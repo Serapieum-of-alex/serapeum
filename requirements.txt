@@ -1,0 +1,12 @@
+accelerate >= 0.32.1
+bitsandbytes >= 0.43.1
+jupyter
+langchain >= 0.2.6
+langchain_community >= 0.2.6
+pip >=24.0.0
+pypdf >= 4.2.0
+pytest >=8.2.2
+pytest-cov >=5.0.0
+python-dotenv~=1.0.1
+torch >= 2.3.1
+transformers>=4.42.3

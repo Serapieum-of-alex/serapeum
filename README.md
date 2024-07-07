@@ -1,6 +1,6 @@
 # llm
 ## CUDA installation
-- First check which version of CUDA toolkit is available for the version of pytorch you are going to use here 
+- First check which version of CUDA toolkit is available for the version of pytorch you are going to use here
 https://pytorch.org/get-started/locally/
 
 - We are using the stable version of pytorch (2.3.1) which is compatible in Windows with CUDA 12.1

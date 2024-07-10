@@ -42,6 +42,16 @@ class DataSource:
         self.overlap = int(chunk_size/10) if overlap is None else overlap
         self.model = model
 
+    @property
+    def splitter(self) -> RecursiveCharacterTextSplitter:
+        """Text splitter."""
+        return RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
+            tokenizer=AutoTokenizer.from_pretrained(self.model),
+            chunk_size=self.chunk_size,
+            chunk_overlap=self.overlap,
+            strip_whitespace=True,
+        )
+
     def load_data(self, paths: Union[str, List[str]]):
         """read the data.
 
@@ -105,11 +115,5 @@ class DataSource:
         for loader in loaders:
             pages.extend(loader.load())
 
-        text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
-            tokenizer=AutoTokenizer.from_pretrained(self.model),
-            chunk_size=self.chunk_size,
-            chunk_overlap=self.overlap,
-            strip_whitespace=True,
-        )
-        docs = text_splitter.split_documents(pages)
+        docs = self.splitter.split_documents(pages)
         return docs

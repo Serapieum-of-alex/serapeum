@@ -1,6 +1,7 @@
 """
 Data Base class
 """
+
 from typing import List
 from langchain_core.documents.base import Document
 from langchain_community.vectorstores import FAISS

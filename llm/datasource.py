@@ -41,6 +41,13 @@ class DataSource:
 
         self._data = pages
 
+    def __str__(self):
+        message = f"""
+                    Type: {self.dtype}
+                    Number of Pages: {len(self.data)}
+                """
+        return message
+
     @property
     def data(self) -> List[Document]:
         """Data"""

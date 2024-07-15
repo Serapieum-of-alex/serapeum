@@ -55,6 +55,9 @@ class ChatModel:
         self._tokenizer = AutoTokenizer.from_pretrained(
             model_id, cache_dir=model_dir, token=access_token
         )
+
+        self._model_id = model_id
+
         # To reduce memory
         if device == "cuda":
             quantization_config = BitsAndBytesConfig(
@@ -63,6 +66,10 @@ class ChatModel:
         else:
             quantization_config = None
 
+        self._device = device
+
+        # TODO: try this parameter instead of the quantization_config `torch_dtype = torch.bfloat16`
+        # create the tokenizer instance
         self._model = AutoModelForCausalLM.from_pretrained(
             model_id,
             device_map=device,

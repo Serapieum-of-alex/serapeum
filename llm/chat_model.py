@@ -1,12 +1,15 @@
+from typing import Union
 import os
 import torch
+import warnings
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from huggingface_hub import HfApi
 from llm import __path__
 
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
-DEFAULT_MODELS_DIR = rf"{__path__[0]}\models"
+DEFAULT_MODELS_DIR = rf"{__path__[0]}/models"
+chat_templates_rdir = rf"{__path__[0]}/chat-templates"
 
 
 class ChatModel:
@@ -126,10 +129,18 @@ class ChatModel:
             Context: {context}.
             Question: {question}
             """
-
-        chat = [{"role": "user", "content": prompt}]
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a knowledgeable assistant who helps users with their questions.",
+            },
+            {"role": "user", "content": f"{prompt}"},
+            {"role": "assistant", "content": "You are a helpful assistant."},
+        ]
+        # get the chat template.
+        self.tokenizer.chat_template = self.get_chat_template()
         formatted_prompt = self.tokenizer.apply_chat_template(
-            chat,
+            messages,
             # do not add tokens to the chat message (start and end strings) "<s>[INST] Hello, how are you? [/INST]
             tokenize=False,
             add_generation_prompt=True,
@@ -145,12 +156,61 @@ class ChatModel:
                 do_sample=False,
             )
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=False)
-        response = response[
-            len(formatted_prompt) :
-        ]  # remove input prompt from response
-        response = response.replace("<eos>", "")  # remove eos token
+        # remove input prompt from response
+        response = response[len(formatted_prompt) :]
+        # remove eos token
+        response = response.replace("<eos>", "")
 
         return response
+
+    def get_chat_template(self) -> str:
+        """Get chat template.
+
+        Warnings
+        -------
+        If the chat template file does not exist, a warning will be raised and the default template will be used.
+
+        Returns
+        -------
+        chat_template: str
+            the jinja2 chat template.
+        """
+        template = (
+            self._read_chat_template(model_id=self.model_id)
+            if not None
+            else (self.tokenizer.default_chat_template)
+        )
+        return template
+
+    @staticmethod
+    def _read_chat_template(model_id) -> Union[str, None]:
+        """Read chat template
+
+        Parameters
+        ----------
+        model_id: str
+            the model id as the hugging face model name.
+
+        Warnings
+        -------
+        If the chat template file does not exist, a warning will be raised and the default template will be used.
+
+        Returns
+        -------
+        chat_template: str
+            the jinja2 chat template.
+        """
+        chat_template_file = f"{model_id.replace('/', '!')}.jinja"
+        path = f"{chat_templates_rdir}/{chat_template_file}"
+        if os.path.exists(path):
+            chat_template = open(path).read()
+            chat_template = chat_template.replace("    ", "").replace("\n", "")
+        else:
+            warnings.warn(
+                f"The mode: {model_id} does not have a template, therefore the default template will be used"
+            )
+            chat_template = None
+        return chat_template
 
 
 def list_models(limit: int = 10, author: str = None, detailed: bool = False):

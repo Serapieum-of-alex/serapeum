@@ -70,6 +70,7 @@ class ChatModel:
             cache_dir=model_dir,
             token=access_token,
         )
+        # evaluation mode.
         self._model.eval()
         self.chat = []
 
@@ -122,15 +123,17 @@ class ChatModel:
         chat = [{"role": "user", "content": prompt}]
         formatted_prompt = self.tokenizer.apply_chat_template(
             chat,
+            # do not add tokens to the chat message (start and end strings) "<s>[INST] Hello, how are you? [/INST]
             tokenize=False,
             add_generation_prompt=True,
         )
-        inputs = self.tokenizer.encode(
+        input_ids = self.tokenizer.encode(
             formatted_prompt, add_special_tokens=False, return_tensors="pt"
         ).to(self.device)
+
         with torch.no_grad():
             outputs = self._model.generate(
-                input_ids=inputs,
+                input_ids=input_ids,
                 max_new_tokens=max_new_tokens,
                 do_sample=False,
             )

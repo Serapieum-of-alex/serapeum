@@ -173,6 +173,4 @@ cython_debug/
 /llm/llm/models/models--google--gemma-2b-it/snapshots/4cf79afa15bef73c0b98ff5937d8e57d6071ef71/tokenizer.json
 /llm/llm/models/models--google--gemma-2b-it/snapshots/4cf79afa15bef73c0b98ff5937d8e57d6071ef71/tokenizer.model
 /llm/llm/models/models--google--gemma-2b-it/snapshots/4cf79afa15bef73c0b98ff5937d8e57d6071ef71/tokenizer_config.json
-/llm/__init__.py
-/llm/chat_model.py
 /tests/mo/*

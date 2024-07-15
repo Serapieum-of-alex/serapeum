@@ -72,12 +72,26 @@ class ChatModel:
         )
         self._model.eval()
         self.chat = []
-        self.device = device
+
+    @property
+    def model_id(self) -> str:
+        """Hugging Face model name"""
+        return self._model_id
+
+    @property
+    def device(self) -> str:
+        """device"""
+        return self._device
 
     @property
     def model(self) -> str:
         """chat model"""
         return self._model
+
+    @property
+    def tokenizer(self):
+        """tokenizer"""
+        return self._tokenizer
 
     def generate(self, question: str, context: str = None, max_new_tokens: int = 250):
         """generate.

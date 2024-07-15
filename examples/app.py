@@ -1,9 +1,9 @@
 import os
 import streamlit as st
-from llm.model import ChatModel
+from llm.chat_model import ChatModel
 from llm.encoder import Encoder
 from llm.datasource import DataSource
-from llm.database import Faiss
+from llm.datastore import Faiss
 
 FILES_DIR = os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "files")
@@ -22,7 +22,9 @@ def load_model():
 @st.cache_resource
 def load_encoder():
     encoder = Encoder(
-        model_id="sentence-transformers/all-MiniLM-L12-v2", device="cuda", model_dir=model_dir
+        model_id="sentence-transformers/all-MiniLM-L12-v2",
+        device="cuda",
+        model_dir=model_dir,
     )
     return encoder
 
@@ -49,9 +51,14 @@ with st.sidebar:
     for uploaded_file in uploaded_files:
         file_paths.append(save_file(uploaded_file))
 
-    datasource = DataSource(dtype="pdf", chunk_size=256, overlap=25, model="sentence-transformers/all-MiniLM-L12-v2")
     if uploaded_files:
-        docs = datasource.load_data(file_paths)
+        datasource = DataSource(dtype="pdf", file_paths=file_paths)
+        datasource.create_splitter(
+            model_id="sentence-transformers/all-MiniLM-L12-v2",
+            chunk_size=256,
+            overlap=25,
+        )
+        docs = datasource.split_data()
         DB = Faiss(docs=docs, embedding_function=encoder.embedding_function)
 
 

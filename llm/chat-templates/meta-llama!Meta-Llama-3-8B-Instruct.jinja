@@ -1,0 +1,22 @@
+{% if messages[0]['role'] == 'system' %}
+    {# if the first message is a system message set the offset to 1 #}
+    {% set offset = 1 %}
+{% else %}
+    {% set offset = 0 %}
+{% endif %}
+
+{# insert the beginning of sequence token #}
+{{ bos_token }}
+{# Iterate over messages and check alternation: #}
+{% for message in messages %}
+    {% if (message['role'] == 'user') != (loop.index0 % 2 == offset) %}
+        {# the message should change user as follow user, assistant, user, assistant, ... #}
+        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}
+    {% endif %}
+
+    {{ '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n' + message['content'] | trim + '<|eot_id|>' }}
+{% endfor %}
+
+{% if add_generation_prompt %}
+    {{ '<|start_header_id|>' + 'assistant' + '<|end_header_id|>\n\n' }}
+{% endif %}

@@ -52,7 +52,7 @@ class ChatModel:
         if not os.path.exists(model_dir):
             raise FileNotFoundError(f"Model directory '{model_dir}' does not exist.")
 
-        self.tokenizer = AutoTokenizer.from_pretrained(
+        self._tokenizer = AutoTokenizer.from_pretrained(
             model_id, cache_dir=model_dir, token=access_token
         )
         # To reduce memory

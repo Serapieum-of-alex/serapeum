@@ -160,17 +160,4 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
-/local-model/*
-/llm/llm/models/models--google--gemma-2b-it/.no_exist/4cf79afa15bef73c0b98ff5937d8e57d6071ef71/added_tokens.json
-/llm/llm/models/models--google--gemma-2b-it/blobs/8d6368f7e735fbe4781bf6e956b7c6ad0586df80
-/llm/llm/models/models--google--gemma-2b-it/blobs/035fa0e287781a32a1bb2ff9f5cfd6cb5522be70
-/llm/llm/models/models--google--gemma-2b-it/blobs/61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2
-/llm/llm/models/models--google--gemma-2b-it/blobs/583327915e2ce21dbdd7c44a90a9dcb2b02559a1
-/llm/llm/models/models--google--gemma-2b-it/blobs/c15eb04bc5ad609fb26533e8525302c5640a945e5f67f65b7c849900acda7d99
-/llm/llm/models/models--google--gemma-2b-it/refs/main
-/llm/llm/models/models--google--gemma-2b-it/snapshots/4cf79afa15bef73c0b98ff5937d8e57d6071ef71/config.json
-/llm/llm/models/models--google--gemma-2b-it/snapshots/4cf79afa15bef73c0b98ff5937d8e57d6071ef71/special_tokens_map.json
-/llm/llm/models/models--google--gemma-2b-it/snapshots/4cf79afa15bef73c0b98ff5937d8e57d6071ef71/tokenizer.json
-/llm/llm/models/models--google--gemma-2b-it/snapshots/4cf79afa15bef73c0b98ff5937d8e57d6071ef71/tokenizer.model
-/llm/llm/models/models--google--gemma-2b-it/snapshots/4cf79afa15bef73c0b98ff5937d8e57d6071ef71/tokenizer_config.json
 /tests/mo/*

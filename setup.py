@@ -10,20 +10,20 @@ requirements = [line.strip() for line in open("requirements.txt").readlines()]
 requirements_dev = [line.strip() for line in open("requirements-dev.txt").readlines()]
 
 setup(
-    name="llm",
+    name="serapeum",
     version="0.1.0",
     description="llm utility package",
     author="Mostafa Farrag",
     author_email="moah.farag@gmail.com",
-    url="https://github.com/Serapieum-of-alex/llm",
-    keywords=["llm", "gdal"],
+    url="https://github.com/Serapieum-of-alex/serapeum",
+    keywords=["llm", "generativeai", "chatbot", "rag", "natural language processing"],
     long_description=readme + "\n\n" + history,
-    repository="https://github.com/MAfarrag/llm",
-    documentation="https://llm.readthedocs.io/",
+    repository="https://github.com/MAfarrag/serapeum",
+    documentation="https://serapeum.readthedocs.io/",
     long_description_content_type="text/markdown",
     license="GNU General Public License v3",
     zip_safe=False,
-    packages=find_packages(include=["llm", "llm.*"]),
+    packages=find_packages(include=["serapeum", "serapeum.*"]),
     install_requires=requirements,
     extras_require={
         "dev": requirements_dev,

@@ -1,5 +1,5 @@
 from typing import List
-from llm.datasource import DataSource
+from serapeum.datasource import DataSource
 from langchain_core.documents.base import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 

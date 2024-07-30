@@ -1,4 +1,4 @@
-import llm
+import serapeum
 
 
 def test_1():

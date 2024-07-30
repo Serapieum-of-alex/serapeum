@@ -1,9 +1,9 @@
 import os
 import streamlit as st
-from llm.chat_model import ChatModel
-from llm.encoder import Encoder
-from llm.datasource import DataSource
-from llm.datastore import Faiss
+from serapeum.chat_model import ChatModel
+from serapeum.encoder import Encoder
+from serapeum.datasource import DataSource
+from serapeum.datastore import Faiss
 
 FILES_DIR = os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "files")

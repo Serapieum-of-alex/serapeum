@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv(f".env")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
-from llm.chat_model import ChatModel, list_models
+from serapeum.chat_model import ChatModel, list_models
 
 model_dir = r"C:\MyComputer\llm\models"
 # model_dir = r"\\MYCLOUDEX2ULTRA\research\llm\models"
@@ -68,7 +68,7 @@ partners and our clients.
 response = model.generate(question="what is deltares in the Netherlands?", context=con)
 print(response)
 # %% Document Loader and Text Splitter
-from llm.datasource import DataSource
+from serapeum.datasource import DataSource
 
 # paper_name = ["tests/data/wf45t6000a_series.pdf"]
 paper_name = ["tests/data/paper.pdf"]
@@ -84,14 +84,14 @@ Faiss is a vector database library from Meta’s fundamental AI research team fo
 clustering of dense vectors. Using LangChain’s community integration, we can use our docs variable from the text
 splitter to create a Faiss database in RAM.
 """
-from llm.encoder import Encoder
+from serapeum.encoder import Encoder
 
 encoder = Encoder(
     model_id="sentence-transformers/all-MiniLM-L12-v2",
     device="cuda",
     model_dir=model_dir,
 )
-from llm.datastore import Faiss
+from serapeum.datastore import Faiss
 
 DB = Faiss(docs, encoder.embedding_function)
 user_prompt = "how to select a location"

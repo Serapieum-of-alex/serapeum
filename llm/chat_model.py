@@ -37,6 +37,7 @@ class ChatModel:
             - xlnet-base-cased
             - albert-base-v2
             - t5-base
+            - meta-llama/Meta-Llama-3-8B-Instruct
             - meta-llama/Meta-Llama-3-8B
             - meta-llama/Llama-2-7b-hf
             - openai-community/openai-gpt

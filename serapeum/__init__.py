@@ -1,4 +1,4 @@
-"""llm"""
+"""serapeum"""
 
 __all__ = ["chat_model", "datasource", "datastore", "encoder"]
 
@@ -36,5 +36,5 @@ if missing_dependencies:
     raise ImportError("Missing required dependencies {0}".format(missing_dependencies))
 
 __doc__ = """
-llm - llm utility package
+serapeum - serapeum utility package
 """

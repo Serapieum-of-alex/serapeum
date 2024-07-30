@@ -4,7 +4,7 @@ import torch
 import warnings
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from huggingface_hub import HfApi
-from llm import __path__
+from serapeum import __path__
 
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
@@ -178,7 +178,7 @@ class ChatModel:
         """
         template = (
             self._read_chat_template(model_id=self.model_id)
-            if not None
+            if None
             else (self.tokenizer.default_chat_template)
         )
         return template

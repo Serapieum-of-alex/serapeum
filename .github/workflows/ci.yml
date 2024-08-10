@@ -11,8 +11,6 @@ jobs:
         python-version: ["3.12"]
     env:
       OS: ${{ matrix.os }}
-    #     container:
-    #       image: pytorch/pytorch:2.4.0-cuda11.8-cudnn9-devel
 
     steps:
     - name: Checkout repository
@@ -22,6 +20,10 @@ jobs:
       uses: Jimver/cuda-toolkit@v0.2.16
       with:
         cuda: "12.4.0"
+
+    - name: Install dependencies
+      run: |
+          pip install .[dev]
 
     - name: Verify CUDA installation
       run: |

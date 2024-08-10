@@ -21,7 +21,7 @@ jobs:
     - name: Install CUDA Toolkit
       uses: Jimver/cuda-toolkit@v0.2.16
       with:
-        cuda: "12.4"
+        cuda: "12.4.0"
 
     - name: List installed packages
       run: dpkg --get-selections | grep cuda

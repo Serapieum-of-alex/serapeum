@@ -11,15 +11,20 @@ jobs:
         python-version: ["3.12"]
     env:
       OS: ${{ matrix.os }}
-    container:
-      image: pytorch/pytorch:2.4.0-cuda11.8-cudnn9-devel
+    #     container:
+    #       image: pytorch/pytorch:2.4.0-cuda11.8-cudnn9-devel
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Add CUDA to PATH
-      run: echo 'export PATH=/usr/local/cuda/bin:$PATH' >> $GITHUB_ENV
+    - name: Install CUDA Toolkit
+      uses: Jimver/cuda-toolkit@v0.2.16
+      with:
+        cuda: "12.4"
+
+    - name: List installed packages
+      run: dpkg --get-selections | grep cuda
 
     - name: Verify CUDA installation
       run: |

@@ -1,6 +1,5 @@
 
 # Additional index URL for PyTorch packages with CUDA 12.4 support
---index-url https://download.pytorch.org/whl/cu124
 accelerate >= 0.32.1
 bitsandbytes >= 0.43.1
 faiss-cpu >=1.8.0

@@ -23,7 +23,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-          pip install .[dev]
+          pip install .[dev] --index-url https://download.pytorch.org/whl/cu124
 
     - name: Verify CUDA installation
       run: |

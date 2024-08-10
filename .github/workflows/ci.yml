@@ -23,9 +23,6 @@ jobs:
       with:
         cuda: "12.4.0"
 
-    - name: List installed packages
-      run: dpkg --get-selections | grep cuda
-
     - name: Verify CUDA installation
       run: |
         nvcc --version

@@ -1,0 +1,24 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.12"]
+    env:
+      OS: ${{ matrix.os }}
+    container:
+      image: pytorch/pytorch:2.4.0-cuda12.4-cudnn9-runtime
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Verify CUDA installation
+      run: |
+        nvcc --version
+        python -c "import torch; print(torch.cuda.is_available())"

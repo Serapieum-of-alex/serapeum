@@ -18,6 +18,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Add CUDA to PATH
+      run: echo 'export PATH=/usr/local/cuda/bin:$PATH' >> $GITHUB_ENV
+
     - name: Verify CUDA installation
       run: |
         nvcc --version

@@ -68,7 +68,7 @@ Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
 [tool.setuptools.packages.find]
 include = ["serapeum", "serapeum.*"]
 
-[tool.pip.extra-index-url]
+[tool.pip.index-url]
 url = "https://download.pytorch.org/whl/cu124"
 
 [build-system]

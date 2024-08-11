@@ -31,7 +31,6 @@ dependencies = [
     "pip >= 24.0.05",
     "pypdf >= 4.2.0",
     "python-dotenv ~= 1.0.1",
-    "streamlit ~= 1.29.0",
     "transformers >= 4.42.3",
     "torch == 2.4.0"
 ]
@@ -43,6 +42,7 @@ test = [
     "nbval >= 0.11.0",
 ]
 dev = [
+    "streamlit ~= 1.29.0",
     "pytest >= 8.2.2",
     "pytest-cov >= 5.0.0",
     "jupyter",

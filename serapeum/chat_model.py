@@ -1,6 +1,7 @@
 from typing import Union
 import os
 import torch
+from torch import tensor
 import warnings
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from huggingface_hub import HfApi
@@ -130,6 +131,7 @@ class ChatModel:
             Context: {context}.
             Question: {question}
             """
+
         messages = [
             {
                 "role": "system",
@@ -146,12 +148,12 @@ class ChatModel:
             tokenize=False,
             add_generation_prompt=True,
         )
-        input_ids = self.tokenizer.encode(
+        input_ids: tensor = self.tokenizer.encode(
             formatted_prompt, add_special_tokens=False, return_tensors="pt"
         ).to(self.device)
 
         with torch.no_grad():
-            outputs = self._model.generate(
+            outputs: tensor = self._model.generate(
                 input_ids=input_ids,
                 max_new_tokens=max_new_tokens,
                 do_sample=False,
@@ -184,7 +186,7 @@ class ChatModel:
         return template
 
     @staticmethod
-    def _read_chat_template(model_id) -> Union[str, None]:
+    def _read_chat_template(model_id: str) -> Union[str, None]:
         """Read chat template
 
         Parameters

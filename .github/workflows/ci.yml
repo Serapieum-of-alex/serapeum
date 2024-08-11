@@ -27,7 +27,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install .[dev]
+          pip install .[test]
 
       - name: Verify CUDA installation
         run: |

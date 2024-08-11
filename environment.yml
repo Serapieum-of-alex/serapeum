@@ -13,5 +13,5 @@ dependencies:
   - pypdf >= 4.2.0
   - python-dotenv ~= 1.0.1
   - transformers >= 4.42.3
-  - pytorch == 12.4
+#   - pytorch == 12.4
   - pytorch-cuda == 12.4

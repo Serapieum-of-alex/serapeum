@@ -1,0 +1,17 @@
+channels:
+  - conda-forge
+  - pytorch
+  - nvidia
+dependencies:
+  - accelerate >= 0.32.1
+  - bitsandbytes >= 0.43.1
+  - faiss-cpu >= 1.8.0
+  - jinja2 >= 3.1.4
+  - langchain >= 0.2.6
+  - langchain_community >= 0.2.6
+  - pip >= 24.0.05
+  - pypdf >= 4.2.0
+  - python-dotenv ~= 1.0.1
+  - transformers >= 4.42.3
+  - pytorch == 12.4
+  - pytorch-cuda == 12.4

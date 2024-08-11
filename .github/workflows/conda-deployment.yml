@@ -30,7 +30,8 @@ jobs:
       - name: Install dev-dependencies
         shell: bash -el {0}
         run: |
-            pip install .[test]
+            # pip install .[test] --no-deps
+            pip install pytest pytest-cov nbval
 
       - name: Run tests
         shell: bash -el {0}
@@ -39,11 +40,11 @@ jobs:
           conda list
           conda config --show-sources
           conda config --show
-          python -m pytest -sv
+          pytest -sv
 
       - name: test Jupyter notebook
         shell: bash -el {0}
         run: |
           conda activate test
           pip install -e .
-          python -m pytest --nbval -k ".ipynb"
+          pytest --nbval -k ".ipynb"

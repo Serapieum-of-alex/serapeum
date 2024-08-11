@@ -7,32 +7,21 @@ name = "serapeum"
 version = "0.1.0"
 description = "llm utility package"
 readme = "README.md"
-requires-python = ">=3.0"
+requires-python = ">=3.11"
 license = {text = "GNU General Public License v3"}
 authors = [
     { name = "Mostafa Farrag", email = "moah.farag@gmail.com" }
 ]
 keywords = ["llm", "generativeai", "chatbot", "rag", "natural language processing"]
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Environment :: Console",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Natural Language :: English",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: AI",
-    "Intended Audience :: Science/Research",
-    "Intended Audience :: Developers",
-]
+
 dependencies = [
-    "accelerate >= 0.32.1",
-    "bitsandbytes >= 0.43.1",
-    "faiss-cpu >= 1.8.0",
-    "jinja2 >= 3.1.4",
-    "langchain >= 0.2.6",
-    "langchain_community >= 0.2.6",
-    "pip >= 24.0.05",
+    "accelerate>=0.32.1",
+    "bitsandbytes>=0.43.1",
+    "faiss-cpu>=1.8.0",
+    "jinja2>=3.1.4",
+    "langchain>=0.2.6",
+    "langchain_community>=0.2.6",
+    "pip>=24.0.05",
 ]
 
 

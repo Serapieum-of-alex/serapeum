@@ -25,9 +25,23 @@ jobs:
         with:
           cuda: "12.4.0"
 
+      - name: Cleanup after cuda
+        run: |
+            sudo rm -rf /tmp/*
+            sudo rm -rf ~/.cache/pip
+            sudo apt-get clean
+            sudo rm -rf /var/lib/apt/lists/*
+
       - name: Install dependencies
         run: |
-          pip install .[test]
+            pip install .[test]
+
+      - name: Cleanup after dependencies installation
+        run: |
+            sudo rm -rf /tmp/*
+            sudo rm -rf ~/.cache/pip
+            sudo apt-get clean
+            sudo rm -rf /var/lib/apt/lists/*
 
       - name: Verify CUDA installation
         run: |

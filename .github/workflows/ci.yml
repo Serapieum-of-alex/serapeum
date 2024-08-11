@@ -26,7 +26,7 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.16
         with:
           cuda: "12.4.0"
-          linux-local-args: ["--toolkit"]
+          linux-local-args: '["--toolkit"]'
 
       - name: Cleanup after cuda
         run: |

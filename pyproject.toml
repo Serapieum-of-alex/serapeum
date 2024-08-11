@@ -1,0 +1,73 @@
+[project]
+name = "serapeum"
+version = "0.1.0"
+description = "llm utility package"
+readme = "README.md"
+requires-python = ">=3.0"
+license = {text = "GNU General Public License v3"}
+authors = [
+    { name = "Mostafa Farrag", email = "moah.farag@gmail.com" }
+]
+keywords = ["llm", "generativeai", "chatbot", "rag", "natural language processing"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: AI",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+]
+dependencies = [
+    "accelerate >= 0.32.1",
+    "bitsandbytes >= 0.43.1",
+    "faiss-cpu >= 1.8.0",
+    "jinja2 >= 3.1.4",
+    "langchain >= 0.2.6",
+    "langchain_community >= 0.2.6",
+    "pip >= 24.0.05",
+    "pypdf >= 4.2.0",
+    "python-dotenv ~= 1.0.1",
+    "streamlit ~= 1.29.0",
+    "transformers >= 4.42.3",
+    "torch == 2.4.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest >= 8.2.2",
+    "pytest-cov >= 5.0.0",
+    "jupyter",
+    "black >=24.4.2",
+    "darglint >=1.8.1",
+    "flake8-bandit >=4.1.1",
+    "flake8-bugbear >=24.4.26",
+    "flake8-docstrings >=1.7.0",
+    "flake8-rst-docstrings >=0.3.0",
+    "nbval >=0.11.0",
+    "pep8-naming >=0.14.1",
+    "pre-commit >=3.7.1",
+    "pre-commit-hooks >=4.6.0",
+    "pytest >=8.2.2",
+    "pytest-cov >=5.0.0",
+    "reorder-python-imports >=3.13.0",
+]
+
+[project.urls]
+homepage = "https://github.com/Serapieum-of-alex/serapeum"
+repository = "https://github.com/Serapieum-of-alex/serapeum"
+documentation = "https://serapeum.readthedocs.io/"
+Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
+
+[tool.setuptools.packages.find]
+include = ["serapeum", "serapeum.*"]
+
+[tool.pip.index-url]
+url = "https://download.pytorch.org/whl/cu124"
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"

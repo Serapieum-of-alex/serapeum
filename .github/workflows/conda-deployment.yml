@@ -1,0 +1,48 @@
+name: conda-deployment
+
+on: [push]
+
+jobs:
+  Main-package:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.12"]
+    env:
+      OS: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          mamba-version: "*"
+          #use-mamba: true
+          auto-update-conda: false
+          environment-file: environment.yml
+          auto-activate-base: false
+          activate-environment: test
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge,defaults
+          channel-priority: true
+          show-channel-urls: true
+
+      - name: Install dev-dependencies
+        run: |
+            pip install .[test] --no-deps
+
+      - name: Run tests
+        shell: bash -el {0}
+        run: |
+          conda info
+          conda list
+          conda config --show-sources
+          conda config --show
+          pytest -sv
+
+      - name: test Jupyter notebook
+        shell: bash -el {0}
+        run: |
+          conda activate test
+          pip install -e .
+          pytest --nbval -k ".ipynb"

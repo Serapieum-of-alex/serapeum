@@ -10,6 +10,8 @@ from serapeum import __path__
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 DEFAULT_MODELS_DIR = rf"{__path__[0]}/models"
+if not os.path.exists(DEFAULT_MODELS_DIR):
+    os.makedirs(DEFAULT_MODELS_DIR)
 chat_templates_rdir = rf"{__path__[0]}/chat-templates"
 
 

@@ -11,8 +11,8 @@ jobs:
         python-version: ["3.12"]
     env:
       OS: ${{ matrix.os }}
-    container:
-      image: nvidia/cuda:12.4-base
+#     container:
+#       image: nvidia/cuda:12.4-base
 
     steps:
       - uses: actions/checkout@v3
@@ -22,10 +22,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: x64
 
-#       - name: Install CUDA Toolkit
-#         uses: Jimver/cuda-toolkit@v0.2.16
-#         with:
-#           cuda: "12.4.0"
+      - name: Install CUDA Toolkit
+        uses: Jimver/cuda-toolkit@v0.2.16
+        with:
+          cuda: "12.4.0"
+          linux-local-args: ["--toolkit"]
 
       - name: Cleanup after cuda
         run: |

@@ -3,7 +3,7 @@ name: conda-deployment
 on: [push]
 
 jobs:
-  Main-package:
+  main-package:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

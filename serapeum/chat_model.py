@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Dict, Any
 import os
 import torch
 from torch import tensor
@@ -26,6 +26,8 @@ class ChatModel:
         device="cpu",
         access_token: str = None,
         model_dir: str = None,
+        tokenizer_kwargs: Dict[str, Any] = None,
+        **model_kwargs,
     ):
         """ChatModel class to interact with a pre-trained language model
 
@@ -49,7 +51,7 @@ class ChatModel:
             - openai-community/gpt-4
             - facebook/rag-token-base
         device: str, default is "cpu"
-            cpu or cuda
+            device name (i.e. cpu, cuda, cuda:0, cuda:1, etc.) or auto, 'balanced', 'balanced_low_0', 'sequential'
         access_token: str, default is None.
             access token to hugging face.
         """
@@ -59,9 +61,16 @@ class ChatModel:
         if not os.path.exists(model_dir):
             raise FileNotFoundError(f"Model directory '{model_dir}' does not exist.")
 
-        self._tokenizer = AutoTokenizer.from_pretrained(
-            model_id, cache_dir=model_dir, token=access_token
-        )
+        if tokenizer_kwargs is None:
+            self._tokenizer = AutoTokenizer.from_pretrained(
+                model_id,
+                cache_dir=model_dir,
+                token=access_token,
+            )
+        else:
+            self._tokenizer = AutoTokenizer.from_pretrained(
+                model_id, cache_dir=model_dir, token=access_token, **tokenizer_kwargs
+            )
 
         self._model_id = model_id
 
@@ -83,6 +92,7 @@ class ChatModel:
             quantization_config=quantization_config,
             cache_dir=model_dir,
             token=access_token,
+            **model_kwargs,
         )
         # evaluation mode.
         self._model.eval()
@@ -108,7 +118,9 @@ class ChatModel:
         """tokenizer"""
         return self._tokenizer
 
-    def generate(self, question: str, context: str = None, max_new_tokens: int = 250):
+    def generate_response(
+        self, question: str, context: str = None, max_new_tokens: int = 250
+    ):
         """generate.
 
             The generate function can be used to simply answer a question or to answer a question with additional context
@@ -183,7 +195,7 @@ class ChatModel:
         template = (
             self._read_chat_template(model_id=self.model_id)
             if None
-            else (self.tokenizer.default_chat_template)
+            else self.tokenizer.default_chat_template
         )
         return template
 

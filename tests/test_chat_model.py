@@ -29,3 +29,11 @@ def test_create_chat_model() -> ChatModel:
     assert chat_mode.device == "cpu"
     assert isinstance(chat_mode.model, BertLMHeadModel)
     assert isinstance(chat_mode.tokenizer, BertTokenizerFast)
+
+    return chat_mode
+
+
+class TestChatTemplate:
+    def test_template_does_not_exist(self):
+        template = ChatModel._read_chat_template(model_id="does-not-exist")
+        assert template is None

@@ -31,6 +31,14 @@ def test_create_chat_model(model_id: str) -> ChatModel:
     return chat_mode
 
 
+def test_generate_response(test_create_chat_model: ChatModel):
+    response = test_create_chat_model.generate_response(
+        question="what is cmake?", context=""
+    )
+    expected_response = "CMake is"
+    assert response.__contains__(expected_response)
+
+
 class TestChatTemplate:
     def test_template_does_not_exist(self):
         template = ChatModel._read_chat_template(model_id="does-not-exist")

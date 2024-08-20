@@ -11,6 +11,7 @@ jobs:
         python-version: ["3.12"]
     env:
       OS: ${{ matrix.os }}
+      HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
 
     steps:
       - uses: actions/checkout@v3

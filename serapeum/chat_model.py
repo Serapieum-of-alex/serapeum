@@ -192,11 +192,7 @@ class ChatModel:
         chat_template: str
             the jinja2 chat template.
         """
-        template = (
-            self._read_chat_template(model_id=self.model_id)
-            if None
-            else self.tokenizer.default_chat_template
-        )
+        template = self._read_chat_template(model_id=self.model_id)
         return template
 
     @staticmethod

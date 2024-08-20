@@ -1,8 +1,8 @@
 import os
 import pytest
 from serapeum.chat_model import ChatModel
-from transformers.models.bert.modeling_bert import BertLMHeadModel
-from transformers.models.bert.tokenization_bert_fast import BertTokenizerFast
+from transformers.models.gemma.modeling_gemma import GemmaForCausalLM
+from transformers.models.gemma.tokenization_gemma_fast import GemmaTokenizerFast
 
 # Retrieve the Hugging Face token from environment variables
 huggingface_token = os.getenv("HUGGINGFACE_TOKEN")
@@ -11,24 +11,22 @@ if huggingface_token is None:
 
 
 @pytest.fixture(scope="module")
-def test_create_chat_model() -> ChatModel:
+def test_create_chat_model(model_id: str) -> ChatModel:
     # first test without tokenizer_kwargs
-    ChatModel(
-        model_id="bert-base-uncased", access_token=huggingface_token, is_decoder=True
-    )
+    ChatModel(model_id=model_id, access_token=huggingface_token, is_decoder=True)
 
     tokenizer_kwargs = {"clean_up_tokenization_spaces": True}
 
     chat_mode = ChatModel(
-        model_id="bert-base-uncased",
+        model_id=model_id,
         access_token=huggingface_token,
         tokenizer_kwargs=tokenizer_kwargs,
         is_decoder=True,
     )
-    assert chat_mode.model_id == "bert-base-uncased"
+    assert chat_mode.model_id == model_id
     assert chat_mode.device == "cpu"
-    assert isinstance(chat_mode.model, BertLMHeadModel)
-    assert isinstance(chat_mode.tokenizer, BertTokenizerFast)
+    assert isinstance(chat_mode.model, GemmaForCausalLM)
+    assert isinstance(chat_mode.tokenizer, GemmaTokenizerFast)
 
     return chat_mode
 

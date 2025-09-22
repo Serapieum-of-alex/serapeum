@@ -54,7 +54,7 @@ try:
 
     model_found = False
     for model in models["models"]:
-        if model["name"] == test_model:
+        if model["model"] == test_model:
             model_found = True
             break
 

@@ -1,0 +1,100 @@
+from abc import abstractmethod
+from typing import (
+    Any,
+    List,
+    Sequence,
+)
+
+from serapeum.core.base.llms.types import (
+    ChatMessage,
+    ChatResponse,
+    ChatResponseAsyncGen,
+    ChatResponseGen,
+    CompletionResponse,
+    CompletionResponseAsyncGen,
+    CompletionResponseGen,
+    LLMMetadata,
+    TextBlock,
+)
+
+from pydantic import ConfigDict
+from serapeum.core.schema import BaseComponent
+
+
+class BaseLLM(BaseComponent):
+    """BaseLLM interface."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @property
+    @abstractmethod
+    def metadata(self) -> LLMMetadata:
+        """LLM metadata.
+
+        Returns:
+            LLMMetadata: LLM metadata containing various information about the LLM.
+        """
+
+    def convert_chat_messages(self, messages: Sequence[ChatMessage]) -> List[Any]:
+        """Convert chat messages to an LLM specific message format."""
+        converted_messages = []
+        for message in messages:
+            if isinstance(message.content, str):
+                converted_messages.append(message)
+            elif isinstance(message.content, List):
+                content_string = ""
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        content_string += block.text
+                    else:
+                        raise ValueError("LLM only supports text inputs")
+                message.content = content_string
+                converted_messages.append(message)
+            else:
+                raise ValueError(f"Invalid message content: {message.content!s}")
+
+        return converted_messages
+
+    @abstractmethod
+    def chat(self, messages: Sequence[ChatMessage], **kwargs: Any) -> ChatResponse:
+        ...
+    @abstractmethod
+    def complete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponse:
+        ...
+
+    @abstractmethod
+    def stream_chat(
+        self, messages: Sequence[ChatMessage], **kwargs: Any
+    ) -> ChatResponseGen:
+        ...
+
+    @abstractmethod
+    def stream_complete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponseGen:
+        ...
+
+    @abstractmethod
+    async def achat(
+        self, messages: Sequence[ChatMessage], **kwargs: Any
+    ) -> ChatResponse:
+        ...
+
+    @abstractmethod
+    async def acomplete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponse:
+        ...
+
+    @abstractmethod
+    async def astream_chat(
+        self, messages: Sequence[ChatMessage], **kwargs: Any
+    ) -> ChatResponseAsyncGen:
+        ...
+    @abstractmethod
+    async def astream_complete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponseAsyncGen:
+        ...

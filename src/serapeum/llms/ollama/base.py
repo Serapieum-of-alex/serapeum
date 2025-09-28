@@ -19,7 +19,7 @@ from serapeum.core.base.llms.generic_utils import (
     stream_chat_to_completion_decorator,
     astream_chat_to_completion_decorator,
 )
-from serapeum.core.base.llms.types import (
+from serapeum.core.base.llms.models import (
     ChatMessage,
     ChatResponse,
     ChatResponseGen,
@@ -30,18 +30,21 @@ from serapeum.core.base.llms.types import (
     LLMMetadata,
     MessageRole,
     TextBlock,
+
+
+
     ImageBlock,
 )
 from pydantic import BaseModel, Field, PrivateAttr
-from serapeum.core.constants import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
+from serapeum.core.configs import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llms.function_calling import FunctionCallingLLM
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ToolSelection
-from serapeum.core.types import PydanticProgramMode
+from serapeum.core.models import PydanticProgramMode
 from serapeum.core.program.utils import process_streaming_objects
 
 if TYPE_CHECKING:
-    from serapeum.core.tools.types import BaseTool
+    from serapeum.core.tools.models import BaseTool
 
 DEFAULT_REQUEST_TIMEOUT = 60.0
 

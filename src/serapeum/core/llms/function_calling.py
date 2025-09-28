@@ -2,7 +2,7 @@ import asyncio
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Union
 
-from serapeum.core.base.llms.types import (
+from serapeum.core.base.llms.models import (
     ChatMessage,
     ChatResponse,
     ChatResponseAsyncGen,
@@ -11,8 +11,8 @@ from serapeum.core.base.llms.types import (
 from serapeum.core.llms.llm import LLM, ToolSelection
 
 if TYPE_CHECKING:
-    from serapeum.core.chat_engine.types import AgentChatResponse
-    from serapeum.core.tools.types import BaseTool
+    from serapeum.core.chat_engine.models import AgentChatResponse
+    from serapeum.core.tools.models import BaseTool
 
 
 class FunctionCallingLLM(LLM):
@@ -159,19 +159,10 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> "AgentChatResponse":
         """Predict and call the tool."""
-        from serapeum.core.chat_engine.types import AgentChatResponse
+        from serapeum.core.chat_engine.models import AgentChatResponse
         from serapeum.core.tools.calling import (
             call_tool_with_selection,
         )
-
-        if not self.metadata.is_function_calling_model:
-            return super().predict_and_call(
-                tools,
-                user_msg=user_msg,
-                chat_history=chat_history,
-                verbose=verbose,
-                **kwargs,
-            )
 
         response = self.chat_with_tools(
             tools,
@@ -225,19 +216,10 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> "AgentChatResponse":
         """Predict and call the tool."""
-        from serapeum.core.chat_engine.types import AgentChatResponse
+        from serapeum.core.chat_engine.models import AgentChatResponse
         from serapeum.core.tools.calling import (
             acall_tool_with_selection,
         )
-
-        if not self.metadata.is_function_calling_model:
-            return await super().apredict_and_call(
-                tools,
-                user_msg=user_msg,
-                chat_history=chat_history,
-                verbose=verbose,
-                **kwargs,
-            )
 
         response = await self.achat_with_tools(
             tools,

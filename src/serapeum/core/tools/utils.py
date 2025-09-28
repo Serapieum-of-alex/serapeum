@@ -15,7 +15,8 @@ from typing import (
 import datetime
 import typing
 
-from pydantic import BaseModel, FieldInfo, create_model
+from pydantic import BaseModel, create_model
+from pydantic.fields import FieldInfo
 
 
 def create_schema_from_function(

@@ -1,4 +1,3 @@
-from collections import ChainMap
 from typing import (
     Any,
     Dict,
@@ -9,26 +8,18 @@ from typing import (
     Protocol,
     Sequence,
     Union,
-    get_args,
     runtime_checkable,
     TYPE_CHECKING,
     Type,
 )
 from typing_extensions import Annotated
 
-from serapeum.core.base.llms.types import (
+from serapeum.core.base.llms.models import (
     ChatResponseAsyncGen,
     ChatResponseGen,
     CompletionResponseAsyncGen,
     CompletionResponseGen,
     MessageRole,
-)
-from serapeum.core.base.query_pipeline.query import (
-    InputKeys,
-    OutputKeys,
-    QueryComponent,
-    StringableInput,
-    validate_and_convert_stringable,
 )
 from pydantic import (
     BaseModel,
@@ -36,19 +27,15 @@ from pydantic import (
     Field,
     field_validator,
     model_validator,
-    ConfigDict,
     ValidationError,
 )
-from serapeum.core.callbacks import CBEventType, EventPayload
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.generic_utils import (
     messages_to_prompt as generic_messages_to_prompt,
 )
-from serapeum.core.base.llms.generic_utils import (
-    prompt_to_messages,
-)
+
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
-from serapeum.core.types import (
+from serapeum.core.models import (
     BaseOutputParser,
     PydanticProgramMode,
     TokenAsyncGen,
@@ -56,7 +43,7 @@ from serapeum.core.types import (
     Model,
 )
 
-from serapeum.core.base.llms.types import (
+from serapeum.core.base.llms.models import (
     ChatMessage,
 )
 
@@ -195,7 +182,7 @@ class LLM(BaseLLM):
     )
     pydantic_program_mode: PydanticProgramMode = PydanticProgramMode.DEFAULT
 
-    # deprecated
+    # # deprecated
     query_wrapper_prompt: Optional[BasePromptTemplate] = Field(
         description="Query wrapper prompt for LLM calls.",
         default=None,
@@ -226,25 +213,6 @@ class LLM(BaseLLM):
             self.messages_to_prompt = generic_messages_to_prompt
         return self
 
-
-    def _log_template_data(
-        self, prompt: BasePromptTemplate, **prompt_args: Any
-    ) -> None:
-        template_vars = {
-            k: v
-            for k, v in ChainMap(prompt.kwargs, prompt_args).items()
-            if k in prompt.template_vars
-        }
-        with self.callback_manager.event(
-            CBEventType.TEMPLATING,
-            payload={
-                EventPayload.TEMPLATE: prompt.get_template(llm=self),
-                EventPayload.TEMPLATE_VARS: template_vars,
-                EventPayload.SYSTEM_PROMPT: self.system_prompt,
-                EventPayload.QUERY_WRAPPER_PROMPT: self.query_wrapper_prompt,
-            },
-        ):
-            pass
 
     def _get_prompt(self, prompt: BasePromptTemplate, **prompt_args: Any) -> str:
         formatted_prompt = prompt.format(
@@ -297,16 +265,6 @@ class LLM(BaseLLM):
             ]
         return messages
 
-    def _as_query_component(self, **kwargs: Any) -> QueryComponent:
-        """Return query component."""
-        if self.metadata.is_chat_model:
-            return LLMChatComponent(llm=self, **kwargs)
-        else:
-            return LLMCompleteComponent(llm=self, **kwargs)
-
-    # -- Structured outputs --
-
-    # @dispatcher.span
     def structured_predict(
         self,
         output_cls: Type[BaseModel],
@@ -346,11 +304,6 @@ class LLM(BaseLLM):
         """
         from serapeum.core.program.utils import get_program_for_llm
 
-        # dispatcher.event(
-        #     LLMStructuredPredictStartEvent(
-        #         output_cls=output_cls, template=prompt, template_args=prompt_args
-        #     )
-        # )
         program = get_program_for_llm(
             output_cls,
             prompt,
@@ -359,10 +312,9 @@ class LLM(BaseLLM):
         )
 
         result = program(llm_kwargs=llm_kwargs, **prompt_args)
-        # dispatcher.event(LLMStructuredPredictEndEvent(output=result))
+
         return result
 
-    # @dispatcher.span
     async def astructured_predict(
         self,
         output_cls: Type[BaseModel],
@@ -402,12 +354,6 @@ class LLM(BaseLLM):
         """
         from serapeum.core.program.utils import get_program_for_llm
 
-        # dispatcher.event(
-        #     LLMStructuredPredictStartEvent(
-        #         output_cls=output_cls, template=prompt, template_args=prompt_args
-        #     )
-        # )
-
         program = get_program_for_llm(
             output_cls,
             prompt,
@@ -416,10 +362,9 @@ class LLM(BaseLLM):
         )
 
         result = await program.acall(llm_kwargs=llm_kwargs, **prompt_args)
-        # dispatcher.event(LLMStructuredPredictEndEvent(output=result))
+
         return result
 
-    # @dispatcher.span
     def stream_structured_predict(
         self,
         output_cls: Type[BaseModel],
@@ -461,11 +406,6 @@ class LLM(BaseLLM):
         """
         from serapeum.core.program.utils import get_program_for_llm
 
-        # dispatcher.event(
-        #     LLMStructuredPredictStartEvent(
-        #         output_cls=output_cls, template=prompt, template_args=prompt_args
-        #     )
-        # )
         program = get_program_for_llm(
             output_cls,
             prompt,
@@ -474,13 +414,29 @@ class LLM(BaseLLM):
         )
 
         result = program.stream_call(llm_kwargs=llm_kwargs, **prompt_args)
-        # for r in result:
-        #     dispatcher.event(LLMStructuredPredictInProgressEvent(output=r))
-        #     yield r
+        for r in result:
+            yield r
 
-        # dispatcher.event(LLMStructuredPredictEndEvent(output=r))
+    async def _structured_astream_call(
+            self,
+            output_cls: Type[Model],
+            prompt: PromptTemplate,
+            llm_kwargs: Optional[Dict[str, Any]] = None,
+            **prompt_args: Any,
+    ) -> AsyncGenerator[
+        Union[Model, List[Model], "BaseModel", List["BaseModel"]], None
+    ]:
+        from serapeum.core.program.utils import get_program_for_llm
 
-    # @dispatcher.span
+        program = get_program_for_llm(
+            output_cls,
+            prompt,
+            self,
+            pydantic_program_mode=self.pydantic_program_mode,
+        )
+
+        return await program.astream_call(llm_kwargs=llm_kwargs, **prompt_args)
+
     async def astream_structured_predict(
         self,
         output_cls: Type[BaseModel],
@@ -524,11 +480,6 @@ class LLM(BaseLLM):
         async def gen() -> AsyncGenerator[Union[Model, List[Model]], None]:
             from serapeum.core.program.utils import get_program_for_llm
 
-            # dispatcher.event(
-            #     LLMStructuredPredictStartEvent(
-            #         output_cls=output_cls, template=prompt, template_args=prompt_args
-            #     )
-            # )
             program = get_program_for_llm(
                 output_cls,
                 prompt,
@@ -537,17 +488,13 @@ class LLM(BaseLLM):
             )
 
             result = await program.astream_call(llm_kwargs=llm_kwargs, **prompt_args)
-            # async for r in result:
-            #     dispatcher.event(LLMStructuredPredictInProgressEvent(output=r))
-            #     yield r
-            #
-            # dispatcher.event(LLMStructuredPredictEndEvent(output=r))
+            async for r in result:
+                yield r
 
         return gen()
 
     # -- Prompt Chaining --
 
-    # @dispatcher.span
     def predict(
         self,
         prompt: BasePromptTemplate,
@@ -573,11 +520,6 @@ class LLM(BaseLLM):
             print(output)
             ```
         """
-        # dispatcher.event(
-        #     LLMPredictStartEvent(template=prompt, template_args=prompt_args)
-        # )
-        self._log_template_data(prompt, **prompt_args)
-
         if self.metadata.is_chat_model:
             messages = self._get_messages(prompt, **prompt_args)
             chat_response = self.chat(messages)
@@ -587,10 +529,9 @@ class LLM(BaseLLM):
             response = self.complete(formatted_prompt, formatted=True)
             output = response.text
         parsed_output = self._parse_output(output)
-        # dispatcher.event(LLMPredictEndEvent(output=parsed_output))
+
         return parsed_output
 
-    # @dispatcher.span
     def stream(
         self,
         prompt: BasePromptTemplate,
@@ -636,7 +577,6 @@ class LLM(BaseLLM):
 
         return stream_tokens
 
-    # @dispatcher.span
     async def apredict(
         self,
         prompt: BasePromptTemplate,
@@ -662,11 +602,6 @@ class LLM(BaseLLM):
             print(output)
             ```
         """
-        # dispatcher.event(
-        #     LLMPredictStartEvent(template=prompt, template_args=prompt_args)
-        # )
-        self._log_template_data(prompt, **prompt_args)
-
         if self.metadata.is_chat_model:
             messages = self._get_messages(prompt, **prompt_args)
             chat_response = await self.achat(messages)
@@ -677,10 +612,8 @@ class LLM(BaseLLM):
             output = response.text
 
         parsed_output = self._parse_output(output)
-        # dispatcher.event(LLMPredictEndEvent(output=parsed_output))
         return parsed_output
 
-    # @dispatcher.span
     async def astream(
         self,
         prompt: BasePromptTemplate,
@@ -707,11 +640,6 @@ class LLM(BaseLLM):
                 print(token, end="", flush=True)
             ```
         """
-        self._log_template_data(prompt, **prompt_args)
-
-        # dispatcher.event(
-        #     LLMPredictStartEvent(template=prompt, template_args=prompt_args)
-        # )
         if self.metadata.is_chat_model:
             messages = self._get_messages(prompt, **prompt_args)
             chat_response = await self.astream_chat(messages)
@@ -728,137 +656,6 @@ class LLM(BaseLLM):
 
         return stream_tokens
 
-    # @dispatcher.span
-    # def predict_and_call(
-    #     self,
-    #     tools: List["BaseTool"],
-    #     user_msg: Optional[Union[str, ChatMessage]] = None,
-    #     chat_history: Optional[List[ChatMessage]] = None,
-    #     verbose: bool = False,
-    #     **kwargs: Any,
-    # ) -> "AgentChatResponse":
-    #     """Predict and call the tool.
-    #
-    #     By default uses a ReAct agent to do tool calling (through text prompting),
-    #     but function calling LLMs will implement this differently.
-    #
-    #     """
-    #     from serapeum.core.agent.react import ReActAgentWorker
-    #     from serapeum.core.agent.types import Task
-    #     from serapeum.core.chat_engine.types import AgentChatResponse
-    #     from serapeum.core.memory import ChatMemoryBuffer
-    #
-    #     worker = ReActAgentWorker(
-    #         tools,
-    #         llm=self,
-    #         callback_manager=self.callback_manager,
-    #         verbose=verbose,
-    #         max_iterations=kwargs.get("max_iterations", 10),
-    #         react_chat_formatter=kwargs.get("react_chat_formatter", None),
-    #         output_parser=kwargs.get("output_parser", None),
-    #         tool_retriever=kwargs.get("tool_retriever", None),
-    #         handle_reasoning_failure_fn=kwargs.get("handle_reasoning_failure_fn", None),
-    #     )
-    #
-    #     if isinstance(user_msg, ChatMessage) and isinstance(user_msg.content, str):
-    #         user_msg = user_msg.content
-    #     elif isinstance(user_msg, str):
-    #         pass
-    #     elif (
-    #         not user_msg
-    #         and chat_history is not None
-    #         and len(chat_history) > 0
-    #         and isinstance(chat_history[-1].content, str)
-    #     ):
-    #         user_msg = chat_history[-1].content
-    #     else:
-    #         raise ValueError("No user message provided or found in chat history.")
-    #
-    #     task = Task(
-    #         input=user_msg,
-    #         memory=ChatMemoryBuffer.from_defaults(chat_history=chat_history),
-    #         extra_state={},
-    #         callback_manager=self.callback_manager,
-    #     )
-    #     step = worker.initialize_step(task)
-    #
-    #     try:
-    #         output = worker.run_step(step, task).output
-    #
-    #         # react agent worker inserts a "Observation: " prefix to the response
-    #         if output.response and output.response.startswith("Observation: "):
-    #             output.response = output.response.replace("Observation: ", "")
-    #     except Exception as e:
-    #         output = AgentChatResponse(
-    #             response="An error occurred while running the tool: " + str(e),
-    #             sources=[],
-    #         )
-    #
-    #     return output
-
-    # @dispatcher.span
-    # async def apredict_and_call(
-    #     self,
-    #     tools: List["BaseTool"],
-    #     user_msg: Optional[Union[str, ChatMessage]] = None,
-    #     chat_history: Optional[List[ChatMessage]] = None,
-    #     verbose: bool = False,
-    #     **kwargs: Any,
-    # ) -> "AgentChatResponse":
-    #     """Predict and call the tool."""
-    #     from serapeum.core.agent.react import ReActAgentWorker
-    #     from serapeum.core.agent.types import Task
-    #     from serapeum.core.chat_engine.types import AgentChatResponse
-    #     from serapeum.core.memory import ChatMemoryBuffer
-    #
-    #     worker = ReActAgentWorker(
-    #         tools,
-    #         llm=self,
-    #         callback_manager=self.callback_manager,
-    #         verbose=verbose,
-    #         max_iterations=kwargs.get("max_iterations", 10),
-    #         react_chat_formatter=kwargs.get("react_chat_formatter", None),
-    #         output_parser=kwargs.get("output_parser", None),
-    #         tool_retriever=kwargs.get("tool_retriever", None),
-    #         handle_reasoning_failure_fn=kwargs.get("handle_reasoning_failure_fn", None),
-    #     )
-    #
-    #     if isinstance(user_msg, ChatMessage) and isinstance(user_msg.content, str):
-    #         user_msg = user_msg.content
-    #     elif isinstance(user_msg, str):
-    #         pass
-    #     elif (
-    #         not user_msg
-    #         and chat_history is not None
-    #         and len(chat_history) > 0
-    #         and isinstance(chat_history[-1].content, str)
-    #     ):
-    #         user_msg = chat_history[-1].content
-    #     else:
-    #         raise ValueError("No user message provided or found in chat history.")
-    #
-    #     task = Task(
-    #         input=user_msg,
-    #         memory=ChatMemoryBuffer.from_defaults(chat_history=chat_history),
-    #         extra_state={},
-    #         callback_manager=self.callback_manager,
-    #     )
-    #     step = worker.initialize_step(task)
-    #
-    #     try:
-    #         output = (await worker.arun_step(step, task)).output
-    #
-    #         # react agent worker inserts a "Observation: " prefix to the response
-    #         if output.response and output.response.startswith("Observation: "):
-    #             output.response = output.response.replace("Observation: ", "")
-    #     except Exception as e:
-    #         output = AgentChatResponse(
-    #             response="An error occurred while running the tool: " + str(e),
-    #             sources=[],
-    #         )
-    #
-    #     return output
-
     def as_structured_llm(
         self,
         output_cls: Type[BaseModel],
@@ -868,126 +665,3 @@ class LLM(BaseLLM):
         from serapeum.core.llms.structured_llm import StructuredLLM
 
         return StructuredLLM(llm=self, output_cls=output_cls, **kwargs)
-
-
-class BaseLLMComponent(QueryComponent):
-    """Base LLM component."""
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-    llm: LLM = Field(..., description="LLM")
-    streaming: bool = Field(default=False, description="Streaming mode")
-
-    def set_callback_manager(self, callback_manager: Any) -> None:
-        """Set callback manager."""
-        self.llm.callback_manager = callback_manager
-
-
-class LLMCompleteComponent(BaseLLMComponent):
-    """LLM completion component."""
-
-    def _validate_component_inputs(self, input: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate component inputs during run_component."""
-        if "prompt" not in input:
-            raise ValueError("Prompt must be in input dict.")
-
-        # do special check to see if prompt is a list of chat messages
-        if isinstance(input["prompt"], get_args(List[ChatMessage])):
-            if self.llm.messages_to_prompt:
-                input["prompt"] = self.llm.messages_to_prompt(input["prompt"])
-            input["prompt"] = validate_and_convert_stringable(input["prompt"])
-        else:
-            input["prompt"] = validate_and_convert_stringable(input["prompt"])
-            if self.llm.completion_to_prompt:
-                input["prompt"] = self.llm.completion_to_prompt(input["prompt"])
-
-        return input
-
-    def _run_component(self, **kwargs: Any) -> Any:
-        """Run component."""
-        # TODO: support only complete for now
-        # non-trivial to figure how to support chat/complete/etc.
-        prompt = kwargs["prompt"]
-        # ignore all other kwargs for now
-
-        response: Any
-        if self.streaming:
-            response = self.llm.stream_complete(prompt, formatted=True)
-        else:
-            response = self.llm.complete(prompt, formatted=True)
-        return {"output": response}
-
-    async def _arun_component(self, **kwargs: Any) -> Any:
-        """Run component."""
-        # TODO: support only complete for now
-        # non-trivial to figure how to support chat/complete/etc.
-        prompt = kwargs["prompt"]
-        # ignore all other kwargs for now
-        response = await self.llm.acomplete(prompt, formatted=True)
-        return {"output": response}
-
-    @property
-    def input_keys(self) -> InputKeys:
-        """Input keys."""
-        # TODO: support only complete for now
-        return InputKeys.from_keys({"prompt"})
-
-    @property
-    def output_keys(self) -> OutputKeys:
-        """Output keys."""
-        return OutputKeys.from_keys({"output"})
-
-
-class LLMChatComponent(BaseLLMComponent):
-    """LLM chat component."""
-
-    def _validate_component_inputs(self, input: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate component inputs during run_component."""
-        if "messages" not in input:
-            raise ValueError("Messages must be in input dict.")
-
-        # if `messages` is a string, convert to a list of chat message
-        if isinstance(input["messages"], get_args(StringableInput)):
-            input["messages"] = validate_and_convert_stringable(input["messages"])
-            input["messages"] = prompt_to_messages(str(input["messages"]))
-
-        for message in input["messages"]:
-            if not isinstance(message, ChatMessage):
-                raise ValueError("Messages must be a list of ChatMessage")
-        return input
-
-    def _run_component(self, **kwargs: Any) -> Any:
-        """Run component."""
-        # TODO: support only complete for now
-        # non-trivial to figure how to support chat/complete/etc.
-        messages = kwargs["messages"]
-
-        response: Any
-        if self.streaming:
-            response = self.llm.stream_chat(messages)
-        else:
-            response = self.llm.chat(messages)
-        return {"output": response}
-
-    async def _arun_component(self, **kwargs: Any) -> Any:
-        """Run component."""
-        # TODO: support only complete for now
-        # non-trivial to figure how to support chat/complete/etc.
-        messages = kwargs["messages"]
-
-        response: Any
-        if self.streaming:
-            response = await self.llm.astream_chat(messages)
-        else:
-            response = await self.llm.achat(messages)
-        return {"output": response}
-
-    @property
-    def input_keys(self) -> InputKeys:
-        """Input keys."""
-        # TODO: support only complete for now
-        return InputKeys.from_keys({"messages"})
-
-    @property
-    def output_keys(self) -> OutputKeys:
-        """Output keys."""
-        return OutputKeys.from_keys({"output"})

@@ -1,7 +1,7 @@
 import os
 from typing import Any, Awaitable, Callable, List, Optional, Sequence
 
-from serapeum.core.base.llms.types import (
+from serapeum.core.base.llms.models import (
     ChatMessage,
     ChatResponse,
     ChatResponseAsyncGen,

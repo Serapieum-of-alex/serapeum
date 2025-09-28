@@ -1,15 +1,23 @@
 import asyncio
 import inspect
-from typing import Any, Awaitable, Callable, Optional, Type
-
-from serapeum.core.async_utils import asyncio_run
-from pydantic.fields import FieldInfo
+from typing import Any, Awaitable, Callable, Optional, Type, Dict, Union, List, Tuple
+import re
 from pydantic import BaseModel
-from serapeum.core.tools.types import AsyncBaseTool, ToolMetadata, ToolOutput
+from pydantic.fields import FieldInfo
+
+from serapeum.core.utils.async_utils import asyncio_run
+from serapeum.core.tools.models import AsyncBaseTool, ToolMetadata, ToolOutput
+from serapeum.core.base.llms.models import (
+    TextBlock,
+    ImageBlock,
+    AudioBlock,
+    ContentBlock,
+)
+from serapeum.core.schemas.models import BaseNode, Document
 from serapeum.core.tools.utils import create_schema_from_function
-from serapeum.core.workflow.context import Context
 
 AsyncCallable = Callable[..., Awaitable[Any]]
+
 
 
 def sync_to_async(fn: Callable[..., Any]) -> AsyncCallable:
@@ -42,11 +50,13 @@ class FunctionTool(AsyncBaseTool):
         fn: Optional[Callable[..., Any]] = None,
         metadata: Optional[ToolMetadata] = None,
         async_fn: Optional[AsyncCallable] = None,
+        partial_params: Optional[Dict[str, Any]] = None,
     ) -> None:
         if fn is None and async_fn is None:
-            raise ValueError("fn must be provided")
+            raise ValueError("fn or async_fn must be provided.")
 
-        # If async_fn is provided explicitly, use it. Otherwise check if fn is async
+        # Handle function (sync and async)
+        self._real_fn = fn or async_fn
         if async_fn is not None:
             self._async_fn = async_fn
             self._fn = fn or async_to_sync(async_fn)
@@ -59,19 +69,17 @@ class FunctionTool(AsyncBaseTool):
                 self._fn = fn
                 self._async_fn = sync_to_async(fn)
 
-        # Determine if function requires context by inspecting signature
+        # Determine if the function requires context by inspecting its signature
         fn_to_inspect = fn or async_fn
         assert fn_to_inspect is not None
-        sig = inspect.signature(fn_to_inspect)
-
-        self.requires_context = any(
-            param.annotation == Context for param in sig.parameters.values()
-        )
+        # sig = inspect.signature(fn_to_inspect)
+        self.requires_context = False
 
         if metadata is None:
             raise ValueError("metadata must be provided")
 
         self._metadata = metadata
+        self.partial_params = partial_params or {}
 
     @classmethod
     def from_defaults(
@@ -83,34 +91,22 @@ class FunctionTool(AsyncBaseTool):
         fn_schema: Optional[Type[BaseModel]] = None,
         async_fn: Optional[AsyncCallable] = None,
         tool_metadata: Optional[ToolMetadata] = None,
+        partial_params: Optional[Dict[str, Any]] = None,
     ) -> "FunctionTool":
+        partial_params = partial_params or {}
+
         if tool_metadata is None:
             fn_to_parse = fn or async_fn
             assert fn_to_parse is not None, "fn must be provided"
             name = name or fn_to_parse.__name__
-            docstring = fn_to_parse.__doc__
+            docstring = fn_to_parse.__doc__ or ""
 
             # Get function signature
             fn_sig = inspect.signature(fn_to_parse)
+            fn_params = set(fn_sig.parameters.keys())
 
-            # Remove ctx parameter from schema if present
-            has_ctx = any(
-                param.annotation == Context for param in fn_sig.parameters.values()
-            )
-            ctx_param_name = None
-            if has_ctx:
-                ctx_param_name = next(
-                    param.name
-                    for param in fn_sig.parameters.values()
-                    if param.annotation == Context
-                )
-                fn_sig = fn_sig.replace(
-                    parameters=[
-                        param
-                        for param in fn_sig.parameters.values()
-                        if param.annotation != Context
-                    ]
-                )
+            # 1. Extract docstring param descriptions
+            param_docs, unknown_params = cls.extract_param_docs(docstring, fn_params)
 
             # Handle FieldInfo defaults (remove default values and make all parameters required)
             fn_sig = fn_sig.replace(
@@ -122,16 +118,32 @@ class FunctionTool(AsyncBaseTool):
                 ]
             )
 
-            description = description or f"{name}{fn_sig}\n{docstring}"
+            # 5. Build enriched description using param_docs
+            if description is None:
+                description = f"{name}{fn_sig}\n"
+
+                # Extract the first meaningful line (summary) from the docstring
+                doc_lines = docstring.strip().splitlines()
+                for line in doc_lines:
+                    if line.strip():
+                        description += line.strip()
+                        break
+
+
+            # 6. Build fn_schema only if not already provided
             if fn_schema is None:
+
                 fn_schema = create_schema_from_function(
                     f"{name}",
                     fn_to_parse,
                     additional_fields=None,
-                    ignore_fields=[ctx_param_name]
-                    if ctx_param_name is not None
-                    else None,
+                    ignore_fields=None,
                 )
+                if fn_schema is not None and param_docs:
+                    for param_name, field in fn_schema.model_fields.items():
+                        if not field.description and param_name in param_docs:
+                            field.description = param_docs[param_name].strip()
+
             tool_metadata = ToolMetadata(
                 name=name,
                 description=description,
@@ -142,7 +154,48 @@ class FunctionTool(AsyncBaseTool):
             fn=fn,
             metadata=tool_metadata,
             async_fn=async_fn,
+            partial_params=partial_params,
         )
+
+    @staticmethod
+    def extract_param_docs(
+            docstring: str, fn_params: Optional[set] = None
+    ) -> Tuple[dict, set]:
+        """
+        Parses param descriptions from a docstring.
+
+        Returns:
+            - param_docs: Only for params in fn_params with non-conflicting descriptions.
+            - unknown_params: Params found in docstring but not in fn_params (ignored in final output).
+
+        """
+        raw_param_docs: dict[str, str] = {}
+        unknown_params = set()
+
+        def try_add_param(name: str, desc: str) -> None:
+            desc = desc.strip()
+            if fn_params and name not in fn_params:
+                unknown_params.add(name)
+                return
+            if name in raw_param_docs and raw_param_docs[name] != desc:
+                return
+            raw_param_docs[name] = desc
+
+        # Sphinx style
+        for match in re.finditer(r":param (\w+): (.+)", docstring):
+            try_add_param(match.group(1), match.group(2))
+
+        # Google style
+        for match in re.finditer(
+                r"^\s*(\w+)\s*\(.*?\):\s*(.+)$", docstring, re.MULTILINE
+        ):
+            try_add_param(match.group(1), match.group(2))
+
+        # Javadoc style
+        for match in re.finditer(r"@param (\w+)\s+(.+)", docstring):
+            try_add_param(match.group(1), match.group(2))
+
+        return raw_param_docs, unknown_params
 
     @property
     def metadata(self) -> ToolMetadata:
@@ -159,70 +212,87 @@ class FunctionTool(AsyncBaseTool):
         """Async function."""
         return self._async_fn
 
-    def call(
-        self, *args: Any, ctx: Optional[Context] = None, **kwargs: Any
-    ) -> ToolOutput:
-        """Call."""
-        if self.requires_context:
-            if ctx is None:
-                raise ValueError("Context is required for this tool")
-            tool_output = self._fn(ctx, *args, **kwargs)
-        else:
-            tool_output = self._fn(*args, **kwargs)
+    @property
+    def real_fn(self) -> Union[Callable[..., Any], AsyncCallable]:
+        """Real function."""
+        if self._real_fn is None:
+            raise ValueError("Real function is not set!")
 
-        return ToolOutput(
-            content=str(tool_output),
-            tool_name=self.metadata.name,
-            raw_input={"args": args, "kwargs": kwargs},
-            raw_output=tool_output,
+        return self._real_fn
+
+    def _parse_tool_output(self, raw_output: Any) -> List[ContentBlock]:
+        """Parse tool output into content blocks."""
+        if isinstance(
+                raw_output, (TextBlock, ImageBlock, AudioBlock)
+        ):
+            return [raw_output]
+        elif isinstance(raw_output, list) and all(
+                isinstance(
+                    item, (TextBlock, ImageBlock, AudioBlock)
+                )
+                for item in raw_output
+        ):
+            return raw_output
+        elif isinstance(raw_output, (BaseNode, Document)):
+            return [TextBlock(text=raw_output.get_content())]
+        elif isinstance(raw_output, list) and all(
+                isinstance(item, (BaseNode, Document)) for item in raw_output
+        ):
+            return [TextBlock(text=item.get_content()) for item in raw_output]
+        else:
+            return [TextBlock(text=str(raw_output))]
+
+    def __call__(self, *args: Any, **kwargs: Any) -> ToolOutput:
+        all_kwargs = {**self.partial_params, **kwargs}
+        return self.call(*args, **all_kwargs)
+
+    def call(self, *args: Any, **kwargs: Any) -> ToolOutput:
+        """Sync Call."""
+        all_kwargs = {**self.partial_params, **kwargs}
+
+        raw_output = self._fn(*args, **all_kwargs)
+
+        # Exclude the Context param from the tool output so that the Context can be serialized
+        # tool_output_kwargs = {
+        #     k: v for k, v in all_kwargs.items() if k != self.ctx_param_name
+        # }
+
+        # Parse tool output into content blocks
+        output_blocks = self._parse_tool_output(raw_output)
+
+        # Default ToolOutput based on the raw output
+        default_output = ToolOutput(
+            blocks=output_blocks,
+            tool_name=self.metadata.get_name(),
+            raw_input={"args": args, "kwargs": all_kwargs},
+            raw_output=raw_output,
         )
 
-    async def acall(
-        self, *args: Any, ctx: Optional[Context] = None, **kwargs: Any
-    ) -> ToolOutput:
-        """Call."""
-        if self.requires_context:
-            if ctx is None:
-                raise ValueError("Context is required for this tool")
-            tool_output = await self._async_fn(ctx, *args, **kwargs)
-        else:
-            tool_output = await self._async_fn(*args, **kwargs)
+        return default_output
 
-        return ToolOutput(
-            content=str(tool_output),
-            tool_name=self.metadata.name,
-            raw_input={"args": args, "kwargs": kwargs},
-            raw_output=tool_output,
+    async def acall(self, *args: Any, **kwargs: Any) -> ToolOutput:
+        """Async Call."""
+        all_kwargs = {**self.partial_params, **kwargs}
+        if self.requires_context and self.ctx_param_name is not None:
+            if self.ctx_param_name not in all_kwargs:
+                raise ValueError("Context is required for this tool")
+
+        raw_output = await self._async_fn(*args, **all_kwargs)
+
+        # Exclude the Context param from the tool output so that the Context can be serialized
+        tool_output_kwargs = {
+            k: v for k, v in all_kwargs.items() if k != self.ctx_param_name
+        }
+
+        # Parse tool output into content blocks
+        output_blocks = self._parse_tool_output(raw_output)
+
+        # Default ToolOutput based on the raw output
+        default_output = ToolOutput(
+            blocks=output_blocks,
+            tool_name=self.metadata.get_name(),
+            raw_input={"args": args, "kwargs": tool_output_kwargs},
+            raw_output=raw_output,
         )
 
-    # def to_langchain_tool(
-    #     self,
-    #     **langchain_tool_kwargs: Any,
-    # ) -> "Tool":
-    #     """To langchain tool."""
-    #     from serapeum.core.bridge.langchain import Tool
-    #
-    #     langchain_tool_kwargs = self._process_langchain_tool_kwargs(
-    #         langchain_tool_kwargs
-    #     )
-    #     return Tool.from_function(
-    #         func=self.fn,
-    #         coroutine=self.async_fn,
-    #         **langchain_tool_kwargs,
-    #     )
-
-    # def to_langchain_structured_tool(
-    #     self,
-    #     **langchain_tool_kwargs: Any,
-    # ) -> "StructuredTool":
-    #     """To langchain structured tool."""
-    #     from serapeum.core.bridge.langchain import StructuredTool
-    #
-    #     langchain_tool_kwargs = self._process_langchain_tool_kwargs(
-    #         langchain_tool_kwargs
-    #     )
-    #     return StructuredTool.from_function(
-    #         func=self.fn,
-    #         coroutine=self.async_fn,
-    #         **langchain_tool_kwargs,
-    #     )
+        return default_output

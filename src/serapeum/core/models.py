@@ -33,9 +33,6 @@ TokenAsyncGen = AsyncGenerator[str, None]
 RESPONSE_TEXT_TYPE = Union[BaseModel, str, TokenGen, TokenAsyncGen]
 
 
-
-# TODO: move into a `core` folder
-# NOTE: this is necessary to make it compatible with pydantic
 class BaseOutputParser(ABC):
     """Output parser class."""
 

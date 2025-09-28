@@ -5,7 +5,7 @@ from typing import (
     Sequence,
 )
 
-from serapeum.core.base.llms.types import (
+from serapeum.core.base.llms.models import (
     ChatMessage,
     ChatResponse,
     ChatResponseAsyncGen,
@@ -18,7 +18,7 @@ from serapeum.core.base.llms.types import (
 )
 
 from pydantic import ConfigDict
-from serapeum.core.schema import BaseComponent
+from serapeum.core.schemas.models import BaseComponent
 
 
 class BaseLLM(BaseComponent):

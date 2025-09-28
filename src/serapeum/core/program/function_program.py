@@ -17,14 +17,13 @@ from pydantic import (
     BaseModel,
     ValidationError,
 )
-from serapeum.core.base.llms.types import ChatResponse
+from serapeum.core.base.llms.models import ChatResponse
 from serapeum.core.llms.function_calling import FunctionCallingLLM
 from serapeum.core.llms.llm import LLM
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.settings import Settings
-from serapeum.core.types import BasePydanticProgram, Model
+from serapeum.core.models import BasePydanticProgram, Model
 from serapeum.core.tools.function_tool import FunctionTool
-# from serapeum.core.chat_engine.types import AgentChatResponse
 from serapeum.core.program.utils import (
     process_streaming_objects,
     num_valid_fields,

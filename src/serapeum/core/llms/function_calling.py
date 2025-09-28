@@ -3,7 +3,7 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Union
 
 from serapeum.core.base.llms.models import (
-    ChatMessage,
+    Message,
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
@@ -24,8 +24,8 @@ class FunctionCallingLLM(LLM):
     def chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, ChatMessage]] = None,
-        chat_history: Optional[List[ChatMessage]] = None,
+        user_msg: Optional[Union[str, Message]] = None,
+        chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
@@ -50,8 +50,8 @@ class FunctionCallingLLM(LLM):
     async def achat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, ChatMessage]] = None,
-        chat_history: Optional[List[ChatMessage]] = None,
+        user_msg: Optional[Union[str, Message]] = None,
+        chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
@@ -76,8 +76,8 @@ class FunctionCallingLLM(LLM):
     def stream_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, ChatMessage]] = None,
-        chat_history: Optional[List[ChatMessage]] = None,
+        user_msg: Optional[Union[str, Message]] = None,
+        chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
@@ -97,8 +97,8 @@ class FunctionCallingLLM(LLM):
     async def astream_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, ChatMessage]] = None,
-        chat_history: Optional[List[ChatMessage]] = None,
+        user_msg: Optional[Union[str, Message]] = None,
+        chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
@@ -118,8 +118,8 @@ class FunctionCallingLLM(LLM):
     def _prepare_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, ChatMessage]] = None,
-        chat_history: Optional[List[ChatMessage]] = None,
+        user_msg: Optional[Union[str, Message]] = None,
+        chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
@@ -150,8 +150,8 @@ class FunctionCallingLLM(LLM):
     def predict_and_call(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, ChatMessage]] = None,
-        chat_history: Optional[List[ChatMessage]] = None,
+        user_msg: Optional[Union[str, Message]] = None,
+        chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         error_on_no_tool_call: bool = True,
@@ -207,8 +207,8 @@ class FunctionCallingLLM(LLM):
     async def apredict_and_call(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, ChatMessage]] = None,
-        chat_history: Optional[List[ChatMessage]] = None,
+        user_msg: Optional[Union[str, Message]] = None,
+        chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         error_on_no_tool_call: bool = True,

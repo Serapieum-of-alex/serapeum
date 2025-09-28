@@ -6,7 +6,7 @@ from typing import (
 )
 
 from serapeum.core.base.llms.models import (
-    ChatMessage,
+    Message,
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
@@ -35,7 +35,7 @@ class BaseLLM(BaseComponent):
             LLMMetadata: LLM metadata containing various information about the LLM.
         """
 
-    def convert_chat_messages(self, messages: Sequence[ChatMessage]) -> List[Any]:
+    def convert_chat_messages(self, messages: Sequence[Message]) -> List[Any]:
         """Convert chat messages to an LLM specific message format."""
         converted_messages = []
         for message in messages:
@@ -56,7 +56,7 @@ class BaseLLM(BaseComponent):
         return converted_messages
 
     @abstractmethod
-    def chat(self, messages: Sequence[ChatMessage], **kwargs: Any) -> ChatResponse:
+    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         ...
     @abstractmethod
     def complete(
@@ -66,7 +66,7 @@ class BaseLLM(BaseComponent):
 
     @abstractmethod
     def stream_chat(
-        self, messages: Sequence[ChatMessage], **kwargs: Any
+        self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseGen:
         ...
 
@@ -78,7 +78,7 @@ class BaseLLM(BaseComponent):
 
     @abstractmethod
     async def achat(
-        self, messages: Sequence[ChatMessage], **kwargs: Any
+        self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponse:
         ...
 
@@ -90,7 +90,7 @@ class BaseLLM(BaseComponent):
 
     @abstractmethod
     async def astream_chat(
-        self, messages: Sequence[ChatMessage], **kwargs: Any
+        self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseAsyncGen:
         ...
     @abstractmethod

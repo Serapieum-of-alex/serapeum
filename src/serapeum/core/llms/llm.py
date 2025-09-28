@@ -44,7 +44,7 @@ from serapeum.core.models import (
 )
 
 from serapeum.core.base.llms.models import (
-    ChatMessage,
+    Message,
 )
 
 
@@ -71,7 +71,7 @@ class ToolSelection(BaseModel):
 # NOTE: These two protocols are needed to appease mypy
 @runtime_checkable
 class MessagesToPromptType(Protocol):
-    def __call__(self, messages: Sequence[ChatMessage]) -> str:
+    def __call__(self, messages: Sequence[Message]) -> str:
         pass
 
 
@@ -227,7 +227,7 @@ class LLM(BaseLLM):
 
     def _get_messages(
         self, prompt: BasePromptTemplate, **prompt_args: Any
-    ) -> List[ChatMessage]:
+    ) -> List[Message]:
         messages = prompt.format_messages(llm=self, **prompt_args)
         if self.output_parser is not None:
             messages = self.output_parser.format_messages(messages)
@@ -256,11 +256,11 @@ class LLM(BaseLLM):
 
         return extended_prompt
 
-    def _extend_messages(self, messages: List[ChatMessage]) -> List[ChatMessage]:
+    def _extend_messages(self, messages: List[Message]) -> List[Message]:
         """Add system prompt to chat message list."""
         if self.system_prompt:
             messages = [
-                ChatMessage(role=MessageRole.SYSTEM, content=self.system_prompt),
+                Message(role=MessageRole.SYSTEM, content=self.system_prompt),
                 *messages,
             ]
         return messages

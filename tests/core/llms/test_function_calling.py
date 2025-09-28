@@ -2,7 +2,7 @@ from typing import Any, AsyncGenerator, Coroutine, Dict, List, Optional, Sequenc
 
 import pytest
 from serapeum.core.base.llms.models import (
-    ChatMessage,
+    Message,
     ChatResponse,
     ChatResponseGen,
     CompletionResponse,
@@ -21,9 +21,9 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         self._tool_selection = tool_selection
 
     async def achat(
-        self, messages: Sequence[ChatMessage], **kwargs: Any
+        self, messages: Sequence[Message], **kwargs: Any
     ) -> Coroutine[Any, Any, ChatResponse]:
-        return ChatResponse(message=ChatMessage(role="user", content=""))
+        return ChatResponse(message=Message(role="user", content=""))
 
     def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
@@ -31,7 +31,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         pass
 
     def astream_chat(
-        self, messages: Sequence[ChatMessage], **kwargs: Any
+        self, messages: Sequence[Message], **kwargs: Any
     ) -> Coroutine[Any, Any, AsyncGenerator[ChatResponse, None]]:
         pass
 
@@ -40,8 +40,8 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     ) -> Coroutine[Any, Any, AsyncGenerator[CompletionResponse, None]]:
         pass
 
-    def chat(self, messages: Sequence[ChatMessage], **kwargs: Any) -> ChatResponse:
-        return ChatResponse(message=ChatMessage(role="user", content=""))
+    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+        return ChatResponse(message=Message(role="user", content=""))
 
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
@@ -49,7 +49,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         pass
 
     def stream_chat(
-        self, messages: Sequence[ChatMessage], **kwargs: Any
+        self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseGen:
         pass
 
@@ -65,8 +65,8 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     def _prepare_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, ChatMessage]] = None,
-        chat_history: Optional[List[ChatMessage]] = None,
+        user_msg: Optional[Union[str, Message]] = None,
+        chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,

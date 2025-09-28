@@ -3,7 +3,7 @@ import os
 
 from pydantic import BaseModel
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.llms import ChatMessage
+from serapeum.core.llms import Message
 from serapeum.core.tools import FunctionTool
 from serapeum.llms.ollama import Ollama
 from unittest.mock import patch, AsyncMock, MagicMock, PropertyMock
@@ -88,7 +88,7 @@ def test_embedding_class() -> None:
 def test_ollama_chat(mock_ollama_client) -> None:
     mock_ollama_client.chat = MagicMock(return_value=normal_response)
     llm = Ollama(model=test_model, request_timeout=80)
-    response = llm.chat([ChatMessage(role="user", content="Hello!")])
+    response = llm.chat([Message(role="user", content="Hello!")])
     assert response is not None
     assert str(response).strip() != ""
 
@@ -107,7 +107,7 @@ def test_ollama_complete(mock_ollama_client) -> None:
 )
 def test_ollama_stream_chat() -> None:
     llm = Ollama(model=test_model, request_timeout=80)
-    response = llm.stream_chat([ChatMessage(role="user", content="Hello!")])
+    response = llm.stream_chat([Message(role="user", content="Hello!")])
     for r in response:
         assert r is not None
         assert r.delta is not None
@@ -132,7 +132,7 @@ def test_ollama_stream_complete() -> None:
 @pytest.mark.asyncio()
 async def test_ollama_async_chat() -> None:
     llm = Ollama(model=test_model)
-    response = await llm.achat([ChatMessage(role="user", content="Hello!")])
+    response = await llm.achat([Message(role="user", content="Hello!")])
     assert response is not None
     assert str(response).strip() != ""
 
@@ -154,7 +154,7 @@ async def test_ollama_async_complete() -> None:
 @pytest.mark.asyncio()
 async def test_ollama_async_stream_chat() -> None:
     llm = Ollama(model=test_model, request_timeout=80)
-    response = await llm.astream_chat([ChatMessage(role="user", content="Hello!")])
+    response = await llm.astream_chat([Message(role="user", content="Hello!")])
     async for r in response:
         assert r is not None
         assert r.delta is not None

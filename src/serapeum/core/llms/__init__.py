@@ -1,5 +1,5 @@
 from serapeum.core.base.llms.models import (
-    ChatMessage,
+    Message,
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
@@ -18,7 +18,7 @@ from serapeum.core.llms.llm import LLM
 __all__ = [
     # "CustomLLM",
     "LLM",
-    "ChatMessage",
+    "Message",
     "ChatResponse",
     "ChatResponseAsyncGen",
     "ChatResponseGen",

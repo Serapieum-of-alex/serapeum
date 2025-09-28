@@ -20,7 +20,7 @@ from serapeum.core.base.llms.generic_utils import (
     astream_chat_to_completion_decorator,
 )
 from serapeum.core.base.llms.models import (
-    ChatMessage,
+    Message,
     ChatResponse,
     ChatResponseGen,
     ChatResponseAsyncGen,
@@ -186,7 +186,7 @@ class Ollama(FunctionCallingLLM):
             **self.additional_kwargs,
         }
 
-    def _convert_to_ollama_messages(self, messages: Sequence[ChatMessage]) -> Dict:
+    def _convert_to_ollama_messages(self, messages: Sequence[Message]) -> Dict:
         ollama_messages = []
         for message in messages:
             cur_ollama_message = {
@@ -232,8 +232,8 @@ class Ollama(FunctionCallingLLM):
     def _prepare_chat_with_tools(
         self,
         tools: List["BaseTool"],
-        user_msg: Optional[Union[str, ChatMessage]] = None,
-        chat_history: Optional[List[ChatMessage]] = None,
+        user_msg: Optional[Union[str, Message]] = None,
+        chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
@@ -243,7 +243,7 @@ class Ollama(FunctionCallingLLM):
         ]
 
         if isinstance(user_msg, str):
-            user_msg = ChatMessage(role=MessageRole.USER, content=user_msg)
+            user_msg = Message(role=MessageRole.USER, content=user_msg)
 
         messages = chat_history or []
         if user_msg:
@@ -295,7 +295,7 @@ class Ollama(FunctionCallingLLM):
 
         return tool_selections
 
-    def chat(self, messages: Sequence[ChatMessage], **kwargs: Any) -> ChatResponse:
+    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         ollama_messages = self._convert_to_ollama_messages(messages)
 
         tools = kwargs.pop("tools", None)
@@ -319,7 +319,7 @@ class Ollama(FunctionCallingLLM):
             response["usage"] = token_counts
 
         return ChatResponse(
-            message=ChatMessage(
+            message=Message(
                 content=response["message"]["content"],
                 role=response["message"]["role"],
                 additional_kwargs={"tool_calls": tool_calls},
@@ -328,7 +328,7 @@ class Ollama(FunctionCallingLLM):
         )
 
     def stream_chat(
-        self, messages: Sequence[ChatMessage], **kwargs: Any
+        self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseGen:
         ollama_messages = self._convert_to_ollama_messages(messages)
 
@@ -376,7 +376,7 @@ class Ollama(FunctionCallingLLM):
                     r["usage"] = token_counts
 
                 yield ChatResponse(
-                    message=ChatMessage(
+                    message=Message(
                         content=response_txt,
                         role=r["message"]["role"],
                         additional_kwargs={"tool_calls": list(set(all_tool_calls))},
@@ -388,7 +388,7 @@ class Ollama(FunctionCallingLLM):
         return gen()
 
     async def astream_chat(
-        self, messages: Sequence[ChatMessage], **kwargs: Any
+        self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseAsyncGen:
         ollama_messages = self._convert_to_ollama_messages(messages)
 
@@ -437,7 +437,7 @@ class Ollama(FunctionCallingLLM):
                     r["usage"] = token_counts
 
                 yield ChatResponse(
-                    message=ChatMessage(
+                    message=Message(
                         content=response_txt,
                         role=r["message"]["role"],
                         additional_kwargs={"tool_calls": all_tool_calls},
@@ -449,7 +449,7 @@ class Ollama(FunctionCallingLLM):
         return gen()
 
     async def achat(
-        self, messages: Sequence[ChatMessage], **kwargs: Any
+        self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponse:
         ollama_messages = self._convert_to_ollama_messages(messages)
 
@@ -474,7 +474,7 @@ class Ollama(FunctionCallingLLM):
             response["usage"] = token_counts
 
         return ChatResponse(
-            message=ChatMessage(
+            message=Message(
                 content=response["message"]["content"],
                 role=response["message"]["role"],
                 additional_kwargs={"tool_calls": tool_calls},

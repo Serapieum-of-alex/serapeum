@@ -3,7 +3,7 @@ from typing import Any, Type, Sequence, Dict
 from serapeum.core.llms.llm import LLM
 
 from serapeum.core.base.llms.models import (
-    ChatMessage,
+    Message,
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
@@ -40,7 +40,7 @@ class StructuredLLM(LLM):
     def metadata(self) -> LLMMetadata:
         return self.llm.metadata
 
-    def chat(self, messages: Sequence[ChatMessage], **kwargs: Any) -> ChatResponse:
+    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         """Chat endpoint for LLM."""
         # TODO:
 
@@ -54,14 +54,14 @@ class StructuredLLM(LLM):
             output_cls=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
         )
         return ChatResponse(
-            message=ChatMessage(
+            message=Message(
                 role=MessageRole.ASSISTANT, content=output.model_dump_json()
             ),
             raw=output,
         )
 
     def stream_chat(
-        self, messages: Sequence[ChatMessage], **kwargs: Any
+        self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseGen:
         chat_prompt = ChatPromptTemplate(message_templates=messages)
 
@@ -70,7 +70,7 @@ class StructuredLLM(LLM):
         )
         for partial_output in stream_output:
             yield ChatResponse(
-                message=ChatMessage(
+                message=Message(
                     role=MessageRole.ASSISTANT, content=partial_output.json()
                 ),
                 raw=partial_output,
@@ -90,7 +90,7 @@ class StructuredLLM(LLM):
 
     async def achat(
         self,
-        messages: Sequence[ChatMessage],
+        messages: Sequence[Message],
         **kwargs: Any,
     ) -> ChatResponse:
         # NOTE: we are wrapping existing messages in a ChatPromptTemplate to
@@ -103,7 +103,7 @@ class StructuredLLM(LLM):
             output_cls=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
         )
         return ChatResponse(
-            message=ChatMessage(
+            message=Message(
                 role=MessageRole.ASSISTANT, content=output.model_dump_json()
             ),
             raw=output,
@@ -111,7 +111,7 @@ class StructuredLLM(LLM):
 
     async def astream_chat(
         self,
-        messages: Sequence[ChatMessage],
+        messages: Sequence[Message],
         **kwargs: Any,
     ) -> ChatResponseAsyncGen:
         """Async stream chat endpoint for LLM."""
@@ -124,7 +124,7 @@ class StructuredLLM(LLM):
             )
             async for partial_output in stream_output:
                 yield ChatResponse(
-                    message=ChatMessage(
+                    message=Message(
                         role=MessageRole.ASSISTANT, content=partial_output.json()
                     ),
                     raw=partial_output,

@@ -22,7 +22,7 @@ from pydantic import (
     ConfigDict
 )
 
-from serapeum.core.base.llms.models import ChatMessage
+from serapeum.core.base.llms.models import Message
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.generic_utils import (
     messages_to_prompt as default_messages_to_prompt,
@@ -117,7 +117,7 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
     @abstractmethod
     def format_messages(
         self, llm: Optional[BaseLLM] = None, **kwargs: Any
-    ) -> List[ChatMessage]: ...
+    ) -> List[Message]: ...
 
     @abstractmethod
     def get_template(self, llm: Optional[BaseLLM] = None) -> str: ...
@@ -194,7 +194,7 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
     def format_messages(
         self, llm: Optional[BaseLLM] = None, **kwargs: Any
-    ) -> List[ChatMessage]:
+    ) -> List[Message]:
         """Format the prompt into a list of chat messages."""
         del llm  # unused
         prompt = self.format(**kwargs)
@@ -205,11 +205,11 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
 
 class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
-    message_templates: List[ChatMessage]
+    message_templates: List[Message]
 
     def __init__(
         self,
-        message_templates: Sequence[ChatMessage],
+        message_templates: Sequence[Message],
         prompt_type: str = PromptType.CUSTOM,
         output_parser: Optional[BaseOutputParser] = None,
         metadata: Optional[Dict[str, Any]] = None,
@@ -238,13 +238,13 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
     @classmethod
     def from_messages(
         cls,
-        message_templates: Union[List[Tuple[str, str]], List[ChatMessage]],
+        message_templates: Union[List[Tuple[str, str]], List[Message]],
         **kwargs: Any,
     ) -> "ChatPromptTemplate":
         """From messages."""
         if isinstance(message_templates[0], tuple):
             message_templates = [
-                ChatMessage.from_str(role=role, content=content)  # type: ignore[arg-type]
+                Message.from_str(role=role, content=content)  # type: ignore[arg-type]
                 for role, content in message_templates
             ]
         return cls(message_templates=message_templates, **kwargs)  # type: ignore[arg-type]
@@ -257,7 +257,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
     def format(
         self,
         llm: Optional[BaseLLM] = None,
-        messages_to_prompt: Optional[Callable[[Sequence[ChatMessage]], str]] = None,
+        messages_to_prompt: Optional[Callable[[Sequence[Message]], str]] = None,
         **kwargs: Any,
     ) -> str:
         del llm  # unused
@@ -270,7 +270,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
     def format_messages(
         self, llm: Optional[BaseLLM] = None, **kwargs: Any
-    ) -> List[ChatMessage]:
+    ) -> List[Message]:
         del llm  # unused
         """Format the prompt into a list of chat messages."""
         all_kwargs = {
@@ -279,7 +279,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         }
         mapped_all_kwargs = self._map_all_vars(all_kwargs)
 
-        messages: List[ChatMessage] = []
+        messages: List[Message] = []
         for message_template in self.message_templates:
             # Handle messages with multiple blocks
             if message_template.blocks:
@@ -377,7 +377,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 #
 #     def format_messages(
 #         self, llm: Optional[BaseLLM] = None, **kwargs: Any
-#     ) -> List[ChatMessage]:
+#     ) -> List[Message]:
 #         """Format the prompt into a list of chat messages."""
 #         prompt = self.select(llm=llm)
 #         return prompt.format_messages(**kwargs)

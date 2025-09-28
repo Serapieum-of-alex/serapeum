@@ -1,6 +1,6 @@
 """Prompt class."""
 
-from serapeum.core.base.llms.models import ChatMessage, MessageRole
+from serapeum.core.base.llms.models import Message, MessageRole
 from serapeum.core.prompts.base import (
     BasePromptTemplate,
     ChatPromptTemplate,
@@ -15,6 +15,6 @@ __all__ = [
     "ChatPromptTemplate",
     "BasePromptTemplate",
     "PromptType",
-    "ChatMessage",
+    "Message",
     "MessageRole",
 ]

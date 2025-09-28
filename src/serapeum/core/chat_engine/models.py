@@ -4,7 +4,7 @@ import time
 from dataclasses import dataclass, field
 from typing import AsyncGenerator, Generator, List, Optional, Dict, Any
 
-from serapeum.core.base.llms.models import ChatMessage
+from serapeum.core.base.llms.models import Message
 from serapeum.core.base.response.models import Response, StreamingResponse
 from serapeum.core.schemas.models import NodeWithScore
 from serapeum.core.tools import ToolOutput
@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 
 
-def is_function(message: ChatMessage) -> bool:
-    """Utility for ChatMessage responses from OpenAI models."""
+def is_function(message: Message) -> bool:
+    """Utility for Message responses from OpenAI models."""
     return (
         "tool_calls" in message.additional_kwargs
         and len(message.additional_kwargs["tool_calls"]) > 0

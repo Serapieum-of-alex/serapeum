@@ -2,7 +2,7 @@ import os
 from typing import Any, Awaitable, Callable, List, Optional, Sequence
 
 from serapeum.core.base.llms.models import (
-    ChatMessage,
+    Message,
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
@@ -13,7 +13,7 @@ from serapeum.core.base.llms.models import (
 )
 
 
-# def messages_to_history_str(messages: Sequence[ChatMessage]) -> str:
+# def messages_to_history_str(messages: Sequence[Message]) -> str:
 #     """Convert messages to a history string."""
 #     string_messages = []
 #     for message in messages:
@@ -28,7 +28,7 @@ from serapeum.core.base.llms.models import (
 #     return "\n".join(string_messages)
 
 
-def messages_to_prompt(messages: Sequence[ChatMessage]) -> str:
+def messages_to_prompt(messages: Sequence[Message]) -> str:
     """Convert messages to a prompt string."""
     string_messages = []
     for message in messages:
@@ -45,9 +45,9 @@ def messages_to_prompt(messages: Sequence[ChatMessage]) -> str:
     return "\n".join(string_messages)
 
 
-def prompt_to_messages(prompt: str) -> List[ChatMessage]:
+def prompt_to_messages(prompt: str) -> List[Message]:
     """Convert a string prompt to a sequence of messages."""
-    return [ChatMessage(role=MessageRole.USER, content=prompt)]
+    return [Message(role=MessageRole.USER, content=prompt)]
 
 
 # def completion_response_to_chat_response(
@@ -55,7 +55,7 @@ def prompt_to_messages(prompt: str) -> List[ChatMessage]:
 # ) -> ChatResponse:
 #     """Convert a completion response to a chat response."""
 #     return ChatResponse(
-#         message=ChatMessage(
+#         message=Message(
 #             role=MessageRole.ASSISTANT,
 #             content=completion_response.text,
 #             additional_kwargs=completion_response.additional_kwargs,
@@ -72,7 +72,7 @@ def prompt_to_messages(prompt: str) -> List[ChatMessage]:
 #     def gen() -> ChatResponseGen:
 #         for response in completion_response_gen:
 #             yield ChatResponse(
-#                 message=ChatMessage(
+#                 message=Message(
 #                     role=MessageRole.ASSISTANT,
 #                     content=response.text,
 #                     additional_kwargs=response.additional_kwargs,
@@ -92,7 +92,7 @@ def prompt_to_messages(prompt: str) -> List[ChatMessage]:
 #     async def gen() -> ChatResponseAsyncGen:
 #         async for response in completion_response_gen:
 #             yield ChatResponse(
-#                 message=ChatMessage(
+#                 message=Message(
 #                     role=MessageRole.ASSISTANT,
 #                     content=response.text,
 #                     additional_kwargs=response.additional_kwargs,
@@ -137,7 +137,7 @@ def stream_chat_response_to_completion_response(
 # ) -> Callable[..., ChatResponse]:
 #     """Convert a completion function to a chat function."""
 #
-#     def wrapper(messages: Sequence[ChatMessage], **kwargs: Any) -> ChatResponse:
+#     def wrapper(messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
 #         # normalize input
 #         prompt = messages_to_prompt(messages)
 #         completion_response = func(prompt, **kwargs)
@@ -152,7 +152,7 @@ def stream_chat_response_to_completion_response(
 # ) -> Callable[..., ChatResponseGen]:
 #     """Convert a completion function to a chat function."""
 #
-#     def wrapper(messages: Sequence[ChatMessage], **kwargs: Any) -> ChatResponseGen:
+#     def wrapper(messages: Sequence[Message], **kwargs: Any) -> ChatResponseGen:
 #         # normalize input
 #         prompt = messages_to_prompt(messages)
 #         completion_response = func(prompt, **kwargs)
@@ -200,7 +200,7 @@ def stream_chat_to_completion_decorator(
 # ) -> Callable[..., Awaitable[ChatResponse]]:
 #     """Convert a completion function to a chat function."""
 #
-#     async def wrapper(messages: Sequence[ChatMessage], **kwargs: Any) -> ChatResponse:
+#     async def wrapper(messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
 #         # normalize input
 #         prompt = messages_to_prompt(messages)
 #         completion_response = await func(prompt, **kwargs)
@@ -231,7 +231,7 @@ def achat_to_completion_decorator(
 #     """Convert a completion function to a chat function."""
 #
 #     async def wrapper(
-#         messages: Sequence[ChatMessage], **kwargs: Any
+#         messages: Sequence[Message], **kwargs: Any
 #     ) -> ChatResponseAsyncGen:
 #         # normalize input
 #         prompt = messages_to_prompt(messages)
@@ -265,7 +265,7 @@ def astream_chat_to_completion_decorator(
 #     async def gen() -> ChatResponseAsyncGen:
 #         async for response in completion_response_gen:
 #             yield ChatResponse(
-#                 message=ChatMessage(
+#                 message=Message(
 #                     role=MessageRole.ASSISTANT,
 #                     content=response.text,
 #                     additional_kwargs=response.additional_kwargs,

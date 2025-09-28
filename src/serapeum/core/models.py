@@ -18,7 +18,7 @@ from typing import (
     Union,
 )
 
-from serapeum.core.base.llms.models import ChatMessage, MessageRole, TextBlock
+from serapeum.core.base.llms.models import Message, MessageRole, TextBlock
 from pydantic import (
     BaseModel,
     GetCoreSchemaHandler,
@@ -44,7 +44,7 @@ class BaseOutputParser(ABC):
         """Format a query with structured output formatting instructions."""
         return query
 
-    def _format_message(self, message: ChatMessage) -> ChatMessage:
+    def _format_message(self, message: Message) -> Message:
         text_blocks: list[tuple[int, TextBlock]] = [
             (idx, block)
             for idx, block in enumerate(message.blocks)
@@ -66,7 +66,7 @@ class BaseOutputParser(ABC):
 
         return message
 
-    def format_messages(self, messages: List[ChatMessage]) -> List[ChatMessage]:
+    def format_messages(self, messages: List[Message]) -> List[Message]:
         """Format a list of messages with structured output formatting instructions."""
         # NOTE: apply output parser to either the first message if it's a system message
         #       or the last message

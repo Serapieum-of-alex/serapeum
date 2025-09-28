@@ -28,7 +28,6 @@ from pydantic import (
     model_validator,
 )
 from serapeum.core.configs import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
-# from serapeum.core.schema import ImageDocument
 from serapeum.core.utils.utils import resolve_binary
 
 
@@ -168,8 +167,8 @@ ContentBlock = Annotated[
 ]
 
 
-class ChatMessage(BaseModel):
-    """Chat message."""
+class Message(BaseModel):
+    """Message."""
 
     role: MessageRole = MessageRole.USER
     additional_kwargs: dict[str, Any] = Field(default_factory=dict)
@@ -216,7 +215,7 @@ class ChatMessage(BaseModel):
             self.blocks = [TextBlock(text=content)]
         else:
             raise ValueError(
-                "ChatMessage contains multiple blocks, use 'ChatMessage.blocks' instead."
+                "Message contains multiple blocks, use 'Message.blocks' instead."
             )
 
     def __str__(self) -> str:
@@ -259,11 +258,10 @@ class LogProb(BaseModel):
     bytes: List[int] = Field(default_factory=list)
 
 
-# ===== Generic Model Output - Chat =====
 class ChatResponse(BaseModel):
     """Chat response."""
 
-    message: ChatMessage
+    message: Message
     raw: Optional[Any] = None
     delta: Optional[str] = None
     logprobs: Optional[List[List[LogProb]]] = None
@@ -277,7 +275,6 @@ ChatResponseGen = Generator[ChatResponse, None, None]
 ChatResponseAsyncGen = AsyncGenerator[ChatResponse, None]
 
 
-# ===== Generic Model Output - Completion =====
 class CompletionResponse(BaseModel):
     """
     Completion response.

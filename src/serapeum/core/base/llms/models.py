@@ -44,12 +44,12 @@ class MessageRole(str, Enum):
 
 
 class TextBlock(BaseModel):
-    block_type: Literal["text"] = "text"
+    type: Literal["text"] = "text"
     text: str
 
 
 class ImageBlock(BaseModel):
-    block_type: Literal["image"] = "image"
+    type: Literal["image"] = "image"
     image: bytes | None = None
     path: FilePath | None = None
     url: AnyUrl | str | None = None
@@ -58,14 +58,14 @@ class ImageBlock(BaseModel):
 
     @field_validator("url", mode="after")
     @classmethod
-    def urlstr_to_anyurl(cls, url: str | AnyUrl) -> AnyUrl:
+    def url_str_to_any_url(cls, url: str | AnyUrl) -> AnyUrl:
         """Store the url as Anyurl."""
         if isinstance(url, AnyUrl):
             return url
         return AnyUrl(url=url)
 
     @model_validator(mode="after")
-    def image_to_base64(self) -> Self:
+    def to_base64(self) -> Self:
         """Store the image as base64 and guess the mimetype when possible.
 
         In case the model was built passing image data but without a mimetype,
@@ -106,7 +106,7 @@ class ImageBlock(BaseModel):
 
 
 class AudioBlock(BaseModel):
-    block_type: Literal["audio"] = "audio"
+    type: Literal["audio"] = "audio"
     audio: bytes | None = None
     path: FilePath | None = None
     url: AnyUrl | str | None = None
@@ -114,14 +114,14 @@ class AudioBlock(BaseModel):
 
     @field_validator("url", mode="after")
     @classmethod
-    def urlstr_to_anyurl(cls, url: str | AnyUrl) -> AnyUrl:
+    def url_str_to_any_url(cls, url: str | AnyUrl) -> AnyUrl:
         """Store the url as Anyurl."""
         if isinstance(url, AnyUrl):
             return url
         return AnyUrl(url=url)
 
     @model_validator(mode="after")
-    def audio_to_base64(self) -> Self:
+    def to_base64(self) -> Self:
         """Store the audio as base64 and guess the mimetype when possible.
 
         In case the model was built passing audio data but without a mimetype,
@@ -163,7 +163,7 @@ class AudioBlock(BaseModel):
 
 
 ContentBlock = Annotated[
-    Union[TextBlock, ImageBlock, AudioBlock], Field(discriminator="block_type")
+    Union[TextBlock, ImageBlock, AudioBlock], Field(discriminator="type")
 ]
 
 
@@ -172,6 +172,7 @@ class Message(BaseModel):
 
     role: MessageRole = MessageRole.USER
     additional_kwargs: dict[str, Any] = Field(default_factory=dict)
+    #TODO: rename to chunks
     blocks: list[ContentBlock] = Field(default_factory=list)
 
     def __init__(self, /, content: Any | None = None, **data: Any) -> None:

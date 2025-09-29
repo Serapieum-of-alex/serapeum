@@ -29,11 +29,11 @@ from serapeum.core.base.llms.models import (
     CompletionResponseGen,
     LLMMetadata,
     MessageRole,
-    TextBlock,
+    TextChunk,
 
 
 
-    ImageBlock,
+    Image,
 )
 from pydantic import BaseModel, Field, PrivateAttr
 from serapeum.core.configs import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
@@ -193,10 +193,10 @@ class Ollama(FunctionCallingLLM):
                 "role": message.role.value,
                 "content": "",
             }
-            for block in message.blocks:
-                if isinstance(block, TextBlock):
+            for block in message.chunks:
+                if isinstance(block, TextChunk):
                     cur_ollama_message["content"] += block.text
-                elif isinstance(block, ImageBlock):
+                elif isinstance(block, Image):
                     if "images" not in cur_ollama_message:
                         cur_ollama_message["images"] = []
                     cur_ollama_message["images"].append(

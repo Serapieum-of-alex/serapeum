@@ -172,20 +172,19 @@ class Message(BaseModel):
 
     role: MessageRole = MessageRole.USER
     additional_kwargs: dict[str, Any] = Field(default_factory=dict)
-    #TODO: rename to chunks
-    blocks: list[ChunkType] = Field(default_factory=list)
+    chunks: list[ChunkType] = Field(default_factory=list)
 
     def __init__(self, /, content: Any | None = None, **data: Any) -> None:
         """Keeps backward compatibility with the old `content` field.
 
         If content was passed and contained text, store a single TextChunk.
-        If content was passed and it was a list, assume it's a list of content blocks and store it.
+        If content was passed and it was a list, assume it's a list of content chunks and store it.
         """
         if content is not None:
             if isinstance(content, str):
-                data["blocks"] = [TextChunk(text=content)]
+                data["chunks"] = [TextChunk(text=content)]
             elif isinstance(content, list):
-                data["blocks"] = content
+                data["chunks"] = content
 
         super().__init__(**data)
 
@@ -196,7 +195,7 @@ class Message(BaseModel):
         Returns:
             The cumulative content of all TextBlocks in the message.
         """
-        texts = [b.text for b in self.blocks if isinstance(b, TextChunk)]
+        texts = [b.text for b in self.chunks if isinstance(b, TextChunk)]
         result = None if not texts else (texts[0] if len(texts) == 1 else "\n".join(texts))
 
         return result
@@ -206,15 +205,15 @@ class Message(BaseModel):
         """content
 
         Raises:
-            ValueError: if blocks contains more than a block, or a block that's not TextChunk.
+            ValueError: if chunks contains more than a block, or a block that's not TextChunk.
         """
-        if not self.blocks:
-            self.blocks = [TextChunk(text=content)]
-        elif len(self.blocks) == 1 and isinstance(self.blocks[0], TextChunk):
-            self.blocks = [TextChunk(text=content)]
+        if not self.chunks:
+            self.chunks = [TextChunk(text=content)]
+        elif len(self.chunks) == 1 and isinstance(self.chunks[0], TextChunk):
+            self.chunks = [TextChunk(text=content)]
         else:
             raise ValueError(
-                "Message contains multiple blocks, use 'Message.blocks' instead."
+                "Message contains multiple chunks, use 'Message.chunks' instead."
             )
 
     def __str__(self) -> str:

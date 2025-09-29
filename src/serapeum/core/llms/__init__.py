@@ -6,11 +6,11 @@ from serapeum.core.base.llms.models import (
     CompletionResponse,
     CompletionResponseAsyncGen,
     CompletionResponseGen,
-    ImageBlock,
+    Image,
     LLMMetadata,
     MessageRole,
-    TextBlock,
-    AudioBlock,
+    TextChunk,
+    Audio,
 )
 # from serapeum.core.llms.custom import CustomLLM
 from serapeum.core.llms.llm import LLM
@@ -27,7 +27,7 @@ __all__ = [
     "CompletionResponseGen",
     "LLMMetadata",
     "MessageRole",
-    "ImageBlock",
-    "TextBlock",
-    "AudioBlock",
+    "Image",
+    "TextChunk",
+    "Audio",
 ]

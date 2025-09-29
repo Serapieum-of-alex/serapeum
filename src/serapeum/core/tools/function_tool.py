@@ -8,10 +8,10 @@ from pydantic.fields import FieldInfo
 from serapeum.core.utils.async_utils import asyncio_run
 from serapeum.core.tools.models import AsyncBaseTool, ToolMetadata, ToolOutput
 from serapeum.core.base.llms.models import (
-    TextBlock,
-    ImageBlock,
-    AudioBlock,
-    ContentBlock,
+    TextChunk,
+    Image,
+    Audio,
+    ChunkType,
 )
 from serapeum.core.schemas.models import BaseNode, Document
 from serapeum.core.tools.utils import create_schema_from_function
@@ -220,27 +220,27 @@ class FunctionTool(AsyncBaseTool):
 
         return self._real_fn
 
-    def _parse_tool_output(self, raw_output: Any) -> List[ContentBlock]:
-        """Parse tool output into content blocks."""
+    def _parse_tool_output(self, raw_output: Any) -> List[ChunkType]:
+        """Parse tool output into content chunks."""
         if isinstance(
-                raw_output, (TextBlock, ImageBlock, AudioBlock)
+                raw_output, (TextChunk, Image, Audio)
         ):
             return [raw_output]
         elif isinstance(raw_output, list) and all(
                 isinstance(
-                    item, (TextBlock, ImageBlock, AudioBlock)
+                    item, (TextChunk, Image, Audio)
                 )
                 for item in raw_output
         ):
             return raw_output
         elif isinstance(raw_output, (BaseNode, Document)):
-            return [TextBlock(text=raw_output.get_content())]
+            return [TextChunk(text=raw_output.get_content())]
         elif isinstance(raw_output, list) and all(
                 isinstance(item, (BaseNode, Document)) for item in raw_output
         ):
-            return [TextBlock(text=item.get_content()) for item in raw_output]
+            return [TextChunk(text=item.get_content()) for item in raw_output]
         else:
-            return [TextBlock(text=str(raw_output))]
+            return [TextChunk(text=str(raw_output))]
 
     def __call__(self, *args: Any, **kwargs: Any) -> ToolOutput:
         all_kwargs = {**self.partial_params, **kwargs}
@@ -257,7 +257,7 @@ class FunctionTool(AsyncBaseTool):
         #     k: v for k, v in all_kwargs.items() if k != self.ctx_param_name
         # }
 
-        # Parse tool output into content blocks
+        # Parse tool output into content chunks
         output_blocks = self._parse_tool_output(raw_output)
 
         # Default ToolOutput based on the raw output
@@ -284,7 +284,7 @@ class FunctionTool(AsyncBaseTool):
             k: v for k, v in all_kwargs.items() if k != self.ctx_param_name
         }
 
-        # Parse tool output into content blocks
+        # Parse tool output into content chunks
         output_blocks = self._parse_tool_output(raw_output)
 
         # Default ToolOutput based on the raw output

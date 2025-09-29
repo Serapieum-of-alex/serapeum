@@ -30,7 +30,7 @@ from serapeum.core.base.llms.generic_utils import (
 from serapeum.core.base.llms.generic_utils import (
     prompt_to_messages,
 )
-from serapeum.core.base.llms.models import ContentBlock, TextBlock
+from serapeum.core.base.llms.models import ChunkType, TextChunk
 from serapeum.core.prompts.prompt_type import PromptType
 from serapeum.core.prompts.utils import get_template_vars, format_string
 from serapeum.core.models import BaseOutputParser
@@ -281,11 +281,11 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
         messages: List[Message] = []
         for message_template in self.message_templates:
-            # Handle messages with multiple blocks
-            if message_template.blocks:
-                formatted_blocks: List[ContentBlock] = []
-                for block in message_template.blocks:
-                    if isinstance(block, TextBlock):
+            # Handle messages with multiple chunks
+            if message_template.chunks:
+                formatted_blocks: List[ChunkType] = []
+                for block in message_template.chunks:
+                    if isinstance(block, TextChunk):
                         template_vars = get_template_vars(block.text)
                         relevant_kwargs = {
                             k: v
@@ -293,14 +293,14 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
                             if k in template_vars
                         }
                         formatted_text = format_string(block.text, **relevant_kwargs)
-                        formatted_blocks.append(TextBlock(text=formatted_text))
+                        formatted_blocks.append(TextChunk(text=formatted_text))
                     else:
-                        # For non-text blocks (like images), keep them as is
+                        # For non-text chunks (like images), keep them as is
                         # TODO: can images be formatted as variables?
                         formatted_blocks.append(block)
 
                 message = message_template.model_copy()
-                message.blocks = formatted_blocks
+                message.chunks = formatted_blocks
                 messages.append(message)
             else:
                 # Handle empty messages (if any)

@@ -3,7 +3,7 @@ import json
 from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Type
-from serapeum.core.base.llms.models import ContentBlock, TextBlock
+from serapeum.core.base.llms.models import ChunkType, TextChunk
 from pydantic import BaseModel
 
 
@@ -72,7 +72,7 @@ class ToolMetadata:
 class ToolOutput(BaseModel):
     """Tool output."""
 
-    blocks: List[ContentBlock]
+    blocks: List[ChunkType]
     tool_name: str
     raw_input: Dict[str, Any]
     raw_output: Any
@@ -82,15 +82,15 @@ class ToolOutput(BaseModel):
         self,
         tool_name: str,
         content: Optional[str] = None,
-        blocks: Optional[List[ContentBlock]] = None,
+        blocks: Optional[List[ChunkType]] = None,
         raw_input: Optional[Dict[str, Any]] = None,
         raw_output: Optional[Any] = None,
         is_error: bool = False,
     ):
         if content and blocks:
-            raise ValueError("Cannot provide both content and blocks.")
+            raise ValueError("Cannot provide both content and chunks.")
         if content:
-            blocks = [TextBlock(text=content)]
+            blocks = [TextChunk(text=content)]
         elif blocks:
             pass
         else:
@@ -108,13 +108,13 @@ class ToolOutput(BaseModel):
     def content(self) -> str:
         """Get the content of the tool output."""
         return "\n".join(
-            [block.text for block in self.blocks if isinstance(block, TextBlock)]
+            [block.text for block in self.blocks if isinstance(block, TextChunk)]
         )
 
     @content.setter
     def content(self, content: str) -> None:
         """Set the content of the tool output."""
-        self.blocks = [TextBlock(text=content)]
+        self.blocks = [TextChunk(text=content)]
 
     def __str__(self) -> str:
         """String."""

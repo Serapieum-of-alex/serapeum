@@ -18,7 +18,7 @@ from typing import (
     Union,
 )
 
-from serapeum.core.base.llms.models import Message, MessageRole, TextBlock
+from serapeum.core.base.llms.models import Message, MessageRole, TextChunk
 from pydantic import (
     BaseModel,
     GetCoreSchemaHandler,
@@ -45,10 +45,10 @@ class BaseOutputParser(ABC):
         return query
 
     def _format_message(self, message: Message) -> Message:
-        text_blocks: list[tuple[int, TextBlock]] = [
+        text_blocks: list[tuple[int, TextChunk]] = [
             (idx, block)
-            for idx, block in enumerate(message.blocks)
-            if isinstance(block, TextBlock)
+            for idx, block in enumerate(message.chunks)
+            if isinstance(block, TextChunk)
         ]
 
         # add text to the last text block, or add a new text block
@@ -59,10 +59,10 @@ class BaseOutputParser(ABC):
 
             if format_idx != -1:
                 # this should always be a text block
-                assert isinstance(message.blocks[format_idx], TextBlock)
-                message.blocks[format_idx].text = self.format(format_text)  # type: ignore
+                assert isinstance(message.chunks[format_idx], TextChunk)
+                message.chunks[format_idx].text = self.format(format_text)  # type: ignore
         else:
-            message.blocks.append(TextBlock(text=self.format(format_text)))
+            message.chunks.append(TextChunk(text=self.format(format_text)))
 
         return message
 
@@ -72,7 +72,7 @@ class BaseOutputParser(ABC):
         #       or the last message
         if messages:
             if messages[0].role == MessageRole.SYSTEM:
-                # get text from the last text blocks
+                # get text from the last text chunks
                 messages[0] = self._format_message(messages[0])
             else:
                 messages[-1] = self._format_message(messages[-1])

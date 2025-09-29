@@ -2,7 +2,7 @@ from typing import Dict, List, Optional
 import re
 
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.base.llms.models import ContentBlock, TextBlock
+from serapeum.core.base.llms.models import ChunkType, TextChunk
 
 
 class SafeFormatter:
@@ -31,14 +31,14 @@ def format_string(string_to_format: str, **kwargs: str) -> str:
 
 
 def format_content_blocks(
-    content_blocks: List[ContentBlock], **kwargs: str
-) -> List[ContentBlock]:
-    """Format content blocks with kwargs."""
+    content_blocks: List[ChunkType], **kwargs: str
+) -> List[ChunkType]:
+    """Format content chunks with kwargs."""
     formatter = SafeFormatter(format_dict=kwargs)
-    formatted_blocks: List[ContentBlock] = []
+    formatted_blocks: List[ChunkType] = []
     for block in content_blocks:
-        if isinstance(block, TextBlock):
-            formatted_blocks.append(TextBlock(text=formatter.format(block.text)))
+        if isinstance(block, TextChunk):
+            formatted_blocks.append(TextChunk(text=formatter.format(block.text)))
         else:
             formatted_blocks.append(block)
 

@@ -14,7 +14,7 @@ from serapeum.core.base.llms.models import (
     CompletionResponseAsyncGen,
     CompletionResponseGen,
     LLMMetadata,
-    TextBlock,
+    TextChunk,
 )
 
 from pydantic import ConfigDict
@@ -44,7 +44,7 @@ class BaseLLM(BaseComponent):
             elif isinstance(message.content, List):
                 content_string = ""
                 for block in message.content:
-                    if isinstance(block, TextBlock):
+                    if isinstance(block, TextChunk):
                         content_string += block.text
                     else:
                         raise ValueError("LLM only supports text inputs")

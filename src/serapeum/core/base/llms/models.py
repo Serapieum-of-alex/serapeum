@@ -43,12 +43,12 @@ class MessageRole(str, Enum):
     MODEL = "model"
 
 
-class TextBlock(BaseModel):
+class TextChunk(BaseModel):
     type: Literal["text"] = "text"
     text: str
 
 
-class ImageBlock(BaseModel):
+class Image(BaseModel):
     type: Literal["image"] = "image"
     image: bytes | None = None
     path: FilePath | None = None
@@ -105,7 +105,7 @@ class ImageBlock(BaseModel):
         )
 
 
-class AudioBlock(BaseModel):
+class Audio(BaseModel):
     type: Literal["audio"] = "audio"
     audio: bytes | None = None
     path: FilePath | None = None
@@ -162,8 +162,8 @@ class AudioBlock(BaseModel):
         )
 
 
-ContentBlock = Annotated[
-    Union[TextBlock, ImageBlock, AudioBlock], Field(discriminator="type")
+ChunkType = Annotated[
+    Union[TextChunk, Image, Audio], Field(discriminator="type")
 ]
 
 
@@ -173,17 +173,17 @@ class Message(BaseModel):
     role: MessageRole = MessageRole.USER
     additional_kwargs: dict[str, Any] = Field(default_factory=dict)
     #TODO: rename to chunks
-    blocks: list[ContentBlock] = Field(default_factory=list)
+    blocks: list[ChunkType] = Field(default_factory=list)
 
     def __init__(self, /, content: Any | None = None, **data: Any) -> None:
         """Keeps backward compatibility with the old `content` field.
 
-        If content was passed and contained text, store a single TextBlock.
+        If content was passed and contained text, store a single TextChunk.
         If content was passed and it was a list, assume it's a list of content blocks and store it.
         """
         if content is not None:
             if isinstance(content, str):
-                data["blocks"] = [TextBlock(text=content)]
+                data["blocks"] = [TextChunk(text=content)]
             elif isinstance(content, list):
                 data["blocks"] = content
 
@@ -196,7 +196,7 @@ class Message(BaseModel):
         Returns:
             The cumulative content of all TextBlocks in the message.
         """
-        texts = [b.text for b in self.blocks if isinstance(b, TextBlock)]
+        texts = [b.text for b in self.blocks if isinstance(b, TextChunk)]
         result = None if not texts else (texts[0] if len(texts) == 1 else "\n".join(texts))
 
         return result
@@ -206,12 +206,12 @@ class Message(BaseModel):
         """content
 
         Raises:
-            ValueError: if blocks contains more than a block, or a block that's not TextBlock.
+            ValueError: if blocks contains more than a block, or a block that's not TextChunk.
         """
         if not self.blocks:
-            self.blocks = [TextBlock(text=content)]
-        elif len(self.blocks) == 1 and isinstance(self.blocks[0], TextBlock):
-            self.blocks = [TextBlock(text=content)]
+            self.blocks = [TextChunk(text=content)]
+        elif len(self.blocks) == 1 and isinstance(self.blocks[0], TextChunk):
+            self.blocks = [TextChunk(text=content)]
         else:
             raise ValueError(
                 "Message contains multiple blocks, use 'Message.blocks' instead."
@@ -229,7 +229,7 @@ class Message(BaseModel):
     ) -> Self:
         if isinstance(role, str):
             role = MessageRole(role)
-        return cls(role=role, blocks=[TextBlock(text=content)], **kwargs)
+        return cls(role=role, blocks=[TextChunk(text=content)], **kwargs)
 
     def _recursive_serialization(self, value: Any) -> Any:
         if isinstance(value, BaseModel):

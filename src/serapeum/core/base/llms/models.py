@@ -190,21 +190,19 @@ class Message(BaseModel):
 
     @property
     def content(self) -> str | None:
-        """Keeps backward compatibility with the old `content` field.
+        """content
 
         Returns:
-            The cumulative content of the TextBlock blocks, None if there are none.
+            The cumulative content of all TextBlocks in the message.
         """
-        content = ""
-        for block in self.blocks:
-            if isinstance(block, TextBlock):
-                content += block.text
+        texts = [b.text for b in self.blocks if isinstance(b, TextBlock)]
+        result = None if not texts else (texts[0] if len(texts) == 1 else "\n".join(texts))
 
-        return content or None
+        return result
 
     @content.setter
     def content(self, content: str) -> None:
-        """Keeps backward compatibility with the old `content` field.
+        """content
 
         Raises:
             ValueError: if blocks contains more than a block, or a block that's not TextBlock.

@@ -268,14 +268,18 @@ class LikelihoodScore(BaseModel):
     bytes: List[int] = Field(default_factory=list)
 
 
-class ChatResponse(BaseModel):
+class BaseResponse(BaseModel):
+    """Base response."""
+    raw: Optional[Any] = None
+    likelihood_score: Optional[List[List[LikelihoodScore]]] = None
+    additional_kwargs: dict = Field(default_factory=dict)
+    delta: Optional[str] = None
+
+
+class ChatResponse(BaseResponse):
     """Chat response."""
 
     message: Message
-    raw: Optional[Any] = None
-    delta: Optional[str] = None
-    likelihood_score: Optional[List[List[LikelihoodScore]]] = None
-    additional_kwargs: dict = Field(default_factory=dict)
 
     def __str__(self) -> str:
         return str(self.message)
@@ -299,10 +303,6 @@ class CompletionResponse(BaseModel):
     """
 
     text: str
-    additional_kwargs: dict = Field(default_factory=dict)
-    raw: Optional[Any] = None
-    likelihood_score: Optional[List[List[LikelihoodScore]]] = None
-    delta: Optional[str] = None
 
     def __str__(self) -> str:
         return self.text
@@ -336,7 +336,6 @@ class Metadata(BaseModel):
     )
     is_function_calling_model: bool = Field(
         default=False,
-        # SEE: https://openai.com/blog/function-calling-and-other-api-updates
         description=(
             "Set True if the model supports function calling messages, similar to"
             " OpenAI's function calling API. For example, converting 'Email Anya to"

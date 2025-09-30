@@ -67,26 +67,26 @@ class TestMessage:
         assert m.content == "test content"
         assert len(m.chunks) == 1
         assert type(m.chunks[0]) is TextChunk
-        assert m.chunks[0].text == "test content"
+        assert m.chunks[0].content == "test content"
 
     def test_chat_message_content_legacy_get(self):
         m = Message(content="test content")
         assert m.content == "test content"
         assert len(m.chunks) == 1
         assert type(m.chunks[0]) is TextChunk
-        assert m.chunks[0].text == "test content"
+        assert m.chunks[0].content == "test content"
 
         m = Message(role="user", content="test content")
         assert m.role == "user"
         assert m.content == "test content"
         assert len(m.chunks) == 1
         assert isinstance(m.chunks[0], TextChunk)
-        assert m.chunks[0].text == "test content"
+        assert m.chunks[0].content == "test content"
 
         m = Message(
             chunks=[
-                TextChunk(text="test content 1"),
-                TextChunk(text="test content 2")
+                TextChunk(content="test content 1"),
+                TextChunk(content="test content 2")
             ]
         )
         assert m.content == "test content 1\ntest content 2"
@@ -98,20 +98,20 @@ class TestMessage:
         m.content = "test content"
         assert len(m.chunks) == 1
         assert type(m.chunks[0]) is TextChunk
-        assert m.chunks[0].text == "test content"
+        assert m.chunks[0].content == "test content"
 
         m = Message(content="some original content")
         m.content = "test content"
         assert len(m.chunks) == 1
         assert type(m.chunks[0]) is TextChunk
-        assert m.chunks[0].text == "test content"
+        assert m.chunks[0].content == "test content"
 
-        m = Message(content=[TextChunk(text="test content"), Image()])
+        m = Message(content=[TextChunk(content="test content"), Image()])
         with pytest.raises(ValueError):
             m.content = "test content"
 
     def test_chat_message_content_returns_empty_string(self):
-        m = Message(content=[TextChunk(text="test content"), Image()])
+        m = Message(content=[TextChunk(content="test content"), Image()])
         assert m.content == "test content"
         m = Message()
         assert m.content is None
@@ -127,13 +127,13 @@ class TestMessage:
             content="test content",
             additional_kwargs={"some_list": ["a", "b", "c"], "some_object": SimpleModel()},
         )
-        assert m.model_dump() == {
+        assert m.model_dump(exclude_none=True) == {
             "role": MessageRole.USER,
             "additional_kwargs": {
                 "some_list": ["a", "b", "c"],
                 "some_object": {"some_field": ""},
             },
-            "chunks": [{"type": "text", "text": "test content"}],
+            "chunks": [{"type": "text", "content": "test content"}],
         }
 
     def test_chat_message_legacy_roundtrip(self):
@@ -143,16 +143,16 @@ class TestMessage:
             "additional_kwargs": {},
         }
         m = Message(**legacy_message)
-        assert m.model_dump() == {
+        assert m.model_dump(exclude_none=True) == {
             "additional_kwargs": {},
-            "chunks": [{"type": "text", "text": "foo"}],
+            "chunks": [{"type": "text", "content": "foo"}],
             "role": MessageRole.USER,
         }
 
 
 class TestImageBlock:
     def test_image_block_resolve_image(self, png_1px: bytes, png_1px_b64: bytes):
-        b = Image(image=png_1px)
+        b = Image(content=png_1px)
 
         img = b.resolve_image()
         assert isinstance(img, BytesIO)
@@ -241,14 +241,14 @@ class TestImageBlock:
 
     def test_image_block_store_as_base64(self, png_1px_b64: bytes, png_1px: bytes):
         # Store regular bytes
-        assert Image(image=png_1px).image == png_1px_b64
+        assert Image(content=png_1px).content == png_1px_b64
         # Store already encoded data
-        assert Image(image=png_1px_b64).image == png_1px_b64
+        assert Image(content=png_1px_b64).content == png_1px_b64
 
     def test_legacy_image_additional_kwargs(self, png_1px_b64: bytes):
-        msg = Message(chunks=[Image(image=png_1px_b64)])
+        msg = Message(chunks=[Image(content=png_1px_b64)])
         assert len(msg.chunks) == 1
-        assert msg.chunks[0].image == png_1px_b64
+        assert msg.chunks[0].content == png_1px_b64
 
 
 def test_chat_response():

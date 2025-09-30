@@ -43,16 +43,18 @@ class MessageRole(str, Enum):
     MODEL = "model"
 
 
-class TextChunk(BaseModel):
+class Chunk(BaseModel):
+    content: bytes | str | None = None
+    path: Optional[FilePath | None] = None
+    url: Optional[AnyUrl | str | None] = None
+
+
+class TextChunk(Chunk):
     type: Literal["text"] = "text"
-    text: str
 
 
-class Image(BaseModel):
+class Image(Chunk):
     type: Literal["image"] = "image"
-    image: bytes | None = None
-    path: FilePath | None = None
-    url: AnyUrl | str | None = None
     image_mimetype: str | None = None
     detail: str | None = None
 
@@ -72,16 +74,16 @@ class Image(BaseModel):
         we try to guess it using the filetype library. To avoid resource-intense
         operations, we won't load the path or the URL to guess the mimetype.
         """
-        if not self.image:
+        if not self.content:
             return self
 
         try:
             # Check if image is already base64 encoded
-            decoded_img = base64.b64decode(self.image)
+            decoded_img = base64.b64decode(self.content)
         except Exception:
-            decoded_img = self.image
+            decoded_img = self.content
             # Not base64 - encode it
-            self.image = base64.b64encode(self.image)
+            self.content = base64.b64encode(self.content)
 
         self._guess_mimetype(decoded_img)
         return self
@@ -98,18 +100,15 @@ class Image(BaseModel):
             as_base64 (bool): whether the resolved image should be returned as base64-encoded bytes
         """
         return resolve_binary(
-            raw_bytes=self.image,
+            raw_bytes=self.content,
             path=self.path,
             url=str(self.url) if self.url else None,
             as_base64=as_base64,
         )
 
 
-class Audio(BaseModel):
+class Audio(Chunk):
     type: Literal["audio"] = "audio"
-    audio: bytes | None = None
-    path: FilePath | None = None
-    url: AnyUrl | str | None = None
     format: str | None = None
 
     @field_validator("url", mode="after")
@@ -128,16 +127,16 @@ class Audio(BaseModel):
         we try to guess it using the filetype library. To avoid resource-intense
         operations, we won't load the path or the URL to guess the mimetype.
         """
-        if not self.audio:
+        if not self.content:
             return self
 
         try:
             # Check if audio is already base64 encoded
-            decoded_audio = base64.b64decode(self.audio)
+            decoded_audio = base64.b64decode(self.content)
         except Exception:
-            decoded_audio = self.audio
+            decoded_audio = self.content
             # Not base64 - encode it
-            self.audio = base64.b64encode(self.audio)
+            self.content = base64.b64encode(self.content)
 
         self._guess_format(decoded_audio)
 
@@ -155,7 +154,7 @@ class Audio(BaseModel):
             as_base64 (bool): whether the resolved audio should be returned as base64-encoded bytes
         """
         return resolve_binary(
-            raw_bytes=self.audio,
+            raw_bytes=self.content,
             path=self.path,
             url=str(self.url) if self.url else None,
             as_base64=as_base64,
@@ -182,7 +181,7 @@ class Message(BaseModel):
         """
         if content is not None:
             if isinstance(content, str):
-                data["chunks"] = [TextChunk(text=content)]
+                data["chunks"] = [TextChunk(content=content)]
             elif isinstance(content, list):
                 data["chunks"] = content
 
@@ -195,7 +194,7 @@ class Message(BaseModel):
         Returns:
             The cumulative content of all TextBlocks in the message.
         """
-        texts = [b.text for b in self.chunks if isinstance(b, TextChunk)]
+        texts = [b.content for b in self.chunks if isinstance(b, TextChunk)]
         result = None if not texts else (texts[0] if len(texts) == 1 else "\n".join(texts))
 
         return result
@@ -208,9 +207,9 @@ class Message(BaseModel):
             ValueError: if chunks contains more than a block, or a block that's not TextChunk.
         """
         if not self.chunks:
-            self.chunks = [TextChunk(text=content)]
+            self.chunks = [TextChunk(content=content)]
         elif len(self.chunks) == 1 and isinstance(self.chunks[0], TextChunk):
-            self.chunks = [TextChunk(text=content)]
+            self.chunks = [TextChunk(content=content)]
         else:
             raise ValueError(
                 "Message contains multiple chunks, use 'Message.chunks' instead."
@@ -228,7 +227,7 @@ class Message(BaseModel):
     ) -> Self:
         if isinstance(role, str):
             role = MessageRole(role)
-        return cls(role=role, blocks=[TextChunk(text=content)], **kwargs)
+        return cls(role=role, chunks=[TextChunk(content=content)], **kwargs)
 
     def _recursive_serialization(self, value: Any) -> Any:
         if isinstance(value, BaseModel):
@@ -238,6 +237,7 @@ class Message(BaseModel):
             return {
                 key: self._recursive_serialization(value)
                 for key, value in value.items()
+                # if value is not None
             }
         if isinstance(value, list):
             return [self._recursive_serialization(item) for item in value]

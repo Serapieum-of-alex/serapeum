@@ -5,7 +5,7 @@ from serapeum.core.base.llms.models import (
     TextChunk,
     Image,
     Audio,
-    LogProb,
+    LikelihoodScore,
     CompletionResponse,
     LLMMetadata
 )
@@ -18,7 +18,7 @@ __all__ = [
     "TextChunk",
     "Image",
     "Audio",
-    "LogProb",
+    "LikelihoodScore",
     "CompletionResponse",
     "LLMMetadata",
 ]

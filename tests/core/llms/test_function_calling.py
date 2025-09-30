@@ -6,7 +6,7 @@ from serapeum.core.base.llms.models import (
     ChatResponse,
     ChatResponseGen,
     CompletionResponse,
-    LLMMetadata,
+    Metadata,
 )
 from serapeum.core.llms.function_calling import FunctionCallingLLM
 from serapeum.core.llms.llm import ToolSelection
@@ -59,8 +59,8 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         pass
 
     @property
-    def metadata(self) -> LLMMetadata:
-        return LLMMetadata(is_function_calling_model=True)
+    def metadata(self) -> Metadata:
+        return Metadata(is_function_calling_model=True)
 
     def _prepare_chat_with_tools(
         self,

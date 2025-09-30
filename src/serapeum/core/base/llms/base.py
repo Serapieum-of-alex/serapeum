@@ -13,7 +13,7 @@ from serapeum.core.base.llms.models import (
     CompletionResponse,
     CompletionResponseAsyncGen,
     CompletionResponseGen,
-    LLMMetadata,
+    Metadata,
     TextChunk,
 )
 
@@ -28,11 +28,11 @@ class BaseLLM(BaseComponent):
 
     @property
     @abstractmethod
-    def metadata(self) -> LLMMetadata:
+    def metadata(self) -> Metadata:
         """LLM metadata.
 
         Returns:
-            LLMMetadata: LLM metadata containing various information about the LLM.
+            Metadata: LLM metadata containing various information about the LLM.
         """
 
     def convert_chat_messages(self, messages: Sequence[Message]) -> List[Any]:

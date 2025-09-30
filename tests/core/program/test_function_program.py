@@ -5,7 +5,7 @@ import pytest
 
 from serapeum.core.base.llms.models import (
     Message,
-    LLMMetadata,
+    Metadata,
 )
 from pydantic import BaseModel
 from typing import List, Optional, Union, Any
@@ -96,8 +96,8 @@ class MockLLM(MagicMock):
         )
 
     @property
-    def metadata(self) -> LLMMetadata:
-        return LLMMetadata(is_function_calling_model=True)
+    def metadata(self) -> Metadata:
+        return Metadata(is_function_calling_model=True)
 
 
 def test_function_program() -> None:

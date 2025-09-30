@@ -7,7 +7,7 @@ from serapeum.core.base.llms.models import (
     Message,
     ChatResponse,
     CompletionResponse,
-    LLMMetadata,
+    Metadata,
     MessageRole,
 )
 from pydantic import BaseModel
@@ -23,8 +23,8 @@ class MockLLM(MagicMock):
         return CompletionResponse(text=text)
 
     @property
-    def metadata(self) -> LLMMetadata:
-        return LLMMetadata()
+    def metadata(self) -> Metadata:
+        return Metadata()
 
 
 class MockChatLLM(MagicMock):
@@ -36,8 +36,8 @@ class MockChatLLM(MagicMock):
         )
 
     @property
-    def metadata(self) -> LLMMetadata:
-        metadata = LLMMetadata()
+    def metadata(self) -> Metadata:
+        metadata = Metadata()
         metadata.is_chat_model = True
         return metadata
 

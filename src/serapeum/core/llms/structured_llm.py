@@ -9,7 +9,7 @@ from serapeum.core.base.llms.models import (
     ChatResponseGen,
     CompletionResponse,
     CompletionResponseGen,
-    LLMMetadata,
+    Metadata,
     MessageRole,
 )
 from pydantic import (
@@ -37,7 +37,7 @@ class StructuredLLM(LLM):
         return "structured_llm"
 
     @property
-    def metadata(self) -> LLMMetadata:
+    def metadata(self) -> Metadata:
         return self.llm.metadata
 
     def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:

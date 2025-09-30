@@ -7,7 +7,7 @@ from serapeum.core.base.llms.models import (
     Audio,
     LikelihoodScore,
     CompletionResponse,
-    LLMMetadata
+    Metadata
 )
 
 
@@ -20,5 +20,5 @@ __all__ = [
     "Audio",
     "LikelihoodScore",
     "CompletionResponse",
-    "LLMMetadata",
+    "Metadata",
 ]

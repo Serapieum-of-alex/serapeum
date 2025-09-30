@@ -27,7 +27,7 @@ from serapeum.core.base.llms.models import (
     CompletionResponse,
     CompletionResponseAsyncGen,
     CompletionResponseGen,
-    LLMMetadata,
+    Metadata,
     MessageRole,
     TextChunk,
 
@@ -150,9 +150,9 @@ class Ollama(FunctionCallingLLM):
         return "Ollama_llm"
 
     @property
-    def metadata(self) -> LLMMetadata:
+    def metadata(self) -> Metadata:
         """LLM metadata."""
-        return LLMMetadata(
+        return Metadata(
             context_window=self.context_window,
             num_output=DEFAULT_NUM_OUTPUTS,
             model_name=self.model,

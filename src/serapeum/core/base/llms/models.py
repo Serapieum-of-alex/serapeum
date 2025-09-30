@@ -312,7 +312,7 @@ CompletionResponseGen = Generator[CompletionResponse, None, None]
 CompletionResponseAsyncGen = AsyncGenerator[CompletionResponse, None]
 
 
-class LLMMetadata(BaseModel):
+class Metadata(BaseModel):
     model_config = ConfigDict(
         protected_namespaces=("pydantic_model_",), arbitrary_types_allowed=True
     )

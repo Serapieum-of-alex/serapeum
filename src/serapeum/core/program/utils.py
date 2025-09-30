@@ -83,17 +83,6 @@ def get_program_for_llm(
                 prompt=prompt,
                 **kwargs,
             )
-    elif pydantic_program_mode == PydanticProgramMode.OPENAI:
-        from serapeum.program.openai import (
-            OpenAIPydanticProgram,
-        )  # pants: no-infer-dep
-
-        return OpenAIPydanticProgram.from_defaults(
-            output_cls=output_cls,
-            llm=llm,
-            prompt=prompt,  # type: ignore
-            **kwargs,
-        )
     elif pydantic_program_mode == PydanticProgramMode.FUNCTION:
         from serapeum.core.program.function_program import FunctionCallingProgram
 

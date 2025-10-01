@@ -268,9 +268,6 @@ class FunctionTool(AsyncBaseTool):
     async def acall(self, *args: Any, **kwargs: Any) -> ToolOutput:
         """Async Call."""
         all_kwargs = {**self.partial_params, **kwargs}
-        if self.requires_context and self.ctx_param_name is not None:
-            if self.ctx_param_name not in all_kwargs:
-                raise ValueError("Context is required for this tool")
 
         raw_output = await self._async_fn(*args, **all_kwargs)
 

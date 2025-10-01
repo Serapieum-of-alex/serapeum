@@ -13,7 +13,6 @@ from serapeum.core.base.llms.models import (
     Audio,
     ChunkType,
 )
-from serapeum.core.schemas.models import BaseNode, Document
 from serapeum.core.tools.utils import create_schema_from_function
 
 AsyncCallable = Callable[..., Awaitable[Any]]
@@ -222,25 +221,12 @@ class FunctionTool(AsyncBaseTool):
 
     def _parse_tool_output(self, raw_output: Any) -> List[ChunkType]:
         """Parse tool output into content chunks."""
-        if isinstance(
-                raw_output, (TextChunk, Image, Audio)
-        ):
+        if isinstance(raw_output, (TextChunk, Image, Audio)):
             return [raw_output]
-        elif isinstance(raw_output, list) and all(
-                isinstance(
-                    item, (TextChunk, Image, Audio)
-                )
-                for item in raw_output
-        ):
+        elif isinstance(raw_output, list) and all(isinstance(item, (TextChunk, Image, Audio)) for item in raw_output):
             return raw_output
-        elif isinstance(raw_output, (BaseNode, Document)):
-            return [TextChunk(text=raw_output.get_content())]
-        elif isinstance(raw_output, list) and all(
-                isinstance(item, (BaseNode, Document)) for item in raw_output
-        ):
-            return [TextChunk(text=item.get_content()) for item in raw_output]
         else:
-            return [TextChunk(text=str(raw_output))]
+            return [TextChunk(content=str(raw_output))]
 
     def __call__(self, *args: Any, **kwargs: Any) -> ToolOutput:
         all_kwargs = {**self.partial_params, **kwargs}

@@ -90,7 +90,7 @@ class ToolOutput(BaseModel):
         if content and blocks:
             raise ValueError("Cannot provide both content and chunks.")
         if content:
-            blocks = [TextChunk(text=content)]
+            blocks = [TextChunk(content=content)]
         elif blocks:
             pass
         else:
@@ -108,13 +108,13 @@ class ToolOutput(BaseModel):
     def content(self) -> str:
         """Get the content of the tool output."""
         return "\n".join(
-            [block.text for block in self.blocks if isinstance(block, TextChunk)]
+            [block.content for block in self.blocks if isinstance(block, TextChunk)]
         )
 
     @content.setter
     def content(self, content: str) -> None:
         """Set the content of the tool output."""
-        self.blocks = [TextChunk(text=content)]
+        self.blocks = [TextChunk(content=content)]
 
     def __str__(self) -> str:
         """String."""

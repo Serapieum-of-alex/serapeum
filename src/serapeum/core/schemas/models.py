@@ -551,16 +551,6 @@ class TextNode(BaseNode):
     serialized objects.
     """
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Make TextNode forward-compatible with Node by supporting 'text_resource' in the constructor."""
-        if "text_resource" in kwargs:
-            tr = kwargs.pop("text_resource")
-            if isinstance(tr, MediaResource):
-                kwargs["text"] = tr.text
-            else:
-                kwargs["text"] = tr["text"]
-        super().__init__(*args, **kwargs)
-
     text: str = Field(default="", description="Text content of the node.")
     mimetype: str = Field(
         default="text/plain", description="MIME type of the node content."
@@ -582,6 +572,16 @@ class TextNode(BaseNode):
             "{metadata_str} placeholders."
         ),
     )
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Make TextNode forward-compatible with Node by supporting 'text_resource' in the constructor."""
+        if "text_resource" in kwargs:
+            tr = kwargs.pop("text_resource")
+            if isinstance(tr, MediaResource):
+                kwargs["text"] = tr.text
+            else:
+                kwargs["text"] = tr["text"]
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def class_name(cls) -> str:

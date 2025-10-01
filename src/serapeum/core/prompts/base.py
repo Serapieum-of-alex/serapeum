@@ -286,14 +286,14 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
                 formatted_blocks: List[ChunkType] = []
                 for block in message_template.chunks:
                     if isinstance(block, TextChunk):
-                        template_vars = get_template_vars(block.text)
+                        template_vars = get_template_vars(block.content)
                         relevant_kwargs = {
                             k: v
                             for k, v in mapped_all_kwargs.items()
                             if k in template_vars
                         }
-                        formatted_text = format_string(block.text, **relevant_kwargs)
-                        formatted_blocks.append(TextChunk(text=formatted_text))
+                        formatted_text = format_string(block.content, **relevant_kwargs)
+                        formatted_blocks.append(TextChunk(content=formatted_text))
                     else:
                         # For non-text chunks (like images), keep them as is
                         # TODO: can images be formatted as variables?

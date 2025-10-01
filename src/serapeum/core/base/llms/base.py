@@ -45,7 +45,7 @@ class BaseLLM(SerializableModel):
                 content_string = ""
                 for block in message.content:
                     if isinstance(block, TextChunk):
-                        content_string += block.text
+                        content_string += block.content
                     else:
                         raise ValueError("LLM only supports text inputs")
                 message.content = content_string

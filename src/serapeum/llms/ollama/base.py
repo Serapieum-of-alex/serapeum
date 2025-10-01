@@ -195,7 +195,7 @@ class Ollama(FunctionCallingLLM):
             }
             for block in message.chunks:
                 if isinstance(block, TextChunk):
-                    cur_ollama_message["content"] += block.text
+                    cur_ollama_message["content"] += block.content
                 elif isinstance(block, Image):
                     if "images" not in cur_ollama_message:
                         cur_ollama_message["images"] = []

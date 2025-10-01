@@ -9,7 +9,8 @@ from serapeum.llms.ollama import Ollama
 from unittest.mock import patch, AsyncMock, MagicMock, PropertyMock
 from ollama import Client
 from copy import deepcopy
-from ollama import Message, ChatResponse
+from ollama import Message as OllamaMessage
+from ollama import ChatResponse
 response_dict = {
     'model': 'llama3.1:latest',
     'created_at': '2025-09-20T21:52:10.0615697Z',
@@ -33,16 +34,16 @@ response_dict = {
 normal_response = ChatResponse(**response_dict)
 response_with_tool_dict = deepcopy(response_dict)
 response_with_tool_dict["message"]["tool_calls"] = [
-                Message.ToolCall(
-                    function=Message.ToolCall.Function(
-                        name='generate_song',
-                        arguments={
-                            'artist': 'The Beatles',
-                            'name': 'Hello!'
-                        }
-                    )
-                )
-            ]
+    OllamaMessage.ToolCall(
+        function=OllamaMessage.ToolCall.Function(
+            name='generate_song',
+            arguments={
+                'artist': 'The Beatles',
+                'name': 'Hello!'
+            }
+        )
+    )
+]
 
 response_for_tool_call = ChatResponse(**response_with_tool_dict)
 

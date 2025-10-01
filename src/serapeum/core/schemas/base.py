@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class SerializableModel(BaseModel):
-    """Base component object to capture class names."""
+    """Serialization and Deserialization functionality."""
 
     @classmethod
     def __get_pydantic_json_schema__(

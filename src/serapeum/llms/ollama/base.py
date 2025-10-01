@@ -30,13 +30,10 @@ from serapeum.core.base.llms.models import (
     Metadata,
     MessageRole,
     TextChunk,
-
-
-
     Image,
 )
 from pydantic import BaseModel, Field, PrivateAttr
-from serapeum.core.configs import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
+from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llms.function_calling import FunctionCallingLLM
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ToolSelection

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from serapeum.core.llms.llm import LLM
 from serapeum.core.output_parsers.pydantic import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
-from serapeum.core.settings import Settings
+from serapeum.core.configs.configs import Configs
 from serapeum.core.models import BaseOutputParser, BasePydanticProgram
 
 
@@ -41,9 +41,8 @@ class LLMTextCompletionProgram(BasePydanticProgram[BaseModel]):
         prompt: Optional[BasePromptTemplate] = None,
         llm: Optional[LLM] = None,
         verbose: bool = False,
-        **kwargs: Any,
     ) -> "LLMTextCompletionProgram":
-        llm = llm or Settings.llm
+        llm = llm or Configs.llm
         if prompt is None and prompt_template_str is None:
             raise ValueError("Must provide either prompt or prompt_template_str.")
         if prompt is not None and prompt_template_str is not None:

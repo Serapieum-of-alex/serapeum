@@ -27,7 +27,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from serapeum.core.configs import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
+from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.utils.utils import resolve_binary
 
 

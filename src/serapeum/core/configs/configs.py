@@ -7,8 +7,8 @@ from serapeum.core.models import PydanticProgramMode
 
 
 @dataclass
-class _Settings:
-    """Settings for the Llama Index, lazily initialized."""
+class _Configs:
+    """Configs for the Llama Index, lazily initialized."""
 
     _llm: Optional[LLM] = None
 
@@ -35,4 +35,4 @@ class _Settings:
 
 
 # Singleton
-Settings = _Settings()
+Configs = _Configs()

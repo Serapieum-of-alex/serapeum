@@ -5,8 +5,6 @@ from dataclasses import dataclass, field
 from typing import AsyncGenerator, Generator, List, Optional, Dict, Any
 
 from serapeum.core.base.llms.models import Message
-from serapeum.core.base.response.models import Response, StreamingResponse
-from serapeum.core.schemas.models import NodeWithScore
 from serapeum.core.tools import ToolOutput
 
 logger = logging.getLogger(__name__)
@@ -27,18 +25,18 @@ class AgentChatResponse:
 
     response: str = ""
     sources: List[ToolOutput] = field(default_factory=list)
-    source_nodes: List[NodeWithScore] = field(default_factory=list)
+    # source_nodes: List[NodeWithScore] = field(default_factory=list)
     is_dummy_stream: bool = False
     metadata: Optional[Dict[str, Any]] = None
 
-    def set_source_nodes(self) -> None:
-        if self.sources and not self.source_nodes:
-            for tool_output in self.sources:
-                if isinstance(tool_output.raw_output, (Response, StreamingResponse)):
-                    self.source_nodes.extend(tool_output.raw_output.source_nodes)
+    # def set_source_nodes(self) -> None:
+    #     if self.sources and not self.source_nodes:
+    #         for tool_output in self.sources:
+    #             if isinstance(tool_output.raw_output, (Response, StreamingResponse)):
+    #                 self.source_nodes.extend(tool_output.raw_output.source_nodes)
 
-    def __post_init__(self) -> None:
-        self.set_source_nodes()
+    # def __post_init__(self) -> None:
+    #     self.set_source_nodes()
 
     def __str__(self) -> str:
         return self.response

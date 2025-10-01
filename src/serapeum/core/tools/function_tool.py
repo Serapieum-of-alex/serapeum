@@ -281,7 +281,7 @@ class FunctionTool(AsyncBaseTool):
         default_output = ToolOutput(
             blocks=output_blocks,
             tool_name=self.metadata.get_name(),
-            raw_input={"args": args, "kwargs": tool_output_kwargs},
+            raw_input={"args": args, "kwargs": all_kwargs},
             raw_output=raw_output,
         )
 

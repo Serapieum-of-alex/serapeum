@@ -18,10 +18,10 @@ from serapeum.core.base.llms.models import (
 )
 
 from pydantic import ConfigDict
-from serapeum.core.schemas.models import BaseComponent
+from serapeum.core.schemas.models import SerializableModel
 
 
-class BaseLLM(BaseComponent):
+class BaseLLM(SerializableModel):
     """BaseLLM interface."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

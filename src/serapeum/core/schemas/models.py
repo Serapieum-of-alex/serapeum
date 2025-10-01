@@ -40,7 +40,7 @@ from pydantic import (
     model_serializer,
 )
 from serapeum.core.utils.utils import truncate_text
-from serapeum.core.schemas.base import BaseComponent
+from serapeum.core.schemas.base import SerializableModel
 
 
 DEFAULT_TEXT_NODE_TMPL = "{metadata_str}\n\n{content}"
@@ -86,9 +86,7 @@ def json_to_doc(doc_dict: dict) -> BaseNode:
     return doc
 
 
-
-
-class TransformComponent(BaseComponent):
+class TransformComponent(SerializableModel):
     """Base class for transform components."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -145,7 +143,7 @@ class MetadataMode(str, Enum):
     NONE = "none"
 
 
-class RelatedNodeInfo(BaseComponent):
+class RelatedNodeInfo(SerializableModel):
     node_id: str
     node_type: Annotated[ObjectType, EnumNameSerializer] | str | None = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
@@ -159,7 +157,7 @@ class RelatedNodeInfo(BaseComponent):
 RelatedNodeType = Union[RelatedNodeInfo, List[RelatedNodeInfo]]
 
 
-class BaseNode(BaseComponent):
+class BaseNode(SerializableModel):
     """Base node Object.
 
     Generic abstract interface for retrievable nodes
@@ -793,7 +791,7 @@ class IndexNode(TextNode):
         return "IndexNode"
 
 
-class NodeWithScore(BaseComponent):
+class NodeWithScore(SerializableModel):
     node: SerializeAsAny[BaseNode]
     score: Optional[float] = None
 

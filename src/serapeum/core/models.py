@@ -55,14 +55,14 @@ class BaseOutputParser(ABC):
         format_text = ""
         if text_blocks:
             format_idx = text_blocks[-1][0]
-            format_text = text_blocks[-1][1].text
+            format_text = text_blocks[-1][1].content
 
             if format_idx != -1:
                 # this should always be a text block
                 assert isinstance(message.chunks[format_idx], TextChunk)
-                message.chunks[format_idx].text = self.format(format_text)  # type: ignore
+                message.chunks[format_idx].content = self.format(format_text)  # type: ignore
         else:
-            message.chunks.append(TextChunk(text=self.format(format_text)))
+            message.chunks.append(TextChunk(content=self.format(format_text)))
 
         return message
 

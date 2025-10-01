@@ -7,18 +7,21 @@ from pydantic_core import CoreSchema
 from pydantic.json_schema import JsonSchemaValue
 from pydantic import GetJsonSchemaHandler, model_serializer, SerializerFunctionWrapHandler, SerializationInfo
 
-__all__ = ["BaseComponent"]
+__all__ = ["SerializableModel"]
 
 logger = logging.getLogger(__name__)
 
 
-class BaseComponent(BaseModel):
+class SerializableModel(BaseModel):
     """Base component object to capture class names."""
 
     @classmethod
     def __get_pydantic_json_schema__(
-            cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler
+        cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler
     ) -> JsonSchemaValue:
+        """
+        Overrides Pydantic's JSON schema generation to include a class_name property
+        """
         json_schema = handler(core_schema)
         json_schema = handler.resolve_ref_schema(json_schema)
 
@@ -34,28 +37,32 @@ class BaseComponent(BaseModel):
     @classmethod
     def class_name(cls) -> str:
         """
-        Get the class name, used as a unique ID in serialization.
-
-        This provides a key that makes serialization robust against actual class
-        name changes.
+        - This is meant to be overridden by the subclass.class_name() method.
+        - Automatically injects the class name into the schema and serialized data.
         """
         return "base_component"
 
     def json(self, **kwargs: Any) -> str:
+        """alias to to_json"""
         return self.to_json(**kwargs)
 
     @model_serializer(mode="wrap")
     def custom_model_dump(
-            self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
+        self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
     ) -> Dict[str, Any]:
         data = handler(self)
         data["class_name"] = self.class_name()
         return data
 
     def dict(self, **kwargs: Any) -> Dict[str, Any]:
+        """alias to model_dump"""
         return self.model_dump(**kwargs)
 
     def __getstate__(self) -> Dict[str, Any]:
+        """
+        - Custom pickling to remove unpickleable attributes.
+        - Scan both __dict__ and __pydantic_private__ for unpickleable attributes.
+        """
         state = super().__getstate__()
 
         # remove attributes that are not pickleable -- kind of dangerous
@@ -87,6 +94,9 @@ class BaseComponent(BaseModel):
         return state
 
     def __setstate__(self, state: Dict[str, Any]) -> None:
+        """
+        Custom unpickling to remove unpickleable attributes to reconstruct the class via __init__.
+        """
         # Use the __dict__ and __init__ method to set state
         # so that all variables initialize
         try:
@@ -106,9 +116,8 @@ class BaseComponent(BaseModel):
         return json.dumps(data)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any], **kwargs: Any) -> Self:  # type: ignore
-        # In SimpleKVStore we rely on shallow coping. Hence, the data will be modified in the store directly.
-        # And it is the same when the user is passing a dictionary to create a component. We can't modify the passed down dictionary.
+    def from_dict(cls, data: Dict[str, Any], **kwargs: Any) -> Self:
+        """Creates an instance from a dictionary (Deserialization)."""
         data = dict(data)
         if isinstance(kwargs, dict):
             data.update(kwargs)
@@ -116,6 +125,7 @@ class BaseComponent(BaseModel):
         return cls(**data)
 
     @classmethod
-    def from_json(cls, data_str: str, **kwargs: Any) -> Self:  # type: ignore
+    def from_json(cls, data_str: str, **kwargs: Any) -> Self:
+        """Creates an instance from a JSON string (Deserialization)."""
         data = json.loads(data_str)
         return cls.from_dict(data, **kwargs)

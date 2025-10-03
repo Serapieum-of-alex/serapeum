@@ -18,7 +18,7 @@ from serapeum.core.base.llms.models import (
 )
 
 from pydantic import ConfigDict
-from serapeum.core.schemas import SerializableModel
+from serapeum.core.models import SerializableModel
 
 
 class BaseLLM(SerializableModel):

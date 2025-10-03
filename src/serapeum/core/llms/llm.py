@@ -35,12 +35,12 @@ from serapeum.core.base.llms.generic_utils import (
 )
 
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
-from serapeum.core.models import (
+from serapeum.core.models.base import Model
+from serapeum.core.core_models import (
     BaseOutputParser,
     PydanticProgramMode,
     TokenAsyncGen,
     TokenGen,
-    Model,
 )
 
 from serapeum.core.base.llms.models import (
@@ -418,11 +418,11 @@ class LLM(BaseLLM):
             yield r
 
     async def _structured_astream_call(
-            self,
-            output_cls: Type[Model],
-            prompt: PromptTemplate,
-            llm_kwargs: Optional[Dict[str, Any]] = None,
-            **prompt_args: Any,
+        self,
+        output_cls: Type[Model],
+        prompt: PromptTemplate,
+        llm_kwargs: Optional[Dict[str, Any]] = None,
+        **prompt_args: Any,
     ) -> AsyncGenerator[
         Union[Model, List[Model], "BaseModel", List["BaseModel"]], None
     ]:

@@ -8,7 +8,7 @@ from serapeum.core.output_parsers.base import (
     StructuredOutput,
 )
 from serapeum.core.output_parsers.utils import _marshal_llm_to_json
-from serapeum.core.models import BaseOutputParser
+from serapeum.core.core_models import BaseOutputParser
 
 
 def _escape_curly_braces(input_string: str) -> str:

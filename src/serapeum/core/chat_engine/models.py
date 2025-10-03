@@ -3,20 +3,10 @@ import logging
 import time
 from dataclasses import dataclass, field
 from typing import AsyncGenerator, Generator, List, Optional, Dict, Any
-
-from serapeum.core.base.llms.models import Message
 from serapeum.core.tools import ToolOutput
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
-
-
-def is_function(message: Message) -> bool:
-    """Utility for Message responses from OpenAI models."""
-    return (
-        "tool_calls" in message.additional_kwargs
-        and len(message.additional_kwargs["tool_calls"]) > 0
-    )
 
 
 @dataclass

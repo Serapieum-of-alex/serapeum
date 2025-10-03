@@ -37,7 +37,7 @@ from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_O
 from serapeum.core.llms.function_calling import FunctionCallingLLM
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ToolSelection
-from serapeum.core.models import PydanticProgramMode
+from serapeum.core.core_models import PydanticProgramMode
 from serapeum.core.program.utils import process_streaming_objects
 
 if TYPE_CHECKING:

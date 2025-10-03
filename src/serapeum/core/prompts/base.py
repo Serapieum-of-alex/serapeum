@@ -33,7 +33,7 @@ from serapeum.core.base.llms.generic_utils import (
 from serapeum.core.base.llms.models import ChunkType, TextChunk
 from serapeum.core.prompts.prompt_type import PromptType
 from serapeum.core.prompts.utils import get_template_vars, format_string
-from serapeum.core.models import BaseOutputParser
+from serapeum.core.core_models import BaseOutputParser
 
 
 AnnotatedCallable = Annotated[

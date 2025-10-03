@@ -2,12 +2,16 @@ from typing import Any, Dict, Self
 import json
 import pickle
 import logging
-from pydantic import BaseModel
+from typing import TypeVar
 from pydantic_core import CoreSchema
 from pydantic.json_schema import JsonSchemaValue
-from pydantic import GetJsonSchemaHandler, model_serializer, SerializerFunctionWrapHandler, SerializationInfo
+from pydantic import BaseModel, GetJsonSchemaHandler, model_serializer, SerializerFunctionWrapHandler, SerializationInfo
 
-__all__ = ["SerializableModel"]
+
+Model = TypeVar("Model", bound=BaseModel)
+
+__all__ = ["SerializableModel", "Model"]
+
 
 logger = logging.getLogger(__name__)
 

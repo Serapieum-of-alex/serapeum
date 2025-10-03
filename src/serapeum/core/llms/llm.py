@@ -35,10 +35,9 @@ from serapeum.core.base.llms.generic_utils import (
 )
 
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
-from serapeum.core.models.base import Model
+from serapeum.core.models import Model, PydanticProgramMode
 from serapeum.core.core_models import (
     BaseOutputParser,
-    PydanticProgramMode,
     TokenAsyncGen,
     TokenGen,
 )

@@ -2,6 +2,7 @@ from typing import Any, Dict, Self
 import json
 import pickle
 import logging
+from enum import Enum
 from typing import TypeVar
 from pydantic_core import CoreSchema
 from pydantic.json_schema import JsonSchemaValue
@@ -10,7 +11,7 @@ from pydantic import BaseModel, GetJsonSchemaHandler, model_serializer, Serializ
 
 Model = TypeVar("Model", bound=BaseModel)
 
-__all__ = ["SerializableModel", "Model"]
+__all__ = ["SerializableModel", "Model", "PydanticProgramMode"]
 
 
 logger = logging.getLogger(__name__)
@@ -133,3 +134,14 @@ class SerializableModel(BaseModel):
         """Creates an instance from a JSON string (Deserialization)."""
         data = json.loads(data_str)
         return cls.from_dict(data, **kwargs)
+
+
+class PydanticProgramMode(str, Enum):
+    """Pydantic program mode."""
+
+    DEFAULT = "default"
+    OPENAI = "openai"
+    LLM = "llm"
+    FUNCTION = "function"
+    GUIDANCE = "guidance"
+    LM_FORMAT_ENFORCER = "lm-format-enforcer"

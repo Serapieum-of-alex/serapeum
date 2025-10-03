@@ -1,17 +1,11 @@
-import threading
 from abc import ABC, abstractmethod
-from contextvars import copy_context
-from enum import Enum
-from functools import partial
+
 from typing import (
     Any,
     AsyncGenerator,
-    Callable,
     Dict,
     Generator,
     List,
-    Optional,
-    Tuple,
     Type,
     Union,
 )
@@ -89,45 +83,3 @@ class BaseOutputParser(ABC):
         json_schema = handler(core_schema)
         return handler.resolve_ref_schema(json_schema)
 
-
-
-class PydanticProgramMode(str, Enum):
-    """Pydantic program mode."""
-
-    DEFAULT = "default"
-    OPENAI = "openai"
-    LLM = "llm"
-    FUNCTION = "function"
-    GUIDANCE = "guidance"
-    LM_FORMAT_ENFORCER = "lm-format-enforcer"
-
-
-class Thread(threading.Thread):
-    """
-    A wrapper for threading.Thread that copies the current context and uses the copy to run the target.
-    """
-
-    def __init__(
-        self,
-        group: Optional[Any] = None,
-        target: Optional[Callable[..., Any]] = None,
-        name: Optional[str] = None,
-        args: Tuple[Any, ...] = (),
-        kwargs: Optional[Dict[str, Any]] = None,
-        *,
-        daemon: Optional[bool] = None,
-    ) -> None:
-        if target is not None:
-            args = (
-                partial(target, *args, **(kwargs if isinstance(kwargs, dict) else {})),
-            )
-        else:
-            args = ()
-
-        super().__init__(
-            group=group,
-            target=copy_context().run,
-            name=name,
-            args=args,
-            daemon=daemon,
-        )

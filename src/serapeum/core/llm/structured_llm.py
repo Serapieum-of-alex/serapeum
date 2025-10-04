@@ -1,6 +1,6 @@
 from typing import Any, Type, Sequence, Dict
 
-from serapeum.core.llms.llm import LLM
+from serapeum.core.llm.llm import LLM
 
 from serapeum.core.base.llms.models import (
     Message,

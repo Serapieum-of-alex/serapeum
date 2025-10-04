@@ -8,8 +8,8 @@ from serapeum.core.base.llms.models import (
     CompletionResponse,
     Metadata,
 )
-from serapeum.core.llms.function_calling import FunctionCallingLLM
-from serapeum.core.llms.llm import ToolSelection
+from serapeum.core.llm.function_calling import FunctionCallingLLM
+from serapeum.core.llm.llm import ToolSelection
 from serapeum.core.program.function_program import FunctionTool, get_function_tool
 from serapeum.core.tools.models import BaseTool
 from pydantic import BaseModel, Field

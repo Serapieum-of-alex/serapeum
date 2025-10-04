@@ -3,7 +3,7 @@ import os
 
 from pydantic import BaseModel
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.llms import Message
+from serapeum.core.llm import Message
 from serapeum.core.tools import FunctionTool
 from serapeum.llms.ollama import Ollama
 from unittest.mock import patch, AsyncMock, MagicMock, PropertyMock

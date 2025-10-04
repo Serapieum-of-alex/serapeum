@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-from serapeum.core.llms import LLM
+from serapeum.core.llm import LLM
 from serapeum.core.models import PydanticProgramMode
 
 

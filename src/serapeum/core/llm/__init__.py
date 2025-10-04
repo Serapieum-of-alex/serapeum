@@ -13,7 +13,7 @@ from serapeum.core.base.llms.models import (
     Audio,
 )
 # from serapeum.core.llms.custom import CustomLLM
-from serapeum.core.llms.llm import LLM
+from serapeum.core.llm.llm import LLM
 
 __all__ = [
     # "CustomLLM",

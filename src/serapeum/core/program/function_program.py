@@ -18,8 +18,8 @@ from pydantic import (
     ValidationError,
 )
 from serapeum.core.base.llms.models import ChatResponse
-from serapeum.core.llms.function_calling import FunctionCallingLLM
-from serapeum.core.llms.llm import LLM
+from serapeum.core.llm.function_calling import FunctionCallingLLM
+from serapeum.core.llm.llm import LLM
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.configs.configs import Configs
 from serapeum.core.program.models import BasePydanticProgram, Model

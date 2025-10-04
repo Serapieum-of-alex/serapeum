@@ -9,8 +9,8 @@ from pydantic import (
     ValidationError,
     create_model,
 )
-from serapeum.core.llms.llm import LLM, ToolSelection
-from serapeum.core.llms.function_calling import FunctionCallingLLM
+from serapeum.core.llm.llm import LLM, ToolSelection
+from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.output_parsers.pydantic import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate
 from serapeum.core.program import BasePydanticProgram

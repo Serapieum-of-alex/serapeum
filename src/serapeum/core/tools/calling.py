@@ -1,6 +1,6 @@
 from serapeum.core.tools.models import BaseTool, ToolOutput, adapt_to_async_tool
 from typing import TYPE_CHECKING, Sequence
-from serapeum.core.llms.llm import ToolSelection
+from serapeum.core.llm.llm import ToolSelection
 import json
 
 if TYPE_CHECKING:

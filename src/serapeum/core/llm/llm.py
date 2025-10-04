@@ -48,7 +48,7 @@ from serapeum.core.base.llms.models import (
 
 
 if TYPE_CHECKING:
-    from serapeum.core.llms.structured_llm import StructuredLLM
+    from serapeum.core.llm.structured_llm import StructuredLLM
 
 
 class ToolSelection(BaseModel):
@@ -661,6 +661,6 @@ class LLM(BaseLLM):
         **kwargs: Any,
     ) -> "StructuredLLM":
         """Return a structured LLM around a given object."""
-        from serapeum.core.llms.structured_llm import StructuredLLM
+        from serapeum.core.llm.structured_llm import StructuredLLM
 
         return StructuredLLM(llm=self, output_cls=output_cls, **kwargs)

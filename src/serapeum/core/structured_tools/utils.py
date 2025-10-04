@@ -9,7 +9,7 @@ from pydantic import (
 )
 from serapeum.core.llm.base import LLM, ToolSelection
 from serapeum.core.llm.function_calling import FunctionCallingLLM
-from serapeum.core.output_parsers.pydantic import PydanticOutputParser
+from serapeum.core.output_parsers.models import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate
 from serapeum.core.structured_tools.models import BasePydanticProgram
 from serapeum.core.models import StructuredLLMMode

@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional, Type, cast
 
 from pydantic import BaseModel
 from serapeum.core.llm.base import LLM
-from serapeum.core.output_parsers.pydantic import PydanticOutputParser
+from serapeum.core.output_parsers.models import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.configs.configs import Configs
 from serapeum.core.structured_tools.models import BasePydanticProgram

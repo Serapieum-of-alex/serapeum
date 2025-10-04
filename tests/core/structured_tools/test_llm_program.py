@@ -11,7 +11,7 @@ from serapeum.core.base.llms.models import (
     MessageRole,
 )
 from pydantic import BaseModel
-from serapeum.core.output_parsers.pydantic import PydanticOutputParser
+from serapeum.core.output_parsers.models import PydanticOutputParser
 from serapeum.core.structured_tools.llm_program import TextCompletionLLM
 from serapeum.core.prompts import ChatPromptTemplate
 

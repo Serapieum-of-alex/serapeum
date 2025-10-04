@@ -6,8 +6,6 @@ from typing import Any, List
 with contextlib.suppress(ImportError):
     import yaml
 
-from serapeum.core.output_parsers.base import OutputParserException
-
 
 def _marshal_llm_to_json(output: str) -> str:
     """
@@ -118,3 +116,7 @@ def extract_json_str(text: str) -> str:
         raise ValueError(f"Could not extract json string from output: {text}")
 
     return match.group()
+
+
+class OutputParserException(Exception):
+    pass

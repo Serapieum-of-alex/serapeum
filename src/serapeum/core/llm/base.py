@@ -490,8 +490,6 @@ class LLM(BaseLLM):
 
         return gen()
 
-    # -- Prompt Chaining --
-
     def predict(
         self,
         prompt: BasePromptTemplate,

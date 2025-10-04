@@ -1,5 +1,3 @@
-"""Prompt types enum."""
-
 from enum import Enum
 
 

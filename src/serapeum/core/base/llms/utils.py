@@ -35,60 +35,6 @@ def prompt_to_messages(prompt: str) -> List[Message]:
     return [Message(role=MessageRole.USER, content=prompt)]
 
 
-# def completion_response_to_chat_response(
-#     completion_response: CompletionResponse,
-# ) -> ChatResponse:
-#     """Convert a completion response to a chat response."""
-#     return ChatResponse(
-#         message=Message(
-#             role=MessageRole.ASSISTANT,
-#             content=completion_response.text,
-#             additional_kwargs=completion_response.additional_kwargs,
-#         ),
-#         raw=completion_response.raw,
-#     )
-
-
-# def stream_completion_response_to_chat_response(
-#     completion_response_gen: CompletionResponseGen,
-# ) -> ChatResponseGen:
-#     """Convert a stream completion response to a stream chat response."""
-#
-#     def gen() -> ChatResponseGen:
-#         for response in completion_response_gen:
-#             yield ChatResponse(
-#                 message=Message(
-#                     role=MessageRole.ASSISTANT,
-#                     content=response.text,
-#                     additional_kwargs=response.additional_kwargs,
-#                 ),
-#                 delta=response.delta,
-#                 raw=response.raw,
-#             )
-#
-#     return gen()
-
-
-# def astream_completion_response_to_chat_response(
-#     completion_response_gen: CompletionResponseAsyncGen,
-# ) -> ChatResponseAsyncGen:
-#     """Convert an async stream completion to an async stream chat response."""
-#
-#     async def gen() -> ChatResponseAsyncGen:
-#         async for response in completion_response_gen:
-#             yield ChatResponse(
-#                 message=Message(
-#                     role=MessageRole.ASSISTANT,
-#                     content=response.text,
-#                     additional_kwargs=response.additional_kwargs,
-#                 ),
-#                 delta=response.delta,
-#                 raw=response.raw,
-#             )
-#
-#     return gen()
-
-
 def chat_response_to_completion_response(
     chat_response: ChatResponse,
 ) -> CompletionResponse:
@@ -115,36 +61,6 @@ def stream_chat_response_to_completion_response(
             )
 
     return gen()
-
-
-# def completion_to_chat_decorator(
-#     func: Callable[..., CompletionResponse]
-# ) -> Callable[..., ChatResponse]:
-#     """Convert a completion function to a chat function."""
-#
-#     def wrapper(messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
-#         # normalize input
-#         prompt = messages_to_prompt(messages)
-#         completion_response = func(prompt, **kwargs)
-#         # normalize output
-#         return completion_response_to_chat_response(completion_response)
-#
-#     return wrapper
-
-
-# def stream_completion_to_chat_decorator(
-#     func: Callable[..., CompletionResponseGen]
-# ) -> Callable[..., ChatResponseGen]:
-#     """Convert a completion function to a chat function."""
-#
-#     def wrapper(messages: Sequence[Message], **kwargs: Any) -> ChatResponseGen:
-#         # normalize input
-#         prompt = messages_to_prompt(messages)
-#         completion_response = func(prompt, **kwargs)
-#         # normalize output
-#         return stream_completion_response_to_chat_response(completion_response)
-#
-#     return wrapper
 
 
 def chat_to_completion_decorator(
@@ -177,24 +93,6 @@ def stream_chat_to_completion_decorator(
     return wrapper
 
 
-# ===== Async =====
-
-
-# def acompletion_to_chat_decorator(
-#     func: Callable[..., Awaitable[CompletionResponse]]
-# ) -> Callable[..., Awaitable[ChatResponse]]:
-#     """Convert a completion function to a chat function."""
-#
-#     async def wrapper(messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
-#         # normalize input
-#         prompt = messages_to_prompt(messages)
-#         completion_response = await func(prompt, **kwargs)
-#         # normalize output
-#         return completion_response_to_chat_response(completion_response)
-#
-#     return wrapper
-
-
 def achat_to_completion_decorator(
     func: Callable[..., Awaitable[ChatResponse]]
 ) -> Callable[..., Awaitable[CompletionResponse]]:
@@ -210,23 +108,6 @@ def achat_to_completion_decorator(
     return wrapper
 
 
-# def astream_completion_to_chat_decorator(
-#     func: Callable[..., Awaitable[CompletionResponseAsyncGen]]
-# ) -> Callable[..., Awaitable[ChatResponseAsyncGen]]:
-#     """Convert a completion function to a chat function."""
-#
-#     async def wrapper(
-#         messages: Sequence[Message], **kwargs: Any
-#     ) -> ChatResponseAsyncGen:
-#         # normalize input
-#         prompt = messages_to_prompt(messages)
-#         completion_response = await func(prompt, **kwargs)
-#         # normalize output
-#         return astream_completion_response_to_chat_response(completion_response)
-#
-#     return wrapper
-
-
 def astream_chat_to_completion_decorator(
     func: Callable[..., Awaitable[ChatResponseAsyncGen]]
 ) -> Callable[..., Awaitable[CompletionResponseAsyncGen]]:
@@ -240,26 +121,6 @@ def astream_chat_to_completion_decorator(
         return astream_chat_response_to_completion_response(chat_response)
 
     return wrapper
-
-
-# def async_stream_completion_response_to_chat_response(
-#     completion_response_gen: CompletionResponseAsyncGen,
-# ) -> ChatResponseAsyncGen:
-#     """Convert a stream completion response to a stream chat response."""
-#
-#     async def gen() -> ChatResponseAsyncGen:
-#         async for response in completion_response_gen:
-#             yield ChatResponse(
-#                 message=Message(
-#                     role=MessageRole.ASSISTANT,
-#                     content=response.text,
-#                     additional_kwargs=response.additional_kwargs,
-#                 ),
-#                 delta=response.delta,
-#                 raw=response.raw,
-#             )
-#
-#     return gen()
 
 
 def astream_chat_response_to_completion_response(

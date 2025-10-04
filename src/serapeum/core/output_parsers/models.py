@@ -34,15 +34,14 @@ Here's a JSON schema to follow:
 Output a valid JSON object but do not repeat the schema.
 """
 
+
 class BaseOutputParser(ABC):
-    """Output parser class."""
 
     @abstractmethod
     def parse(self, output: str) -> Any:
-        """Parse, validate, and correct errors programmatically."""
+        ...
 
     def format(self, query: str) -> str:
-        """Format a query with structured output formatting instructions."""
         return query
 
     def _format_message(self, message: Message) -> Message:
@@ -68,9 +67,6 @@ class BaseOutputParser(ABC):
         return message
 
     def format_messages(self, messages: List[Message]) -> List[Message]:
-        """Format a list of messages with structured output formatting instructions."""
-        # NOTE: apply output parser to either the first message if it's a system message
-        #       or the last message
         if messages:
             if messages[0].role == MessageRole.SYSTEM:
                 # get text from the last text chunks
@@ -97,10 +93,10 @@ class BaseOutputParser(ABC):
 class PydanticOutputParser(BaseOutputParser, Generic[Model]):
 
     def __init__(
-            self,
-            output_cls: Type[Model],
-            excluded_schema_keys_from_format: Optional[List] = None,
-            pydantic_format_tmpl: str = PYDANTIC_FORMAT_TMPL,
+        self,
+        output_cls: Type[Model],
+        excluded_schema_keys_from_format: Optional[List] = None,
+        pydantic_format_tmpl: str = PYDANTIC_FORMAT_TMPL,
     ) -> None:
         """Init params."""
         self._output_cls = output_cls
@@ -113,11 +109,9 @@ class PydanticOutputParser(BaseOutputParser, Generic[Model]):
 
     @property
     def format_string(self) -> str:
-        """Format string."""
         return self.get_format_string(escape_json=True)
 
     def get_format_string(self, escape_json: bool = True) -> str:
-        """Format string."""
         schema_dict = self._output_cls.model_json_schema()
         for key in self._excluded_schema_keys_from_format:
             del schema_dict[key]
@@ -130,10 +124,8 @@ class PydanticOutputParser(BaseOutputParser, Generic[Model]):
             return output_str
 
     def parse(self, text: str) -> Any:
-        """Parse, validate, and correct errors programmatically."""
         json_str = extract_json_str(text)
         return self._output_cls.model_validate_json(json_str)
 
     def format(self, query: str) -> str:
-        """Format a query with structured output formatting instructions."""
         return query + "\n\n" + self.get_format_string(escape_json=True)

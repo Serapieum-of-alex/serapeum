@@ -12,11 +12,10 @@ from serapeum.core.base.llms.models import (
     TextChunk,
     Audio,
 )
-# from serapeum.core.llms.custom import CustomLLM
-from serapeum.core.llm.llm import LLM
+
+from serapeum.core.llm.base import LLM
 
 __all__ = [
-    # "CustomLLM",
     "LLM",
     "Message",
     "ChatResponse",

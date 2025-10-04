@@ -5,11 +5,10 @@ from typing import Any, List, Type, Sequence, Union, Optional, Dict
 from pydantic import (
     BaseModel,
     ConfigDict,
-    Field,
     ValidationError,
     create_model,
 )
-from serapeum.core.llm.llm import LLM, ToolSelection
+from serapeum.core.llm.base import LLM, ToolSelection
 from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.output_parsers.pydantic import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate

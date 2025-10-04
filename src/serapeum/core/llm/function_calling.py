@@ -8,7 +8,7 @@ from serapeum.core.base.llms.models import (
     ChatResponseAsyncGen,
     ChatResponseGen,
 )
-from serapeum.core.llm.llm import LLM, ToolSelection
+from serapeum.core.llm.base import LLM, ToolSelection
 
 if TYPE_CHECKING:
     from serapeum.core.chat_engine.models import AgentChatResponse
@@ -159,7 +159,7 @@ class FunctionCallingLLM(LLM):
     ) -> "AgentChatResponse":
         """Predict and call the tool."""
         from serapeum.core.chat_engine.models import AgentChatResponse
-        from serapeum.core.tools.calling import (
+        from serapeum.core.tools.utils import (
             call_tool_with_selection,
         )
 
@@ -216,7 +216,7 @@ class FunctionCallingLLM(LLM):
     ) -> "AgentChatResponse":
         """Predict and call the tool."""
         from serapeum.core.chat_engine.models import AgentChatResponse
-        from serapeum.core.tools.calling import (
+        from serapeum.core.tools.utils import (
             acall_tool_with_selection,
         )
 

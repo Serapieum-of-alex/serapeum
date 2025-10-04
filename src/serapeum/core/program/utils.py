@@ -13,7 +13,7 @@ from serapeum.core.llms.llm import LLM, ToolSelection
 from serapeum.core.llms.function_calling import FunctionCallingLLM
 from serapeum.core.output_parsers.pydantic import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate
-from serapeum.core.program.models import BasePydanticProgram
+from serapeum.core.program import BasePydanticProgram
 from serapeum.core.models import PydanticProgramMode
 from serapeum.core.base.llms.models import ChatResponse
 

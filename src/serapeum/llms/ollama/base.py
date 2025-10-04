@@ -13,7 +13,7 @@ from typing import (
     AsyncGenerator,
 )
 
-from serapeum.core.base.llms.generic_utils import (
+from serapeum.core.base.llms.utils import (
     chat_to_completion_decorator,
     achat_to_completion_decorator,
     stream_chat_to_completion_decorator,

@@ -24,10 +24,10 @@ from pydantic import (
 
 from serapeum.core.base.llms.models import Message
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.base.llms.generic_utils import (
+from serapeum.core.base.llms.utils import (
     messages_to_prompt as default_messages_to_prompt,
 )
-from serapeum.core.base.llms.generic_utils import (
+from serapeum.core.base.llms.utils import (
     prompt_to_messages,
 )
 from serapeum.core.base.llms.models import ChunkType, TextChunk

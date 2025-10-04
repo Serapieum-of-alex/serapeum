@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 class FunctionCallingLLM(LLM):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        # Help static checkers understand this class hierarchy
         super().__init__(*args, **kwargs)
 
     def chat_with_tools(

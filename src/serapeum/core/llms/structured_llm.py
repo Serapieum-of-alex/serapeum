@@ -19,7 +19,7 @@ from pydantic import (
 )
 
 from serapeum.core.prompts.base import ChatPromptTemplate
-from serapeum.core.base.llms.generic_utils import (
+from serapeum.core.base.llms.utils import (
     achat_to_completion_decorator,
     chat_to_completion_decorator,
 )

@@ -30,7 +30,7 @@ from pydantic import (
     ValidationError,
 )
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.base.llms.generic_utils import (
+from serapeum.core.base.llms.utils import (
     messages_to_prompt as generic_messages_to_prompt,
 )
 

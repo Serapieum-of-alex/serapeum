@@ -22,9 +22,9 @@ from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.llm.base import LLM
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.configs.configs import Configs
-from serapeum.core.program.models import BasePydanticProgram, Model
+from serapeum.core.structured_tools.models import BasePydanticProgram, Model
 from serapeum.core.tools.function_tool import FunctionTool
-from serapeum.core.program.utils import (
+from serapeum.core.structured_tools.utils import (
     process_streaming_objects,
     num_valid_fields,
 )

@@ -38,7 +38,7 @@ from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ToolSelection
 from serapeum.core.models import PydanticProgramMode
-from serapeum.core.program.utils import process_streaming_objects
+from serapeum.core.structured_tools.utils import process_streaming_objects
 
 if TYPE_CHECKING:
     from serapeum.core.tools.models import BaseTool

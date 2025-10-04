@@ -12,7 +12,7 @@ from serapeum.core.base.llms.models import (
 )
 from pydantic import BaseModel
 from serapeum.core.output_parsers.pydantic import PydanticOutputParser
-from serapeum.core.program.llm_program import LLMTextCompletionProgram
+from serapeum.core.structured_tools.llm_program import LLMTextCompletionProgram
 from serapeum.core.prompts import ChatPromptTemplate
 
 

@@ -5,7 +5,7 @@ from serapeum.core.llm.base import LLM
 from serapeum.core.output_parsers.pydantic import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.configs.configs import Configs
-from serapeum.core.program.models import BasePydanticProgram
+from serapeum.core.structured_tools.models import BasePydanticProgram
 from serapeum.core.output_parsers import BaseOutputParser
 
 

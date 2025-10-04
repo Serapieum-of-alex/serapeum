@@ -12,7 +12,7 @@ from typing import List, Optional, Union, Any
 from serapeum.core.tools.models import BaseTool
 from serapeum.core.chat.models import AgentChatResponse
 from serapeum.core.tools import ToolOutput
-from serapeum.core.program import FunctionCallingProgram
+from serapeum.core.structured_tools import FunctionCallingProgram
 
 
 class MockSong(BaseModel):

@@ -301,7 +301,7 @@ class LLM(BaseLLM):
             print(output.name)
             ```
         """
-        from serapeum.core.program.utils import get_program_for_llm
+        from serapeum.core.structured_tools.utils import get_program_for_llm
 
         program = get_program_for_llm(
             output_cls,
@@ -351,7 +351,7 @@ class LLM(BaseLLM):
             print(output.name)
             ```
         """
-        from serapeum.core.program.utils import get_program_for_llm
+        from serapeum.core.structured_tools.utils import get_program_for_llm
 
         program = get_program_for_llm(
             output_cls,
@@ -403,7 +403,7 @@ class LLM(BaseLLM):
                 print(partial_output.name)
             ```
         """
-        from serapeum.core.program.utils import get_program_for_llm
+        from serapeum.core.structured_tools.utils import get_program_for_llm
 
         program = get_program_for_llm(
             output_cls,
@@ -425,7 +425,7 @@ class LLM(BaseLLM):
     ) -> AsyncGenerator[
         Union[Model, List[Model], "BaseModel", List["BaseModel"]], None
     ]:
-        from serapeum.core.program.utils import get_program_for_llm
+        from serapeum.core.structured_tools.utils import get_program_for_llm
 
         program = get_program_for_llm(
             output_cls,
@@ -477,7 +477,7 @@ class LLM(BaseLLM):
         """
 
         async def gen() -> AsyncGenerator[Union[Model, List[Model]], None]:
-            from serapeum.core.program.utils import get_program_for_llm
+            from serapeum.core.structured_tools.utils import get_program_for_llm
 
             program = get_program_for_llm(
                 output_cls,

@@ -3,7 +3,7 @@ import pytest
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from serapeum.core.base.llms.models import Message, ChatResponse, MessageRole
-from serapeum.core.program.utils import (
+from serapeum.core.structured_tools.utils import (
     _repair_incomplete_json,
     process_streaming_objects,
     num_valid_fields,

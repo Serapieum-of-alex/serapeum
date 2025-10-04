@@ -12,7 +12,7 @@ from serapeum.core.llm.base import LLM, ToolSelection
 from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.output_parsers.pydantic import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate
-from serapeum.core.program.models import BasePydanticProgram
+from serapeum.core.structured_tools.models import BasePydanticProgram
 from serapeum.core.models import PydanticProgramMode
 from serapeum.core.base.llms.models import ChatResponse
 
@@ -42,7 +42,7 @@ def get_program_for_llm(
     """Get a program based on the compatible LLM."""
     if pydantic_program_mode == PydanticProgramMode.DEFAULT:
         if llm.metadata.is_function_calling_model:
-            from serapeum.core.program.function_program import FunctionCallingProgram
+            from serapeum.core.structured_tools.function_program import FunctionCallingProgram
 
             return FunctionCallingProgram.from_defaults(
                 output_cls=output_cls,
@@ -51,7 +51,7 @@ def get_program_for_llm(
                 **kwargs,
             )
         else:
-            from serapeum.core.program.llm_program import (
+            from serapeum.core.structured_tools.llm_program import (
                 LLMTextCompletionProgram,
             )
 
@@ -62,7 +62,7 @@ def get_program_for_llm(
                 **kwargs,
             )
     elif pydantic_program_mode == PydanticProgramMode.FUNCTION:
-        from serapeum.core.program.function_program import FunctionCallingProgram
+        from serapeum.core.structured_tools.function_program import FunctionCallingProgram
 
         return FunctionCallingProgram.from_defaults(
             output_cls=output_cls,
@@ -72,27 +72,10 @@ def get_program_for_llm(
         )
 
     elif pydantic_program_mode == PydanticProgramMode.LLM:
-        from serapeum.core.program.llm_program import LLMTextCompletionProgram
+        from serapeum.core.structured_tools.llm_program import LLMTextCompletionProgram
 
         return LLMTextCompletionProgram.from_defaults(
             output_parser=PydanticOutputParser(output_cls=output_cls),
-            llm=llm,
-            prompt=prompt,
-            **kwargs,
-        )
-    elif pydantic_program_mode == PydanticProgramMode.LM_FORMAT_ENFORCER:
-        try:
-            from serapeum.program.lmformatenforcer import (
-                LMFormatEnforcerPydanticProgram,
-            )  # pants: no-infer-dep
-        except ImportError:
-            raise ImportError(
-                "This mode requires the `llama-index-program-lmformatenforcer package. Please"
-                " install it by running `pip install llama-index-program-lmformatenforcer`."
-            )
-
-        return LMFormatEnforcerPydanticProgram.from_defaults(
-            output_cls=output_cls,
             llm=llm,
             prompt=prompt,
             **kwargs,

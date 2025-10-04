@@ -6,7 +6,7 @@ from serapeum.core.output_parsers.pydantic import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.configs.configs import Configs
 from serapeum.core.program.models import BasePydanticProgram
-from serapeum.core.core_models import BaseOutputParser
+from serapeum.core.output_parsers import BaseOutputParser
 
 
 class LLMTextCompletionProgram(BasePydanticProgram[BaseModel]):

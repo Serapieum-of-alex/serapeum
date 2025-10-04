@@ -31,7 +31,7 @@ from serapeum.core.base.llms.utils import (
     prompt_to_messages,
 )
 from serapeum.core.base.llms.models import ChunkType, TextChunk
-from serapeum.core.prompts.prompt_type import PromptType
+from serapeum.core.prompts.models import PromptType
 from serapeum.core.prompts.utils import get_template_vars, format_string
 from serapeum.core.output_parsers import BaseOutputParser
 

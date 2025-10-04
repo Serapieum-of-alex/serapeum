@@ -35,7 +35,7 @@ from serapeum.core.base.llms.utils import (
 )
 
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
-from serapeum.core.models import Model, PydanticProgramMode
+from serapeum.core.models import Model, StructuredLLMMode
 from serapeum.core.output_parsers.models import (
     BaseOutputParser,
     TokenAsyncGen,
@@ -157,7 +157,7 @@ class LLM(BaseLLM):
             Function to convert a completion to an LLM prompt.
         output_parser (Optional[BaseOutputParser]):
             Output parser to parse, validate, and correct errors programmatically.
-        pydantic_program_mode (PydanticProgramMode):
+        pydantic_program_mode (StructuredLLMMode):
             Pydantic program mode to use for structured prediction.
     """
 
@@ -179,7 +179,7 @@ class LLM(BaseLLM):
         default=None,
         exclude=True,
     )
-    pydantic_program_mode: PydanticProgramMode = PydanticProgramMode.DEFAULT
+    pydantic_program_mode: StructuredLLMMode = StructuredLLMMode.DEFAULT
 
     # # deprecated
     query_wrapper_prompt: Optional[BasePromptTemplate] = Field(

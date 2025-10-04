@@ -13,7 +13,7 @@ from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.output_parsers.pydantic import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate
 from serapeum.core.structured_tools.models import BasePydanticProgram
-from serapeum.core.models import PydanticProgramMode
+from serapeum.core.models import StructuredLLMMode
 from serapeum.core.base.llms.models import ChatResponse
 
 _logger = logging.getLogger(__name__)
@@ -36,11 +36,11 @@ def get_program_for_llm(
     output_cls: Type[BaseModel],
     prompt: BasePromptTemplate,
     llm: LLM,
-    pydantic_program_mode: PydanticProgramMode = PydanticProgramMode.DEFAULT,
+    pydantic_program_mode: StructuredLLMMode = StructuredLLMMode.DEFAULT,
     **kwargs: Any,
 ) -> BasePydanticProgram:
     """Get a program based on the compatible LLM."""
-    if pydantic_program_mode == PydanticProgramMode.DEFAULT:
+    if pydantic_program_mode == StructuredLLMMode.DEFAULT:
         if llm.metadata.is_function_calling_model:
             from serapeum.core.structured_tools.function_program import FunctionCallingLLM
 
@@ -61,7 +61,7 @@ def get_program_for_llm(
                 prompt=prompt,
                 **kwargs,
             )
-    elif pydantic_program_mode == PydanticProgramMode.FUNCTION:
+    elif pydantic_program_mode == StructuredLLMMode.FUNCTION:
         from serapeum.core.structured_tools.function_program import FunctionCallingLLM
 
         return FunctionCallingLLM.from_defaults(
@@ -71,7 +71,7 @@ def get_program_for_llm(
             **kwargs,
         )
 
-    elif pydantic_program_mode == PydanticProgramMode.LLM:
+    elif pydantic_program_mode == StructuredLLMMode.LLM:
         from serapeum.core.structured_tools.llm_program import LLMTextCompletionProgram
 
         return LLMTextCompletionProgram.from_defaults(

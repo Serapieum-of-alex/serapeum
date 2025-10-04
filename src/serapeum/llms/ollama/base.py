@@ -37,7 +37,7 @@ from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_O
 from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ToolSelection
-from serapeum.core.models import PydanticProgramMode
+from serapeum.core.models import StructuredLLMMode
 from serapeum.core.structured_tools.utils import process_streaming_objects
 
 if TYPE_CHECKING:
@@ -508,7 +508,7 @@ class Ollama(FunctionCallingLLM):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **prompt_args: Any,
     ) -> BaseModel:
-        if self.pydantic_program_mode == PydanticProgramMode.DEFAULT:
+        if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
             llm_kwargs = llm_kwargs or {}
             llm_kwargs["format"] = output_cls.model_json_schema()
 
@@ -528,7 +528,7 @@ class Ollama(FunctionCallingLLM):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **prompt_args: Any,
     ) -> BaseModel:
-        if self.pydantic_program_mode == PydanticProgramMode.DEFAULT:
+        if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
             llm_kwargs = llm_kwargs or {}
             llm_kwargs["format"] = output_cls.model_json_schema()
 
@@ -548,7 +548,7 @@ class Ollama(FunctionCallingLLM):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **prompt_args: Any,
     ) -> Generator[Union[BaseModel, List[BaseModel]], None, None]:
-        if self.pydantic_program_mode == PydanticProgramMode.DEFAULT:
+        if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
 
             def gen(
                 output_cls: Type[BaseModel],
@@ -593,7 +593,7 @@ class Ollama(FunctionCallingLLM):
         **prompt_args: Any,
     ) -> AsyncGenerator[Union[BaseModel, List[BaseModel]], None]:
         """Async version of stream_structured_predict."""
-        if self.pydantic_program_mode == PydanticProgramMode.DEFAULT:
+        if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
 
             async def gen(
                 output_cls: Type[BaseModel],

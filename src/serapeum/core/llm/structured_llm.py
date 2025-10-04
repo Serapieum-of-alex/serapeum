@@ -45,7 +45,7 @@ class StructuredLLM(LLM):
         # TODO:
 
         # NOTE: we are wrapping existing messages in a ChatPromptTemplate to
-        # make this work with our FunctionCallingProgram, even though
+        # make this work with our FunctionCallingLLM, even though
         # the messages don't technically have any variables (they are already formatted)
 
         chat_prompt = ChatPromptTemplate(message_templates=messages)
@@ -94,7 +94,7 @@ class StructuredLLM(LLM):
         **kwargs: Any,
     ) -> ChatResponse:
         # NOTE: we are wrapping existing messages in a ChatPromptTemplate to
-        # make this work with our FunctionCallingProgram, even though
+        # make this work with our FunctionCallingLLM, even though
         # the messages don't technically have any variables (they are already formatted)
 
         chat_prompt = ChatPromptTemplate(message_templates=messages)

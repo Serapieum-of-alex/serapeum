@@ -42,9 +42,9 @@ def get_program_for_llm(
     """Get a program based on the compatible LLM."""
     if pydantic_program_mode == PydanticProgramMode.DEFAULT:
         if llm.metadata.is_function_calling_model:
-            from serapeum.core.structured_tools.function_program import FunctionCallingProgram
+            from serapeum.core.structured_tools.function_program import FunctionCallingLLM
 
-            return FunctionCallingProgram.from_defaults(
+            return FunctionCallingLLM.from_defaults(
                 output_cls=output_cls,
                 llm=llm,
                 prompt=prompt,
@@ -62,9 +62,9 @@ def get_program_for_llm(
                 **kwargs,
             )
     elif pydantic_program_mode == PydanticProgramMode.FUNCTION:
-        from serapeum.core.structured_tools.function_program import FunctionCallingProgram
+        from serapeum.core.structured_tools.function_program import FunctionCallingLLM
 
-        return FunctionCallingProgram.from_defaults(
+        return FunctionCallingLLM.from_defaults(
             output_cls=output_cls,
             llm=llm,
             prompt=prompt,

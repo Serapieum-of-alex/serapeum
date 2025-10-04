@@ -1,4 +1,3 @@
-"""Program utils."""
 import logging
 from typing import Any, List, Type, Sequence, Union, Optional, Dict
 

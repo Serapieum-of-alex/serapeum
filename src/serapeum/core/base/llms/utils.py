@@ -13,21 +13,6 @@ from serapeum.core.base.llms.models import (
 )
 
 
-# def messages_to_history_str(messages: Sequence[Message]) -> str:
-#     """Convert messages to a history string."""
-#     string_messages = []
-#     for message in messages:
-#         role = message.role
-#         content = message.content
-#         string_message = f"{role.value}: {content}"
-#
-#         additional_kwargs = message.additional_kwargs
-#         if additional_kwargs:
-#             string_message += f"\n{additional_kwargs}"
-#         string_messages.append(string_message)
-#     return "\n".join(string_messages)
-
-
 def messages_to_prompt(messages: Sequence[Message]) -> str:
     """Convert messages to a prompt string."""
     string_messages = []

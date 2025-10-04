@@ -1,5 +1,3 @@
-"""Pydantic program through function calling."""
-
 import logging
 from typing import (
     Any,

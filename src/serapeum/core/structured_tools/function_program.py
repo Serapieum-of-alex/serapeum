@@ -67,7 +67,7 @@ def get_function_tool(output_cls: Type[Model]) -> FunctionTool:
     )
 
 
-class FunctionCallingLLM(BasePydanticProgram[BaseModel]):
+class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
     """Function Calling Program.
 
     Uses function calling LLMs to obtain a structured output.
@@ -100,7 +100,7 @@ class FunctionCallingLLM(BasePydanticProgram[BaseModel]):
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
-    ) -> "FunctionCallingLLM":
+    ) -> "ToolOrchestratingLLM":
         llm = llm or Configs.llm  # type: ignore
         assert llm is not None
 

@@ -12,7 +12,7 @@ from typing import List, Optional, Union, Any
 from serapeum.core.tools.models import BaseTool
 from serapeum.core.chat.models import AgentChatResponse
 from serapeum.core.tools import ToolOutput
-from serapeum.core.structured_tools import FunctionCallingLLM
+from serapeum.core.structured_tools import ToolOrchestratingLLM
 
 
 class MockSong(BaseModel):
@@ -103,7 +103,7 @@ class MockLLM(MagicMock):
 def test_function_program() -> None:
     """Test Function program."""
     prompt_template_str = """This is a test album with {topic}"""
-    llm_program = FunctionCallingLLM.from_defaults(
+    llm_program = ToolOrchestratingLLM.from_defaults(
         output_cls=MockAlbum,
         prompt_template_str=prompt_template_str,
         llm=MockLLM(),
@@ -119,7 +119,7 @@ def test_function_program() -> None:
 def test_function_program_multiple() -> None:
     """Test Function program multiple."""
     prompt_template_str = """This is a test album with {topic}"""
-    llm_program = FunctionCallingLLM.from_defaults(
+    llm_program = ToolOrchestratingLLM.from_defaults(
         output_cls=MockAlbum,
         prompt_template_str=prompt_template_str,
         llm=MockLLM(),
@@ -142,7 +142,7 @@ async def test_async_function_program() -> None:
     """Test async function program."""
     # same as above but async
     prompt_template_str = """This is a test album with {topic}"""
-    llm_program = FunctionCallingLLM.from_defaults(
+    llm_program = ToolOrchestratingLLM.from_defaults(
         output_cls=MockAlbum,
         prompt_template_str=prompt_template_str,
         llm=MockLLM(),

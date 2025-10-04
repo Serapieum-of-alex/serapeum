@@ -38,12 +38,11 @@ def get_program_for_llm(
     pydantic_program_mode: StructuredLLMMode = StructuredLLMMode.DEFAULT,
     **kwargs: Any,
 ) -> BasePydanticProgram:
-    """Get a program based on the compatible LLM."""
     if pydantic_program_mode == StructuredLLMMode.DEFAULT:
         if llm.metadata.is_function_calling_model:
-            from serapeum.core.structured_tools.function_program import FunctionCallingLLM
+            from serapeum.core.structured_tools.function_program import ToolOrchestratingLLM
 
-            return FunctionCallingLLM.from_defaults(
+            return ToolOrchestratingLLM.from_defaults(
                 output_cls=output_cls,
                 llm=llm,
                 prompt=prompt,
@@ -61,9 +60,9 @@ def get_program_for_llm(
                 **kwargs,
             )
     elif pydantic_program_mode == StructuredLLMMode.FUNCTION:
-        from serapeum.core.structured_tools.function_program import FunctionCallingLLM
+        from serapeum.core.structured_tools.function_program import ToolOrchestratingLLM
 
-        return FunctionCallingLLM.from_defaults(
+        return ToolOrchestratingLLM.from_defaults(
             output_cls=output_cls,
             llm=llm,
             prompt=prompt,

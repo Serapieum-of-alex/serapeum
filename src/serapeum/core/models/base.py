@@ -144,4 +144,3 @@ class PydanticProgramMode(str, Enum):
     LLM = "llm"
     FUNCTION = "function"
     GUIDANCE = "guidance"
-    LM_FORMAT_ENFORCER = "lm-format-enforcer"

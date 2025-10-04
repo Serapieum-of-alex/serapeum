@@ -188,8 +188,6 @@ class LLM(BaseLLM):
         exclude=True,
     )
 
-    # -- Pydantic Configs --
-
     @field_validator("messages_to_prompt")
     @classmethod
     def set_messages_to_prompt(

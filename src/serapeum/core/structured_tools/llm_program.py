@@ -9,7 +9,7 @@ from serapeum.core.structured_tools.models import BasePydanticProgram
 from serapeum.core.output_parsers import BaseOutputParser
 
 
-class LLMTextCompletionProgram(BasePydanticProgram[BaseModel]):
+class TextCompletionLLM(BasePydanticProgram[BaseModel]):
     """
     LLM Text Completion Program.
 
@@ -42,7 +42,7 @@ class LLMTextCompletionProgram(BasePydanticProgram[BaseModel]):
         prompt: Optional[BasePromptTemplate] = None,
         llm: Optional[LLM] = None,
         verbose: bool = False,
-    ) -> "LLMTextCompletionProgram":
+    ) -> "TextCompletionLLM":
         llm = llm or Configs.llm
         if prompt is None and prompt_template_str is None:
             raise ValueError("Must provide either prompt or prompt_template_str.")

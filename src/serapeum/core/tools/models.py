@@ -53,7 +53,6 @@ class ToolMetadata:
         return self.name
 
     def to_openai_tool(self, skip_length_check: bool = False) -> Dict[str, Any]:
-        """To OpenAI tool."""
         if not skip_length_check and len(self.description) > 1024:
             raise ValueError(
                 "Tool description exceeds maximum length of 1024 characters. "
@@ -70,9 +69,8 @@ class ToolMetadata:
 
 
 class ToolOutput(BaseModel):
-    """Tool output."""
 
-    blocks: List[ChunkType]
+    chunks: List[ChunkType]
     tool_name: str
     raw_input: Dict[str, Any]
     raw_output: Any
@@ -82,23 +80,23 @@ class ToolOutput(BaseModel):
         self,
         tool_name: str,
         content: Optional[str] = None,
-        blocks: Optional[List[ChunkType]] = None,
+        chunks: Optional[List[ChunkType]] = None,
         raw_input: Optional[Dict[str, Any]] = None,
         raw_output: Optional[Any] = None,
         is_error: bool = False,
     ):
-        if content and blocks:
+        if content and chunks:
             raise ValueError("Cannot provide both content and chunks.")
         if content:
-            blocks = [TextChunk(content=content)]
-        elif blocks:
+            chunks = [TextChunk(content=content)]
+        elif chunks:
             pass
         else:
-            blocks = []
+            chunks = []
 
         super().__init__(
             tool_name=tool_name,
-            blocks=blocks,
+            chunks=chunks,
             raw_input=raw_input,
             raw_output=raw_output,
             is_error=is_error,
@@ -108,13 +106,13 @@ class ToolOutput(BaseModel):
     def content(self) -> str:
         """Get the content of the tool output."""
         return "\n".join(
-            [block.content for block in self.blocks if isinstance(block, TextChunk)]
+            [chunk.content for chunk in self.chunks if isinstance(chunk, TextChunk)]
         )
 
     @content.setter
     def content(self, content: str) -> None:
         """Set the content of the tool output."""
-        self.blocks = [TextChunk(content=content)]
+        self.chunks = [TextChunk(content=content)]
 
     def __str__(self) -> str:
         """String."""
@@ -122,15 +120,15 @@ class ToolOutput(BaseModel):
 
 
 class BaseTool:
+
     @property
     @abstractmethod
     def metadata(self) -> ToolMetadata:
         pass
 
     @abstractmethod
-    def __call__(self, input: Any) -> ToolOutput:
+    def __call__(self, input_values: Any) -> ToolOutput:
         pass
-
 
 
 class AsyncBaseTool(BaseTool):
@@ -143,13 +141,13 @@ class AsyncBaseTool(BaseTool):
         return self.call(*args, **kwargs)
 
     @abstractmethod
-    def call(self, input: Any) -> ToolOutput:
+    def call(self, input_values: Any) -> ToolOutput:
         """
         This is the method that should be implemented by the tool developer.
         """
 
     @abstractmethod
-    async def acall(self, input: Any) -> ToolOutput:
+    async def acall(self, input_values: Any) -> ToolOutput:
         """
         This is the async version of the call method.
         Should also be implemented by the tool developer as an
@@ -169,11 +167,11 @@ class BaseToolAsyncAdapter(AsyncBaseTool):
     def metadata(self) -> ToolMetadata:
         return self.base_tool.metadata
 
-    def call(self, input: Any) -> ToolOutput:
-        return self.base_tool(input)
+    def call(self, input_values: Any) -> ToolOutput:
+        return self.base_tool(input_values)
 
-    async def acall(self, input: Any) -> ToolOutput:
-        return await asyncio.to_thread(self.call, input)
+    async def acall(self, input_values: Any) -> ToolOutput:
+        return await asyncio.to_thread(self.call, input_values)
 
 
 def adapt_to_async_tool(tool: BaseTool) -> AsyncBaseTool:

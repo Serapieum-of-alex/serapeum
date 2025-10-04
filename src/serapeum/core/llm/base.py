@@ -52,7 +52,6 @@ if TYPE_CHECKING:
 
 
 class ToolSelection(BaseModel):
-    """Tool selection."""
 
     tool_id: str = Field(description="Tool ID to select.")
     tool_name: str = Field(description="Tool name to select.")
@@ -67,7 +66,6 @@ class ToolSelection(BaseModel):
             return handler({})
 
 
-# NOTE: These two protocols are needed to appease mypy
 @runtime_checkable
 class MessagesToPromptType(Protocol):
     def __call__(self, messages: Sequence[Message]) -> str:

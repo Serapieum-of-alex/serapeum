@@ -7,7 +7,7 @@ from pydantic import BaseModel, ValidationError
 
 from serapeum.core.base.llms.models import TextChunk, Image, Audio
 from serapeum.core.tools.models import (
-    DefaultToolFnSchema,
+    MinimalToolSchema,
     ToolMetadata,
     ToolOutput,
     BaseTool,
@@ -60,7 +60,7 @@ class DummyAsyncTool(AsyncBaseTool):
 
 class TestDefaultToolFnSchema:
     def test_valid_input(self):
-        """Test creating DefaultToolFnSchema with a valid string.
+        """Test creating MinimalToolSchema with a valid string.
         
         Inputs:
           - input: a valid string ("hello").
@@ -69,7 +69,7 @@ class TestDefaultToolFnSchema:
         Checks:
           - The `input` field equals the provided string.
         """
-        model = DefaultToolFnSchema(input="hello")
+        model = MinimalToolSchema(input="hello")
         assert model.input == "hello"
 
     def test_invalid_input_type(self):
@@ -83,7 +83,7 @@ class TestDefaultToolFnSchema:
           - ValidationError is raised.
         """
         with pytest.raises(ValidationError):
-            DefaultToolFnSchema(input=123)  # type: ignore[arg-type]
+            MinimalToolSchema(input=123)  # type: ignore[arg-type]
 
 
 class TestToolMetadataGetParametersDict:
@@ -108,13 +108,13 @@ class TestToolMetadataGetParametersDict:
         """Test that default Pydantic schema is filtered to allowed keys.
         
         Inputs:
-          - ToolMetadata with fn_schema=DefaultToolFnSchema.
+          - ToolMetadata with fn_schema=MinimalToolSchema.
         Expected:
           - The schema dict only contains filtered keys and has an `input` string property.
         Checks:
           - Only expected keys exist; `input` under properties is present and string-typed.
         """
-        meta = ToolMetadata(description="desc", name="tool", fn_schema=DefaultToolFnSchema)
+        meta = ToolMetadata(description="desc", name="tool", fn_schema=MinimalToolSchema)
         params = meta.get_parameters_dict()
         for k in params.keys():
             assert k in {"type", "properties", "required", "definitions", "$defs"}

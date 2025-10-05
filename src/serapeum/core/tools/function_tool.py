@@ -87,7 +87,7 @@ class FunctionTool(AsyncBaseTool):
         name: Optional[str] = None,
         description: Optional[str] = None,
         return_direct: bool = False,
-        fn_schema: Optional[Type[BaseModel]] = None,
+        tool_schema: Optional[Type[BaseModel]] = None,
         async_fn: Optional[AsyncCallable] = None,
         tool_metadata: Optional[ToolMetadata] = None,
         partial_params: Optional[Dict[str, Any]] = None,
@@ -129,24 +129,24 @@ class FunctionTool(AsyncBaseTool):
                         break
 
 
-            # 6. Build fn_schema only if not already provided
-            if fn_schema is None:
+            # 6. Build tool_schema only if not already provided
+            if tool_schema is None:
 
-                fn_schema = create_schema_from_function(
+                tool_schema = create_schema_from_function(
                     f"{name}",
                     fn_to_parse,
                     additional_fields=None,
                     ignore_fields=None,
                 )
-                if fn_schema is not None and param_docs:
-                    for param_name, field in fn_schema.model_fields.items():
+                if tool_schema is not None and param_docs:
+                    for param_name, field in tool_schema.model_fields.items():
                         if not field.description and param_name in param_docs:
                             field.description = param_docs[param_name].strip()
 
             tool_metadata = ToolMetadata(
                 name=name,
                 description=description,
-                fn_schema=fn_schema,
+                tool_schema=tool_schema,
                 return_direct=return_direct,
             )
         return cls(

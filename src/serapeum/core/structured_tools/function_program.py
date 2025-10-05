@@ -54,7 +54,7 @@ def get_function_tool(output_cls: Type[Model]) -> FunctionTool:
     schema_description = schema.get("description", None)
 
     # NOTE: this does not specify the schema in the function signature,
-    # so instead we'll directly provide it in the fn_schema in the ToolMetadata
+    # so instead we'll directly provide it in the tool_schema in the ToolMetadata
     def model_fn(**kwargs: Any) -> BaseModel:
         """Model function."""
         return output_cls(**kwargs)
@@ -63,7 +63,7 @@ def get_function_tool(output_cls: Type[Model]) -> FunctionTool:
         fn=model_fn,
         name=schema["title"],
         description=schema_description,
-        fn_schema=output_cls,
+        tool_schema=output_cls,
     )
 
 

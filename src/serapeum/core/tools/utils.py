@@ -1,3 +1,4 @@
+import json
 from inspect import signature
 from typing import (
     Any,
@@ -11,13 +12,20 @@ from typing import (
     cast,
     get_origin,
     get_args,
+    Annotated,
+    TYPE_CHECKING,
+    Sequence
 )
 import datetime
-import typing
 
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
+from serapeum.core.tools.models import BaseTool, ToolOutput, adapt_to_async_tool
+from serapeum.core.llm.base import ToolSelection
 
+
+if TYPE_CHECKING:
+    from serapeum.core.tools.models import BaseTool
 
 def create_schema_from_function(
     name: str,
@@ -47,7 +55,7 @@ def create_schema_from_function(
         description = None
         json_schema_extra: dict[str, Any] = {}
 
-        if get_origin(param_type) is typing.Annotated:
+        if get_origin(param_type) is Annotated:
             args = get_args(param_type)
             param_type = args[0]
 
@@ -109,21 +117,11 @@ def create_schema_from_function(
     return create_model(name, **fields)  # type: ignore
 
 
-
-from serapeum.core.tools.models import BaseTool, ToolOutput, adapt_to_async_tool
-from typing import TYPE_CHECKING, Sequence
-from serapeum.core.llm.base import ToolSelection
-import json
-
-if TYPE_CHECKING:
-    from serapeum.core.tools.models import BaseTool
-
-
 def call_tool(tool: BaseTool, arguments: dict) -> ToolOutput:
     """Call a tool with arguments."""
     try:
         if (
-                len(tool.metadata.get_parameters_dict()["properties"]) == 1
+                len(tool.metadata.get_schema()["properties"]) == 1
                 and len(arguments) == 1
         ):
             try:
@@ -149,7 +147,7 @@ async def acall_tool(tool: BaseTool, arguments: dict) -> ToolOutput:
     async_tool = adapt_to_async_tool(tool)
     try:
         if (
-                len(tool.metadata.get_parameters_dict()["properties"]) == 1
+                len(tool.metadata.get_schema()["properties"]) == 1
                 and len(arguments) == 1
         ):
             try:

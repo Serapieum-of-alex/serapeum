@@ -61,7 +61,7 @@ class DummyAsyncTool(AsyncBaseTool):
 class TestDefaultToolFnSchema:
     def test_valid_input(self):
         """Test creating MinimalToolSchema with a valid string.
-        
+
         Inputs:
           - input: a valid string ("hello").
         Expected:
@@ -74,7 +74,7 @@ class TestDefaultToolFnSchema:
 
     def test_invalid_input_type(self):
         """Test that non-string input raises a ValidationError.
-        
+
         Inputs:
           - input: a non-string value (123).
         Expected:
@@ -87,18 +87,18 @@ class TestDefaultToolFnSchema:
 
 
 class TestToolMetadataGetParametersDict:
-    def test_fn_schema_none_uses_default_object(self):
-        """Test that when fn_schema is None, a default object schema is returned.
-        
+    def test_tool_schema_none_uses_default_object(self):
+        """Test that when tool_schema is None, a default object schema is returned.
+
         Inputs:
-          - ToolMetadata with fn_schema=None.
+          - ToolMetadata with tool_schema=None.
         Expected:
           - Returned dict has type object, properties with `input` string and required ["input"].
         Checks:
           - Keys present and values match the default structure.
         """
-        meta = ToolMetadata(description="desc", name="tool", fn_schema=None)
-        params = meta.get_parameters_dict()
+        meta = ToolMetadata(description="desc", name="tool", tool_schema=None)
+        params = meta.get_schema()
         assert params["type"] == "object"
         assert "properties" in params and "input" in params["properties"]
         assert params["properties"]["input"]["type"] == "string"
@@ -106,23 +106,23 @@ class TestToolMetadataGetParametersDict:
 
     def test_default_schema_filtered(self):
         """Test that default Pydantic schema is filtered to allowed keys.
-        
+
         Inputs:
-          - ToolMetadata with fn_schema=MinimalToolSchema.
+          - ToolMetadata with tool_schema=MinimalToolSchema.
         Expected:
           - The schema dict only contains filtered keys and has an `input` string property.
         Checks:
           - Only expected keys exist; `input` under properties is present and string-typed.
         """
-        meta = ToolMetadata(description="desc", name="tool", fn_schema=MinimalToolSchema)
-        params = meta.get_parameters_dict()
+        meta = ToolMetadata(description="desc", name="tool", tool_schema=MinimalToolSchema)
+        params = meta.get_schema()
         for k in params.keys():
             assert k in {"type", "properties", "required", "definitions", "$defs"}
         assert params["properties"]["input"]["type"] == "string"
 
     def test_nested_schema_includes_defs(self):
         """Test that nested Pydantic models preserve $defs/definitions when present.
-        
+
         Inputs:
           - A custom schema with a nested sub-model to generate $defs/definitions.
         Expected:
@@ -136,8 +136,8 @@ class TestToolMetadataGetParametersDict:
         class MainModel(BaseModel):
             sub: SubModel
 
-        meta = ToolMetadata(description="desc", name="tool", fn_schema=MainModel)
-        params = meta.get_parameters_dict()
+        meta = ToolMetadata(description="desc", name="tool", tool_schema=MainModel)
+        params = meta.get_schema()
         assert any(key in params for key in ("$defs", "definitions"))
         assert params["type"] == "object"
         assert "sub" in params["properties"]
@@ -145,40 +145,40 @@ class TestToolMetadataGetParametersDict:
 
 class TestToolMetadataFnSchemaStr:
     def test_returns_json_string(self):
-        """Test fn_schema_str returns a JSON string for a valid schema.
-        
+        """Test tool_schema_str returns a JSON string for a valid schema.
+
         Inputs:
-          - ToolMetadata with default fn_schema.
+          - ToolMetadata with default tool_schema.
         Expected:
           - JSON string decodes to the same dict as get_parameters_dict.
         Checks:
-          - json.loads(fn_schema_str) equals get_parameters_dict().
+          - json.loads(tool_schema_str) equals get_parameters_dict().
         """
         meta = ToolMetadata(description="desc", name="tool")
-        params = meta.get_parameters_dict()
-        json_str = meta.fn_schema_str
+        params = meta.get_schema()
+        json_str = meta.tool_schema_str
         assert isinstance(json_str, str)
         assert json.loads(json_str) == params
 
     def test_raises_when_schema_none(self):
-        """Test that fn_schema_str raises when fn_schema is None.
-        
+        """Test that tool_schema_str raises when tool_schema is None.
+
         Inputs:
-          - ToolMetadata with fn_schema=None.
+          - ToolMetadata with tool_schema=None.
         Expected:
-          - ValueError with message "fn_schema is None." is raised.
+          - ValueError with message "tool_schema is None." is raised.
         Checks:
           - ValueError is raised and message matches.
         """
-        meta = ToolMetadata(description="desc", name="tool", fn_schema=None)
-        with pytest.raises(ValueError, match="fn_schema is None."):
-            _ = meta.fn_schema_str
+        meta = ToolMetadata(description="desc", name="tool", tool_schema=None)
+        with pytest.raises(ValueError, match="tool_schema is None."):
+            _ = meta.tool_schema_str
 
 
 class TestToolMetadataGetName:
     def test_returns_name(self):
         """Test get_name returns the provided name.
-        
+
         Inputs:
           - ToolMetadata with a non-None name.
         Expected:
@@ -191,7 +191,7 @@ class TestToolMetadataGetName:
 
     def test_raises_when_name_none(self):
         """Test get_name raises when name is None.
-        
+
         Inputs:
           - ToolMetadata with name=None.
         Expected:
@@ -207,7 +207,7 @@ class TestToolMetadataGetName:
 class TestToolMetadataToOpenAITool:
     def test_returns_correct_structure(self):
         """Test the returned OpenAI tool structure is correct.
-        
+
         Inputs:
           - ToolMetadata with valid name, description, and default schema.
         Expected:
@@ -220,11 +220,11 @@ class TestToolMetadataToOpenAITool:
         assert tool["type"] == "function"
         assert tool["function"]["name"] == "tool"
         assert tool["function"]["description"] == "desc"
-        assert tool["function"]["parameters"] == meta.get_parameters_dict()
+        assert tool["function"]["parameters"] == meta.get_schema()
 
     def test_raises_on_long_description(self):
         """Test that overly long description raises unless skipping length check.
-        
+
         Inputs:
           - ToolMetadata with description length 1025.
         Expected:
@@ -239,7 +239,7 @@ class TestToolMetadataToOpenAITool:
 
     def test_skip_length_check_allows_long_description(self):
         """Test skip_length_check allows a long description without error.
-        
+
         Inputs:
           - ToolMetadata with long description and skip_length_check=True.
         Expected:
@@ -256,7 +256,7 @@ class TestToolMetadataToOpenAITool:
 class TestToolOutput:
     def test_init_with_content_only_and_missing_raw_input_raises(self):
         """Test that constructing with content but missing raw_input fails validation.
-        
+
         Inputs:
           - tool_name: "t"
           - content: "hello"
@@ -271,7 +271,7 @@ class TestToolOutput:
 
     def test_init_with_content_and_raw_input_populates_chunks(self):
         """Test that providing content with raw_input creates a single TextChunk.
-        
+
         Inputs:
           - tool_name: "t"
           - content: "hello"
@@ -288,7 +288,7 @@ class TestToolOutput:
 
     def test_init_with_blocks_and_raw_input(self):
         """Test that providing chunks with raw_input uses the given chunks.
-        
+
         Inputs:
           - tool_name: "t"
           - chunks: [TextChunk("a"), TextChunk("b")]
@@ -305,7 +305,7 @@ class TestToolOutput:
 
     def test_init_with_both_content_and_blocks_raises(self):
         """Test that providing both content and chunks raises ValueError.
-        
+
         Inputs:
           - tool_name: "t"
           - content: "x"
@@ -327,7 +327,7 @@ class TestToolOutput:
 
     def test_content_property_filters_non_text_chunks(self):
         """Test that content getter concatenates only TextChunk contents.
-        
+
         Inputs:
           - chunks: [TextChunk("a"), Image(url=...), Audio(url=...), TextChunk("b")]
         Expected:
@@ -346,7 +346,7 @@ class TestToolOutput:
 
     def test_content_setter_overwrites_chunks(self):
         """Test that setting content replaces chunks with a single TextChunk.
-        
+
         Inputs:
           - Start with two TextChunks then set content to "new".
         Expected:
@@ -368,7 +368,7 @@ class TestToolOutput:
 
     def test_str_returns_content(self):
         """Test that __str__ returns the same as content.
-        
+
         Inputs:
           - ToolOutput with content "hello" and raw_input {}.
         Expected:
@@ -385,7 +385,7 @@ class TestAsyncBaseToolCall:
 
     def test_dunder_call_dispatches_to_call(self):
         """Test that AsyncBaseTool.__call__ dispatches to the sync call method.
-        
+
         Inputs:
           - A DummyAsyncTool instance; call using callable syntax with input 42.
         Expected:
@@ -406,7 +406,7 @@ class TestBaseToolAsyncAdapter:
     @pytest.mark.asyncio
     async def test_metadata_and_call_and_acall(self):
         """Test that the adapter proxies metadata and delegates call/acall.
-        
+
         Inputs:
           - A DummySyncTool wrapped by BaseToolAsyncAdapter, input value "ping".
         Expected:
@@ -434,7 +434,7 @@ class TestAdaptToAsyncTool:
     @pytest.mark.asyncio
     async def test_returns_same_for_async_tool(self):
         """Test that an AsyncBaseTool is returned unchanged by adapt_to_async_tool.
-        
+
         Inputs:
           - A DummyAsyncTool instance.
         Expected:
@@ -451,7 +451,7 @@ class TestAdaptToAsyncTool:
     @pytest.mark.asyncio
     async def test_wraps_sync_tool(self):
         """Test that a sync BaseTool is wrapped into a BaseToolAsyncAdapter.
-        
+
         Inputs:
           - A DummySyncTool instance.
         Expected:

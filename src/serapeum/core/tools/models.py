@@ -1,3 +1,4 @@
+"""tools module."""
 import asyncio
 import json
 from abc import abstractmethod
@@ -51,7 +52,7 @@ class MinimalToolSchema(BaseModel):
             ```
 
     See Also:
-        - ToolMetadata: Holds metadata for a tool, including a custom ``fn_schema``.
+        - ToolMetadata: Holds metadata for a tool, including a custom ``tool_schema``.
         - ToolOutput: Represents the standardized output of a tool.
     """
 
@@ -69,13 +70,13 @@ class ToolMetadata:
 
     Args:
         description (str):
-            A concise, human-readable description of the tool's
-            purpose and behavior. Used when exporting the tool to function-calling
-            providers. Keep under 1024 characters unless you disable length checks.
+            A concise, human-readable description of the tool's purpose and behavior.
+            Used when exporting the tool to function-calling providers. Keep under 1024
+            characters unless you disable length checks.
         name (Optional[str]):
             The public function name for the tool. This must be
             a valid identifier when exporting to function-calling providers.
-        fn_schema (Optional[Type[pydantic.BaseModel]]):
+        tool_schema (Optional[Type[pydantic.BaseModel]]):
             A Pydantic model class describing the function's input parameters. If ``None``, a simple
             ``{"input": str}`` schema is used.
         return_direct (bool): If ``True``, indicates that the tool's result should
@@ -84,17 +85,24 @@ class ToolMetadata:
     Returns:
         ToolMetadata: The initialized metadata object.
 
-    Raises:
-        None
-
     Examples:
         - Typical usage with default parameter schema
             ```python
             >>> from serapeum.core.tools.models import ToolMetadata
             >>> meta = ToolMetadata(description="Echo user input back.", name="echo")
-            >>> params = meta.get_parameters_dict()
-            >>> sorted(set(params) & {"type", "properties", "required"})
-            ['properties', 'required', 'type']
+            >>> params = meta.get_schema()
+            >>> print(params)
+            {
+                'properties':
+                    {
+                        'input': {
+                            'title': 'Input',
+                            'type': 'string'
+                        }
+                    },
+                'required': ['input'],
+                'type': 'object'
+            }
 
             ```
 
@@ -105,10 +113,45 @@ class ToolMetadata:
             ...     query: str
             ...     limit: int | None = None
             ...
-            >>> meta = ToolMetadata(description="Search items.", name="search", fn_schema=MyArgs)
-            >>> tool_spec = meta.to_openai_tool()
-            >>> tool_spec["type"], list(tool_spec["function"])[:2]
-            ('function', ['name', 'description'])
+            >>> meta = ToolMetadata(description="Search items.", name="search", tool_schema=MyArgs)
+            >>> print(meta.get_schema())
+            {
+                'properties':
+                    {
+                        'query': {'title': 'Query',  'type': 'string'},
+                        'limit': {
+                            'anyOf': [{'type': 'integer'}, {'type': 'null'}],
+                            'default': None,
+                            'title': 'Limit'
+                        }
+                    },
+                'required': ['query'],
+                'type': 'object'
+            }
+            >>> print(meta.to_openai_tool())
+            {
+                'type': 'function',
+                'function':
+                    {
+                        'name': 'search',
+                        'description': 'Search items.',
+                        'parameters':
+                            {
+                                'properties':
+                                    {
+                                        'query': {'title': 'Query', 'type': 'string'},
+                                        'limit':
+                                            {
+                                                'anyOf': [{'type': 'integer'}, {'type': 'null'}],
+                                                'default': None,
+                                                'title': 'Limit'
+                                            }
+                                    },
+                                'required': ['query'],
+                                'type': 'object'
+                            }
+                    }
+                }
 
             ```
 
@@ -119,36 +162,38 @@ class ToolMetadata:
 
     description: str
     name: Optional[str] = None
-    fn_schema: Optional[Type[BaseModel]] = MinimalToolSchema
+    tool_schema: Optional[Type[BaseModel]] = MinimalToolSchema
     return_direct: bool = False
 
-    def get_parameters_dict(self) -> dict:
+    def get_schema(self) -> dict:
         """Return the JSON Schema dictionary for this tool's parameters.
 
-        If ``fn_schema`` is ``None``, a minimal schema with a single string field
+        If ``tool_schema`` is ``None``, a minimal schema with a single string field
         named ``input`` is returned. Otherwise, this method derives the schema from
         the provided Pydantic model class and filters it down to the keys relevant
         for function-calling providers.
-
-        Args:
-            self (ToolMetadata): The current metadata instance.
 
         Returns:
             dict: A JSON Schema-like dictionary containing keys such as
                 ``type``, ``properties``, ``required``, and optional ``definitions``
                 or ``$defs`` depending on the Pydantic version.
 
-        Raises:
-            None
-
         Examples:
-            - Default schema when no custom ``fn_schema`` is supplied
+            - Default schema when no custom ``tool_schema`` is supplied
                 ```python
                 >>> from serapeum.core.tools.models import ToolMetadata
-                >>> meta = ToolMetadata(description="Echo", name="echo", fn_schema=None)
-                >>> params = meta.get_parameters_dict()
-                >>> sorted(set(params) & {"type", "properties", "required"})
-                ['properties', 'required', 'type']
+                >>> meta = ToolMetadata(description="Echo", name="echo", tool_schema=None)
+                >>> params = meta.get_schema()
+                >>> print(params)
+                {
+                    'type': 'object',
+                    'properties':
+                        {
+                            'input':
+                                {'title': 'input query string', 'type': 'string'}
+                        },
+                    'required': ['input']
+                }
 
                 ```
 
@@ -159,14 +204,22 @@ class ToolMetadata:
                 ...     text: str
                 ...     count: int
                 ...
-                >>> meta = ToolMetadata(description="Repeat text", name="repeat", fn_schema=MyArgs)
-                >>> params = meta.get_parameters_dict()
-                >>> 'properties' in params and set(params['properties']).issuperset({'text', 'count'})
-                True
+                >>> meta = ToolMetadata(description="Repeat text", name="repeat", tool_schema=MyArgs)
+                >>> params = meta.get_schema()
+                >>> print(params) # doctest: +NORMALIZE_WHITESPACE
+                {
+                    'properties':
+                        {
+                            'text': {'title': 'Text', 'type': 'string'},
+                            'count': {'title': 'Count', 'type': 'integer'}
+                        },
+                    'required': ['text', 'count'],
+                    'type': 'object'
+                }
 
                 ```
         """
-        if self.fn_schema is None:
+        if self.tool_schema is None:
             parameters = {
                 "type": "object",
                 "properties": {
@@ -175,7 +228,7 @@ class ToolMetadata:
                 "required": ["input"],
             }
         else:
-            parameters = self.fn_schema.model_json_schema()
+            parameters = self.tool_schema.model_json_schema()
             parameters = {
                 k: v
                 for k, v in parameters.items()
@@ -184,11 +237,11 @@ class ToolMetadata:
         return parameters
 
     @property
-    def fn_schema_str(self) -> str:
+    def tool_schema_str(self) -> str:
         """Return the function-argument schema as a JSON string.
 
         This property serializes the parameter schema produced by
-        :meth:`get_parameters_dict` to a JSON string. If ``fn_schema`` is ``None``,
+        :meth:`get_parameters_dict` to a JSON string. If ``tool_schema`` is ``None``,
         it raises a ``ValueError`` to make the absence explicit (use
         :meth:`get_parameters_dict` directly to obtain the default schema).
 
@@ -199,7 +252,7 @@ class ToolMetadata:
             str: A JSON string encoding of the parameters schema.
 
         Raises:
-            ValueError: If ``fn_schema`` is ``None``. In that case, call
+            ValueError: If ``tool_schema`` is ``None``. In that case, call
                 :meth:`get_parameters_dict` instead to retrieve the default schema.
 
         Examples:
@@ -211,28 +264,35 @@ class ToolMetadata:
                 >>> class Args(BaseModel):
                 ...     input: str
                 ...
-                >>> meta = ToolMetadata(description="Echo", name="echo", fn_schema=Args)
-                >>> s = meta.fn_schema_str
+                >>> meta = ToolMetadata(description="Echo", name="echo", tool_schema=Args)
+                >>> s = meta.tool_schema_str
+                >>> print(s)
+                {
+                    "properties":
+                        { "input": {"title": "Input", "type": "string"}},
+                    "required": ["input"],
+                    "type": "object"
+                }
                 >>> isinstance(json.loads(s), dict)
                 True
 
                 ```
 
-            - Error when ``fn_schema`` is ``None``
+            - Error when ``tool_schema`` is ``None``
                 ```python
                 >>> from serapeum.core.tools.models import ToolMetadata
-                >>> meta = ToolMetadata(description="Echo", name="echo", fn_schema=None)
+                >>> meta = ToolMetadata(description="Echo", name="echo", tool_schema=None)
                 >>> try:
-                ...     _ = meta.fn_schema_str
+                ...     _ = meta.tool_schema_str
                 ... except ValueError as e:
                 ...     print(str(e))
-                fn_schema is None.
+                tool_schema is None.
 
                 ```
         """
-        if self.fn_schema is None:
-            raise ValueError("fn_schema is None.")
-        parameters = self.get_parameters_dict()
+        if self.tool_schema is None:
+            raise ValueError("tool_schema is None.")
+        parameters = self.get_schema()
         return json.dumps(parameters, ensure_ascii=False)
 
     def get_name(self) -> str:
@@ -240,9 +300,6 @@ class ToolMetadata:
 
         This helper ensures the name is present and raises an error if it is not,
         which is useful before exporting a tool to function-calling providers.
-
-        Args:
-            self (ToolMetadata): The current metadata instance.
 
         Returns:
             str: The non-empty tool name.
@@ -300,12 +357,24 @@ class ToolMetadata:
                 ```python
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> meta = ToolMetadata(description="Echo input.", name="echo")
-                >>> spec = meta.to_openai_tool()
-                >>> spec["type"], sorted(spec["function"])  # doctest: +NORMALIZE_WHITESPACE
-                ('function', ['description', 'name', 'parameters'])
+                >>> print(meta.to_openai_tool())
+                {
+                    'type': 'function',
+                    'function':
+                        {
+                            'name': 'echo',
+                            'description': 'Echo input.',
+                            'parameters':
+                                {
+                                    'properties':
+                                        {'input': {'title': 'Input', 'type': 'string'}},
+                                    'required': ['input'],
+                                    'type': 'object'
+                                }
+                        }
+                }
 
                 ```
-
             - Error on overly long descriptions (when not skipped)
                 ```python
                 >>> from serapeum.core.tools.models import ToolMetadata
@@ -329,7 +398,7 @@ class ToolMetadata:
             "function": {
                 "name": self.name,
                 "description": self.description,
-                "parameters": self.get_parameters_dict(),
+                "parameters": self.get_schema(),
             },
         }
 
@@ -471,7 +540,7 @@ class ToolOutput(BaseModel):
 
     @property
     def content(self) -> str:
-        """Return a unified text view over all text chunks.
+        r"""Return a unified text view over all text chunks.
 
         Aggregates the textual content of all :class:`TextChunk` instances present in
         ``self.chunks``, joined by newlines. Non-text chunks are ignored.
@@ -483,18 +552,15 @@ class ToolOutput(BaseModel):
             str: The concatenated textual content, or an empty string if there are
                 no text chunks.
 
-        Raises:
-            None
-
         Examples:
             - Multiple text chunks are joined with a newline
-
                 ```python
                 >>> from serapeum.core.base.llms.models import TextChunk
                 >>> from serapeum.core.tools.models import ToolOutput
-                >>> out = ToolOutput(tool_name="t", chunks=[TextChunk(content="a"), TextChunk(content="b")])
-                >>> out.content
-                'a\nb'
+                >>> out = ToolOutput(tool_name="t", chunks=[TextChunk(content="a"), TextChunk(content="b")],raw_input={})
+                >>> print(out.content)
+                a
+                b
 
                 ```
         """
@@ -511,12 +577,6 @@ class ToolOutput(BaseModel):
 
         Args:
             content (str): The new text content to set.
-
-        Returns:
-            None
-
-        Raises:
-            None
 
         Examples:
             - Overwrite existing chunks
@@ -610,7 +670,7 @@ class BaseTool:
 
         Args:
             input_values (Any): The inputs for the tool. Strongly recommended to be
-                a dict matching the tool's ``fn_schema``.
+                a dict matching the tool's ``tool_schema``.
 
         Returns:
             ToolOutput: The structured tool output.

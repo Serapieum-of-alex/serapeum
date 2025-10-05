@@ -51,6 +51,10 @@ Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
 where = ["src"]
 include = ["serapeum", "serapeum.*"]
 
+[tool.flake8]
+ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
+max-line-length = 120
+count = true
 
 [build-system]
 build-backend = "poetry.core.masonry.api"

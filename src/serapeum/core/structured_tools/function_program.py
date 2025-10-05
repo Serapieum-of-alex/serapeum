@@ -21,7 +21,7 @@ from serapeum.core.llm.base import LLM
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.configs.configs import Configs
 from serapeum.core.structured_tools.models import BasePydanticProgram, Model
-from serapeum.core.tools.function_tool import FunctionTool
+from serapeum.core.tools.function_tool import CallableTool
 from serapeum.core.structured_tools.utils import (
     process_streaming_objects,
     num_valid_fields,
@@ -48,7 +48,7 @@ def _parse_tool_outputs(
         return outputs[0]
 
 
-def get_function_tool(output_cls: Type[Model]) -> FunctionTool:
+def get_function_tool(output_cls: Type[Model]) -> CallableTool:
     """Get function tool."""
     schema = output_cls.model_json_schema()
     schema_description = schema.get("description", None)
@@ -59,7 +59,7 @@ def get_function_tool(output_cls: Type[Model]) -> FunctionTool:
         """Model function."""
         return output_cls(**kwargs)
 
-    return FunctionTool.from_defaults(
+    return CallableTool.from_defaults(
         fn=model_fn,
         name=schema["title"],
         description=schema_description,

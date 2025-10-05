@@ -38,11 +38,8 @@ def async_to_sync(func_async: AsyncCallable) -> Callable:
     return _sync_wrapped_fn
 
 
-class FunctionTool(AsyncBaseTool):
-    """Function Tool.
-
-    A tool that takes in a function and optionally handles workflow context.
-    """
+class CallableTool(AsyncBaseTool):
+    """Function Tool."""
 
     def __init__(
         self,
@@ -91,7 +88,7 @@ class FunctionTool(AsyncBaseTool):
         async_fn: Optional[AsyncCallable] = None,
         tool_metadata: Optional[ToolMetadata] = None,
         partial_params: Optional[Dict[str, Any]] = None,
-    ) -> "FunctionTool":
+    ) -> "CallableTool":
         partial_params = partial_params or {}
 
         if tool_metadata is None:

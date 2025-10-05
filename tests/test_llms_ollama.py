@@ -4,7 +4,7 @@ import os
 from pydantic import BaseModel
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.llm import Message
-from serapeum.core.tools import FunctionTool
+from serapeum.core.tools import CallableTool
 from serapeum.llms.ollama import Ollama
 from unittest.mock import patch, AsyncMock, MagicMock, PropertyMock
 from ollama import Client
@@ -77,7 +77,7 @@ def generate_song(name: str, artist: str) -> Song:
     return Song(name=name, artist=artist)
 
 
-tool = FunctionTool.from_defaults(fn=generate_song)
+tool = CallableTool.from_defaults(fn=generate_song)
 
 
 def test_embedding_class() -> None:

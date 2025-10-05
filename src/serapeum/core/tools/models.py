@@ -1,4 +1,5 @@
 """tools module."""
+
 import asyncio
 import json
 from abc import abstractmethod
@@ -429,7 +430,6 @@ class ToolOutput(BaseModel):
 
     Examples:
         - Typical usage with string content
-
             ```python
             >>> from serapeum.core.tools.models import ToolOutput
             >>> out = ToolOutput(tool_name="echo", content="hello")
@@ -443,13 +443,12 @@ class ToolOutput(BaseModel):
             >>> from serapeum.core.base.llms.models import TextChunk
             >>> from serapeum.core.tools.models import ToolOutput
             >>> out = ToolOutput(tool_name="echo", chunks=[TextChunk(content="hi")])
-            >>> isinstance(out.chunks[0], TextChunk) and out.content
+            >>> print(out.content)
             'hi'
 
             ```
 
         - Edge case: providing both ``content`` and ``chunks`` raises an error
-
             ```python
             >>> from serapeum.core.base.llms.models import TextChunk
             >>> from serapeum.core.tools.models import ToolOutput
@@ -468,7 +467,7 @@ class ToolOutput(BaseModel):
 
     chunks: List[ChunkType]
     tool_name: str
-    raw_input: Dict[str, Any]
+    raw_input: Optional[Dict[str, Any]]
     raw_output: Any
     is_error: bool = False
 
@@ -487,17 +486,18 @@ class ToolOutput(BaseModel):
         given, it is wrapped into a single :class:`~serapeum.core.base.llms.models.TextChunk`.
 
         Args:
-            tool_name (str): The name of the producing tool.
-            content (Optional[str]): A convenience text payload. If supplied,
-                ``chunks`` must be omitted.
-            chunks (Optional[List[ChunkType]]): Explicit chunk list. If supplied,
-                ``content`` must be omitted.
-            raw_input (Optional[Dict[str, Any]]): Optional debug/provenance input.
-            raw_output (Optional[Any]): Optional raw output from the tool.
-            is_error (bool): Flag indicating the output is an error.
-
-        Returns:
-            None: The constructed instance.
+            tool_name (str):
+                The name of the producing tool.
+            content (Optional[str]):
+                A convenience text payload. If supplied, ``chunks`` must be omitted.
+            chunks (Optional[List[ChunkType]]):
+                Explicit chunk list. If supplied, ``content`` must be omitted.
+            raw_input (Optional[Dict[str, Any]]):
+                Optional debug/provenance input.
+            raw_output (Optional[Any]):
+                Optional raw output from the tool.
+            is_error (bool):
+                Flag indicating the output is an error.
 
         Raises:
             ValueError: If both ``content`` and ``chunks`` are provided.
@@ -523,6 +523,7 @@ class ToolOutput(BaseModel):
         """
         if content and chunks:
             raise ValueError("Cannot provide both content and chunks.")
+
         if content:
             chunks = [TextChunk(content=content)]
         elif chunks:
@@ -605,14 +606,9 @@ class ToolOutput(BaseModel):
         Returns:
             str: The same value as :pyattr:`ToolOutput.content`.
 
-        Raises:
-            None
-
         Examples:
             - String conversion mirrors ``content``
-
                 ```python
-
                 >>> from serapeum.core.tools.models import ToolOutput
                 >>> out = ToolOutput(tool_name="t", content="hello")
                 >>> str(out)
@@ -632,9 +628,7 @@ class BaseTool:
 
     Examples:
         - Minimal echo tool
-
             ```python
-
             >>> from serapeum.core.tools.models import BaseTool, ToolMetadata, ToolOutput
             >>> class Echo(BaseTool):
             ...     @property
@@ -647,7 +641,7 @@ class BaseTool:
             ...
             >>> tool = Echo()
             >>> out = tool({"input": "hi"})
-            >>> out.content
+            >>> print(out.content)
             'hi'
 
             ```
@@ -688,9 +682,7 @@ class AsyncBaseTool(BaseTool):
 
     Examples:
         - Minimal async echo tool
-
             ```python
-
             >>> import asyncio
             >>> from serapeum.core.tools.models import AsyncBaseTool, ToolMetadata, ToolOutput
             >>> class EchoAsync(AsyncBaseTool):
@@ -762,9 +754,7 @@ class BaseToolAsyncAdapter(AsyncBaseTool):
 
     Examples:
         - Adapt a synchronous tool to async usage
-
             ```python
-
             >>> import asyncio
             >>> from serapeum.core.tools.models import BaseTool, ToolMetadata, ToolOutput, BaseToolAsyncAdapter
             >>> class Echo(BaseTool):
@@ -844,9 +834,7 @@ def adapt_to_async_tool(tool: BaseTool) -> AsyncBaseTool:
 
     Examples:
         - Passing through an already-async tool
-
             ```python
-
             >>> import asyncio
             >>> from serapeum.core.tools.models import AsyncBaseTool, ToolMetadata, ToolOutput, adapt_to_async_tool
             >>> class EchoAsync(AsyncBaseTool):
@@ -861,15 +849,15 @@ def adapt_to_async_tool(tool: BaseTool) -> AsyncBaseTool:
             ...         return self.call(input_values)
             ...
             >>> async_tool = adapt_to_async_tool(EchoAsync())
+            >>> type(async_tool)
+            <class 'serapeum.core.tools.models.BaseToolAsyncAdapter'>
             >>> asyncio.run(async_tool.acall({"input": "ok"})).content
             'ok'
 
             ```
 
         - Adapting a synchronous tool
-
             ```python
-
             >>> import asyncio
             >>> from serapeum.core.tools.models import BaseTool, ToolMetadata, ToolOutput, adapt_to_async_tool
             >>> class Echo(BaseTool):
@@ -881,6 +869,8 @@ def adapt_to_async_tool(tool: BaseTool) -> AsyncBaseTool:
             ...         return ToolOutput(tool_name="echo", content=input_values.get("input", ""))
             ...
             >>> async_tool = adapt_to_async_tool(Echo())
+            >>> type(async_tool)
+            <class 'serapeum.core.tools.models.BaseToolAsyncAdapter'>
             >>> asyncio.run(async_tool.acall({"input": "hi"})).content
             'hi'
 

@@ -254,20 +254,6 @@ class TestToolMetadataToOpenAITool:
 
 
 class TestToolOutput:
-    def test_init_with_content_only_and_missing_raw_input_raises(self):
-        """Test that constructing with content but missing raw_input fails validation.
-
-        Inputs:
-          - tool_name: "t"
-          - content: "hello"
-          - raw_input: omitted (defaults to None)
-        Expected:
-          - pydantic.ValidationError because raw_input field expects a dictionary.
-        Checks:
-          - ValidationError is raised.
-        """
-        with pytest.raises(ValidationError):
-            ToolOutput(tool_name="t", content="hello")
 
     def test_init_with_content_and_raw_input_populates_chunks(self):
         """Test that providing content with raw_input creates a single TextChunk.

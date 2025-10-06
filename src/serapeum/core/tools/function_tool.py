@@ -18,7 +18,6 @@ from serapeum.core.tools.utils import create_schema_from_function
 AsyncCallable = Callable[..., Awaitable[Any]]
 
 
-
 def sync_to_async(fn: Callable[..., Any]) -> AsyncCallable:
     """Sync to async."""
 
@@ -46,7 +45,7 @@ class CallableTool(AsyncBaseTool):
         fn: Optional[Callable[..., Any]] = None,
         metadata: Optional[ToolMetadata] = None,
         async_fn: Optional[AsyncCallable] = None,
-        partial_params: Optional[Dict[str, Any]] = None,
+        default_arguments: Optional[Dict[str, Any]] = None,
     ) -> None:
         if fn is None and async_fn is None:
             raise ValueError("fn or async_fn must be provided.")
@@ -68,14 +67,12 @@ class CallableTool(AsyncBaseTool):
         # Determine if the function requires context by inspecting its signature
         fn_to_inspect = fn or async_fn
         assert fn_to_inspect is not None
-        # sig = inspect.signature(fn_to_inspect)
-        self.requires_context = False
 
         if metadata is None:
             raise ValueError("metadata must be provided")
 
         self._metadata = metadata
-        self.partial_params = partial_params or {}
+        self.default_arguments = default_arguments or {}
 
     @classmethod
     def from_defaults(
@@ -87,9 +84,9 @@ class CallableTool(AsyncBaseTool):
         tool_schema: Optional[Type[BaseModel]] = None,
         async_fn: Optional[AsyncCallable] = None,
         tool_metadata: Optional[ToolMetadata] = None,
-        partial_params: Optional[Dict[str, Any]] = None,
+        default_arguments: Optional[Dict[str, Any]] = None,
     ) -> "CallableTool":
-        partial_params = partial_params or {}
+        default_arguments = default_arguments or {}
 
         if tool_metadata is None:
             fn_to_parse = fn or async_fn
@@ -150,12 +147,12 @@ class CallableTool(AsyncBaseTool):
             fn=fn,
             metadata=tool_metadata,
             async_fn=async_fn,
-            partial_params=partial_params,
+            default_arguments=default_arguments,
         )
 
     @staticmethod
     def extract_param_docs(
-            docstring: str, fn_params: Optional[set] = None
+        docstring: str, fn_params: Optional[set] = None
     ) -> Tuple[dict, set]:
         """
         Parses param descriptions from a docstring.
@@ -227,12 +224,12 @@ class CallableTool(AsyncBaseTool):
         return vals
 
     def __call__(self, *args: Any, **kwargs: Any) -> ToolOutput:
-        all_kwargs = {**self.partial_params, **kwargs}
+        all_kwargs = {**self.default_arguments, **kwargs}
         return self.call(*args, **all_kwargs)
 
     def call(self, *args: Any, **kwargs: Any) -> ToolOutput:
         """Sync Call."""
-        all_kwargs = {**self.partial_params, **kwargs}
+        all_kwargs = {**self.default_arguments, **kwargs}
 
         raw_output = self._fn(*args, **all_kwargs)
 
@@ -251,7 +248,7 @@ class CallableTool(AsyncBaseTool):
 
     async def acall(self, *args: Any, **kwargs: Any) -> ToolOutput:
         """Async Call."""
-        all_kwargs = {**self.partial_params, **kwargs}
+        all_kwargs = {**self.default_arguments, **kwargs}
 
         raw_output = await self._async_fn(*args, **all_kwargs)
 

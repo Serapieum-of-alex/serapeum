@@ -215,15 +215,16 @@ class CallableTool(AsyncBaseTool):
             raise ValueError("Real function is not set!")
 
         return self._real_fn
-
-    def _parse_tool_output(self, raw_output: Any) -> List[ChunkType]:
+    @staticmethod
+    def _parse_tool_output(raw_output: Any) -> List[ChunkType]:
         """Parse tool output into content chunks."""
         if isinstance(raw_output, (TextChunk, Image, Audio)):
-            return [raw_output]
+            vals = [raw_output]
         elif isinstance(raw_output, list) and all(isinstance(item, (TextChunk, Image, Audio)) for item in raw_output):
-            return raw_output
+            vals = raw_output
         else:
-            return [TextChunk(content=str(raw_output))]
+            vals = [TextChunk(content=str(raw_output))]
+        return vals
 
     def __call__(self, *args: Any, **kwargs: Any) -> ToolOutput:
         all_kwargs = {**self.partial_params, **kwargs}

@@ -43,7 +43,7 @@ def sync_to_async(fn: Callable[..., Any]) -> AsyncCallable:
         - Basic usage with integers
             ```python
             >>> import asyncio
-            >>> from serapeum.core.tools.function_tool import sync_to_async
+            >>> from serapeum.core.tools.callable_tool import sync_to_async
             >>> def add(x: int, y: int) -> int:
             ...     return x + y
             >>> async_add = sync_to_async(add)
@@ -54,7 +54,7 @@ def sync_to_async(fn: Callable[..., Any]) -> AsyncCallable:
         - Works with arbitrary return types
             ```python
             >>> import asyncio
-            >>> from serapeum.core.tools.function_tool import sync_to_async
+            >>> from serapeum.core.tools.callable_tool import sync_to_async
             >>> def greet(name: str) -> str:
             ...     return f"Hello, {name}!"
             >>> async_greet = sync_to_async(greet)
@@ -98,7 +98,7 @@ def async_to_sync(func_async: AsyncCallable) -> Callable:
     Examples:
         - Basic usage
             ```python
-            >>> from serapeum.core.tools.function_tool import async_to_sync
+            >>> from serapeum.core.tools.callable_tool import async_to_sync
             >>> async def mul(x: int, y: int) -> int:
             ...     return x * y
             >>> mul_sync = async_to_sync(mul)
@@ -108,7 +108,7 @@ def async_to_sync(func_async: AsyncCallable) -> Callable:
             ```
         - Wrapping async functions that return strings
             ```python
-            >>> from serapeum.core.tools.function_tool import async_to_sync
+            >>> from serapeum.core.tools.callable_tool import async_to_sync
             >>> async def greet(name: str) -> str:
             ...     return f"Hello, {name}!"
             >>> greet_sync = async_to_sync(greet)
@@ -142,7 +142,7 @@ class CallableTool(AsyncBaseTool):
     Examples:
         - Wrap a synchronous function
             ```python
-            >>> from serapeum.core.tools.function_tool import CallableTool
+            >>> from serapeum.core.tools.callable_tool import CallableTool
             >>> from serapeum.core.tools.models import ToolMetadata
             >>> def greet(name: str) -> str:
             ...     return f"Hello, {name}!"
@@ -156,7 +156,7 @@ class CallableTool(AsyncBaseTool):
         - Wrap an async function
             ```python
             >>> import asyncio
-            >>> from serapeum.core.tools.function_tool import CallableTool
+            >>> from serapeum.core.tools.callable_tool import CallableTool
             >>> from serapeum.core.tools.models import ToolMetadata
             >>> async def add(x: int, y: int) -> int:
             ...     return x + y
@@ -168,7 +168,7 @@ class CallableTool(AsyncBaseTool):
             ```
         - Provide default arguments
             ```python
-            >>> from serapeum.core.tools.function_tool import CallableTool
+            >>> from serapeum.core.tools.callable_tool import CallableTool
             >>> from serapeum.core.tools.models import ToolMetadata
             >>> def power(base: int, exp: int = 2) -> int:
             ...     return base ** exp
@@ -224,7 +224,7 @@ class CallableTool(AsyncBaseTool):
         Examples:
             - Synchronous function with metadata
                 ```python
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def echo(text: str) -> str:
                 ...     return text
@@ -236,7 +236,7 @@ class CallableTool(AsyncBaseTool):
             - Asynchronous function with default arguments
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> async def add(a: int, b: int) -> int:
                 ...     return a + b
@@ -329,7 +329,7 @@ class CallableTool(AsyncBaseTool):
         Examples:
             - Infer metadata and schema from a sync function
                 ```python
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> def add(a: int, b: int) -> int:
                 ...     '''Add two integers.
                 ...
@@ -349,7 +349,7 @@ class CallableTool(AsyncBaseTool):
             - Provide your own metadata and defaults
                 ```python
                 >>> from serapeum.core.tools.models import ToolMetadata
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> def echo(text: str) -> str:
                 ...     return text
                 >>> meta = ToolMetadata(name="echo", description="Echo text")
@@ -453,7 +453,7 @@ class CallableTool(AsyncBaseTool):
         Examples:
             - Google style
                 ```python
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> doc = '''
                 ... Adds two numbers.
                 ...
@@ -510,7 +510,7 @@ class CallableTool(AsyncBaseTool):
         Examples:
             - Access the tool name
                 ```python
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def noop(x: int) -> int:
                 ...     return x
@@ -535,7 +535,7 @@ class CallableTool(AsyncBaseTool):
         Examples:
             - Invoke the underlying function directly
                 ```python
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def add(a: int, b: int) -> int:
                 ...     return a + b
@@ -562,7 +562,7 @@ class CallableTool(AsyncBaseTool):
             - Await the async wrapper
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def square(x: int) -> int:
                 ...     return x * x
@@ -591,7 +591,7 @@ class CallableTool(AsyncBaseTool):
             - Inspect whether the wrapped function is async
                 ```python
                 >>> import inspect
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> async def afunc(x: int) -> int:
                 ...     return x
@@ -626,7 +626,7 @@ class CallableTool(AsyncBaseTool):
         Examples:
             - String is converted into a TextChunk
                 ```python
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> chunks = CallableTool._parse_tool_output("hello")
                 >>> print(type(chunks[0]).__name__, getattr(chunks[0], 'content', None))
                 TextChunk hello
@@ -635,7 +635,7 @@ class CallableTool(AsyncBaseTool):
             - List of TextChunk values is preserved
                 ```python
                 >>> from serapeum.core.base.llms.models import TextChunk
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> lst = [TextChunk(content="a"), TextChunk(content="b")]
                 >>> chunks = CallableTool._parse_tool_output(lst)
                 >>> print(len(chunks), type(chunks[1]).__name__)
@@ -675,7 +675,7 @@ class CallableTool(AsyncBaseTool):
         Examples:
             - Delegation to call()
                 ```python
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def add(a: int, b: int) -> int:
                 ...     return a + b
@@ -687,7 +687,7 @@ class CallableTool(AsyncBaseTool):
                 ```
             - Default arguments are merged
                 ```python
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def greet(name: str, punct: str = "!") -> str:
                 ...     return f"Hello, {name}{punct}"
@@ -725,7 +725,7 @@ class CallableTool(AsyncBaseTool):
         Examples:
             - Typical usage
                 ```python
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def concat(a: str, b: str) -> str:
                 ...     return a + b
@@ -736,7 +736,7 @@ class CallableTool(AsyncBaseTool):
                 ```
             - Overriding defaults
                 ```python
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def greet(name: str, punct: str = "!") -> str:
                 ...     return f"Hello, {name}{punct}"
@@ -785,7 +785,7 @@ class CallableTool(AsyncBaseTool):
             - Typical usage with asyncio.run
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.tools.function_tool import CallableTool
+                >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> async def add(a: int, b: int) -> int:
                 ...     return a + b

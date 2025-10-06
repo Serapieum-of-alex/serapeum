@@ -21,7 +21,7 @@ from serapeum.core.llm.base import LLM
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.configs.configs import Configs
 from serapeum.core.structured_tools.models import BasePydanticProgram, Model
-from serapeum.core.tools.function_tool import CallableTool
+from serapeum.core.tools.callable_tool import CallableTool
 from serapeum.core.structured_tools.utils import (
     process_streaming_objects,
     num_valid_fields,

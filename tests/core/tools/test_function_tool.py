@@ -3,7 +3,7 @@ import pytest
 from pydantic import BaseModel, Field
 
 from serapeum.core.base.llms.models import TextChunk, Image, Audio
-from serapeum.core.tools.function_tool import (
+from serapeum.core.tools.callable_tool import (
     sync_to_async,
     async_to_sync,
     CallableTool,

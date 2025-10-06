@@ -190,7 +190,7 @@ class TestCallableToolFromDefaults:
             """
             return f"{x}-{y}"
 
-        tool = CallableTool.from_defaults(fn=foo)
+        tool = CallableTool.from_function(fn=foo)
         meta = tool.metadata
         assert meta.get_name() == "foo"
         # Description should start with signature and include the summary line
@@ -218,7 +218,7 @@ class TestCallableToolFromDefaults:
             """Bar summary."""
             return a
 
-        tool = CallableTool.from_defaults(fn=bar)
+        tool = CallableTool.from_function(fn=bar)
         desc = tool.metadata.description
         # Ensure signature part doesn't leak Field(...) text
         assert desc.startswith("bar(")
@@ -245,7 +245,7 @@ class TestCallableToolFromDefaults:
         def f(q: str) -> str:
             return q
 
-        tool = CallableTool.from_defaults(fn=f, tool_metadata=meta)
+        tool = CallableTool.from_function(fn=f, tool_metadata=meta)
         assert tool.metadata is meta
         assert tool.metadata.get_name() == "custom"
         assert tool.metadata.get_schema()["properties"]["q"]["type"] == "string"
@@ -288,7 +288,7 @@ class TestCallableToolParseToolOutput:
         chunks = [TextChunk(content="a"), Image(url="http://example.com/i.png")]
         assert tool._parse_tool_output(chunks) == chunks
 
-    def test_plain_and_nonstring_outputs_become_textchunks(self):
+    def test_plain_and_nonstring_outputs_become_text_chunks(self):
         """
         Inputs: _parse_tool_output with a plain string ("ok"), an int (123), and a dict.
         Expected: Each is converted to a single TextChunk with content=str(raw_output).

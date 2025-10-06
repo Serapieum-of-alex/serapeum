@@ -75,7 +75,7 @@ class CallableTool(AsyncBaseTool):
         self.default_arguments = default_arguments or {}
 
     @classmethod
-    def from_defaults(
+    def from_function(
         cls,
         fn: Optional[Callable[..., Any]] = None,
         name: Optional[str] = None,

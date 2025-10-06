@@ -77,7 +77,7 @@ def generate_song(name: str, artist: str) -> Song:
     return Song(name=name, artist=artist)
 
 
-tool = CallableTool.from_defaults(fn=generate_song)
+tool = CallableTool.from_function(fn=generate_song)
 
 
 def test_embedding_class() -> None:

@@ -57,6 +57,12 @@ repos:
         name: "[py   - check] pydocstyle"
         files: ^pyramids/
 
+  - repo: https://github.com/ambv/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        name: "[py   - format] black"
+
   - repo: https://github.com/pycqa/flake8
     rev: 7.1.0
     hooks:
@@ -65,16 +71,6 @@ repos:
         additional_dependencies: [Flake8-pyproject, flake8-bugbear, flake8-docstrings, flake8-black]
         exclude: ^(examples/|tests/)
 
-  #- repo: https://github.com/psf/black
-  #  rev: 22.8.0
-  #  hooks:
-  #    - id: black
-  - repo: https://github.com/ambv/black
-    rev: 24.4.2
-    hooks:
-      - id: black
-        name: "[py   - format] black"
-#        language_version: python3.9
   - repo: https://github.com/lovesegfault/beautysh
     rev: v6.2.1
     hooks:

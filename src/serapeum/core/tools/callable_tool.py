@@ -15,7 +15,7 @@ from serapeum.core.base.llms.models import (
     Audio,
     ChunkType,
 )
-from serapeum.core.tools.utils import create_schema_from_function
+from serapeum.core.tools.utils import Function
 
 AsyncCallable = Callable[..., Awaitable[Any]]
 
@@ -403,12 +403,13 @@ class CallableTool(AsyncBaseTool):
             # 6. Build tool_schema only if not already provided
             if tool_schema is None:
 
-                tool_schema = create_schema_from_function(
+                function = Function(
                     f"{name}",
                     fn_to_parse,
                     additional_fields=None,
                     ignore_fields=None,
                 )
+                tool_schema = function.to_schema()
                 if tool_schema is not None and param_docs:
                     for param_name, field in tool_schema.model_fields.items():
                         if not field.description and param_name in param_docs:

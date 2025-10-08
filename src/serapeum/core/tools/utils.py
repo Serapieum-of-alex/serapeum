@@ -1,5 +1,5 @@
 import json
-from inspect import signature
+from inspect import signature, Parameter
 from typing import (
     Any,
     Awaitable,
@@ -27,6 +27,73 @@ from serapeum.core.llm.base import ToolSelection
 if TYPE_CHECKING:
     from serapeum.core.tools.models import BaseTool
 
+class FunctionArgument:
+    def __init__(self, param: Parameter) -> None:
+        self.param = param
+        # Extract type, description, and extras from annotation
+        self.param_type = self.param.annotation
+        self.description: Optional[str] = None
+        self.json_schema_extra: dict[str, Any] = {}
+        if self.is_annotated():
+            self._extract_annotated_info()
+
+    def is_annotated(self)-> bool:
+        return get_origin(self.param.annotation) is Annotated
+
+    def _extract_annotated_info(self):
+        """Extract base type, description, and json_schema_extra from an annotation.
+        Supports typing.Annotated[str | FieldInfo] for metadata.
+        """
+        args = get_args(self.param_type)
+        if args:
+            self.param_type = args[0]
+            if len(args) > 1:
+                meta = args[1]
+                if isinstance(meta, str):
+                    self.description = meta
+                elif isinstance(meta, FieldInfo):
+                    self.description = meta.description
+                    if meta.json_schema_extra and isinstance(meta.json_schema_extra, dict):
+                        self.json_schema_extra.update(meta.json_schema_extra)
+
+
+    def _add_format_if_datetime(self) -> None:
+        """Mutates json_schema_extra to include appropriate datetime format if applicable."""
+        if self.param_type == datetime.date:
+            self.json_schema_extra.setdefault("format", "date")
+        elif self.param_type == datetime.datetime:
+            self.json_schema_extra.setdefault("format", "date-time")
+        elif self.param_type == datetime.time:
+            self.json_schema_extra.setdefault("format", "time")
+
+    def _create_field_info(self) -> FieldInfo:
+        """Create FieldInfo respecting required/default and FieldInfo defaults."""
+        default = self.param.default
+
+        if default is Parameter.empty:
+            field_info = FieldInfo(description=self.description, json_schema_extra=self.json_schema_extra)
+        elif isinstance(default, FieldInfo):
+            field_info = default
+        else:
+            field_info = FieldInfo(default=default, description=self.description, json_schema_extra=self.json_schema_extra)
+
+        return field_info
+
+    def to_field(self) -> Tuple[Type[Any], FieldInfo]:
+
+        # Add format for date/datetime/time if applicable
+        self._add_format_if_datetime()
+
+        # Fallbacks for missing annotation
+        if self.param_type is self.param.empty:
+            param_type = Any
+        else:
+            param_type = self.param_type
+
+        # Build FieldInfo based on default semantics
+        field_info = self._create_field_info()
+        return param_type, field_info
+
 
 class Function:
     def __init__(
@@ -36,69 +103,42 @@ class Function:
          additional_fields: Optional[
              List[Union[Tuple[str, Type, Any], Tuple[str, Type]]]
          ] = None,
-         ignore_fields: Optional[List[str]] = None):
+         ignore_fields: Optional[List[str]] = None
+    ):
         self.name = name
         self.func = func
         self.additional_fields = additional_fields
         self.ignore_fields = ignore_fields
 
     def to_schema(self) -> Type[BaseModel]:
-        fields = {}
+        """
+        Build a Pydantic model schema from the wrapped function signature.
+
+        Behavior is preserved:
+        - respects ignore_fields
+        - supports typing.Annotated[str|FieldInfo] for description/extra
+        - adds format for date, datetime, time
+        - handles required vs default vs FieldInfo defaults
+        - merges self.additional_fields
+        """
+        fields = self._collect_fields_from_func_signature()
+        fields = self._apply_additional_fields(fields)
+        return create_model(self.name, **fields)  # type: ignore
+
+    def _collect_fields_from_func_signature(self) -> dict[str, Tuple[Type[Any], FieldInfo]]:
+        fields: dict[str, Tuple[Type[Any], FieldInfo]] = {}
         ignore_fields = self.ignore_fields or []
         params = signature(self.func).parameters
-
-        for param_name in params:
+        for param_name, param in params.items():
             if param_name in ignore_fields:
                 continue
+            argument = FunctionArgument(param)
+            field_type, field_info = argument.to_field()
+            fields[param_name] = (field_type, field_info)
+        return fields
 
-            param_type = params[param_name].annotation
-            param_default = params[param_name].default
-            description = None
-            json_schema_extra: dict[str, Any] = {}
-
-            if get_origin(param_type) is Annotated:
-                args = get_args(param_type)
-                param_type = args[0]
-
-                if isinstance(args[1], str):
-                    description = args[1]
-                elif isinstance(args[1], FieldInfo):
-                    description = args[1].description
-                    if args[1].json_schema_extra and isinstance(
-                            args[1].json_schema_extra, dict
-                    ):
-                        json_schema_extra.update(args[1].json_schema_extra)
-
-            # Add format based on param_type
-            if param_type == datetime.date:
-                json_schema_extra.setdefault("format", "date")
-            elif param_type == datetime.datetime:
-                json_schema_extra.setdefault("format", "date-time")
-            elif param_type == datetime.time:
-                json_schema_extra.setdefault("format", "time")
-
-            if param_type is params[param_name].empty:
-                param_type = Any
-
-            if param_default is params[param_name].empty:
-                # Required field
-                fields[param_name] = (
-                    param_type,
-                    FieldInfo(description=description, json_schema_extra=json_schema_extra),
-                )
-            elif isinstance(param_default, FieldInfo):
-                # Field with pydantic.Field as default value
-                fields[param_name] = (param_type, param_default)
-            else:
-                fields[param_name] = (
-                    param_type,
-                    FieldInfo(
-                        default=param_default,
-                        description=description,
-                        json_schema_extra=json_schema_extra,
-                    ),
-                )
-
+        
+    def _apply_additional_fields(self, fields: dict[str, Tuple[Type[Any], FieldInfo]]) -> dict[str, Tuple[Type[Any], FieldInfo]]:
         additional_fields = self.additional_fields or []
         for field_info in additional_fields:
             if len(field_info) == 3:
@@ -115,7 +155,7 @@ class Function:
                     "Must be a tuple of length 2 or 3."
                 )
 
-        return create_model(self.name, **fields)  # type: ignore
+        return fields
 
 
 def call_tool(tool: BaseTool, arguments: dict) -> ToolOutput:

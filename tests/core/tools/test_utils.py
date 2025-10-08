@@ -19,7 +19,7 @@ import pytest
 from pydantic import BaseModel, Field
 
 from serapeum.core.tools.utils import (
-    Function,
+    FunctionConverter,
     call_tool,
     acall_tool,
     call_tool_with_selection,
@@ -173,7 +173,7 @@ class TestCreateSchemaFromFunction:
         def f(a: int, b: str = "x", c=3, d: int = Field(default=5, description="five")) -> None:
             return None
 
-        function = Function("F", f)
+        function = FunctionConverter("F", f)
         model = function.to_schema()
         schema = model.model_json_schema()
         required = set(schema.get("required", []))
@@ -203,7 +203,7 @@ class TestCreateSchemaFromFunction:
 
         def g(x: Ann[int, "counter value"], y: Ann[str, Field(description="text", json_schema_extra={"alpha": True})]) -> None:
             return None
-        function = Function("G", g)
+        function = FunctionConverter("G", g)
         model = function.to_schema()
         fx = model.model_fields["x"]
         fy = model.model_fields["y"]
@@ -215,7 +215,7 @@ class TestCreateSchemaFromFunction:
         """Ensure date/datetime/time fields carry proper JSON Schema format values.
 
         Inputs:
-            - Function with parameters of type date, datetime, and time.
+            - FunctionConverter with parameters of type date, datetime, and time.
         Expected:
             - Corresponding JSON Schema properties include format: 'date', 'date-time', 'time'.
         Checks:
@@ -224,7 +224,7 @@ class TestCreateSchemaFromFunction:
 
         def h(day: dt.date, ts: dt.datetime, at: dt.time) -> None:
             return None
-        function = Function("H", h)
+        function = FunctionConverter("H", h)
         model = function.to_schema()
         props = model.model_json_schema()["properties"]
         assert props["day"].get("format") == "date"
@@ -235,7 +235,7 @@ class TestCreateSchemaFromFunction:
         """Test ignore_fields and additional_fields (both 2- and 3-tuples).
 
         Inputs:
-            - Function with parameters: keep_me: int, skip_me: str
+            - FunctionConverter with parameters: keep_me: int, skip_me: str
             - ignore_fields=["skip_me"], additional_fields=[("extra", int), ("flag", bool, True)]
         Expected:
             - 'skip_me' is excluded.
@@ -247,7 +247,7 @@ class TestCreateSchemaFromFunction:
         def k(keep_me: int, skip_me: str) -> None:
             return None
 
-        function = Function(
+        function = FunctionConverter(
             "K",
             k,
             additional_fields=[("extra", int), ("flag", bool, True)],
@@ -276,7 +276,7 @@ class TestCreateSchemaFromFunction:
             return None
 
         with pytest.raises(ValueError):
-            function = Function("Z", z, additional_fields=[("bad",)])
+            function = FunctionConverter("Z", z, additional_fields=[("bad",)])
             _ = function.to_schema()
 
 

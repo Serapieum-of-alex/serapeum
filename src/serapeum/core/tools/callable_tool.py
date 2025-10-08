@@ -15,7 +15,7 @@ from serapeum.core.base.llms.models import (
     Audio,
     ChunkType,
 )
-from serapeum.core.tools.utils import Function
+from serapeum.core.tools.utils import FunctionConverter
 
 AsyncCallable = Callable[..., Awaitable[Any]]
 
@@ -403,7 +403,7 @@ class CallableTool(AsyncBaseTool):
             # 6. Build tool_schema only if not already provided
             if tool_schema is None:
 
-                function = Function(
+                function = FunctionConverter(
                     f"{name}",
                     fn_to_parse,
                     additional_fields=None,

@@ -95,7 +95,7 @@ class FunctionArgument:
         return param_type, field_info
 
 
-class Function:
+class FunctionConverter:
     def __init__(
         self,
         name: str,

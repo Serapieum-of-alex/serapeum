@@ -189,11 +189,9 @@ class TestDocstringExtractParamDocs:
         assert param_docs == {"x": "first desc"}
         assert unknown == set()
 
-# -----------------------------------------------------------------------------
-# Tests for create_schema_from_function
-# -----------------------------------------------------------------------------
 
 class TestCreateSchemaFromFunction:
+    """Tests for create_schema_from_function"""
     def test_required_default_any_and_field_info(self) -> None:
         """Validate required fields, defaulted fields, Any typing, and Field defaults.
 
@@ -324,11 +322,8 @@ class TestCreateSchemaFromFunction:
             _ = function.to_schema()
 
 
-# -----------------------------------------------------------------------------
-# Tests for call_tool (synchronous)
-# -----------------------------------------------------------------------------
-
 class TestCallTool:
+    """Tests for call_tool (synchronous)"""
     def test_single_arg_positional_forwarding(self) -> None:
         """A single-arg tool called with one-arg schema forwards a positional value.
 

@@ -58,10 +58,11 @@ class SyncAsyncConverter:
             - Basic usage with integers
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.tools.callable_tool import sync_to_async
+                >>> from serapeum.core.tools.callable_tool import SyncAsyncConverter
                 >>> def add(x: int, y: int) -> int:
                 ...     return x + y
-                >>> async_add = sync_to_async(add)
+                >>> converter = SyncAsyncConverter(add)
+                >>> async_add = converter.async_func
                 >>> print(asyncio.run(async_add(2, 3)))
                 5
 
@@ -69,10 +70,11 @@ class SyncAsyncConverter:
             - Works with arbitrary return types
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.tools.callable_tool import sync_to_async
+                >>> from serapeum.core.tools.callable_tool import SyncAsyncConverter
                 >>> def greet(name: str) -> str:
                 ...     return f"Hello, {name}!"
-                >>> async_greet = sync_to_async(greet)
+                >>> converter = SyncAsyncConverter(greet)
+                >>> async_greet = converter.async_func
                 >>> print(asyncio.run(async_greet("Alice")))
                 Hello, Alice!
 
@@ -113,20 +115,22 @@ class SyncAsyncConverter:
         Examples:
             - Basic usage
                 ```python
-                >>> from serapeum.core.tools.callable_tool import async_to_sync
+                >>> from serapeum.core.tools.callable_tool import SyncAsyncConverter
                 >>> async def mul(x: int, y: int) -> int:
                 ...     return x * y
-                >>> mul_sync = async_to_sync(mul)
+                >>> converter = SyncAsyncConverter(mul)
+                >>> mul_sync = converter.sync_func
                 >>> print(mul_sync(4, 5))
                 20
 
                 ```
             - Wrapping async functions that return strings
                 ```python
-                >>> from serapeum.core.tools.callable_tool import async_to_sync
+                >>> from serapeum.core.tools.callable_tool import SyncAsyncConverter
                 >>> async def greet(name: str) -> str:
                 ...     return f"Hello, {name}!"
-                >>> greet_sync = async_to_sync(greet)
+                >>> converter = SyncAsyncConverter(greet)
+                >>> greet_sync = converter.sync_func
                 >>> print(greet_sync("Bob"))
                 Hello, Bob!
 
@@ -175,7 +179,7 @@ class CallableTool(AsyncBaseTool):
             >>> from serapeum.core.tools.models import ToolMetadata
             >>> async def add(x: int, y: int) -> int:
             ...     return x + y
-            >>> tool = CallableTool(async_fn=add, metadata=ToolMetadata(name="add", description="Add two ints"))
+            >>> tool = CallableTool(func=add, metadata=ToolMetadata(name="add", description="Add two ints"))
             >>> out = asyncio.run(tool.acall(2, 3))  # call() also works via sync adapter
             >>> print(out.content)
             5
@@ -254,7 +258,7 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> async def add(a: int, b: int) -> int:
                 ...     return a + b
-                >>> tool = CallableTool(async_fn=add, metadata=ToolMetadata(name="add", description="Add ints"), default_arguments={"b": 10})
+                >>> tool = CallableTool(func=add, metadata=ToolMetadata(name="add", description="Add ints"), default_arguments={"b": 10})
                 >>> print(asyncio.run(tool.acall(5)).content)
                 15
 
@@ -264,8 +268,8 @@ class CallableTool(AsyncBaseTool):
         self._real_fn = func
         sync_async_converter = SyncAsyncConverter(func)
 
-        self._async_fn = sync_async_converter.async_func
-        self._fn = sync_async_converter.sync_func
+        self._async_func = sync_async_converter.async_func
+        self._sync_func = sync_async_converter.sync_func
 
         if metadata is None:
             raise ValueError("metadata must be provided")
@@ -441,7 +445,7 @@ class CallableTool(AsyncBaseTool):
         return self._metadata
 
     @property
-    def fn(self) -> Callable[..., Any]:
+    def sync_func(self) -> Callable[..., Any]:
         """Return the synchronous wrapper for the underlying callable.
 
         If the original callable was async, this is a blocking adapter created by
@@ -458,15 +462,15 @@ class CallableTool(AsyncBaseTool):
                 >>> def add(a: int, b: int) -> int:
                 ...     return a + b
                 >>> tool = CallableTool(func=add, metadata=ToolMetadata(name="add", description="Add"))
-                >>> print(tool.func(2, 3))
+                >>> print(tool.sync_func(2, 3))
                 5
 
                 ```
         """
-        return self._fn
+        return self._sync_func
 
     @property
-    def async_fn(self) -> AsyncCallable:
+    def async_func(self) -> AsyncCallable:
         """Return the asynchronous wrapper for the underlying callable.
 
         If the original callable was synchronous, this is an adapter created by
@@ -485,12 +489,12 @@ class CallableTool(AsyncBaseTool):
                 >>> def square(x: int) -> int:
                 ...     return x * x
                 >>> tool = CallableTool(func=square, metadata=ToolMetadata(name="square", description="Square"))
-                >>> print(asyncio.run(tool.async_fn(4)))
+                >>> print(asyncio.run(tool.async_func(4)))
                 16
 
                 ```
         """
-        return self._async_fn
+        return self._async_func
 
     @property
     def real_fn(self) -> Union[Callable[..., Any], AsyncCallable]:
@@ -513,7 +517,7 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> async def afunc(x: int) -> int:
                 ...     return x
-                >>> tool = CallableTool(async_fn=afunc, metadata=ToolMetadata(name="afunc", description="Async"))
+                >>> tool = CallableTool(func=afunc, metadata=ToolMetadata(name="afunc", description="Async"))
                 >>> print(inspect.iscoroutinefunction(tool.real_fn))
                 True
 
@@ -668,7 +672,7 @@ class CallableTool(AsyncBaseTool):
         """
         all_kwargs = {**self.default_arguments, **kwargs}
 
-        raw_output = self._fn(*args, **all_kwargs)
+        raw_output = self._sync_func(*args, **all_kwargs)
 
         # Parse tool output into content chunks
         output_blocks = self._parse_tool_output(raw_output)
@@ -707,7 +711,7 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> async def add(a: int, b: int) -> int:
                 ...     return a + b
-                >>> tool = CallableTool(async_fn=add, metadata=ToolMetadata(name="add", description="Add"))
+                >>> tool = CallableTool(func=add, metadata=ToolMetadata(name="add", description="Add"))
                 >>> out = asyncio.run(tool.acall(2, 3))
                 >>> print(out.content)
                 5
@@ -716,7 +720,7 @@ class CallableTool(AsyncBaseTool):
         """
         all_kwargs = {**self.default_arguments, **kwargs}
 
-        raw_output = await self._async_fn(*args, **all_kwargs)
+        raw_output = await self._async_func(*args, **all_kwargs)
 
         # Parse tool output into content chunks
         output_blocks = self._parse_tool_output(raw_output)

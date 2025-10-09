@@ -91,8 +91,8 @@ class TestCallableToolInit:
 
         meta = ToolMetadata(name="t", description="d")
         tool = CallableTool(func=echo, metadata=meta)
-        assert tool.fn("hi") == "HI"
-        assert asyncio.run(tool.async_fn("yo")) == "YO"
+        assert tool.sync_func("hi") == "HI"
+        assert asyncio.run(tool.async_func("yo")) == "YO"
         assert tool.real_fn is echo
         assert tool.metadata.get_name() == "t"
 
@@ -110,9 +110,9 @@ class TestCallableToolInit:
         meta = ToolMetadata(name="ta", description="d")
         tool = CallableTool(func=aecho, metadata=meta)
         # sync path
-        assert tool.fn("abc") == "cba"
+        assert tool.sync_func("abc") == "cba"
         # async path
-        assert asyncio.run(tool.async_fn("abcd")) == "dcba"
+        assert asyncio.run(tool.async_func("abcd")) == "dcba"
         assert tool.real_fn is aecho
 
     def test_init_without_metadata_raises(self):

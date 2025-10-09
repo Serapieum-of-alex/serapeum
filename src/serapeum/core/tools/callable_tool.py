@@ -373,7 +373,7 @@ class CallableTool(AsyncBaseTool):
 
             # 1. Extract docstring param descriptions
             docstring = Docstring(fn_to_parse)
-            param_docs, unknown_params = docstring.extract_param_docs()
+            param_docs, _ = docstring.extract_param_docs()
 
             # Handle FieldInfo defaults (remove default values and make all parameters required)
             fn_sig = fn_sig.replace(

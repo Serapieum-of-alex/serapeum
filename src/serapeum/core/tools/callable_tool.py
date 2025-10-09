@@ -3,7 +3,6 @@
 import asyncio
 import inspect
 from typing import Any, Awaitable, Callable, Optional, Type, Dict, Union, List, Tuple
-import re
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
@@ -163,7 +162,7 @@ class CallableTool(AsyncBaseTool):
             >>> def greet(name: str) -> str:
             ...     return f"Hello, {name}!"
             >>> meta = ToolMetadata(name="greet", description="Greets a person by name.")
-            >>> tool = CallableTool(fn=greet, metadata=meta)
+            >>> tool = CallableTool(func=greet, metadata=meta)
             >>> out = tool("World")  # __call__ delegates to .call()
             >>> print(out.content)
             Hello, World!
@@ -189,7 +188,7 @@ class CallableTool(AsyncBaseTool):
             >>> def power(base: int, exp: int = 2) -> int:
             ...     return base ** exp
             >>> tool = CallableTool(
-            ...     fn=power,
+            ...     func=power,
             ...     metadata=ToolMetadata(name="power", description="Exponentiation"),
             ...     default_arguments={"exp": 3},
             ... )
@@ -207,20 +206,19 @@ class CallableTool(AsyncBaseTool):
 
     def __init__(
         self,
-        fn: Optional[Callable[..., Any]] = None,
+        func: Optional[Callable[..., Any] | AsyncCallable],
         metadata: Optional[ToolMetadata] = None,
-        async_fn: Optional[AsyncCallable] = None,
         default_arguments: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialize a CallableTool.
 
-        Provide either a synchronous function via ``fn`` or an asynchronous one
-        via ``async_fn``. If only ``fn`` is provided and it is synchronous, an
-        async adapter is created automatically; if ``fn`` is already async, a
+        Provide either a synchronous function via ``func`` or an asynchronous one
+        via ``async_fn``. If only ``func`` is provided and it is synchronous, an
+        async adapter is created automatically; if ``func`` is already async, a
         sync adapter is created for ``call(...)``.
 
         Args:
-            fn (Optional[Callable[..., Any]]):
+            func (Optional[Callable[..., Any]]):
                 Synchronous or asynchronous callable to wrap. Mutually exclusive
                 with ``async_fn``.
             metadata (Optional[ToolMetadata]):
@@ -228,13 +226,13 @@ class CallableTool(AsyncBaseTool):
                 :meth:`CallableTool.from_defaults` if you prefer automatic
                 metadata derivation.
             async_fn (Optional[AsyncCallable]):
-                Async callable to wrap. Mutually exclusive with ``fn``.
+                Async callable to wrap. Mutually exclusive with ``func``.
             default_arguments (Optional[Dict[str, Any]]):
                 Default keyword arguments that will be merged into each call,
                 allowing you to pre-configure parameters.
 
         Raises:
-            ValueError: If neither ``fn`` nor ``async_fn`` is provided.
+            ValueError: If neither ``func`` nor ``async_fn`` is provided.
             ValueError: If ``metadata`` is not provided.
 
         Examples:
@@ -244,7 +242,7 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def echo(text: str) -> str:
                 ...     return text
-                >>> tool = CallableTool(fn=echo, metadata=ToolMetadata(name="echo", description="Echo text"))
+                >>> tool = CallableTool(func=echo, metadata=ToolMetadata(name="echo", description="Echo text"))
                 >>> print(tool("hi").content)
                 hi
 
@@ -262,9 +260,6 @@ class CallableTool(AsyncBaseTool):
 
                 ```
         """
-        if fn is None and async_fn is None:
-            raise ValueError("fn or async_fn must be provided.")
-
         # Handle function (sync and async)
         self._real_fn = func
         sync_async_converter = SyncAsyncConverter(func)
@@ -281,19 +276,18 @@ class CallableTool(AsyncBaseTool):
     @classmethod
     def from_function(
         cls,
-        fn: Optional[Callable[..., Any]] = None,
+        func: Optional[Callable[..., Any] | AsyncCallable],
         name: Optional[str] = None,
         description: Optional[str] = None,
         return_direct: bool = False,
         tool_schema: Optional[Type[BaseModel]] = None,
-        async_fn: Optional[AsyncCallable] = None,
         tool_metadata: Optional[ToolMetadata] = None,
         default_arguments: Optional[Dict[str, Any]] = None,
     ) -> "CallableTool":
         """Construct a ``CallableTool`` and infer metadata/schema when needed.
 
         If ``tool_metadata`` is not provided, this method derives a
-        :class:`ToolMetadata` instance from the provided ``fn``/``async_fn`` by
+        :class:`ToolMetadata` instance from the provided ``func``/``async_fn`` by
         inspecting its signature, type hints, and docstring. If
         ``tool_schema`` is not provided, a Pydantic model is built to represent
         the function's input schema. Where possible, parameter descriptions are
@@ -301,7 +295,7 @@ class CallableTool(AsyncBaseTool):
         :meth:`CallableTool.extract_param_docs`.
 
         Args:
-            fn (Optional[Callable[..., Any]]):
+            func (Optional[Callable[..., Any]]):
                 Synchronous function to wrap. Mutually exclusive with
                 ``async_fn``.
             name (Optional[str]):
@@ -318,7 +312,7 @@ class CallableTool(AsyncBaseTool):
                 Optional Pydantic model to use as the input schema. If omitted,
                 one is created from the function signature.
             async_fn (Optional[AsyncCallable]):
-                Asynchronous function to wrap. Mutually exclusive with ``fn``.
+                Asynchronous function to wrap. Mutually exclusive with ``func``.
             tool_metadata (Optional[ToolMetadata]):
                 Provide explicit metadata. If given, it is used as-is and no
                 inference occurs.
@@ -329,7 +323,7 @@ class CallableTool(AsyncBaseTool):
             CallableTool: A tool wrapping the provided callable.
 
         Raises:
-            AssertionError: If neither ``fn`` nor ``async_fn`` is provided.
+            AssertionError: If neither ``func`` nor ``async_fn`` is provided.
 
         Examples:
             - Infer metadata and schema from a sync function
@@ -343,7 +337,7 @@ class CallableTool(AsyncBaseTool):
                 ...         b (int): Second integer.
                 ...     '''
                 ...     return a + b
-                >>> tool = CallableTool.from_function(fn=add)
+                >>> tool = CallableTool.from_function(func=add)
                 >>> # Name falls back to function name; calling works as usual
                 >>> print(tool.metadata.get_name())
                 add
@@ -358,7 +352,7 @@ class CallableTool(AsyncBaseTool):
                 >>> def echo(text: str) -> str:
                 ...     return text
                 >>> meta = ToolMetadata(name="echo", description="Echo text")
-                >>> tool = CallableTool.from_function(fn=echo, tool_metadata=meta, default_arguments={})
+                >>> tool = CallableTool.from_function(func=echo, tool_metadata=meta, default_arguments={})
                 >>> print(tool("ok").content)
                 ok
 
@@ -370,17 +364,16 @@ class CallableTool(AsyncBaseTool):
         default_arguments = default_arguments or {}
 
         if tool_metadata is None:
-            fn_to_parse = fn or async_fn
-            assert fn_to_parse is not None, "fn must be provided"
-            name = name or fn_to_parse.__name__
+            if func is None:
+                raise ValueError("func must be provided")
+            name = name or func.__name__
+            fn_sig = inspect.signature(func)
 
-            fn_sig = inspect.signature(fn_to_parse)
-
-            # 1. Extract docstring param descriptions
-            docstring = Docstring(fn_to_parse)
+            # get the docstring from the function
+            docstring = Docstring(func)
             param_docs, _ = docstring.extract_param_docs()
 
-            # Handle FieldInfo defaults (remove default values and make all parameters required)
+            # Replace default values to be required
             fn_sig = fn_sig.replace(
                 parameters=[
                     (
@@ -392,16 +385,17 @@ class CallableTool(AsyncBaseTool):
                 ]
             )
             docstring.signature = fn_sig
-            # 5. Build enriched description using param_docs
-            if description is None:
-                description = docstring.create_description()
 
-            # 6. Build tool_schema only if not already provided
+            # Build enriched description using param_docs
+            if description is None:
+                description = docstring.get_short_summary_line()
+
+            # get the tool_schema
             if tool_schema is None:
 
                 function = FunctionConverter(
                     f"{name}",
-                    fn_to_parse,
+                    func,
                     additional_fields=None,
                     ignore_fields=None,
                 )
@@ -418,12 +412,10 @@ class CallableTool(AsyncBaseTool):
                 return_direct=return_direct,
             )
         return cls(
-            fn=fn,
+            func=func,
             metadata=tool_metadata,
-            async_fn=async_fn,
             default_arguments=default_arguments,
         )
-
 
 
     @property
@@ -440,7 +432,7 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def noop(x: int) -> int:
                 ...     return x
-                >>> tool = CallableTool(fn=noop, metadata=ToolMetadata(name="noop", description="No-op"))
+                >>> tool = CallableTool(func=noop, metadata=ToolMetadata(name="noop", description="No-op"))
                 >>> print(tool.metadata.get_name())
                 noop
 
@@ -465,8 +457,8 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def add(a: int, b: int) -> int:
                 ...     return a + b
-                >>> tool = CallableTool(fn=add, metadata=ToolMetadata(name="add", description="Add"))
-                >>> print(tool.fn(2, 3))
+                >>> tool = CallableTool(func=add, metadata=ToolMetadata(name="add", description="Add"))
+                >>> print(tool.func(2, 3))
                 5
 
                 ```
@@ -492,7 +484,7 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def square(x: int) -> int:
                 ...     return x * x
-                >>> tool = CallableTool(fn=square, metadata=ToolMetadata(name="square", description="Square"))
+                >>> tool = CallableTool(func=square, metadata=ToolMetadata(name="square", description="Square"))
                 >>> print(asyncio.run(tool.async_fn(4)))
                 16
 
@@ -605,7 +597,7 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def add(a: int, b: int) -> int:
                 ...     return a + b
-                >>> tool = CallableTool(fn=add, metadata=ToolMetadata(name="add", description="Add"))
+                >>> tool = CallableTool(func=add, metadata=ToolMetadata(name="add", description="Add"))
                 >>> out = tool(2, 3)
                 >>> print(out.content)
                 5
@@ -617,7 +609,7 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def greet(name: str, punct: str = "!") -> str:
                 ...     return f"Hello, {name}{punct}"
-                >>> tool = CallableTool(fn=greet, metadata=ToolMetadata(name="greet", description="Greet"), default_arguments={"punct": "!!"})
+                >>> tool = CallableTool(func=greet, metadata=ToolMetadata(name="greet", description="Greet"), default_arguments={"punct": "!!"})
                 >>> print(tool("Ada").content)
                 Hello, Ada!!
                 >>> print(tool("Ada", punct=".").content)
@@ -632,7 +624,7 @@ class CallableTool(AsyncBaseTool):
         """Execute the wrapped callable synchronously.
 
         Merges ``default_arguments`` with the supplied ``kwargs``, invokes the
-        synchronous wrapper (:attr:`CallableTool.fn`), normalizes the result into
+        synchronous wrapper (:attr:`CallableTool.func`), normalizes the result into
         content chunks, and returns a :class:`ToolOutput`.
 
         Args:
@@ -655,7 +647,7 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def concat(a: str, b: str) -> str:
                 ...     return a + b
-                >>> tool = CallableTool(fn=concat, metadata=ToolMetadata(name="concat", description="Concat"))
+                >>> tool = CallableTool(func=concat, metadata=ToolMetadata(name="concat", description="Concat"))
                 >>> print(tool.call("a", "b").content)
                 ab
 
@@ -666,7 +658,7 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def greet(name: str, punct: str = "!") -> str:
                 ...     return f"Hello, {name}{punct}"
-                >>> tool = CallableTool(fn=greet, metadata=ToolMetadata(name="greet", description="Greet"), default_arguments={"punct": "?"})
+                >>> tool = CallableTool(func=greet, metadata=ToolMetadata(name="greet", description="Greet"), default_arguments={"punct": "?"})
                 >>> print(tool.call("Ada").content)
                 Hello, Ada?
                 >>> print(tool.call("Ada", punct=".").content)

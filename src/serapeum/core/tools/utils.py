@@ -116,17 +116,17 @@ class Docstring:
 
         return raw_param_docs, unknown_params
 
-    def create_description(self) -> str:
+    def get_short_summary_line(self) -> str:
         """Extracts the first line of the docstring."""
         description = f"{self.name}{self.fn_sig}\n"
 
-        # Extract the first meaningful line (summary) from the docstring
         doc_lines = self.docstring.strip().splitlines()
         for line in doc_lines:
             if line.strip():
                 description += line.strip()
                 break
         return description
+
 
 class FunctionArgument:
     def __init__(self, param: Parameter) -> None:

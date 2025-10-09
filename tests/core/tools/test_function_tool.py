@@ -82,7 +82,7 @@ class TestCallableToolInit:
     def test_init_with_sync_fn(self):
         """
         Inputs: A simple sync function and ToolMetadata(name="t", description="d").
-        Expected: CallableTool initializes, exposing .fn (sync) and .async_fn (async wrapper), and .real_fn is the original function.
+        Expected: CallableTool initializes, exposing .func (sync) and .async_fn (async wrapper), and .real_fn is the original function.
         Checks: Correct wrapping decisions and metadata attachment.
         """
 
@@ -90,7 +90,7 @@ class TestCallableToolInit:
             return text.upper()
 
         meta = ToolMetadata(name="t", description="d")
-        tool = CallableTool(fn=echo, metadata=meta)
+        tool = CallableTool(func=echo, metadata=meta)
         assert tool.fn("hi") == "HI"
         assert asyncio.run(tool.async_fn("yo")) == "YO"
         assert tool.real_fn is echo
@@ -99,7 +99,7 @@ class TestCallableToolInit:
     def test_init_with_async_fn(self):
         """
         Inputs: An async function and ToolMetadata.
-        Expected: .async_fn is the original async function, .fn is a sync wrapper that runs it, and .real_fn is the async function.
+        Expected: .async_fn is the original async function, .func is a sync wrapper that runs it, and .real_fn is the async function.
         Checks: Wrapping from async to sync path and consistency of returned values through both call styles.
         """
 
@@ -108,7 +108,7 @@ class TestCallableToolInit:
             return text[::-1]
 
         meta = ToolMetadata(name="ta", description="d")
-        tool = CallableTool(async_fn=aecho, metadata=meta)
+        tool = CallableTool(func=aecho, metadata=meta)
         # sync path
         assert tool.fn("abc") == "cba"
         # async path
@@ -126,21 +126,21 @@ class TestCallableToolInit:
             return 1
 
         with pytest.raises(ValueError, match="metadata must be provided"):
-            _ = CallableTool(fn=f, metadata=None)  # type: ignore[arg-type]
+            _ = CallableTool(func=f, metadata=None)  # type: ignore[arg-type]
 
     def test_init_without_fn_or_async_fn_raises(self):
         """
-        Inputs: Both fn=None and async_fn=None.
-        Expected: ValueError stating that one of fn or async_fn must be provided.
+        Inputs: Both func=None and async_fn=None.
+        Expected: ValueError stating that one of func or async_fn must be provided.
         Checks: Constructor enforces presence of at least one callable.
         """
 
         meta = ToolMetadata(name="x", description="d")
-        with pytest.raises(ValueError, match="fn or async_fn must be provided"):
-            _ = CallableTool(fn=None, async_fn=None, metadata=meta)  # type: ignore[arg-type]
+        with pytest.raises(ValueError, match="func must be a callable"):
+            _ = CallableTool(func=None, metadata=meta)  # type: ignore[arg-type]
 
 
-class TestCallableToolFromDefaults:
+class TestCallableToolFromFunction:
     def test_builds_metadata_name_description_and_schema_with_docs(self):
         """
         Inputs:
@@ -163,7 +163,7 @@ class TestCallableToolFromDefaults:
             """
             return f"{x}-{y}"
 
-        tool = CallableTool.from_function(fn=foo)
+        tool = CallableTool.from_function(func=foo)
         meta = tool.metadata
         assert meta.get_name() == "foo"
         # Description should start with signature and include the summary line
@@ -191,7 +191,7 @@ class TestCallableToolFromDefaults:
             """Bar summary."""
             return a
 
-        tool = CallableTool.from_function(fn=bar)
+        tool = CallableTool.from_function(func=bar)
         desc = tool.metadata.description
         # Ensure signature part doesn't leak Field(...) text
         assert desc.startswith("bar(")
@@ -218,7 +218,7 @@ class TestCallableToolFromDefaults:
         def f(q: str) -> str:
             return q
 
-        tool = CallableTool.from_function(fn=f, tool_metadata=meta)
+        tool = CallableTool.from_function(func=f, tool_metadata=meta)
         assert tool.metadata is meta
         assert tool.metadata.get_name() == "custom"
         assert tool.metadata.get_schema()["properties"]["q"]["type"] == "string"
@@ -232,7 +232,7 @@ class TestCallableToolParseToolOutput:
         Checks: Pass-through behavior for a single valid chunk.
         """
         tool = CallableTool(
-            fn=lambda: "ignored",
+            func=lambda: "ignored",
             metadata=ToolMetadata(name="t", description="d"),
         )
         chunk = TextChunk(content="hello")
@@ -245,7 +245,7 @@ class TestCallableToolParseToolOutput:
         Expected: Returns lists containing the provided chunk instances respectively.
         Checks: Pass-through behavior for image and audio chunks.
         """
-        tool = CallableTool(fn=lambda: "ignored", metadata=ToolMetadata(name="t", description="d"))
+        tool = CallableTool(func=lambda: "ignored", metadata=ToolMetadata(name="t", description="d"))
         img = Image(url="http://example.com/x.png")
         aud = Audio(url="http://example.com/x.wav")
         assert tool._parse_tool_output(img) == [img]
@@ -257,7 +257,7 @@ class TestCallableToolParseToolOutput:
         Expected: Returns the same list unchanged.
         Checks: Lists of valid chunk types are passed through as-is.
         """
-        tool = CallableTool(fn=lambda: "ignored", metadata=ToolMetadata(name="t", description="d"))
+        tool = CallableTool(func=lambda: "ignored", metadata=ToolMetadata(name="t", description="d"))
         chunks = [TextChunk(content="a"), Image(url="http://example.com/i.png")]
         assert tool._parse_tool_output(chunks) == chunks
 
@@ -268,7 +268,7 @@ class TestCallableToolParseToolOutput:
         Checks: Fallback conversion for non-chunk outputs to text chunks.
         """
 
-        tool = CallableTool(fn=lambda: "ignored", metadata=ToolMetadata(name="t", description="d"))
+        tool = CallableTool(func=lambda: "ignored", metadata=ToolMetadata(name="t", description="d"))
         for raw in ("ok", 123, {"a": 1}):
             chunks = tool._parse_tool_output(raw)
             assert len(chunks) == 1
@@ -288,7 +288,7 @@ class TestCallableToolCall:
             return a, b, c
 
         meta = ToolMetadata(name="add", description="d")
-        tool = CallableTool(fn=f, metadata=meta, default_arguments={"c": 10})
+        tool = CallableTool(func=f, metadata=meta, default_arguments={"c": 10})
 
         out: ToolOutput = tool.call(1, b=2)
         assert isinstance(out, ToolOutput)
@@ -311,7 +311,7 @@ class TestCallableToolCall:
             return a, b, c
 
         meta = ToolMetadata(name="add2", description="d")
-        tool = CallableTool(fn=f, metadata=meta, default_arguments={"c": 10})
+        tool = CallableTool(func=f, metadata=meta, default_arguments={"c": 10})
 
         out = tool.call(1, b=2, c=20)
         assert out.raw_output == (1, 2, 20)
@@ -334,7 +334,7 @@ class TestCallableToolDunderCall:
             return f"{a}{sep}{b}"
 
         meta = ToolMetadata(name="join", description="d")
-        tool = CallableTool(fn=join, metadata=meta, default_arguments={"sep": ":"})
+        tool = CallableTool(func=join, metadata=meta, default_arguments={"sep": ":"})
 
         out = tool("left", b="right")
         assert out.tool_name == "join"
@@ -357,7 +357,7 @@ class TestCallableToolACall:
             return str(a + b + c)
 
         meta = ToolMetadata(name="sum_async", description="d")
-        tool = CallableTool(async_fn=g, metadata=meta, default_arguments={"c": 5})
+        tool = CallableTool(func=g, metadata=meta, default_arguments={"c": 5})
 
         out = await tool.acall(a=1, b=2)
         assert out.tool_name == "sum_async"

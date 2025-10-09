@@ -229,8 +229,6 @@ class CallableTool(AsyncBaseTool):
                 Required metadata describing the tool. Use
                 :meth:`CallableTool.from_defaults` if you prefer automatic
                 metadata derivation.
-            async_fn (Optional[AsyncCallable]):
-                Async callable to wrap. Mutually exclusive with ``func``.
             default_arguments (Optional[Dict[str, Any]]):
                 Default keyword arguments that will be merged into each call,
                 allowing you to pre-configure parameters.
@@ -265,7 +263,7 @@ class CallableTool(AsyncBaseTool):
                 ```
         """
         # Handle function (sync and async)
-        self._real_fn = func
+        self._input_func = func
         sync_async_converter = SyncAsyncConverter(func)
 
         self._async_func = sync_async_converter.async_func
@@ -497,7 +495,7 @@ class CallableTool(AsyncBaseTool):
         return self._async_func
 
     @property
-    def real_fn(self) -> Union[Callable[..., Any], AsyncCallable]:
+    def input_func(self) -> Union[Callable[..., Any], AsyncCallable]:
         """Return the original callable that was wrapped.
 
         Returns:
@@ -518,15 +516,15 @@ class CallableTool(AsyncBaseTool):
                 >>> async def afunc(x: int) -> int:
                 ...     return x
                 >>> tool = CallableTool(func=afunc, metadata=ToolMetadata(name="afunc", description="Async"))
-                >>> print(inspect.iscoroutinefunction(tool.real_fn))
+                >>> print(inspect.iscoroutinefunction(tool.input_func))
                 True
 
                 ```
         """
-        if self._real_fn is None:
+        if self._input_func is None:
             raise ValueError("Real function is not set!")
 
-        return self._real_fn
+        return self._input_func
 
     @staticmethod
     def _parse_tool_output(raw_output: Any) -> List[ChunkType]:

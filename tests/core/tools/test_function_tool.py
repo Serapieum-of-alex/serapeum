@@ -93,7 +93,7 @@ class TestCallableToolInit:
         tool = CallableTool(func=echo, metadata=meta)
         assert tool.sync_func("hi") == "HI"
         assert asyncio.run(tool.async_func("yo")) == "YO"
-        assert tool.real_fn is echo
+        assert tool.input_func is echo
         assert tool.metadata.get_name() == "t"
 
     def test_init_with_async_fn(self):
@@ -113,7 +113,7 @@ class TestCallableToolInit:
         assert tool.sync_func("abc") == "cba"
         # async path
         assert asyncio.run(tool.async_func("abcd")) == "dcba"
-        assert tool.real_fn is aecho
+        assert tool.input_func is aecho
 
     def test_init_without_metadata_raises(self):
         """

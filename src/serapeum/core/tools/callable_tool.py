@@ -15,7 +15,7 @@ from serapeum.core.base.llms.models import (
     Audio,
     ChunkType,
 )
-from serapeum.core.tools.utils import FunctionConverter
+from serapeum.core.tools.utils import FunctionConverter, Docstring
 
 AsyncCallable = Callable[..., Awaitable[Any]]
 
@@ -368,14 +368,12 @@ class CallableTool(AsyncBaseTool):
             fn_to_parse = fn or async_fn
             assert fn_to_parse is not None, "fn must be provided"
             name = name or fn_to_parse.__name__
-            docstring = fn_to_parse.__doc__ or ""
 
-            # Get function signature
             fn_sig = inspect.signature(fn_to_parse)
-            fn_params = set(fn_sig.parameters.keys())
 
             # 1. Extract docstring param descriptions
-            param_docs, unknown_params = cls.extract_param_docs(docstring, fn_params)
+            docstring = Docstring(fn_to_parse)
+            param_docs, unknown_params = docstring.extract_param_docs()
 
             # Handle FieldInfo defaults (remove default values and make all parameters required)
             fn_sig = fn_sig.replace(
@@ -388,17 +386,10 @@ class CallableTool(AsyncBaseTool):
                     for param in fn_sig.parameters.values()
                 ]
             )
-
+            docstring.signature = fn_sig
             # 5. Build enriched description using param_docs
             if description is None:
-                description = f"{name}{fn_sig}\n"
-
-                # Extract the first meaningful line (summary) from the docstring
-                doc_lines = docstring.strip().splitlines()
-                for line in doc_lines:
-                    if line.strip():
-                        description += line.strip()
-                        break
+                description = docstring.create_description()
 
             # 6. Build tool_schema only if not already provided
             if tool_schema is None:
@@ -428,78 +419,7 @@ class CallableTool(AsyncBaseTool):
             default_arguments=default_arguments,
         )
 
-    @staticmethod
-    def extract_param_docs(
-        docstring: str, fn_params: Optional[set] = None
-    ) -> Tuple[dict, set]:
-        """Parse parameter descriptions from a docstring in common styles.
 
-        Supports Sphinx (``:param name: desc``), Google (``name (type): desc``),
-        and Javadoc (``@param name desc``) styles. Unknown parameters (i.e.,
-        names not present in ``fn_params`` when provided) are returned
-        separately and ignored in the final schema enrichment.
-
-        Args:
-            docstring (str): The docstring text to parse.
-            fn_params (Optional[set]): Optional set of valid parameter names.
-                When supplied, parameters not in this set are returned in the
-                second element of the tuple as ``unknown_params``.
-
-        Returns:
-            Tuple[dict, set]:
-                - A mapping of parameter name to the first non-conflicting
-                  description found.
-                - A set of unknown parameter names encountered in the docstring.
-
-        Examples:
-            - Google style
-                ```python
-                >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> doc = '''
-                ... Adds two numbers.
-                ...
-                ... Args:
-                ...     a (int): First addend.
-                ...     b (int): Second addend.
-                ... '''
-                >>> param_docs, unknown = CallableTool.extract_param_docs(doc, {"a", "b"})
-                >>> print(sorted(param_docs.items()))
-                [('a', 'First addend.'), ('b', 'Second addend.')]
-                >>> print(sorted(unknown))
-                []
-
-                ```
-
-        See Also:
-            - CallableTool.from_defaults: Uses this to enrich a generated schema.
-        """
-        raw_param_docs: dict[str, str] = {}
-        unknown_params = set()
-
-        def try_add_param(name: str, desc: str) -> None:
-            desc = desc.strip()
-            if fn_params and name not in fn_params:
-                unknown_params.add(name)
-                return
-            if name in raw_param_docs and raw_param_docs[name] != desc:
-                return
-            raw_param_docs[name] = desc
-
-        # Sphinx style
-        for match in re.finditer(r":param (\w+): (.+)", docstring):
-            try_add_param(match.group(1), match.group(2))
-
-        # Google style
-        for match in re.finditer(
-            r"^\s*(\w+)\s*\(.*?\):\s*(.+)$", docstring, re.MULTILINE
-        ):
-            try_add_param(match.group(1), match.group(2))
-
-        # Javadoc style
-        for match in re.finditer(r"@param (\w+)\s+(.+)", docstring):
-            try_add_param(match.group(1), match.group(2))
-
-        return raw_param_docs, unknown_params
 
     @property
     def metadata(self) -> ToolMetadata:

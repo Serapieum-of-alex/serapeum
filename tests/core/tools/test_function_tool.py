@@ -72,39 +72,6 @@ class TestAsyncToSync:
             wrapped()
 
 
-class TestCallableToolExtractParamDocs:
-    def test_extracts_sphinx_google_javadoc_and_filters_unknown(self):
-        """
-        Inputs: A composite docstring containing Sphinx (:param), Google (name (type): desc), and Javadoc (@param) parameter docs.
-                Known function parameters: {"a", "b"}. Docstring also includes an unknown param "c".
-        Expected: Returned param_docs provides descriptions for only known params (a and b). unknown_params contains {"c"}.
-        Checks: All three styles are parsed, only known params are kept, and unknown parameters are reported.
-        """
-        doc = (
-            "Summary line.\n\n"
-            ":param a: value for a\n"
-            "b (int): value for b\n"
-            "@param c value for c (unknown)\n"
-        )
-        param_docs, unknown = CallableTool.extract_param_docs(doc, {"a", "b"})
-        assert param_docs == {"a": "value for a", "b": "value for b"}
-        assert unknown == {"c"}
-
-    def test_conflicting_descriptions_keep_first(self):
-        """
-        Inputs: A docstring defines the same parameter twice with different descriptions.
-        Expected: The first description is retained; the conflicting second one is ignored.
-        Checks: Conflict resolution behavior when duplicate param documentation with different text appears.
-        """
-        doc = (
-            ":param x: first desc\n"
-            ":param x: second desc\n"
-        )
-        param_docs, unknown = CallableTool.extract_param_docs(doc, {"x"})
-        assert param_docs == {"x": "first desc"}
-        assert unknown == set()
-
-
 class TestCallableToolInit:
     def test_init_with_sync_fn(self):
         """

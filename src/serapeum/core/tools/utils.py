@@ -1,3 +1,4 @@
+import re
 import json
 from inspect import signature, Parameter
 from typing import (
@@ -26,6 +27,106 @@ from serapeum.core.llm.base import ToolSelection
 
 if TYPE_CHECKING:
     from serapeum.core.tools.models import BaseTool
+
+
+class Docstring:
+
+    def __init__(self, func: Callable[..., Any], *,name: Optional[str] = None) -> None:
+        # self.func = func
+        self.name = name or func.__name__
+        self.docstring = func.__doc__ or ""
+        self.fn_sig = signature(func)
+        self.fn_params = set(self.fn_sig.parameters.keys())
+
+    @property
+    def signature(self):
+        return self.fn_sig
+
+    @signature.setter
+    def signature(self, sig):
+        self.fn_sig = sig
+
+    def extract_param_docs(self) -> Tuple[dict, set]:
+        """Parse parameter descriptions from a docstring in common styles.
+
+        Supports Sphinx (``:param name: desc``), Google (``name (type): desc``),
+        and Javadoc (``@param name desc``) styles. Unknown parameters (i.e.,
+        names not present in ``fn_params`` when provided) are returned
+        separately and ignored in the final schema enrichment.
+
+        Args:
+            docstring (str): The docstring text to parse.
+            fn_params (Optional[set]): Optional set of valid parameter names.
+                When supplied, parameters not in this set are returned in the
+                second element of the tuple as ``unknown_params``.
+
+        Returns:
+            Tuple[dict, set]:
+                - A mapping of parameter name to the first non-conflicting
+                  description found.
+                - A set of unknown parameter names encountered in the docstring.
+
+        Examples:
+            - Google style
+                ```python
+                >>> from serapeum.core.tools.callable_tool import CallableTool
+                >>> doc = '''
+                ... Adds two numbers.
+                ...
+                ... Args:
+                ...     a (int): First addend.
+                ...     b (int): Second addend.
+                ... '''
+                >>> param_docs, unknown = CallableTool.extract_param_docs(doc, {"a", "b"})
+                >>> print(sorted(param_docs.items()))
+                [('a', 'First addend.'), ('b', 'Second addend.')]
+                >>> print(sorted(unknown))
+                []
+
+                ```
+
+        See Also:
+            - CallableTool.from_defaults: Uses this to enrich a generated schema.
+        """
+        raw_param_docs: dict[str, str] = {}
+        unknown_params = set()
+
+        def try_add_param(name: str, desc: str) -> None:
+            desc = desc.strip()
+            if self.fn_params and name not in self.fn_params:
+                unknown_params.add(name)
+                return
+            if name in raw_param_docs and raw_param_docs[name] != desc:
+                return
+            raw_param_docs[name] = desc
+
+        # Sphinx style
+        for match in re.finditer(r":param (\w+): (.+)", self.docstring):
+            try_add_param(match.group(1), match.group(2))
+
+        # Google style
+        for match in re.finditer(
+    r"^\s*(\w+)\s*\(.*?\):\s*(.+)$", self.docstring, re.MULTILINE
+        ):
+            try_add_param(match.group(1), match.group(2))
+
+        # Javadoc style
+        for match in re.finditer(r"@param (\w+)\s+(.+)", self.docstring):
+            try_add_param(match.group(1), match.group(2))
+
+        return raw_param_docs, unknown_params
+
+    def create_description(self) -> str:
+        """Extracts the first line of the docstring."""
+        description = f"{self.name}{self.fn_sig}\n"
+
+        # Extract the first meaningful line (summary) from the docstring
+        doc_lines = self.docstring.strip().splitlines()
+        for line in doc_lines:
+            if line.strip():
+                description += line.strip()
+                break
+        return description
 
 class FunctionArgument:
     def __init__(self, param: Parameter) -> None:

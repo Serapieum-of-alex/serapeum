@@ -60,7 +60,7 @@ def get_function_tool(output_cls: Type[Model]) -> CallableTool:
         return output_cls(**kwargs)
 
     return CallableTool.from_function(
-        fn=model_fn,
+        func=model_fn,
         name=schema["title"],
         description=schema_description,
         tool_schema=output_cls,

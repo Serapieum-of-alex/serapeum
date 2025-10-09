@@ -19,112 +19,128 @@ from serapeum.core.tools.utils import FunctionConverter, Docstring
 
 AsyncCallable = Callable[..., Awaitable[Any]]
 
+class SyncAsyncConverter:
+    def __init__(self, func: Callable[..., Any]) -> None:
+        if not isinstance(func, Callable):
+            raise ValueError("func must be a callable")
 
-def sync_to_async(fn: Callable[..., Any]) -> AsyncCallable:
-    """Wrap a synchronous callable so it can be awaited.
+        if self.is_async(func):
+            self.async_func = func
+            self.sync_func = self.async_to_sync(func)
+        else:
+            self.sync_func = func
+            self.async_func = self.to_async(func)
 
-    The returned coroutine function offloads the synchronous work to the event
-    loop's default executor using ``loop.run_in_executor(None, ...)``.
+    @staticmethod
+    def is_async(func) -> bool:
+        return inspect.iscoroutinefunction(func)
 
-    Args:
-        fn (Callable[..., Any]):
-            A regular, synchronous callable to be executed in a thread pool.
+    @staticmethod
+    def to_async(fn: Callable[..., Any]) -> AsyncCallable:
+        """Wrap a synchronous callable so it can be awaited.
 
-    Returns:
-        AsyncCallable: An ``async`` wrapper that accepts the same positional and
-        keyword arguments as ``fn`` and returns its result when awaited.
+        The returned coroutine function offloads the synchronous work to the event
+        loop's default executor using ``loop.run_in_executor(None, ...)``.
 
-    Raises:
-        RuntimeError: If called when no event loop is running. Use
-            ``asyncio.run(...)`` or ensure you're inside an async context when
-            awaiting the wrapper.
+        Args:
+            fn (Callable[..., Any]):
+                A regular, synchronous callable to be executed in a thread pool.
 
-    Examples:
-        - Basic usage with integers
-            ```python
-            >>> import asyncio
-            >>> from serapeum.core.tools.callable_tool import sync_to_async
-            >>> def add(x: int, y: int) -> int:
-            ...     return x + y
-            >>> async_add = sync_to_async(add)
-            >>> print(asyncio.run(async_add(2, 3)))
-            5
+        Returns:
+            AsyncCallable: An ``async`` wrapper that accepts the same positional and
+            keyword arguments as ``func`` and returns its result when awaited.
 
-            ```
-        - Works with arbitrary return types
-            ```python
-            >>> import asyncio
-            >>> from serapeum.core.tools.callable_tool import sync_to_async
-            >>> def greet(name: str) -> str:
-            ...     return f"Hello, {name}!"
-            >>> async_greet = sync_to_async(greet)
-            >>> print(asyncio.run(async_greet("Alice")))
-            Hello, Alice!
+        Raises:
+            RuntimeError: If called when no event loop is running. Use
+                ``asyncio.run(...)`` or ensure you're inside an async context when
+                awaiting the wrapper.
 
-            ```
+        Examples:
+            - Basic usage with integers
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.tools.callable_tool import sync_to_async
+                >>> def add(x: int, y: int) -> int:
+                ...     return x + y
+                >>> async_add = sync_to_async(add)
+                >>> print(asyncio.run(async_add(2, 3)))
+                5
 
-    See Also:
-        - async_to_sync: Convert an async callable into a blocking callable.
-    """
+                ```
+            - Works with arbitrary return types
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.tools.callable_tool import sync_to_async
+                >>> def greet(name: str) -> str:
+                ...     return f"Hello, {name}!"
+                >>> async_greet = sync_to_async(greet)
+                >>> print(asyncio.run(async_greet("Alice")))
+                Hello, Alice!
 
-    async def _async_wrapped_fn(*args: Any, **kwargs: Any) -> Any:
-        loop = asyncio.get_running_loop()
-        # offload a blocking function to a thread pool.
-        return await loop.run_in_executor(None, lambda: fn(*args, **kwargs))
+                ```
 
-    return _async_wrapped_fn
+        See Also:
+            - async_to_sync: Convert an async callable into a blocking callable.
+        """
 
+        async def _async_wrapped_fn(*args: Any, **kwargs: Any) -> Any:
+            loop = asyncio.get_running_loop()
+            # offload a blocking function to a thread pool.
+            return await loop.run_in_executor(None, lambda: fn(*args, **kwargs))
 
-def async_to_sync(func_async: AsyncCallable) -> Callable:
-    """Wrap an async callable so it can be used from synchronous code.
+        return _async_wrapped_fn
 
-    This wrapper runs the coroutine to completion using
-    :func:`serapeum.core.utils.async_utils.asyncio_run`, which handles common
-    environments (including notebooks with existing loops) and provides a clear
-    error message for nested event loops.
+    @staticmethod
+    def async_to_sync(func_async: AsyncCallable) -> Callable:
+        """Wrap an async callable so it can be used from synchronous code.
 
-    Args:
-        func_async (AsyncCallable):
-            An async function to be executed in a blocking manner.
+        This wrapper runs the coroutine to completion using
+        :func:`serapeum.core.utils.async_utils.asyncio_run`, which handles common
+        environments (including notebooks with existing loops) and provides a clear
+        error message for nested event loops.
 
-    Returns:
-        Callable: A synchronous function that blocks until the coroutine
-        completes and returns its result.
+        Args:
+            func_async (AsyncCallable):
+                An async function to be executed in a blocking manner.
 
-    Raises:
-        RuntimeError: If the environment disallows running a new or nested event
-            loop. See the error message for mitigation strategies.
+        Returns:
+            Callable: A synchronous function that blocks until the coroutine
+            completes and returns its result.
 
-    Examples:
-        - Basic usage
-            ```python
-            >>> from serapeum.core.tools.callable_tool import async_to_sync
-            >>> async def mul(x: int, y: int) -> int:
-            ...     return x * y
-            >>> mul_sync = async_to_sync(mul)
-            >>> print(mul_sync(4, 5))
-            20
+        Raises:
+            RuntimeError: If the environment disallows running a new or nested event
+                loop. See the error message for mitigation strategies.
 
-            ```
-        - Wrapping async functions that return strings
-            ```python
-            >>> from serapeum.core.tools.callable_tool import async_to_sync
-            >>> async def greet(name: str) -> str:
-            ...     return f"Hello, {name}!"
-            >>> greet_sync = async_to_sync(greet)
-            >>> print(greet_sync("Bob"))
-            Hello, Bob!
+        Examples:
+            - Basic usage
+                ```python
+                >>> from serapeum.core.tools.callable_tool import async_to_sync
+                >>> async def mul(x: int, y: int) -> int:
+                ...     return x * y
+                >>> mul_sync = async_to_sync(mul)
+                >>> print(mul_sync(4, 5))
+                20
 
-            ```
+                ```
+            - Wrapping async functions that return strings
+                ```python
+                >>> from serapeum.core.tools.callable_tool import async_to_sync
+                >>> async def greet(name: str) -> str:
+                ...     return f"Hello, {name}!"
+                >>> greet_sync = async_to_sync(greet)
+                >>> print(greet_sync("Bob"))
+                Hello, Bob!
 
-    See Also:
-        - sync_to_async: Convert a sync callable into an awaitable callable.
-    """
+                ```
 
-    def _sync_wrapped_fn(*args: Any, **kwargs: Any) -> Any:
-        return asyncio_run(func_async(*args, **kwargs))  # type: ignore[arg-type]
+        See Also:
+            - sync_to_async: Convert a sync callable into an awaitable callable.
+        """
 
-    return _sync_wrapped_fn
+        def _sync_wrapped_fn(*args: Any, **kwargs: Any) -> Any:
+            return asyncio_run(func_async(*args, **kwargs))  # type: ignore[arg-type]
+
+        return _sync_wrapped_fn
 
 
 class CallableTool(AsyncBaseTool):
@@ -250,22 +266,11 @@ class CallableTool(AsyncBaseTool):
             raise ValueError("fn or async_fn must be provided.")
 
         # Handle function (sync and async)
-        self._real_fn = fn or async_fn
-        if async_fn is not None:
-            self._async_fn = async_fn
-            self._fn = fn or async_to_sync(async_fn)
-        else:
-            assert fn is not None
-            if inspect.iscoroutinefunction(fn):
-                self._async_fn = fn
-                self._fn = async_to_sync(fn)
-            else:
-                self._fn = fn
-                self._async_fn = sync_to_async(fn)
+        self._real_fn = func
+        sync_async_converter = SyncAsyncConverter(func)
 
-        # Determine if the function requires context by inspecting its signature
-        fn_to_inspect = fn or async_fn
-        assert fn_to_inspect is not None
+        self._async_fn = sync_async_converter.async_func
+        self._fn = sync_async_converter.sync_func
 
         if metadata is None:
             raise ValueError("metadata must be provided")

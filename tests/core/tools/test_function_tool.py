@@ -4,72 +4,78 @@ from pydantic import BaseModel, Field
 
 from serapeum.core.base.llms.models import TextChunk, Image, Audio
 from serapeum.core.tools.callable_tool import (
-    sync_to_async,
-    async_to_sync,
+    SyncAsyncConverter,
     CallableTool,
 )
 from serapeum.core.tools.models import ToolMetadata, ToolOutput
 
-
-class TestSyncToAsync:
-    def test_returns_awaitable_and_result(self):
-        """
-        Inputs: A synchronous function f(x, y=2) that returns x * y, wrapped with sync_to_async, then awaited with (3, y=4).
-        Expected: Awaiting the wrapper returns 12 (3 * 4).
-        Checks: The wrapper is awaitable and forwards args/kwargs correctly to the sync function, returning its result.
-        """
-
-        def f(x: int, y: int = 2) -> int:
-            return x * y
-
-        wrapped = sync_to_async(f)
-        result = asyncio.run(wrapped(3, y=4))
-        assert result == 12
-
-    def test_exception_propagates(self):
-        """
-        Inputs: A synchronous function that raises ValueError, wrapped via sync_to_async and awaited.
-        Expected: The same ValueError is raised when awaiting the wrapper.
-        Checks: Exceptions raised in the underlying sync function propagate through the async wrapper.
-        """
-
-        def boom() -> None:
-            raise ValueError("fail sync")
-
-        wrapped = sync_to_async(boom)
-        with pytest.raises(ValueError, match="fail sync"):
-            asyncio.run(wrapped())
-
-
-class TestAsyncToSync:
-    def test_returns_result(self):
-        """
-        Inputs: An async function add(a, b) that returns a + b, wrapped by async_to_sync and called synchronously as fn(5, 7).
-        Expected: The wrapper returns 12.
-        Checks: The wrapper runs the coroutine to completion and returns its value.
-        """
-
-        async def add(a: int, b: int) -> int:
-            await asyncio.sleep(0)
-            return a + b
-
-        wrapped = async_to_sync(add)
-        assert wrapped(5, 7) == 12
-
-    def test_exception_propagates(self):
-        """
-        Inputs: An async function that raises RuntimeError, wrapped with async_to_sync and invoked synchronously.
-        Expected: The wrapper raises a RuntimeError.
-        Checks: Errors originating in the async function are raised by the sync wrapper (message may vary depending on event loop handling).
-        """
-
-        async def boom() -> None:
-            await asyncio.sleep(0)
-            raise RuntimeError("fail async")
-
-        wrapped = async_to_sync(boom)
-        with pytest.raises(RuntimeError):
-            wrapped()
+class TestSyncAsyncConverter:
+    class TestSyncToAsync:
+        def test_returns_awaitable_and_result(self):
+            """
+            Inputs:
+                A synchronous function f(x, y=2) that returns x * y, wrapped with sync_to_async, then awaited with (3, y=4).
+            Expected:
+                Awaiting the wrapper returns 12 (3 * 4).
+            Checks:
+                The wrapper is awaitable and forwards args/kwargs correctly to the sync function, returning its result.
+            """
+    
+            def f(x: int, y: int = 2) -> int:
+                return x * y
+    
+            sync_async_converter = SyncAsyncConverter(f)
+            wrapped = sync_async_converter.async_func
+            result = asyncio.run(wrapped(3, y=4))
+            assert result == 12
+    
+        def test_exception_propagates(self):
+            """
+            Inputs: A synchronous function that raises ValueError, wrapped via sync_to_async and awaited.
+            Expected: The same ValueError is raised when awaiting the wrapper.
+            Checks: Exceptions raised in the underlying sync function propagate through the async wrapper.
+            """
+    
+            def boom() -> None:
+                raise ValueError("fail sync")
+    
+            sync_async_converter = SyncAsyncConverter(boom)
+            wrapped = sync_async_converter.async_func
+            with pytest.raises(ValueError, match="fail sync"):
+                asyncio.run(wrapped())
+    
+    
+    class TestAsyncToSync:
+        def test_returns_result(self):
+            """
+            Inputs: An async function add(a, b) that returns a + b, wrapped by async_to_sync and called synchronously as func(5, 7).
+            Expected: The wrapper returns 12.
+            Checks: The wrapper runs the coroutine to completion and returns its value.
+            """
+    
+            async def add(a: int, b: int) -> int:
+                await asyncio.sleep(0)
+                return a + b
+    
+            sync_async_converter = SyncAsyncConverter(add)
+            wrapped = sync_async_converter.sync_func
+            assert wrapped(5, 7) == 12
+    
+        def test_exception_propagates(self):
+            """
+            Inputs: An async function that raises RuntimeError, wrapped with async_to_sync and invoked synchronously.
+            Expected: The wrapper raises a RuntimeError.
+            Checks: Errors originating in the async function are raised by the sync wrapper (message may vary depending on event loop handling).
+            """
+    
+            async def boom() -> None:
+                await asyncio.sleep(0)
+                raise RuntimeError("fail async")
+    
+            sync_async_converter = SyncAsyncConverter(boom)
+            wrapped = sync_async_converter.sync_func
+            with pytest.raises(RuntimeError):
+                wrapped()
 
 
 class TestCallableToolInit:

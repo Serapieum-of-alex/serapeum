@@ -1,5 +1,6 @@
 import re
 import json
+from dataclasses import dataclass
 from inspect import signature, Parameter
 from typing import (
     Any,
@@ -259,96 +260,249 @@ class FunctionConverter:
         return fields
 
 
-def call_tool(tool: BaseTool, arguments: dict) -> ToolOutput:
-    """Call a tool with arguments."""
-    try:
-        if (
-                len(tool.metadata.get_schema()["properties"]) == 1
-                and len(arguments) == 1
-        ):
-            try:
-                single_arg = arguments[next(iter(arguments))]
-                return tool(single_arg)
-            except Exception:
-                # some tools will REQUIRE kwargs, so try it
-                return tool(**arguments)
+@dataclass
+class ExecutionConfig:
+    """Configuration for tool execution behavior."""
+    verbose: bool = False
+    single_arg_auto_unpack: bool = True
+    raise_on_error: bool = False
+
+
+class ToolExecutor:
+    """Handles execution of tools with error handling and argument unpacking.
+
+    This class encapsulates the logic for calling tools safely, handling both
+    synchronous and asynchronous execution, with configurable behavior for
+    argument unpacking and error handling.
+
+    Examples:
+        - Basic synchronous execution
+            ```python
+            >>> executor = ToolExecutor()
+            >>> output = executor.execute(my_tool, {"input": "hello"})
+            ```
+
+        - Async execution
+            ```python
+            >>> executor = ToolExecutor()
+            >>> async def my_tool():
+            ...     return await executor.execute_async(my_tool, {"input": "hello"})
+            >>> asyncio.run(my_tool())
+            ```
+
+        - With configuration
+            ```python
+            >>> config = ExecutionConfig(verbose=True, raise_on_error=True)
+            >>> executor = ToolExecutor(config)
+            ```
+    """
+
+    def __init__(self, config: Optional[ExecutionConfig] = None):
+        """Initialize the tool executor.
+
+        Args:
+            config: Optional configuration for execution behavior.
+                If None, uses default configuration.
+        """
+        self.config = config or ExecutionConfig()
+
+    def execute(self, tool: BaseTool, arguments: dict) -> ToolOutput:
+        """Execute a tool synchronously with error handling.
+
+        Args:
+            tool: The tool to execute.
+            arguments: Dictionary of arguments to pass to the tool.
+
+        Returns:
+            ToolOutput: The tool's output, or an error output if execution failed.
+
+        Raises:
+            Exception: If config.raise_on_error is True and execution fails.
+        """
+        if self.config.verbose:
+            self._log_execution_start(tool, arguments)
+
+        try:
+            output = self._invoke_tool(tool, arguments)
+
+            if self.config.verbose:
+                self._log_execution_result(output)
+
+            return output
+
+        except Exception as e:
+            if self.config.raise_on_error:
+                raise
+            return self._create_error_output(tool, arguments, e)
+
+    async def execute_async(self, tool: BaseTool, arguments: dict) -> ToolOutput:
+        """Execute a tool asynchronously with error handling.
+
+        Args:
+            tool: The tool to execute.
+            arguments: Dictionary of arguments to pass to the tool.
+
+        Returns:
+            ToolOutput: The tool's output, or an error output if execution failed.
+
+        Raises:
+            Exception: If config.raise_on_error is True and execution fails.
+        """
+        if self.config.verbose:
+            self._log_execution_start(tool, arguments)
+
+        async_tool = adapt_to_async_tool(tool)
+
+        try:
+            output = await self._invoke_tool_async(async_tool, arguments)
+
+            if self.config.verbose:
+                self._log_execution_result(output)
+
+            return output
+
+        except Exception as e:
+            if self.config.raise_on_error:
+                raise
+            return self._create_error_output(tool, arguments, e)
+
+    def execute_with_selection(
+        self,
+        tool_call: ToolSelection,
+        tools: Sequence[BaseTool],
+    ) -> ToolOutput:
+        """Execute a tool based on a tool selection.
+
+        Args:
+            tool_call: The tool selection containing name and arguments.
+            tools: Sequence of available tools.
+
+        Returns:
+            ToolOutput: The execution result.
+
+        Raises:
+            KeyError: If the selected tool is not found in the tools sequence.
+        """
+        tool = self._find_tool_by_name(tool_call.tool_name, tools)
+        return self.execute(tool, tool_call.tool_kwargs)
+
+    async def execute_async_with_selection(
+            self,
+            tool_call: ToolSelection,
+            tools: Sequence[BaseTool],
+    ) -> ToolOutput:
+        """Execute a tool asynchronously based on a tool selection.
+
+        Args:
+            tool_call: The tool selection containing name and arguments.
+            tools: Sequence of available tools.
+
+        Returns:
+            ToolOutput: The execution result.
+
+        Raises:
+            KeyError: If the selected tool is not found in the tools sequence.
+        """
+        tool = self._find_tool_by_name(tool_call.tool_name, tools)
+        return await self.execute_async(tool, tool_call.tool_kwargs)
+
+    def _invoke_tool(self, tool: BaseTool, arguments: dict) -> ToolOutput:
+        """Internal method to invoke tool with argument unpacking logic."""
+        if self._should_unpack_single_arg(tool, arguments):
+            output = self._try_single_arg_then_kwargs(tool, arguments)
         else:
-            return tool(**arguments)
-    except Exception as e:
+            output = tool(**arguments)
+
+        return output
+
+    async def _invoke_tool_async(
+        self,
+        async_tool: BaseTool,
+        arguments: dict
+    ) -> ToolOutput:
+        """Internal method to invoke async tool with argument unpacking logic."""
+        if self._should_unpack_single_arg(async_tool, arguments):
+            output = await self._try_single_arg_then_kwargs_async(async_tool, arguments)
+        else:
+            output = await async_tool.acall(**arguments)
+
+        return output
+
+    def _should_unpack_single_arg(self, tool: BaseTool, arguments: dict) -> bool:
+        """Check if single argument unpacking should be attempted."""
+        if not self.config.single_arg_auto_unpack:
+            val = False
+        else:
+            # get the tool schema and check if it's a single arg tool and that the given arguments are a single arg
+            schema = tool.metadata.get_schema()
+            val = (
+                    len(schema.get("properties", {})) == 1
+                    and len(arguments) == 1
+            )
+
+        return val
+
+    def _try_single_arg_then_kwargs(
+        self,
+        tool: BaseTool,
+        arguments: dict
+    ) -> ToolOutput:
+        """Try calling with single unpacked arg, fall back to kwargs."""
+        try:
+            single_arg = arguments[next(iter(arguments))]
+            output = tool(single_arg)
+        except Exception:
+            # Some tools require kwargs, so try that instead
+            output =tool(**arguments)
+
+        return output
+
+    async def _try_single_arg_then_kwargs_async(
+        self,
+        async_tool: BaseTool,
+        arguments: dict
+    ) -> ToolOutput:
+        """Try calling async with single unpacked arg, fall back to kwargs."""
+        try:
+            single_arg = arguments[next(iter(arguments))]
+            output = await async_tool.acall(single_arg)
+        except Exception:
+            # Some tools require kwargs, so try that instead
+            output = await async_tool.acall(**arguments)
+
+        return output
+
+    def _create_error_output(
+        self,
+        tool: BaseTool,
+        arguments: dict,
+        error: Exception
+    ) -> ToolOutput:
+        """Create a standardized error output."""
         return ToolOutput(
-            content="Encountered error: " + str(e),
+            content=f"Encountered error: {str(error)}",
             tool_name=tool.metadata.get_name(),
             raw_input=arguments,
-            raw_output=str(e),
+            raw_output=str(error),
             is_error=True,
         )
 
+    def _find_tool_by_name(
+        self,
+        name: str,
+        tools: Sequence[BaseTool]
+    ) -> BaseTool:
+        """Find a tool by name from a sequence of tools."""
+        tools_by_name = {tool.metadata.name: tool for tool in tools}
+        return tools_by_name[name]
 
-async def acall_tool(tool: BaseTool, arguments: dict) -> ToolOutput:
-    """Call a tool with arguments asynchronously."""
-    async_tool = adapt_to_async_tool(tool)
-    try:
-        if (
-                len(tool.metadata.get_schema()["properties"]) == 1
-                and len(arguments) == 1
-        ):
-            try:
-                single_arg = arguments[next(iter(arguments))]
-                return await async_tool.acall(single_arg)
-            except Exception:
-                # some tools will REQUIRE kwargs, so try it
-                return await async_tool.acall(**arguments)
-        else:
-            return await async_tool.acall(**arguments)
-    except Exception as e:
-        return ToolOutput(
-            content="Encountered error: " + str(e),
-            tool_name=tool.metadata.get_name(),
-            raw_input=arguments,
-            raw_output=str(e),
-            is_error=True,
-        )
-
-
-def call_tool_with_selection(
-    tool_call: ToolSelection,
-    tools: Sequence["BaseTool"],
-    verbose: bool = False,
-) -> ToolOutput:
-
-    tools_by_name = {tool.metadata.name: tool for tool in tools}
-    name = tool_call.tool_name
-    if verbose:
-        arguments_str = json.dumps(tool_call.tool_kwargs)
+    def _log_execution_start(self, tool: BaseTool, arguments: dict) -> None:
+        """Log the start of tool execution."""
+        arguments_str = json.dumps(arguments)
         print("=== Calling Function ===")
-        print(f"Calling function: {name} with args: {arguments_str}")
-    tool = tools_by_name[name]
-    output = call_tool(tool, tool_call.tool_kwargs)
+        print(f"Calling function: {tool.metadata.get_name()} with args: {arguments_str}")
 
-    if verbose:
+    def _log_execution_result(self, output: ToolOutput) -> None:
+        """Log the result of tool execution."""
         print("=== Function Output ===")
         print(output.content)
-
-    return output
-
-
-async def acall_tool_with_selection(
-    tool_call: ToolSelection,
-    tools: Sequence["BaseTool"],
-    verbose: bool = False,
-) -> ToolOutput:
-
-    tools_by_name = {tool.metadata.name: tool for tool in tools}
-    name = tool_call.tool_name
-    if verbose:
-        arguments_str = json.dumps(tool_call.tool_kwargs)
-        print("=== Calling Function ===")
-        print(f"Calling function: {name} with args: {arguments_str}")
-    tool = tools_by_name[name]
-    output = await acall_tool(tool, tool_call.tool_kwargs)
-
-    if verbose:
-        print("=== Function Output ===")
-        print(output.content)
-
-    return output

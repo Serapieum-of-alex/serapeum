@@ -160,7 +160,8 @@ class FunctionCallingLLM(LLM):
         """Predict and call the tool."""
         from serapeum.core.chat.models import AgentChatResponse
         from serapeum.core.tools.utils import (
-            call_tool_with_selection,
+            ToolExecutor,
+            ExecutionConfig
         )
 
         response = self.chat_with_tools(
@@ -174,10 +175,12 @@ class FunctionCallingLLM(LLM):
         tool_calls = self.get_tool_calls_from_response(
             response, error_on_no_tool_call=error_on_no_tool_call
         )
+        tool_executor = ToolExecutor(ExecutionConfig(verbose=verbose))
         tool_outputs = [
-            call_tool_with_selection(tool_call, tools, verbose=verbose)
+            tool_executor.execute_with_selection(tool_call, tools)
             for tool_call in tool_calls
         ]
+
         tool_outputs_with_error = [
             tool_output for tool_output in tool_outputs if tool_output.is_error
         ]
@@ -217,7 +220,8 @@ class FunctionCallingLLM(LLM):
         """Predict and call the tool."""
         from serapeum.core.chat.models import AgentChatResponse
         from serapeum.core.tools.utils import (
-            acall_tool_with_selection,
+            ToolExecutor,
+            ExecutionConfig
         )
 
         response = await self.achat_with_tools(
@@ -232,10 +236,12 @@ class FunctionCallingLLM(LLM):
         tool_calls = self.get_tool_calls_from_response(
             response, error_on_no_tool_call=error_on_no_tool_call
         )
+        tool_executor = ToolExecutor(ExecutionConfig(verbose=verbose))
         tool_tasks = [
-            acall_tool_with_selection(tool_call, tools, verbose=verbose)
+            tool_executor.execute_async_with_selection(tool_call, tools)
             for tool_call in tool_calls
         ]
+
         tool_outputs = await asyncio.gather(*tool_tasks)
         tool_outputs_with_error = [
             tool_output for tool_output in tool_outputs if tool_output.is_error

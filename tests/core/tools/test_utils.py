@@ -2,10 +2,6 @@
 
 This test suite covers all functions in utils.py:
 - create_schema_from_function
-- call_tool
-- acall_tool
-- call_tool_with_selection
-- acall_tool_with_selection
 
 For each function, we define a dedicated test class with multiple test methods, each
 with a docstring that explains inputs, expected behavior, and what is being checked.
@@ -21,10 +17,8 @@ from pydantic import BaseModel, Field
 from serapeum.core.tools.utils import (
     FunctionConverter,
     Docstring,
-    call_tool,
-    acall_tool,
-    call_tool_with_selection,
-    acall_tool_with_selection,
+    ToolExecutor,
+    ExecutionConfig
 )
 from serapeum.core.tools.models import BaseTool, AsyncBaseTool, ToolMetadata, ToolOutput
 from serapeum.core.llm.base import ToolSelection
@@ -56,7 +50,7 @@ class SingleArgEchoTool(BaseTool):
 class SingleArgKwOnlyTool(BaseTool):
     """A single-argument tool that requires a keyword-only argument.
 
-    This exercises the kwargs fallback in call_tool when the positional path fails.
+    This exercises the kwargs fallback in ToolExecutor.execute when the positional path fails.
     """
 
     @property
@@ -98,7 +92,7 @@ class ErrorTool(BaseTool):
 
 
 class AsyncSingleArgKwOnlyTool(AsyncBaseTool):
-    """Async variant requiring a keyword-only argument, for acall_tool fallback."""
+    """Async variant requiring a keyword-only argument, for ToolExecutor.execute_async fallback."""
 
     @property
     def metadata(self) -> ToolMetadata:  # type: ignore[override]
@@ -114,7 +108,7 @@ class AsyncSingleArgKwOnlyTool(AsyncBaseTool):
 
 
 class AsyncTwoArgTool(AsyncBaseTool):
-    """Async tool with two kwargs to validate acall_tool kwargs path."""
+    """Async tool with two kwargs to validate ToolExecutor.execute_async kwargs path."""
 
     class Args(BaseModel):
         a: int
@@ -133,7 +127,7 @@ class AsyncTwoArgTool(AsyncBaseTool):
 
 
 class AsyncErrorTool(AsyncBaseTool):
-    """Async tool that raises to test error handling in acall_tool."""
+    """Async tool that raises to test error handling in ToolExecutor.execute_async."""
 
     @property
     def metadata(self) -> ToolMetadata:  # type: ignore[override]
@@ -323,7 +317,7 @@ class TestCreateSchemaFromFunction:
 
 
 class TestCallTool:
-    """Tests for call_tool (synchronous)"""
+    """Tests the Extractor.execute method."""
     def test_single_arg_positional_forwarding(self) -> None:
         """A single-arg tool called with one-arg schema forwards a positional value.
 
@@ -332,13 +326,15 @@ class TestCallTool:
               __call__ that accepts a single positional input.
             - arguments={"input": "hello"}
         Expected:
-            - call_tool detects one property and forwards the single value.
+            - ToolExecutor.execute detects one property and forwards the single value.
             - ToolOutput contains content "hello", is_error False, correct tool name.
         Checks:
             - Output content, is_error flag, and tool_name field.
         """
         tool = SingleArgEchoTool()
-        out = call_tool(tool, {"input": "hello"})
+        tool_executor = ToolExecutor()
+        out = tool_executor.execute(tool, {"input": "hello"})
+
         assert isinstance(out, ToolOutput)
         assert out.content == "hello"
         assert out.is_error is False
@@ -357,7 +353,9 @@ class TestCallTool:
             - Output content is "world".
         """
         tool = SingleArgKwOnlyTool()
-        out = call_tool(tool, {"input_values": "world"})
+        tool_executor = ToolExecutor()
+        out = tool_executor.execute(tool, {"input_values": "world"})
+
         assert out.content == "world"
 
     def test_multi_arg_kwargs(self) -> None:
@@ -367,12 +365,13 @@ class TestCallTool:
             - Tool with custom two-field schema and __call__(*, a: int, b: int).
             - arguments={"a": 2, "b": 3}
         Expected:
-            - call_tool uses kwargs path and returns sum as string.
+            - ToolExecutor.execute uses kwargs path and returns sum as string.
         Checks:
             - Output content equals "5".
         """
         tool = TwoArgSumTool()
-        out = call_tool(tool, {"a": 2, "b": 3})
+        tool_executor = ToolExecutor()
+        out = tool_executor.execute(tool, {"a": 2, "b": 3})
         assert out.content == "5"
 
     def test_error_handling_returns_tool_output(self) -> None:
@@ -382,45 +381,44 @@ class TestCallTool:
             - Tool that raises RuntimeError("boom").
             - arguments={"input": "anything"}
         Expected:
-            - call_tool returns ToolOutput with is_error=True, content prefixed with
+            - ToolExecutor.execute returns ToolOutput with is_error=True, content prefixed with
               "Encountered error:", and raw_input matches provided arguments.
         Checks:
             - is_error flag, content prefix, raw_input equality, and tool_name.
         """
         tool = ErrorTool()
         args = {"input": "anything"}
-        out = call_tool(tool, args)
+        tool_executor = ToolExecutor()
+        out = tool_executor.execute(tool, args)
         assert out.is_error is True
         assert out.content.startswith("Encountered error: ")
         assert out.raw_input == args
         assert out.tool_name == tool.metadata.name
 
 
-# -----------------------------------------------------------------------------
-# Tests for acall_tool (asynchronous)
-# -----------------------------------------------------------------------------
-
 class TestACallTool:
+    """ Test the ToolExecutor.execute_async method."""
     @pytest.mark.asyncio
     async def test_single_arg_positional_forwarding_async(self) -> None:
-        """acall_tool with a single-arg sync tool forwards positional value via adapter.
+        """ToolExecutor.execute_async with a single-arg sync tool forwards positional value via adapter.
 
         Inputs:
             - Synchronous tool with single schema property and positional __call__.
             - arguments={"input": "hello"}
         Expected:
-            - acall_tool adapts the tool and returns the same content.
+            - ToolExecutor.execute_async adapts the tool and returns the same content.
         Checks:
             - Output content is "hello" and not error.
         """
         tool = SingleArgEchoTool()
-        out = await acall_tool(tool, {"input": "hello"})
+        tool_executor = ToolExecutor()
+        out = await tool_executor.execute_async(tool, {"input": "hello"})
         assert out.content == "hello"
         assert out.is_error is False
 
     @pytest.mark.asyncio
     async def test_single_arg_kwargs_fallback_async(self) -> None:
-        """acall_tool uses kwargs fallback with an async kw-only tool.
+        """ToolExecutor.execute_async uses kwargs fallback with an async kw-only tool.
 
         Inputs:
             - Async tool having acall(*, input: str), with single schema property.
@@ -431,12 +429,13 @@ class TestACallTool:
             - Output content is "world".
         """
         tool = AsyncSingleArgKwOnlyTool()
-        out = await acall_tool(tool, {"input_values": "world"})
+        tool_executor = ToolExecutor()
+        out = await tool_executor.execute_async(tool, {"input_values": "world"})
         assert out.content == "world"
 
     @pytest.mark.asyncio
     async def test_multi_arg_kwargs_async(self) -> None:
-        """acall_tool calls async tool with multiple kwargs.
+        """ToolExecutor.execute_async calls async tool with multiple kwargs.
 
         Inputs:
             - Async tool with two arguments, acall(*, a: int, b: int).
@@ -447,7 +446,8 @@ class TestACallTool:
             - Output content equals "10".
         """
         tool = AsyncTwoArgTool()
-        out = await acall_tool(tool, {"a": 4, "b": 6})
+        tool_executor = ToolExecutor()
+        out = await tool_executor.execute_async(tool, {"a": 4, "b": 6})
         assert out.content == "10"
 
     @pytest.mark.asyncio
@@ -462,16 +462,14 @@ class TestACallTool:
             - is_error is True and content prefix matches.
         """
         tool = AsyncErrorTool()
-        out = await acall_tool(tool, {"input": "x"})
+        tool_executor = ToolExecutor()
+        out = await tool_executor.execute_async(tool, {"input": "x"})
         assert out.is_error is True
         assert out.content.startswith("Encountered error: ")
 
 
-# -----------------------------------------------------------------------------
-# Tests for call_tool_with_selection and acall_tool_with_selection
-# -----------------------------------------------------------------------------
-
 class TestCallToolWithSelection:
+    """Test the ToolExecutor.execute_with_selection method and ToolExecutor.execute_async_with_selection method."""
     def test_calls_correct_tool_and_propagates_output(self, capsys: pytest.CaptureFixture[str]) -> None:
         """Ensure the correct tool is selected by name and the output is returned.
 
@@ -479,13 +477,14 @@ class TestCallToolWithSelection:
             - ToolSelection with tool_name="single_echo" and tool_kwargs={"input": "ok"}.
             - tools list containing SingleArgEchoTool and TwoArgSumTool.
         Expected:
-            - call_tool_with_selection selects the echo tool and returns content "ok".
+            - ToolExecutor.execute_with_selection selects the echo tool and returns content "ok".
         Checks:
             - Output content equals "ok".
         """
         tools: Sequence[BaseTool] = [SingleArgEchoTool(), TwoArgSumTool()]
         sel = ToolSelection(tool_id="1", tool_name="single_echo", tool_kwargs={"input": "ok"})
-        out = call_tool_with_selection(sel, tools, verbose=False)
+        tool_executor = ToolExecutor()
+        out = tool_executor.execute_with_selection(sel, tools)
         assert out.content == "ok"
 
     def test_verbose_prints_arguments_and_output(self, capsys: pytest.CaptureFixture[str]) -> None:
@@ -501,7 +500,8 @@ class TestCallToolWithSelection:
         """
         tools: Sequence[BaseTool] = [SingleArgEchoTool()]
         sel = ToolSelection(tool_id="2", tool_name="single_echo", tool_kwargs={"input": "zzz"})
-        out = call_tool_with_selection(sel, tools, verbose=True)
+        tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
+        out = tool_executor.execute_with_selection(sel, tools)
         captured = capsys.readouterr()
         assert "=== Calling Function ===" in captured.out
         assert "single_echo" in captured.out
@@ -524,7 +524,8 @@ class TestACallToolWithSelection:
         """
         tools: Sequence[BaseTool] = [AsyncTwoArgTool()]
         sel = ToolSelection(tool_id="3", tool_name="async_sum2", tool_kwargs={"a": 1, "b": 2})
-        out = await acall_tool_with_selection(sel, tools, verbose=False)
+        tool_executor = ToolExecutor()
+        out = await tool_executor.execute_async_with_selection(sel, tools)
         assert out.content == "3"
 
     @pytest.mark.asyncio
@@ -540,7 +541,8 @@ class TestACallToolWithSelection:
         """
         tools: Sequence[BaseTool] = [AsyncTwoArgTool()]
         sel = ToolSelection(tool_id="4", tool_name="async_sum2", tool_kwargs={"a": 2, "b": 5})
-        out = await acall_tool_with_selection(sel, tools, verbose=True)
+        tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
+        out = await tool_executor.execute_async_with_selection(sel, tools)
         captured = capsys.readouterr()
         assert "=== Calling Function ===" in captured.out
         assert "async_sum2" in captured.out

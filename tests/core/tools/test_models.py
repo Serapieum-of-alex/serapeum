@@ -14,6 +14,7 @@ from serapeum.core.tools.models import (
     AsyncBaseTool,
     BaseToolAsyncAdapter,
     adapt_to_async_tool,
+    ToolCallArguments
 )
 
 
@@ -451,3 +452,128 @@ class TestAdaptToAsyncTool:
         out = await adapted.acall(123)
         assert out.tool_name == "sync"
         assert out.content == "123"
+
+
+class TestToolCallArguments:
+    def test_valid_arguments_with_dict_kwargs(self):
+        """Validate standard construction with proper types.
+
+        Inputs:
+          - tool_id: "call-001" (string)
+          - tool_name: "echo" (string)
+          - tool_kwargs: {"text": "hi", "count": 2} (dict)
+        Expected:
+          - Model is created successfully with fields preserved as provided.
+        Checks:
+          - tool_id and tool_name match inputs.
+          - tool_kwargs is the exact same mapping content provided.
+        """
+        sel = ToolCallArguments(tool_id="call-001", tool_name="echo", tool_kwargs={"text": "hi", "count": 2})
+        assert sel.tool_id == "call-001"
+        assert sel.tool_name == "echo"
+        assert sel.tool_kwargs == {"text": "hi", "count": 2}
+
+    def test_non_dict_kwargs_string_coerced_to_empty_dict(self):
+        """Ensure non-dict tool_kwargs (string) are coerced to {} by validator.
+
+        Inputs:
+          - tool_kwargs: "not-a-dict" (string)
+        Expected:
+          - tool_kwargs is replaced with an empty dict instead of raising.
+        Checks:
+          - sel.tool_kwargs == {}.
+        """
+        sel = ToolCallArguments(tool_id="id-1", tool_name="echo", tool_kwargs="not-a-dict")
+        assert sel.tool_kwargs == {}
+
+    def test_non_dict_kwargs_list_coerced_to_empty_dict(self):
+        """Ensure non-dict tool_kwargs (list) are coerced to {} by validator.
+
+        Inputs:
+          - tool_kwargs: [("a", 1)] (list)
+        Expected:
+          - tool_kwargs is replaced with an empty dict instead of raising.
+        Checks:
+          - sel.tool_kwargs == {}.
+        """
+        sel = ToolCallArguments(tool_id="id-2", tool_name="sum", tool_kwargs=[("a", 1)])
+        assert sel.tool_kwargs == {}
+
+    def test_none_kwargs_coerced_to_empty_dict(self):
+        """Ensure None passed for tool_kwargs is coerced to {}.
+
+        Inputs:
+          - tool_kwargs: None
+        Expected:
+          - tool_kwargs is replaced with {} via the wrap validator.
+        Checks:
+          - sel.tool_kwargs == {}.
+        """
+        sel = ToolCallArguments(tool_id="id-3", tool_name="echo", tool_kwargs=None)  # type: ignore[arg-type]
+        assert sel.tool_kwargs == {}
+
+    def test_missing_tool_name_raises_validation_error(self):
+        """Verify that tool_name is a required field.
+
+        Inputs:
+          - tool_id present, tool_kwargs present, tool_name missing.
+        Expected:
+          - pydantic.ValidationError is raised due to missing required field.
+        Checks:
+          - Raised exception type is ValidationError.
+        """
+        with pytest.raises(ValidationError):
+            ToolCallArguments(tool_id="only-id", tool_kwargs={})  # type: ignore[call-arg]
+
+    def test_missing_tool_id_raises_validation_error(self):
+        """Verify that tool_id is a required field.
+
+        Inputs:
+          - tool_name present, tool_kwargs present, tool_id missing.
+        Expected:
+          - pydantic.ValidationError is raised due to missing required field.
+        Checks:
+          - Raised exception type is ValidationError.
+        """
+        with pytest.raises(ValidationError):
+            ToolCallArguments(tool_name="only-name", tool_kwargs={})  # type: ignore[call-arg]
+
+    def test_missing_tool_kwargs_raises_validation_error(self):
+        """Verify that omitting tool_kwargs entirely is not allowed.
+
+        Inputs:
+          - tool_id and tool_name provided; tool_kwargs omitted.
+        Expected:
+          - pydantic.ValidationError is raised before field validator runs.
+        Checks:
+          - Raised exception type is ValidationError.
+        """
+        with pytest.raises(ValidationError):
+            ToolCallArguments(tool_id="id", tool_name="echo")  # type: ignore[call-arg]
+
+    def test_nested_tool_kwargs_preserved(self):
+        """Validate that nested structures inside tool_kwargs are preserved.
+
+        Inputs:
+          - tool_kwargs: {"filters": {"tags": ["x", "y"], "limit": 10}}
+        Expected:
+          - Nested dict/list structure is accepted as-is.
+        Checks:
+          - Returned tool_kwargs equals the input mapping deep-equal.
+        """
+        payload = {"filters": {"tags": ["x", "y"], "limit": 10}}
+        sel = ToolCallArguments(tool_id="nested", tool_name="search", tool_kwargs=payload)
+        assert sel.tool_kwargs == payload
+
+    def test_extra_fields_are_ignored(self):
+        """Ensure extra/unknown fields do not break model construction.
+
+        Inputs:
+          - An extra field `extra_field` included in constructor.
+        Expected:
+          - Model is created successfully; extra field is ignored by default config.
+        Checks:
+          - getattr(sel, "extra_field", None) is None (not set as attribute).
+        """
+        sel = ToolCallArguments(tool_id="e1", tool_name="echo", tool_kwargs={}, extra_field=123)  # type: ignore[call-arg]
+        assert getattr(sel, "extra_field", None) is None

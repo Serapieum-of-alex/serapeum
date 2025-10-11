@@ -36,7 +36,7 @@ from pydantic import BaseModel, Field, PrivateAttr
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.prompts import PromptTemplate
-from serapeum.core.tools import ToolSelection
+from serapeum.core.tools import ToolCallArguments
 from serapeum.core.models import StructuredLLMMode
 from serapeum.core.structured_tools.utils import process_streaming_objects
 
@@ -267,7 +267,7 @@ class Ollama(FunctionCallingLLM):
         self,
         response: "ChatResponse",
         error_on_no_tool_call: bool = True,
-    ) -> List[ToolSelection]:
+    ) -> List[ToolCallArguments]:
         tool_calls = response.message.additional_kwargs.get("tool_calls", [])
         if len(tool_calls) < 1:
             if error_on_no_tool_call:
@@ -282,7 +282,7 @@ class Ollama(FunctionCallingLLM):
             argument_dict = tool_call["function"]["arguments"]
 
             tool_selections.append(
-                ToolSelection(
+                ToolCallArguments(
                     # tool ids not provided by Ollama
                     tool_id=tool_call["function"]["name"],
                     tool_name=tool_call["function"]["name"],

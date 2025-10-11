@@ -9,14 +9,14 @@ from serapeum.core.base.llms.models import (
     Metadata,
 )
 from serapeum.core.llm.function_calling import FunctionCallingLLM
-from serapeum.core.tools.models import ToolSelection
+from serapeum.core.tools.models import ToolCallArguments
 from serapeum.core.structured_tools.function_program import CallableTool, get_function_tool
 from serapeum.core.tools.models import BaseTool
 from pydantic import BaseModel, Field
 
 
 class MockFunctionCallingLLM(FunctionCallingLLM):
-    def __init__(self, tool_selection: List[ToolSelection]):
+    def __init__(self, tool_selection: List[ToolCallArguments]):
         super().__init__()
         self._tool_selection = tool_selection
 
@@ -78,7 +78,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         response: ChatResponse,
         error_on_no_tool_call: bool = True,
         **kwargs: Any,
-    ) -> List[ToolSelection]:
+    ) -> List[ToolCallArguments]:
         return self._tool_selection
 
 
@@ -92,8 +92,8 @@ def person_tool() -> CallableTool:
 
 
 @pytest.fixture()
-def person_tool_selection(person_tool: CallableTool) -> ToolSelection:
-    return ToolSelection(
+def person_tool_selection(person_tool: CallableTool) -> ToolCallArguments:
+    return ToolCallArguments(
         tool_id="",
         tool_name=person_tool.metadata.name,
         tool_kwargs={},
@@ -101,7 +101,7 @@ def person_tool_selection(person_tool: CallableTool) -> ToolSelection:
 
 
 def test_predict_and_call(
-    person_tool: CallableTool, person_tool_selection: ToolSelection
+    person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
     """Test predict_and_call will return ToolOutput with error rather than raising one."""
     llm = MockFunctionCallingLLM([person_tool_selection])
@@ -110,7 +110,7 @@ def test_predict_and_call(
 
 
 def test_predict_and_call_throws_if_error_on_tool(
-    person_tool: CallableTool, person_tool_selection: ToolSelection
+    person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
     """Test predict_and_call will raise an error."""
     llm = MockFunctionCallingLLM([person_tool_selection])
@@ -120,7 +120,7 @@ def test_predict_and_call_throws_if_error_on_tool(
 
 @pytest.mark.asyncio()
 async def test_apredict_and_call(
-    person_tool: CallableTool, person_tool_selection: ToolSelection
+    person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
     """Test apredict_and_call will return ToolOutput with error rather than raising one."""
     llm = MockFunctionCallingLLM([person_tool_selection])
@@ -130,7 +130,7 @@ async def test_apredict_and_call(
 
 @pytest.mark.asyncio()
 async def test_apredict_and_call_throws_if_error_on_tool(
-    person_tool: CallableTool, person_tool_selection: ToolSelection
+    person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
     """Test apredict_and_call will raise an error."""
     llm = MockFunctionCallingLLM([person_tool_selection])

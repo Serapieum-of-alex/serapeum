@@ -92,7 +92,7 @@ def test_process_streaming_objects() -> None:
         def get_tool_calls_from_response(self, *args, **kwargs):
             return [
                 type(
-                    "ToolSelection",
+                    "ToolCallArguments",
                     (),
                     {"tool_kwargs": {"name": "Jane", "age": 28}},
                 )

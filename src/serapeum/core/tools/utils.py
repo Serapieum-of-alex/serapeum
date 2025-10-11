@@ -16,7 +16,7 @@ infrastructure.
 See Also:
     - serapeum.core.tools.models.BaseTool
     - serapeum.core.tools.models.ToolOutput
-    - serapeum.core.llm.base.ToolSelection
+    - serapeum.core.tools.models.ToolCallArguments
 """
 
 import re
@@ -44,7 +44,7 @@ import datetime
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 from serapeum.core.tools.models import BaseTool, ToolOutput, adapt_to_async_tool
-from serapeum.core.tools.models import ToolSelection
+from serapeum.core.tools.models import ToolCallArguments
 
 
 if TYPE_CHECKING:
@@ -774,13 +774,13 @@ class ToolExecutor:
 
     def execute_with_selection(
         self,
-        tool_call: ToolSelection,
+        tool_call: ToolCallArguments,
         tools: Sequence[BaseTool],
     ) -> ToolOutput:
         """Execute a tool based on a tool selection.
 
         Args:
-            tool_call (ToolSelection): The tool selection containing name and arguments.
+            tool_call (ToolCallArguments): The tool selection containing name and arguments.
             tools (Sequence[BaseTool]): Sequence of available tools.
 
         Returns:
@@ -827,13 +827,13 @@ class ToolExecutor:
 
     async def execute_async_with_selection(
             self,
-            tool_call: ToolSelection,
+            tool_call: ToolCallArguments,
             tools: Sequence[BaseTool],
     ) -> ToolOutput:
         """Execute a tool asynchronously based on a tool selection.
 
         Args:
-            tool_call (ToolSelection): The tool selection containing name and arguments.
+            tool_call (ToolCallArguments): The tool selection containing name and arguments.
             tools (Sequence[BaseTool]): Sequence of available tools.
 
         Returns:

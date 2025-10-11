@@ -8,7 +8,7 @@ from pydantic import (
     create_model,
 )
 from serapeum.core.llm.base import LLM
-from serapeum.core.tools.models import ToolSelection
+from serapeum.core.tools.models import ToolCallArguments
 from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.output_parsers.models import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate
@@ -138,7 +138,7 @@ def process_streaming_objects(
     if not chat_response.message.additional_kwargs.get("tool_calls"):
         output_cls_args = [chat_response.message.content]
     else:
-        tool_calls: List[ToolSelection] = []
+        tool_calls: List[ToolCallArguments] = []
         if not llm:
             raise ValueError("LLM is required to get tool calls")
 

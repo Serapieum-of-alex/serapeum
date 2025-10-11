@@ -9,7 +9,7 @@ from serapeum.core.base.llms.models import (
     ChatResponseGen,
 )
 from serapeum.core.llm.base import LLM
-from serapeum.core.tools.models import ToolSelection
+from serapeum.core.tools.models import ToolCallArguments
 
 if TYPE_CHECKING:
     from serapeum.core.chat.models import AgentChatResponse
@@ -141,7 +141,7 @@ class FunctionCallingLLM(LLM):
         response: ChatResponse,
         error_on_no_tool_call: bool = True,
         **kwargs: Any,
-    ) -> List[ToolSelection]:
+    ) -> List[ToolCallArguments]:
         """Predict and call the tool."""
         raise NotImplementedError(
             "get_tool_calls_from_response is not supported by default."

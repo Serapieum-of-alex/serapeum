@@ -882,7 +882,69 @@ def adapt_to_async_tool(tool: BaseTool) -> AsyncBaseTool:
         return BaseToolAsyncAdapter(tool)
 
 
-class ToolSelection(BaseModel):
+class ToolCallArguments(BaseModel):
+    """Represents a concrete tool choice and its arguments.
+
+    This Pydantic model captures the selection of a tool (by id and name) and the
+    keyword arguments that should be passed to it at execution time. It is typically
+    produced by an LLM during function-calling or constructed programmatically before
+    dispatching to an executor.
+
+    Notes:
+    - The ``tool_kwargs`` field uses a validator that replaces non-dictionary inputs
+      with an empty dictionary instead of raising a validation error. This keeps
+      downstream execution resilient to imperfect upstream outputs.
+
+    Args:
+        tool_id (str):
+            An identifier for the tool call (e.g., provider-specific id).
+        tool_name (str):
+            The name of the tool to execute.
+        tool_kwargs (Dict[str, Any]):
+            Keyword arguments for the tool. If a non-dict value is supplied, it is coerced to an empty dict by
+            validation.
+
+    Returns:
+        ToolCallArguments: A validated instance describing the tool call.
+
+    Raises:
+        pydantic.ValidationError: If required fields are missing or have incompatible
+            types that cannot be coerced. Note that ``tool_kwargs`` specifically
+            coerces non-dict values to ``{}`` instead of raising.
+
+    Examples:
+        - Typical usage: construct a selection and access its fields
+            ```python
+            >>> from serapeum.core.tools.models import ToolCallArguments
+            >>> sel = ToolCallArguments(tool_id="abc123", tool_name="echo", tool_kwargs={"text": "hi"})
+            >>> (sel.tool_name, sel.tool_kwargs["text"])
+            ('echo', 'hi')
+
+            ```
+
+        - Non-dict ``tool_kwargs`` are replaced with an empty dict
+            ```python
+            >>> sel = ToolCallArguments(tool_id="id-1", tool_name="echo", tool_kwargs="not-a-dict")
+            >>> sel.tool_kwargs == {}
+            True
+
+            ```
+
+        - Missing required fields raise a ValidationError
+            ```python
+            >>> from pydantic import ValidationError
+            >>> try:
+            ...     ToolCallArguments(tool_id="only-id", tool_kwargs={})  # missing tool_name
+            ... except ValidationError as e:
+            ...     print(type(e).__name__)
+            ValidationError
+
+            ```
+
+    See Also:
+        - serapeum.core.tools.utils.ToolExecutor.execute_with_selection: Execute a selection synchronously.
+        - serapeum.core.tools.utils.ToolExecutor.execute_async_with_selection: Execute a selection asynchronously.
+    """
 
     tool_id: str = Field(description="Tool ID to select.")
     tool_name: str = Field(description="Tool name to select.")

@@ -21,7 +21,7 @@ from serapeum.core.tools.utils import (
     ExecutionConfig,
 )
 from serapeum.core.tools.models import BaseTool, AsyncBaseTool, ToolMetadata, ToolOutput
-from serapeum.core.tools.models import ToolSelection
+from serapeum.core.tools.models import ToolCallArguments
 
 # -----------------------------------------------------------------------------
 # Helpers: Dummy tool implementations for exercising call utilities
@@ -509,7 +509,7 @@ class TestToolExecutor:
             """Ensure the correct tool is selected by name and the output is returned.
 
             Inputs:
-                - ToolSelection with tool_name="single_echo" and tool_kwargs={"input": "ok"}.
+                - ToolCallArguments with tool_name="single_echo" and tool_kwargs={"input": "ok"}.
                 - tools list containing SingleArgEchoTool and TwoArgSumTool.
             Expected:
                 - ToolExecutor.execute_with_selection selects the echo tool and returns content "ok".
@@ -517,7 +517,7 @@ class TestToolExecutor:
                 - Output content equals "ok".
             """
             tools: Sequence[BaseTool] = [SingleArgEchoTool(), TwoArgSumTool()]
-            sel = ToolSelection(
+            sel = ToolCallArguments(
                 tool_id="1", tool_name="single_echo", tool_kwargs={"input": "ok"}
             )
             tool_executor = ToolExecutor()
@@ -530,7 +530,7 @@ class TestToolExecutor:
             """Verify verbose mode prints the function call info and output content.
 
             Inputs:
-                - ToolSelection for SingleArgEchoTool with input "zzz" and verbose=True.
+                - ToolCallArguments for SingleArgEchoTool with input "zzz" and verbose=True.
             Expected:
                 - Two sections printed: "=== Calling Function ===" and "=== Function Output ===".
                 - The printed lines include tool name and arguments JSON, and the echoed output.
@@ -538,7 +538,7 @@ class TestToolExecutor:
                 - capsys output contains the expected substrings.
             """
             tools: Sequence[BaseTool] = [SingleArgEchoTool()]
-            sel = ToolSelection(
+            sel = ToolCallArguments(
                 tool_id="2", tool_name="single_echo", tool_kwargs={"input": "zzz"}
             )
             tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
@@ -556,14 +556,14 @@ class TestToolExecutor:
             """Ensure async selection calls the right tool and returns the awaited output.
 
             Inputs:
-                - ToolSelection targeting AsyncTwoArgTool with a=1, b=2.
+                - ToolCallArguments targeting AsyncTwoArgTool with a=1, b=2.
             Expected:
                 - Output content is "3".
             Checks:
                 - Content equals "3".
             """
             tools: Sequence[BaseTool] = [AsyncTwoArgTool()]
-            sel = ToolSelection(
+            sel = ToolCallArguments(
                 tool_id="3", tool_name="async_sum2", tool_kwargs={"a": 1, "b": 2}
             )
             tool_executor = ToolExecutor()
@@ -577,14 +577,14 @@ class TestToolExecutor:
             """Verbose mode prints details for async tool calls as well.
 
             Inputs:
-                - ToolSelection for AsyncTwoArgTool with arguments and verbose=True.
+                - ToolCallArguments for AsyncTwoArgTool with arguments and verbose=True.
             Expected:
                 - Printed sections include call details and function output.
             Checks:
                 - capsys captured output contains expected substrings.
             """
             tools: Sequence[BaseTool] = [AsyncTwoArgTool()]
-            sel = ToolSelection(
+            sel = ToolCallArguments(
                 tool_id="4", tool_name="async_sum2", tool_kwargs={"a": 2, "b": 5}
             )
             tool_executor = ToolExecutor(ExecutionConfig(verbose=True))

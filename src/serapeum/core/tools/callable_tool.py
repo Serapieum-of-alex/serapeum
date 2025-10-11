@@ -298,8 +298,7 @@ class CallableTool(AsyncBaseTool):
 
         Args:
             func (Optional[Callable[..., Any]]):
-                Synchronous function to wrap. Mutually exclusive with
-                ``async_fn``.
+                Synchronous or Asynchronous function to wrap.
             name (Optional[str]):
                 Override for the tool name. Defaults to the function's
                 ``__name__``.
@@ -313,8 +312,6 @@ class CallableTool(AsyncBaseTool):
             tool_schema (Optional[Type[BaseModel]]):
                 Optional Pydantic model to use as the input schema. If omitted,
                 one is created from the function signature.
-            async_fn (Optional[AsyncCallable]):
-                Asynchronous function to wrap. Mutually exclusive with ``func``.
             tool_metadata (Optional[ToolMetadata]):
                 Provide explicit metadata. If given, it is used as-is and no
                 inference occurs.
@@ -323,9 +320,6 @@ class CallableTool(AsyncBaseTool):
 
         Returns:
             CallableTool: A tool wrapping the provided callable.
-
-        Raises:
-            AssertionError: If neither ``func`` nor ``async_fn`` is provided.
 
         Examples:
             - Infer metadata and schema from a sync function
@@ -368,25 +362,26 @@ class CallableTool(AsyncBaseTool):
         if tool_metadata is None:
             if func is None:
                 raise ValueError("func must be provided")
+
             name = name or func.__name__
-            fn_sig = inspect.signature(func)
+            func_signature = inspect.signature(func)
 
             # get the docstring from the function
             docstring = Docstring(func)
             param_docs, _ = docstring.extract_param_docs()
 
             # Replace default values to be required
-            fn_sig = fn_sig.replace(
+            func_signature = func_signature.replace(
                 parameters=[
                     (
                         param.replace(default=inspect.Parameter.empty)
                         if isinstance(param.default, FieldInfo)
                         else param
                     )
-                    for param in fn_sig.parameters.values()
+                    for param in func_signature.parameters.values()
                 ]
             )
-            docstring.signature = fn_sig
+            docstring.signature = func_signature
 
             # Build enriched description using param_docs
             if description is None:

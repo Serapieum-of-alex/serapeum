@@ -315,237 +315,237 @@ class TestCreateSchemaFromFunction:
             function = FunctionConverter("Z", z, additional_fields=[("bad",)])
             _ = function.to_schema()
 
+class TestToolExecutor:
+    class TestExecute:
+        """Tests the Extractor.execute method."""
+        def test_single_arg_positional_forwarding(self) -> None:
+            """A single-arg tool called with one-arg schema forwards a positional value.
 
-class TestCallTool:
-    """Tests the Extractor.execute method."""
-    def test_single_arg_positional_forwarding(self) -> None:
-        """A single-arg tool called with one-arg schema forwards a positional value.
+            Inputs:
+                - Tool with a single schema property (default MinimalToolSchema) and
+                  __call__ that accepts a single positional input.
+                - arguments={"input": "hello"}
+            Expected:
+                - ToolExecutor.execute detects one property and forwards the single value.
+                - ToolOutput contains content "hello", is_error False, correct tool name.
+            Checks:
+                - Output content, is_error flag, and tool_name field.
+            """
+            tool = SingleArgEchoTool()
+            tool_executor = ToolExecutor()
+            out = tool_executor.execute(tool, {"input": "hello"})
 
-        Inputs:
-            - Tool with a single schema property (default MinimalToolSchema) and
-              __call__ that accepts a single positional input.
-            - arguments={"input": "hello"}
-        Expected:
-            - ToolExecutor.execute detects one property and forwards the single value.
-            - ToolOutput contains content "hello", is_error False, correct tool name.
-        Checks:
-            - Output content, is_error flag, and tool_name field.
-        """
-        tool = SingleArgEchoTool()
-        tool_executor = ToolExecutor()
-        out = tool_executor.execute(tool, {"input": "hello"})
+            assert isinstance(out, ToolOutput)
+            assert out.content == "hello"
+            assert out.is_error is False
+            assert out.tool_name == tool.metadata.name
 
-        assert isinstance(out, ToolOutput)
-        assert out.content == "hello"
-        assert out.is_error is False
-        assert out.tool_name == tool.metadata.name
+        def test_single_arg_kwargs_fallback(self) -> None:
+            """A single-arg tool requiring kw-only arg uses kwargs fallback path.
 
-    def test_single_arg_kwargs_fallback(self) -> None:
-        """A single-arg tool requiring kw-only arg uses kwargs fallback path.
+            Inputs:
+                - Tool with a single schema property (default MinimalToolSchema) whose
+                  __call__ signature requires a keyword-only parameter named 'input'.
+                - arguments={"input": "world"}
+            Expected:
+                - The positional attempt fails; kwargs fallback is used successfully.
+            Checks:
+                - Output content is "world".
+            """
+            tool = SingleArgKwOnlyTool()
+            tool_executor = ToolExecutor()
+            out = tool_executor.execute(tool, {"input_values": "world"})
 
-        Inputs:
-            - Tool with a single schema property (default MinimalToolSchema) whose
-              __call__ signature requires a keyword-only parameter named 'input'.
-            - arguments={"input": "world"}
-        Expected:
-            - The positional attempt fails; kwargs fallback is used successfully.
-        Checks:
-            - Output content is "world".
-        """
-        tool = SingleArgKwOnlyTool()
-        tool_executor = ToolExecutor()
-        out = tool_executor.execute(tool, {"input_values": "world"})
+            assert out.content == "world"
 
-        assert out.content == "world"
+        def test_multi_arg_kwargs(self) -> None:
+            """A two-argument tool is called via kwargs path.
 
-    def test_multi_arg_kwargs(self) -> None:
-        """A two-argument tool is called via kwargs path.
+            Inputs:
+                - Tool with custom two-field schema and __call__(*, a: int, b: int).
+                - arguments={"a": 2, "b": 3}
+            Expected:
+                - ToolExecutor.execute uses kwargs path and returns sum as string.
+            Checks:
+                - Output content equals "5".
+            """
+            tool = TwoArgSumTool()
+            tool_executor = ToolExecutor()
+            out = tool_executor.execute(tool, {"a": 2, "b": 3})
+            assert out.content == "5"
 
-        Inputs:
-            - Tool with custom two-field schema and __call__(*, a: int, b: int).
-            - arguments={"a": 2, "b": 3}
-        Expected:
-            - ToolExecutor.execute uses kwargs path and returns sum as string.
-        Checks:
-            - Output content equals "5".
-        """
-        tool = TwoArgSumTool()
-        tool_executor = ToolExecutor()
-        out = tool_executor.execute(tool, {"a": 2, "b": 3})
-        assert out.content == "5"
+        def test_error_handling_returns_tool_output(self) -> None:
+            """Errors raised by the tool are captured and returned as ToolOutput.
 
-    def test_error_handling_returns_tool_output(self) -> None:
-        """Errors raised by the tool are captured and returned as ToolOutput.
-
-        Inputs:
-            - Tool that raises RuntimeError("boom").
-            - arguments={"input": "anything"}
-        Expected:
-            - ToolExecutor.execute returns ToolOutput with is_error=True, content prefixed with
-              "Encountered error:", and raw_input matches provided arguments.
-        Checks:
-            - is_error flag, content prefix, raw_input equality, and tool_name.
-        """
-        tool = ErrorTool()
-        args = {"input": "anything"}
-        tool_executor = ToolExecutor()
-        out = tool_executor.execute(tool, args)
-        assert out.is_error is True
-        assert out.content.startswith("Encountered error: ")
-        assert out.raw_input == args
-        assert out.tool_name == tool.metadata.name
-
-
-class TestACallTool:
-    """ Test the ToolExecutor.execute_async method."""
-    @pytest.mark.asyncio
-    async def test_single_arg_positional_forwarding_async(self) -> None:
-        """ToolExecutor.execute_async with a single-arg sync tool forwards positional value via adapter.
-
-        Inputs:
-            - Synchronous tool with single schema property and positional __call__.
-            - arguments={"input": "hello"}
-        Expected:
-            - ToolExecutor.execute_async adapts the tool and returns the same content.
-        Checks:
-            - Output content is "hello" and not error.
-        """
-        tool = SingleArgEchoTool()
-        tool_executor = ToolExecutor()
-        out = await tool_executor.execute_async(tool, {"input": "hello"})
-        assert out.content == "hello"
-        assert out.is_error is False
-
-    @pytest.mark.asyncio
-    async def test_single_arg_kwargs_fallback_async(self) -> None:
-        """ToolExecutor.execute_async uses kwargs fallback with an async kw-only tool.
-
-        Inputs:
-            - Async tool having acall(*, input: str), with single schema property.
-            - arguments={"input": "world"}
-        Expected:
-            - First positional attempt fails due to kw-only; second kwargs attempt succeeds.
-        Checks:
-            - Output content is "world".
-        """
-        tool = AsyncSingleArgKwOnlyTool()
-        tool_executor = ToolExecutor()
-        out = await tool_executor.execute_async(tool, {"input_values": "world"})
-        assert out.content == "world"
-
-    @pytest.mark.asyncio
-    async def test_multi_arg_kwargs_async(self) -> None:
-        """ToolExecutor.execute_async calls async tool with multiple kwargs.
-
-        Inputs:
-            - Async tool with two arguments, acall(*, a: int, b: int).
-            - arguments={"a": 4, "b": 6}
-        Expected:
-            - Sum returned as string "10".
-        Checks:
-            - Output content equals "10".
-        """
-        tool = AsyncTwoArgTool()
-        tool_executor = ToolExecutor()
-        out = await tool_executor.execute_async(tool, {"a": 4, "b": 6})
-        assert out.content == "10"
-
-    @pytest.mark.asyncio
-    async def test_error_handling_async(self) -> None:
-        """Errors in async tools are captured and returned as ToolOutput.
-
-        Inputs:
-            - Async tool that raises RuntimeError.
-        Expected:
-            - ToolOutput with is_error=True and error message prefix.
-        Checks:
-            - is_error is True and content prefix matches.
-        """
-        tool = AsyncErrorTool()
-        tool_executor = ToolExecutor()
-        out = await tool_executor.execute_async(tool, {"input": "x"})
-        assert out.is_error is True
-        assert out.content.startswith("Encountered error: ")
+            Inputs:
+                - Tool that raises RuntimeError("boom").
+                - arguments={"input": "anything"}
+            Expected:
+                - ToolExecutor.execute returns ToolOutput with is_error=True, content prefixed with
+                  "Encountered error:", and raw_input matches provided arguments.
+            Checks:
+                - is_error flag, content prefix, raw_input equality, and tool_name.
+            """
+            tool = ErrorTool()
+            args = {"input": "anything"}
+            tool_executor = ToolExecutor()
+            out = tool_executor.execute(tool, args)
+            assert out.is_error is True
+            assert out.content.startswith("Encountered error: ")
+            assert out.raw_input == args
+            assert out.tool_name == tool.metadata.name
 
 
-class TestCallToolWithSelection:
-    """Test the ToolExecutor.execute_with_selection method and ToolExecutor.execute_async_with_selection method."""
-    def test_calls_correct_tool_and_propagates_output(self, capsys: pytest.CaptureFixture[str]) -> None:
-        """Ensure the correct tool is selected by name and the output is returned.
+    class TestExecuteAsync:
+        """ Test the ToolExecutor.execute_async method."""
+        @pytest.mark.asyncio
+        async def test_single_arg_positional_forwarding_async(self) -> None:
+            """ToolExecutor.execute_async with a single-arg sync tool forwards positional value via adapter.
 
-        Inputs:
-            - ToolSelection with tool_name="single_echo" and tool_kwargs={"input": "ok"}.
-            - tools list containing SingleArgEchoTool and TwoArgSumTool.
-        Expected:
-            - ToolExecutor.execute_with_selection selects the echo tool and returns content "ok".
-        Checks:
-            - Output content equals "ok".
-        """
-        tools: Sequence[BaseTool] = [SingleArgEchoTool(), TwoArgSumTool()]
-        sel = ToolSelection(tool_id="1", tool_name="single_echo", tool_kwargs={"input": "ok"})
-        tool_executor = ToolExecutor()
-        out = tool_executor.execute_with_selection(sel, tools)
-        assert out.content == "ok"
+            Inputs:
+                - Synchronous tool with single schema property and positional __call__.
+                - arguments={"input": "hello"}
+            Expected:
+                - ToolExecutor.execute_async adapts the tool and returns the same content.
+            Checks:
+                - Output content is "hello" and not error.
+            """
+            tool = SingleArgEchoTool()
+            tool_executor = ToolExecutor()
+            out = await tool_executor.execute_async(tool, {"input": "hello"})
+            assert out.content == "hello"
+            assert out.is_error is False
 
-    def test_verbose_prints_arguments_and_output(self, capsys: pytest.CaptureFixture[str]) -> None:
-        """Verify verbose mode prints the function call info and output content.
+        @pytest.mark.asyncio
+        async def test_single_arg_kwargs_fallback_async(self) -> None:
+            """ToolExecutor.execute_async uses kwargs fallback with an async kw-only tool.
 
-        Inputs:
-            - ToolSelection for SingleArgEchoTool with input "zzz" and verbose=True.
-        Expected:
-            - Two sections printed: "=== Calling Function ===" and "=== Function Output ===".
-            - The printed lines include tool name and arguments JSON, and the echoed output.
-        Checks:
-            - capsys output contains the expected substrings.
-        """
-        tools: Sequence[BaseTool] = [SingleArgEchoTool()]
-        sel = ToolSelection(tool_id="2", tool_name="single_echo", tool_kwargs={"input": "zzz"})
-        tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
-        out = tool_executor.execute_with_selection(sel, tools)
-        captured = capsys.readouterr()
-        assert "=== Calling Function ===" in captured.out
-        assert "single_echo" in captured.out
-        assert '"input": "zzz"' in captured.out
-        assert "=== Function Output ===" in captured.out
-        assert out.content in captured.out
+            Inputs:
+                - Async tool having acall(*, input: str), with single schema property.
+                - arguments={"input": "world"}
+            Expected:
+                - First positional attempt fails due to kw-only; second kwargs attempt succeeds.
+            Checks:
+                - Output content is "world".
+            """
+            tool = AsyncSingleArgKwOnlyTool()
+            tool_executor = ToolExecutor()
+            out = await tool_executor.execute_async(tool, {"input_values": "world"})
+            assert out.content == "world"
+
+        @pytest.mark.asyncio
+        async def test_multi_arg_kwargs_async(self) -> None:
+            """ToolExecutor.execute_async calls async tool with multiple kwargs.
+
+            Inputs:
+                - Async tool with two arguments, acall(*, a: int, b: int).
+                - arguments={"a": 4, "b": 6}
+            Expected:
+                - Sum returned as string "10".
+            Checks:
+                - Output content equals "10".
+            """
+            tool = AsyncTwoArgTool()
+            tool_executor = ToolExecutor()
+            out = await tool_executor.execute_async(tool, {"a": 4, "b": 6})
+            assert out.content == "10"
+
+        @pytest.mark.asyncio
+        async def test_error_handling_async(self) -> None:
+            """Errors in async tools are captured and returned as ToolOutput.
+
+            Inputs:
+                - Async tool that raises RuntimeError.
+            Expected:
+                - ToolOutput with is_error=True and error message prefix.
+            Checks:
+                - is_error is True and content prefix matches.
+            """
+            tool = AsyncErrorTool()
+            tool_executor = ToolExecutor()
+            out = await tool_executor.execute_async(tool, {"input": "x"})
+            assert out.is_error is True
+            assert out.content.startswith("Encountered error: ")
 
 
-class TestACallToolWithSelection:
-    @pytest.mark.asyncio
-    async def test_calls_correct_tool_async_and_propagates_output(self) -> None:
-        """Ensure async selection calls the right tool and returns the awaited output.
+    class TestExecuteWithSelection:
+        """Test the ToolExecutor.execute_with_selection method and ToolExecutor.execute_async_with_selection method."""
+        def test_calls_correct_tool_and_propagates_output(self, capsys: pytest.CaptureFixture[str]) -> None:
+            """Ensure the correct tool is selected by name and the output is returned.
 
-        Inputs:
-            - ToolSelection targeting AsyncTwoArgTool with a=1, b=2.
-        Expected:
-            - Output content is "3".
-        Checks:
-            - Content equals "3".
-        """
-        tools: Sequence[BaseTool] = [AsyncTwoArgTool()]
-        sel = ToolSelection(tool_id="3", tool_name="async_sum2", tool_kwargs={"a": 1, "b": 2})
-        tool_executor = ToolExecutor()
-        out = await tool_executor.execute_async_with_selection(sel, tools)
-        assert out.content == "3"
+            Inputs:
+                - ToolSelection with tool_name="single_echo" and tool_kwargs={"input": "ok"}.
+                - tools list containing SingleArgEchoTool and TwoArgSumTool.
+            Expected:
+                - ToolExecutor.execute_with_selection selects the echo tool and returns content "ok".
+            Checks:
+                - Output content equals "ok".
+            """
+            tools: Sequence[BaseTool] = [SingleArgEchoTool(), TwoArgSumTool()]
+            sel = ToolSelection(tool_id="1", tool_name="single_echo", tool_kwargs={"input": "ok"})
+            tool_executor = ToolExecutor()
+            out = tool_executor.execute_with_selection(sel, tools)
+            assert out.content == "ok"
 
-    @pytest.mark.asyncio
-    async def test_verbose_prints_arguments_and_output_async(self, capsys: pytest.CaptureFixture[str]) -> None:
-        """Verbose mode prints details for async tool calls as well.
+        def test_verbose_prints_arguments_and_output(self, capsys: pytest.CaptureFixture[str]) -> None:
+            """Verify verbose mode prints the function call info and output content.
 
-        Inputs:
-            - ToolSelection for AsyncTwoArgTool with arguments and verbose=True.
-        Expected:
-            - Printed sections include call details and function output.
-        Checks:
-            - capsys captured output contains expected substrings.
-        """
-        tools: Sequence[BaseTool] = [AsyncTwoArgTool()]
-        sel = ToolSelection(tool_id="4", tool_name="async_sum2", tool_kwargs={"a": 2, "b": 5})
-        tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
-        out = await tool_executor.execute_async_with_selection(sel, tools)
-        captured = capsys.readouterr()
-        assert "=== Calling Function ===" in captured.out
-        assert "async_sum2" in captured.out
-        assert '"a": 2' in captured.out and '"b": 5' in captured.out
-        assert "=== Function Output ===" in captured.out
-        assert out.content in captured.out
+            Inputs:
+                - ToolSelection for SingleArgEchoTool with input "zzz" and verbose=True.
+            Expected:
+                - Two sections printed: "=== Calling Function ===" and "=== Function Output ===".
+                - The printed lines include tool name and arguments JSON, and the echoed output.
+            Checks:
+                - capsys output contains the expected substrings.
+            """
+            tools: Sequence[BaseTool] = [SingleArgEchoTool()]
+            sel = ToolSelection(tool_id="2", tool_name="single_echo", tool_kwargs={"input": "zzz"})
+            tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
+            out = tool_executor.execute_with_selection(sel, tools)
+            captured = capsys.readouterr()
+            assert "=== Calling Function ===" in captured.out
+            assert "single_echo" in captured.out
+            assert '"input": "zzz"' in captured.out
+            assert "=== Function Output ===" in captured.out
+            assert out.content in captured.out
+
+
+    class TestExecuteAsyncWithSelection:
+        @pytest.mark.asyncio
+        async def test_calls_correct_tool_async_and_propagates_output(self) -> None:
+            """Ensure async selection calls the right tool and returns the awaited output.
+
+            Inputs:
+                - ToolSelection targeting AsyncTwoArgTool with a=1, b=2.
+            Expected:
+                - Output content is "3".
+            Checks:
+                - Content equals "3".
+            """
+            tools: Sequence[BaseTool] = [AsyncTwoArgTool()]
+            sel = ToolSelection(tool_id="3", tool_name="async_sum2", tool_kwargs={"a": 1, "b": 2})
+            tool_executor = ToolExecutor()
+            out = await tool_executor.execute_async_with_selection(sel, tools)
+            assert out.content == "3"
+
+        @pytest.mark.asyncio
+        async def test_verbose_prints_arguments_and_output_async(self, capsys: pytest.CaptureFixture[str]) -> None:
+            """Verbose mode prints details for async tool calls as well.
+
+            Inputs:
+                - ToolSelection for AsyncTwoArgTool with arguments and verbose=True.
+            Expected:
+                - Printed sections include call details and function output.
+            Checks:
+                - capsys captured output contains expected substrings.
+            """
+            tools: Sequence[BaseTool] = [AsyncTwoArgTool()]
+            sel = ToolSelection(tool_id="4", tool_name="async_sum2", tool_kwargs={"a": 2, "b": 5})
+            tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
+            out = await tool_executor.execute_async_with_selection(sel, tools)
+            captured = capsys.readouterr()
+            assert "=== Calling Function ===" in captured.out
+            assert "async_sum2" in captured.out
+            assert '"a": 2' in captured.out and '"b": 5' in captured.out
+            assert "=== Function Output ===" in captured.out
+            assert out.content in captured.out

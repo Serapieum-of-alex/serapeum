@@ -18,7 +18,7 @@ from serapeum.core.tools.utils import (
     FunctionConverter,
     Docstring,
     ToolExecutor,
-    ExecutionConfig
+    ExecutionConfig,
 )
 from serapeum.core.tools.models import BaseTool, AsyncBaseTool, ToolMetadata, ToolOutput
 from serapeum.core.llm.base import ToolSelection
@@ -26,6 +26,7 @@ from serapeum.core.llm.base import ToolSelection
 # -----------------------------------------------------------------------------
 # Helpers: Dummy tool implementations for exercising call utilities
 # -----------------------------------------------------------------------------
+
 
 class SingleArgEchoTool(BaseTool):
     """A single-argument echo tool used to validate positional forwarding path.
@@ -59,7 +60,9 @@ class SingleArgKwOnlyTool(BaseTool):
 
     def __call__(self, *, input_values: str) -> ToolOutput:  # type: ignore[override]
         # ensure keyword-only is required from the caller perspective
-        return ToolOutput(tool_name=self.metadata.name or "single_kw", content=input_values)
+        return ToolOutput(
+            tool_name=self.metadata.name or "single_kw", content=input_values
+        )
 
 
 class TwoArgSumTool(BaseTool):
@@ -74,7 +77,9 @@ class TwoArgSumTool(BaseTool):
 
     @property
     def metadata(self) -> ToolMetadata:  # type: ignore[override]
-        return ToolMetadata(description="Sum two numbers.", name="sum2", tool_schema=TwoArgSumTool.Args)
+        return ToolMetadata(
+            description="Sum two numbers.", name="sum2", tool_schema=TwoArgSumTool.Args
+        )
 
     def __call__(self, *, a: int, b: int) -> ToolOutput:  # type: ignore[override]
         return ToolOutput(tool_name=self.metadata.name or "sum2", content=str(a + b))
@@ -100,11 +105,15 @@ class AsyncSingleArgKwOnlyTool(AsyncBaseTool):
 
     def call(self, *, input_values: str) -> ToolOutput:  # type: ignore[override]
         # sync path delegates to same semantics as async
-        return ToolOutput(tool_name=self.metadata.name or "async_single_kw", content=input_values)
+        return ToolOutput(
+            tool_name=self.metadata.name or "async_single_kw", content=input_values
+        )
 
     async def acall(self, *, input_values: str) -> ToolOutput:  # type: ignore[override]
         await asyncio.sleep(0)
-        return ToolOutput(tool_name=self.metadata.name or "async_single_kw", content=input_values)
+        return ToolOutput(
+            tool_name=self.metadata.name or "async_single_kw", content=input_values
+        )
 
 
 class AsyncTwoArgTool(AsyncBaseTool):
@@ -116,14 +125,22 @@ class AsyncTwoArgTool(AsyncBaseTool):
 
     @property
     def metadata(self) -> ToolMetadata:  # type: ignore[override]
-        return ToolMetadata(description="Async sum.", name="async_sum2", tool_schema=AsyncTwoArgTool.Args)
+        return ToolMetadata(
+            description="Async sum.",
+            name="async_sum2",
+            tool_schema=AsyncTwoArgTool.Args,
+        )
 
     def call(self, *, a: int, b: int) -> ToolOutput:  # type: ignore[override]
-        return ToolOutput(tool_name=self.metadata.name or "async_sum2", content=str(a + b))
+        return ToolOutput(
+            tool_name=self.metadata.name or "async_sum2", content=str(a + b)
+        )
 
     async def acall(self, *, a: int, b: int) -> ToolOutput:  # type: ignore[override]
         await asyncio.sleep(0)
-        return ToolOutput(tool_name=self.metadata.name or "async_sum2", content=str(a + b))
+        return ToolOutput(
+            tool_name=self.metadata.name or "async_sum2", content=str(a + b)
+        )
 
 
 class AsyncErrorTool(AsyncBaseTool):
@@ -151,6 +168,7 @@ class TestDocstringExtractParamDocs:
         Checks:
             All three styles are parsed, only known params are kept, and unknown parameters are reported.
         """
+
         def f(a: int, b: str) -> None:
             """Summary line.
 
@@ -160,6 +178,7 @@ class TestDocstringExtractParamDocs:
             @param c value for c (unknown)
             """
             pass
+
         docstring = Docstring(f)
         param_docs, unknown = docstring.extract_param_docs()
         assert param_docs == {"a": "value for a", "b": "value for b"}
@@ -171,6 +190,7 @@ class TestDocstringExtractParamDocs:
         Expected: The first description is retained; the conflicting second one is ignored.
         Checks: Conflict resolution behavior when duplicate param documentation with different text appears.
         """
+
         def f(x: int) -> None:
             """
             :param x: first desc
@@ -186,6 +206,7 @@ class TestDocstringExtractParamDocs:
 
 class TestCreateSchemaFromFunction:
     """Tests for create_schema_from_function"""
+
     def test_required_default_any_and_field_info(self) -> None:
         """Validate required fields, defaulted fields, Any typing, and Field defaults.
 
@@ -206,7 +227,9 @@ class TestCreateSchemaFromFunction:
             - model.model_fields metadata and model_json_schema entries.
         """
 
-        def f(a: int, b: str = "x", c=3, d: int = Field(default=5, description="five")) -> None:
+        def f(
+            a: int, b: str = "x", c=3, d: int = Field(default=5, description="five")
+        ) -> None:
             return None
 
         function = FunctionConverter("F", f)
@@ -237,15 +260,22 @@ class TestCreateSchemaFromFunction:
         """
         from typing import Annotated as Ann
 
-        def g(x: Ann[int, "counter value"], y: Ann[str, Field(description="text", json_schema_extra={"alpha": True})]) -> None:
+        def g(
+            x: Ann[int, "counter value"],
+            y: Ann[str, Field(description="text", json_schema_extra={"alpha": True})],
+        ) -> None:
             return None
+
         function = FunctionConverter("G", g)
         model = function.to_schema()
         fx = model.model_fields["x"]
         fy = model.model_fields["y"]
         assert fx.description == "counter value"
         assert fy.description == "text"
-        assert isinstance(fy.json_schema_extra, dict) and fy.json_schema_extra.get("alpha") is True
+        assert (
+            isinstance(fy.json_schema_extra, dict)
+            and fy.json_schema_extra.get("alpha") is True
+        )
 
     def test_date_datetime_time_formats(self) -> None:
         """Ensure date/datetime/time fields carry proper JSON Schema format values.
@@ -260,6 +290,7 @@ class TestCreateSchemaFromFunction:
 
         def h(day: dt.date, ts: dt.datetime, at: dt.time) -> None:
             return None
+
         function = FunctionConverter("H", h)
         model = function.to_schema()
         props = model.model_json_schema()["properties"]
@@ -315,9 +346,11 @@ class TestCreateSchemaFromFunction:
             function = FunctionConverter("Z", z, additional_fields=[("bad",)])
             _ = function.to_schema()
 
+
 class TestToolExecutor:
     class TestExecute:
         """Tests the Extractor.execute method."""
+
         def test_single_arg_positional_forwarding(self) -> None:
             """A single-arg tool called with one-arg schema forwards a positional value.
 
@@ -395,9 +428,9 @@ class TestToolExecutor:
             assert out.raw_input == args
             assert out.tool_name == tool.metadata.name
 
-
     class TestExecuteAsync:
-        """ Test the ToolExecutor.execute_async method."""
+        """Test the ToolExecutor.execute_async method."""
+
         @pytest.mark.asyncio
         async def test_single_arg_positional_forwarding_async(self) -> None:
             """ToolExecutor.execute_async with a single-arg sync tool forwards positional value via adapter.
@@ -467,10 +500,12 @@ class TestToolExecutor:
             assert out.is_error is True
             assert out.content.startswith("Encountered error: ")
 
-
     class TestExecuteWithSelection:
         """Test the ToolExecutor.execute_with_selection method and ToolExecutor.execute_async_with_selection method."""
-        def test_calls_correct_tool_and_propagates_output(self, capsys: pytest.CaptureFixture[str]) -> None:
+
+        def test_calls_correct_tool_and_propagates_output(
+            self, capsys: pytest.CaptureFixture[str]
+        ) -> None:
             """Ensure the correct tool is selected by name and the output is returned.
 
             Inputs:
@@ -482,12 +517,16 @@ class TestToolExecutor:
                 - Output content equals "ok".
             """
             tools: Sequence[BaseTool] = [SingleArgEchoTool(), TwoArgSumTool()]
-            sel = ToolSelection(tool_id="1", tool_name="single_echo", tool_kwargs={"input": "ok"})
+            sel = ToolSelection(
+                tool_id="1", tool_name="single_echo", tool_kwargs={"input": "ok"}
+            )
             tool_executor = ToolExecutor()
             out = tool_executor.execute_with_selection(sel, tools)
             assert out.content == "ok"
 
-        def test_verbose_prints_arguments_and_output(self, capsys: pytest.CaptureFixture[str]) -> None:
+        def test_verbose_prints_arguments_and_output(
+            self, capsys: pytest.CaptureFixture[str]
+        ) -> None:
             """Verify verbose mode prints the function call info and output content.
 
             Inputs:
@@ -499,7 +538,9 @@ class TestToolExecutor:
                 - capsys output contains the expected substrings.
             """
             tools: Sequence[BaseTool] = [SingleArgEchoTool()]
-            sel = ToolSelection(tool_id="2", tool_name="single_echo", tool_kwargs={"input": "zzz"})
+            sel = ToolSelection(
+                tool_id="2", tool_name="single_echo", tool_kwargs={"input": "zzz"}
+            )
             tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
             out = tool_executor.execute_with_selection(sel, tools)
             captured = capsys.readouterr()
@@ -508,7 +549,6 @@ class TestToolExecutor:
             assert '"input": "zzz"' in captured.out
             assert "=== Function Output ===" in captured.out
             assert out.content in captured.out
-
 
     class TestExecuteAsyncWithSelection:
         @pytest.mark.asyncio
@@ -523,13 +563,17 @@ class TestToolExecutor:
                 - Content equals "3".
             """
             tools: Sequence[BaseTool] = [AsyncTwoArgTool()]
-            sel = ToolSelection(tool_id="3", tool_name="async_sum2", tool_kwargs={"a": 1, "b": 2})
+            sel = ToolSelection(
+                tool_id="3", tool_name="async_sum2", tool_kwargs={"a": 1, "b": 2}
+            )
             tool_executor = ToolExecutor()
             out = await tool_executor.execute_async_with_selection(sel, tools)
             assert out.content == "3"
 
         @pytest.mark.asyncio
-        async def test_verbose_prints_arguments_and_output_async(self, capsys: pytest.CaptureFixture[str]) -> None:
+        async def test_verbose_prints_arguments_and_output_async(
+            self, capsys: pytest.CaptureFixture[str]
+        ) -> None:
             """Verbose mode prints details for async tool calls as well.
 
             Inputs:
@@ -540,7 +584,9 @@ class TestToolExecutor:
                 - capsys captured output contains expected substrings.
             """
             tools: Sequence[BaseTool] = [AsyncTwoArgTool()]
-            sel = ToolSelection(tool_id="4", tool_name="async_sum2", tool_kwargs={"a": 2, "b": 5})
+            sel = ToolSelection(
+                tool_id="4", tool_name="async_sum2", tool_kwargs={"a": 2, "b": 5}
+            )
             tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
             out = await tool_executor.execute_async_with_selection(sel, tools)
             captured = capsys.readouterr()

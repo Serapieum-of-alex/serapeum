@@ -21,7 +21,7 @@ from serapeum.core.tools.utils import (
     ExecutionConfig,
 )
 from serapeum.core.tools.models import BaseTool, AsyncBaseTool, ToolMetadata, ToolOutput
-from serapeum.core.llm.base import ToolSelection
+from serapeum.core.tools.models import ToolSelection
 
 # -----------------------------------------------------------------------------
 # Helpers: Dummy tool implementations for exercising call utilities

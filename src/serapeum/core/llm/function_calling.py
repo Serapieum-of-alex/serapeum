@@ -8,7 +8,8 @@ from serapeum.core.base.llms.models import (
     ChatResponseAsyncGen,
     ChatResponseGen,
 )
-from serapeum.core.llm.base import LLM, ToolSelection
+from serapeum.core.llm.base import LLM
+from serapeum.core.tools.models import ToolSelection
 
 if TYPE_CHECKING:
     from serapeum.core.chat.models import AgentChatResponse

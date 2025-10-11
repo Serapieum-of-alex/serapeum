@@ -18,6 +18,7 @@ from serapeum.core.tools.utils import FunctionConverter, Docstring
 
 AsyncCallable = Callable[..., Awaitable[Any]]
 
+
 class SyncAsyncConverter:
     def __init__(self, func: Callable[..., Any]) -> None:
         if not isinstance(func, Callable):

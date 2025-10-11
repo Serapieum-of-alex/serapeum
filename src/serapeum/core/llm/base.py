@@ -51,21 +51,6 @@ if TYPE_CHECKING:
     from serapeum.core.llm.structured_llm import StructuredLLM
 
 
-class ToolSelection(BaseModel):
-
-    tool_id: str = Field(description="Tool ID to select.")
-    tool_name: str = Field(description="Tool name to select.")
-    tool_kwargs: Dict[str, Any] = Field(description="Keyword arguments for the tool.")
-
-    @field_validator("tool_kwargs", mode="wrap")
-    @classmethod
-    def ignore_non_dict_arguments(cls, v: Any, handler: Any) -> Dict[str, Any]:
-        try:
-            return handler(v)
-        except ValidationError:
-            return handler({})
-
-
 @runtime_checkable
 class MessagesToPromptType(Protocol):
     def __call__(self, messages: Sequence[Message]) -> str:

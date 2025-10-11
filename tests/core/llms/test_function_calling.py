@@ -9,7 +9,7 @@ from serapeum.core.base.llms.models import (
     Metadata,
 )
 from serapeum.core.llm.function_calling import FunctionCallingLLM
-from serapeum.core.llm.base import ToolSelection
+from serapeum.core.tools.models import ToolSelection
 from serapeum.core.structured_tools.function_program import CallableTool, get_function_tool
 from serapeum.core.tools.models import BaseTool
 from pydantic import BaseModel, Field

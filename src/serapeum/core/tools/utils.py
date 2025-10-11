@@ -23,7 +23,7 @@ import datetime
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 from serapeum.core.tools.models import BaseTool, ToolOutput, adapt_to_async_tool
-from serapeum.core.llm.base import ToolSelection
+from serapeum.core.tools.models import ToolSelection
 
 
 if TYPE_CHECKING:

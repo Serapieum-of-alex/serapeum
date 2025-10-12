@@ -178,7 +178,7 @@ class TestImageBlock:
         assert img.read() == png_1px_b64
 
     def test_image_block_resolve_image_url(self, png_1px_b64: bytes, png_1px: bytes):
-        with mock.patch("serapeum.core.utils.utils.requests") as mocked_req:
+        with mock.patch("serapeum.core.utils.base.requests") as mocked_req:
             url_str = "http://example.com"
             mocked_req.get.return_value = mock.MagicMock(content=png_1px)
             b = Image(url=AnyUrl(url=url_str))

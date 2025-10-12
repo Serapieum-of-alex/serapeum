@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from serapeum.core.utils.utils import resolve_binary, truncate_text
+from serapeum.core.utils.base import resolve_binary, truncate_text
 
 
 class TestResolveBinary:
@@ -198,7 +198,7 @@ class TestResolveBinary:
                     self.raise_called = True
 
             dummy = DummyResponse(content)
-            with patch("serapeum.core.utils.utils.requests.get", return_value=dummy) as mock_get:
+            with patch("serapeum.core.utils.base.requests.get", return_value=dummy) as mock_get:
                 # as_base64=False
                 bio = resolve_binary(url="https://example.com/data.bin", as_base64=False)
                 assert bio.getvalue() == content
@@ -206,7 +206,7 @@ class TestResolveBinary:
                 mock_get.assert_called_once()
 
             dummy2 = DummyResponse(content)
-            with patch("serapeum.core.utils.utils.requests.get", return_value=dummy2):
+            with patch("serapeum.core.utils.base.requests.get", return_value=dummy2):
                 # as_base64=True
                 bio2 = resolve_binary(url="https://example.com/data.bin", as_base64=True)
                 assert base64.b64decode(bio2.getvalue()) == content

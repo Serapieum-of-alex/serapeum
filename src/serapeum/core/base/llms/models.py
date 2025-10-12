@@ -28,7 +28,7 @@ from pydantic import (
     model_validator,
 )
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
-from serapeum.core.utils.utils import resolve_binary
+from serapeum.core.utils.base import resolve_binary
 
 
 class MessageRole(str, Enum):

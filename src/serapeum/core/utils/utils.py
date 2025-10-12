@@ -35,15 +35,14 @@ def resolve_binary(
 
         if as_base64:
             return BytesIO(base64.b64encode(decoded_bytes))
-        return BytesIO(decoded_bytes)
 
+        buffer = BytesIO(decoded_bytes)
     elif path is not None:
         path = Path(path) if isinstance(path, str) else path
         data = path.read_bytes()
         if as_base64:
             return BytesIO(base64.b64encode(data))
-        return BytesIO(data)
-
+        buffer = BytesIO(data)
     elif url is not None:
         parsed_url = urlparse(url)
         if parsed_url.scheme == "data":
@@ -80,9 +79,11 @@ def resolve_binary(
         response.raise_for_status()
         if as_base64:
             return BytesIO(base64.b64encode(response.content))
-        return BytesIO(response.content)
+        buffer = BytesIO(response.content)
+    else:
+        raise ValueError("No valid source provided to resolve binary data!")
 
-    raise ValueError("No valid source provided to resolve binary data!")
+    return buffer
 
 
 def truncate_text(text: str, max_length: int) -> str:

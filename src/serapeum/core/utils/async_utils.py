@@ -5,7 +5,10 @@ from itertools import zip_longest
 from typing import Any, Coroutine, Iterable, List, Optional, TypeVar
 DEFAULT_NUM_WORKERS = 4
 
-def asyncio_module(show_progress: bool = False) -> Any:
+T = TypeVar("T")
+
+
+def get_asyncio_module(show_progress: bool = False) -> Any:
     if show_progress:
         from tqdm.asyncio import tqdm_asyncio
 
@@ -91,19 +94,6 @@ async def batch_gather(
             print(f"Completed {len(output)} out of {len(tasks)} tasks")
     return output
 
-
-def get_asyncio_module(show_progress: bool = False) -> Any:
-    if show_progress:
-        from tqdm.asyncio import tqdm_asyncio
-
-        module = tqdm_asyncio
-    else:
-        module = asyncio
-
-    return module
-
-
-T = TypeVar("T")
 
 async def run_jobs(
     jobs: List[Coroutine[Any, Any, T]],

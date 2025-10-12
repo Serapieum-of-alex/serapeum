@@ -2,7 +2,7 @@ import base64
 from io import BytesIO
 from pathlib import Path
 from typing import Optional
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -198,9 +198,13 @@ class TestResolveBinary:
                     self.raise_called = True
 
             dummy = DummyResponse(content)
-            with patch("serapeum.core.utils.base.requests.get", return_value=dummy) as mock_get:
+            with patch(
+                "serapeum.core.utils.base.requests.get", return_value=dummy
+            ) as mock_get:
                 # as_base64=False
-                bio = resolve_binary(url="https://example.com/data.bin", as_base64=False)
+                bio = resolve_binary(
+                    url="https://example.com/data.bin", as_base64=False
+                )
                 assert bio.getvalue() == content
                 assert dummy.raise_called is True
                 mock_get.assert_called_once()
@@ -208,7 +212,9 @@ class TestResolveBinary:
             dummy2 = DummyResponse(content)
             with patch("serapeum.core.utils.base.requests.get", return_value=dummy2):
                 # as_base64=True
-                bio2 = resolve_binary(url="https://example.com/data.bin", as_base64=True)
+                bio2 = resolve_binary(
+                    url="https://example.com/data.bin", as_base64=True
+                )
                 assert base64.b64decode(bio2.getvalue()) == content
 
         def test_no_valid_source_raises(self):

@@ -1,5 +1,6 @@
 import asyncio
 import pytest
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from serapeum.core.base.llms.models import TextChunk, Image, Audio
@@ -8,6 +9,44 @@ from serapeum.core.tools.callable_tool import (
     CallableTool,
 )
 from serapeum.core.tools.models import ToolMetadata, ToolOutput
+
+
+class MockSong(BaseModel):
+    """Mock Song model for testing."""
+
+    title: str
+    duration: Optional[int] = None
+
+
+class MockAlbum(BaseModel):
+    """Mock Album model for testing."""
+
+    title: str
+    artist: str
+    songs: List[MockSong]
+
+
+class MockSimpleModel(BaseModel):
+    """Simple model for basic testing."""
+
+    name: str
+    value: int
+
+
+class MockModelWithDescription(BaseModel):
+    """Model with description field."""
+
+    description: str = Field(description="A test description")
+    data: str
+
+
+class MockModelWithOptionalFields(BaseModel):
+    """Model with optional fields."""
+
+    required_field: str
+    optional_field: Optional[str] = None
+    optional_int: Optional[int] = None
+
 
 class TestSyncAsyncConverter:
     class TestSyncToAsync:
@@ -224,6 +263,87 @@ class TestCallableToolFromFunction:
         assert tool.metadata.get_schema()["properties"]["q"]["type"] == "string"
 
 
+class TestCallableToolFromModel:
+    """Test class for get_function_tool function."""
+
+    def test_get_function_tool_basic_model(self):
+        """Test creating function tool from basic model.
+
+        Input: MockSimpleModel class
+        Expected: Returns CallableTool with correct name and schema
+        Check: Tool name matches model title, tool_schema is set
+        """
+        tool = CallableTool.from_model(MockSimpleModel)
+
+        assert tool is not None
+        assert tool.metadata.name == "MockSimpleModel"
+        assert tool.metadata.tool_schema == MockSimpleModel
+
+    def test_get_function_tool_model_with_description(self):
+        """Test creating function tool from model with description.
+
+        Input: MockModelWithDescription class with schema description
+        Expected: Returns CallableTool with description from schema
+        Check: Tool has description matching model schema
+        """
+        tool = CallableTool.from_model(MockModelWithDescription)
+
+        assert tool is not None
+        assert tool.metadata.name == "MockModelWithDescription"
+        # Description should come from the model schema
+
+    def test_get_function_tool_complex_model(self):
+        """Test creating function tool from complex nested model.
+
+        Input: MockAlbum class with nested structure
+        Expected: Returns CallableTool that can handle nested data
+        Check: Tool schema correctly represents nested structure
+        """
+        tool = CallableTool.from_model(MockAlbum)
+
+        assert tool is not None
+        assert tool.metadata.name == "MockAlbum"
+        assert tool.metadata.tool_schema == MockAlbum
+
+    def test_get_function_tool_callable(self):
+        """Test that function tool is callable with kwargs.
+
+        Input: MockSimpleModel tool called with valid kwargs
+        Expected: Returns instance of MockSimpleModel
+        Check: Returned object is correct model instance with data
+        """
+        tool = CallableTool.from_model(MockSimpleModel)
+        result = tool.sync_func(name="test", value=42)
+
+        assert isinstance(result, MockSimpleModel)
+        assert result.name == "test"
+        assert result.value == 42
+
+    def test_get_function_tool_with_optional_fields(self):
+        """Test function tool with model containing optional fields.
+
+        Input: MockModelWithOptionalFields class
+        Expected: Returns tool that handles optional fields correctly
+        Check: Tool can be called with/without optional fields
+        """
+        tool = CallableTool.from_model(MockModelWithOptionalFields)
+
+        # Test with only required field
+        result1 = tool.sync_func(required_field="test")
+        assert isinstance(result1, MockModelWithOptionalFields)
+        assert result1.required_field == "test"
+        assert result1.optional_field is None
+
+        # Test with all fields
+        result2 = tool.sync_func(
+            required_field="test",
+            optional_field="optional",
+            optional_int=10,
+        )
+        assert result2.optional_field == "optional"
+        assert result2.optional_int == 10
+
+
 class TestCallableToolParseToolOutput:
     def test_single_text_chunk(self):
         """
@@ -364,3 +484,4 @@ class TestCallableToolACall:
         assert out.raw_output == "8"
         assert out.raw_input == {"args": (), "kwargs": {"a": 1, "b": 2, "c": 5}}
         assert [c.content for c in out.chunks if isinstance(c, TextChunk)] == ["8"]
+

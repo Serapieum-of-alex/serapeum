@@ -10,7 +10,7 @@ from serapeum.core.base.llms.models import (
 )
 from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.tools.models import ToolCallArguments
-from serapeum.core.structured_tools.function_program import CallableTool, get_function_tool
+from serapeum.core.structured_tools.function_program import CallableTool
 from serapeum.core.tools.models import BaseTool
 from pydantic import BaseModel, Field
 
@@ -88,7 +88,7 @@ class Person(BaseModel):
 
 @pytest.fixture()
 def person_tool() -> CallableTool:
-    return get_function_tool(Person)
+    return CallableTool.from_model(Person)
 
 
 @pytest.fixture()

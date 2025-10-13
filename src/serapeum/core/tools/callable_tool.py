@@ -2,7 +2,7 @@
 
 import asyncio
 import inspect
-from typing import Any, Awaitable, Callable, Optional, Type, Dict, Union, List, Tuple
+from typing import Any, Awaitable, Callable, Optional, Type, Dict, Union, List, TypeVar
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
@@ -17,6 +17,8 @@ from serapeum.core.base.llms.models import (
 from serapeum.core.tools.utils import FunctionConverter, Docstring
 
 AsyncCallable = Callable[..., Awaitable[Any]]
+
+Model = TypeVar("Model", bound=BaseModel)
 
 
 class SyncAsyncConverter:
@@ -415,6 +417,112 @@ class CallableTool(AsyncBaseTool):
             default_arguments=default_arguments,
         )
 
+    @classmethod
+    def from_model(cls, output_cls: Type[Model]) -> "CallableTool":
+        """Create a callable tool from a Pydantic model class.
+
+        Converts a Pydantic BaseModel class into a CallableTool that can be used
+        with LLM function calling. The tool's metadata (name, description, schema)
+        is extracted from the model's JSON schema.
+
+        Args:
+            output_cls (Type[Model]):
+                A Pydantic BaseModel subclass that defines the structure of the tool's output.
+                The model's schema will be used to generate the tool's metadata and validation.
+
+        Returns:
+            CallableTool:
+                A callable tool instance that wraps the Pydantic model. The tool can be invoked with keyword arguments
+                matching the model's fields, and will return an instance of the output_cls.
+
+        Example:
+            - Create a tool from a simple Pydantic model:
+                ```python
+                >>> from pydantic import BaseModel, Field
+                >>> from serapeum.core.tools.callable_tool import CallableTool
+                >>>
+                >>> class UserInfo(BaseModel):
+                ...     '''User information model.'''
+                ...     name: str = Field(description="User's full name")
+                ...     age: int = Field(description="User's age in years")
+                >>>
+                >>> tool = CallableTool.from_model(UserInfo)
+                >>> tool.metadata.name
+                'UserInfo'
+                >>> isinstance(tool, CallableTool)
+                True
+
+                ```
+
+            - Use the tool to create model instances:
+                ```python
+                >>> user = tool.sync_func(name="Alice Smith", age=30)
+                >>> user.name
+                'Alice Smith'
+                >>> user.age
+                30
+                >>> isinstance(user, UserInfo)
+                True
+
+                ```
+
+            - Tool with optional fields:
+                ```python
+                >>> class Product(BaseModel):
+                ...     '''Product information.'''
+                ...     name: str
+                ...     price: float
+                ...     in_stock: bool = True
+                >>>
+                >>> product_tool = CallableTool.from_model(Product)
+                >>> product = product_tool.fn(name="Widget", price=29.99)
+                >>> product.in_stock
+                True
+
+                ```
+
+            - Tool with nested models:
+                ```python
+                >>> class Address(BaseModel):
+                ...     '''Address information.'''
+                ...     street: str
+                ...     city: str
+                >>>
+                >>> class Customer(BaseModel):
+                ...     '''Customer with address.'''
+                ...     name: str
+                ...     address: Address
+                >>>
+                >>> customer_tool = CallableTool.from_model(Customer)
+                >>> customer = customer_tool.sync_func(
+                ...     name="Bob",
+                ...     address={"street": "123 Main St", "city": "Boston"}
+                ... )
+                >>> customer.address.city
+                'Boston'
+
+                ```
+
+        See Also:
+            - CallableTool.from_function: The underlying factory method used
+            - ToolOrchestratingLLM: Uses this function to create tools for LLM calls
+            - _parse_tool_outputs: Parses outputs from tools created by this function
+        """
+        schema = output_cls.model_json_schema()
+        schema_description = schema.get("description", None)
+
+        # NOTE: this does not specify the schema in the function signature,
+        # so instead we'll directly provide it in the tool_schema in the ToolMetadata
+        def model_fn(**kwargs: Any) -> BaseModel:
+            """Model function."""
+            return output_cls(**kwargs)
+
+        return cls.from_function(
+            func=model_fn,
+            name=schema["title"],
+            description=schema_description,
+            tool_schema=output_cls,
+        )
 
     @property
     def metadata(self) -> ToolMetadata:

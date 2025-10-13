@@ -296,6 +296,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         Returns:
             Type[BaseModel]: The Pydantic model class used for structured output.
 
+        """
         return self._output_cls
 
     @property
@@ -305,6 +306,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         Returns:
             BasePromptTemplate: The prompt template used for formatting LLM inputs.
 
+        """
         return self._prompt
 
     @prompt.setter
@@ -314,6 +316,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         Args:
             prompt (BasePromptTemplate): New prompt template to use.
 
+        """
         self._prompt = prompt
 
     def __call__(

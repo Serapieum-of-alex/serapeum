@@ -1,6 +1,6 @@
 """Test LLM program."""
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import pytest
 
 from serapeum.core.base.llms.models import (

@@ -147,7 +147,6 @@ def _parse_tool_outputs(
 
 
 class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
-    """Function Calling Program.
     """Function calling program that orchestrates LLM tool usage for structured outputs.
 
     This class enables LLMs with function calling capabilities to generate structured
@@ -155,7 +154,6 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
     workflow of formatting prompts, invoking the LLM with tools, and parsing the
     structured outputs.
 
-    Uses function calling LLMs to obtain a structured output.
     The class supports both single and parallel tool calls, synchronous and
     asynchronous execution, and streaming responses.
 
@@ -189,7 +187,6 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         allow_parallel_tool_calls: bool = False,
         verbose: bool = False,
     ) -> None:
-        """Init params."""
         """Initialize the ToolOrchestratingLLM instance.
 
         Args:
@@ -211,6 +208,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
 
         See Also:
             - from_defaults: Alternative constructor with more convenient defaults
+        """
         self._output_cls = output_cls
         self._llm = llm
         self._prompt = prompt
@@ -265,6 +263,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         See Also:
             - __init__: Direct constructor if you already have all components
             - Configs: Global configuration for default LLM settings
+        """
         llm = llm or Configs.llm  # type: ignore
         assert llm is not None
 
@@ -344,6 +343,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         See Also:
             - acall: Async version of this method
             - stream_call: Streaming version for incremental results
+        """
         llm_kwargs = llm_kwargs or {}
         tool = CallableTool.from_model(self._output_cls)
 
@@ -390,6 +390,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         See Also:
             - __call__: Synchronous version of this method
             - astream_call: Async streaming version for incremental results
+        """
         llm_kwargs = llm_kwargs or {}
         tool = CallableTool.from_model(self._output_cls)
 
@@ -411,7 +412,6 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         output_cls: Type[BaseModel],
         cur_objects: Optional[List[BaseModel]] = None,
     ) -> Union[Model, List[Model]]:
-        """Process stream."""
         """Process and validate streaming objects from chat response.
 
         Internal method that extracts tool calls from a chat response, validates them
@@ -441,6 +441,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
             - stream_call: Uses this method to process streaming responses
             - astream_call: Async version that uses this method
             - num_valid_fields: Utility to compare object completeness
+        """
         tool_calls = self._llm.get_tool_calls_from_response(
             chat_response,
             # error_on_no_tool_call=True
@@ -485,7 +486,6 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
     def stream_call(  # type: ignore
         self, *args: Any, llm_kwargs: Optional[Dict[str, Any]] = None, **kwargs: Any
     ) -> Generator[Union[Model, List[Model]], None, None]:
-        """Stream object.
         """Stream structured output generation with incremental updates.
 
         Returns a generator that yields progressively refined structured objects as the
@@ -503,8 +503,6 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
                 Each yielded value is a Pydantic model instance (or list of instances if
                 allow_parallel_tool_calls is True) with incrementally more complete data.
 
-        Returns a generator returning partials of the same object
-        or a list of objects until it returns.
         Raises:
             ValueError: If the LLM is not a FunctionCallingLLM instance.
 
@@ -556,7 +554,6 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
     async def astream_call(  # type: ignore
         self, *args: Any, llm_kwargs: Optional[Dict[str, Any]] = None, **kwargs: Any
     ) -> AsyncGenerator[Union[Model, List[Model]], None]:
-        """Stream objects.
         """Asynchronously stream structured output generation with incremental updates.
 
         Async version of stream_call. Returns an async generator that yields progressively
@@ -574,8 +571,6 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
                 Each yielded value is a Pydantic model instance (or list of instances if
                 allow_parallel_tool_calls is True) with incrementally more complete data.
 
-        Returns a generator returning partials of the same object
-        or a list of objects until it returns.
         Raises:
             ValueError: If the LLM is not a FunctionCallingLLM instance.
 

@@ -224,7 +224,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         **kwargs: Any,
     ) -> BaseModel:
         llm_kwargs = llm_kwargs or {}
-        tool = get_function_tool(self._output_cls)
+        tool = CallableTool.from_model(self._output_cls)
 
         messages = self._prompt.format_messages(llm=self._llm, **kwargs)
         messages = self._llm._extend_messages(messages)
@@ -248,7 +248,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         **kwargs: Any,
     ) -> BaseModel:
         llm_kwargs = llm_kwargs or {}
-        tool = get_function_tool(self._output_cls)
+        tool = CallableTool.from_model(self._output_cls)
 
         agent_response = await self._llm.apredict_and_call(
             [tool],
@@ -323,7 +323,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
             raise ValueError("stream_call is only supported for LLMs.")
 
         llm_kwargs = llm_kwargs or {}
-        tool = get_function_tool(self._output_cls)
+        tool = CallableTool.from_model(self._output_cls)
 
         messages = self._prompt.format_messages(llm=self._llm, **kwargs)
         messages = self._llm._extend_messages(messages)
@@ -364,7 +364,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         if not isinstance(self._llm, FunctionCallingLLM):
             raise ValueError("stream_call is only supported for LLMs.")
 
-        tool = get_function_tool(self._output_cls)
+        tool = CallableTool.from_model(self._output_cls)
 
         messages = self._prompt.format_messages(llm=self._llm, **kwargs)
         messages = self._llm._extend_messages(messages)

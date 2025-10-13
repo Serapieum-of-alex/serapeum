@@ -34,37 +34,116 @@ def _parse_tool_outputs(
     agent_response,
     allow_parallel_tool_calls: bool = False,
 ) -> Union[BaseModel, List[BaseModel]]:
-    """Parse tool outputs."""
+    """Parse tool outputs from agent response.
+
+    Extracts and returns structured output models from an agent's tool execution
+    response. When parallel tool calls are disabled, only the first output is
+    returned. When enabled, all outputs are returned as a list.
+
+    Args:
+        agent_response: The agent chat response containing tool outputs in its
+            sources attribute. Each source should have a raw_output field
+            containing a BaseModel instance.
+        allow_parallel_tool_calls (bool, optional): If True, returns all tool
+            outputs as a list. If False, returns only the first output and logs
+            a warning if multiple outputs exist. Defaults to False.
+
+    Returns:
+        Union[BaseModel, List[BaseModel]]: A single BaseModel instance when
+            allow_parallel_tool_calls is False, or a list of BaseModel instances
+            when allow_parallel_tool_calls is True.
+
+    Warns:
+        Logs a warning message when multiple outputs are found but allow_parallel_tool_calls is False.
+
+    Example:
+        - Parse single tool output (parallel calls disabled):
+            ```python
+            >>> from pydantic import BaseModel
+            >>> from serapeum.core.chat.models import AgentChatResponse
+            >>> from serapeum.core.tools import ToolOutput
+            >>> from serapeum.core.structured_tools.function_program import _parse_tool_outputs
+            >>>
+            >>> class Person(BaseModel):
+            ...     name: str
+            ...     age: int
+            >>>
+            >>> person = Person(name="Alice", age=30)
+            >>> tool_output = ToolOutput(
+            ...     content="Person created",
+            ...     tool_name="create_person",
+            ...     raw_input={},
+            ...     raw_output=person
+            ... )
+            >>> response = AgentChatResponse(
+            ...     response="Created person",
+            ...     sources=[tool_output]
+            ... )
+            >>> result = _parse_tool_outputs(response, allow_parallel_tool_calls=False)
+            >>> print(result)
+            name='Alice' age=30
+            >>> result.name
+            'Alice'
+            >>> result.age
+            30
+
+            ```
+
+        - Parse multiple tool outputs with parallel calls enabled:
+            ```python
+            >>> person1 = Person(name="Bob", age=25)
+            >>> person2 = Person(name="Charlie", age=35)
+            >>> tool_outputs = [
+            ...     ToolOutput(
+            ...         content="Person 1", tool_name="create_person",
+            ...         raw_input={}, raw_output=person1
+            ...     ),
+            ...     ToolOutput(
+            ...         content="Person 2", tool_name="create_person",
+            ...         raw_input={}, raw_output=person2
+            ...     )
+            ... ]
+            >>> response = AgentChatResponse(
+            ...     response="Created persons", sources=tool_outputs
+            ... )
+            >>> results = _parse_tool_outputs(response, allow_parallel_tool_calls=True)
+            >>> len(results)
+            2
+            >>> results[0].name
+            'Bob'
+            >>> results[1].name
+            'Charlie'
+
+            ```
+
+        - Parse multiple outputs with parallel calls disabled (logs warning):
+            ```python
+            >>> response = AgentChatResponse(
+            ...     response="Created persons", sources=tool_outputs
+            ... )
+            >>> result = _parse_tool_outputs(response, allow_parallel_tool_calls=False)
+            >>> result.name
+            'Bob'
+
+            ```
+
+    See Also:
+        - get_function_tool: Creates callable tools from Pydantic models
+        - ToolOrchestratingLLM.__call__: Main execution method using this parser
+    """
     outputs = [cast(BaseModel, s.raw_output) for s in agent_response.sources]
     if allow_parallel_tool_calls:
-        return outputs
+        val = outputs
     else:
         if len(outputs) > 1:
             _logger.warning(
                 "Multiple outputs found, returning first one. "
-                "If you want to return all outputs, set output_multiple=True."
+                "If you want to return all outputs, set allow_parallel_tool_calls=True."
             )
 
-        return outputs[0]
+        val = outputs[0]
 
-
-def get_function_tool(output_cls: Type[Model]) -> CallableTool:
-    """Get function tool."""
-    schema = output_cls.model_json_schema()
-    schema_description = schema.get("description", None)
-
-    # NOTE: this does not specify the schema in the function signature,
-    # so instead we'll directly provide it in the tool_schema in the ToolMetadata
-    def model_fn(**kwargs: Any) -> BaseModel:
-        """Model function."""
-        return output_cls(**kwargs)
-
-    return CallableTool.from_function(
-        func=model_fn,
-        name=schema["title"],
-        description=schema_description,
-        tool_schema=output_cls,
-    )
+    return val
 
 
 class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):

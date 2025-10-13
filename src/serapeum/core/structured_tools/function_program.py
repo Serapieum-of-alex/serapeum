@@ -148,8 +148,36 @@ def _parse_tool_outputs(
 
 class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
     """Function Calling Program.
+    """Function calling program that orchestrates LLM tool usage for structured outputs.
+
+    This class enables LLMs with function calling capabilities to generate structured
+    data by converting Pydantic models into callable tools. It manages the entire
+    workflow of formatting prompts, invoking the LLM with tools, and parsing the
+    structured outputs.
 
     Uses function calling LLMs to obtain a structured output.
+    The class supports both single and parallel tool calls, synchronous and
+    asynchronous execution, and streaming responses.
+
+    Attributes:
+        _output_cls (Type[Model]):
+            The Pydantic model class defining output structure.
+        _llm (FunctionCallingLLM):
+            The language model with function calling support.
+        _prompt (BasePromptTemplate):
+            Template for generating prompts.
+        _verbose (bool):
+            Whether to enable verbose logging.
+        _allow_parallel_tool_calls (bool):
+            Whether to allow multiple tool calls.
+        _tool_choice (Optional[Union[str, Dict[str, Any]]]):
+            Tool selection strategy.
+
+
+    See Also:
+        - get_function_tool: Creates tools from Pydantic models
+        - BasePydanticProgram: Base class for Pydantic programs
+        - FunctionCallingLLM: LLM interface with function calling support
     """
 
     def __init__(
@@ -162,6 +190,27 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         verbose: bool = False,
     ) -> None:
         """Init params."""
+        """Initialize the ToolOrchestratingLLM instance.
+
+        Args:
+            output_cls (Type[Model]): Pydantic model class defining the structure
+                of the expected output. This model will be converted to a callable
+                tool for the LLM to use.
+            llm (FunctionCallingLLM): A language model instance with function calling
+                capabilities. Must have is_function_calling_model=True in metadata.
+            prompt (BasePromptTemplate): Template for generating prompts that will be
+                sent to the LLM. Can contain variables to be filled at call time.
+            tool_choice (Optional[Union[str, Dict[str, Any]]], optional): Strategy
+                for tool selection. Can be "auto", "none", a specific tool name, or
+                a dictionary with detailed tool choice configuration. Defaults to None.
+            allow_parallel_tool_calls (bool, optional): If True, allows the LLM to
+                make multiple tool calls in a single response, returning a list of
+                outputs. If False, only returns the first output. Defaults to False.
+            verbose (bool, optional): If True, enables detailed logging of LLM
+                interactions and tool calls. Defaults to False.
+
+        See Also:
+            - from_defaults: Alternative constructor with more convenient defaults
         self._output_cls = output_cls
         self._llm = llm
         self._prompt = prompt
@@ -180,6 +229,42 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         allow_parallel_tool_calls: bool = False,
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> "ToolOrchestratingLLM":
+        """Create a ToolOrchestratingLLM instance with convenient defaults.
+
+        Factory method that creates a ToolOrchestratingLLM with sensible defaults,
+        automatically retrieving the LLM from global configuration if not provided,
+        and creating a PromptTemplate from a string if needed.
+
+        Args:
+            output_cls (Type[Model]): Pydantic model class defining the output structure.
+            prompt_template_str (Optional[str], optional): String template for the prompt.
+                Can contain variables in {braces} to be filled at call time. Either this
+                or `prompt` must be provided, but not both. Defaults to None.
+            prompt (Optional[BasePromptTemplate], optional): Pre-constructed prompt
+                template object. Either this or `prompt_template_str` must be provided,
+                but not both. Defaults to None.
+            llm (Optional[LLM], optional): Language model instance with function calling
+                support. If None, uses Configs.llm global configuration. Defaults to None.
+            verbose (bool, optional): If True, enables verbose logging of LLM
+                interactions. Defaults to False.
+            allow_parallel_tool_calls (bool, optional): If True, allows multiple tool
+                calls in a single response. Defaults to False.
+            tool_choice (Optional[Union[str, Dict[str, Any]]], optional): Tool selection
+                strategy for the LLM. Defaults to None.
+
+        Returns:
+            ToolOrchestratingLLM: Configured instance ready to use.
+
+        Raises:
+            ValueError: If the LLM doesn't support function calling.
+            ValueError: If neither prompt nor prompt_template_str is provided.
+            ValueError: If both prompt and prompt_template_str are provided.
+            AssertionError: If llm is None after attempting to get from Configs.
+
+
+        See Also:
+            - __init__: Direct constructor if you already have all components
+            - Configs: Global configuration for default LLM settings
         llm = llm or Configs.llm  # type: ignore
         assert llm is not None
 
@@ -207,14 +292,29 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
 
     @property
     def output_cls(self) -> Type[BaseModel]:
+        """Get the output Pydantic model class.
+
+        Returns:
+            Type[BaseModel]: The Pydantic model class used for structured output.
+
         return self._output_cls
 
     @property
     def prompt(self) -> BasePromptTemplate:
+        """Get the current prompt template.
+
+        Returns:
+            BasePromptTemplate: The prompt template used for formatting LLM inputs.
+
         return self._prompt
 
     @prompt.setter
     def prompt(self, prompt: BasePromptTemplate) -> None:
+        """Set a new prompt template.
+
+        Args:
+            prompt (BasePromptTemplate): New prompt template to use.
+
         self._prompt = prompt
 
     def __call__(
@@ -223,6 +323,27 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> BaseModel:
+        """Execute the program to generate structured output.
+
+        Formats the prompt with provided kwargs, invokes the LLM with the function
+        calling tool, and parses the response into structured Pydantic model(s).
+
+        Args:
+            *args (Any): Positional arguments (currently unused).
+            llm_kwargs (Optional[Dict[str, Any]], optional): Additional keyword
+                arguments to pass to the LLM (e.g., temperature, max_tokens).
+                Defaults to None.
+            **kwargs (Any): Keyword arguments used to format the prompt template.
+                These should match the variables in the prompt template.
+
+        Returns:
+            BaseModel: A single Pydantic model instance if allow_parallel_tool_calls
+                is False, or a list of Pydantic model instances if it's True.
+
+
+        See Also:
+            - acall: Async version of this method
+            - stream_call: Streaming version for incremental results
         llm_kwargs = llm_kwargs or {}
         tool = CallableTool.from_model(self._output_cls)
 
@@ -247,6 +368,28 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> BaseModel:
+        """Asynchronously execute the program to generate structured output.
+
+        Async version of __call__. Formats the prompt with provided kwargs,
+        asynchronously invokes the LLM with the function calling tool, and parses
+        the response into structured Pydantic model(s).
+
+        Args:
+            *args (Any): Positional arguments (currently unused).
+            llm_kwargs (Optional[Dict[str, Any]], optional): Additional keyword
+                arguments to pass to the LLM (e.g., temperature, max_tokens).
+                Defaults to None.
+            **kwargs (Any): Keyword arguments used to format the prompt template.
+                These should match the variables in the prompt template.
+
+        Returns:
+            BaseModel: A single Pydantic model instance if allow_parallel_tool_calls
+                is False, or a list of Pydantic model instances if it's True.
+
+
+        See Also:
+            - __call__: Synchronous version of this method
+            - astream_call: Async streaming version for incremental results
         llm_kwargs = llm_kwargs or {}
         tool = CallableTool.from_model(self._output_cls)
 
@@ -269,6 +412,35 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         cur_objects: Optional[List[BaseModel]] = None,
     ) -> Union[Model, List[Model]]:
         """Process stream."""
+        """Process and validate streaming objects from chat response.
+
+        Internal method that extracts tool calls from a chat response, validates them
+        against the output model class, and returns parsed objects. Used primarily for
+        streaming responses where partial objects are progressively refined.
+
+        Args:
+            chat_response (ChatResponse): The response from the LLM containing potential
+                tool calls to parse.
+            output_cls (Type[BaseModel]): The target Pydantic model class for validation.
+            cur_objects (Optional[List[BaseModel]], optional): Previously parsed objects
+                to compare against. If new objects have more valid fields, they replace
+                the current ones. Defaults to None.
+
+        Returns:
+            Union[Model, List[Model]]: A single model instance if allow_parallel_tool_calls
+                is False, or a list of model instances if it's True. If no tool calls are
+                found, returns an empty instance of output_cls.
+
+        Warns:
+            Logs warnings when:
+            - Validation fails for an object (falls back to unvalidated object)
+            - Multiple outputs found but parallel calls disabled (returns first only)
+
+
+        See Also:
+            - stream_call: Uses this method to process streaming responses
+            - astream_call: Async version that uses this method
+            - num_valid_fields: Utility to compare object completeness
         tool_calls = self._llm.get_tool_calls_from_response(
             chat_response,
             # error_on_no_tool_call=True
@@ -314,9 +486,37 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         self, *args: Any, llm_kwargs: Optional[Dict[str, Any]] = None, **kwargs: Any
     ) -> Generator[Union[Model, List[Model]], None, None]:
         """Stream object.
+        """Stream structured output generation with incremental updates.
+
+        Returns a generator that yields progressively refined structured objects as the
+        LLM generates its response. Each yield provides a partial or complete instance
+        of the output model, allowing for real-time updates and progressive rendering.
+
+        Args:
+            *args (Any): Positional arguments (currently unused).
+            llm_kwargs (Optional[Dict[str, Any]], optional): Additional keyword arguments
+                to pass to the LLM (e.g., temperature, max_tokens). Defaults to None.
+            **kwargs (Any): Keyword arguments used to format the prompt template.
+
+        Yields:
+            Union[Model, List[Model]]: Progressive updates of the structured output.
+                Each yielded value is a Pydantic model instance (or list of instances if
+                allow_parallel_tool_calls is True) with incrementally more complete data.
 
         Returns a generator returning partials of the same object
         or a list of objects until it returns.
+        Raises:
+            ValueError: If the LLM is not a FunctionCallingLLM instance.
+
+        Warns:
+            Logs warnings when parsing streaming responses fails, then continues with
+            the next chunk.
+
+
+        See Also:
+            - __call__: Non-streaming synchronous version
+            - astream_call: Async streaming version
+            - _process_objects: Internal method for processing stream chunks
         """
         # TODO: we can extend this to non-function calling LLMs as well, coming soon
         if not isinstance(self._llm, FunctionCallingLLM):
@@ -357,9 +557,37 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         self, *args: Any, llm_kwargs: Optional[Dict[str, Any]] = None, **kwargs: Any
     ) -> AsyncGenerator[Union[Model, List[Model]], None]:
         """Stream objects.
+        """Asynchronously stream structured output generation with incremental updates.
+
+        Async version of stream_call. Returns an async generator that yields progressively
+        refined structured objects as the LLM generates its response. Enables concurrent
+        streaming operations and integration with async frameworks.
+
+        Args:
+            *args (Any): Positional arguments (currently unused).
+            llm_kwargs (Optional[Dict[str, Any]], optional): Additional keyword arguments
+                to pass to the LLM (e.g., temperature, max_tokens). Defaults to None.
+            **kwargs (Any): Keyword arguments used to format the prompt template.
+
+        Yields:
+            Union[Model, List[Model]]: Progressive updates of the structured output.
+                Each yielded value is a Pydantic model instance (or list of instances if
+                allow_parallel_tool_calls is True) with incrementally more complete data.
 
         Returns a generator returning partials of the same object
         or a list of objects until it returns.
+        Raises:
+            ValueError: If the LLM is not a FunctionCallingLLM instance.
+
+        Warns:
+            Logs warnings when parsing streaming responses fails, then continues with
+            the next chunk.
+
+
+        See Also:
+            - acall: Non-streaming async version
+            - stream_call: Synchronous streaming version
+            - _process_objects: Internal method for processing stream chunks
         """
         if not isinstance(self._llm, FunctionCallingLLM):
             raise ValueError("stream_call is only supported for LLMs.")

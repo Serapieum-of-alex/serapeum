@@ -780,8 +780,10 @@ class ToolExecutor:
         """Execute a tool based on a tool selection.
 
         Args:
-            tool_call (ToolCallArguments): The tool selection containing name and arguments.
-            tools (Sequence[BaseTool]): Sequence of available tools.
+            tool_call (ToolCallArguments):
+                The tool selection containing name and arguments.
+            tools (Sequence[BaseTool]):
+                Sequence of available tools.
 
         Returns:
             ToolOutput: The execution result.

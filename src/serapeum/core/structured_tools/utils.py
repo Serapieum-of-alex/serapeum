@@ -50,7 +50,7 @@ def get_program_for_llm(
                 **kwargs,
             )
         else:
-            from serapeum.core.structured_tools.llm_program import (
+            from serapeum.core.structured_tools.text_completion_llm import (
                 TextCompletionLLM,
             )
 
@@ -71,7 +71,7 @@ def get_program_for_llm(
         )
 
     elif pydantic_program_mode == StructuredLLMMode.LLM:
-        from serapeum.core.structured_tools.llm_program import TextCompletionLLM
+        from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 
         return TextCompletionLLM.from_defaults(
             output_parser=PydanticOutputParser(output_cls=output_cls),

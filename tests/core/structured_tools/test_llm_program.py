@@ -12,7 +12,7 @@ from serapeum.core.base.llms.models import (
 )
 from pydantic import BaseModel
 from serapeum.core.output_parsers.models import PydanticOutputParser
-from serapeum.core.structured_tools.llm_program import TextCompletionLLM
+from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 from serapeum.core.prompts import ChatPromptTemplate
 
 
@@ -47,7 +47,7 @@ class TestModel(BaseModel):
     hello: str
 
 
-def test_llm_program() -> None:
+def test_text_completion_llm() -> None:
     """Test LLM program."""
     output_parser = PydanticOutputParser(output_cls=TestModel)
     llm_program = TextCompletionLLM.from_defaults(

@@ -62,7 +62,7 @@ def _parse_tool_outputs(
             >>> from pydantic import BaseModel
             >>> from serapeum.core.chat.models import AgentChatResponse
             >>> from serapeum.core.tools import ToolOutput
-            >>> from serapeum.core.structured_tools.function_program import _parse_tool_outputs
+            >>> from serapeum.core.structured_tools.tools_llm import _parse_tool_outputs
             >>>
             >>> class Person(BaseModel):
             ...     name: str
@@ -181,8 +181,8 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
     def __init__(
         self,
         output_cls: Type[Model],
-        llm: FunctionCallingLLM,
         prompt: Union[BasePromptTemplate, str],
+        llm: Optional[FunctionCallingLLM] = None,
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
         allow_parallel_tool_calls: bool = False,
         verbose: bool = False,
@@ -193,10 +193,11 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
             output_cls (Type[Model]): Pydantic model class defining the structure
                 of the expected output. This model will be converted to a callable
                 tool for the LLM to use.
-            llm (FunctionCallingLLM): A language model instance with function calling
-                capabilities. Must have is_function_calling_model=True in metadata.
             prompt (BasePromptTemplate): Template for generating prompts that will be
                 sent to the LLM. Can contain variables to be filled at call time.
+            llm (FunctionCallingLLM, optional): A language model instance with function calling
+                capabilities. Must have is_function_calling_model=True in metadata.
+                If None, uses Configs.llm global configuration. Defaults to None.
             tool_choice (Optional[Union[str, Dict[str, Any]]], optional): Strategy
                 for tool selection. Can be "auto", "none", a specific tool name, or
                 a dictionary with detailed tool choice configuration. Defaults to None.
@@ -206,11 +207,18 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
             verbose (bool, optional): If True, enables detailed logging of LLM
                 interactions and tool calls. Defaults to False.
 
+        Raises:
+            ValueError: If the LLM doesn't support function calling.
+            ValueError: If neither prompt nor prompt_template_str is provided.
+            ValueError: If both prompt and prompt_template_str are provided.
+            AssertionError: If llm is None after attempting to get from Configs.
+
         See Also:
-            - from_defaults: Alternative constructor with more convenient defaults
+            - __init__: Direct constructor if you already have all components
+            - Configs: Global configuration for default LLM settings
         """
         self._output_cls = output_cls
-        self._llm = llm
+        self._llm = self.validate_llm(llm)
         if not isinstance(prompt, (BasePromptTemplate, str)):
             raise ValueError(
                 "prompt must be an instance of BasePromptTemplate or str."
@@ -223,54 +231,8 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         self._allow_parallel_tool_calls = allow_parallel_tool_calls
         self._tool_choice = tool_choice
 
-    @classmethod
-    def from_defaults(
-        cls,
-        output_cls: Type[Model],
-        prompt: Union[BasePromptTemplate, str] = None,
-        llm: Optional[LLM] = None,
-        verbose: bool = False,
-        allow_parallel_tool_calls: bool = False,
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
-    ) -> "ToolOrchestratingLLM":
-        """Create a ToolOrchestratingLLM instance with convenient defaults.
-
-        Factory method that creates a ToolOrchestratingLLM with sensible defaults,
-        automatically retrieving the LLM from global configuration if not provided,
-        and creating a PromptTemplate from a string if needed.
-
-        Args:
-            output_cls (Type[Model]):
-                Pydantic model class defining the output structure.
-            prompt_template_str (Optional[str], optional):
-                String template for the prompt. Can contain variables in {braces} to be filled at call time.
-                Either this or `prompt` must be provided, but not both. Defaults to None.
-            prompt (Optional[BasePromptTemplate], optional): Pre-constructed prompt
-                template object. Either this or `prompt_template_str` must be provided,
-                but not both. Defaults to None.
-            llm (Optional[LLM], optional): Language model instance with function calling
-                support. If None, uses Configs.llm global configuration. Defaults to None.
-            verbose (bool, optional): If True, enables verbose logging of LLM
-                interactions. Defaults to False.
-            allow_parallel_tool_calls (bool, optional): If True, allows multiple tool
-                calls in a single response. Defaults to False.
-            tool_choice (Optional[Union[str, Dict[str, Any]]], optional): Tool selection
-                strategy for the LLM. Defaults to None.
-
-        Returns:
-            ToolOrchestratingLLM: Configured instance ready to use.
-
-        Raises:
-            ValueError: If the LLM doesn't support function calling.
-            ValueError: If neither prompt nor prompt_template_str is provided.
-            ValueError: If both prompt and prompt_template_str are provided.
-            AssertionError: If llm is None after attempting to get from Configs.
-
-
-        See Also:
-            - __init__: Direct constructor if you already have all components
-            - Configs: Global configuration for default LLM settings
-        """
+    @staticmethod
+    def validate_llm(llm: LLM) -> LLM:
         llm = llm or Configs.llm  # type: ignore
         if llm is None:
             raise AssertionError("llm must be provided or set in Configs.")
@@ -280,15 +242,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
                 f"Model name {llm.metadata.model_name} does not support "
                 "function calling API. "
             )
-
-        return cls(
-            output_cls=output_cls,  # type: ignore
-            llm=llm,  # type: ignore
-            prompt=prompt,
-            tool_choice=tool_choice,
-            allow_parallel_tool_calls=allow_parallel_tool_calls,
-            verbose=verbose,
-        )
+        return llm
 
     @property
     def output_cls(self) -> Type[BaseModel]:

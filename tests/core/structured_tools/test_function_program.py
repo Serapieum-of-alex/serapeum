@@ -13,7 +13,7 @@ from serapeum.core.tools.models import BaseTool
 from serapeum.core.chat.models import AgentChatResponse
 from serapeum.core.tools import ToolOutput
 from serapeum.core.structured_tools import ToolOrchestratingLLM
-from serapeum.core.structured_tools.function_program import _parse_tool_outputs
+from serapeum.core.structured_tools.tools_llm import _parse_tool_outputs
 
 
 class MockSong(BaseModel):
@@ -156,7 +156,7 @@ class TestParseToolOutputs:
             sources=tool_outputs,
         )
 
-        with patch("serapeum.core.structured_tools.function_program._logger") as mock_logger:
+        with patch("serapeum.core.structured_tools.tools_llm._logger") as mock_logger:
             result = _parse_tool_outputs(agent_response, allow_parallel_tool_calls=False)
 
         assert result == MOCK_ALBUM
@@ -212,10 +212,10 @@ class TestParseToolOutputs:
             _parse_tool_outputs(agent_response, allow_parallel_tool_calls=False)
 
 class TestToolOrchestratingLLM:
-    def test_function_program(self) -> None:
+    def test_tools_llm(self) -> None:
         """Test Function program."""
         prompt_template_str = """This is a test album with {topic}"""
-        tools_llm = ToolOrchestratingLLM.from_defaults(
+        tools_llm = ToolOrchestratingLLM(
             output_cls=MockAlbum,
             prompt=prompt_template_str,
             llm=MockLLM(),
@@ -227,10 +227,10 @@ class TestToolOrchestratingLLM:
         assert obj_output.songs[0].title == "song1"
         assert obj_output.songs[1].title == "song2"
 
-    def test_function_program_multiple(self) -> None:
+    def test_tools_llm_multiple(self) -> None:
         """Test Function program multiple."""
         prompt_template_str = """This is a test album with {topic}"""
-        tools_llm = ToolOrchestratingLLM.from_defaults(
+        tools_llm = ToolOrchestratingLLM(
             output_cls=MockAlbum,
             prompt=prompt_template_str,
             llm=MockLLM(),
@@ -252,7 +252,7 @@ class TestToolOrchestratingLLM:
         """Test async function program."""
         # same as above but async
         prompt_template_str = """This is a test album with {topic}"""
-        tools_llm = ToolOrchestratingLLM.from_defaults(
+        tools_llm = ToolOrchestratingLLM(
             output_cls=MockAlbum,
             prompt=prompt_template_str,
             llm=MockLLM(),

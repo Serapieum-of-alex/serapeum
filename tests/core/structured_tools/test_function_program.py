@@ -99,6 +99,8 @@ class MockLLM(MagicMock):
     @property
     def metadata(self) -> Metadata:
         return Metadata(is_function_calling_model=True)
+
+
 class TestParseToolOutputs:
     """Test class for _parse_tool_outputs function."""
 
@@ -209,57 +211,55 @@ class TestParseToolOutputs:
         with pytest.raises(IndexError):
             _parse_tool_outputs(agent_response, allow_parallel_tool_calls=False)
 
+class TestToolOrchestratingLLM:
+    def test_function_program(self) -> None:
+        """Test Function program."""
+        prompt_template_str = """This is a test album with {topic}"""
+        tools_llm = ToolOrchestratingLLM.from_defaults(
+            output_cls=MockAlbum,
+            prompt_template_str=prompt_template_str,
+            llm=MockLLM(),
+        )
+        obj_output = tools_llm(topic="songs")
+        assert isinstance(obj_output, MockAlbum)
+        assert obj_output.title == "hello"
+        assert obj_output.artist == "world"
+        assert obj_output.songs[0].title == "song1"
+        assert obj_output.songs[1].title == "song2"
 
-def test_function_program() -> None:
-    """Test Function program."""
-    prompt_template_str = """This is a test album with {topic}"""
-    llm_program = ToolOrchestratingLLM.from_defaults(
-        output_cls=MockAlbum,
-        prompt_template_str=prompt_template_str,
-        llm=MockLLM(),
-    )
-    obj_output = llm_program(topic="songs")
-    assert isinstance(obj_output, MockAlbum)
-    assert obj_output.title == "hello"
-    assert obj_output.artist == "world"
-    assert obj_output.songs[0].title == "song1"
-    assert obj_output.songs[1].title == "song2"
+    def test_function_program_multiple(self) -> None:
+        """Test Function program multiple."""
+        prompt_template_str = """This is a test album with {topic}"""
+        tools_llm = ToolOrchestratingLLM.from_defaults(
+            output_cls=MockAlbum,
+            prompt_template_str=prompt_template_str,
+            llm=MockLLM(),
+            allow_parallel_tool_calls=True,
+        )
+        obj_outputs = tools_llm(topic="songs")
+        assert isinstance(obj_outputs, list)
+        assert len(obj_outputs) == 2
+        assert isinstance(obj_outputs[0], MockAlbum)
+        assert isinstance(obj_outputs[1], MockAlbum)
+        # test second output
+        assert obj_outputs[1].title == "hello2"
+        assert obj_outputs[1].artist == "world2"
+        assert obj_outputs[1].songs[0].title == "song3"
+        assert obj_outputs[1].songs[1].title == "song4"
 
-
-def test_function_program_multiple() -> None:
-    """Test Function program multiple."""
-    prompt_template_str = """This is a test album with {topic}"""
-    llm_program = ToolOrchestratingLLM.from_defaults(
-        output_cls=MockAlbum,
-        prompt_template_str=prompt_template_str,
-        llm=MockLLM(),
-        allow_parallel_tool_calls=True,
-    )
-    obj_outputs = llm_program(topic="songs")
-    assert isinstance(obj_outputs, list)
-    assert len(obj_outputs) == 2
-    assert isinstance(obj_outputs[0], MockAlbum)
-    assert isinstance(obj_outputs[1], MockAlbum)
-    # test second output
-    assert obj_outputs[1].title == "hello2"
-    assert obj_outputs[1].artist == "world2"
-    assert obj_outputs[1].songs[0].title == "song3"
-    assert obj_outputs[1].songs[1].title == "song4"
-
-
-@pytest.mark.asyncio()
-async def test_async_function_program() -> None:
-    """Test async function program."""
-    # same as above but async
-    prompt_template_str = """This is a test album with {topic}"""
-    llm_program = ToolOrchestratingLLM.from_defaults(
-        output_cls=MockAlbum,
-        prompt_template_str=prompt_template_str,
-        llm=MockLLM(),
-    )
-    obj_output = await llm_program.acall(topic="songs")
-    assert isinstance(obj_output, MockAlbum)
-    assert obj_output.title == "hello"
-    assert obj_output.artist == "world"
-    assert obj_output.songs[0].title == "song1"
-    assert obj_output.songs[1].title == "song2"
+    @pytest.mark.asyncio()
+    async def test_async(self) -> None:
+        """Test async function program."""
+        # same as above but async
+        prompt_template_str = """This is a test album with {topic}"""
+        tools_llm = ToolOrchestratingLLM.from_defaults(
+            output_cls=MockAlbum,
+            prompt_template_str=prompt_template_str,
+            llm=MockLLM(),
+        )
+        obj_output = await tools_llm.acall(topic="songs")
+        assert isinstance(obj_output, MockAlbum)
+        assert obj_output.title == "hello"
+        assert obj_output.artist == "world"
+        assert obj_output.songs[0].title == "song1"
+        assert obj_output.songs[1].title == "song2"

@@ -217,7 +217,7 @@ class TestToolOrchestratingLLM:
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM.from_defaults(
             output_cls=MockAlbum,
-            prompt_template_str=prompt_template_str,
+            prompt=prompt_template_str,
             llm=MockLLM(),
         )
         obj_output = tools_llm(topic="songs")
@@ -232,7 +232,7 @@ class TestToolOrchestratingLLM:
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM.from_defaults(
             output_cls=MockAlbum,
-            prompt_template_str=prompt_template_str,
+            prompt=prompt_template_str,
             llm=MockLLM(),
             allow_parallel_tool_calls=True,
         )
@@ -254,7 +254,7 @@ class TestToolOrchestratingLLM:
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM.from_defaults(
             output_cls=MockAlbum,
-            prompt_template_str=prompt_template_str,
+            prompt=prompt_template_str,
             llm=MockLLM(),
         )
         obj_output = await tools_llm.acall(topic="songs")

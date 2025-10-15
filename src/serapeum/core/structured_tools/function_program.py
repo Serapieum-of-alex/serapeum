@@ -182,7 +182,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         self,
         output_cls: Type[Model],
         llm: FunctionCallingLLM,
-        prompt: BasePromptTemplate,
+        prompt: Union[BasePromptTemplate, str],
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
         allow_parallel_tool_calls: bool = False,
         verbose: bool = False,
@@ -211,6 +211,13 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         """
         self._output_cls = output_cls
         self._llm = llm
+        if not isinstance(prompt, (BasePromptTemplate, str)):
+            raise ValueError(
+                "prompt must be an instance of BasePromptTemplate or str."
+            )
+        if isinstance(prompt, str):
+            prompt = PromptTemplate(prompt)
+
         self._prompt = prompt
         self._verbose = verbose
         self._allow_parallel_tool_calls = allow_parallel_tool_calls
@@ -220,8 +227,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
     def from_defaults(
         cls,
         output_cls: Type[Model],
-        prompt_template_str: Optional[str] = None,
-        prompt: Optional[BasePromptTemplate] = None,
+        prompt: Union[BasePromptTemplate, str] = None,
         llm: Optional[LLM] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -275,17 +281,10 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
                 "function calling API. "
             )
 
-        if prompt is None and prompt_template_str is None:
-            raise ValueError("Must provide either prompt or prompt_template_str.")
-        if prompt is not None and prompt_template_str is not None:
-            raise ValueError("Must provide either prompt or prompt_template_str.")
-        if prompt_template_str is not None:
-            prompt = PromptTemplate(prompt_template_str)
-
         return cls(
             output_cls=output_cls,  # type: ignore
             llm=llm,  # type: ignore
-            prompt=cast(PromptTemplate, prompt),
+            prompt=prompt,
             tool_choice=tool_choice,
             allow_parallel_tool_calls=allow_parallel_tool_calls,
             verbose=verbose,

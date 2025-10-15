@@ -234,10 +234,11 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         and creating a PromptTemplate from a string if needed.
 
         Args:
-            output_cls (Type[Model]): Pydantic model class defining the output structure.
-            prompt_template_str (Optional[str], optional): String template for the prompt.
-                Can contain variables in {braces} to be filled at call time. Either this
-                or `prompt` must be provided, but not both. Defaults to None.
+            output_cls (Type[Model]):
+                Pydantic model class defining the output structure.
+            prompt_template_str (Optional[str], optional):
+                String template for the prompt. Can contain variables in {braces} to be filled at call time.
+                Either this or `prompt` must be provided, but not both. Defaults to None.
             prompt (Optional[BasePromptTemplate], optional): Pre-constructed prompt
                 template object. Either this or `prompt_template_str` must be provided,
                 but not both. Defaults to None.
@@ -265,7 +266,8 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
             - Configs: Global configuration for default LLM settings
         """
         llm = llm or Configs.llm  # type: ignore
-        assert llm is not None
+        if llm is None:
+            raise AssertionError("llm must be provided or set in Configs.")
 
         if not llm.metadata.is_function_calling_model:
             raise ValueError(
@@ -349,7 +351,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         """
         llm_kwargs = llm_kwargs or {}
         tool = CallableTool.from_model(self._output_cls)
-
+        # convert the prompt into messages
         messages = self._prompt.format_messages(llm=self._llm, **kwargs)
         messages = self._llm._extend_messages(messages)
 

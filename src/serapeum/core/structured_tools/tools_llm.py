@@ -219,17 +219,20 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         """
         self._output_cls = output_cls
         self._llm = self.validate_llm(llm)
+        self._prompt = self.validate_prompt(prompt)
+        self._verbose = verbose
+        self._allow_parallel_tool_calls = allow_parallel_tool_calls
+        self._tool_choice = tool_choice
+
+    @staticmethod
+    def validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
         if not isinstance(prompt, (BasePromptTemplate, str)):
             raise ValueError(
                 "prompt must be an instance of BasePromptTemplate or str."
             )
         if isinstance(prompt, str):
             prompt = PromptTemplate(prompt)
-
-        self._prompt = prompt
-        self._verbose = verbose
-        self._allow_parallel_tool_calls = allow_parallel_tool_calls
-        self._tool_choice = tool_choice
+        return prompt
 
     @staticmethod
     def validate_llm(llm: LLM) -> LLM:

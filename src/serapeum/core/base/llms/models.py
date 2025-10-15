@@ -289,7 +289,7 @@ ChatResponseGen = Generator[ChatResponse, None, None]
 ChatResponseAsyncGen = AsyncGenerator[ChatResponse, None]
 
 
-class CompletionResponse(BaseModel):
+class CompletionResponse(BaseResponse):
     """
     Completion response.
 

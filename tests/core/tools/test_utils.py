@@ -9,7 +9,7 @@ with a docstring that explains inputs, expected behavior, and what is being chec
 
 import asyncio
 import datetime as dt
-from typing import Any, Sequence
+from typing import Any, Sequence, Optional
 
 import pytest
 from pydantic import BaseModel, Field
@@ -22,6 +22,41 @@ from serapeum.core.tools.utils import (
 )
 from serapeum.core.tools.models import BaseTool, AsyncBaseTool, ToolMetadata, ToolOutput
 from serapeum.core.tools.models import ToolCallArguments
+
+class MockSong(BaseModel):
+    """Mock Song class.
+
+        here is a long description of the class.
+
+    Attributes:
+        title (str):
+            song title
+        length (Optional[int]):
+            length of the song in seconds
+        author (Optional[str]):
+            name of the author of the song. Defaults to None.
+
+    Examples:
+        - provide only the title.
+            ```python
+            >>> song = MockSong(title="song title")
+
+            ```
+        - provide title and length.
+            ```python
+            >>> song = MockSong(title="song title", length=120)
+
+            ```
+        - provide title, length, and author.
+            ```python
+            >>> song = MockSong(title="song title", length=120, author="author name")
+
+            ```
+    """
+
+    title: str
+    length: Optional[int] = None
+    author: Optional[str] = Field(default=None, description="author")
 
 # -----------------------------------------------------------------------------
 # Helpers: Dummy tool implementations for exercising call utilities
@@ -158,6 +193,15 @@ class AsyncErrorTool(AsyncBaseTool):
 
 
 class TestDocstringExtractParamDocs:
+
+    def test_pydantic_class(self):
+        docstring = Docstring(MockSong)
+        param_docs, unknown = docstring.extract_param_docs()
+        assert param_docs == {"title": "song title", "length": "length of the song in seconds", "author": "name of the author of the song. Defaults to None."}
+        summary = docstring.get_short_summary_line()
+        assert summary == "MockSong(*, title: str, length: Optional[int] = None, author: Optional[str] = None) -> None\nMock Song class."
+
+
     def test_extracts_sphinx_google_javadoc_and_filters_unknown(self):
         """
         Inputs:

@@ -37,7 +37,8 @@ from typing import (
     get_args,
     Annotated,
     TYPE_CHECKING,
-    Sequence
+    Sequence,
+    TypeVar
 )
 import datetime
 
@@ -46,6 +47,7 @@ from pydantic.fields import FieldInfo
 from serapeum.core.tools.models import BaseTool, ToolOutput, adapt_to_async_tool
 from serapeum.core.tools.models import ToolCallArguments
 
+Model = TypeVar("Model", bound=BaseModel)
 
 if TYPE_CHECKING:
     from serapeum.core.tools.models import BaseTool
@@ -73,20 +75,50 @@ class Docstring:
         ...     '''
         ...     return a + b
         >>> ds = Docstring(add)
-        >>> str(ds.signature).startswith('(a: int, b: int)')
-        True
+        >>> ds.name
+        'add'
+        >>> ds.docstring
+        'Add two integers.\n    \n    Args:\n        a (int): First number.\n        b (int): Second number.\n    \n    Returns:\n        int: Sum of a and b.\n    '
+        >>> ds.get_short_summary_line()
+        'add(a: int, b: int) -> int\nAdd two integers.'
+        >>> ds.func_arguments
+        {'b', 'a'}
+
+        ```
+    - Create from a class and get first-line summary
+        ```python
+        >>> from pydantic import BaseModel
+        >>> class Song(BaseModel):
+        ...     '''A music track.
+        ...
+        ...     Attribute:
+        ...         title (str): Title of the song.
+        ...     '''
+        ...     title: str
+        >>> ds = Docstring(Song)
+        >>> ds.name
+        "Song"
+        >>> ds.func_arguments
+        {'title'}
+        >>> ds.extract_param_docs()
+        ({'title': 'Title of the song.'}, set())
+        >>> ds.get_short_summary_line()
+        'Song(*, title: str) -> None\nA music track.'
+        >>> ds.docstring
+        'A music track.\n    \n    Attribute:\n        title (str): Title of the song.\n    '
 
         ```
     """
 
-    def __init__(self, func: Callable[..., Any], *,name: Optional[str] = None) -> None:
+    def __init__(self, func: Union[Callable[..., Any], Type[Model]], *,name: Optional[str] = None) -> None:
         """Initialize a Docstring helper for a given callable.
 
         Args:
-            func (Callable[..., Any]): The callable to introspect.
-            name (str | None): Optional name to use instead of ``func.__name__``.
+            func (Callable[..., Any], Type[Model]):
+                The base models/callable to introspect.
+            name (str | None):
+                Optional name to use instead of ``func.__name__``.
         """
-        # self.func = func
         self.name = name or func.__name__
         self.docstring = func.__doc__ or ""
         self.func_signature = signature(func)
@@ -828,9 +860,9 @@ class ToolExecutor:
         return self.execute(tool, tool_call.tool_kwargs)
 
     async def execute_async_with_selection(
-            self,
-            tool_call: ToolCallArguments,
-            tools: Sequence[BaseTool],
+        self,
+        tool_call: ToolCallArguments,
+        tools: Sequence[BaseTool],
     ) -> ToolOutput:
         """Execute a tool asynchronously based on a tool selection.
 

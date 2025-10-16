@@ -308,7 +308,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         llm_kwargs = llm_kwargs or {}
         tool = CallableTool.from_model(self._output_cls)
         # convert the prompt into messages
-        messages = self._prompt.format_messages(llm=self._llm, **kwargs)
+        messages = self.prompt.format_messages(llm=self._llm, **kwargs)
         messages = self._llm._extend_messages(messages)
 
         agent_response = self._llm.predict_and_call(

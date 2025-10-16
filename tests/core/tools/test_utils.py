@@ -192,7 +192,7 @@ class AsyncErrorTool(AsyncBaseTool):
         raise RuntimeError("boom")
 
 
-class TestDocstringExtractParamDocs:
+class TestDocstring:
 
     def test_pydantic_class(self):
         docstring = Docstring(MockSong)

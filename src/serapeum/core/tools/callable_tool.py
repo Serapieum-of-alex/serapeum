@@ -2,6 +2,7 @@
 
 import asyncio
 import inspect
+import json
 from typing import Any, Awaitable, Callable, Optional, Type, Dict, Union, List, TypeVar
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
@@ -358,7 +359,7 @@ class CallableTool(AsyncBaseTool):
                 ```
 
         See Also:
-            - CallableTool.extract_param_docs: Parses parameter docs from a function docstring.
+            - DocString.extract_param_docs: Parses parameter docs from a function docstring.
         """
         default_arguments = default_arguments or {}
 
@@ -510,17 +511,31 @@ class CallableTool(AsyncBaseTool):
         """
         schema = output_cls.model_json_schema()
         schema_description = schema.get("description", None)
+        model_doc = (output_cls.__doc__ or "").strip()
+        # Prefer the model's own description/docstring; fall back to a concise default
+        description = schema_description or model_doc or f"Create an instance of {schema['title']}."
 
         # NOTE: this does not specify the schema in the function signature,
         # so instead we'll directly provide it in the tool_schema in the ToolMetadata
         def model_fn(**kwargs: Any) -> BaseModel:
             """Model function."""
-            return output_cls(**kwargs)
+            # Be a bit forgiving: some LLMs return JSON-like strings for complex fields
+            # (e.g., lists or dicts). Attempt to parse such strings before validation.
+            coerced_kwargs = {}
+            for k, v in kwargs.items():
+                if isinstance(v, str):
+                    try:
+                        coerced_kwargs[k] = json.loads(v)
+                        continue
+                    except Exception:
+                        pass
+                coerced_kwargs[k] = v
+            return output_cls(**coerced_kwargs)
 
         return cls.from_function(
             func=model_fn,
             name=schema["title"],
-            description=schema_description,
+            description=description,
             tool_schema=output_cls,
         )
 

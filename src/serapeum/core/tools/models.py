@@ -61,8 +61,15 @@ class MinimalToolSchema(BaseModel):
     input: str
 
 
-class Schema(BaseModel):
+@dataclass
+class Schema:
     full_schema: Dict[str, Any]
+    resolved_schema: Optional[Dict[str, Any]] = None
+    referenced_schema: Optional[Dict[str, Any]] = None
+
+    def __post_init__(self):
+        self.resolved_schema = self.resolve_references(inline=True)
+        self.referenced_schema = self.resolve_references(inline=False)
 
     def resolve_references(self, inline: bool = False) -> Dict[str, Any]:
         defs = self.full_schema.get("$defs") or self.full_schema.get("definitions") or {}
@@ -275,7 +282,7 @@ class ToolMetadata:
         else:
             full_schema = self.tool_schema.model_json_schema()
             schema = Schema(full_schema=full_schema)
-            parameters = schema.resolve_references(inline=False)
+            parameters = schema.referenced_schema
         return parameters
 
     @property

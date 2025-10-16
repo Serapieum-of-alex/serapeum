@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Type
 from serapeum.core.base.llms.models import ChunkType, TextChunk
 from pydantic import BaseModel, Field, field_validator, ValidationError
+import copy
 
 
 class MinimalToolSchema(BaseModel):
@@ -58,6 +59,46 @@ class MinimalToolSchema(BaseModel):
     """
 
     input: str
+
+
+class Schema(BaseModel):
+    full_schema: Dict[str, Any]
+
+    def resolve_references(self, inline: bool = False) -> Dict[str, Any]:
+        defs = self.full_schema.get("$defs") or self.full_schema.get("definitions") or {}
+        # Inline any local references first
+        if inline:
+            schema = self._resolve_local_refs(copy.deepcopy(self.full_schema), defs)
+            keys = ["type", "properties", "required"]
+        else:
+            schema = self.full_schema
+            keys = ["type", "properties", "required", "definitions", "$defs"]
+
+        # Now keep only the keys relevant for tool providers
+        parameters = {
+            k: v
+            for k, v in schema.items()
+            if k in keys
+        }
+        return parameters
+
+    @staticmethod
+    def _resolve_local_refs(obj: Any, defs: Dict[str, Any]) -> Any:
+        """Recursively inline local $ref objects using the provided defs."""
+        if isinstance(obj, dict):
+            if "$ref" in obj and isinstance(obj["$ref"], str):
+                ref: str = obj["$ref"]
+                if ref.startswith("#/$defs/") or ref.startswith("#/definitions/"):
+                    name = ref.split("/")[-1]
+                    if name in defs:
+                        # Deep-copy to avoid mutating the original defs
+                        return Schema._resolve_local_refs(copy.deepcopy(defs[name]), defs)
+                    # If not found, fall through and return as-is
+            # Recurse into mapping
+            return {k: Schema._resolve_local_refs(v, defs) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [Schema._resolve_local_refs(v, defs) for v in obj]
+        return obj
 
 
 @dataclass
@@ -171,13 +212,16 @@ class ToolMetadata:
 
         If ``tool_schema`` is ``None``, a minimal schema with a single string field
         named ``input`` is returned. Otherwise, this method derives the schema from
-        the provided Pydantic model class and filters it down to the keys relevant
+        the provided Pydantic model class, inlines local JSON Schema references
+        (e.g., ``$ref: '#/$defs/...'``), and filters it down to the keys relevant
         for function-calling providers.
 
         Returns:
             dict: A JSON Schema-like dictionary containing keys such as
-                ``type``, ``properties``, ``required``, and optional ``definitions``
-                or ``$defs`` depending on the Pydantic version.
+                ``type``, ``properties``, and ``required``. Local definitions are
+                resolved inline for improved compatibility with providers that do
+                not support ``$ref``/``$defs`` in tool schemas (e.g., some Ollama
+                versions).
 
         Examples:
             - Default schema when no custom ``tool_schema`` is supplied
@@ -229,12 +273,9 @@ class ToolMetadata:
                 "required": ["input"],
             }
         else:
-            parameters = self.tool_schema.model_json_schema()
-            parameters = {
-                k: v
-                for k, v in parameters.items()
-                if k in ["type", "properties", "required", "definitions", "$defs"]
-            }
+            full_schema = self.tool_schema.model_json_schema()
+            schema = Schema(full_schema=full_schema)
+            parameters = schema.resolve_references(inline=False)
         return parameters
 
     @property

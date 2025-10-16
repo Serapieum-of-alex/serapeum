@@ -14,7 +14,8 @@ from serapeum.core.tools.models import (
     AsyncBaseTool,
     BaseToolAsyncAdapter,
     adapt_to_async_tool,
-    ToolCallArguments
+    ToolCallArguments,
+    Schema,
 )
 
 
@@ -105,6 +106,7 @@ class TestToolMetadataGetParametersDict:
         assert params["properties"]["input"]["type"] == "string"
         assert params["required"] == ["input"]
 
+class TestSchema:
     def test_default_schema_filtered(self):
         """Test that default Pydantic schema is filtered to allowed keys.
 
@@ -115,8 +117,8 @@ class TestToolMetadataGetParametersDict:
         Checks:
           - Only expected keys exist; `input` under properties is present and string-typed.
         """
-        meta = ToolMetadata(description="desc", name="tool", tool_schema=MinimalToolSchema)
-        params = meta.get_schema()
+        schema = Schema(full_schema=MinimalToolSchema.model_json_schema())
+        params = schema.resolve_references()
         for k in params.keys():
             assert k in {"type", "properties", "required", "definitions", "$defs"}
         assert params["properties"]["input"]["type"] == "string"
@@ -137,11 +139,15 @@ class TestToolMetadataGetParametersDict:
         class MainModel(BaseModel):
             sub: SubModel
 
-        meta = ToolMetadata(description="desc", name="tool", tool_schema=MainModel)
-        params = meta.get_schema()
-        assert any(key in params for key in ("$defs", "definitions"))
-        assert params["type"] == "object"
-        assert "sub" in params["properties"]
+        schema = Schema(full_schema=MainModel.model_json_schema())
+        params = schema.resolve_references()
+        assert params == {
+            '$defs': {'SubModel': {'properties': {'x': {'title': 'X', 'type': 'integer'}},
+                                   'required': ['x'], 'title': 'SubModel', 'type': 'object'}},
+            'properties': {'sub': {'$ref': '#/$defs/SubModel'}}, 'required': ['sub'], 'type': 'object'}
+
+        params = schema.resolve_references(inline=True)
+        assert params == {'properties': {'sub': {'properties': {'x': {'title': 'X', 'type': 'integer'}}, 'required': ['x'], 'title': 'SubModel', 'type': 'object'}}, 'required': ['sub'], 'type': 'object'}
 
 
 class TestToolMetadataFnSchemaStr:

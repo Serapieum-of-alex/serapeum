@@ -212,19 +212,20 @@ class Ollama(FunctionCallingLLM):
         return ollama_messages
 
     def _get_response_token_counts(self, raw_response: dict) -> dict:
+        token_counts = {}
         try:
             prompt_tokens = raw_response["prompt_eval_count"]
             completion_tokens = raw_response["eval_count"]
             total_tokens = prompt_tokens + completion_tokens
-        except KeyError:
-            return {}
-        except TypeError:
-            return {}
-        return {
-            "prompt_tokens": prompt_tokens,
-            "completion_tokens": completion_tokens,
-            "total_tokens": total_tokens,
-        }
+            token_counts = {
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "total_tokens": total_tokens,
+            }
+        except (KeyError, TypeError):
+            pass
+
+        return token_counts
 
     def _prepare_chat_with_tools(
         self,

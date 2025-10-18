@@ -159,7 +159,6 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> "AgentChatResponse":
         """Predict and call the tool."""
-        from serapeum.core.chat.models import AgentChatResponse
         from serapeum.core.tools.utils import (
             ToolExecutor,
             ExecutionConfig
@@ -182,6 +181,51 @@ class FunctionCallingLLM(LLM):
             for tool_call in tool_calls
         ]
 
+        self.parse_tool_outputs(tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls)
+
+    async def apredict_and_call(
+        self,
+        tools: Sequence["BaseTool"],
+        user_msg: Optional[Union[str, Message]] = None,
+        chat_history: Optional[List[Message]] = None,
+        verbose: bool = False,
+        allow_parallel_tool_calls: bool = False,
+        error_on_no_tool_call: bool = True,
+        error_on_tool_error: bool = False,
+        **kwargs: Any,
+    ) -> "AgentChatResponse":
+        """Predict and call the tool."""
+        from serapeum.core.tools.utils import (
+            ToolExecutor,
+            ExecutionConfig
+        )
+
+        response = await self.achat_with_tools(
+            tools,
+            user_msg=user_msg,
+            chat_history=chat_history,
+            verbose=verbose,
+            allow_parallel_tool_calls=allow_parallel_tool_calls,
+            **kwargs,
+        )
+
+        tool_calls = self.get_tool_calls_from_response(
+            response, error_on_no_tool_call=error_on_no_tool_call
+        )
+        tool_executor = ToolExecutor(ExecutionConfig(verbose=verbose))
+        tool_tasks = [
+            tool_executor.execute_async_with_selection(tool_call, tools)
+            for tool_call in tool_calls
+        ]
+
+        tool_outputs = await asyncio.gather(*tool_tasks)
+        agent_response = self.parse_tool_outputs(tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls)
+
+        return agent_response
+
+    @staticmethod
+    def parse_tool_outputs(tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls):
+        from serapeum.core.chat.models import AgentChatResponse
         tool_outputs_with_error = [
             tool_output for tool_output in tool_outputs if tool_output.is_error
         ]
@@ -208,66 +252,3 @@ class FunctionCallingLLM(LLM):
                 response=tool_outputs[0].content, sources=tool_outputs
             )
         return agent_response
-
-
-    async def apredict_and_call(
-        self,
-        tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[List[Message]] = None,
-        verbose: bool = False,
-        allow_parallel_tool_calls: bool = False,
-        error_on_no_tool_call: bool = True,
-        error_on_tool_error: bool = False,
-        **kwargs: Any,
-    ) -> "AgentChatResponse":
-        """Predict and call the tool."""
-        from serapeum.core.chat.models import AgentChatResponse
-        from serapeum.core.tools.utils import (
-            ToolExecutor,
-            ExecutionConfig
-        )
-
-        response = await self.achat_with_tools(
-            tools,
-            user_msg=user_msg,
-            chat_history=chat_history,
-            verbose=verbose,
-            allow_parallel_tool_calls=allow_parallel_tool_calls,
-            **kwargs,
-        )
-
-        tool_calls = self.get_tool_calls_from_response(
-            response, error_on_no_tool_call=error_on_no_tool_call
-        )
-        tool_executor = ToolExecutor(ExecutionConfig(verbose=verbose))
-        tool_tasks = [
-            tool_executor.execute_async_with_selection(tool_call, tools)
-            for tool_call in tool_calls
-        ]
-
-        tool_outputs = await asyncio.gather(*tool_tasks)
-        tool_outputs_with_error = [
-            tool_output for tool_output in tool_outputs if tool_output.is_error
-        ]
-        if error_on_tool_error and len(tool_outputs_with_error) > 0:
-            error_text = "\n\n".join(
-                [tool_output.content for tool_output in tool_outputs]
-            )
-            raise ValueError(error_text)
-        elif allow_parallel_tool_calls:
-            output_text = "\n\n".join(
-                [tool_output.content for tool_output in tool_outputs]
-            )
-            return AgentChatResponse(response=output_text, sources=tool_outputs)
-        else:
-            if len(tool_outputs) > 1:
-                raise ValueError("Invalid")
-            elif len(tool_outputs) == 0:
-                return AgentChatResponse(
-                    response=response.message.content or "", sources=tool_outputs
-                )
-
-            return AgentChatResponse(
-                response=tool_outputs[0].content, sources=tool_outputs
-            )

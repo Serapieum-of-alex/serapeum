@@ -185,27 +185,30 @@ class FunctionCallingLLM(LLM):
         tool_outputs_with_error = [
             tool_output for tool_output in tool_outputs if tool_output.is_error
         ]
+
         if error_on_tool_error and len(tool_outputs_with_error) > 0:
             error_text = "\n\n".join(
                 [tool_output.content for tool_output in tool_outputs]
             )
             raise ValueError(error_text)
-        elif allow_parallel_tool_calls:
+
+        if allow_parallel_tool_calls:
             output_text = "\n\n".join(
                 [tool_output.content for tool_output in tool_outputs]
             )
-            return AgentChatResponse(response=output_text, sources=tool_outputs)
+            agent_response = AgentChatResponse(response=output_text, sources=tool_outputs)
+        elif len(tool_outputs) > 1:
+            raise ValueError("Invalid")
+        elif len(tool_outputs) == 0:
+            agent_response = AgentChatResponse(
+                response=response.message.content or "", sources=tool_outputs
+            )
         else:
-            if len(tool_outputs) > 1:
-                raise ValueError("Invalid")
-            elif len(tool_outputs) == 0:
-                return AgentChatResponse(
-                    response=response.message.content or "", sources=tool_outputs
-                )
-
-            return AgentChatResponse(
+            agent_response = AgentChatResponse(
                 response=tool_outputs[0].content, sources=tool_outputs
             )
+        return agent_response
+
 
     async def apredict_and_call(
         self,

@@ -321,3 +321,22 @@ class TestToolOrchestratingLLMCall:
         assert isinstance(result, list)
         assert len(result) == 2
         assert result[0] == SAMPLE_ALBUM and result[1] == SAMPLE_ALBUM_2
+
+
+@pytest.mark.asyncio()
+class TestToolOrchestratingLLMAsyncCall:
+    """Async execution via acall covering standard single-output scenario."""
+
+    async def test_async_single_output(self) -> None:
+        """acall returns a single Album when parallel=False.
+
+        Input: Program with allow_parallel_tool_calls=False using NonFunctionCallingMockLLM
+        Expected: Returns Album equal to SAMPLE_ALBUM
+        Check: isinstance and equality
+        """
+        llm = NonFunctionCallingMockLLM()
+        tools_llm = ToolOrchestratingLLM(Album, prompt="Album with {topic}", llm=llm)
+        result = await tools_llm.acall(topic="pop")
+        assert isinstance(result, Album)
+        assert result == SAMPLE_ALBUM
+

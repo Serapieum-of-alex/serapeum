@@ -173,7 +173,6 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         **kwargs: Any,
     ) -> str:
         """Format the prompt into a string."""
-        del llm  # unused
         all_kwargs = {
             **self.kwargs,
             **kwargs,
@@ -194,7 +193,6 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         self, llm: Optional[BaseLLM] = None, **kwargs: Any
     ) -> List[Message]:
         """Format the prompt into a list of chat messages."""
-        del llm  # unused
         prompt = self.format(**kwargs)
         return prompt_to_messages(prompt)
 

@@ -454,15 +454,17 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         of the output model, allowing for real-time updates and progressive rendering.
 
         Args:
-            *args (Any): Positional arguments (currently unused).
-            llm_kwargs (Optional[Dict[str, Any]], optional): Additional keyword arguments
-                to pass to the LLM (e.g., temperature, max_tokens). Defaults to None.
-            **kwargs (Any): Keyword arguments used to format the prompt template.
+            *args (Any):
+                Positional arguments (currently unused).
+            llm_kwargs (Optional[Dict[str, Any]], optional):
+                Additional keyword arguments to pass to the LLM (e.g., temperature, max_tokens). Defaults to None.
+            **kwargs (Any):
+                Keyword arguments used to format the prompt template.
 
         Yields:
-            Union[Model, List[Model]]: Progressive updates of the structured output.
-                Each yielded value is a Pydantic model instance (or list of instances if
-                allow_parallel_tool_calls is True) with incrementally more complete data.
+            Union[Model, List[Model]]:
+                Progressive updates of the structured output. Each yielded value is a Pydantic model instance (or
+                list of instances if allow_parallel_tool_calls is True) with incrementally more complete data.
 
         Raises:
             ValueError: If the LLM is not a FunctionCallingLLM instance.
@@ -477,7 +479,6 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
             - astream_call: Async streaming version
             - _process_objects: Internal method for processing stream chunks
         """
-        # TODO: we can extend this to non-function calling LLMs as well, coming soon
         if not isinstance(self._llm, FunctionCallingLLM):
             raise ValueError("stream_call is only supported for LLMs.")
 

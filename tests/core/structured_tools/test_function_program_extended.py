@@ -402,21 +402,72 @@ class TestToolOrchestratingLLMStreamCall:
         mock_logger.warning.assert_called()
 
 
+@pytest.mark.asyncio()
+class TestToolOrchestratingLLMAStreamCall:
+    """Tests for the asynchronous streaming interface `astream_call`."""
 
+    async def test_raises_for_non_function_calling_llm(self) -> None:
+        """Raise ValueError if the underlying LLM is not a FunctionCallingLLM.
 
-    def test_no_tool_calls_returns_blank_instance(self) -> None:
-        """When get_tool_calls_from_response returns empty list, return blank model.
+        Input: Program created with NonFunctionCallingMockLLM
+        Expected: ValueError from astream_call
+        Check: pytest.raises(ValueError)
+        """
+        tools_llm = ToolOrchestratingLLM(
+            output_cls=Album,
+            prompt="Album {topic}",
+            llm=NonFunctionCallingMockLLM(),
+        )
+        with pytest.raises(ValueError):
+            gen = await tools_llm.astream_call(topic="t")
+            # exhaust the async generator to trigger computation
+            async for _ in gen:
+                pass
 
-        Input: ChatResponse with no tool calls; output_cls has defaults
-        Expected: Instance of DefaultableModel with default values
-        Check: Attributes are None/default
+    async def test_async_streaming_yields_processed_objects(self) -> None:
+        """astream_call yields objects returned by process_streaming_objects per chunk.
+
+        Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects
+        Expected: Two yields with objects we control (awaited via async for)
+        Check: Sequence and values
         """
         llm = MockFunctionCallingLLM()
-        llm.tool_calls = []  # no tool calls
         tools_llm = ToolOrchestratingLLM(
-            output_cls=self.DefaultableModel, prompt="x {y}", llm=llm
+            output_cls=Album,
+            prompt="Album {topic}",
+            llm=llm,
+            allow_parallel_tool_calls=False,
         )
-        resp = ChatResponse(message=Message.from_str("irrelevant"))
-        out = tools_llm._process_objects(resp, self.DefaultableModel)
-        assert isinstance(out, self.DefaultableModel)
-        assert out.a is None and out.b is None
+        obj1 = Album(title="t1", artist="a1", songs=[Song(title="s1")])
+        obj2 = Album(title="t2", artist="a2", songs=[Song(title="s2")])
+        with patch(
+            "serapeum.core.structured_tools.tools_llm.process_streaming_objects",
+            side_effect=[obj1, obj2],
+        ) as mock_proc:
+            agen = await tools_llm.astream_call(topic="x")
+            results: list[Album] = []
+            async for item in agen:  # type: ignore
+                results.append(item)
+            assert results == [obj1, obj2]
+            assert mock_proc.call_count == 2
+
+    async def test_async_streaming_continues_on_parse_error(self) -> None:
+        """If processing one chunk fails, it logs and continues with the next (async).
+
+        Input: First call to process_streaming_objects raises; second returns an object
+        Expected: The async generator yields only the second object
+        Check: Warning logged and correct single yield
+        """
+        llm = MockFunctionCallingLLM()
+        tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
+        with patch("serapeum.core.structured_tools.tools_llm._logger") as mock_logger:
+            with patch(
+                    "serapeum.core.structured_tools.tools_llm.process_streaming_objects",
+                    side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
+            ):
+                agen = await tools_llm.astream_call(topic="x")
+                results: list[Album] = []
+                async for item in agen:  # type: ignore
+                    results.append(item)
+        assert results == [SAMPLE_ALBUM]
+        mock_logger.warning.assert_called()

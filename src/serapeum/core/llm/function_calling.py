@@ -91,7 +91,7 @@ class FunctionCallingLLM(LLM):
             allow_parallel_tool_calls=allow_parallel_tool_calls,
             **kwargs,
         )
-        # TODO: no validation for streaming outputs
+
         return self.stream_chat(**chat_kwargs)
 
     async def astream_chat_with_tools(
@@ -181,7 +181,7 @@ class FunctionCallingLLM(LLM):
             for tool_call in tool_calls
         ]
 
-        self.parse_tool_outputs(tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls)
+        return self.parse_tool_outputs(tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls)
 
     async def apredict_and_call(
         self,

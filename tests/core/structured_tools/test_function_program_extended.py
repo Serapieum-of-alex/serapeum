@@ -341,25 +341,68 @@ class TestToolOrchestratingLLMAsyncCall:
         assert result == SAMPLE_ALBUM
 
 
-class TestToolOrchestratingLLMProcessObjects:
-    """Tests for the internal `_process_objects` method behavior."""
+class TestToolOrchestratingLLMStreamCall:
+    """Tests for the synchronous streaming interface `stream_call`."""
 
-    class FlexibleAlbum(BaseModel):
-        """A flexible model with fewer required fields to trigger validation paths."""
+    def test_raises_for_non_function_calling_llm(self) -> None:
+        """Raise ValueError if the underlying LLM is not a FunctionCallingLLM.
 
-        title: str
+        Input: Program created with NonFunctionCallingMockLLM
+        Expected: ValueError from stream_call
+        Check: pytest.raises(ValueError)
+        """
+        tools_llm = ToolOrchestratingLLM(
+            output_cls=Album,
+            prompt="Album {topic}",
+            llm=NonFunctionCallingMockLLM(),
+        )
+        with pytest.raises(ValueError):
+            list(tools_llm.stream_call(topic="t"))  # force iteration
 
-    class StrictAlbum(BaseModel):
-        """A strict model requiring title and artist fields."""
+    def test_streaming_yields_processed_objects(self) -> None:
+        """stream_call yields objects returned by process_streaming_objects per chunk.
 
-        title: str
-        artist: str
+        Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects
+        Expected: Two yields with objects we control
+        Check: Sequence and values
+        """
+        llm = MockFunctionCallingLLM()
+        tools_llm = ToolOrchestratingLLM(
+            output_cls=Album,
+            prompt="Album {topic}",
+            llm=llm,
+            allow_parallel_tool_calls=False,
+        )
+        obj1 = Album(title="t1", artist="a1", songs=[Song(title="s1")])
+        obj2 = Album(title="t2", artist="a2", songs=[Song(title="s2")])
+        with patch(
+            "serapeum.core.structured_tools.tools_llm.process_streaming_objects",
+            side_effect=[obj1, obj2],
+        ) as mock_proc:
+            out = list(tools_llm.stream_call(topic="x"))
+            assert out == [obj1, obj2]
+            assert mock_proc.call_count == 2
 
-    class DefaultableModel(BaseModel):
-        """A model with default/optional fields to allow blank construction."""
+    def test_streaming_continues_on_parse_error(self) -> None:
+        """If processing one chunk fails, it logs and continues with the next.
 
-        a: Optional[str] = None
-        b: Optional[int] = None
+        Input: First call to process_streaming_objects raises; second returns an object
+        Expected: The generator yields only the second object
+        Check: Warning logged and correct single yield
+        """
+        llm = MockFunctionCallingLLM()
+        tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
+        with patch("serapeum.core.structured_tools.tools_llm._logger") as mock_logger:
+            with patch(
+                "serapeum.core.structured_tools.tools_llm.process_streaming_objects",
+                side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
+            ):
+                out = list(tools_llm.stream_call(topic="x"))
+        assert out == [SAMPLE_ALBUM]
+        mock_logger.warning.assert_called()
+
+
+
 
     def test_no_tool_calls_returns_blank_instance(self) -> None:
         """When get_tool_calls_from_response returns empty list, return blank model.

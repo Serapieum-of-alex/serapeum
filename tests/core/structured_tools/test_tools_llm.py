@@ -14,6 +14,7 @@ from serapeum.core.chat.models import AgentChatResponse
 from serapeum.core.tools import ToolOutput
 from serapeum.core.structured_tools import ToolOrchestratingLLM
 from serapeum.core.structured_tools.tools_llm import _parse_tool_outputs
+from serapeum.llms.ollama import Ollama
 
 
 class MockSong(BaseModel):
@@ -211,14 +212,18 @@ class TestParseToolOutputs:
         with pytest.raises(IndexError):
             _parse_tool_outputs(agent_response, allow_parallel_tool_calls=False)
 
+
 class TestToolOrchestratingLLM:
     def test_tools_llm(self) -> None:
         """Test Function program."""
         prompt_template_str = """This is a test album with {topic}"""
+        llm = MockLLM()
+        # from serapeum.llms.ollama import Ollama
+        # llm = Ollama(model="llama3.1:latest", request_timeout=80)
         tools_llm = ToolOrchestratingLLM(
             output_cls=MockAlbum,
             prompt=prompt_template_str,
-            llm=MockLLM(),
+            llm=llm,
         )
         obj_output = tools_llm(topic="songs")
         assert isinstance(obj_output, MockAlbum)
@@ -229,11 +234,13 @@ class TestToolOrchestratingLLM:
 
     def test_tools_llm_multiple(self) -> None:
         """Test Function program multiple."""
+        llm = MockLLM()
+        # llm = Ollama(model="llama3.1:latest", request_timeout=80)
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM(
             output_cls=MockAlbum,
             prompt=prompt_template_str,
-            llm=MockLLM(),
+            llm=llm,
             allow_parallel_tool_calls=True,
         )
         obj_outputs = tools_llm(topic="songs")
@@ -250,12 +257,14 @@ class TestToolOrchestratingLLM:
     @pytest.mark.asyncio()
     async def test_async(self) -> None:
         """Test async function program."""
+        # llm = MockLLM()
+        llm = Ollama(model="llama3.1:latest", request_timeout=80)
         # same as above but async
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM(
             output_cls=MockAlbum,
             prompt=prompt_template_str,
-            llm=MockLLM(),
+            llm=llm,
         )
         obj_output = await tools_llm.acall(topic="songs")
         assert isinstance(obj_output, MockAlbum)

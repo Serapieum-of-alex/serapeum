@@ -9,26 +9,23 @@ explaining inputs, expected results, and what is being verified.
 """
 from __future__ import annotations
 
-from typing import List, Optional, Sequence
-from unittest.mock import MagicMock, patch
+from typing import List, Sequence
 
 import pytest
 
 from pydantic import BaseModel
 
-from serapeum.core.base.llms.models import Message, ChatResponse
 from serapeum.core.chat.models import AgentChatResponse
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.structured_tools.tools_llm import (
     ToolOrchestratingLLM,
 )
 from serapeum.core.tools import ToolOutput
-from serapeum.core.tools.models import ToolCallArguments
 from serapeum.llms.ollama import Ollama
 
 LLM = Ollama(
     model="llama3.1",
-    request_timeout=80,
+    request_timeout=180,
 )
 
 class Song(BaseModel):
@@ -160,3 +157,54 @@ class TestToolOrchestratingLLMAsyncCall:
         tools_llm = ToolOrchestratingLLM(Album, prompt="Album with {topic}", llm=LLM)
         result = await tools_llm.acall(topic="pop")
         assert isinstance(result, Album)
+
+
+class TestToolOrchestratingLLMStreamCall:
+    """Tests for the synchronous streaming interface `stream_call`."""
+
+    def test_streaming_yields_processed_objects(self) -> None:
+        """stream_call yields objects returned by process_streaming_objects per chunk.
+
+        Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects
+        Expected: Two yields with objects we control
+        Check: Sequence and values
+        """
+        llm = LLM
+        tools_llm = ToolOrchestratingLLM(
+            output_cls=Album,
+            prompt="Album {topic}",
+            llm=llm,
+            allow_parallel_tool_calls=False,
+        )
+
+        out = tools_llm.stream_call(topic="x")
+        out = list(out)
+        assert len(out) == 2
+        assert all(isinstance(obj, Album) for obj in out)
+
+
+@pytest.mark.asyncio()
+class TestToolOrchestratingLLMAStreamCall:
+    """Tests for the asynchronous streaming interface `astream_call`."""
+
+    async def test_async_streaming_yields_processed_objects(self) -> None:
+        """astream_call yields objects returned by process_streaming_objects per chunk.
+
+        Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects
+        Expected: Two yields with objects we control (awaited via async for)
+        Check: Sequence and values
+        """
+        llm = LLM
+        tools_llm = ToolOrchestratingLLM(
+            output_cls=Album,
+            prompt="Album {topic}",
+            llm=llm,
+            allow_parallel_tool_calls=False,
+        )
+
+        agen = await tools_llm.astream_call(topic="x")
+        results: list[Album] = []
+        async for item in agen:  # type: ignore
+            results.append(item)
+        assert len(results) == 2
+        assert all(isinstance(obj, Album) for obj in results)

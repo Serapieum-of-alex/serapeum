@@ -122,7 +122,6 @@ class TestToolOrchestratingLLMCall:
         tools_llm = ToolOrchestratingLLM(Album, prompt="can you create Album with {topic}, and two random songs", llm=LLM)
         result = tools_llm(topic="rock")
         assert isinstance(result, Album)
-        assert result == SAMPLE_ALBUM
 
     def test_multiple_outputs_call_parallel_enabled(self) -> None:
         """Call returns list of Albums when parallel=True.

@@ -282,7 +282,7 @@ class ToolMetadata:
         else:
             full_schema = self.tool_schema.model_json_schema()
             schema = Schema(full_schema=full_schema)
-            parameters = schema.referenced_schema
+            parameters = schema.resolved_schema
         return parameters
 
     @property

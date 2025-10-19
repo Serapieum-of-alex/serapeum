@@ -211,7 +211,8 @@ class Ollama(FunctionCallingLLM):
 
         return ollama_messages
 
-    def _get_response_token_counts(self, raw_response: dict) -> dict:
+    @staticmethod
+    def _get_response_token_counts(raw_response: dict) -> dict:
         token_counts = {}
         try:
             prompt_tokens = raw_response["prompt_eval_count"]
@@ -325,63 +326,62 @@ class Ollama(FunctionCallingLLM):
             raw=response,
         )
 
+    @staticmethod
+    def _parse_tool_call_response(response_txt, tools_dict, r):
+        r = dict(r)
+
+        response_txt += r["message"]["content"]
+        new_tool_calls = [dict(t) for t in (r["message"].get("tool_calls", []) or [])]
+        for tool_call in new_tool_calls:
+            func_name = str(tool_call["function"]["name"])
+            func_args = str(tool_call["function"]["arguments"])
+            if (func_name, func_args) not in tools_dict["seen_tool_calls"]:
+                tools_dict["seen_tool_calls"].add((func_name, func_args))
+                tools_dict["all_tool_calls"].append(tool_call)
+
+        token_counts = Ollama._get_response_token_counts(r)
+        if token_counts:
+            r["usage"] = token_counts
+
+        return ChatResponse(
+            message=Message(
+                content=response_txt,
+                role=r["message"]["role"],
+                additional_kwargs={"tool_calls": tools_dict["all_tool_calls"]},
+            ),
+            delta=r["message"]["content"],
+            raw=r,
+        )
+
+
     def stream_chat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseGen:
         ollama_messages = self._convert_to_ollama_messages(messages)
 
         tools = kwargs.pop("tools", None)
-        format = kwargs.pop("format", "json" if self.json_mode else None)
+        response_format = kwargs.pop("format", "json" if self.json_mode else None)
 
         def gen() -> ChatResponseGen:
             response = self.client.chat(
                 model=self.model,
                 messages=ollama_messages,
                 stream=True,
-                format=format,
+                format=response_format,
                 tools=tools,
                 options=self._model_kwargs,
                 keep_alive=self.keep_alive,
             )
 
             response_txt = ""
-            seen_tool_calls = set()
-            all_tool_calls = []
+            tools_dict = {
+                "seen_tool_calls": set(),
+                "all_tool_calls": []
+            }
 
             for r in response:
-                if r["message"]["content"] is None:
-                    continue
-
-                r = dict(r)
-
-                response_txt += r["message"]["content"]
-                new_tool_calls = [dict(t) for t in (r["message"].get("tool_calls", []) or [])]
-                for tool_call in new_tool_calls:
-                    if (
-                        str(tool_call["function"]["name"]),
-                        str(tool_call["function"]["arguments"]),
-                    ) in seen_tool_calls:
-                        continue
-                    seen_tool_calls.add(
-                        (
-                            str(tool_call["function"]["name"]),
-                            str(tool_call["function"]["arguments"]),
-                        )
-                    )
-                    all_tool_calls.append(tool_call)
-                token_counts = self._get_response_token_counts(r)
-                if token_counts:
-                    r["usage"] = token_counts
-
-                yield ChatResponse(
-                    message=Message(
-                        content=response_txt,
-                        role=r["message"]["role"],
-                        additional_kwargs={"tool_calls": list(set(all_tool_calls))},
-                    ),
-                    delta=r["message"]["content"],
-                    raw=r,
-                )
+                if r["message"]["content"] is not None:
+                    yield self._parse_tool_call_response(response_txt, tools_dict, r)
 
         return gen()
 
@@ -405,44 +405,14 @@ class Ollama(FunctionCallingLLM):
             )
 
             response_txt = ""
-            seen_tool_calls = set()
-            all_tool_calls = []
+            tools_dict = {
+                "seen_tool_calls": set(),
+                "all_tool_calls": []
+            }
 
             async for r in response:
-                if r["message"]["content"] is None:
-                    continue
-
-                r = dict(r)
-
-                response_txt += r["message"]["content"]
-
-                new_tool_calls = [dict(t) for t in (r["message"].get("tool_calls", []) or [])]
-                for tool_call in new_tool_calls:
-                    if (
-                        str(tool_call["function"]["name"]),
-                        str(tool_call["function"]["arguments"]),
-                    ) in seen_tool_calls:
-                        continue
-                    seen_tool_calls.add(
-                        (
-                            str(tool_call["function"]["name"]),
-                            str(tool_call["function"]["arguments"]),
-                        )
-                    )
-                    all_tool_calls.append(tool_call)
-                token_counts = self._get_response_token_counts(r)
-                if token_counts:
-                    r["usage"] = token_counts
-
-                yield ChatResponse(
-                    message=Message(
-                        content=response_txt,
-                        role=r["message"]["role"],
-                        additional_kwargs={"tool_calls": all_tool_calls},
-                    ),
-                    delta=r["message"]["content"],
-                    raw=r,
-                )
+                if r["message"]["content"] is not None:
+                    yield self._parse_tool_call_response(response_txt, tools_dict, r)
 
         return gen()
 

@@ -340,3 +340,40 @@ class TestToolOrchestratingLLMAsyncCall:
         assert isinstance(result, Album)
         assert result == SAMPLE_ALBUM
 
+
+class TestToolOrchestratingLLMProcessObjects:
+    """Tests for the internal `_process_objects` method behavior."""
+
+    class FlexibleAlbum(BaseModel):
+        """A flexible model with fewer required fields to trigger validation paths."""
+
+        title: str
+
+    class StrictAlbum(BaseModel):
+        """A strict model requiring title and artist fields."""
+
+        title: str
+        artist: str
+
+    class DefaultableModel(BaseModel):
+        """A model with default/optional fields to allow blank construction."""
+
+        a: Optional[str] = None
+        b: Optional[int] = None
+
+    def test_no_tool_calls_returns_blank_instance(self) -> None:
+        """When get_tool_calls_from_response returns empty list, return blank model.
+
+        Input: ChatResponse with no tool calls; output_cls has defaults
+        Expected: Instance of DefaultableModel with default values
+        Check: Attributes are None/default
+        """
+        llm = MockFunctionCallingLLM()
+        llm.tool_calls = []  # no tool calls
+        tools_llm = ToolOrchestratingLLM(
+            output_cls=self.DefaultableModel, prompt="x {y}", llm=llm
+        )
+        resp = ChatResponse(message=Message.from_str("irrelevant"))
+        out = tools_llm._process_objects(resp, self.DefaultableModel)
+        assert isinstance(out, self.DefaultableModel)
+        assert out.a is None and out.b is None

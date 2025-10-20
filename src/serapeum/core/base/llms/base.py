@@ -24,7 +24,8 @@ from serapeum.core.models import SerializableModel
 class BaseLLM(SerializableModel):
     """BaseLLM interface."""
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    # Allow subclasses/tests to attach auxiliary attributes (e.g., test doubles)
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
     @property
     @abstractmethod

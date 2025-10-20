@@ -1,4 +1,4 @@
-"""Test LLM program."""
+"""Test Tool Orchestrating LLM."""
 
 from unittest.mock import MagicMock, patch
 import pytest

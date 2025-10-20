@@ -257,8 +257,8 @@ class TestToolOrchestratingLLM:
     @pytest.mark.asyncio()
     async def test_async(self) -> None:
         """Test async function program."""
-        # llm = MockLLM()
-        llm = Ollama(model="llama3.1:latest", request_timeout=80)
+        llm = MockLLM()
+        # llm = Ollama(model="llama3.1:latest", request_timeout=80)
         # same as above but async
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM(

@@ -37,7 +37,7 @@ class Song(BaseModel):
 class Album(BaseModel):
     """Album model used as the program output."""
 
-    title: str
+    name: str
     artist: str
     songs: List[Song]
 
@@ -116,7 +116,7 @@ class TestToolOrchestratingLLMCall:
         """Call returns a single Album when parallel=False.
 
         Input: Program with allow_parallel_tool_calls=False using NonFunctionCallingMockLLM
-        Expected: Returns Album equal to SAMPLE_ALBUM
+        Expected: Returns Album object
         Check: isinstance and equality
         """
         tools_llm = ToolOrchestratingLLM(Album, prompt="can you create Album with {topic}, and two random songs", llm=LLM)
@@ -127,7 +127,7 @@ class TestToolOrchestratingLLMCall:
         """Call returns list of Albums when parallel=True.
 
         Input: Program with allow_parallel_tool_calls=True
-        Expected: List[Album] of length 2 matching SAMPLE_ALBUM and SAMPLE_ALBUM_2
+        Expected: List[Album] of length 2
         Check: types and order
         """
         tools_llm = ToolOrchestratingLLM(
@@ -150,7 +150,7 @@ class TestToolOrchestratingLLMAsyncCall:
         """acall returns a single Album when parallel=False.
 
         Input: Program with allow_parallel_tool_calls=False using NonFunctionCallingMockLLM
-        Expected: Returns Album equal to SAMPLE_ALBUM
+        Expected: Returns Album equal to ALBUM
         Check: isinstance and equality
         """
         tools_llm = ToolOrchestratingLLM(Album, prompt="Album with {topic}", llm=LLM)
@@ -185,6 +185,21 @@ class TestToolOrchestratingLLMStreamCall:
 @pytest.mark.asyncio()
 class TestToolOrchestratingLLMAStreamCall:
     """Tests for the asynchronous streaming interface `astream_call`."""
+    # @pytest.fixture(autouse=True)
+    # async def setup_teardown(self):
+    #     """Ensure clean event loop state for each test."""
+    #     yield
+    #     # Cleanup any remaining tasks
+    #     import asyncio
+    #     try:
+    #         loop = asyncio.get_running_loop()
+    #         pending = [t for t in asyncio.all_tasks(loop) if not t.done()]
+    #         for task in pending:
+    #             task.cancel()
+    #         if pending:
+    #             await asyncio.gather(*pending, return_exceptions=True)
+    #     except RuntimeError:
+    #         pass  # No running loop
 
     async def test_async_streaming_yields_processed_objects(self) -> None:
         """astream_call yields objects returned by process_streaming_objects per chunk.

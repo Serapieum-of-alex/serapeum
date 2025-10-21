@@ -424,7 +424,7 @@ class TestToolOrchestratingLLMAStreamCall:
             async for _ in gen:
                 pass
 
-    async def test_async_streaming_yields_processed_objects(self) -> None:
+    async def test_async_streaming_yields_processed_objects_mock(self) -> None:
         """astream_call yields objects returned by process_streaming_objects per chunk.
 
         Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects

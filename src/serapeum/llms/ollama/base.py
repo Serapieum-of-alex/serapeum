@@ -327,10 +327,10 @@ class Ollama(FunctionCallingLLM):
         )
 
     @staticmethod
-    def _parse_tool_call_response(response_txt, tools_dict, r):
+    def _parse_tool_call_response(tools_dict, r):
         r = dict(r)
 
-        response_txt += r["message"]["content"]
+        tools_dict["response_txt"] += r["message"]["content"]
         new_tool_calls = [dict(t) for t in (r["message"].get("tool_calls", []) or [])]
         for tool_call in new_tool_calls:
             func_name = str(tool_call["function"]["name"])
@@ -345,7 +345,7 @@ class Ollama(FunctionCallingLLM):
 
         return ChatResponse(
             message=Message(
-                content=response_txt,
+                content=tools_dict["response_txt"],
                 role=r["message"]["role"],
                 additional_kwargs={"tool_calls": tools_dict["all_tool_calls"]},
             ),
@@ -373,15 +373,15 @@ class Ollama(FunctionCallingLLM):
                 keep_alive=self.keep_alive,
             )
 
-            response_txt = ""
             tools_dict = {
+                "response_txt": "",
                 "seen_tool_calls": set(),
                 "all_tool_calls": []
             }
 
             for r in response:
                 if r["message"]["content"] is not None:
-                    yield self._parse_tool_call_response(response_txt, tools_dict, r)
+                    yield self._parse_tool_call_response(tools_dict, r)
 
         return gen()
 
@@ -404,15 +404,15 @@ class Ollama(FunctionCallingLLM):
                 keep_alive=self.keep_alive,
             )
 
-            response_txt = ""
             tools_dict = {
+                "response_txt": "",
                 "seen_tool_calls": set(),
                 "all_tool_calls": []
             }
 
             async for r in response:
                 if r["message"]["content"] is not None:
-                    yield self._parse_tool_call_response(response_txt, tools_dict, r)
+                    yield self._parse_tool_call_response(tools_dict, r)
 
         return gen()
 

@@ -298,13 +298,13 @@ class Ollama(FunctionCallingLLM):
         ollama_messages = self._convert_to_ollama_messages(messages)
 
         tools = kwargs.pop("tools", None)
-        format = kwargs.pop("format", "json" if self.json_mode else None)
+        response_format = kwargs.pop("format", "json" if self.json_mode else None)
 
         response = self.client.chat(
             model=self.model,
             messages=ollama_messages,
             stream=False,
-            format=format,
+            format=response_format,
             tools=tools,
             options=self._model_kwargs,
             keep_alive=self.keep_alive,

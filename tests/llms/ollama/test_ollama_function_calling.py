@@ -42,18 +42,6 @@ class Album(BaseModel):
     songs: List[Song]
 
 
-SAMPLE_ALBUM = Album(
-    title="A Title",
-    artist="An Artist",
-    songs=[Song(title="s1"), Song(title="s2")],
-)
-SAMPLE_ALBUM_2 = Album(
-    title="Another Title",
-    artist="Another Artist",
-    songs=[Song(title="s3"), Song(title="s4")],
-)
-
-
 def make_agent_response_from_models(models: Sequence[BaseModel]) -> AgentChatResponse:
     """Utility to convert a sequence of BaseModel instances to AgentChatResponse.
 
@@ -185,21 +173,6 @@ class TestToolOrchestratingLLMStreamCall:
 @pytest.mark.asyncio()
 class TestToolOrchestratingLLMAStreamCall:
     """Tests for the asynchronous streaming interface `astream_call`."""
-    # @pytest.fixture(autouse=True)
-    # async def setup_teardown(self):
-    #     """Ensure clean event loop state for each test."""
-    #     yield
-    #     # Cleanup any remaining tasks
-    #     import asyncio
-    #     try:
-    #         loop = asyncio.get_running_loop()
-    #         pending = [t for t in asyncio.all_tasks(loop) if not t.done()]
-    #         for task in pending:
-    #             task.cancel()
-    #         if pending:
-    #             await asyncio.gather(*pending, return_exceptions=True)
-    #     except RuntimeError:
-    #         pass  # No running loop
 
     async def test_async_streaming_yields_processed_objects(self) -> None:
         """astream_call yields objects returned by process_streaming_objects per chunk.

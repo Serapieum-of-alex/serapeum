@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Type, cast
+from typing import Any, Dict, Optional, Type, Union, Tuple
 
 from pydantic import BaseModel
 from serapeum.core.llm.base import LLM
@@ -19,38 +19,40 @@ class TextCompletionLLM(BasePydanticProgram[BaseModel]):
 
     def __init__(
         self,
-        output_parser: BaseOutputParser,
-        output_cls: Type[BaseModel],
-        prompt: BasePromptTemplate,
-        llm: LLM,
-        verbose: bool = False,
-    ) -> None:
-        self._output_parser = output_parser
-        self._output_cls = output_cls
-        self._llm = llm
-        self._prompt = prompt
-        self._verbose = verbose
-
-        self._prompt.output_parser = output_parser
-
-    @classmethod
-    def from_defaults(
-        cls,
+        *,
         output_parser: Optional[BaseOutputParser] = None,
+        prompt: Union[BasePromptTemplate, str],
         output_cls: Optional[Type[BaseModel]] = None,
-        prompt_template_str: Optional[str] = None,
-        prompt: Optional[BasePromptTemplate] = None,
         llm: Optional[LLM] = None,
         verbose: bool = False,
-    ) -> "TextCompletionLLM":
-        llm = llm or Configs.llm
-        if prompt is None and prompt_template_str is None:
-            raise ValueError("Must provide either prompt or prompt_template_str.")
-        if prompt is not None and prompt_template_str is not None:
-            raise ValueError("Must provide either prompt or prompt_template_str.")
-        if prompt_template_str is not None:
-            prompt = PromptTemplate(prompt_template_str)
+    ) -> None:
+        self._output_parser, self._output_cls = self.validate_output_parser_cls(output_parser, output_cls)
+        self._llm = self.validate_llm(llm)
+        self._prompt = self.validate_prompt(prompt)
+        self._verbose = verbose
+        self._prompt.output_parser = output_parser
 
+    @staticmethod
+    def validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
+        if not isinstance(prompt, (BasePromptTemplate, str)):
+            raise ValueError(
+                "prompt must be an instance of BasePromptTemplate or str."
+            )
+        if isinstance(prompt, str):
+            prompt = PromptTemplate(prompt)
+        return prompt
+
+    @staticmethod
+    def validate_llm(llm: LLM) -> LLM:
+        llm = llm or Configs.llm  # type: ignore
+        if llm is None:
+            raise AssertionError("llm must be provided or set in Configs.")
+        return llm
+
+    @staticmethod
+    def validate_output_parser_cls(
+        output_parser: BaseOutputParser, output_cls: Type[BaseModel]
+    ) -> Tuple[BaseOutputParser, Type[BaseModel]]:
         # decide default output class if not set
         if output_cls is None:
             if not isinstance(output_parser, PydanticOutputParser):
@@ -60,13 +62,7 @@ class TextCompletionLLM(BasePydanticProgram[BaseModel]):
             if output_parser is None:
                 output_parser = PydanticOutputParser(output_cls=output_cls)
 
-        return cls(
-            output_parser,
-            output_cls,
-            prompt=cast(PromptTemplate, prompt),
-            llm=llm,
-            verbose=verbose,
-        )
+        return output_parser, output_cls
 
     @property
     def output_cls(self) -> Type[BaseModel]:

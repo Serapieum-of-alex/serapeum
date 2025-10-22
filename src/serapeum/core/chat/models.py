@@ -15,7 +15,48 @@ logger.setLevel(logging.WARNING)
 
 @dataclass
 class AgentChatResponse:
-    """Agent chat response."""
+    """Container for an agent's chat response, tool outputs, and metadata.
+
+    This dataclass is returned by chat/LLM components to represent a single
+    response turn. It can optionally hold outputs produced by tools (functions)
+    the agent invoked, and it can simulate token-by-token streaming for simple
+    UI rendering via the ``response_gen`` and ``async_response_gen`` helpers.
+
+    Args:
+        response (str):
+            The final textual response produced by the agent/LLM.
+        sources (List[ToolOutput]):
+            A list of tool call results associated with this response. Each item may
+            contain a structured ``raw_output`` (for example, a Pydantic ``BaseModel``)
+            and/or textual content.
+        is_dummy_stream (bool):
+            When True, enables the fake streaming helpers that yield tokens from ``response``
+            one by one.
+        metadata (Optional[Dict[str, Any]]):
+            Optional extra information attached to this response (e.g., model info, timing,
+            custom flags).
+
+    Examples:
+    - Basic usage and string conversion
+        ```python
+        >>> from serapeum.core.chat.models import AgentChatResponse
+        >>> r = AgentChatResponse(response="Hello, world!")
+        >>> str(r)
+        'Hello, world!'
+
+        ```
+    - Simulate token streaming for simple UIs
+        ```python
+        >>> r = AgentChatResponse(response="hello world", is_dummy_stream=True)
+        >>> list(r.response_gen)  # doctest: +ELLIPSIS
+        ['hello ', 'world ']
+
+        ```
+
+    See Also:
+        - serapeum.core.tools.models.ToolOutput: Structured tool output container.
+        - AgentChatResponse._parse_tool_outputs: Helper to retrieve structured models from ``sources``.
+    """
 
     response: str = ""
     sources: List[ToolOutput] = field(default_factory=list)
@@ -23,11 +64,59 @@ class AgentChatResponse:
     metadata: Optional[Dict[str, Any]] = None
 
     def __str__(self) -> str:
+        """Return the textual response as the string representation.
+
+        Returns:
+            str: The value of the ``response`` field.
+
+        Examples:
+        - Convert to string
+            ```python
+            >>> AgentChatResponse(response="OK").__str__()
+            'OK'
+
+            ```
+        - Using Python's built-in str()
+            ```python
+            >>> str(AgentChatResponse(response="Hi"))
+            'Hi'
+
+            ```
+        """
         return self.response
 
     @property
     def response_gen(self) -> Generator[str, None, None]:
-        """Used for fake streaming, i.e. with tool outputs."""
+        """Yield tokens from ``response`` to simulate streaming.
+
+        When ``is_dummy_stream`` is True, this property returns a generator that
+        yields each token from ``response`` (split on spaces), each suffixed with
+        a single space. This is intended for simple UI streaming demos and tests.
+
+        Returns:
+            Generator[str, None, None]: A generator that yields tokens with trailing spaces.
+
+        Raises:
+            ValueError: If ``is_dummy_stream`` is False.
+
+        Examples:
+        - Typical usage
+            ```python
+            >>> r = AgentChatResponse(response="hello world", is_dummy_stream=True)
+            >>> list(r.response_gen)
+            ['hello ', 'world ']
+
+            ```
+        - Attempting to access when streaming is disabled
+            ```python
+            >>> try:
+            ...     _ = list(AgentChatResponse(response="hi").response_gen)
+            ... except Exception as e:
+            ...     type(e).__name__
+            'ValueError'
+
+            ```
+        """
         if not self.is_dummy_stream:
             raise ValueError(
                 "response_gen is only available for streaming responses. "
@@ -39,7 +128,43 @@ class AgentChatResponse:
             time.sleep(0.1)
 
     async def async_response_gen(self) -> AsyncGenerator[str, None]:
-        """Used for fake streaming, i.e. with tool outputs."""
+        """Asynchronously yield tokens from ``response`` to simulate streaming.
+
+        This coroutine returns an async generator that yields each token from
+        ``response`` (split on spaces), each suffixed with a single space. A
+        short ``asyncio.sleep`` is used between tokens to emulate streaming.
+
+        Returns:
+            AsyncGenerator[str, None]: An async generator yielding tokens with trailing spaces.
+
+        Raises:
+            ValueError: If ``is_dummy_stream`` is False.
+
+        Examples:
+        - Consume with ``asyncio.run``
+            ```python
+            >>> import asyncio
+            >>> async def collect():
+            ...     r = AgentChatResponse(response="foo bar", is_dummy_stream=True)
+            ...     return [t async for t in r.async_response_gen()]
+            >>> asyncio.run(collect())
+            ['foo ', 'bar ']
+
+            ```
+        - Attempting to access when streaming is disabled
+            ```python
+            >>> import asyncio
+            >>> async def try_access():
+            ...     try:
+            ...         async for _ in AgentChatResponse(response="x").async_response_gen():
+            ...             pass
+            ...     except Exception as e:
+            ...         return type(e).__name__
+            >>> asyncio.run(try_access())
+            'ValueError'
+
+            ```
+        """
         if not self.is_dummy_stream:
             raise ValueError(
                 "response_gen is only available for streaming responses. "
@@ -54,80 +179,79 @@ class AgentChatResponse:
         self,
         allow_parallel_tool_calls: bool = False,
     ) -> Union[BaseModel, List[BaseModel]]:
-        """Parse tool outputs from an agent chat response.
+        """Parse structured tool outputs from ``sources``.
 
-        Extracts structured objects (Pydantic models) from an agent/LLM tool-call
-        response. When parallel tool calls are disabled, only the first output is
-        returned. When enabled, all outputs are returned as a list.
+        Extracts the Pydantic models placed in ``ToolOutput.raw_output`` and
+        returns either the single model (default) or a list of models when
+        parallel tool calls are enabled.
 
         Args:
-            agent_response: An object that contains a ``sources`` attribute which is
-                an iterable of items, each having a ``raw_output`` attribute that is
-                a Pydantic ``BaseModel`` instance.
-            allow_parallel_tool_calls (bool, optional): If True, return all parsed
-                models as a list. If False, return only the first model (and log a
-                warning if there are multiple). Defaults to False.
+            allow_parallel_tool_calls (bool):
+                If True, return all parsed models as a list. If False, return only
+                the first model (and log a warning if there are multiple). Defaults to False.
 
         Returns:
-            Union[BaseModel, List[BaseModel]]: A single model (when
-            ``allow_parallel_tool_calls`` is False) or a list of models (when it is
-            True).
+            Union[BaseModel, List[BaseModel]]: The parsed model(s).
 
         Raises:
-            IndexError: If ``agent_response.sources`` is empty and parallel tool
-                calls are disabled (attempts to access the first element).
-            AttributeError: If the expected attributes (``sources`` on
-                ``agent_response`` or ``raw_output`` on a source) are missing.
-            TypeError: If a ``raw_output`` item is not a Pydantic ``BaseModel``.
-
-        Warns:
-            Logs a warning when multiple outputs are present but
-            ``allow_parallel_tool_calls`` is False.
+            IndexError: If ``sources`` is empty and ``allow_parallel_tool_calls`` is False.
 
         Examples:
-        - Parse a single tool output (parallel calls disabled).
+        - Single tool output (default behavior returns the first model)
             ```python
             >>> from pydantic import BaseModel
-            >>> from serapeum.core.structured_tools.tools_llm import _parse_tool_outputs
-            >>>
+            >>> from serapeum.core.chat.models import AgentChatResponse
+            >>> from serapeum.core.tools import ToolOutput
             >>> class Person(BaseModel):
             ...     name: str
             ...     age: int
-            >>>
-            >>> class Source:
-            ...     def __init__(self, raw_output):
-            ...         self.raw_output = raw_output
-            >>> class Response:
-            ...     def __init__(self, sources):
-            ...         self.sources = sources
-            >>>
-            >>> resp = Response([Source(Person(name='Alice', age=30))])
-            >>> result = _parse_tool_outputs(resp, allow_parallel_tool_calls=False)
+            >>> resp = AgentChatResponse(
+            ...     sources=[ToolOutput(tool_name="people", raw_output=Person(name="Alice", age=30))]
+            ... )
+            >>> result = resp._parse_tool_outputs()
             >>> (result.name, result.age)
             ('Alice', 30)
 
             ```
-        - Parse multiple outputs with parallel calls enabled.
+        - Multiple outputs with parallel calls enabled
             ```python
-            >>> p1 = Person(name='Bob', age=25)
-            >>> p2 = Person(name='Charlie', age=35)
-            >>> resp = Response([Source(p1), Source(p2)])
-            >>> results = _parse_tool_outputs(resp, allow_parallel_tool_calls=True)
-            >>> [r.name for r in results]
-            ['Bob', 'Charlie']
+            >>> from pydantic import BaseModel
+            >>> from serapeum.core.chat.models import AgentChatResponse
+            >>> from serapeum.core.tools import ToolOutput
+            >>> class Person(BaseModel):
+            ...     name: str
+            ...     age: int
+            >>> p1 = Person(name="Bob", age=25)
+            >>> p2 = Person(name="Carol", age=35)
+            >>> resp = AgentChatResponse(
+            ...     sources=[
+            ...         ToolOutput(tool_name="people", raw_output=p1),
+            ...         ToolOutput(tool_name="people", raw_output=p2),
+            ...     ]
+            ... )
+            >>> [p.name for p in resp._parse_tool_outputs(allow_parallel_tool_calls=True)]
+            ['Bob', 'Carol']
 
             ```
-        - Multiple outputs with parallel calls disabled returns the first one and logs a warning.
+        - Multiple outputs with parallel calls disabled returns the first one (warning is logged)
             ```python
-            >>> result = _parse_tool_outputs(resp, allow_parallel_tool_calls=False)
-            >>> result.name
+            >>> first = resp._parse_tool_outputs(allow_parallel_tool_calls=False)
+            >>> first.name
             'Bob'
+
+            ```
+        - Empty sources result in ``IndexError`` when parallel calls are disabled
+            ```python
+            >>> try:
+            ...     AgentChatResponse()._parse_tool_outputs()
+            ... except Exception as e:
+            ...     type(e).__name__
+            'IndexError'
 
             ```
 
         See Also:
-            - ToolOrchestratingLLM.__call__: Main execution method using this parser
-            - ToolOrchestratingLLM.stream_call: Streaming variant that yields partial models
+            - serapeum.core.tools.models.ToolOutput: Container used in ``sources``.
         """
         outputs = [cast(BaseModel, s.raw_output) for s in self.sources]
         if allow_parallel_tool_calls:

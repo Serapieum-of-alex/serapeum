@@ -42,50 +42,50 @@ class MockChatLLM(MagicMock):
         return metadata
 
 
-class TestModel(BaseModel):
+class ModelTest(BaseModel):
     __test__ = False
     hello: str
 
 class TestTextCompletionLLM:
     def test_text_completion_llm(self) -> None:
         """Test LLM program."""
-        output_parser = PydanticOutputParser(output_cls=TestModel)
-        llm_program = TextCompletionLLM.from_defaults(
+        output_parser = PydanticOutputParser(output_cls=ModelTest)
+        text_llm = TextCompletionLLM(
             output_parser=output_parser,
-            prompt_template_str="This is a test prompt with a {test_input}.",
+            prompt="This is a test prompt with a {test_input}.",
             llm=MockLLM(),
         )
-        # mock llm
-        obj_output = llm_program(test_input="hello")
-        assert isinstance(obj_output, TestModel)
+
+        obj_output = text_llm(test_input="hello")
+        assert isinstance(obj_output, ModelTest)
         assert obj_output.hello == "world"
 
-    def test_llm_program_with_messages(self) -> None:
+    def test_text_llm_with_messages(self) -> None:
         """Test LLM program."""
         messages = [Message(role=MessageRole.USER, content="Test")]
         prompt = ChatPromptTemplate(message_templates=messages)
-        output_parser = PydanticOutputParser(output_cls=TestModel)
-        llm_program = TextCompletionLLM.from_defaults(
+        output_parser = PydanticOutputParser(output_cls=ModelTest)
+        text_llm = TextCompletionLLM(
             output_parser=output_parser,
             prompt=prompt,
             llm=MockLLM(),
         )
-        # mock llm
-        obj_output = llm_program()
-        assert isinstance(obj_output, TestModel)
+
+        obj_output = text_llm()
+        assert isinstance(obj_output, ModelTest)
         assert obj_output.hello == "world"
 
     def test_llm_program_with_messages_and_chat(self) -> None:
         """Test LLM program."""
         messages = [Message(role=MessageRole.USER, content="Test")]
         prompt = ChatPromptTemplate(message_templates=messages)
-        output_parser = PydanticOutputParser(output_cls=TestModel)
-        llm_program = TextCompletionLLM.from_defaults(
+        output_parser = PydanticOutputParser(output_cls=ModelTest)
+        text_llm = TextCompletionLLM(
             output_parser=output_parser,
             prompt=prompt,
             llm=MockChatLLM(),
         )
-        # mock llm
-        obj_output = llm_program()
-        assert isinstance(obj_output, TestModel)
+
+        obj_output = text_llm()
+        assert isinstance(obj_output, ModelTest)
         assert obj_output.hello == "chat"

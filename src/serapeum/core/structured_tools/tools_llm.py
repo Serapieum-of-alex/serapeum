@@ -13,19 +13,15 @@ from typing import (
 
 from pydantic import (
     BaseModel,
-    ValidationError,
 )
-from serapeum.core.base.llms.models import ChatResponse
 from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.llm.base import LLM
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.configs.configs import Configs
 from serapeum.core.structured_tools.models import BasePydanticProgram, Model
 from serapeum.core.tools.callable_tool import CallableTool
-from serapeum.core.structured_tools.utils import (
-    process_streaming_objects,
-    num_valid_fields,
-)
+from serapeum.core.structured_tools.utils import process_streaming_objects
+
 
 _logger = logging.getLogger(__name__)
 
@@ -227,9 +223,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
     @staticmethod
     def validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
         if not isinstance(prompt, (BasePromptTemplate, str)):
-            raise ValueError(
-                "prompt must be an instance of BasePromptTemplate or str."
-            )
+            raise ValueError("prompt must be an instance of BasePromptTemplate or str.")
         if isinstance(prompt, str):
             prompt = PromptTemplate(prompt)
         return prompt

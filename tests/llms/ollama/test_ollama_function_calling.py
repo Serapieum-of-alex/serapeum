@@ -23,23 +23,13 @@ from serapeum.core.structured_tools.tools_llm import (
 from serapeum.core.tools import ToolOutput
 from serapeum.llms.ollama import Ollama
 
+from tests.llms.ollama.models import Album
+
+
 LLM = Ollama(
     model="llama3.1",
     request_timeout=180,
 )
-
-class Song(BaseModel):
-    """A song data model used in tests."""
-
-    title: str
-
-
-class Album(BaseModel):
-    """Album model used as the program output."""
-
-    name: str
-    artist: str
-    songs: List[Song]
 
 
 def make_agent_response_from_models(models: Sequence[BaseModel]) -> AgentChatResponse:

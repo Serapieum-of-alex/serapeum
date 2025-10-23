@@ -48,7 +48,7 @@ class AgentChatResponse:
     - Simulate token streaming for simple UIs
         ```python
         >>> r = AgentChatResponse(response="hello world", is_dummy_stream=True)
-        >>> list(r.response_gen)  # doctest: +ELLIPSIS
+        >>> list(r.response_gen)
         ['hello ', 'world ']
 
         ```
@@ -119,7 +119,7 @@ class AgentChatResponse:
         """
         if not self.is_dummy_stream:
             raise ValueError(
-                "response_gen is only available for streaming responses. "
+                "response_gen is only available for streaming responses. \n"
                 "Set is_dummy_stream=True if you still want a generator."
             )
 
@@ -259,7 +259,7 @@ class AgentChatResponse:
         else:
             if len(outputs) > 1:
                 logger.warning(
-                    "Multiple outputs found, returning first one. "
+                    "Multiple outputs found, returning first one. \n"
                     "If you want to return all outputs, set allow_parallel_tool_calls=True."
                 )
 

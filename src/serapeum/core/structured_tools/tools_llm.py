@@ -162,7 +162,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         *args: Any,
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> BaseModel:
+    ) -> Union[BaseModel, List[BaseModel]]:
         """Execute the program to generate structured output.
 
         Formats the prompt with provided kwargs, invokes the LLM with the function
@@ -207,7 +207,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
         *args: Any,
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> BaseModel:
+    ) -> Union[BaseModel, List[BaseModel]]:
         """Asynchronously execute the program to generate structured output.
 
         Async version of __call__. Formats the prompt with provided kwargs,

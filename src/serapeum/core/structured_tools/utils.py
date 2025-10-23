@@ -54,7 +54,7 @@ def get_program_for_llm(
                 TextCompletionLLM,
             )
 
-            return TextCompletionLLM.from_defaults(
+            return TextCompletionLLM(
                 output_parser=PydanticOutputParser(output_cls=output_cls),
                 llm=llm,
                 prompt=prompt,
@@ -73,7 +73,7 @@ def get_program_for_llm(
     elif pydantic_program_mode == StructuredLLMMode.LLM:
         from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 
-        return TextCompletionLLM.from_defaults(
+        return TextCompletionLLM(
             output_parser=PydanticOutputParser(output_cls=output_cls),
             llm=llm,
             prompt=prompt,

@@ -461,13 +461,20 @@ class ToolOutput(BaseModel):
     :class:`serapeum.core.base.llms.models.TextChunk`).
 
     Args:
-        chunks (List[ChunkType]): A list of content chunks. If ``content`` is
-            supplied, this value is ignored and replaced by a single ``TextChunk``.
-        tool_name (str): The name of the tool that produced this output.
-        raw_input (Dict[str, Any]): Implementation-specific input payload for
-            debugging or provenance.
-        raw_output (Any): Implementation-specific raw output, if any.
-        is_error (bool): Whether this output represents an error condition.
+        chunks (List[ChunkType]):
+            A list of content chunks. If ``content`` is supplied, this value
+            is ignored and replaced by a single ``TextChunk``.
+        tool_name (str):
+            The name of the tool that produced this output.
+        raw_input (Dict[str, Any]):
+            the schema of the tool's input.
+            ```
+            {"args": (), "kwargs": {"arg1": "val1"}
+            ```
+        raw_output (Any):
+            The pydantic model instance of the tool's output.
+        is_error (bool):
+            Whether this output represents an error condition.
 
     Returns:
         ToolOutput: A validated Pydantic model instance.

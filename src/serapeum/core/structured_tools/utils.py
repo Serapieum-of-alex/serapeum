@@ -12,7 +12,7 @@ from serapeum.core.tools.models import ToolCallArguments
 from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.output_parsers.models import PydanticOutputParser
 from serapeum.core.prompts.base import BasePromptTemplate
-from serapeum.core.structured_tools.models import BasePydanticProgram
+from serapeum.core.structured_tools.models import BasePydanticLLM
 from serapeum.core.models import StructuredLLMMode
 from serapeum.core.base.llms.models import ChatResponse
 
@@ -38,7 +38,7 @@ def get_program_for_llm(
     llm: LLM,
     pydantic_program_mode: StructuredLLMMode = StructuredLLMMode.DEFAULT,
     **kwargs: Any,
-) -> BasePydanticProgram:
+) -> BasePydanticLLM:
     if pydantic_program_mode == StructuredLLMMode.DEFAULT:
         if llm.metadata.is_function_calling_model:
             from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM

@@ -18,7 +18,7 @@ from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.llm.base import LLM
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.configs.configs import Configs
-from serapeum.core.structured_tools.models import BasePydanticProgram, Model
+from serapeum.core.structured_tools.models import BasePydanticLLM, Model
 from serapeum.core.tools.callable_tool import CallableTool
 from serapeum.core.structured_tools.utils import process_streaming_objects
 
@@ -30,6 +30,7 @@ _logger = logging.getLogger(__name__)
 
 class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
     """Function calling program that orchestrates LLM tool usage for structured outputs.
+class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
     This class enables LLMs with function calling capabilities to generate structured
     data by converting Pydantic models into callable tools. It manages the entire

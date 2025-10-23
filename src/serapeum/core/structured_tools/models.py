@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from serapeum.core.models import Model
 
 
-class BasePydanticProgram(ABC, Generic[Model]):
+class BasePydanticLLM(ABC, Generic[Model]):
     """
     A base class for LLM-powered function that return a pydantic model.
     """

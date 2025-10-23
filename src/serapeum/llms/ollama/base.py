@@ -39,6 +39,7 @@ from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ToolCallArguments
 from serapeum.core.models import StructuredLLMMode
 from serapeum.core.structured_tools.utils import process_streaming_objects
+import asyncio
 
 if TYPE_CHECKING:
     from serapeum.core.tools.models import BaseTool
@@ -141,6 +142,9 @@ class Ollama(FunctionCallingLLM):
 
         self._client = client
         self._async_client = async_client
+        # Track the event loop associated with the async client to avoid
+        # reusing a client bound to a closed event loop across tests/runs
+        self._async_client_loop = None
 
     @classmethod
     def class_name(cls) -> str:
@@ -164,13 +168,35 @@ class Ollama(FunctionCallingLLM):
             self._client = Client(host=self.base_url, timeout=self.request_timeout)
         return self._client
 
-    @property
-    def async_client(self) -> AsyncClient:
-        if self._async_client is None:
+    def _ensure_async_client(self) -> AsyncClient:
+        """Return a per-event-loop AsyncClient, recreating when loop changes or closes.
+
+        This avoids 'Event loop is closed' when tests (e.g., with pytest-asyncio)
+        create and close event loops between async invocations.
+        """
+        try:
+            current_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            current_loop = None  # No running loop available in this context
+
+        cached_loop = getattr(self, "_async_client_loop", None)
+        if (
+            self._async_client is None
+            or cached_loop is None
+            or (hasattr(cached_loop, "is_closed") and cached_loop.is_closed())
+            or (current_loop is not None and cached_loop is not current_loop)
+        ):
             self._async_client = AsyncClient(
                 host=self.base_url, timeout=self.request_timeout
             )
+            self._async_client_loop = current_loop  # type: ignore[attr-defined]
+
         return self._async_client
+
+    @property
+    def async_client(self) -> AsyncClient:
+        """Async Ollama client bound to the current asyncio event loop."""
+        return self._ensure_async_client()
 
     @property
     def _model_kwargs(self) -> Dict[str, Any]:

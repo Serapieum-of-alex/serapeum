@@ -175,7 +175,7 @@ class AgentChatResponse:
             yield token + " "
             await asyncio.sleep(0.1)
 
-    def _parse_tool_outputs(
+    def parse_tool_outputs(
         self,
         allow_parallel_tool_calls: bool = False,
     ) -> Union[BaseModel, List[BaseModel]]:
@@ -208,7 +208,7 @@ class AgentChatResponse:
             >>> resp = AgentChatResponse(
             ...     sources=[ToolOutput(tool_name="people", raw_output=Person(name="Alice", age=30))]
             ... )
-            >>> result = resp._parse_tool_outputs()
+            >>> result = resp.parse_tool_outputs()
             >>> (result.name, result.age)
             ('Alice', 30)
 
@@ -229,13 +229,13 @@ class AgentChatResponse:
             ...         ToolOutput(tool_name="people", raw_output=p2),
             ...     ]
             ... )
-            >>> [p.name for p in resp._parse_tool_outputs(allow_parallel_tool_calls=True)]
+            >>> [p.name for p in resp.parse_tool_outputs(allow_parallel_tool_calls=True)]
             ['Bob', 'Carol']
 
             ```
         - Multiple outputs with parallel calls disabled returns the first one (warning is logged)
             ```python
-            >>> first = resp._parse_tool_outputs(allow_parallel_tool_calls=False)
+            >>> first = resp.parse_tool_outputs(allow_parallel_tool_calls=False)
             >>> first.name
             'Bob'
 
@@ -243,7 +243,7 @@ class AgentChatResponse:
         - Empty sources result in ``IndexError`` when parallel calls are disabled
             ```python
             >>> try:
-            ...     AgentChatResponse()._parse_tool_outputs()
+            ...     AgentChatResponse().parse_tool_outputs()
             ... except Exception as e:
             ...     type(e).__name__
             'IndexError'

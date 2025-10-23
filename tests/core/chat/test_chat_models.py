@@ -31,7 +31,7 @@ class TestParseToolOutputs:
             sources=[tool_output],
         )
 
-        result = agent_response._parse_tool_outputs(allow_parallel_tool_calls=False)
+        result = agent_response.parse_tool_outputs(allow_parallel_tool_calls=False)
 
         assert result == MOCK_ALBUM
         assert not isinstance(result, list)
@@ -63,7 +63,7 @@ class TestParseToolOutputs:
         )
 
         with patch("serapeum.core.chat.models.logger") as mock_logger:
-            result = agent_response._parse_tool_outputs(allow_parallel_tool_calls=False)
+            result = agent_response.parse_tool_outputs(allow_parallel_tool_calls=False)
 
         assert result == MOCK_ALBUM
         assert not isinstance(result, list)
@@ -95,7 +95,7 @@ class TestParseToolOutputs:
             sources=tool_outputs,
         )
 
-        result = agent_response._parse_tool_outputs(allow_parallel_tool_calls=True)
+        result = agent_response.parse_tool_outputs(allow_parallel_tool_calls=True)
 
         assert isinstance(result, list)
         assert len(result) == 2
@@ -115,7 +115,7 @@ class TestParseToolOutputs:
         )
 
         with pytest.raises(IndexError):
-            agent_response._parse_tool_outputs(allow_parallel_tool_calls=False)
+            agent_response.parse_tool_outputs(allow_parallel_tool_calls=False)
 
 
 class TestAgentChatResponseStr:

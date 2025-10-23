@@ -198,7 +198,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
             **llm_kwargs,
         )
-        return agent_response._parse_tool_outputs(
+        return agent_response.parse_tool_outputs(
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
         )  # type: ignore
 
@@ -241,7 +241,7 @@ class ToolOrchestratingLLM(BasePydanticProgram[BaseModel]):
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
             **llm_kwargs,
         )
-        return agent_response._parse_tool_outputs(
+        return agent_response.parse_tool_outputs(
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
         )  # type: ignore
 

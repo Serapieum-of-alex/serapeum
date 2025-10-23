@@ -528,9 +528,10 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
                 pass to the LLM (e.g., temperature, max_tokens). Defaults to ``None``.
             **kwargs (Any): Keyword arguments used to format the prompt template.
 
-        Yields:
-            Union[Model, List[Model]]: Progressive updates of the structured output.
-            When ``allow_parallel_tool_calls`` is True, a list of models may be yielded.
+        Returns:
+            AsyncGenerator[Union[Model, List[Model]], None]:
+                An async generator that yields progressive updates of the structured output.
+                Must be awaited before iteration. When ``allow_parallel_tool_calls`` is True, a list of models may be yielded.
 
         Raises:
             ValueError: If ``self._llm`` is not a ``FunctionCallingLLM`` instance.
@@ -539,11 +540,36 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             Logs a warning when parsing streaming responses fails and continues with
             the next chunk.
 
-
         See Also:
             - acall: Non-streaming async version
             - stream_call: Synchronous streaming version
-            - _process_objects: Internal method for processing stream chunks
+
+        Examples:
+        - Consume async streaming results with a real LLM (Ollama). Requires an Ollama server and a pulled model.
+            ```python
+            >>> import asyncio
+            >>> from pydantic import BaseModel
+            >>> from serapeum.llms.ollama.base import Ollama
+            >>> class Number(BaseModel):
+            ...     n: int
+            >>> tools_llm = ToolOrchestratingLLM(
+            ...     output_cls=Number,
+            ...     prompt='Stream the numbers 1, 2, and 3 as separate tool calls.',
+            ...     llm=Ollama(model='llama3.1', request_timeout=80),
+            ... )
+            >>> async def consume():  # doctest: +SKIP
+            >>>     async for obj in await tools_llm.astream_call():  # doctest: +SKIP
+            >>>         print(obj)  # doctest: +SKIP
+            >>> asyncio.run(consume())  # doctest: +SKIP
+            n=1
+            Multiple outputs found, returning first one. If you want to return all outputs, set allow_parallel_tool_calls=True.
+            n=1
+            Multiple outputs found, returning first one. If you want to return all outputs, set allow_parallel_tool_calls=True.
+            Multiple outputs found, returning first one. If you want to return all outputs, set allow_parallel_tool_calls=True.
+            n=1
+            n=1
+
+            ```
         """
         if not isinstance(self._llm, FunctionCallingLLM):
             raise ValueError("stream_call is only supported for LLMs.")

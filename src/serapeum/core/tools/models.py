@@ -523,7 +523,7 @@ class ToolOutput(BaseModel):
     chunks: List[ChunkType]
     tool_name: str
     raw_input: Optional[Dict[str, Any]]
-    raw_output: BaseModel
+    raw_output: Any
     is_error: bool = False
 
     def __init__(

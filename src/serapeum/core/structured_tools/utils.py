@@ -1,5 +1,8 @@
+"""Utilities for structured tools."""
+
+from __future__ import annotations
 import logging
-from typing import Any, List, Type, Sequence, Union, Optional, Dict
+from typing import Any, List, Type, Sequence, Union, Optional, Dict, TYPE_CHECKING
 
 from pydantic import (
     BaseModel,
@@ -7,14 +10,18 @@ from pydantic import (
     ValidationError,
     create_model,
 )
-from serapeum.core.llm.base import LLM
-from serapeum.core.tools.models import ToolCallArguments
-from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.output_parsers.models import PydanticOutputParser
-from serapeum.core.prompts.base import BasePromptTemplate
-from serapeum.core.structured_tools.models import BasePydanticLLM
 from serapeum.core.models import StructuredLLMMode
-from serapeum.core.base.llms.models import ChatResponse
+
+
+if TYPE_CHECKING:
+    from serapeum.core.llm.base import LLM
+    from serapeum.core.llm.function_calling import FunctionCallingLLM
+    from serapeum.core.structured_tools.models import BasePydanticLLM
+    from serapeum.core.prompts.base import BasePromptTemplate
+    from serapeum.core.tools.models import ToolCallArguments
+    from serapeum.core.base.llms.models import ChatResponse
+
 
 _logger = logging.getLogger(__name__)
 
@@ -108,6 +115,180 @@ def _repair_incomplete_json(json_str: str) -> str:
     return json_str
 
 
+class StreamingObjectProcessor:
+    """Processes streaming chat responses into structured Pydantic objects.
+
+    This processor handles incremental parsing of streaming responses, with support
+    for flexible schemas, multiple tool calls, and progressive object accumulation.
+    """
+
+    __slots__ = (
+        "_output_cls",
+        "_parsing_cls",
+        "_flexible_mode",
+        "_allow_parallel",
+        "_llm",
+    )
+
+    def __init__(
+        self,
+        output_cls: Type[BaseModel],
+        flexible_mode: bool = True,
+        allow_parallel_tool_calls: bool = False,
+        llm: Optional[FunctionCallingLLM] = None,
+    ) -> None:
+        """Initialize the streaming object processor.
+
+        Args:
+            output_cls: Target Pydantic model class for output
+            flexible_mode: Use flexible schema allowing partial fields during parsing
+            allow_parallel_tool_calls: Return all objects vs only the first
+            llm: LLM instance for extracting tool calls from responses
+        """
+        self._output_cls = output_cls
+        self._flexible_mode = flexible_mode
+        self._allow_parallel = allow_parallel_tool_calls
+        self._llm = llm
+
+        # Cache parsing class to avoid recreating on each call
+        self._parsing_cls = (
+            create_flexible_model(output_cls) if flexible_mode else output_cls
+        )
+
+    def process(
+        self,
+        chat_response: ChatResponse,
+        cur_objects: Optional[Sequence[BaseModel]] = None,
+    ) -> Union[BaseModel, List[BaseModel]]:
+        """Process a streaming chat response into structured objects.
+
+        Args:
+            chat_response: The chat response to process
+            cur_objects: Previously accumulated objects from earlier chunks
+
+        Returns:
+            Single object or list of objects based on allow_parallel_tool_calls
+        """
+        # Extract and parse arguments
+        args = self._extract_args(chat_response)
+        parsed = self._parse_objects(args, cur_objects)
+
+        # Select and finalize objects
+        selected = self._select_best(parsed, cur_objects)
+        finalized = self._finalize(selected)
+
+        return self._format_output(finalized)
+
+    def _extract_args(self, chat_response: ChatResponse) -> List[Any]:
+        """Extract output arguments from chat response."""
+        tool_calls_data = chat_response.message.additional_kwargs.get("tool_calls")
+
+        if not tool_calls_data:
+            # return the args in the message content
+            return [chat_response.message.content]
+
+        if not self._llm:
+            raise ValueError("LLM is required to extract tool calls from response")
+
+        if not isinstance(tool_calls_data, list):
+            # return an instance of the flexible class
+            return [self._parsing_cls()]
+
+        # get the tool calls from the response
+        tool_calls: list[ToolCallArguments] = self._llm.get_tool_calls_from_response(
+            chat_response, error_on_no_tool_call=False
+        )
+
+        return (
+            [call.tool_kwargs for call in tool_calls]
+            if tool_calls
+            else [self._parsing_cls()]
+        )
+
+    def _parse_objects(
+        self,
+        args: List[Any],
+        fallback: Optional[Sequence[BaseModel]],
+    ) -> List[BaseModel]:
+        """Parse arguments into Pydantic objects with error recovery."""
+        parsed: List[BaseModel] = []
+
+        for arg in args:
+            obj = self._parse_single(arg)
+            if obj is not None:
+                parsed.append(obj)
+
+        if not parsed:
+            return list(fallback) if fallback else [self._parsing_cls()]
+
+        return parsed
+
+    def _parse_single(self, arg: Any) -> Optional[BaseModel]:
+        """Parse a single argument into a Pydantic object."""
+        # Try direct validation
+        try:
+            return self._parsing_cls.model_validate(arg)
+        except (ValidationError, ValueError):
+            pass
+
+        # Try JSON repair for string arguments
+        if isinstance(arg, str):
+            try:
+                repaired = _repair_incomplete_json(arg)
+                return self._parsing_cls.model_validate_json(repaired)
+            except (ValidationError, ValueError) as e:
+                _logger.debug(f"Validation error during streaming: {e}")
+
+        return None
+
+    def _select_best(
+        self,
+        new_objects: List[BaseModel],
+        cur_objects: Optional[Sequence[BaseModel]],
+    ) -> List[BaseModel]:
+        """Select object set with more valid fields."""
+        if cur_objects is None:
+            return new_objects
+
+        return (
+            new_objects
+            if num_valid_fields(new_objects) >= num_valid_fields(cur_objects)
+            else list(cur_objects)
+        )
+
+    def _finalize(self, objects: List[BaseModel]) -> List[BaseModel]:
+        """Convert flexible objects to target schema if applicable."""
+        if not self._flexible_mode:
+            return objects
+
+        finalized: List[BaseModel] = []
+        for obj in objects:
+            try:
+                converted = self._output_cls.model_validate(
+                    obj.model_dump(exclude_unset=True)
+                )
+                finalized.append(converted)
+            except ValidationError:
+                finalized.append(obj)
+
+        return finalized
+
+    def _format_output(
+        self, objects: List[BaseModel]
+    ) -> Union[BaseModel, List[BaseModel]]:
+        """Format output based on parallel tool calls setting."""
+        if self._allow_parallel:
+            return objects
+
+        if len(objects) > 1:
+            _logger.warning(
+                "Multiple outputs found, returning first one. "
+                "Set allow_parallel_tool_calls=True to return all outputs."
+            )
+
+        return objects[0] if objects else objects
+
+
 def process_streaming_objects(
     chat_response: ChatResponse,
     output_cls: Type[BaseModel],
@@ -119,91 +300,23 @@ def process_streaming_objects(
     """Process streaming response into structured objects.
 
     Args:
-        chat_response (ChatResponse): The chat response to process
-        output_cls (Type[BaseModel]): The target output class
-        cur_objects (Optional[List[BaseModel]]): Current accumulated objects
-        allow_parallel_tool_calls (bool): Whether to allow multiple tool calls
-        flexible_mode (bool): Whether to use flexible schema during parsing
+        chat_response: The chat response to process
+        output_cls: The target output class
+        cur_objects: Current accumulated objects
+        allow_parallel_tool_calls: Whether to allow multiple tool calls
+        flexible_mode: Whether to use flexible schema during parsing
+        llm: LLM instance for tool call extraction
 
     Returns:
-        Union[BaseModel, List[BaseModel]]: Processed object(s)
+        Processed object(s)
     """
-    if flexible_mode:
-        # Create flexible version of model that allows partial responses
-        partial_output_cls = create_flexible_model(output_cls)
-    else:
-        partial_output_cls = output_cls  # type: ignore
-
-    # Get tool calls from response, if there are any
-    if not chat_response.message.additional_kwargs.get("tool_calls"):
-        output_cls_args = [chat_response.message.content]
-    else:
-        tool_calls: List[ToolCallArguments] = []
-        if not llm:
-            raise ValueError("LLM is required to get tool calls")
-
-        if isinstance(chat_response.message.additional_kwargs.get("tool_calls"), list):
-            tool_calls = llm.get_tool_calls_from_response(
-                chat_response, error_on_no_tool_call=False
-            )
-
-        if len(tool_calls) == 0:
-            # If no tool calls, return single blank output class
-            return partial_output_cls()
-
-        # Extract arguments from tool calls
-        output_cls_args = [call.tool_kwargs for call in tool_calls]  # type: ignore
-
-    # Try to parse objects, handling potential incomplete JSON
-    objects = []
-    for output_cls_arg in output_cls_args:
-        try:
-            # First try direct validation
-            obj = partial_output_cls.model_validate(output_cls_arg)
-            objects.append(obj)
-        except (ValidationError, ValueError):
-            try:
-                # Try repairing the JSON if it's a string
-                if isinstance(output_cls_arg, str):
-                    repaired_json = _repair_incomplete_json(output_cls_arg)
-                    obj = partial_output_cls.model_validate_json(repaired_json)
-                    objects.append(obj)
-                else:
-                    raise
-            except (ValidationError, ValueError) as e2:
-                _logger.debug(f"Validation error during streaming: {e2}")
-                # If we have previous objects, keep using those
-                if cur_objects:
-                    objects = cur_objects  # type: ignore
-                else:
-                    # Return a blank object if we can't parse anything
-                    return partial_output_cls()
-
-    # Update if we have more valid fields than before
-    if cur_objects is None or num_valid_fields(objects) >= num_valid_fields(
-        cur_objects
-    ):
-        cur_objects = objects  # type: ignore
-
-    # Try to convert flexible objects to target schema
-    new_cur_objects = []
-    cur_objects = cur_objects or []
-    for o in cur_objects:
-        try:
-            new_obj = output_cls.model_validate(o.model_dump(exclude_unset=True))
-        except ValidationError:
-            new_obj = o
-        new_cur_objects.append(new_obj)
-
-    if allow_parallel_tool_calls:
-        return new_cur_objects
-    else:
-        if len(new_cur_objects) > 1:
-            _logger.warning(
-                "Multiple outputs found, returning first one. "
-                "If you want to return all outputs, set allow_parallel_tool_calls=True."
-            )
-        return new_cur_objects[0]
+    processor = StreamingObjectProcessor(
+        output_cls=output_cls,
+        flexible_mode=flexible_mode,
+        allow_parallel_tool_calls=allow_parallel_tool_calls,
+        llm=llm,
+    )
+    return processor.process(chat_response, cur_objects)
 
 
 def num_valid_fields(

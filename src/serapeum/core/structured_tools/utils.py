@@ -245,12 +245,10 @@ class StreamingObjectProcessor:
         cur_objects: Optional[Sequence[BaseModel]],
     ) -> List[BaseModel]:
         """Select object set with more valid fields."""
-        if cur_objects is None:
-            return new_objects
 
         return (
             new_objects
-            if num_valid_fields(new_objects) >= num_valid_fields(cur_objects)
+            if cur_objects is None or num_valid_fields(new_objects) >= num_valid_fields(cur_objects)
             else list(cur_objects)
         )
 

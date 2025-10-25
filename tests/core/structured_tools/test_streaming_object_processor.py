@@ -259,3 +259,56 @@ class TestParseObjects:
         parsed = p._parse_objects([], fallback=None)
         assert len(parsed) == 1 and isinstance(parsed[0], p._parsing_cls)
 
+
+class TestSelectBest:
+
+    def test_select_best_prefers_more_complete_objects(self) -> None:
+        """Selects the object set with greater number of valid fields.
+
+        Inputs:
+            - cur_objects: one Person with only name.
+            - new_objects: one Person with name and age (more fields).
+        Expected:
+            - new_objects is selected.
+        Checks:
+            - Equality by identity with the chosen list.
+        """
+        p = StreamingObjectProcessor(Person)
+        cur = [Person(name="A")]
+        new = [Person(name="A", age=10)]
+        chosen = p._select_best(new_objects=new, cur_objects=cur)
+        assert chosen is new
+
+    def test_select_best_equal_fields_prefers_new(self) -> None:
+        """When equal number of valid fields, prefers new_objects (>= condition).
+
+        Inputs:
+            - cur_objects and new_objects both having one field set.
+        Expected:
+            - Returns new_objects as per implementation (>= uses new on tie).
+        Checks:
+            - Identity equals new_objects.
+        """
+        p = StreamingObjectProcessor(Person)
+        cur = [Person(name="A")]
+        new = [Person(name="B")]
+        chosen = p._select_best(new_objects=new, cur_objects=cur)
+        assert chosen is new
+
+    def test_select_best_when_no_current_returns_new(self) -> None:
+        """If cur_objects is None, returns new_objects.
+
+        Inputs:
+            - cur_objects: None
+            - new_objects: list with one Person
+        Expected:
+            - new_objects returned unchanged.
+        Checks:
+            - Identity equals new_objects.
+        """
+        p = StreamingObjectProcessor(Person)
+        new = [Person(name="A")]
+        chosen = p._select_best(new_objects=new, cur_objects=None)
+        assert chosen is new
+
+

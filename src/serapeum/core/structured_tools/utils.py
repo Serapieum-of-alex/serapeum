@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 import logging
-from typing import Any, List, Type, Sequence, Union, Optional, Dict, TYPE_CHECKING
+from typing import Any, List, Type, Sequence, Union, Optional, Dict, TYPE_CHECKING, TypeVar
 
 from pydantic import (
     BaseModel,
@@ -22,15 +22,17 @@ if TYPE_CHECKING:
     from serapeum.core.tools.models import ToolCallArguments
     from serapeum.core.base.llms.models import ChatResponse
 
+Model = TypeVar("Model", bound=BaseModel)
 
 _logger = logging.getLogger(__name__)
+
 
 
 class FlexibleModel(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     @classmethod
-    def create(cls, model: Type[BaseModel]) -> Type[FlexibleModel]:
+    def create(cls, model: Type[Model]) -> Type[Model]:
         """Create a flexible version of the model that allows any fields."""
         return create_model(
             f"Flexible{model.__name__}",

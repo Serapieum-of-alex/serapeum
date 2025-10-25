@@ -158,3 +158,65 @@ class TestExtractArgs:
         args = p._extract_args(resp)
         assert len(args) == 1
         assert isinstance(args[0], p._parsing_cls)
+
+
+class TestParseSingle:
+    def test_parse_single_with_valid_mapping(self) -> None:
+        """Parses a valid mapping directly into the flexible parsing model.
+
+        Inputs:
+            - Dict with fields matching the Person schema.
+        Expected:
+            - Returns an instance of the flexible parsing class with the data set.
+        Checks:
+            - Instance type and field values are correctly parsed.
+        """
+        p = StreamingObjectProcessor(Person)
+        result = p._parse_single({"name": "John", "age": 30})
+        assert result is not None
+        assert result.model_dump().get("name") == "John"
+        assert result.model_dump().get("age") == 30
+
+    def test_parse_single_repairs_incomplete_json_string(self) -> None:
+        """Repairs and parses an incomplete JSON string argument.
+
+        Inputs:
+            - A string with missing trailing braces: '{"name": "Jane"'.
+        Expected:
+            - The internal repair function adds '}' and parsing succeeds.
+        Checks:
+            - Returned model has the expected field values.
+        """
+        p = StreamingObjectProcessor(Person)
+        arg = '{"name": "Jane"'
+        result = p._parse_single(arg)
+        assert result is not None
+        assert result.model_dump().get("name") == "Jane"
+
+    def test_parse_single_unparseable_string_returns_none(self) -> None:
+        """Unparseable string input returns None after repair attempt fails.
+
+        Inputs:
+            - A non-JSON string like 'not json'.
+        Expected:
+            - Repair does not help and model_validate_json raises internally.
+        Checks:
+            - Method returns None.
+        """
+        p = StreamingObjectProcessor(Person)
+        result = p._parse_single("not json")
+        assert result is None
+
+    def test_parse_single_none_returns_none(self) -> None:
+        """None input is not a valid mapping or JSON; returns None.
+
+        Inputs:
+            - None.
+        Expected:
+            - model_validate on None fails, string parsing path is skipped.
+        Checks:
+            - Method returns None.
+        """
+        p = StreamingObjectProcessor(Person)
+        result = p._parse_single(None)  # type: ignore[arg-type]
+        assert result is None

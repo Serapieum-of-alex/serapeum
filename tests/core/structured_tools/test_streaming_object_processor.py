@@ -220,3 +220,42 @@ class TestParseSingle:
         p = StreamingObjectProcessor(Person)
         result = p._parse_single(None)  # type: ignore[arg-type]
         assert result is None
+
+
+class TestParseObjects:
+
+    def test_parse_objects_filters_invalid_and_uses_fallback(self) -> None:
+        """Parses only valid args; when none valid, use fallback if provided.
+
+        Inputs:
+            - args with one valid dict, one invalid string, and one None.
+            - fallback list with a Person("Prev", 40).
+        Expected:
+            - Only the valid dict is parsed when present.
+            - When args are all invalid, returns the fallback list.
+        Checks:
+            - Correct list length and content for both cases.
+        """
+        p = StreamingObjectProcessor(Person)
+        args = [{"name": "Ok", "age": 1}, "not json", None]
+        parsed = p._parse_objects(args, fallback=None)
+        assert len(parsed) == 1 and parsed[0].model_dump().get("name") == "Ok"
+
+        parsed2 = p._parse_objects(["bad", None], fallback=[Person(name="Prev", age=40)])
+        assert len(parsed2) == 1 and isinstance(parsed2[0], Person)
+        assert parsed2[0].name == "Prev" and parsed2[0].age == 40
+
+    def test_parse_objects_empty_and_no_fallback_returns_empty_instance(self) -> None:
+        """When nothing parses and no fallback, returns a single default instance.
+
+        Inputs:
+            - args empty list, fallback None.
+        Expected:
+            - Returns a list with one element: the flexible parsing class default.
+        Checks:
+            - Length is 1 and type is flexible model.
+        """
+        p = StreamingObjectProcessor(Person)
+        parsed = p._parse_objects([], fallback=None)
+        assert len(parsed) == 1 and isinstance(parsed[0], p._parsing_cls)
+

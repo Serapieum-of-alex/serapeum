@@ -224,21 +224,20 @@ class StreamingObjectProcessor:
 
     def _parse_single(self, args: Any) -> Optional[BaseModel]:
         """Parse a single set of arguments into a Pydantic object."""
+        result = None
         # Try direct validation
         try:
-            return self._parsing_cls.model_validate(args)
+            result = self._parsing_cls.model_validate(args)
         except (ValidationError, ValueError):
-            pass
+            # Try JSON repair for string arguments
+            if isinstance(args, str):
+                try:
+                    repaired = _repair_incomplete_json(args)
+                    result = self._parsing_cls.model_validate_json(repaired)
+                except (ValidationError, ValueError) as e:
+                    _logger.debug(f"Validation error during streaming: {e}")
 
-        # Try JSON repair for string arguments
-        if isinstance(args, str):
-            try:
-                repaired = _repair_incomplete_json(args)
-                return self._parsing_cls.model_validate_json(repaired)
-            except (ValidationError, ValueError) as e:
-                _logger.debug(f"Validation error during streaming: {e}")
-
-        return None
+        return result
 
     def _select_best(
         self,

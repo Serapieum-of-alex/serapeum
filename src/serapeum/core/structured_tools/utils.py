@@ -277,15 +277,15 @@ class StreamingObjectProcessor:
     ) -> Union[BaseModel, List[BaseModel]]:
         """Format output based on parallel tool calls setting."""
         if self._allow_parallel:
-            return objects
-
-        if len(objects) > 1:
-            _logger.warning(
-                "Multiple outputs found, returning first one. "
-                "Set allow_parallel_tool_calls=True to return all outputs."
-            )
-
-        return objects[0] if objects else objects
+            result = objects
+        else:
+            if len(objects) > 1:
+                _logger.warning(
+                    "Multiple outputs found, returning first one. "
+                    "Set allow_parallel_tool_calls=True to return all outputs."
+                )
+            result = objects[0] if objects else objects
+        return result
 
 
 def process_streaming_objects(

@@ -363,3 +363,52 @@ class TestFinalize:
         assert finalized is objs
 
 
+class TestFormatOutput:
+    def test_format_output_allow_parallel_true_returns_list(self) -> None:
+        """When allow_parallel is True, returns the objects list as-is.
+
+        Inputs:
+            - Processor with allow_parallel_tool_calls=True and list of two Persons.
+        Expected:
+            - The same list object is returned.
+        Checks:
+            - Identity equality.
+        """
+        p = StreamingObjectProcessor(Person, allow_parallel_tool_calls=True)
+        objs = [Person(name="A"), Person(name="B")]
+        out = p._format_output(objs)
+        assert out is objs
+
+    def test_format_output_allow_parallel_false_returns_first_and_warns(self, caplog: Any) -> None:
+        """When allow_parallel is False, returns the first object and logs a warning.
+
+        Inputs:
+            - Processor with default allow_parallel=False and list of two Persons.
+        Expected:
+            - Returns only the first Person, and a warning is recorded in logs.
+        Checks:
+            - Returned instance equals first; caplog captured a warning message.
+        """
+        p = StreamingObjectProcessor(Person)
+        objs = [Person(name="A"), Person(name="B")]
+        with caplog.at_level("WARNING"):
+            out = p._format_output(objs)
+        assert isinstance(out, Person) and out.name == "A"
+        # Ensure a warning about multiple outputs was logged
+        assert any("Multiple outputs found" in rec.message for rec in caplog.records)
+
+    def test_format_output_empty_list_returns_empty_list(self) -> None:
+        """If objects list is empty and not allowing parallel, returns empty list.
+
+        Inputs:
+            - Empty objects list.
+        Expected:
+            - Returns the same empty list (falsy), not raising errors.
+        Checks:
+            - Equality to the input empty list.
+        """
+        p = StreamingObjectProcessor(Person)
+        out = p._format_output([])
+        assert out == []
+
+

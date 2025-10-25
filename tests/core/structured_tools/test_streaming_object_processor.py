@@ -412,3 +412,92 @@ class TestFormatOutput:
         assert out == []
 
 
+class TestProcess:
+    def test_process_with_valid_string_content(self) -> None:
+        """End-to-end: valid JSON string content parsed to strict Person.
+
+        Inputs:
+            - ChatResponse.message.content = '{"name": "John", "age": 30}'.
+        Expected:
+            - Returns a Person instance with name and age set.
+        Checks:
+            - Type and field values.
+        """
+        resp = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content='{"name": "John", "age": 30}'))
+        p = StreamingObjectProcessor(Person)
+        out = p.process(resp)
+        assert isinstance(out, Person)
+        assert out.name == "John" and out.age == 30
+
+    def test_process_incomplete_json_uses_previous_state(self) -> None:
+        """End-to-end: incomplete JSON falls back to cur_objects when better.
+
+        Inputs:
+            - ChatResponse with incomplete content '{"name": "Jo"'.
+            - cur_objects with a more complete Person(name, age).
+        Expected:
+            - The selection logic prefers cur_objects when it has >= valid fields.
+            - Returns strict Person with previous values after finalize.
+        Checks:
+            - Returned instance equals the previous object's values.
+        """
+        resp = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content='{"name": "Jo"'))
+        prev = Person(name="John", age=25)
+        p = StreamingObjectProcessor(Person)
+        out = p.process(resp, cur_objects=[prev])
+        assert isinstance(out, Person)
+        assert out.name == "John" and out.age == 25
+
+    def test_process_tool_calls_multiple_and_allow_parallel(self) -> None:
+        """End-to-end: processes multiple tool calls when allow_parallel is True.
+
+        Inputs:
+            - ChatResponse.additional_kwargs.tool_calls is a list with two items.
+            - Mock LLM returns two tool calls.
+            - Processor configured with allow_parallel_tool_calls=True.
+        Expected:
+            - Returns a list of two Person objects corresponding to the calls.
+        Checks:
+            - List length, type of items, and field values for each.
+        """
+        resp = ChatResponse(
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                content="",
+                additional_kwargs={"tool_calls": [{}, {}]},
+            )
+        )
+        llm = MockLLMReturns(calls=[{"name": "A", "age": 1}, {"name": "B", "age": 2}])
+        p = StreamingObjectProcessor(Person, allow_parallel_tool_calls=True, llm=llm)
+        out = p.process(resp)
+        assert isinstance(out, list) and len(out) == 2
+        assert isinstance(out[0], Person) and isinstance(out[1], Person)
+        assert out[0].name == "A" and out[0].age == 1
+        assert out[1].name == "B" and out[1].age == 2
+
+    def test_process_tool_calls_present_but_llm_returns_none(self) -> None:
+        """End-to-end: tool_calls present but LLM returns empty leads to default.
+
+        Inputs:
+            - ChatResponse with tool_calls list.
+            - Mock LLM returns empty list.
+        Expected:
+            - Processor uses a single default flexible object, then finalize to strict
+              if possible; since strict requires name, result remains flexible at
+              finalize stage unless fields exist. Finally, formatting returns first.
+        Checks:
+            - Result is a flexible model instance (not Person) due to missing required fields.
+        """
+        resp = ChatResponse(
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                content="",
+                additional_kwargs={"tool_calls": [{}]},
+            )
+        )
+        p = StreamingObjectProcessor(Person, llm=MockLLMReturns(calls=[]))
+        out = p.process(resp)
+        # In this flow, _extract_args returns [flexible_default], which after finalize
+        # cannot convert to Person (missing required name) and formatting returns first
+        # because allow_parallel is False
+        assert isinstance(out, p._parsing_cls)

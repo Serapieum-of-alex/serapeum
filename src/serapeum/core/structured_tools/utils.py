@@ -213,15 +213,14 @@ class StreamingObjectProcessor:
         """Parse arguments into Pydantic objects with error recovery."""
         parsed: List[BaseModel] = []
 
-        for arg in args:
-            obj = self._parse_single(arg)
+        for args_set in args:
+            obj = self._parse_single(args_set)
             if obj is not None:
                 parsed.append(obj)
 
-        if not parsed:
-            return list(fallback) if fallback else [self._parsing_cls()]
+        result = parsed if parsed else list(fallback) if fallback else [self._parsing_cls()]
 
-        return parsed
+        return result
 
     def _parse_single(self, args: Any) -> Optional[BaseModel]:
         """Parse a single set of arguments into a Pydantic object."""

@@ -29,14 +29,14 @@ _logger = logging.getLogger(__name__)
 class FlexibleModel(BaseModel):
     model_config = ConfigDict(extra="allow")
 
-
-def create_flexible_model(model: Type[BaseModel]) -> Type[FlexibleModel]:
-    """Create a flexible version of the model that allows any fields."""
-    return create_model(
-        f"Flexible{model.__name__}",
-        __base__=FlexibleModel,
-        **{field: (Optional[Any], None) for field in model.model_fields},
-    )  # type: ignore
+    @classmethod
+    def create(cls, model: Type[BaseModel]) -> Type[FlexibleModel]:
+        """Create a flexible version of the model that allows any fields."""
+        return create_model(
+            f"Flexible{model.__name__}",
+            __base__=cls,
+            **{field: (Optional[Any], None) for field in model.model_fields},
+        )  # type: ignore
 
 
 def get_program_for_llm(
@@ -152,7 +152,7 @@ class StreamingObjectProcessor:
 
         # Cache parsing class to avoid recreating on each call
         self._parsing_cls = (
-            create_flexible_model(output_cls) if flexible_mode else output_cls
+            FlexibleModel.create(output_cls) if flexible_mode else output_cls
         )
 
     def process(

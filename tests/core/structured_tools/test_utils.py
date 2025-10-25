@@ -7,7 +7,7 @@ from serapeum.core.structured_tools.utils import (
     _repair_incomplete_json,
     process_streaming_objects,
     num_valid_fields,
-    create_flexible_model,
+    FlexibleModel
 )
 
 
@@ -137,7 +137,7 @@ def test_num_valid_fields() -> None:
 
 def test_create_flexible_model() -> None:
     """Test creating flexible model."""
-    FlexiblePerson = create_flexible_model(Person)
+    FlexiblePerson = FlexibleModel.create(Person)
 
     # Should accept partial data
     flexible_person = FlexiblePerson(name="John")

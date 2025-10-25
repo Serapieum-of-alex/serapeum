@@ -257,19 +257,20 @@ class StreamingObjectProcessor:
     def _finalize(self, objects: List[BaseModel]) -> List[BaseModel]:
         """Convert flexible objects to target schema if applicable."""
         if not self._flexible_mode:
-            return objects
+            result = objects
+        else:
+            finalized: List[BaseModel] = []
+            for obj in objects:
+                try:
+                    converted = self._output_cls.model_validate(
+                        obj.model_dump(exclude_unset=True)
+                    )
+                    finalized.append(converted)
+                except ValidationError:
+                    finalized.append(obj)
+            result = finalized
 
-        finalized: List[BaseModel] = []
-        for obj in objects:
-            try:
-                converted = self._output_cls.model_validate(
-                    obj.model_dump(exclude_unset=True)
-                )
-                finalized.append(converted)
-            except ValidationError:
-                finalized.append(obj)
-
-        return finalized
+        return result
 
     def _format_output(
         self, objects: List[BaseModel]

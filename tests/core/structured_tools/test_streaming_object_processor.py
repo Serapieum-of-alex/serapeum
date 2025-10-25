@@ -312,3 +312,54 @@ class TestSelectBest:
         assert chosen is new
 
 
+class TestFinalize:
+
+    def test_finalize_converts_flexible_to_strict_when_valid(self) -> None:
+        """In flexible mode, converts flexible objects to the strict output schema.
+
+        Inputs:
+            - A flexible instance with valid fields for Person.
+        Expected:
+            - Conversion to Person succeeds and returned list contains Person.
+        Checks:
+            - Instance type is Person and values preserved.
+        """
+        p = StreamingObjectProcessor(Person, flexible_mode=True)
+        FlexiblePerson = FlexibleModel.create(Person)
+        flex = FlexiblePerson(name="John", age=44)
+        finalized = p._finalize([flex])
+        assert isinstance(finalized[0], Person)
+        assert finalized[0].name == "John" and finalized[0].age == 44
+
+    def test_finalize_keeps_flexible_when_conversion_fails(self) -> None:
+        """If conversion to strict schema fails, keeps the flexible instance.
+
+        Inputs:
+            - A flexible instance missing required 'name'.
+        Expected:
+            - ValidationError inside _finalize causes original flexible to be kept.
+        Checks:
+            - Returned instance is still the flexible model type.
+        """
+        p = StreamingObjectProcessor(Person, flexible_mode=True)
+        FlexiblePerson = FlexibleModel.create(Person)
+        flex = FlexiblePerson(age=12)  # missing required name for strict Person
+        finalized = p._finalize([flex])
+        assert isinstance(finalized[0], FlexiblePerson)
+
+    def test_finalize_noop_when_not_flexible_mode(self) -> None:
+        """When flexible_mode is False, _finalize returns objects unchanged.
+
+        Inputs:
+            - Processor configured with flexible_mode=False and a Person list.
+        Expected:
+            - Returned list is identical to input (by identity).
+        Checks:
+            - Identity equality.
+        """
+        p = StreamingObjectProcessor(Person, flexible_mode=False)
+        objs = [Person(name="X")]
+        finalized = p._finalize(objs)
+        assert finalized is objs
+
+

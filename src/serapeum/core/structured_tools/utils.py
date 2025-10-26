@@ -288,36 +288,6 @@ class StreamingObjectProcessor:
         return result
 
 
-def process_streaming_objects(
-    chat_response: ChatResponse,
-    output_cls: Type[BaseModel],
-    cur_objects: Optional[Sequence[BaseModel]] = None,
-    allow_parallel_tool_calls: bool = False,
-    flexible_mode: bool = True,
-    llm: Optional[FunctionCallingLLM] = None,
-) -> Union[BaseModel, List[BaseModel]]:
-    """Process streaming response into structured objects.
-
-    Args:
-        chat_response: The chat response to process
-        output_cls: The target output class
-        cur_objects: Current accumulated objects
-        allow_parallel_tool_calls: Whether to allow multiple tool calls
-        flexible_mode: Whether to use flexible schema during parsing
-        llm: LLM instance for tool call extraction
-
-    Returns:
-        Processed object(s)
-    """
-    processor = StreamingObjectProcessor(
-        output_cls=output_cls,
-        flexible_mode=flexible_mode,
-        allow_parallel_tool_calls=allow_parallel_tool_calls,
-        llm=llm,
-    )
-    return processor.process(chat_response, cur_objects)
-
-
 def num_valid_fields(
     obj: Union[BaseModel, Sequence[BaseModel], Dict[str, BaseModel]]
 ) -> int:

@@ -501,3 +501,83 @@ class TestProcess:
         # cannot convert to Person (missing required name) and formatting returns first
         # because allow_parallel is False
         assert isinstance(out, p._parsing_cls)
+
+
+def test_process_streaming_objects() -> None:
+    """Test processing streaming objects."""
+    # Test processing complete object
+    response = ChatResponse(
+        message=Message(
+            role=MessageRole.ASSISTANT,
+            content='{"name": "John", "age": 30}',
+        )
+    )
+
+    processor = StreamingObjectProcessor(output_cls=Person)
+    result = processor.process(response)
+
+    assert isinstance(result, Person)
+    assert result.name == "John"
+    assert result.age == 30
+
+    # Test processing incomplete object
+    incomplete_response = ChatResponse(
+        message=Message(
+            role=MessageRole.ASSISTANT,
+            content='{"name": "John", "age":',
+        )
+    )
+
+    # Should return empty object when can't parse
+    processor = StreamingObjectProcessor(output_cls=Person)
+    result = processor.process(incomplete_response)
+
+    assert result.name is None  # Default value
+
+    # Test with previous state
+    prev_obj = Person(name="John", age=25)
+    processor = StreamingObjectProcessor(output_cls=Person)
+    result = processor.process(incomplete_response, [prev_obj])
+
+    assert isinstance(result, Person)
+    assert result.name == "John"
+    assert result.age == 25  # Keeps previous state
+
+    # Test with tool calls
+    tool_call_response = ChatResponse(
+        message=Message(
+            role=MessageRole.ASSISTANT,
+            content="",
+            additional_kwargs={
+                "tool_calls": [
+                    {
+                        "function": {
+                            "name": "create_person",
+                            "arguments": '{"name": "Jane", "age": 28}',
+                        }
+                    }
+                ]
+            },
+        )
+    )
+
+    # Mock LLM for tool calls
+    class MockLLM:
+        def get_tool_calls_from_response(self, *args, **kwargs):
+            return [
+                type(
+                    "ToolCallArguments",
+                    (),
+                    {"tool_kwargs": {"name": "Jane", "age": 28}},
+                )
+            ]
+
+    processor = StreamingObjectProcessor(
+        output_cls=Person,
+        llm=MockLLM(), # type: ignore
+    )
+    result = processor.process(tool_call_response)
+
+    assert isinstance(result, Person)
+    assert result.name == "Jane"
+    assert result.age == 28

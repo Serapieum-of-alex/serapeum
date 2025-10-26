@@ -20,7 +20,7 @@ from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.configs.configs import Configs
 from serapeum.core.structured_tools.models import BasePydanticLLM, Model
 from serapeum.core.tools.callable_tool import CallableTool
-from serapeum.core.structured_tools.utils import process_streaming_objects
+from serapeum.core.structured_tools.utils import StreamingObjectProcessor
 
 if TYPE_CHECKING:
     from serapeum.core.chat.models import AgentChatResponse
@@ -500,14 +500,14 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         cur_objects = None
         for partial_resp in chat_response_gen:
             try:
-                objects = process_streaming_objects(
-                    partial_resp,
-                    self._output_cls,
-                    cur_objects=cur_objects,
-                    allow_parallel_tool_calls=self._allow_parallel_tool_calls,
+                processor = StreamingObjectProcessor(
+                    output_cls=self._output_cls,
                     flexible_mode=True,
+                    allow_parallel_tool_calls=self._allow_parallel_tool_calls,
                     llm=self._llm,
                 )
+                objects = processor.process(partial_resp, cur_objects)
+
                 cur_objects = objects if isinstance(objects, list) else [objects]
                 yield objects  # type: ignore
             except Exception as e:
@@ -591,14 +591,14 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             cur_objects = None
             async for partial_resp in chat_response_gen:
                 try:
-                    objects = process_streaming_objects(
-                        partial_resp,
-                        self._output_cls,
-                        cur_objects=cur_objects,
-                        allow_parallel_tool_calls=self._allow_parallel_tool_calls,
+                    processor = StreamingObjectProcessor(
+                        output_cls=self._output_cls,
                         flexible_mode=True,
+                        allow_parallel_tool_calls=self._allow_parallel_tool_calls,
                         llm=self._llm,
                     )
+                    objects = processor.process(partial_resp, cur_objects)
+
                     cur_objects = objects if isinstance(objects, list) else [objects]
                     yield objects  # type: ignore
                 except Exception as e:

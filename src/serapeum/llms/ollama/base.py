@@ -38,7 +38,7 @@ from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ToolCallArguments
 from serapeum.core.models import StructuredLLMMode
-from serapeum.core.structured_tools.utils import process_streaming_objects
+from serapeum.core.structured_tools.utils import StreamingObjectProcessor
 import asyncio
 
 if TYPE_CHECKING:
@@ -562,13 +562,13 @@ class Ollama(FunctionCallingLLM):
                 cur_objects = None
                 for response in response_gen:
                     try:
-                        objects = process_streaming_objects(
-                            response,
-                            output_cls,
-                            cur_objects=cur_objects,
-                            allow_parallel_tool_calls=False,
+                        processor = StreamingObjectProcessor(
+                            output_cls=output_cls,
                             flexible_mode=True,
+                            allow_parallel_tool_calls=False,
                         )
+                        objects = processor.process(response, cur_objects)
+
                         cur_objects = (
                             objects if isinstance(objects, list) else [objects]
                         )

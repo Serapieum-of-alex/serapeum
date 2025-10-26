@@ -376,9 +376,10 @@ class TestToolOrchestratingLLMStreamCall:
         obj1 = Album(title="t1", artist="a1", songs=[Song(title="s1")])
         obj2 = Album(title="t2", artist="a2", songs=[Song(title="s2")])
         with patch(
-            "serapeum.core.structured_tools.tools_llm.process_streaming_objects",
+            "serapeum.core.structured_tools.tools_llm.StreamingObjectProcessor.process",
             side_effect=[obj1, obj2],
         ) as mock_proc:
+
             out = list(tools_llm.stream_call(topic="x"))
             assert out == [obj1, obj2]
             assert mock_proc.call_count == 2
@@ -394,7 +395,7 @@ class TestToolOrchestratingLLMStreamCall:
         tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
         with patch("serapeum.core.structured_tools.tools_llm._logger") as mock_logger:
             with patch(
-                "serapeum.core.structured_tools.tools_llm.process_streaming_objects",
+                "serapeum.core.structured_tools.tools_llm.StreamingObjectProcessor.process",
                 side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
             ):
                 out = list(tools_llm.stream_call(topic="x"))
@@ -441,7 +442,7 @@ class TestToolOrchestratingLLMAStreamCall:
         obj1 = Album(title="t1", artist="a1", songs=[Song(title="s1")])
         obj2 = Album(title="t2", artist="a2", songs=[Song(title="s2")])
         with patch(
-            "serapeum.core.structured_tools.tools_llm.process_streaming_objects",
+            "serapeum.core.structured_tools.tools_llm.StreamingObjectProcessor.process",
             side_effect=[obj1, obj2],
         ) as mock_proc:
             agen = await tools_llm.astream_call(topic="x")
@@ -462,7 +463,7 @@ class TestToolOrchestratingLLMAStreamCall:
         tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
         with patch("serapeum.core.structured_tools.tools_llm._logger") as mock_logger:
             with patch(
-                    "serapeum.core.structured_tools.tools_llm.process_streaming_objects",
+                    "serapeum.core.structured_tools.tools_llm.StreamingObjectProcessor.process",
                     side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
             ):
                 agen = await tools_llm.astream_call(topic="x")

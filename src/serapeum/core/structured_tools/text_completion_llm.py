@@ -201,6 +201,56 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
 
     @staticmethod
     def validate_llm(llm: LLM) -> LLM:
+        """Resolve the LLM backing structured completions.
+
+        Args:
+            llm (Optional[LLM]): Explicit language model to use. When omitted, falls back to the
+                global `Configs.llm`.
+
+        Returns:
+            LLM: Concrete language model instance that will execute prompts.
+
+        Raises:
+            AssertionError: If no LLM is supplied and the global configs do not define one.
+
+        Examples:
+            - Return the provided instance without consulting global configs
+                ```python
+                >>> from types import SimpleNamespace
+                >>> from serapeum.core.configs.configs import Configs
+                >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+                >>> Configs.llm = None
+                >>> supplied = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
+                >>> TextCompletionLLM.validate_llm(supplied) is supplied
+                True
+
+                ```
+            - Pull the default instance from `Configs`
+                ```python
+                >>> from types import SimpleNamespace
+                >>> from serapeum.core.configs.configs import Configs
+                >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+                >>> fallback = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
+                >>> Configs.llm = fallback
+                >>> TextCompletionLLM.validate_llm(None) is fallback
+                True
+
+                ```
+            - Raise when no model is available
+                ```python
+                >>> from serapeum.core.configs.configs import Configs
+                >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+                >>> Configs.llm = None
+                >>> TextCompletionLLM.validate_llm(None)
+                Traceback (most recent call last):
+                ...
+                AssertionError: llm must be provided or set in Configs.
+
+                ```
+
+        See Also:
+            serapeum.core.configs.configs.Configs: Houses the global LLM configuration.
+        """
         llm = llm or Configs.llm  # type: ignore
         if llm is None:
             raise AssertionError("llm must be provided or set in Configs.")

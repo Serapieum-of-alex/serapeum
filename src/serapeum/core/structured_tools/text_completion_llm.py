@@ -260,6 +260,78 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
     def validate_output_parser_cls(
         output_parser: BaseOutputParser, output_cls: Type[BaseModel]
     ) -> Tuple[BaseOutputParser, Type[BaseModel]]:
+        """Validate and normalize parser/schema configuration.
+
+        Args:
+            output_parser (Optional[BaseOutputParser]):
+                Parser responsible for producing structured responses.
+            output_cls (Optional[Type[BaseModel]]):
+                Target Pydantic model that defines the schema.
+
+        Returns:
+            Tuple[BaseOutputParser, Type[BaseModel]]:
+                A parser/schema pair ready for execution.
+
+        Raises:
+            ValueError: If neither an `output_cls` nor a compatible `PydanticOutputParser` is
+                supplied.
+
+        Examples:
+            - Derive the output class from a supplied parser
+                ```python
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+                >>> class Record(BaseModel):
+                ...     value: int
+                >>> parser = PydanticOutputParser(output_cls=Record)
+                >>> resolved_parser, resolved_cls = TextCompletionLLM.validate_output_parser_cls(
+                ...     parser,
+                ...     None,  # type: ignore[arg-type]
+                ... )
+                >>> resolved_parser is parser
+                True
+                >>> resolved_cls is Record
+                True
+
+                ```
+            - Auto-create a parser when only the schema is provided
+                ```python
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+                >>> class Item(BaseModel):
+                ...     name: str
+                >>> parser, schema = TextCompletionLLM.validate_output_parser_cls(
+                ...     None,  # type: ignore[arg-type]
+                ...     Item,
+                ... )
+                >>> isinstance(parser, PydanticOutputParser)
+                True
+                >>> schema is Item
+                True
+
+                ```
+            - Reject unsupported parser types without a schema
+                ```python
+                >>> from serapeum.core.output_parsers import BaseOutputParser
+                >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+                >>> class PlainParser(BaseOutputParser):
+                ...     def parse(self, output: str):
+                ...         return output
+                >>> TextCompletionLLM.validate_output_parser_cls(
+                ...     PlainParser(),
+                ...     None,  # type: ignore[arg-type]
+                ... )
+                Traceback (most recent call last):
+                ...
+                ValueError: Output parser must be PydanticOutputParser.
+
+                ```
+
+        See Also:
+            serapeum.core.output_parsers.models.PydanticOutputParser: Default parser implementation.
+        """
         # decide default output class if not set
         if output_cls is None:
             if not isinstance(output_parser, PydanticOutputParser):

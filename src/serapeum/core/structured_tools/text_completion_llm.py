@@ -345,6 +345,35 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
 
     @property
     def output_cls(self) -> Type[BaseModel]:
+        """Return the Pydantic model produced by this program.
+
+        Returns:
+            Type[BaseModel]: Schema guaranteed for every parsed completion.
+
+        Examples:
+            - Inspect the configured schema
+                ```python
+                >>> from types import SimpleNamespace
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+                >>> from serapeum.llms.ollama import Ollama
+                >>> LLM = Ollama(
+                ...     model="llama3.1",
+                ...     request_timeout=180,
+                >>> )
+                >>> class Item(BaseModel):
+                ...     value: int
+                >>> parser = PydanticOutputParser(output_cls=Item)
+                >>> text_llm = TextCompletionLLM(output_parser=parser, prompt="?", llm=LLM)
+                >>> text_llm.output_cls is Item
+                True
+
+                ```
+
+        See Also:
+            TextCompletionLLM.__init__: Details rules used to derive `output_cls`.
+        """
         return self._output_cls
 
     @property

@@ -556,6 +556,72 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         *args: Any,
         **kwargs: Any,
     ) -> BaseModel:
+        """Asynchronously execute the prompt and parse the structured response.
+
+        Args:
+            llm_kwargs (Optional[Dict[str, Any]]): Keyword arguments forwarded to the underlying
+                async LLM invocation.
+            *args (Any): Positional arguments accepted for interface parity.
+            **kwargs (Any): Prompt variables used during template rendering.
+
+        Returns:
+            BaseModel: Parsed Pydantic object yielded by the output parser.
+
+        Raises:
+            ValueError: If the parsed object is not an instance of the declared `output_cls`.
+
+        Examples:
+            - Await a completion and parse the result
+                ```python
+                >>> import asyncio
+                >>> from types import SimpleNamespace
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.llms.ollama import Ollama
+                >>> LLM = Ollama(
+                ...     model="llama3.1",
+                ...     request_timeout=180,
+                >>> )
+                >>> class Record(BaseModel):
+                ...     value: int
+                >>> text_llm = TextCompletionLLM(
+                ...     output_parser=PydanticOutputParser(output_cls=Record),
+                ...     prompt="Return a number.",
+                ...     llm=LLM,
+                ... )
+                >>> asyncio.run(text_llm.acall()) # doctest: +SKIP
+                Record(value=5)
+
+                ```
+            - Detect parser mismatches in async flows
+                ```python
+                >>> import asyncio
+                >>> from types import SimpleNamespace
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.output_parsers import BaseOutputParser
+                >>> class Record(BaseModel):
+                ...     value: int
+                >>> class EchoParser(BaseOutputParser):
+                ...     def parse(self, output: str):
+                ...         return output
+                >>>
+                >>> text_llm = TextCompletionLLM(
+                ...     output_parser=EchoParser(),
+                ...     output_cls=Record,
+                ...     prompt="Return data.",
+                ...     llm=LLM,
+                ... )
+                >>> asyncio.run(tool.acall())  # doctest: +ELLIPSIS
+                Traceback (most recent call last):
+                ...
+                ValueError: Output parser returned <class 'str'> but expected <class '...Record'>
+
+                ```
+
+        See Also:
+            TextCompletionLLM.__call__: Synchronous counterpart.
+            TextCompletionLLM.validate_output_parser_cls: Validates parser compatibility.
+        """
         llm_kwargs = llm_kwargs or {}
         if self._llm.metadata.is_chat_model:
             messages = self._prompt.format_messages(llm=self._llm, **kwargs)

@@ -378,10 +378,86 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
 
     @property
     def prompt(self) -> BasePromptTemplate:
+        """Expose the prompt template bound to this program.
+
+        Returns:
+            BasePromptTemplate: Prompt used to render requests for the LLM.
+
+        Raises:
+            AttributeError:
+                Propagated if the stored prompt was overwritten with an incompatible object.
+
+        Examples:
+            - Inspect the configured prompt template
+                ```python
+                >>> from types import SimpleNamespace
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+                >>> from serapeum.llms.ollama import Ollama
+                >>> LLM = Ollama(
+                ...     model="llama3.1",
+                ...     request_timeout=180,
+                >>> )
+                >>> class Item(BaseModel):
+                ...     value: int
+                >>> text_llm = TextCompletionLLM(
+                ...     output_cls=Item,
+                ...     prompt="Value?",
+                ...     llm=LLM,
+                ... )
+                >>> text_llm.prompt.get_template()
+                'Value?'
+
+                ```
+
+        See Also:
+            TextCompletionLLM.__init__: Establishes the initial prompt value.
+            TextCompletionLLM.prompt.fset: Setter that updates the stored prompt.
+        """
         return self._prompt
 
     @prompt.setter
     def prompt(self, prompt: BasePromptTemplate) -> None:
+        """Update the prompt template used for subsequent LLM calls.
+
+        Args:
+            prompt (BasePromptTemplate): New prompt template instance.
+
+        Returns:
+            None: The method mutates the stored prompt in place.
+
+        Raises:
+            TypeError: Propagated if the supplied prompt does not support the template interface.
+
+        Examples:
+            - Swap the prompt template at runtime
+                ```python
+                >>> from types import SimpleNamespace
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.prompts.base import PromptTemplate
+                >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+                >>> from serapeum.llms.ollama import Ollama
+                >>> LLM = Ollama(
+                ...     model="llama3.1",
+                ...     request_timeout=180,
+                >>> )
+                >>> class Item(BaseModel):
+                ...     value: int
+                >>> text_llm = TextCompletionLLM(
+                ...     output_cls=Item,
+                ...     prompt="Value?",
+                ...     llm=LLM,
+                ... )
+                >>> text_llm.prompt = PromptTemplate("Next value?")
+                >>> text_llm.prompt.get_template()
+                'Next value?'
+
+                ```
+
+        See Also:
+            TextCompletionLLM.validate_prompt: Performs validation when constructing instances.
+        """
         self._prompt = prompt
 
     def __call__(
@@ -390,6 +466,69 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         *args: Any,
         **kwargs: Any,
     ) -> BaseModel:
+        """Execute the prompt synchronously and parse the structured response.
+
+        Args:
+            llm_kwargs (Optional[Dict[str, Any]]): Keyword arguments forwarded to the underlying
+                LLM invocation (chat or completion paths).
+            *args (Any): Positional arguments accepted for interface compatibility; unused.
+            **kwargs (Any): Prompt variables applied when rendering the template.
+
+        Returns:
+            BaseModel: Parsed Pydantic object produced by the configured output parser.
+
+        Raises:
+            ValueError: If the parsed object does not match the declared `output_cls`.
+
+        Examples:
+            - Parse a JSON completion into a Pydantic model
+                ```python
+                >>> from types import SimpleNamespace
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.llms.ollama import Ollama
+                >>> LLM = Ollama(
+                ...     model="llama3.1",
+                ...     request_timeout=180,
+                >>> )
+                >>> class Record(BaseModel):
+                ...     value: int
+                >>> text_llm = TextCompletionLLM(
+                ...     output_parser=PydanticOutputParser(output_cls=Record),
+                ...     prompt="Return an integer.",
+                ...     llm=LLM,
+                ... )
+                >>> text_llm() # doctest: +SKIP
+                Record(value=7)
+
+                ```
+            - Surface parser type mismatches
+                ```python
+                >>> from types import SimpleNamespace
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.output_parsers import BaseOutputParser
+                >>> class Record(BaseModel):
+                ...     value: int
+                >>> class EchoParser(BaseOutputParser):
+                ...     def parse(self, output: str):
+                ...         return output
+                >>> text_llm = TextCompletionLLM(
+                ...     output_parser=EchoParser(),
+                ...     output_cls=Record,
+                ...     prompt="Return data.",
+                ...     llm=LLM,
+                ... )
+                >>> text_llm()  # doctest: +SKIP
+                Traceback (most recent call last):
+                ...
+                ValueError: Output parser returned <class 'str'> but expected <class '...Record'>
+
+                ```
+
+        See Also:
+            TextCompletionLLM.acall: Asynchronous equivalent.
+            TextCompletionLLM.validate_output_parser_cls: Ensures parser compatibility.
+        """
         llm_kwargs = llm_kwargs or {}
         if self._llm.metadata.is_chat_model:
             messages = self._prompt.format_messages(llm=self._llm, **kwargs)

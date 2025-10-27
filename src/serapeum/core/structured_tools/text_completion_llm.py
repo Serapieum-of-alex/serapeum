@@ -91,6 +91,64 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         llm: Optional[LLM] = None,
         verbose: bool = False,
     ) -> None:
+        """Initialize the structured completion pipeline.
+
+        Args:
+            output_parser (Optional[BaseOutputParser]): Parser responsible for translating the raw
+                LLM response into a structured object.
+            prompt (Union[BasePromptTemplate, str]): Prompt template or string used to query the
+                LLM.
+            output_cls (Optional[Type[BaseModel]]): Target Pydantic model type. When omitted, a
+                compatible `PydanticOutputParser` must be supplied.
+            llm (Optional[LLM]): Language model implementation backing the prompt execution.
+            verbose (bool): Enables verbose tracing inherited from the base class.
+
+        Returns:
+            None: This initializer mutates the instance in place.
+
+        Raises:
+            ValueError: Raised when the prompt or output parser cannot be validated.
+            AssertionError: Raised when neither an LLM argument nor `Configs.llm` is set.
+
+        Examples:
+            - Auto-create a parser from an output class
+                ```python
+                >>> from types import SimpleNamespace
+                >>> from pydantic import BaseModel
+                >>> from serapeum.llms.ollama import Ollama
+                >>> LLM = Ollama(
+                ...     model="llama3.1",
+                ...     request_timeout=180,
+                >>> )
+                >>> class Item(BaseModel):
+                ...     name: str
+                >>> text_llm = TextCompletionLLM(
+                ...     output_cls=Item,
+                ...     prompt="Name a thing",
+                ...     llm=LLM,
+                ... )
+                >>> text_llm.output_cls is Item
+                True
+
+                ```
+            - Surface missing-LLM misconfiguration
+                ```python
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.configs.configs import Configs
+                >>> class Item(BaseModel):
+                ...     name: str
+                >>> Configs.llm = None
+                >>> TextCompletionLLM(output_cls=Item, prompt="Name a thing", llm=None)
+                Traceback (most recent call last):
+                ...
+                AssertionError: llm must be provided or set in Configs.
+
+                ```
+
+        See Also:
+            TextCompletionLLM.validate_output_parser_cls: Validates parser and output class pairing.
+            TextCompletionLLM.validate_llm: Resolves the backing LLM instance.
+        """
         self._output_parser, self._output_cls = self.validate_output_parser_cls(output_parser, output_cls)
         self._llm = self.validate_llm(llm)
         self._prompt = self.validate_prompt(prompt)

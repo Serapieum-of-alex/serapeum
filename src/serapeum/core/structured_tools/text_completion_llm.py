@@ -157,6 +157,40 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
 
     @staticmethod
     def validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
+        """Validate that the provided prompt is usable by the program.
+
+        Args:
+            prompt (Union[BasePromptTemplate, str]): Candidate prompt configuration that should be
+                a template instance or raw string.
+
+        Returns:
+            BasePromptTemplate: Normalized prompt template ready for rendering.
+
+        Raises:
+            ValueError: Raised when `prompt` is neither a string nor a `BasePromptTemplate`.
+
+        Examples:
+            - Promote a raw string into a prompt template
+                ```python
+                >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+                >>> validated = TextCompletionLLM.validate_prompt("Hello {name}")
+                >>> validated.get_template()
+                'Hello {name}'
+
+                ```
+            - Reject unsupported prompt types
+                ```python
+                >>> TextCompletionLLM.validate_prompt(42)
+                Traceback (most recent call last):
+                ...
+                ValueError: prompt must be an instance of BasePromptTemplate or str.
+
+                ```
+
+        See Also:
+            serapeum.core.prompts.base.PromptTemplate: Concrete template implementation.
+            TextCompletionLLM.__init__: Calls this validator during initialization.
+        """
         if not isinstance(prompt, (BasePromptTemplate, str)):
             raise ValueError(
                 "prompt must be an instance of BasePromptTemplate or str."

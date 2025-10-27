@@ -10,11 +10,76 @@ from serapeum.core.output_parsers import BaseOutputParser
 
 
 class TextCompletionLLM(BasePydanticLLM[BaseModel]):
-    """
-    LLM Text Completion Program.
+    """Structured text completion runner that returns typed Pydantic models.
 
-    Uses generic LLM text completion + an output parser to generate a structured output.
+    The wrapper binds a prompt, an output parser, and an LLM together so every invocation returns a
+    validated Pydantic model that matches the declared schema.
 
+    Args:
+        output_parser (Optional[BaseOutputParser]): Parser used to coerce raw text into the target
+            model. Required when `output_cls` is not supplied.
+        prompt (Union[BasePromptTemplate, str]): Prompt template or raw template string that drives
+            the LLM request.
+        output_cls (Optional[Type[BaseModel]]): Pydantic model that constrains the expected
+            structure. When omitted, it is inferred from a `PydanticOutputParser`.
+        llm (Optional[LLM]): Concrete language model implementation. Falls back to `Configs.llm`
+            when left unset.
+        verbose (bool): Enables verbose tracing in the underlying base class.
+
+    Returns:
+        TextCompletionLLM: Fully configured structured completion program.
+
+    Raises:
+        ValueError: If the prompt cannot be converted to a `BasePromptTemplate` or the parser
+            configuration is invalid.
+        AssertionError: If no LLM instance is provided and `Configs.llm` is not configured.
+
+    Examples:
+        - Basic synchronous usage with a string prompt
+            ```python
+            >>> from types import SimpleNamespace
+            >>> from pydantic import BaseModel
+            >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+            >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+            >>> from serapeum.llms.ollama import Ollama
+            >>> LLM = Ollama(
+            ...     model="llama3.1",
+            ...     request_timeout=180,
+            >>> )
+            >>> class Greeting(BaseModel):
+            ...     message: str
+            >>>
+            >>> tool = TextCompletionLLM(
+            ...     output_parser=PydanticOutputParser(output_cls=Greeting),
+            ...     prompt="message",
+            ...     llm=LLM,
+            ... )
+            >>> tool() # doctest: +SKIP
+            Greeting(message='Hello, World')
+
+            ```
+        - Chat-model usage with templated prompts
+            ```python
+            >>> from types import SimpleNamespace
+            >>> from pydantic import BaseModel
+            >>> from serapeum.core.prompts.base import PromptTemplate
+            >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+            >>> class Greeting(BaseModel):
+            ...     message: str
+            >>> prompt = PromptTemplate("Say hello to {name}.")
+            >>> tool = TextCompletionLLM(
+            ...     output_parser=PydanticOutputParser(output_cls=Greeting),
+            ...     prompt=prompt,
+            ...     llm=LLM,
+            ... )
+            >>> tool(name="Bob") # doctest: +SKIP
+            Greeting(message='hi')
+
+            ```
+
+    See Also:
+        TextCompletionLLM.__call__: Synchronous inference entry point.
+        TextCompletionLLM.acall: Asynchronous inference entry point.
     """
 
     def __init__(

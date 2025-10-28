@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import (
     Any,
     Dict,
@@ -27,7 +28,6 @@ from pydantic import (
     Field,
     field_validator,
     model_validator,
-    ValidationError,
 )
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.utils import (
@@ -127,7 +127,7 @@ CompletionToPromptCallable = Annotated[
 ]
 
 
-class LLM(BaseLLM):
+class LLM(BaseLLM, ABC):
     """
     The LLM class is the main class for interacting with language models.
 
@@ -538,9 +538,6 @@ class LLM(BaseLLM):
         """
         self._log_template_data(prompt, **prompt_args)
 
-        # dispatcher.event(
-        #     LLMPredictStartEvent(template=prompt, template_args=prompt_args)
-        # )
         if self.metadata.is_chat_model:
             messages = self._get_messages(prompt, **prompt_args)
             chat_response = self.stream_chat(messages)

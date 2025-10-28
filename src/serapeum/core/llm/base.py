@@ -133,8 +133,72 @@ class MessagesToPromptType(Protocol):
 
 @runtime_checkable
 class CompletionToPromptType(Protocol):
+    """Runtime protocol describing prompt adapters invoked before completions.
+
+    Examples:
+        - Check that an identity adapter satisfies the protocol
+            ```python
+            >>> from serapeum.core.llm.base import CompletionToPromptType
+            >>> def identity(prompt: str) -> str:
+            ...     return prompt
+            ...
+            >>> isinstance(identity, CompletionToPromptType)
+            True
+
+            ```
+        - Compose multiple adapters to build reusable transformations
+            ```python
+            >>> def add_footer(prompt: str) -> str:
+            ...     return prompt + "\\n--"
+            ...
+            >>> def upper_then_footer(prompt: str) -> str:
+            ...     return add_footer(prompt.upper())
+            ...
+            >>> upper_then_footer("ok")
+            'OK\n--'
+
+            ```
+    See Also:
+        CompletionToPromptType.__call__: Signature and error handling requirements.
+    """
+
     def __call__(self, prompt: str) -> str:
-        pass
+        """Transform a pre-formatted prompt prior to model execution.
+
+        Args:
+            prompt (str): The prompt string produced by an upstream formatter.
+
+        Returns:
+            str: A transformed prompt suitable for completion endpoints.
+
+        Raises:
+            ValueError: Implementations may raise when the prompt cannot be adapted.
+
+        Examples:
+            - Prefix a prompt with fixed metadata before submission
+                ```python
+                >>> def add_metadata(prompt: str) -> str:
+                ...     return "SYSTEM: " + prompt
+                ...
+                >>> add_metadata("List three colors")
+                'SYSTEM: List three colors'
+
+                ```
+            - Enforce non-empty prompts with validation
+                ```python
+                >>> def ensure_prompt(prompt: str) -> str:
+                ...     if not prompt.strip():
+                ...         raise ValueError("Prompt must not be empty")
+                ...     return prompt.upper()
+                ...
+                >>> ensure_prompt("summarize the agenda")
+                'SUMMARIZE THE AGENDA'
+
+                ```
+        See Also:
+            LLM._extend_prompt: Applies system-level adornments to formatted prompts.
+        """
+        ...
 
 
 def stream_completion_response_to_tokens(

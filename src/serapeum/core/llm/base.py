@@ -53,8 +53,82 @@ if TYPE_CHECKING:
 
 @runtime_checkable
 class MessagesToPromptType(Protocol):
+    r"""Runtime protocol describing adapters that convert chat messages into prompts.
+
+    Examples:
+        - Join message contents into a newline-separated prompt
+            ```python
+            >>> from serapeum.core.llm.base import MessagesToPromptType
+            >>> from serapeum.core.base.llms.models import Message, MessageRole
+            >>> def newline_join(messages):
+            ...     return '\n'.join(message.content or "" for message in messages)
+            ...
+            >>> isinstance(newline_join, MessagesToPromptType)
+            True
+
+            ```
+        - Validate message content before rendering the prompt
+            ```python
+            >>> from serapeum.core.base.llms.models import Message, MessageRole
+            >>> def validated_join(messages):
+            ...     contents = [message.content for message in messages]
+            ...     if any(content is None for content in contents):
+            ...         raise ValueError("Missing content")
+            ...     return " ".join(str(content) for content in contents)
+            ...
+            >>> validated_join([Message(content="hi", role=MessageRole.USER)])
+            'hi'
+
+            ```
+    See Also:
+        MessagesToPromptType.__call__: Details the expected callable signature.
+    """
+
     def __call__(self, messages: Sequence[Message]) -> str:
-        pass
+        """Render a sequence of chat messages into a single prompt string.
+
+        Args:
+            messages (Sequence[Message]): Ordered chat messages to convert.
+
+        Returns:
+            str: Textual prompt synthesized from the provided messages.
+
+        Raises:
+            ValueError: Implementations may raise when a message payload is invalid.
+
+        Examples:
+            - Concatenate user and assistant messages into one prompt
+                ```python
+                >>> from serapeum.core.base.llms.models import Message, MessageRole
+                >>> def concatenate(messages):
+                ...     return " ".join((message.content or "").strip() for message in messages)
+                ...
+                >>> concatenate(
+                ...     [
+                ...         Message(content="Hello", role=MessageRole.USER),
+                ...         Message(content="world", role=MessageRole.ASSISTANT),
+                ...     ]
+                ... )
+                'Hello world'
+
+                ```
+            - Reject empty message content before joining
+                ```python
+                >>> from serapeum.core.base.llms.models import Message, MessageRole
+                >>> def strict_concat(messages):
+                ...     for message in messages:
+                ...         if message.content is None:
+                ...             raise ValueError("Missing content")
+                ...     return " ".join(str(message.content) for message in messages)
+                ...
+                >>> strict_concat([Message(content="Ping", role=MessageRole.USER)])
+                'Ping'
+
+                ```
+        See Also:
+            LLM._get_messages: Prepares message sequences prior to prompt rendering.
+        """
+        ...
 
 
 @runtime_checkable

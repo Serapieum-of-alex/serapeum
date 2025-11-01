@@ -31,7 +31,7 @@ from pydantic import (
 )
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.utils import (
-    messages_to_prompt as generic_messages_to_prompt,
+    MessageList,
 )
 
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
@@ -60,8 +60,9 @@ class MessagesToPromptType(Protocol):
             ```python
             >>> from serapeum.core.llm.base import MessagesToPromptType
             >>> from serapeum.core.base.llms.models import Message, MessageRole
-            >>> def newline_join(messages):
-            ...     return '\n'.join(message.content or "" for message in messages)
+            >>> from serapeum.core.base.llms.utils import MessageList
+            >>> def newline_join(message_list):
+            ...     return '\n'.join(message.content or "" for message in message_list)
             ...
             >>> isinstance(newline_join, MessagesToPromptType)
             True
@@ -70,13 +71,14 @@ class MessagesToPromptType(Protocol):
         - Validate message content before rendering the prompt
             ```python
             >>> from serapeum.core.base.llms.models import Message, MessageRole
-            >>> def validated_join(messages):
-            ...     contents = [message.content for message in messages]
+            >>> from serapeum.core.base.llms.utils import MessageList
+            >>> def validated_join(message_list):
+            ...     contents = [message.content for message in message_list]
             ...     if any(content is None for content in contents):
             ...         raise ValueError("Missing content")
             ...     return " ".join(str(content) for content in contents)
             ...
-            >>> validated_join([Message(content="hi", role=MessageRole.USER)])
+            >>> validated_join(MessageList([Message(content="hi", role=MessageRole.USER)]))
             'hi'
 
             ```
@@ -84,11 +86,11 @@ class MessagesToPromptType(Protocol):
         MessagesToPromptType.__call__: Details the expected callable signature.
     """
 
-    def __call__(self, messages: Sequence[Message]) -> str:
-        """Render a sequence of chat messages into a single prompt string.
+    def __call__(self, message_list: MessageList) -> str:
+        """Render a MessageList into a single prompt string.
 
         Args:
-            messages (Sequence[Message]): Ordered chat messages to convert.
+            message_list (MessageList): MessageList containing chat messages to convert.
 
         Returns:
             str: Textual prompt synthesized from the provided messages.
@@ -100,14 +102,15 @@ class MessagesToPromptType(Protocol):
             - Concatenate user and assistant messages into one prompt
                 ```python
                 >>> from serapeum.core.base.llms.models import Message, MessageRole
-                >>> def concatenate(messages):
-                ...     return " ".join((message.content or "").strip() for message in messages)
+                >>> from serapeum.core.base.llms.utils import MessageList
+                >>> def concatenate(message_list):
+                ...     return " ".join((message.content or "").strip() for message in message_list)
                 ...
                 >>> concatenate(
-                ...     [
+                ...     MessageList([
                 ...         Message(content="Hello", role=MessageRole.USER),
                 ...         Message(content="world", role=MessageRole.ASSISTANT),
-                ...     ]
+                ...     ])
                 ... )
                 'Hello world'
 
@@ -115,13 +118,14 @@ class MessagesToPromptType(Protocol):
             - Reject empty message content before joining
                 ```python
                 >>> from serapeum.core.base.llms.models import Message, MessageRole
-                >>> def strict_concat(messages):
-                ...     for message in messages:
+                >>> from serapeum.core.base.llms.utils import MessageList
+                >>> def strict_concat(message_list):
+                ...     for message in message_list:
                 ...         if message.content is None:
                 ...             raise ValueError("Missing content")
-                ...     return " ".join(str(message.content) for message in messages)
+                ...     return " ".join(str(message.content) for message in message_list)
                 ...
-                >>> strict_concat([Message(content="Ping", role=MessageRole.USER)])
+                >>> strict_concat(MessageList([Message(content="Ping", role=MessageRole.USER)]))
                 'Ping'
 
                 ```
@@ -535,37 +539,37 @@ class LLM(BaseLLM, ABC):
     def set_messages_to_prompt(
         cls, messages_to_prompt: Optional[MessagesToPromptType]
     ) -> MessagesToPromptType:
-        """Select a message-to-prompt adapter, defaulting to the generic renderer.
+        """Select a message-to-prompt adapter, defaulting to MessageList.to_prompt().
 
         Args:
-            messages_to_prompt (Optional[MessagesToPromptType]): Custom adapter supplied by the caller.
+            messages_to_prompt (Optional[MessagesToPromptType]):
+                Custom adapter supplied by the caller.
 
         Returns:
-            MessagesToPromptType: Adapter that converts chat messages into a prompt string.
-
-        Raises:
-            Nothing: The validator always returns a callable and never raises.
+            MessagesToPromptType: Adapter that converts a MessageList into a prompt string.
 
         Examples:
             - Fall back to the default renderer when no adapter is provided
                 ```python
                 >>> LLM.set_messages_to_prompt(None)
-                <function messages_to_prompt ...>
+                <function ...>
 
                 ```
             - Preserve a custom adapter when one is supplied
                 ```python
-                >>> def reverse_messages(messages):
-                ...     return "\\n".join(message.content or "" for message in reversed(messages))
+                >>> def reverse_messages(message_list):
+                ...     return "\\n".join(message.content or "" for message in reversed(message_list))
                 ...
                 >>> LLM.set_messages_to_prompt(reverse_messages) is reverse_messages
                 True
 
                 ```
         See Also:
-            generic_messages_to_prompt: Provides the default message formatting behavior.
+            MessageList.to_prompt: Provides the default message formatting behavior.
         """
-        return messages_to_prompt or generic_messages_to_prompt
+        if messages_to_prompt is None:
+            return lambda message_list: message_list.to_prompt()
+        return messages_to_prompt
 
     @field_validator("completion_to_prompt")
     @classmethod
@@ -685,7 +689,7 @@ class LLM(BaseLLM, ABC):
         if self.completion_to_prompt is None:
             self.completion_to_prompt = default_completion_to_prompt
         if self.messages_to_prompt is None:
-            self.messages_to_prompt = generic_messages_to_prompt
+            self.messages_to_prompt = lambda message_list: message_list.to_prompt()
         return self
 
 

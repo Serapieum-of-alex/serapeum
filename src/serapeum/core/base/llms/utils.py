@@ -60,22 +60,6 @@ class MessageList(ABCSequence):
         """Create from a standard list."""
         return cls(messages)
 
-def messages_to_prompt(messages: Sequence[Message]) -> str:
-    """Convert messages to a prompt string."""
-    string_messages = []
-    for message in messages:
-        role = message.role
-        content = message.content
-        string_message = f"{role.value}: {content}"
-
-        additional_kwargs = message.additional_kwargs
-        if additional_kwargs:
-            string_message += f"\n{additional_kwargs}"
-        string_messages.append(string_message)
-
-    string_messages.append(f"{MessageRole.ASSISTANT.value}: ")
-    return "\n".join(string_messages)
-
 
 def prompt_to_messages(prompt: str) -> List[Message]:
     """Convert a string prompt to a sequence of messages."""

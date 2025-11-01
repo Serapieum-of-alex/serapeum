@@ -23,9 +23,7 @@ from pydantic import (
 from serapeum.core.base.llms.models import Message
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.utils import (
-    messages_to_prompt as default_messages_to_prompt,
-)
-from serapeum.core.base.llms.utils import (
+    MessageList,
     prompt_to_messages,
 )
 from serapeum.core.base.llms.models import ChunkType, TextChunk
@@ -262,7 +260,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         if messages_to_prompt is not None:
             return messages_to_prompt(messages)
 
-        return default_messages_to_prompt(messages)
+        return MessageList(messages).to_prompt()
 
     def format_messages(
         self, llm: Optional[BaseLLM] = None, **kwargs: Any
@@ -308,5 +306,5 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         return messages
 
     def get_template(self, llm: Optional[BaseLLM] = None) -> str:
-        return default_messages_to_prompt(self.message_templates)
+        return MessageList(self.message_templates).to_prompt()
 

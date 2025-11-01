@@ -60,6 +60,11 @@ class MessageList(ABCSequence):
         """Create from a standard list."""
         return cls(messages)
 
+    @classmethod
+    def from_str(cls, prompt: str) -> "MessageList":
+        """Create from a string prompt."""
+        return cls([Message(role=MessageRole.USER, content=prompt)])
+
 
 def prompt_to_messages(prompt: str) -> List[Message]:
     """Convert a string prompt to a sequence of messages."""
@@ -101,7 +106,7 @@ def chat_to_completion_decorator(
 
     def wrapper(prompt: str, **kwargs: Any) -> CompletionResponse:
         # normalize input
-        messages = prompt_to_messages(prompt)
+        messages = list(MessageList.from_str(prompt))
         chat_response = func(messages, **kwargs)
         # normalize output
         return chat_response_to_completion_response(chat_response)
@@ -116,7 +121,7 @@ def stream_chat_to_completion_decorator(
 
     def wrapper(prompt: str, **kwargs: Any) -> CompletionResponseGen:
         # normalize input
-        messages = prompt_to_messages(prompt)
+        messages = list(MessageList.from_str(prompt))
         chat_response = func(messages, **kwargs)
         # normalize output
         return stream_chat_response_to_completion_response(chat_response)
@@ -131,7 +136,7 @@ def achat_to_completion_decorator(
 
     async def wrapper(prompt: str, **kwargs: Any) -> CompletionResponse:
         # normalize input
-        messages = prompt_to_messages(prompt)
+        messages = list(MessageList.from_str(prompt))
         chat_response = await func(messages, **kwargs)
         # normalize output
         return chat_response_to_completion_response(chat_response)
@@ -146,7 +151,7 @@ def astream_chat_to_completion_decorator(
 
     async def wrapper(prompt: str, **kwargs: Any) -> CompletionResponseAsyncGen:
         # normalize input
-        messages = prompt_to_messages(prompt)
+        messages = list(MessageList.from_str(prompt))
         chat_response = await func(messages, **kwargs)
         # normalize output
         return astream_chat_response_to_completion_response(chat_response)

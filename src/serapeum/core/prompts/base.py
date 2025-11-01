@@ -24,7 +24,6 @@ from serapeum.core.base.llms.models import Message
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.utils import (
     MessageList,
-    prompt_to_messages,
 )
 from serapeum.core.base.llms.models import ChunkType, TextChunk
 from serapeum.core.prompts.models import PromptType
@@ -192,7 +191,7 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
     ) -> List[Message]:
         """Format the prompt into a list of chat messages."""
         prompt = self.format(**kwargs)
-        return prompt_to_messages(prompt)
+        return list(MessageList.from_str(prompt))
 
     def get_template(self, llm: Optional[BaseLLM] = None) -> str:
         return self.template

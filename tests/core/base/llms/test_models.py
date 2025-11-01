@@ -257,6 +257,34 @@ def test_chat_response():
     assert str(cr) == str(message)
 
 
+class TestChatResponseToCompletionResponse:
+    def test_to_completion_response(self):
+        """
+        Inputs: ChatResponse with message text "Hello" and raw payload. The Message carries additional_kwargs; the ChatResponse also has its own additional_kwargs.
+        Expected: CompletionResponse.text == "Hello"; additional_kwargs are taken from the MESSAGE (not the response) per implementation; raw propagated.
+        Checks: Exact equality for text; verify precedence/selection of additional_kwargs.
+        """
+        msg = Message(role=MessageRole.ASSISTANT, content="Hello", additional_kwargs={"from": "message"})
+        cr = ChatResponse(message=msg, additional_kwargs={"from": "response"}, raw={"r": True})
+        out = cr.to_completion_response()
+        assert out.text == "Hello"
+        assert out.additional_kwargs == {"from": "message"}
+        assert out.raw == {"r": True}
+
+    def test_when_none_text(self):
+        """
+        Inputs: ChatResponse whose message has no text chunks (only an Image), so message.content is None.
+        Expected: CompletionResponse.text becomes empty string "".
+        Checks: Exact empty string, not None.
+        """
+        img = Image(content=b"\x89PNG", image_mimetype="image/png")
+        msg = Message(role=MessageRole.ASSISTANT, content=[img])
+        assert msg.content is None  # guard
+        cr = ChatResponse(message=msg)
+        out = cr.to_completion_response()
+        assert out.text == ""
+
+
 def test_completion_response():
     cr = CompletionResponse(text="some text")
     assert str(cr) == "some text"

@@ -204,7 +204,45 @@ class CompletionToPromptType(Protocol):
 def stream_completion_response_to_tokens(
     completion_response_gen: CompletionResponseGen,
 ) -> TokenGen:
-    """Convert a stream completion response to a stream of tokens."""
+    """Materialize a token generator from streaming completion responses.
+
+    Args:
+        completion_response_gen (CompletionResponseGen):
+            Response iterator yielding completion deltas.
+
+    Returns:
+        TokenGen: Generator that yields delta strings ready for downstream consumption.
+
+    Raises:
+        AttributeError:
+            If responses lack the ``delta`` attribute expected on completion payloads.
+
+    Examples:
+        - Collect deltas produced by a completion stream
+            ```python
+            >>> from serapeum.core.base.llms.models import CompletionResponse
+            >>> from serapeum.core.llm.base import stream_completion_response_to_tokens
+            >>> def responses():
+            ...     yield CompletionResponse(text="Hello", delta="Hel")
+            ...     yield CompletionResponse(text="Hello", delta="lo")
+            ...
+            >>> list(stream_completion_response_to_tokens(responses()))
+            ['Hel', 'lo']
+
+            ```
+        - Handle responses that omit delta text
+            ```python
+            >>> def responses():
+            ...     yield CompletionResponse(text="partial", delta=None)
+            ...     yield CompletionResponse(text="done", delta="")
+            ...
+            >>> list(stream_completion_response_to_tokens(responses()))
+            ['', '']
+
+            ```
+    See Also:
+        astream_completion_response_to_tokens: Asynchronous variant returning an async generator of tokens.
+    """
 
     def gen() -> TokenGen:
         for response in completion_response_gen:

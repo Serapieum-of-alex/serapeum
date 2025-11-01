@@ -66,11 +66,6 @@ class MessageList(ABCSequence):
         return cls([Message(role=MessageRole.USER, content=prompt)])
 
 
-def prompt_to_messages(prompt: str) -> List[Message]:
-    """Convert a string prompt to a sequence of messages."""
-    return [Message(role=MessageRole.USER, content=prompt)]
-
-
 def chat_response_to_completion_response(
     chat_response: ChatResponse,
 ) -> CompletionResponse:

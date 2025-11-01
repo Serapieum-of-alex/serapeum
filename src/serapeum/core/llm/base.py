@@ -7,7 +7,6 @@ from typing import (
     AsyncGenerator,
     Optional,
     Protocol,
-    Sequence,
     Union,
     runtime_checkable,
     TYPE_CHECKING,

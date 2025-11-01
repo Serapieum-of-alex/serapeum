@@ -1,7 +1,6 @@
-from typing import Any, List, Optional, Sequence
+from typing import Any, List, Sequence
 
 import pytest
-from pydantic import BaseModel
 
 from serapeum.core.llm.base import (
     LLM,
@@ -90,6 +89,7 @@ class CompletionStubLLM(LLM):
 
     async def astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponseAsyncGen:
         raise NotImplementedError()
+
 
     async def astream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any) -> CompletionResponseAsyncGen:
         async def agen() -> CompletionResponseAsyncGen:

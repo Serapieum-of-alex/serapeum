@@ -145,12 +145,7 @@ def astream_chat_response_to_completion_response(
 
     async def gen() -> CompletionResponseAsyncGen:
         async for response in chat_response_gen:
-            yield CompletionResponse(
-                text=response.message.content or "",
-                additional_kwargs=response.message.additional_kwargs,
-                delta=response.delta,
-                raw=response.raw,
-            )
+            yield response.to_completion_response()
 
     return gen()
 

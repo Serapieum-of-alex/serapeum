@@ -201,8 +201,8 @@ class CompletionToPromptType(Protocol):
         ...
 
 
-def stream_completion_response_to_tokens(
-    completion_response_gen: CompletionResponseGen,
+def stream_response_to_tokens(
+    completion_response_gen: Union[CompletionResponseGen, ChatResponseGen],
 ) -> TokenGen:
     """Materialize a token generator from streaming completion responses.
 
@@ -218,30 +218,66 @@ def stream_completion_response_to_tokens(
             If responses lack the ``delta`` attribute expected on completion payloads.
 
     Examples:
-        - Collect deltas produced by a completion stream
-            ```python
-            >>> from serapeum.core.base.llms.models import CompletionResponse
-            >>> from serapeum.core.llm.base import stream_completion_response_to_tokens
-            >>> def responses():
-            ...     yield CompletionResponse(text="Hello", delta="Hel")
-            ...     yield CompletionResponse(text="Hello", delta="lo")
-            ...
-            >>> list(stream_completion_response_to_tokens(responses()))
-            ['Hel', 'lo']
+        - CompletionResponse:
+            - Collect deltas produced by a completion stream
+                ```python
+                >>> from serapeum.core.base.llms.models import CompletionResponse
+                >>> from serapeum.core.llm.base import stream_response_to_tokens
+                >>> def responses():
+                ...     yield CompletionResponse(text="Hello", delta="Hel")
+                ...     yield CompletionResponse(text="Hello", delta="lo")
+                ...
+                >>> list(stream_response_to_tokens(responses()))
+                ['Hel', 'lo']
 
-            ```
-        - Handle responses that omit delta text
-            ```python
-            >>> def responses():
-            ...     yield CompletionResponse(text="partial", delta=None)
-            ...     yield CompletionResponse(text="done", delta="")
-            ...
-            >>> list(stream_completion_response_to_tokens(responses()))
-            ['', '']
+                ```
+            - Handle responses that omit delta text
+                ```python
+                >>> def responses():
+                ...     yield CompletionResponse(text="partial", delta=None)
+                ...     yield CompletionResponse(text="done", delta="")
+                ...
+                >>> list(stream_response_to_tokens(responses()))
+                ['', '']
 
-            ```
+                ```
+        - ChatResponse:
+            - Collect assistant deltas from a chat stream
+                ```python
+                >>> from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
+                >>> def responses():
+                ...     yield ChatResponse(
+                ...         message=Message(content="Hello", role=MessageRole.ASSISTANT),
+                ...         delta="Hel",
+                ...     )
+                ...     yield ChatResponse(
+                ...         message=Message(content="Hello", role=MessageRole.ASSISTANT),
+                ...         delta="lo",
+                ...     )
+                ...
+                >>> list(stream_response_to_tokens(responses()))
+                ['Hel', 'lo']
+
+                ```
+            - Support chat responses without deltas
+                ```python
+                >>> from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
+                >>> def responses():
+                ...     yield ChatResponse(
+                ...         message=Message(content="Partial", role=MessageRole.ASSISTANT),
+                ...         delta=None,
+                ...     )
+                ...     yield ChatResponse(
+                ...         message=Message(content="Partial", role=MessageRole.ASSISTANT),
+                ...         delta="",
+                ...     )
+                ...
+                >>> list(stream_response_to_tokens(responses()))
+                ['', '']
+
+                ```
     See Also:
-        astream_completion_response_to_tokens: Asynchronous variant returning an async generator of tokens.
+        astream_response_to_tokens: Asynchronous variant returning an async generator of tokens.
     """
 
     def gen() -> TokenGen:
@@ -251,22 +287,102 @@ def stream_completion_response_to_tokens(
     return gen()
 
 
-def stream_chat_response_to_tokens(
-    chat_response_gen: ChatResponseGen,
-) -> TokenGen:
-    """Convert a stream completion response to a stream of tokens."""
-
-    def gen() -> TokenGen:
-        for response in chat_response_gen:
-            yield response.delta or ""
-
-    return gen()
-
-
-async def astream_completion_response_to_tokens(
-    completion_response_gen: CompletionResponseAsyncGen,
+async def astream_response_to_tokens(
+    completion_response_gen: Union[CompletionResponseAsyncGen, ChatResponseAsyncGen],
 ) -> TokenAsyncGen:
-    """Convert a stream completion response to a stream of tokens."""
+    """Convert async completion responses into an async token generator.
+
+    Args:
+        completion_response_gen (CompletionResponseAsyncGen): Async iterator yielding completion deltas.
+
+    Returns:
+        TokenAsyncGen: Async generator emitting delta strings from each response.
+
+    Raises:
+        AttributeError: If streamed responses do not expose a ``delta`` attribute.
+
+    Examples:
+        - CompletionResponse:
+            - Gather tokens from an asynchronous completion stream
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.base.llms.models import CompletionResponse
+                >>> async def responses():
+                ...     yield CompletionResponse(text="Hello", delta="Hel")
+                ...     yield CompletionResponse(text="Hello", delta="lo")
+                ...
+                >>> async def collect():
+                ...     generator = await astream_response_to_tokens(responses())
+                ...     return [token async for token in generator]
+                ...
+                >>> asyncio.run(collect())
+                ['Hel', 'lo']
+
+                ```
+            - Ensure empty delta values propagate as empty strings
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.base.llms.models import CompletionResponse
+                >>> async def responses():
+                ...     yield CompletionResponse(text="partial", delta=None)
+                ...     yield CompletionResponse(text="done", delta="")
+                ...
+                >>> async def collect():
+                ...     generator = await astream_response_to_tokens(responses())
+                ...     return [token async for token in generator]
+                ...
+                >>> asyncio.run(collect())
+                ['', '']
+
+                ```
+        - ChatResponse:
+            - Aggregate assistant deltas asynchronously
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
+                >>> async def responses():
+                ...     yield ChatResponse(
+                ...         message=Message(content="Hi", role=MessageRole.ASSISTANT),
+                ...         delta="H",
+                ...     )
+                ...     yield ChatResponse(
+                ...         message=Message(content="Hi", role=MessageRole.ASSISTANT),
+                ...         delta="i",
+                ...     )
+                ...
+                >>> async def collect():
+                ...     generator = await astream_chat_response_to_tokens(responses())
+                ...     return [token async for token in generator]
+                ...
+                >>> asyncio.run(collect())
+                ['H', 'i']
+
+                ```
+            - Surface empty delta entries when no new tokens are produced
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
+                >>> async def responses():
+                ...     yield ChatResponse(
+                ...         message=Message(content="Partial", role=MessageRole.ASSISTANT),
+                ...         delta=None,
+                ...     )
+                ...     yield ChatResponse(
+                ...         message=Message(content="Partial", role=MessageRole.ASSISTANT),
+                ...         delta="",
+                ...     )
+                ...
+                >>> async def collect():
+                ...     generator = await astream_chat_response_to_tokens(responses())
+                ...     return [token async for token in generator]
+                ...
+                >>> asyncio.run(collect())
+                ['', '']
+
+                ```
+    See Also:
+        stream_response_to_tokens: Synchronous companion for blocking workloads.
+    """
 
     async def gen() -> TokenAsyncGen:
         async for response in completion_response_gen:
@@ -275,19 +391,38 @@ async def astream_completion_response_to_tokens(
     return gen()
 
 
-async def astream_chat_response_to_tokens(
-    chat_response_gen: ChatResponseAsyncGen,
-) -> TokenAsyncGen:
-    """Convert a stream completion response to a stream of tokens."""
-
-    async def gen() -> TokenAsyncGen:
-        async for response in chat_response_gen:
-            yield response.delta or ""
-
-    return gen()
-
-
 def default_completion_to_prompt(prompt: str) -> str:
+    """Return the provided prompt unchanged.
+
+    Args:
+        prompt (str): Prompt string produced by a formatter or template.
+
+    Returns:
+        str: The input prompt without modification.
+
+    Raises:
+        Nothing: This helper performs no validation and never raises.
+
+    Examples:
+        - Use the identity adapter when no transformation is required
+            ```python
+            >>> default_completion_to_prompt("Draft a status report.")
+            'Draft a status report.'
+
+            ```
+        - Combine with a fallback adapter to ensure a non-empty string
+            ```python
+            >>> def fallback_adapter(text: str) -> str:
+            ...     transformed = default_completion_to_prompt(text)
+            ...     return transformed or "Default prompt"
+            ...
+            >>> fallback_adapter("")
+            'Default prompt'
+
+            ```
+    See Also:
+        set_completion_to_prompt: Selects this identity helper when no adapter is provided.
+    """
     return prompt
 
 
@@ -304,20 +439,64 @@ CompletionToPromptCallable = Annotated[
 
 
 class LLM(BaseLLM, ABC):
-    """
-    The LLM class is the main class for interacting with language models.
+    """Interactive abstraction around language model providers.
 
     Attributes:
-        system_prompt (Optional[str]):
-            System prompt for LLM calls.
-        messages_to_prompt (Callable):
-            Function to convert a list of messages to an LLM prompt.
-        completion_to_prompt (Callable):
-            Function to convert a completion to an LLM prompt.
-        output_parser (Optional[BaseOutputParser]):
-            Output parser to parse, validate, and correct errors programmatically.
-        pydantic_program_mode (StructuredLLMMode):
-            Pydantic program mode to use for structured prediction.
+        system_prompt (Optional[str]): Optional system-level preamble applied to every request.
+        messages_to_prompt (MessagesToPromptCallable): Callable converting chat messages into prompts.
+        completion_to_prompt (CompletionToPromptCallable): Callable adapting prepared prompts for completions.
+        output_parser (Optional[BaseOutputParser]): Parser used to coerce raw model text into structured values.
+        pydantic_program_mode (StructuredLLMMode): Strategy for executing pydantic-based structured outputs.
+        query_wrapper_prompt (Optional[BasePromptTemplate]): Legacy prompt wrapper retained for backwards compatibility.
+
+    Examples:
+        - Produce a simple completion by subclassing ``LLM``
+            ```python
+            >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+            >>> class EchoLLM(LLM):
+            ...     metadata = Metadata.model_construct(is_chat_model=False)
+            ...     def chat(self, messages, **kwargs):
+            ...         raise NotImplementedError()
+            ...     def stream_chat(self, messages, **kwargs):
+            ...         raise NotImplementedError()
+            ...     async def achat(self, messages, **kwargs):
+            ...         raise NotImplementedError()
+            ...     async def astream_chat(self, messages, **kwargs):
+            ...         raise NotImplementedError()
+            ...     def complete(self, prompt, formatted=False, **kwargs):
+            ...         return CompletionResponse(text=prompt, delta=prompt)
+            ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+            ...         raise NotImplementedError()
+            ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+            ...         return CompletionResponse(text=prompt, delta=prompt)
+            ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+            ...         raise NotImplementedError()
+            ...
+            >>> from serapeum.core.prompts import PromptTemplate
+            >>> echo = EchoLLM()
+            >>> echo.predict(PromptTemplate("{greeting}, world!"), greeting="Hello")
+            'Hello, world!'
+
+            ```
+        - Parse structured output using ``structured_predict``
+            ```python
+            >>> from pydantic import BaseModel
+            >>> class Person(BaseModel):
+            ...     name: str
+            ...
+            >>> from serapeum.core.prompts import PromptTemplate
+            >>> class StubLLM(EchoLLM):
+            ...     def structured_predict(self, output_cls, prompt, **prompt_args):
+            ...         return output_cls(name=prompt.format(**prompt_args))
+            ...
+            >>> stub = StubLLM()
+            >>> stub.structured_predict(Person, PromptTemplate("{name}"), name="Ada").name
+            'Ada'
+
+            ```
+    See Also:
+        BaseLLM: Abstract interface specifying the contract implemented by ``LLM`` subclasses.
+        StructuredLLM: Wrapper that exposes structured interactions on top of an ``LLM`` instance.
     """
 
     system_prompt: Optional[str] = Field(
@@ -352,6 +531,36 @@ class LLM(BaseLLM, ABC):
     def set_messages_to_prompt(
         cls, messages_to_prompt: Optional[MessagesToPromptType]
     ) -> MessagesToPromptType:
+        """Select a message-to-prompt adapter, defaulting to the generic renderer.
+
+        Args:
+            messages_to_prompt (Optional[MessagesToPromptType]): Custom adapter supplied by the caller.
+
+        Returns:
+            MessagesToPromptType: Adapter that converts chat messages into a prompt string.
+
+        Raises:
+            Nothing: The validator always returns a callable and never raises.
+
+        Examples:
+            - Fall back to the default renderer when no adapter is provided
+                ```python
+                >>> LLM.set_messages_to_prompt(None)
+                <function messages_to_prompt ...>
+
+                ```
+            - Preserve a custom adapter when one is supplied
+                ```python
+                >>> def reverse_messages(messages):
+                ...     return "\\n".join(message.content or "" for message in reversed(messages))
+                ...
+                >>> LLM.set_messages_to_prompt(reverse_messages) is reverse_messages
+                True
+
+                ```
+        See Also:
+            generic_messages_to_prompt: Provides the default message formatting behavior.
+        """
         return messages_to_prompt or generic_messages_to_prompt
 
     @field_validator("completion_to_prompt")
@@ -359,10 +568,116 @@ class LLM(BaseLLM, ABC):
     def set_completion_to_prompt(
         cls, completion_to_prompt: Optional[CompletionToPromptType]
     ) -> CompletionToPromptType:
+        """Ensure completion adapters always default to ``default_completion_to_prompt``.
+
+        Args:
+            completion_to_prompt (Optional[CompletionToPromptType]): Custom adapter transforming prompts.
+
+        Returns:
+            CompletionToPromptType: Adapter that prepares prompts for completion endpoints.
+
+        Raises:
+            Nothing: The validator guarantees a callable without raising.
+
+        Examples:
+            - Substitute the identity adapter when ``None`` is provided
+                ```python
+                >>> LLM.set_completion_to_prompt(None)
+                <function default_completion_to_prompt at ...>
+
+                ```
+            - Preserve a custom adapter supplied by the caller
+                ```python
+                >>> def prefix(prompt: str) -> str:
+                ...     return "PREFIX: " + prompt
+                ...
+                >>> LLM.set_completion_to_prompt(prefix) is prefix
+                True
+
+                ```
+        See Also:
+            default_completion_to_prompt: Built-in adapter used as the safe fallback.
+        """
         return completion_to_prompt or default_completion_to_prompt
 
     @model_validator(mode="after")
     def check_prompts(self) -> "LLM":
+        """Populate prompt adapters after pydantic validation completes.
+
+        Returns:
+            LLM: The validated instance with guaranteed prompt adapters.
+
+        Raises:
+            Nothing: The validator ensures adapters exist without raising errors.
+
+        Examples:
+            - Automatically attach defaults when fields are unset
+                ```python
+                >>> from serapeum.core.base.llms.models import (
+                ...     CompletionResponse,
+                ...     Metadata,
+                ... )
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> llm = DemoLLM()
+                >>> callable(llm.messages_to_prompt)
+                True
+
+                ```
+            - Respect explicitly provided adapters
+                ```python
+                >>> from serapeum.core.base.llms.models import Metadata
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> def identity_messages(messages):
+                ...     return " ".join(message.content or "" for message in messages)
+                ...
+                >>> llm = DemoLLM(
+                ...     messages_to_prompt=identity_messages,
+                ...     completion_to_prompt=lambda prompt: prompt.upper(),
+                ... )
+                >>> llm.completion_to_prompt("hi")
+                'HI'
+
+                ```
+        See Also:
+            set_messages_to_prompt: Supplies the default message adapter when missing.
+            set_completion_to_prompt: Supplies the default completion adapter when missing.
+        """
         if self.completion_to_prompt is None:
             self.completion_to_prompt = default_completion_to_prompt
         if self.messages_to_prompt is None:
@@ -371,6 +686,86 @@ class LLM(BaseLLM, ABC):
 
 
     def _get_prompt(self, prompt: BasePromptTemplate, **prompt_args: Any) -> str:
+        """Format a prompt template with LLM metadata and parser hooks.
+
+        Args:
+            prompt (BasePromptTemplate): Template describing the prompt structure.
+            **prompt_args (Any): Named values injected into the template.
+
+        Returns:
+            str: Fully formatted prompt string ready for submission.
+
+        Raises:
+            Nothing: Validation occurs in the template and parser layers.
+
+        Examples:
+            - Expand a template without an output parser
+                ```python
+                >>> from serapeum.core.prompts import ChatPromptTemplate
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> llm = DemoLLM()
+                >>> llm._get_prompt(PromptTemplate("{subject} summary"), subject="Release")
+                'Release summary'
+
+                ```
+            - Apply an output parser formatter before returning the result
+                ```python
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.output_parsers.models import BaseOutputParser
+                >>> class UpperParser(BaseOutputParser):
+                ...     def parse(self, output: str) -> str:
+                ...         return output.upper()
+                ...     def format(self, query: str) -> str:
+                ...         return query.upper()
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     output_parser = UpperParser()
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> DemoLLM()._get_prompt(PromptTemplate("summarize {item}"), item="notes")
+                'SUMMARIZE NOTES'
+
+                ```
+        See Also:
+            _extend_prompt: Adds system and wrapper prompts to the formatted string.
+            _get_messages: Equivalent logic for chat-oriented prompt generation.
+        """
         formatted_prompt = prompt.format(
             llm=self,
             messages_to_prompt=self.messages_to_prompt,
@@ -384,12 +779,181 @@ class LLM(BaseLLM, ABC):
     def _get_messages(
         self, prompt: BasePromptTemplate, **prompt_args: Any
     ) -> List[Message]:
+        """Render chat messages from a prompt template.
+
+        Args:
+            prompt (BasePromptTemplate): Prompt template capable of producing chat messages.
+            **prompt_args (Any): Named values inserted into the template.
+
+        Returns:
+            List[Message]: Sequence of messages ready for chat model consumption.
+
+        Raises:
+            ValueError: Propagated when the template cannot be formatted with ``prompt_args``.
+
+        Examples:
+            - Generate user-facing messages without an output parser
+                ```python
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> from serapeum.core.base.llms.models import (
+                ...     CompletionResponse,
+                ...     Metadata,
+                ... )
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> messages = DemoLLM()._get_messages(
+                ...     ChatPromptTemplate.from_messages([("user", "Hello {name}!")]),
+                ...     name="Ada",
+                ... )
+                >>> messages[0].content
+                'Hello Ada!'
+
+                ```
+            - Apply an output parser hook to the formatted messages
+                ```python
+                >>> from serapeum.core.prompts import ChatPromptTemplate
+                >>> from serapeum.core.base.llms.models import (
+                ...     CompletionResponse,
+                ...     Metadata,
+                ... )
+                >>> from serapeum.core.output_parsers.models import BaseOutputParser
+                >>> class UpperParser(BaseOutputParser):
+                ...     def parse(self, output: str) -> str:
+                ...         return output.upper()
+                ...     def format_messages(self, messages):
+                ...         for message in messages:
+                ...             if message.content is not None:
+                ...                 message.content = message.content.upper()
+                ...         return messages
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     output_parser = UpperParser()
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> message = DemoLLM()._get_messages(
+                ...     ChatPromptTemplate.from_messages([("user", "Hello {name}!")]),
+                ...     name="Ada",
+                ... )[0]
+                >>> message.content
+                'HELLO ADA!'
+
+                ```
+        See Also:
+            _extend_messages: Adds system prompts to the generated message list.
+            _get_prompt: Equivalent logic for completion-style prompts.
+        """
         messages = prompt.format_messages(llm=self, **prompt_args)
         if self.output_parser is not None:
             messages = self.output_parser.format_messages(messages)
         return self._extend_messages(messages)
 
     def _parse_output(self, output: str) -> str:
+        """Parse raw model output using the configured output parser.
+
+        Args:
+            output (str): Raw string returned by the model.
+
+        Returns:
+            str: Parsed representation of the model output.
+
+        Raises:
+            ValueError: Propagated when the configured parser rejects ``output``.
+
+        Examples:
+            - Return the text unchanged when no parser is configured
+                ```python
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> DemoLLM()._parse_output("ready")
+                'ready'
+
+                ```
+            - Coerce text via a custom parser before returning
+                ```python
+                >>> from serapeum.core.output_parsers.models import BaseOutputParser
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class TrimParser(BaseOutputParser):
+                ...     def parse(self, output: str) -> str:
+                ...         return output.strip()
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     output_parser = TrimParser()
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> DemoLLM()._parse_output("  ok  ")
+                'ok'
+
+                ```
+        See Also:
+            BaseOutputParser.parse: Implements the parsing logic invoked here.
+        """
         if self.output_parser is not None:
             return str(self.output_parser.parse(output))
 
@@ -399,7 +963,76 @@ class LLM(BaseLLM, ABC):
         self,
         formatted_prompt: str,
     ) -> str:
-        """Add system and query wrapper prompts to base prompt."""
+        """Add system and query wrapper prompts to a formatted prompt.
+
+        Args:
+            formatted_prompt (str): Fully formatted prompt string.
+
+        Returns:
+            str: Prompt extended with system and wrapper decorations.
+
+        Raises:
+            Nothing: Operations are concatenations that cannot fail.
+
+        Examples:
+            - Return the original text when no decorations are configured
+                ```python
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> DemoLLM()._extend_prompt("Plan release notes")
+                'Plan release notes'
+
+                ```
+            - Prepend a system prompt and wrap the query
+                ```python
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     system_prompt = "You are an assistant."
+                ...     query_wrapper_prompt = PromptTemplate("Question: {query_str}")
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> DemoLLM()._extend_prompt("List priorities")
+                'You are an assistant.\\n\\nQuestion: List priorities'
+
+                ```
+        See Also:
+            _extend_messages: Equivalent extension logic for chat message lists.
+        """
         extended_prompt = formatted_prompt
 
         if self.system_prompt:
@@ -413,7 +1046,86 @@ class LLM(BaseLLM, ABC):
         return extended_prompt
 
     def _extend_messages(self, messages: List[Message]) -> List[Message]:
-        """Add system prompt to chat message list."""
+        """Add optional system prompts to the chat message list.
+
+        Args:
+            messages (List[Message]): Sequence of user/assistant messages.
+
+        Returns:
+            List[Message]: Message list with system context prepended when configured.
+
+        Raises:
+            Nothing: Operates purely on in-memory message lists.
+
+        Examples:
+            - Leave messages unchanged when no system prompt is configured
+                ```python
+                >>> from serapeum.core.base.llms.models import (
+                ...     CompletionResponse,
+                ...     Message,
+                ...     Metadata,
+                ...     MessageRole,
+                ... )
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> messages = [Message(content="Hi", role=MessageRole.USER)]
+                >>> DemoLLM()._extend_messages(messages)[0].content
+                'Hi'
+
+                ```
+            - Prepend a system prompt when configured
+                ```python
+                >>> from serapeum.core.base.llms.models import (
+                ...     CompletionResponse,
+                ...     Message,
+                ...     Metadata,
+                ...     MessageRole,
+                ... )
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     system_prompt = "You are helpful."
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> extended = DemoLLM()._extend_messages([Message(content="Hi", role=MessageRole.USER)])
+                >>> extended[0].role.value
+                'system'
+
+                ```
+        See Also:
+            _extend_prompt: Applies equivalent system context to string prompts.
+        """
         if self.system_prompt:
             messages = [
                 Message(role=MessageRole.SYSTEM, content=self.system_prompt),
@@ -428,35 +1140,108 @@ class LLM(BaseLLM, ABC):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **prompt_args: Any,
     ) -> BaseModel:
-        r"""Structured predict.
+        """Invoke the structured output program for synchronous predictions.
 
         Args:
-            output_cls (BaseModel):
-                Output class to use for structured prediction.
-            prompt (PromptTemplate):
-                Prompt template to use for structured prediction.
-            llm_kwargs (Optional[Dict[str, Any]]):
-                Arguments that are passed down to the LLM invoked by the program.
-            prompt_args (Any):
-                Additional arguments to format the prompt with.
+            output_cls (Type[BaseModel]): Pydantic model describing the expected output schema.
+            prompt (PromptTemplate): Template used to gather inputs and instructions.
+            llm_kwargs (Optional[Dict[str, Any]]): Provider-specific arguments forwarded to the underlying LLM.
+            **prompt_args (Any): Additional template variables passed to ``prompt``.
 
         Returns:
-            BaseModel: The structured prediction output.
+            BaseModel: Instance of ``output_cls`` populated by the structured program.
+
+        Raises:
+            RuntimeError: Propagated when the structured program encounters execution failures.
 
         Examples:
-            ```python
-            from pydantic import BaseModel
+            - Produce a structured response using a patched program
+                ```python
+                >>> from unittest.mock import patch
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class Person(BaseModel):
+                ...     name: str
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> def fake_program(llm_kwargs=None, **kwargs):
+                ...     return Person(name=kwargs["name"].title())
+                ...
+                >>> with patch(
+                ...     "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...     return_value=fake_program,
+                ... ):
+                ...     DemoLLM().structured_predict(Person, PromptTemplate("{name}"), name="ada").name
+                'Ada'
 
-            class Test(BaseModel):
-                \"\"\"My test class.\"\"\"
-                name: str
+                ```
+            - Forward ``llm_kwargs`` to the structured program
+                ```python
+                >>> from unittest.mock import patch
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class Stats(BaseModel):
+                ...     parameter: str
+                ...     config: dict
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> def fake_program(llm_kwargs=None, **kwargs):
+                ...     return Stats(parameter=kwargs["name"], config=llm_kwargs or {})
+                ...
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> with patch(
+                ...     "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...     return_value=fake_program,
+                ... ):
+                ...     DemoLLM().structured_predict(
+                ...         Stats,
+                ...         PromptTemplate("{name}"),
+                ...         llm_kwargs={"temperature": 0.3},
+                ...         name="throughput",
+                ...     ).config["temperature"]
+                0.3
 
-            from serapeum.core.prompts import PromptTemplate
-
-            prompt = PromptTemplate("Please predict a Test with a random name related to {topic}.")
-            output = llm.structured_predict(Test, prompt, topic="cats")
-            print(output.name)
-            ```
+                ```
+        See Also:
+            astructured_predict: Async counterpart that awaits the structured program.
+            stream_structured_predict: Streams partial structured outputs incrementally.
         """
         from serapeum.core.structured_tools.utils import get_program_for_llm
 
@@ -478,35 +1263,123 @@ class LLM(BaseLLM, ABC):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **prompt_args: Any,
     ) -> BaseModel:
-        r"""Async Structured predict.
+        """Run the structured output program asynchronously.
 
         Args:
-            output_cls (BaseModel):
-                Output class to use for structured prediction.
-            prompt (PromptTemplate):
-                Prompt template to use for structured prediction.
-            llm_kwargs (Optional[Dict[str, Any]]):
-                Arguments that are passed down to the LLM invoked by the program.
-            prompt_args (Any):
-                Additional arguments to format the prompt with.
+            output_cls (Type[BaseModel]): Pydantic model describing the target schema.
+            prompt (PromptTemplate): Template used to generate program inputs.
+            llm_kwargs (Optional[Dict[str, Any]]): Optional provider arguments forwarded to the program.
+            **prompt_args (Any): Additional inputs passed to the template.
 
         Returns:
-            BaseModel: The structured prediction output.
+            BaseModel: Awaited instance of ``output_cls`` produced by the structured program.
+
+        Raises:
+            RuntimeError: Propagated when the structured program fails during execution.
 
         Examples:
-            ```python
-            from pydantic import BaseModel
+            - Await a patched structured program
+                ```python
+                >>> import asyncio
+                >>> from unittest.mock import patch
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class Person(BaseModel):
+                ...     name: str
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> class FakeProgram:
+                ...     async def acall(self, **kwargs):
+                ...         return Person(name="Ada")
+                ...
+                >>> async def demo():
+                ...     with patch(
+                ...         "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...         return_value=FakeProgram(),
+                ...     ):
+                ...         from serapeum.core.prompts import PromptTemplate
+                ...         result = await DemoLLM().astructured_predict(
+                ...             Person,
+                ...             PromptTemplate("{name}"),
+                ...             name="ignored",
+                ...         )
+                ...     return result.name
+                ...
+                >>> asyncio.run(demo())
+                'Ada'
 
-            class Test(BaseModel):
-                \"\"\"My test class.\"\"\"
-                name: str
+                ```
+            - Forward ``llm_kwargs`` through the async program interface
+                ```python
+                >>> import asyncio
+                >>> from unittest.mock import patch
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class Report(BaseModel):
+                ...     meta: dict
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> class FakeProgram:
+                ...     async def acall(self, **kwargs):
+                ...         return Report(meta=kwargs["llm_kwargs"])
+                ...
+                >>> async def demo():
+                ...     with patch(
+                ...         "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...         return_value=FakeProgram(),
+                ...     ):
+                ...         from serapeum.core.prompts import PromptTemplate
+                ...         result = await DemoLLM().astructured_predict(
+                ...             Report,
+                ...             PromptTemplate("{name}"),
+                ...             llm_kwargs={"seed": 42},
+                ...             name="ignored",
+                ...         )
+                ...     return result.meta["seed"]
+                ...
+                >>> asyncio.run(demo())
+                42
 
-            from serapeum.core.prompts import PromptTemplate
-
-            prompt = PromptTemplate("Please predict a Test with a random name related to {topic}.")
-            output = await llm.astructured_predict(Test, prompt, topic="cats")
-            print(output.name)
-            ```
+                ```
+        See Also:
+            structured_predict: Blocking variant using the same structured program.
+            astream_structured_predict: Emits partial values asynchronously during execution.
         """
         from serapeum.core.structured_tools.utils import get_program_for_llm
 
@@ -528,37 +1401,121 @@ class LLM(BaseLLM, ABC):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **prompt_args: Any,
     ) -> Generator[Union[Model, List[Model]], None, None]:
-        r"""Stream Structured predict.
+        """Stream structured predictions as they become available.
 
         Args:
-            output_cls (BaseModel):
-                Output class to use for structured prediction.
-            prompt (PromptTemplate):
-                Prompt template to use for structured prediction.
-            llm_kwargs (Optional[Dict[str, Any]]):
-                Arguments that are passed down to the LLM invoked by the program.
-            prompt_args (Any):
-                Additional arguments to format the prompt with.
+            output_cls (Type[BaseModel]): Pydantic model describing the structured response.
+            prompt (PromptTemplate): Template orchestrating the program execution.
+            llm_kwargs (Optional[Dict[str, Any]]): Additional arguments forwarded to the underlying LLM.
+            **prompt_args (Any): Keyword arguments interpolated into the template.
 
-        Returns:
-            Generator: A generator returning partial copies of the model or list of models.
+        Yields:
+            Union[Model, List[Model]]: Incremental structured values emitted by the program.
+
+        Raises:
+            RuntimeError: Propagated from the structured program when streaming fails.
 
         Examples:
-            ```python
-            from pydantic import BaseModel
+            - Iterate over partial models emitted by a patched program
+                ```python
+                >>> from unittest.mock import patch
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class Item(BaseModel):
+                ...     value: str
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> class FakeProgram:
+                ...     def stream_call(self, llm_kwargs=None, **kwargs):
+                ...         yield Item(value=kwargs["name"])
+                ...         yield Item(value=kwargs["name"].upper())
+                ...
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> with patch(
+                ...     "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...     return_value=FakeProgram(),
+                ... ):
+                ...     tokens = [
+                ...         part.value
+                ...         for part in DemoLLM().stream_structured_predict(
+                ...             Item,
+                ...             PromptTemplate("{name}"),
+                ...             name="signal",
+                ...         )
+                ...     ]
+                >>> tokens
+                ['signal', 'SIGNAL']
 
-            class Test(BaseModel):
-                \"\"\"My test class.\"\"\"
-                name: str
+                ```
+            - Stream lists when the program emits batch updates
+                ```python
+                >>> from unittest.mock import patch
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class Item(BaseModel):
+                ...     value: str
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> class FakeProgram:
+                ...     def stream_call(self, llm_kwargs=None, **kwargs):
+                ...         yield [Item(value="partial")]
+                ...         yield [Item(value="final")]
+                ...
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> with patch(
+                ...     "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...     return_value=FakeProgram(),
+                ... ):
+                ...     batches = list(
+                ...         DemoLLM().stream_structured_predict(
+                ...             Item,
+                ...             PromptTemplate("{name}"),
+                ...             name="ignored",
+                ...         )
+                ...     )
+                >>> [batch[0].value for batch in batches]
+                ['partial', 'final']
 
-            from serapeum.core.prompts import PromptTemplate
-
-            prompt = PromptTemplate("Please predict a Test with a random name related to {topic}.")
-            stream_output = llm.stream_structured_predict(Test, prompt, topic="cats")
-            for partial_output in stream_output:
-                # stream partial outputs until completion
-                print(partial_output.name)
-            ```
+                ```
+        See Also:
+            astream_structured_predict: Async variant yielding values via an async iterator.
+            structured_predict: Non-streaming version that returns the final model directly.
         """
         from serapeum.core.structured_tools.utils import get_program_for_llm
 
@@ -582,6 +1539,79 @@ class LLM(BaseLLM, ABC):
     ) -> AsyncGenerator[
         Union[Model, List[Model], "BaseModel", List["BaseModel"]], None
     ]:
+        """Obtain the async structured program stream without additional wrapping.
+
+        Args:
+            output_cls (Type[Model]): Structured output model requested by the caller.
+            prompt (PromptTemplate): Template defining the structured program execution.
+            llm_kwargs (Optional[Dict[str, Any]]): Keyword arguments forwarded to the LLM.
+            **prompt_args (Any): Arguments substituted into ``prompt``.
+
+        Returns:
+            AsyncGenerator[Union[Model, List[Model]]]: Async generator streaming structured values.
+
+        Raises:
+            RuntimeError: Propagated when the structured program fails to initialize.
+
+        Examples:
+            - Acquire the underlying async generator for custom post-processing
+                ```python
+                >>> import asyncio
+                >>> from unittest.mock import patch
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class Item(BaseModel):
+                ...     value: str
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> class FakeProgram:
+                ...     async def astream_call(self, llm_kwargs=None, **kwargs):
+                ...         async def generator():
+                ...             yield Item(value="partial")
+                ...             yield Item(value="final")
+                ...         return generator()
+                ...
+                >>> async def demo():
+                ...     from serapeum.core.prompts import PromptTemplate
+                ...     with patch(
+                ...         "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...         return_value=FakeProgram(),
+                ...     ):
+                ...         stream = await DemoLLM()._structured_astream_call(
+                ...             Item,
+                ...             PromptTemplate("{name}"),
+                ...             name="ignored",
+                ...         )
+                ...     collected = []
+                ...     async for part in stream:
+                ...         collected.append(part.value)
+                ...     return collected
+                ...
+                >>> asyncio.run(demo())
+                ['partial', 'final']
+
+                ```
+        See Also:
+            astream_structured_predict: Public helper that wraps this coroutine for callers.
+        """
         from serapeum.core.structured_tools.utils import get_program_for_llm
 
         program = get_program_for_llm(
@@ -600,37 +1630,134 @@ class LLM(BaseLLM, ABC):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **prompt_args: Any,
     ) -> AsyncGenerator[Union[Model, List[Model]], None]:
-        r"""Async Stream Structured predict.
+        """Stream structured predictions asynchronously.
 
         Args:
-            output_cls (BaseModel):
-                Output class to use for structured prediction.
-            prompt (PromptTemplate):
-                Prompt template to use for structured prediction.
-            llm_kwargs (Optional[Dict[str, Any]]):
-                Arguments that are passed down to the LLM invoked by the program.
-            prompt_args (Any):
-                Additional arguments to format the prompt with.
+            output_cls (Type[BaseModel]): Structured response model expected from the program.
+            prompt (PromptTemplate): Prompt orchestrating the structured interaction.
+            llm_kwargs (Optional[Dict[str, Any]]): Provider arguments injected into the structured program.
+            **prompt_args (Any): Additional inputs formatted into ``prompt``.
 
-        Returns:
-            Generator: A generator returning partial copies of the model or list of models.
+        Yields:
+            Union[Model, List[Model]]: Structured values produced asynchronously.
+
+        Raises:
+            RuntimeError: Propagated when the underlying program encounters streaming issues.
 
         Examples:
-            ```python
-            from pydantic import BaseModel
+            - Iterate over streamed values with patched program output
+                ```python
+                >>> import asyncio
+                >>> from unittest.mock import patch
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class Item(BaseModel):
+                ...     value: str
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> class FakeProgram:
+                ...     async def astream_call(self, llm_kwargs=None, **kwargs):
+                ...         async def generator():
+                ...             yield Item(value=kwargs["name"])
+                ...             yield Item(value=kwargs["name"].upper())
+                ...         return generator()
+                ...
+                >>> async def demo():
+                ...     from serapeum.core.prompts import PromptTemplate
+                ...     with patch(
+                ...         "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...         return_value=FakeProgram(),
+                ...     ):
+                ...         stream = await DemoLLM().astream_structured_predict(
+                ...             Item,
+                ...             PromptTemplate("{name}"),
+                ...             name="flow",
+                ...         )
+                ...     items = []
+                ...     async for partial in stream:
+                ...         items.append(partial.value)
+                ...     return items
+                ...
+                >>> asyncio.run(demo())
+                ['flow', 'FLOW']
 
-            class Test(BaseModel):
-                \"\"\"My test class.\"\"\"
-                name: str
+                ```
+            - Handle batch updates returned as lists
+                ```python
+                >>> import asyncio
+                >>> from unittest.mock import patch
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class Item(BaseModel):
+                ...     value: str
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> class FakeProgram:
+                ...     async def astream_call(self, llm_kwargs=None, **kwargs):
+                ...         async def generator():
+                ...             yield [Item(value="chunk")]
+                ...             yield [Item(value="done")]
+                ...         return generator()
+                ...
+                >>> async def demo():
+                ...     from serapeum.core.prompts import PromptTemplate
+                ...     with patch(
+                ...         "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...         return_value=FakeProgram(),
+                ...     ):
+                ...         stream = await DemoLLM().astream_structured_predict(
+                ...             Item,
+                ...             PromptTemplate("{name}"),
+                ...             name="ignored",
+                ...         )
+                ...     values = []
+                ...     async for batch in stream:
+                ...         values.append(batch[0].value)
+                ...     return values
+                ...
+                >>> asyncio.run(demo())
+                ['chunk', 'done']
 
-            from serapeum.core.prompts import PromptTemplate
-
-            prompt = PromptTemplate("Please predict a Test with a random name related to {topic}.")
-            stream_output = await llm.astream_structured_predict(Test, prompt, topic="cats")
-            async for partial_output in stream_output:
-                # stream partial outputs until completion
-                print(partial_output.name)
-            ```
+                ```
+        See Also:
+            stream_structured_predict: Synchronous counterpart yielding from a regular generator.
+            _structured_astream_call: Internal helper that retrieves the structured async stream.
         """
 
         async def gen() -> AsyncGenerator[Union[Model, List[Model]], None]:
@@ -654,25 +1781,84 @@ class LLM(BaseLLM, ABC):
         prompt: BasePromptTemplate,
         **prompt_args: Any,
     ) -> str:
-        """Predict for a given prompt.
+        """Generate a synchronous completion for the provided prompt.
 
         Args:
-            prompt (BasePromptTemplate):
-                The prompt to use for prediction.
-            prompt_args (Any):
-                Additional arguments to format the prompt with.
+            prompt (BasePromptTemplate): Prompt template rendered prior to model invocation.
+            **prompt_args (Any): Keyword arguments passed to ``prompt`` formatting helpers.
 
         Returns:
-            str: The prediction output.
+            str: Parsed text returned by the underlying model.
+
+        Raises:
+            ValueError: Propagated when prompt formatting or output parsing fails.
 
         Examples:
-            ```python
-            from serapeum.core.prompts import PromptTemplate
+            - Produce a completion using a non-chat model
+                ```python
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt.upper(), delta=prompt.upper())
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> DemoLLM().predict(PromptTemplate("{greet}"), greet="hi")
+                'HI'
 
-            prompt = PromptTemplate("Please write a random name related to {topic}.")
-            output = llm.predict(prompt, topic="cats")
-            print(output)
-            ```
+                ```
+            - Return the assistant message when operating in chat mode
+                ```python
+                >>> from serapeum.core.prompts import ChatPromptTemplate
+                >>> from serapeum.core.base.llms.models import (
+                ...     ChatResponse,
+                ...     Message,
+                ...     MessageRole,
+                ...     Metadata,
+                ... )
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     def chat(self, messages, **kwargs):
+                ...         return ChatResponse(
+                ...             message=Message(content="pong", role=MessageRole.ASSISTANT)
+                ...         )
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> prompt = ChatPromptTemplate.from_messages([("user", "{word}")])
+                >>> DemoLLM().predict(prompt, word="ping")
+                'pong'
+
+                ```
+        See Also:
+            apredict: Asynchronous variant that awaits the model result.
+            stream: Streams incremental tokens instead of returning a single string.
         """
         if self.metadata.is_chat_model:
             messages = self._get_messages(prompt, **prompt_args)
@@ -691,37 +1877,118 @@ class LLM(BaseLLM, ABC):
         prompt: BasePromptTemplate,
         **prompt_args: Any,
     ) -> TokenGen:
-        """Stream predict for a given prompt.
+        """Stream tokens produced by the model for the given prompt.
 
         Args:
-            prompt (BasePromptTemplate):
-                The prompt to use for prediction.
-            prompt_args (Any):
-                Additional arguments to format the prompt with.
+            prompt (BasePromptTemplate): Prompt template rendered prior to streaming.
+            **prompt_args (Any): Keyword arguments used to populate ``prompt``.
 
         Yields:
-            str: Each streamed token.
+            str: Incremental token strings emitted by the model.
+
+        Raises:
+            NotImplementedError: If an output parser is configured for either the prompt or the LLM.
 
         Examples:
-            ```python
-            from serapeum.core.prompts import PromptTemplate
+            - Stream completion tokens for a non-chat model
+                ```python
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> from serapeum.core.base.llms.models import (
+                ...     CompletionResponse,
+                ...     CompletionResponseGen,
+                ...     Metadata,
+                ... )
+                >>> def completion_stream():
+                ...     yield CompletionResponse(text="run", delta="r")
+                ...     yield CompletionResponse(text="run", delta="un")
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs) -> CompletionResponseGen:
+                ...         return completion_stream()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> list(
+                ...     DemoLLM().stream(PromptTemplate("{verb}!"), verb="run")
+                ... )
+                ['r', 'un']
 
-            prompt = PromptTemplate("Please write a random name related to {topic}.")
-            gen = llm.stream_predict(prompt, topic="cats")
-            for token in gen:
-                print(token, end="", flush=True)
-            ```
+                ```
+            - Stream assistant deltas for a chat model
+                ```python
+                >>> from serapeum.core.prompts import ChatPromptTemplate
+                >>> from serapeum.core.base.llms.models import (
+                ...     ChatResponse,
+                ...     ChatResponseGen,
+                ...     Message,
+                ...     MessageRole,
+                ...     Metadata,
+                ... )
+                >>> def chat_stream():
+                ...     yield ChatResponse(
+                ...         message=Message(content="ok", role=MessageRole.ASSISTANT),
+                ...         delta="o",
+                ...     )
+                ...     yield ChatResponse(
+                ...         message=Message(content="ok", role=MessageRole.ASSISTANT),
+                ...         delta="k",
+                ...     )
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs) -> ChatResponseGen:
+                ...         return chat_stream()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> tokens = list(
+                ...     DemoLLM().stream(
+                ...         ChatPromptTemplate.from_messages([("user", "ping")])
+                ...     )
+                ... )
+                >>> tokens
+                ['o', 'k']
+
+                ```
+        See Also:
+            astream: Asynchronous streaming counterpart returning an async generator.
+            predict: Convenience wrapper that buffers the entire response.
         """
         self._log_template_data(prompt, **prompt_args)
 
         if self.metadata.is_chat_model:
             messages = self._get_messages(prompt, **prompt_args)
             chat_response = self.stream_chat(messages)
-            stream_tokens = stream_chat_response_to_tokens(chat_response)
+            stream_tokens = stream_response_to_tokens(chat_response)
         else:
             formatted_prompt = self._get_prompt(prompt, **prompt_args)
             stream_response = self.stream_complete(formatted_prompt, formatted=True)
-            stream_tokens = stream_completion_response_to_tokens(stream_response)
+            stream_tokens = stream_response_to_tokens(stream_response)
 
         if prompt.output_parser is not None or self.output_parser is not None:
             raise NotImplementedError("Output parser is not supported for streaming.")
@@ -733,25 +2000,92 @@ class LLM(BaseLLM, ABC):
         prompt: BasePromptTemplate,
         **prompt_args: Any,
     ) -> str:
-        """Async Predict for a given prompt.
+        """Asynchronously generate a completion for the provided prompt.
 
         Args:
-            prompt (BasePromptTemplate):
-                The prompt to use for prediction.
-            prompt_args (Any):
-                Additional arguments to format the prompt with.
+            prompt (BasePromptTemplate): Prompt template rendered prior to model invocation.
+            **prompt_args (Any): Keyword arguments used during template formatting.
 
         Returns:
-            str: The prediction output.
+            str: Parsed model output produced asynchronously.
+
+        Raises:
+            ValueError: Propagated when prompt formatting or output parsing fails.
 
         Examples:
-            ```python
-            from serapeum.core.prompts import PromptTemplate
+            - Await a completion for a non-chat model
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt[::-1], delta=prompt[::-1])
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> async def demo():
+                ...     return await DemoLLM().apredict(PromptTemplate("{word}"), word="abc")
+                ...
+                >>> asyncio.run(demo())
+                'cba'
 
-            prompt = PromptTemplate("Please write a random name related to {topic}.")
-            output = await llm.apredict(prompt, topic="cats")
-            print(output)
-            ```
+                ```
+            - Await a chat response when the model operates in chat mode
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.prompts import ChatPromptTemplate
+                >>> from serapeum.core.base.llms.models import (
+                ...     ChatResponse,
+                ...     Message,
+                ...     MessageRole,
+                ...     Metadata,
+                ... )
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         return ChatResponse(
+                ...             message=Message(content="pong", role=MessageRole.ASSISTANT)
+                ...         )
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> async def demo():
+                ...     prompt = ChatPromptTemplate.from_messages([("user", "ping")])
+                ...     return await DemoLLM().apredict(prompt)
+                ...
+                >>> asyncio.run(demo())
+                'pong'
+
+                ```
+        See Also:
+            predict: Blocking variant that returns immediately.
+            astream: Streams asynchronous tokens without aggregating the response.
         """
         if self.metadata.is_chat_model:
             messages = self._get_messages(prompt, **prompt_args)
@@ -770,37 +2104,122 @@ class LLM(BaseLLM, ABC):
         prompt: BasePromptTemplate,
         **prompt_args: Any,
     ) -> TokenAsyncGen:
-        """Async stream predict for a given prompt.
+        """Asynchronously stream tokens for the provided prompt.
 
         Args:
-        prompt (BasePromptTemplate):
-            The prompt to use for prediction.
-        prompt_args (Any):
-            Additional arguments to format the prompt with.
+            prompt (BasePromptTemplate): Prompt template rendered before streaming.
+            **prompt_args (Any): Keyword arguments supplied to ``prompt``.
 
-        Yields:
-            str: An async generator that yields strings of tokens.
+        Returns:
+            TokenAsyncGen: Async generator yielding incremental token strings.
+
+        Raises:
+            NotImplementedError: If an output parser is configured on the prompt or LLM.
 
         Examples:
-            ```python
-            from serapeum.core.prompts import PromptTemplate
+            - Stream completion deltas asynchronously
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> from serapeum.core.base.llms.models import (
+                ...     CompletionResponse,
+                ...     CompletionResponseAsyncGen,
+                ...     Metadata,
+                ... )
+                >>> async def completion_stream():
+                ...     yield CompletionResponse(text="run", delta="r")
+                ...     yield CompletionResponse(text="run", delta="un")
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs) -> CompletionResponseAsyncGen:
+                ...         return completion_stream()
+                ...
+                >>> async def demo():
+                ...     stream = await DemoLLM().astream(PromptTemplate("{verb}"), verb="run")
+                ...     return [token async for token in stream]
+                ...
+                >>> asyncio.run(demo())
+                ['r', 'un']
 
-            prompt = PromptTemplate("Please write a random name related to {topic}.")
-            gen = await llm.astream_predict(prompt, topic="cats")
-            async for token in gen:
-                print(token, end="", flush=True)
-            ```
+                ```
+            - Stream chat deltas asynchronously for chat models
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.prompts import ChatPromptTemplate
+                >>> from serapeum.core.base.llms.models import (
+                ...     ChatResponse,
+                ...     ChatResponseAsyncGen,
+                ...     Message,
+                ...     MessageRole,
+                ...     Metadata,
+                ... )
+                >>> async def chat_stream():
+                ...     yield ChatResponse(
+                ...         message=Message(content="ok", role=MessageRole.ASSISTANT),
+                ...         delta="o",
+                ...     )
+                ...     yield ChatResponse(
+                ...         message=Message(content="ok", role=MessageRole.ASSISTANT),
+                ...         delta="k",
+                ...     )
+                ...
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs) -> ChatResponseAsyncGen:
+                ...         return chat_stream()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> async def demo():
+                ...     prompt = ChatPromptTemplate.from_messages([("user", "ping")])
+                ...     stream = await DemoLLM().astream(prompt)
+                ...     return [token async for token in stream]
+                ...
+                >>> asyncio.run(demo())
+                ['o', 'k']
+
+                ```
+        See Also:
+            stream: Blocking variant returning a synchronous generator of tokens.
+            apredict: Aggregates the async stream into a final string.
         """
         if self.metadata.is_chat_model:
             messages = self._get_messages(prompt, **prompt_args)
             chat_response = await self.astream_chat(messages)
-            stream_tokens = await astream_chat_response_to_tokens(chat_response)
+            stream_tokens = await astream_response_to_tokens(chat_response)
         else:
             formatted_prompt = self._get_prompt(prompt, **prompt_args)
             stream_response = await self.astream_complete(
                 formatted_prompt, formatted=True
             )
-            stream_tokens = await astream_completion_response_to_tokens(stream_response)
+            stream_tokens = await astream_response_to_tokens(stream_response)
 
         if prompt.output_parser is not None or self.output_parser is not None:
             raise NotImplementedError("Output parser is not supported for streaming.")
@@ -812,7 +2231,85 @@ class LLM(BaseLLM, ABC):
         output_cls: Type[BaseModel],
         **kwargs: Any,
     ) -> "StructuredLLM":
-        """Return a structured LLM around a given object."""
+        """Wrap this LLM with structured output capabilities.
+
+        Args:
+            output_cls (Type[BaseModel]): Pydantic model describing the structured response schema.
+            **kwargs (Any): Additional keyword arguments forwarded to ``StructuredLLM``.
+
+        Returns:
+            StructuredLLM: Wrapper that exposes structured inference helpers.
+
+        Raises:
+            Nothing: Construction simply instantiates ``StructuredLLM``.
+
+        Examples:
+            - Construct a structured wrapper with default options
+                ```python
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> class Person(BaseModel):
+                ...     name: str
+                ...
+                >>> llm = DemoLLM()
+                >>> wrapper = llm.as_structured_llm(Person)
+                >>> wrapper.llm is llm
+                True
+
+                ```
+            - Pass configuration options through to ``StructuredLLM``
+                ```python
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> class DemoLLM(LLM):
+                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     def chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def stream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def achat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def astream_chat(self, messages, **kwargs):
+                ...         raise NotImplementedError()
+                ...     def complete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     def stream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...     async def acomplete(self, prompt, formatted=False, **kwargs):
+                ...         return CompletionResponse(text=prompt, delta=prompt)
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
+                ...         raise NotImplementedError()
+                ...
+                >>> class Configured(BaseModel):
+                ...     value: str
+                ...
+                >>> wrapper = DemoLLM().as_structured_llm(Configured, retries=2)
+                >>> wrapper.retries
+                2
+
+                ```
+        See Also:
+            StructuredLLM: Provides structured prediction helpers built atop the base LLM.
+        """
         from serapeum.core.llm.structured_llm import StructuredLLM
 
         return StructuredLLM(llm=self, output_cls=output_cls, **kwargs)

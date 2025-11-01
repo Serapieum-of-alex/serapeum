@@ -5,11 +5,9 @@ from pydantic import BaseModel
 
 from serapeum.core.llm.base import (
     LLM,
-    astream_chat_response_to_tokens,
-    astream_completion_response_to_tokens,
+    astream_response_to_tokens,
     default_completion_to_prompt,
-    stream_chat_response_to_tokens,
-    stream_completion_response_to_tokens,
+    stream_response_to_tokens,
 )
 from serapeum.core.base.llms.models import (
     ChatResponse,
@@ -140,12 +138,12 @@ class ChatStubLLM(LLM):
         raise NotImplementedError()
 
 
-class TestStreamCompletionResponseToTokens:
-    @staticmethod
-    def test_nominal_and_empty_deltas():
+class TestStreamResponseToTokens:
+
+    def test_nominal_and_empty_deltas_completion_response(self):
         """Inputs: two responses with non-empty deltas and then empty/None.
         Expected: tokens reflect exact delta values or empty strings for falsy deltas.
-        Checks: list(stream_completion_response_to_tokens(gen())) matches expected sequence.
+        Checks: list(stream_response_to_tokens(gen())) matches expected sequence.
         """
         def responses() -> CompletionResponseGen:
             yield CompletionResponse(text="Hello", delta="He")
@@ -153,5 +151,51 @@ class TestStreamCompletionResponseToTokens:
             yield CompletionResponse(text="Hello", delta="")
             yield CompletionResponse(text="Hello", delta=None)
 
-        tokens = list(stream_completion_response_to_tokens(responses()))
+        tokens = list(stream_response_to_tokens(responses()))
         assert tokens == ["He", "llo", "", ""]
+
+    def test_nominal_and_empty_deltas_chat_response(self):
+        """Inputs: chat responses with deltas including empty and None.
+        Expected: yielded tokens equal the deltas or empty strings when falsy.
+        Checks: list(stream_response_to_tokens(gen())) equals expected.
+        """
+        def responses() -> ChatResponseGen:
+            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="H")
+            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="i")
+            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="")
+            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=None)
+
+        tokens = list(stream_response_to_tokens(responses()))
+        assert tokens == ["H", "i", "", ""]
+
+
+class TestAStreamResponseToTokens:
+    @pytest.mark.asyncio
+    async def test_async_nominal_and_empty_deltas_completion_response(self):
+        """Inputs: async completion responses with normal and falsy deltas.
+        Expected: async generator yields the same sequence of tokens, empty for falsy.
+        Checks: collected list equals expected sequence.
+        """
+        async def responses() -> CompletionResponseAsyncGen:
+            yield CompletionResponse(text="Hello", delta="He")
+            yield CompletionResponse(text="Hello", delta="llo")
+            yield CompletionResponse(text="Hello", delta="")
+            yield CompletionResponse(text="Hello", delta=None)
+
+        agen = await astream_response_to_tokens(responses())
+        assert [t async for t in agen] == ["He", "llo", "", ""]
+
+    @pytest.mark.asyncio
+    async def test_async_nominal_and_empty_deltas_chat_response(self):
+        """Inputs: async chat responses with deltas including empty and None.
+        Expected: tokens are passed through as-is, empty for falsy values.
+        Checks: collected list equals expected.
+        """
+        async def responses() -> ChatResponseAsyncGen:
+            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="H")
+            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="i")
+            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="")
+            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=None)
+
+        agen = await astream_response_to_tokens(responses())
+        assert [t async for t in agen] == ["H", "i", "", ""]

@@ -1,3 +1,16 @@
+import pytest
+
+from serapeum.core.base.llms.models import ChatResponse
+from serapeum.core.base.llms.utils import (
+    stream_chat_response_to_completion_response,
+    astream_chat_response_to_completion_response,
+    chat_to_completion_decorator,
+    stream_chat_to_completion_decorator,
+    achat_to_completion_decorator,
+    astream_chat_to_completion_decorator,
+    get_from_param_or_env,
+)
+
 from serapeum.core.base.llms.models import Message, MessageRole, TextChunk, Image
 from serapeum.core.base.llms.utils import MessageList
 
@@ -109,3 +122,71 @@ class TestMessageList:
             "assistant: ",
         ])
         assert prompt == expected
+
+
+class TestMessageListBasics:
+    def test_from_list_and_len_getitem_slice_and_append(self):
+        """
+        Inputs:
+            - Start with two messages (system and user).
+            - Use MessageList.from_list to construct, then test __len__, __getitem__ (int), slicing, and append.
+        Expected:
+            - Length reflects number of messages.
+            - Integer indexing returns Message; slicing returns MessageList with correct subset.
+            - Append adds to the end; iteration order preserved.
+        Checks:
+            - Types of returned objects; content and roles remain intact.
+        """
+        m1 = Message(role=MessageRole.SYSTEM, content="You are a bot.")
+        m2 = Message(role=MessageRole.USER, content="Hello")
+        ml = MessageList.from_list([m1, m2])
+
+        # __len__ and __getitem__
+        assert len(ml) == 2
+        assert ml[0] is m1
+        assert ml[1] is m2
+
+        # slice returns MessageList
+        sub = ml[0:1]
+        assert isinstance(sub, MessageList)
+        assert len(sub) == 1
+        assert sub[0] is m1
+
+        # append maintains order
+        m3 = Message(role=MessageRole.ASSISTANT, content="Hi!")
+        ml.append(m3)
+        assert list(ml)[-1] is m3
+        assert [m.role for m in ml] == [MessageRole.SYSTEM, MessageRole.USER, MessageRole.ASSISTANT]
+
+    def test_from_str_constructs_user_message(self):
+        """
+        Inputs: Use MessageList.from_str with prompt "Ping".
+        Expected: Single Message with role=user and content="Ping".
+        Checks: Role and content correct; to_prompt adds trailing assistant line.
+        """
+        ml = MessageList.from_str("Ping")
+        msgs = list(ml)
+        assert len(msgs) == 1
+        assert msgs[0].role == MessageRole.USER
+        assert msgs[0].content == "Ping"
+        assert ml.to_prompt().splitlines() == ["user: Ping", "assistant: "]
+
+    def test_filter_by_role(self):
+        """
+        Inputs: Mixed roles (system, user, assistant, tool).
+        Expected: filter_by_role returns only messages of that role, as a MessageList.
+        Checks: Type and ordering preserved; other roles excluded.
+        """
+        messages = [
+            Message(role=MessageRole.SYSTEM, content="S"),
+            Message(role=MessageRole.USER, content="U1"),
+            Message(role=MessageRole.ASSISTANT, content="A"),
+            Message(role=MessageRole.USER, content="U2"),
+            Message(role=MessageRole.TOOL, content="T"),
+        ]
+        ml = MessageList(messages)
+        only_users = ml.filter_by_role(MessageRole.USER)
+        assert isinstance(only_users, MessageList)
+        assert [m.content for m in only_users] == ["U1", "U2"]
+
+

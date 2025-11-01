@@ -199,3 +199,14 @@ class TestAStreamResponseToTokens:
 
         agen = await astream_response_to_tokens(responses())
         assert [t async for t in agen] == ["H", "i", "", ""]
+
+
+class TestDefaultCompletionToPrompt:
+
+    def test_identity_behavior(self):
+        """Inputs: various strings including empty.
+        Expected: identity function, returns the same exact string.
+        Checks: equality for typical and boundary values.
+        """
+        assert default_completion_to_prompt("abc") == "abc"
+        assert default_completion_to_prompt("") == ""

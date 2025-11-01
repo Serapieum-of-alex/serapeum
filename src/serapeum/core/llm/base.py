@@ -307,6 +307,7 @@ async def astream_response_to_tokens(
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.base.llms.models import CompletionResponse
+                >>> from serapeum.core.llm.base import astream_response_to_tokens
                 >>> async def responses():
                 ...     yield CompletionResponse(text="Hello", delta="Hel")
                 ...     yield CompletionResponse(text="Hello", delta="lo")
@@ -351,7 +352,7 @@ async def astream_response_to_tokens(
                 ...     )
                 ...
                 >>> async def collect():
-                ...     generator = await astream_chat_response_to_tokens(responses())
+                ...     generator = await astream_response_to_tokens(responses())
                 ...     return [token async for token in generator]
                 ...
                 >>> asyncio.run(collect())
@@ -373,7 +374,7 @@ async def astream_response_to_tokens(
                 ...     )
                 ...
                 >>> async def collect():
-                ...     generator = await astream_chat_response_to_tokens(responses())
+                ...     generator = await astream_response_to_tokens(responses())
                 ...     return [token async for token in generator]
                 ...
                 >>> asyncio.run(collect())
@@ -395,13 +396,16 @@ def default_completion_to_prompt(prompt: str) -> str:
     """Return the provided prompt unchanged.
 
     Args:
-        prompt (str): Prompt string produced by a formatter or template.
+        prompt (str):
+            Prompt string produced by a formatter or template.
 
     Returns:
-        str: The input prompt without modification.
+        str:
+            The input prompt without modification.
 
     Raises:
-        Nothing: This helper performs no validation and never raises.
+        Nothing:
+            This helper performs no validation and never raises.
 
     Examples:
         - Use the identity adapter when no transformation is required

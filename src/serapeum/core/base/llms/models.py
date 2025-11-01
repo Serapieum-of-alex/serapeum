@@ -290,6 +290,7 @@ class ChatResponse(BaseResponse):
             text=self.message.content or "",
             additional_kwargs=self.message.additional_kwargs,
             raw=self.raw,
+            delta=self.delta,
         )
 
 

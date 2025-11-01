@@ -210,3 +210,25 @@ class TestConversionFunctions:
         assert out[0].additional_kwargs == {}
         assert out[1].additional_kwargs == {"x": 2}
 
+    @pytest.mark.asyncio
+    async def test_astream_chat_response_to_completion_response(self):
+        """
+        Inputs: Async generator yielding two ChatResponse objects.
+        Expected: Async generator of CompletionResponse with field mapping identical to sync version.
+        Checks: Sequence and field values preserved.
+        """
+        async def agen():
+            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="X"), delta="x", raw={"k": 0})
+            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="Y", additional_kwargs={"a": 1}), delta="y", raw={"k": 1})
+
+        comp_agen = astream_chat_response_to_completion_response(agen())
+        results = []
+        async for item in comp_agen:
+            results.append(item)
+        assert [c.text for c in results] == ["X", "Y"]
+        assert [c.delta for c in results] == ["x", "y"]
+        assert [c.raw for c in results] == [{"k": 0}, {"k": 1}]
+        assert results[0].additional_kwargs == {}
+        assert results[1].additional_kwargs == {"a": 1}
+
+

@@ -284,6 +284,14 @@ class ChatResponse(BaseResponse):
     def __str__(self) -> str:
         return str(self.message)
 
+    def to_completion_response(self) -> CompletionResponse:
+        """Convert a chat response to a completion response."""
+        return CompletionResponse(
+            text=self.message.content or "",
+            additional_kwargs=self.message.additional_kwargs,
+            raw=self.raw,
+        )
+
 
 ChatResponseGen = Generator[ChatResponse, None, None]
 ChatResponseAsyncGen = AsyncGenerator[ChatResponse, None]

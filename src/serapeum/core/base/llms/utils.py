@@ -66,17 +66,6 @@ class MessageList(ABCSequence):
         return cls([Message(role=MessageRole.USER, content=prompt)])
 
 
-def chat_response_to_completion_response(
-    chat_response: ChatResponse,
-) -> CompletionResponse:
-    """Convert a chat response to a completion response."""
-    return CompletionResponse(
-        text=chat_response.message.content or "",
-        additional_kwargs=chat_response.message.additional_kwargs,
-        raw=chat_response.raw,
-    )
-
-
 def stream_chat_response_to_completion_response(
     chat_response_gen: ChatResponseGen,
 ) -> CompletionResponseGen:
@@ -104,7 +93,7 @@ def chat_to_completion_decorator(
         messages = list(MessageList.from_str(prompt))
         chat_response = func(messages, **kwargs)
         # normalize output
-        return chat_response_to_completion_response(chat_response)
+        return chat_response.to_completion_response()
 
     return wrapper
 
@@ -134,7 +123,7 @@ def achat_to_completion_decorator(
         messages = list(MessageList.from_str(prompt))
         chat_response = await func(messages, **kwargs)
         # normalize output
-        return chat_response_to_completion_response(chat_response)
+        return chat_response.to_completion_response()
 
     return wrapper
 

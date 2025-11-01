@@ -2,7 +2,7 @@ from serapeum.core.base.llms.models import Message, MessageRole, TextChunk, Imag
 from serapeum.core.base.llms.utils import MessageList
 
 
-class TestMessagesToPrompt:
+class TestMessageList:
     def test_happy_path_system_and_user(self):
         """
         Inputs: Two messages — system("You are a bot."), user("Hello").

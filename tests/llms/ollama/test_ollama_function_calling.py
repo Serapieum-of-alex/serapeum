@@ -9,7 +9,7 @@ explaining inputs, expected results, and what is being verified.
 """
 from __future__ import annotations
 
-from typing import List, Sequence
+from typing import Sequence
 
 import pytest
 
@@ -90,6 +90,7 @@ class TestToolOrchestratingLLM:
 class TestToolOrchestratingLLMCall:
     """Synchronous execution via __call__ covering single/multiple outputs."""
 
+    @pytest.mark.e2e
     def test_single_output_call(self) -> None:
         """Call returns a single Album when parallel=False.
 
@@ -101,6 +102,7 @@ class TestToolOrchestratingLLMCall:
         result = tools_llm(topic="rock")
         assert isinstance(result, Album)
 
+    @pytest.mark.e2e
     def test_multiple_outputs_call_parallel_enabled(self) -> None:
         """Call returns list of Albums when parallel=True.
 
@@ -124,6 +126,7 @@ class TestToolOrchestratingLLMCall:
 class TestToolOrchestratingLLMAsyncCall:
     """Async execution via acall covering standard single-output scenario."""
 
+    @pytest.mark.e2e
     async def test_async_single_output(self) -> None:
         """acall returns a single Album when parallel=False.
 
@@ -139,6 +142,7 @@ class TestToolOrchestratingLLMAsyncCall:
 class TestToolOrchestratingLLMStreamCall:
     """Tests for the synchronous streaming interface `stream_call`."""
 
+    @pytest.mark.e2e
     def test_streaming_yields_processed_objects(self) -> None:
         """stream_call yields objects returned by process_streaming_objects per chunk.
 
@@ -146,11 +150,10 @@ class TestToolOrchestratingLLMStreamCall:
         Expected: Two yields with objects we control
         Check: Sequence and values
         """
-        llm = LLM
         tools_llm = ToolOrchestratingLLM(
             output_cls=Album,
             prompt="Album {topic}",
-            llm=llm,
+            llm=LLM,
             allow_parallel_tool_calls=False,
         )
 
@@ -164,6 +167,7 @@ class TestToolOrchestratingLLMStreamCall:
 class TestToolOrchestratingLLMAStreamCall:
     """Tests for the asynchronous streaming interface `astream_call`."""
 
+    @pytest.mark.e2e
     async def test_async_streaming_yields_processed_objects(self) -> None:
         """astream_call yields objects returned by process_streaming_objects per chunk.
 
@@ -171,11 +175,10 @@ class TestToolOrchestratingLLMAStreamCall:
         Expected: Two yields with objects we control (awaited via async for)
         Check: Sequence and values
         """
-        llm = LLM
         tools_llm = ToolOrchestratingLLM(
             output_cls=Album,
             prompt="Album {topic}",
-            llm=llm,
+            llm=LLM,
             allow_parallel_tool_calls=False,
         )
 

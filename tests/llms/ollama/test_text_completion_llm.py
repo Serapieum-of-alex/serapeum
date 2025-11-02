@@ -1,5 +1,5 @@
 """Test LLM program."""
-
+import pytest
 import json
 from unittest.mock import MagicMock
 
@@ -56,6 +56,8 @@ class ModelTest(BaseModel):
     hello: str
 
 class TestTextCompletionLLM:
+
+    @pytest.mark.e2e
     def test_text_completion_llm(self) -> None:
         """Test LLM program."""
         output_parser = PydanticOutputParser(output_cls=ModelTest)
@@ -68,6 +70,7 @@ class TestTextCompletionLLM:
         obj_output = text_llm(test_input="hello")
         assert isinstance(obj_output, ModelTest)
 
+    @pytest.mark.e2e
     def test_text_llm_with_messages(self) -> None:
         """Test LLM program."""
         messages = [Message(role=MessageRole.USER, content="Test")]
@@ -82,6 +85,7 @@ class TestTextCompletionLLM:
         obj_output = text_llm()
         assert isinstance(obj_output, ModelTest)
 
+    @pytest.mark.e2e
     def test_llm_program_with_messages_and_chat(self) -> None:
         """Test LLM program."""
         messages = [Message(role=MessageRole.USER, content="Test")]

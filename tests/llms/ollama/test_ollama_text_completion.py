@@ -56,6 +56,8 @@ def restore_configs_llm():
 
 
 class TestCallMethod:
+
+    @pytest.mark.e2e
     def test_call_non_chat_llm_success(self) -> None:
         """
         Inputs: text LLM and prompt args with llm kwargs
@@ -75,6 +77,7 @@ class TestCallMethod:
         # the `value` attribute should have a value  of `input`
         assert result.value == "input"
 
+    @pytest.mark.e2e
     def test_call_chat_llm_success(self) -> None:
         """
         Inputs: chat LLM with chat response
@@ -96,6 +99,7 @@ class TestCallMethod:
         assert isinstance(result, DummyModel)
         assert result.value is not None
 
+    @pytest.mark.e2e
     def test_call_raises_when_parser_returns_wrong_type(self) -> None:
         """
         Inputs: parser returning SecondaryModel
@@ -117,9 +121,15 @@ class TestCallMethod:
 
 
 class TestAcallMethod:
+
+    @pytest.mark.e2e
     @pytest.mark.asyncio
     async def test_acall_non_chat_llm_success(self) -> None:
-        """Inputs: async call on text LLM; Expected: DummyModel returned; Checks: asynchronous complete branch."""
+        """
+        Inputs: async call on text LLM
+        Expected: DummyModel returned
+        Checks: asynchronous complete branch.
+        """
         parser = RecordingPydanticParser(output_cls=DummyModel)
         text_llm = TextCompletionLLM(
             output_parser=parser,
@@ -132,9 +142,14 @@ class TestAcallMethod:
         assert isinstance(result, DummyModel)
         assert result.value == "input"
 
+    @pytest.mark.e2e
     @pytest.mark.asyncio
     async def test_acall_chat_llm_success(self) -> None:
-        """Inputs: async call on chat LLM; Expected: DummyModel returned; Checks: asynchronous chat branch."""
+        """
+        Inputs: async call on chat LLM
+        Expected: DummyModel returned
+        Checks: asynchronous chat branch.
+        """
         parser = RecordingPydanticParser(output_cls=DummyModel)
         messages = [
             Message(role=MessageRole.USER, content="Value"),
@@ -151,9 +166,14 @@ class TestAcallMethod:
         assert isinstance(result, DummyModel)
         assert result.value is not None
 
+    @pytest.mark.e2e
     @pytest.mark.asyncio
     async def test_acall_raises_when_parser_returns_wrong_type(self) -> None:
-        """Inputs: parser returning SecondaryModel; Expected: ValueError for wrong type; Checks: async guard mirrored from sync path."""
+        """
+        Inputs: parser returning SecondaryModel
+        Expected: ValueError for wrong type
+        Checks: async guard mirrored from sync path.
+        """
         parser = RecordingPydanticParser(
             output_cls=DummyModel,
             override_result=SecondaryModel(flag=True),

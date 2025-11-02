@@ -84,7 +84,7 @@ def test_embedding_class() -> None:
     names_of_base_classes = [b.__name__ for b in Ollama.__mro__]
     assert BaseLLM.__name__ in names_of_base_classes
 
-
+@pytest.mark.mock
 @patch.object(Ollama, "client")
 def test_ollama_chat(mock_ollama_client) -> None:
     mock_ollama_client.chat = MagicMock(return_value=normal_response)
@@ -94,6 +94,7 @@ def test_ollama_chat(mock_ollama_client) -> None:
     assert str(response).strip() != ""
 
 
+@pytest.mark.mock
 @patch.object(Ollama, "client")
 def test_ollama_complete(mock_ollama_client) -> None:
     mock_ollama_client.chat = MagicMock(return_value=normal_response)
@@ -107,7 +108,7 @@ def test_ollama_complete(mock_ollama_client) -> None:
     client is None, reason="Ollama client is not available or test model is missing"
 )
 def test_ollama_stream_chat() -> None:
-    llm = Ollama(model=test_model, request_timeout=80)
+    llm = Ollama(model=test_model, request_timeout=100)
     response = llm.stream_chat([Message(role="user", content="Hello!")])
     for r in response:
         assert r is not None
@@ -115,6 +116,7 @@ def test_ollama_stream_chat() -> None:
         assert str(r).strip() != ""
 
 
+@pytest.mark.e2e
 @pytest.mark.skipif(
     client is None, reason="Ollama client is not available or test model is missing"
 )
@@ -127,6 +129,7 @@ def test_ollama_stream_complete() -> None:
         assert str(r).strip() != ""
 
 
+@pytest.mark.e2e
 @pytest.mark.skipif(
     client is None, reason="Ollama client is not available or test model is missing"
 )
@@ -138,6 +141,7 @@ async def test_ollama_async_chat() -> None:
     assert str(response).strip() != ""
 
 
+@pytest.mark.e2e
 @pytest.mark.skipif(
     client is None, reason="Ollama client is not available or test model is missing"
 )
@@ -149,6 +153,7 @@ async def test_ollama_async_complete() -> None:
     assert str(response).strip() != ""
 
 
+@pytest.mark.e2e
 @pytest.mark.skipif(
     client is None, reason="Ollama client is not available or test model is missing"
 )
@@ -162,6 +167,7 @@ async def test_ollama_async_stream_chat() -> None:
         assert str(r).strip() != ""
 
 
+@pytest.mark.e2e
 @pytest.mark.skipif(
     client is None, reason="Ollama client is not available or test model is missing"
 )
@@ -175,6 +181,7 @@ async def test_ollama_async_stream_complete() -> None:
         assert str(r).strip() != ""
 
 
+@pytest.mark.mock
 @patch.object(Ollama, "client")
 def test_chat_with_tools(mock_ollama_client) -> None:
     mock_ollama_client.chat = MagicMock(return_value=response_for_tool_call)
@@ -189,6 +196,7 @@ def test_chat_with_tools(mock_ollama_client) -> None:
     assert isinstance(tool_result.raw_output, Song)
 
 
+@pytest.mark.mock
 @pytest.mark.asyncio()
 @patch.object(Ollama, "async_client", new_callable=PropertyMock)
 async def test_async_chat_with_tools(mock_ollama_async_prop) -> None:

@@ -56,6 +56,15 @@ ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
 max-line-length = 120
 count = true
 
+[tool.pytest.ini_options]
+testpaths = "tests"
+norecursedirs = "docs"
+markers = [
+    "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
+    "mock: marks tests as mock (deselect with '-m \"not mock\"')",
+    "integration: marks tests as optional-package (deselect with '-m \"not optional_package\"')",
+]
+
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core"]

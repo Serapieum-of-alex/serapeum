@@ -22,7 +22,7 @@ from pydantic import (
 
 from serapeum.core.base.llms.models import Message
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.base.llms.utils import (
+from serapeum.core.base.llms.models import (
     MessageList,
 )
 from serapeum.core.base.llms.models import ChunkType, TextChunk

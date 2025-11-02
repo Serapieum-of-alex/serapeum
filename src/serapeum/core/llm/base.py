@@ -29,7 +29,7 @@ from pydantic import (
     model_validator,
 )
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.base.llms.utils import (
+from serapeum.core.base.llms.models import (
     MessageList,
 )
 
@@ -58,8 +58,7 @@ class MessagesToPromptType(Protocol):
         - Join message contents into a newline-separated prompt
             ```python
             >>> from serapeum.core.llm.base import MessagesToPromptType
-            >>> from serapeum.core.base.llms.models import Message, MessageRole
-            >>> from serapeum.core.base.llms.utils import MessageList
+            >>> from serapeum.core.base.llms.models import Message, MessageRole, MessageList
             >>> def newline_join(message_list):
             ...     return '\n'.join(message.content or "" for message in message_list)
             ...
@@ -69,8 +68,7 @@ class MessagesToPromptType(Protocol):
             ```
         - Validate message content before rendering the prompt
             ```python
-            >>> from serapeum.core.base.llms.models import Message, MessageRole
-            >>> from serapeum.core.base.llms.utils import MessageList
+            >>> from serapeum.core.base.llms.models import Message, MessageRole, MessageList
             >>> def validated_join(message_list):
             ...     contents = [message.content for message in message_list]
             ...     if any(content is None for content in contents):
@@ -100,8 +98,7 @@ class MessagesToPromptType(Protocol):
         Examples:
             - Concatenate user and assistant messages into one prompt
                 ```python
-                >>> from serapeum.core.base.llms.models import Message, MessageRole
-                >>> from serapeum.core.base.llms.utils import MessageList
+                >>> from serapeum.core.base.llms.models import Message, MessageRole, MessageList
                 >>> def concatenate(message_list):
                 ...     return " ".join((message.content or "").strip() for message in message_list)
                 ...
@@ -116,8 +113,7 @@ class MessagesToPromptType(Protocol):
                 ```
             - Reject empty message content before joining
                 ```python
-                >>> from serapeum.core.base.llms.models import Message, MessageRole
-                >>> from serapeum.core.base.llms.utils import MessageList
+                >>> from serapeum.core.base.llms.models import Message, MessageRole, MessageList
                 >>> def strict_concat(message_list):
                 ...     for message in message_list:
                 ...         if message.content is None:

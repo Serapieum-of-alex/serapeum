@@ -5,7 +5,6 @@ from typing import (
     Dict,
     List,
     Optional,
-    Sequence,
     Tuple,
     Type,
     Union,
@@ -18,10 +17,10 @@ from serapeum.core.base.llms.utils import (
     achat_to_completion_decorator,
     stream_chat_to_completion_decorator,
     astream_chat_to_completion_decorator,
-    MessageList
 )
 from serapeum.core.base.llms.models import (
     Message,
+    MessageList,
     ChatResponse,
     ChatResponseGen,
     ChatResponseAsyncGen,

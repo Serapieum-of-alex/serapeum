@@ -1,71 +1,23 @@
 import os
-from typing import Any, Awaitable, Callable, List, Optional, Sequence, Iterator, Union
-from collections.abc import Sequence as ABCSequence
+from typing import Any, Awaitable, Callable, Optional
 
 from serapeum.core.base.llms.models import (
-    Message,
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
     CompletionResponse,
     CompletionResponseAsyncGen,
     CompletionResponseGen,
-    MessageRole,
+    MessageList,
 )
 
-
-class MessageList(ABCSequence):
-    """A collection of Message objects with helper methods."""
-
-    def __init__(self, messages: Sequence[Message] = None):
-        self._messages: List[Message] = list(messages) if messages else []
-
-    def __iter__(self) -> Iterator[Message]:
-        return iter(self._messages)
-
-    def __len__(self) -> int:
-        return len(self._messages)
-
-    def __getitem__(self, index: Union[int, slice]) -> Union[Message, "MessageList"]:
-        if isinstance(index, slice):
-            return MessageList(self._messages[index])
-        return self._messages[index]
-
-    def to_prompt(self) -> str:
-        """Convert messages to a prompt string."""
-        string_messages = []
-        for message in self._messages:
-            role = message.role
-            content = message.content
-            string_message = f"{role.value}: {content}"
-
-            additional_kwargs = message.additional_kwargs
-            if additional_kwargs:
-                string_message += f"\n{additional_kwargs}"
-            string_messages.append(string_message)
-
-        string_messages.append(f"{MessageRole.ASSISTANT.value}: ")
-        return "\n".join(string_messages)
-
-    def filter_by_role(self, role: MessageRole) -> "MessageList":
-        """Return messages with a specific role."""
-        return MessageList([m for m in self._messages if m.role == role])
-
-    def append(self, message: Message) -> None:
-        """Add a message to the collection."""
-        self._messages.append(message)
-
-    @classmethod
-    def from_list(cls, messages: List[Message]) -> "MessageList":
-        """Create from a standard list."""
-        return cls(messages)
-
-    @classmethod
-    def from_str(cls, prompt: str) -> "MessageList":
-        """Create from a string prompt."""
-        return cls([Message(role=MessageRole.USER, content=prompt)])
-
-
+__all__ = [
+    "chat_to_completion_decorator",
+    "stream_chat_to_completion_decorator",
+    "achat_to_completion_decorator",
+    "astream_chat_to_completion_decorator",
+    "get_from_param_or_env"
+]
 
 def chat_to_completion_decorator(
     func: Callable[..., ChatResponse]

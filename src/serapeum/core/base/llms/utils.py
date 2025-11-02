@@ -85,7 +85,7 @@ def chat_to_completion_decorator(
 def stream_chat_to_completion_decorator(
     func: Callable[..., ChatResponseGen]
 ) -> Callable[..., CompletionResponseGen]:
-    """Convert a chat function to a completion function."""
+    """Convert a streaming chat function to a completion function."""
 
     def wrapper(prompt: str, **kwargs: Any) -> CompletionResponseGen:
         # normalize input
@@ -100,7 +100,7 @@ def stream_chat_to_completion_decorator(
 def achat_to_completion_decorator(
     func: Callable[..., Awaitable[ChatResponse]]
 ) -> Callable[..., Awaitable[CompletionResponse]]:
-    """Convert a chat function to a completion function."""
+    """Convert an async chat function to a completion function."""
 
     async def wrapper(prompt: str, **kwargs: Any) -> CompletionResponse:
         # normalize input
@@ -115,7 +115,7 @@ def achat_to_completion_decorator(
 def astream_chat_to_completion_decorator(
     func: Callable[..., Awaitable[ChatResponseAsyncGen]]
 ) -> Callable[..., Awaitable[CompletionResponseAsyncGen]]:
-    """Convert a chat function to a completion function."""
+    """Convert an async streaming chat function to a completion function."""
 
     async def wrapper(prompt: str, **kwargs: Any) -> CompletionResponseAsyncGen:
         # normalize input

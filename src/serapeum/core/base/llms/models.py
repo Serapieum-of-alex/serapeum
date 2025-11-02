@@ -251,27 +251,25 @@ class Message(BaseModel):
         return self._recursive_serialization(value)
 
 
-class MessageList(ABCSequence):
+class MessageList(BaseModel, ABCSequence):
     """A collection of Message objects with helper methods."""
-
-    def __init__(self, messages: Sequence[Message] = None):
-        self._messages: List[Message] = list(messages) if messages else []
+    messages: List[Message] = Field(default_factory=list)
 
     def __iter__(self) -> Iterator[Message]:
-        return iter(self._messages)
+        return iter(self.messages)
 
     def __len__(self) -> int:
-        return len(self._messages)
+        return len(self.messages)
 
     def __getitem__(self, index: Union[int, slice]) -> Union[Message, "MessageList"]:
         if isinstance(index, slice):
-            return MessageList(self._messages[index])
-        return self._messages[index]
+            return MessageList(messages=self.messages[index])
+        return self.messages[index]
 
     def to_prompt(self) -> str:
         """Convert messages to a prompt string."""
         string_messages = []
-        for message in self._messages:
+        for message in self.messages:
             role = message.role
             content = message.content
             string_message = f"{role.value}: {content}"
@@ -286,21 +284,21 @@ class MessageList(ABCSequence):
 
     def filter_by_role(self, role: MessageRole) -> "MessageList":
         """Return messages with a specific role."""
-        return MessageList([m for m in self._messages if m.role == role])
+        return MessageList(messages=[m for m in self.messages if m.role == role])
 
     def append(self, message: Message) -> None:
         """Add a message to the collection."""
-        self._messages.append(message)
+        self.messages.append(message)
 
     @classmethod
     def from_list(cls, messages: List[Message]) -> "MessageList":
         """Create from a standard list."""
-        return cls(messages)
+        return cls(messages=messages)
 
     @classmethod
     def from_str(cls, prompt: str) -> "MessageList":
         """Create from a string prompt."""
-        return cls([Message(role=MessageRole.USER, content=prompt)])
+        return cls(messages=[Message(role=MessageRole.USER, content=prompt)])
 
 
 class LikelihoodScore(BaseModel):

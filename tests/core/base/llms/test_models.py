@@ -330,7 +330,7 @@ def test_completion_response():
     assert str(cr) == "some text"
 
 
-class TestMessageList:
+class TestMessageLists:
     class TestMessageList:
         def test_happy_path_system_and_user(self):
             """
@@ -343,7 +343,7 @@ class TestMessageList:
                 Message(role=MessageRole.SYSTEM, content="You are a bot."),
                 Message(role=MessageRole.USER, content="Hello"),
             ]
-            message_list = MessageList(messages)
+            message_list = MessageList(messages=messages)
             prompt = message_list.to_prompt()
 
             expected = "\n".join([
@@ -361,7 +361,7 @@ class TestMessageList:
             Checks: Deterministic minimal output; no errors.
             """
             messages: list[Message] = []
-            message_list = MessageList(messages)
+            message_list = MessageList(messages=messages)
             prompt = message_list.to_prompt()
 
             assert prompt == "assistant: "
@@ -373,7 +373,7 @@ class TestMessageList:
             Checks: Dict structure and ordering preserved in the string; overall line ordering correct.
             """
             msg = Message(role=MessageRole.USER, content="Hi", additional_kwargs={"tool": {"name": "calc"}})
-            message_list = MessageList([msg])
+            message_list = MessageList(messages=[msg])
             prompt = message_list.to_prompt()
 
             expected = "\n".join([
@@ -390,7 +390,7 @@ class TestMessageList:
             Checks: Correct newline joining within a single message; no extra blank lines.
             """
             msg = Message(role=MessageRole.USER, content=[TextChunk(content="Line1"), TextChunk(content="Line2")])
-            message_list = MessageList([msg])
+            message_list = MessageList(messages=[msg])
             prompt = message_list.to_prompt()
 
             expected = "\n".join([
@@ -407,7 +407,7 @@ class TestMessageList:
             """
             img = Image(content=b"\x89PNG", image_mimetype="image/png")
             msg = Message(role=MessageRole.USER, content=[img])
-            message_list = MessageList([msg])
+            message_list = MessageList(messages=[msg])
             prompt = message_list.to_prompt()
 
             expected = "\n".join([
@@ -428,7 +428,7 @@ class TestMessageList:
                 Message(role=MessageRole.ASSISTANT, content="B"),
                 Message(role=MessageRole.TOOL, content="C"),
             ]
-            message_list = MessageList(messages)
+            message_list = MessageList(messages=messages)
             prompt = message_list.to_prompt()
 
             expected = "\n".join([
@@ -500,7 +500,7 @@ class TestMessageList:
                 Message(role=MessageRole.USER, content="U2"),
                 Message(role=MessageRole.TOOL, content="T"),
             ]
-            ml = MessageList(messages)
+            ml = MessageList(messages=messages)
             only_users = ml.filter_by_role(MessageRole.USER)
             assert isinstance(only_users, MessageList)
             assert [m.content for m in only_users] == ["U1", "U2"]

@@ -74,10 +74,10 @@ def chat_to_completion_decorator(
 
     def wrapper(prompt: str, **kwargs: Any) -> CompletionResponse:
         # normalize input
-        messages = list(MessageList.from_str(prompt))
-        chat_response_gen = func(messages, **kwargs)
+        messages = MessageList.from_str(prompt)
+        chat_response = func(messages, **kwargs)
         # normalize output
-        return chat_response_gen.to_completion_response()
+        return chat_response.to_completion_response()
 
     return wrapper
 
@@ -89,7 +89,7 @@ def stream_chat_to_completion_decorator(
 
     def wrapper(prompt: str, **kwargs: Any) -> CompletionResponseGen:
         # normalize input
-        messages = list(MessageList.from_str(prompt))
+        messages = MessageList.from_str(prompt)
         chat_response_gen = func(messages, **kwargs)
         # normalize output
         return ChatResponse.stream_to_completion_response(chat_response_gen)
@@ -104,7 +104,7 @@ def achat_to_completion_decorator(
 
     async def wrapper(prompt: str, **kwargs: Any) -> CompletionResponse:
         # normalize input
-        messages = list(MessageList.from_str(prompt))
+        messages = MessageList.from_str(prompt)
         chat_response = await func(messages, **kwargs)
         # normalize output
         return chat_response.to_completion_response()
@@ -119,7 +119,7 @@ def astream_chat_to_completion_decorator(
 
     async def wrapper(prompt: str, **kwargs: Any) -> CompletionResponseAsyncGen:
         # normalize input
-        messages = list(MessageList.from_str(prompt))
+        messages = MessageList.from_str(prompt)
         chat_response = await func(messages, **kwargs)
         # normalize output
         return ChatResponse.astream_to_completion_response(chat_response)

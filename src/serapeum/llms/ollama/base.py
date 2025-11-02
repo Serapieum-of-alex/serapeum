@@ -18,6 +18,7 @@ from serapeum.core.base.llms.utils import (
     achat_to_completion_decorator,
     stream_chat_to_completion_decorator,
     astream_chat_to_completion_decorator,
+    MessageList
 )
 from serapeum.core.base.llms.models import (
     Message,
@@ -215,7 +216,7 @@ class Ollama(FunctionCallingLLM):
             **self.additional_kwargs,
         }
 
-    def _convert_to_ollama_messages(self, messages: Sequence[Message]) -> Dict:
+    def _convert_to_ollama_messages(self, messages: MessageList) -> Dict:
         ollama_messages = []
         for message in messages:
             cur_ollama_message = {
@@ -326,7 +327,7 @@ class Ollama(FunctionCallingLLM):
 
         return tool_selections
 
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+    def chat(self, messages: MessageList, **kwargs: Any) -> ChatResponse:
         ollama_messages = self._convert_to_ollama_messages(messages)
 
         tools = kwargs.pop("tools", None)
@@ -387,7 +388,7 @@ class Ollama(FunctionCallingLLM):
 
 
     def stream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
+        self, messages: MessageList, **kwargs: Any
     ) -> ChatResponseGen:
         ollama_messages = self._convert_to_ollama_messages(messages)
 
@@ -418,7 +419,7 @@ class Ollama(FunctionCallingLLM):
         return gen()
 
     async def astream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
+        self, messages: MessageList, **kwargs: Any
     ) -> ChatResponseAsyncGen:
         ollama_messages = self._convert_to_ollama_messages(messages)
 
@@ -449,7 +450,7 @@ class Ollama(FunctionCallingLLM):
         return gen()
 
     async def achat(
-        self, messages: Sequence[Message], **kwargs: Any
+        self, messages: MessageList, **kwargs: Any
     ) -> ChatResponse:
         ollama_messages = self._convert_to_ollama_messages(messages)
 

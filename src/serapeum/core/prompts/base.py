@@ -259,7 +259,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         if messages_to_prompt is not None:
             return messages_to_prompt(messages)
 
-        return MessageList(messages).to_prompt()
+        return MessageList(messages=messages).to_prompt()
 
     def format_messages(
         self, llm: Optional[BaseLLM] = None, **kwargs: Any
@@ -305,5 +305,5 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         return messages
 
     def get_template(self, llm: Optional[BaseLLM] = None) -> str:
-        return MessageList(self.message_templates).to_prompt()
+        return MessageList(messages=self.message_templates).to_prompt()
 

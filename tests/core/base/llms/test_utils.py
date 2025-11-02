@@ -1,6 +1,6 @@
 import pytest
 
-from serapeum.core.base.llms.models import ChatResponse
+from serapeum.core.base.llms.models import ChatResponse, MessageList
 from serapeum.core.base.llms.utils import (
     chat_to_completion_decorator,
     stream_chat_to_completion_decorator,
@@ -23,7 +23,7 @@ class TestDecorators:
 
         def chat_impl(messages, **kwargs):
             # validate normalization
-            assert isinstance(messages, list)
+            assert isinstance(messages, MessageList)
             assert len(messages) == 1
             assert isinstance(messages[0], Message)
             assert messages[0].role == MessageRole.USER

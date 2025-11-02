@@ -146,6 +146,12 @@ class Ollama(FunctionCallingLLM):
         # reusing a client bound to a closed event loop across tests/runs
         self._async_client_loop = None
 
+        # Cache decorated methods to avoid creating wrappers on every call
+        self._complete_fn = chat_to_completion_decorator(self.chat)
+        self._acomplete_fn = achat_to_completion_decorator(self.achat)
+        self._stream_complete_fn = stream_chat_to_completion_decorator(self.stream_chat)
+        self._astream_complete_fn = astream_chat_to_completion_decorator(self.astream_chat)
+
     @classmethod
     def class_name(cls) -> str:
         return "Ollama_llm"
@@ -477,26 +483,24 @@ class Ollama(FunctionCallingLLM):
         )
 
     def complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
+        self, prompt: str, **kwargs: Any
     ) -> CompletionResponse:
-        return chat_to_completion_decorator(self.chat)(prompt, **kwargs)
+        return self._complete_fn(prompt, **kwargs)
 
     async def acomplete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
+        self, prompt: str, **kwargs: Any
     ) -> CompletionResponse:
-        return await achat_to_completion_decorator(self.achat)(prompt, **kwargs)
+        return await self._acomplete_fn(prompt, **kwargs)
 
     def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
+        self, prompt: str, **kwargs: Any
     ) -> CompletionResponseGen:
-        return stream_chat_to_completion_decorator(self.stream_chat)(prompt, **kwargs)
+        return self._stream_complete_fn(prompt, **kwargs)
 
     async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
+        self, prompt: str, **kwargs: Any
     ) -> CompletionResponseAsyncGen:
-        return await astream_chat_to_completion_decorator(self.astream_chat)(
-            prompt, **kwargs
-        )
+        return await self._astream_complete_fn(prompt, **kwargs)
 
     def structured_predict(
         self,

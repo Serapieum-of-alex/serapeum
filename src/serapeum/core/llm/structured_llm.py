@@ -32,6 +32,13 @@ class StructuredLLM(LLM):
         ..., description="Output class for the structured LLM.", exclude=True
     )
 
+    def model_post_init(self, __context: Any) -> None:
+        """Cache decorated methods to avoid creating wrappers on every call."""
+        super().model_post_init(__context)
+        # Cache the decorated methods
+        self._complete_fn = chat_to_completion_decorator(self.chat)
+        self._acomplete_fn = achat_to_completion_decorator(self.achat)
+
     @classmethod
     def class_name(cls) -> str:
         return "structured_llm"
@@ -77,13 +84,12 @@ class StructuredLLM(LLM):
             )
 
     def complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
+        self, prompt: str, **kwargs: Any
     ) -> CompletionResponse:
-        complete_fn = chat_to_completion_decorator(self.chat)
-        return complete_fn(prompt, **kwargs)
+        return self._complete_fn(prompt, **kwargs)
 
     def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
+        self, prompt: str, **kwargs: Any
     ) -> CompletionResponseGen:
         """Stream completion endpoint for LLM."""
         raise NotImplementedError("stream_complete is not supported by default.")
@@ -133,13 +139,12 @@ class StructuredLLM(LLM):
         return gen()
 
     async def acomplete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
+        self, prompt: str, **kwargs: Any
     ) -> CompletionResponse:
-        complete_fn = achat_to_completion_decorator(self.achat)
-        return await complete_fn(prompt, **kwargs)
+        return await self._acomplete_fn(prompt, **kwargs)
 
     async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
+        self, prompt: str, **kwargs: Any
     ) -> CompletionResponseGen:
         """Async stream completion endpoint for LLM."""
         raise NotImplementedError("astream_complete is not supported by default.")

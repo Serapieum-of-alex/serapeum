@@ -293,6 +293,43 @@ class ChatResponse(BaseResponse):
             delta=self.delta,
         )
 
+    @staticmethod
+    def stream_to_completion_response(
+        chat_response_gen: ChatResponseGen,
+    ) -> CompletionResponseGen:
+        """Convert a chat response stream to completion response stream.
+
+        Args:
+            chat_response_gen: Generator yielding ChatResponse objects
+
+        Yields:
+            CompletionResponse objects converted from each ChatResponse
+        """
+
+        def gen() -> CompletionResponseGen:
+            for response in chat_response_gen:
+                yield response.to_completion_response()
+
+        return gen()
+
+    @staticmethod
+    def astream_to_completion_response(
+        chat_response_gen: ChatResponseAsyncGen,
+    ) -> CompletionResponseAsyncGen:
+        """Convert an async chat response stream to completion response stream.
+
+        Args:
+            chat_response_gen: Async generator yielding ChatResponse objects
+
+        Yields:
+            CompletionResponse objects converted from each ChatResponse
+        """
+        async def gen() -> CompletionResponseAsyncGen:
+            async for response in chat_response_gen:
+                yield response.to_completion_response()
+
+        return gen()
+
 
 ChatResponseGen = Generator[ChatResponse, None, None]
 ChatResponseAsyncGen = AsyncGenerator[ChatResponse, None]

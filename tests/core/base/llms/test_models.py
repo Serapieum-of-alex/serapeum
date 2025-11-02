@@ -284,6 +284,45 @@ class TestChatResponseToCompletionResponse:
         out = cr.to_completion_response()
         assert out.text == ""
 
+    def test_stream_to_completion_response(self):
+        """
+        Inputs: Generator of two ChatResponse items with different content and delta values.
+        Expected: Generator yields corresponding CompletionResponse items mapping fields 1:1 (text, additional_kwargs, delta, raw).
+        Checks: Order preserved; values mapped correctly.
+        """
+        def chat_gen():
+            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="A"), delta="A", raw={"i": 0})
+            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="B", additional_kwargs={"x": 2}), delta="B", raw={"i": 1})
+
+        comp_gen = ChatResponse.stream_to_completion_response(chat_gen())
+        out = list(comp_gen)
+        assert [c.text for c in out] == ["A", "B"]
+        assert [c.delta for c in out] == ["A", "B"]
+        assert [c.raw for c in out] == [{"i": 0}, {"i": 1}]
+        assert out[0].additional_kwargs == {}
+        assert out[1].additional_kwargs == {"x": 2}
+
+    @pytest.mark.asyncio
+    async def test_astream_completion_response(self):
+        """
+        Inputs: Async generator yielding two ChatResponse objects.
+        Expected: Async generator of CompletionResponse with field mapping identical to sync version.
+        Checks: Sequence and field values preserved.
+        """
+        async def agen():
+            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="X"), delta="x", raw={"k": 0})
+            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="Y", additional_kwargs={"a": 1}), delta="y", raw={"k": 1})
+
+        comp_agen = ChatResponse.astream_to_completion_response(agen())
+        results = []
+        async for item in comp_agen:
+            results.append(item)
+        assert [c.text for c in results] == ["X", "Y"]
+        assert [c.delta for c in results] == ["x", "y"]
+        assert [c.raw for c in results] == [{"k": 0}, {"k": 1}]
+        assert results[0].additional_kwargs == {}
+        assert results[1].additional_kwargs == {"a": 1}
+
 
 def test_completion_response():
     cr = CompletionResponse(text="some text")

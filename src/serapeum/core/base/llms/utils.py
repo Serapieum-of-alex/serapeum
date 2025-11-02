@@ -66,17 +66,6 @@ class MessageList(ABCSequence):
         return cls([Message(role=MessageRole.USER, content=prompt)])
 
 
-def stream_chat_response_to_completion_response(
-    chat_response_gen: ChatResponseGen,
-) -> CompletionResponseGen:
-    """Convert a stream chat response to a completion response."""
-
-    def gen() -> CompletionResponseGen:
-        for response in chat_response_gen:
-            yield response.to_completion_response()
-
-    return gen()
-
 
 def chat_to_completion_decorator(
     func: Callable[..., ChatResponse]
@@ -86,9 +75,9 @@ def chat_to_completion_decorator(
     def wrapper(prompt: str, **kwargs: Any) -> CompletionResponse:
         # normalize input
         messages = list(MessageList.from_str(prompt))
-        chat_response = func(messages, **kwargs)
+        chat_response_gen = func(messages, **kwargs)
         # normalize output
-        return chat_response.to_completion_response()
+        return chat_response_gen.to_completion_response()
 
     return wrapper
 
@@ -101,9 +90,9 @@ def stream_chat_to_completion_decorator(
     def wrapper(prompt: str, **kwargs: Any) -> CompletionResponseGen:
         # normalize input
         messages = list(MessageList.from_str(prompt))
-        chat_response = func(messages, **kwargs)
+        chat_response_gen = func(messages, **kwargs)
         # normalize output
-        return stream_chat_response_to_completion_response(chat_response)
+        return ChatResponse.stream_to_completion_response(chat_response_gen)
 
     return wrapper
 
@@ -133,21 +122,9 @@ def astream_chat_to_completion_decorator(
         messages = list(MessageList.from_str(prompt))
         chat_response = await func(messages, **kwargs)
         # normalize output
-        return astream_chat_response_to_completion_response(chat_response)
+        return ChatResponse.astream_to_completion_response(chat_response)
 
     return wrapper
-
-
-def astream_chat_response_to_completion_response(
-    chat_response_gen: ChatResponseAsyncGen,
-) -> CompletionResponseAsyncGen:
-    """Convert a stream chat response to a completion response."""
-
-    async def gen() -> CompletionResponseAsyncGen:
-        async for response in chat_response_gen:
-            yield response.to_completion_response()
-
-    return gen()
 
 
 def get_from_param_or_env(

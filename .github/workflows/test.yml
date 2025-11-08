@@ -34,7 +34,7 @@ jobs:
             **/uv.lock
 
       - name: Install Dependencies
-        run: uv pip install -e ".[dev]"
+        run: uv sync --frozen --group dev
 
       - name: list env contents
         run: |

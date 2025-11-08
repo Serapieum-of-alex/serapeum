@@ -100,6 +100,15 @@ repos:
       - id: check-summary-punctuation
         name: "[bash -   format] check-summary-punctuation"
 
+- repo: local
+    hooks:
+      - id: uv-lock-check
+        name: Check uv.lock is up to date
+        entry: uv lock --check
+        language: system
+        pass_filenames: false
+        files: ^(pyproject\.toml|uv\.lock)$
+
   - repo: local
     hooks:
       - id: pytest-check

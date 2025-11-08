@@ -1,4 +1,6 @@
 name: ci
+permissions:
+    contents: read
 
 on:
   push:
@@ -30,9 +32,6 @@ jobs:
           cache-dependency-glob: |
             **/pyproject.toml
             **/uv.lock
-
-      - name: Create virtual environment
-        run: uv venv
 
       - name: Install Dependencies
         run: uv pip install -e ".[dev]"

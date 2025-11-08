@@ -13,11 +13,10 @@ from typing import (
     Literal,
     Optional,
     Union,
-    Sequence,
     Iterator
 )
 
-import filetype
+from filetype import guess as filetype_guess
 from typing_extensions import Self
 
 from pydantic import (
@@ -93,7 +92,7 @@ class Image(Chunk):
 
     def _guess_mimetype(self, img_data: bytes) -> None:
         if not self.image_mimetype:
-            guess = filetype.guess(img_data)
+            guess = filetype_guess(img_data)
             self.image_mimetype = guess.mime if guess else None
 
     def resolve_image(self, as_base64: bool = False) -> BytesIO:
@@ -147,7 +146,7 @@ class Audio(Chunk):
 
     def _guess_format(self, audio_data: bytes) -> None:
         if not self.format:
-            guess = filetype.guess(audio_data)
+            guess = filetype_guess(audio_data)
             self.format = guess.extension if guess else None
 
     def resolve_audio(self, as_base64: bool = False) -> BytesIO:

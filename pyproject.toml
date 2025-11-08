@@ -26,10 +26,6 @@ dependencies = [
     "numpy",
     "filetype>=1.2.0",
     "requests>=2.32.5",
-    "deprecated>=1.2.18",
-    "dataclasses-json>=0.6.7",
-    "nltk>=3.9.1",
-    "banks>=2.2.0",
 ]
 
 [project.optional-dependencies]

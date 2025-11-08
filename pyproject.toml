@@ -1,11 +1,11 @@
-[tool.poetry]
+[project]
 name = "serapeum"
 version = "0.1.0"
 description = "llm utility package"
 readme = "README.md"
-license = "GNU General Public License v3"
+license = {text = "GNU General Public License v3"}
 authors = [
-    "Mostafa Farrag moah.farag@gmail.com"
+    {name = "Mostafa Farrag", email = "moah.farag@gmail.com"}
 ]
 keywords = ["llm", "generativeai", "chatbot", "rag", "natural language processing"]
 classifiers = [
@@ -16,32 +16,33 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: AI",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
 ]
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "ollama>=0.5.4",
+    "numpy",
+    "filetype>=1.2.0",
+    "requests>=2.32.5",
+    "deprecated>=1.2.18",
+    "dataclasses-json>=0.6.7",
+    "nltk>=3.9.1",
+    "banks>=2.2.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.11,<4.0"
-ollama = ">=0.5.4"
-numpy = "*"
-filetype = "^1.2.0"
-requests = "^2.32.5"
-deprecated = "^1.2.18"
-dataclasses-json = "^0.6.7"
-nltk = "^3.9.1"
-banks = "^2.2.0"
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+    "pre-commit>=4.3.0",
+    "pre-commit-hooks>=6.0.0",
+    "pytest-asyncio>=1.2.0",
+    "nest-asyncio>=1.6.0",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.4.2"
-pytest-cov = "^7.0.0"
-pre-commit = "^4.3.0"
-pre-commit-hooks = "^6.0.0"
-pytest-asyncio = "^1.2.0"
-nest-asyncio = "^1.6.0"
-
-
-[urls]
+[project.urls]
 homepage = "https://github.com/Serapieum-of-alex/serapeum"
 repository = "https://github.com/Serapieum-of-alex/serapeum"
 documentation = "https://serapeum.readthedocs.io/"
@@ -66,5 +67,5 @@ markers = [
 ]
 
 [build-system]
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core"]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

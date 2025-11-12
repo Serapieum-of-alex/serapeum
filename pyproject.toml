@@ -64,9 +64,9 @@ repository = "https://github.com/Serapieum-of-alex/serapeum"
 documentation = "https://serapeum.readthedocs.io/"
 Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["serapeum", "serapeum.*"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/serapeum"]
 
 [tool.flake8]
 ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]

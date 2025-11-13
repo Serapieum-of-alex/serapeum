@@ -1,0 +1,1368 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="LLM package" name="description"/>
+<link href="https://serapieum-of-alex.github.io/Serapeum/develop/reference/structured_tools/tools_llm/" rel="canonical"/>
+<link href="../../../overview/codebase-map/" rel="prev"/>
+<link href="../../tools/tools/" rel="next"/>
+<link href="../../../assets/images/favicon.png" rel="icon"/>
+<meta content="mkdocs-1.6.1, mkdocs-material-9.6.23" name="generator"/>
+<title>Tools LLM - Serapeum</title>
+<link href="../../../assets/stylesheets/main.84d31ad4.min.css" rel="stylesheet"/>
+<link href="../../../assets/stylesheets/palette.06af60db.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
+<style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+<link href="../../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
+<script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+<meta name="panzoom-theme" content="material">
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#toolorchestratingllm-comprehensive-diagrams-and-documentation">
+          Skip to content
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<div data-md-color-scheme="default" data-md-component="outdated" hidden="">
+</div>
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+<nav aria-label="Header" class="md-header__inner md-grid">
+<a aria-label="Serapeum" class="md-header__button md-logo" data-md-component="logo" href="../../.." title="Serapeum">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            Serapeum
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              Tools LLM
+            
+          </span>
+</div>
+</div>
+</div>
+<form class="md-header__option" data-md-component="palette">
+<input aria-label="Switch to light mode" class="md-option" data-md-color-accent="indigo" data-md-color-media="(prefers-color-scheme)" data-md-color-primary="indigo" data-md-color-scheme="default" id="__palette_0" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_1" hidden="" title="Switch to light mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"></path></svg>
+</label>
+<input aria-label="Switch to dark mode" class="md-option" data-md-color-accent="purple" data-md-color-media="(prefers-color-scheme: light)" data-md-color-primary="teal" data-md-color-scheme="default" id="__palette_1" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_2" hidden="" title="Switch to dark mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"></path></svg>
+</label>
+<input aria-label="Switch to system preference" class="md-option" data-md-color-accent="lime" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-primary="black" data-md-color-scheme="slate" id="__palette_2" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_0" hidden="" title="Switch to system preference">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"></path></svg>
+</label>
+</form>
+<script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+<label class="md-header__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+</label>
+<div class="md-search" data-md-component="search" role="dialog">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="Search" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="Search" required="" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+</label>
+<nav aria-label="Search" class="md-search__options">
+<button aria-label="Clear" class="md-search__icon md-icon" tabindex="-1" title="Clear" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+</button>
+</nav>
+<div class="md-search__suggest" data-md-component="search-suggest"></div>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="" tabindex="0">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
+            Initializing search
+          </div>
+<ol class="md-search-result__list" role="presentation"></ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md-header__source">
+<a class="md-source" data-md-component="source" href="https://github.com/Serapieum-of-alex/Serapeum" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+</div>
+<div class="md-source__repository">
+    Serapieum-of-alex/Serapeum
+  </div>
+</a>
+</div>
+</nav>
+<nav aria-label="Tabs" class="md-tabs" data-md-component="tabs">
+<div class="md-grid">
+<ul class="md-tabs__list">
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../..">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../../installation/">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../../overview/codebase-map/">
+          
+  
+  
+    
+  
+  Overview
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../../architecture/diagrams.md">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+</li>
+<li class="md-tabs__item md-tabs__item--active">
+<a class="md-tabs__link" href="./">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../../tutorials/getting-started.md">
+          
+  
+  
+    
+  
+  Tutorials
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../../change-log/">
+          
+  
+  
+    
+  
+  About
+
+        </a>
+</li>
+</ul>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary md-nav--lifted" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="Serapeum" class="md-nav__button md-logo" data-md-component="logo" href="../../.." title="Serapeum">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
+</a>
+    Serapeum
+  </label>
+<div class="md-nav__source">
+<a class="md-source" data-md-component="source" href="https://github.com/Serapieum-of-alex/Serapeum" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+</div>
+<div class="md-source__repository">
+    Serapieum-of-alex/Serapeum
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../..">
+<span class="md-ellipsis">
+    Home
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../installation/">
+<span class="md-ellipsis">
+    Installation
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_3" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+<span class="md-ellipsis">
+    Overview
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_3">
+<span class="md-nav__icon md-icon"></span>
+            Overview
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../overview/codebase-map/">
+<span class="md-ellipsis">
+    Codebase Map
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_4" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+<span class="md-ellipsis">
+    Architecture
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_4">
+<span class="md-nav__icon md-icon"></span>
+            Architecture
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../architecture/diagrams.md">
+<span class="md-ellipsis">
+    Diagrams
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5" type="checkbox"/>
+<label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+<span class="md-ellipsis">
+    Reference
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="true" aria-labelledby="__nav_5_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_5">
+<span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="">
+<span class="md-ellipsis">
+    structured_tools
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="true" aria-labelledby="__nav_5_1_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_5_1">
+<span class="md-nav__icon md-icon"></span>
+            structured_tools
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    Tools LLM
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
+<span class="md-ellipsis">
+    Tools LLM
+    
+  </span>
+</a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#class-hierarchy-uml">
+<span class="md-ellipsis">
+      Class Hierarchy (UML)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#comprehensive-class-diagram-uml">
+<span class="md-ellipsis">
+      Comprehensive Class Diagram (UML)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-diagram-uml">
+<span class="md-ellipsis">
+      Component Diagram (UML)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#sequence-diagram-call">
+<span class="md-ellipsis">
+      Sequence Diagram — call
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#sequence-diagram-streaming-stream_call">
+<span class="md-ellipsis">
+      Sequence Diagram — Streaming (stream_call)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#activity-diagram">
+<span class="md-ellipsis">
+      Activity Diagram
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#data-flow-diagram">
+<span class="md-ellipsis">
+      Data Flow Diagram
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#state-machine-diagram-streaming-lifecycle">
+<span class="md-ellipsis">
+      State Machine Diagram (Streaming Lifecycle)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#architecture-overview-block-diagram">
+<span class="md-ellipsis">
+      Architecture Overview (Block Diagram)
+    </span>
+</a>
+<nav aria-label="Architecture Overview (Block Diagram)" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#notes-and-type-details">
+<span class="md-ellipsis">
+      Notes and Type Details
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--section md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="">
+<span class="md-ellipsis">
+    tools
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_5_2_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_5_2">
+<span class="md-nav__icon md-icon"></span>
+            tools
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../tools/tools/">
+<span class="md-ellipsis">
+    Tools Documentation
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../tools/callable_tools/">
+<span class="md-ellipsis">
+    Callable Tools
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../api-reference.md">
+<span class="md-ellipsis">
+    API Reference
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_6" type="checkbox"/>
+<label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+<span class="md-ellipsis">
+    Tutorials
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_6_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_6">
+<span class="md-nav__icon md-icon"></span>
+            Tutorials
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../tutorials/getting-started.md">
+<span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../tutorials/advanced-usage.md">
+<span class="md-ellipsis">
+    Advanced Usage
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_7" type="checkbox"/>
+<label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+<span class="md-ellipsis">
+    About
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_7_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_7">
+<span class="md-nav__icon md-icon"></span>
+            About
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../change-log/">
+<span class="md-ellipsis">
+    Change-log
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../CODE_OF_CONDUCT/">
+<span class="md-ellipsis">
+    Code of Conduct
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../contributing/">
+<span class="md-ellipsis">
+    Contributing
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../LICENSE/">
+<span class="md-ellipsis">
+    License
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../AUTHORS/">
+<span class="md-ellipsis">
+    Authors
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#class-hierarchy-uml">
+<span class="md-ellipsis">
+      Class Hierarchy (UML)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#comprehensive-class-diagram-uml">
+<span class="md-ellipsis">
+      Comprehensive Class Diagram (UML)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-diagram-uml">
+<span class="md-ellipsis">
+      Component Diagram (UML)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#sequence-diagram-call">
+<span class="md-ellipsis">
+      Sequence Diagram — call
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#sequence-diagram-streaming-stream_call">
+<span class="md-ellipsis">
+      Sequence Diagram — Streaming (stream_call)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#activity-diagram">
+<span class="md-ellipsis">
+      Activity Diagram
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#data-flow-diagram">
+<span class="md-ellipsis">
+      Data Flow Diagram
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#state-machine-diagram-streaming-lifecycle">
+<span class="md-ellipsis">
+      State Machine Diagram (Streaming Lifecycle)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#architecture-overview-block-diagram">
+<span class="md-ellipsis">
+      Architecture Overview (Block Diagram)
+    </span>
+</a>
+<nav aria-label="Architecture Overview (Block Diagram)" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#notes-and-type-details">
+<span class="md-ellipsis">
+      Notes and Type Details
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/structured_tools/tools_llm.md" rel="edit" title="Edit this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+</a>
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/structured_tools/tools_llm.md" title="View source of this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
+</a>
+<h1 id="toolorchestratingllm-comprehensive-diagrams-and-documentation"><a class="toclink" href="#toolorchestratingllm-comprehensive-diagrams-and-documentation">ToolOrchestratingLLM — Comprehensive Diagrams and Documentation</a><a class="headerlink" href="#toolorchestratingllm-comprehensive-diagrams-and-documentation" title="Permanent link">#</a></h1>
+<p>This page documents <code>serapeum.core.structured_tools.tools_llm.ToolOrchestratingLLM</code> with class, component, sequence, activity, data-flow, state, and architecture diagrams. Diagrams include full type annotations, generic parameters, relationships, and both sync/async variants.</p>
+<ul>
+<li>Primary class: <code>ToolOrchestratingLLM(BasePydanticLLM[pydantic.BaseModel])</code></li>
+<li>Key collaborators: <code>FunctionCallingLLM</code>, <code>BasePromptTemplate</code>/<code>PromptTemplate</code>, <code>CallableTool</code>, <code>StreamingObjectProcessor</code>, <code>AgentChatResponse</code>, <code>Configs</code></li>
+</ul>
+<p>Sections provide Mermaid diagrams and PlantUML alternatives where applicable.</p>
+<hr/>
+<h2 id="class-hierarchy-uml"><a class="toclink" href="#class-hierarchy-uml">Class Hierarchy (UML)</a><a class="headerlink" href="#class-hierarchy-uml" title="Permanent link">#</a></h2>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>classDiagram
+    direction TB
+
+    class ABC
+
+    class BasePydanticLLM~Model~ {
+        +output_cls() Type[Model]
+        +__call__(*args: Any, **kwargs: Any) Model | List[Model]
+        +acall(*args: Any, **kwargs: Any) Model | List[Model]
+        +stream_call(*args: Any, **kwargs: Any) Generator[Model | List[Model]]
+        +astream_call(*args: Any, **kwargs: Any) AsyncGenerator[Model | List[Model]]
+    }
+
+    class ToolOrchestratingLLM
+
+    class LLM
+    class FunctionCallingLLM
+    LLM &lt;|-- FunctionCallingLLM
+
+    ABC &lt;|-- BasePydanticLLM~Model~
+    BasePydanticLLM~BaseModel~ &lt;|-- ToolOrchestratingLLM
+
+    class BasePromptTemplate
+    class PromptTemplate
+    BasePromptTemplate &lt;|-- PromptTemplate
+
+    class CallableTool
+    class StreamingObjectProcessor
+    class AgentChatResponse
+    class Configs
+
+    %% Relationships (composition/dependency)
+    ToolOrchestratingLLM *-- BasePromptTemplate : _prompt
+    ToolOrchestratingLLM *-- FunctionCallingLLM : _llm
+    ToolOrchestratingLLM o-- CallableTool : from_model(output_cls)
+    ToolOrchestratingLLM ..&gt; StreamingObjectProcessor : uses (streaming)
+    ToolOrchestratingLLM ..&gt; AgentChatResponse : receives
+    ToolOrchestratingLLM ..&gt; Configs : validate_llm fallback</code></pre>
+</div>
+<p>PlantUML alternative:</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>@startuml
+<a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a>set namespaceSeparator ::
+<a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>
+<a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a>abstract class ABC
+<a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a>class "pydantic.BaseModel" as BaseModel
+<a href="#__codelineno-0-6" id="__codelineno-0-6" name="__codelineno-0-6"></a>class Model &lt;&lt;TypeVar: bound=BaseModel&gt;&gt;
+<a href="#__codelineno-0-7" id="__codelineno-0-7" name="__codelineno-0-7"></a>
+<a href="#__codelineno-0-8" id="__codelineno-0-8" name="__codelineno-0-8"></a>abstract class BasePydanticLLM~Model~ {
+<a href="#__codelineno-0-9" id="__codelineno-0-9" name="__codelineno-0-9"></a>  +{abstract} output_cls() : Type[Model]
+<a href="#__codelineno-0-10" id="__codelineno-0-10" name="__codelineno-0-10"></a>  +{abstract} __call__(*args: Any, **kwargs: Any) : Model | List[Model]
+<a href="#__codelineno-0-11" id="__codelineno-0-11" name="__codelineno-0-11"></a>  +acall(*args: Any, **kwargs: Any) : Model | List[Model]
+<a href="#__codelineno-0-12" id="__codelineno-0-12" name="__codelineno-0-12"></a>  +stream_call(*args: Any, **kwargs: Any) : Generator[Model | List[Model]]
+<a href="#__codelineno-0-13" id="__codelineno-0-13" name="__codelineno-0-13"></a>  +astream_call(*args: Any, **kwargs: Any) : AsyncGenerator[Model | List[Model]]
+<a href="#__codelineno-0-14" id="__codelineno-0-14" name="__codelineno-0-14"></a>}
+<a href="#__codelineno-0-15" id="__codelineno-0-15" name="__codelineno-0-15"></a>
+<a href="#__codelineno-0-16" id="__codelineno-0-16" name="__codelineno-0-16"></a>class ToolOrchestratingLLM
+<a href="#__codelineno-0-17" id="__codelineno-0-17" name="__codelineno-0-17"></a>class LLM
+<a href="#__codelineno-0-18" id="__codelineno-0-18" name="__codelineno-0-18"></a>class FunctionCallingLLM
+<a href="#__codelineno-0-19" id="__codelineno-0-19" name="__codelineno-0-19"></a>LLM &lt;|-- FunctionCallingLLM
+<a href="#__codelineno-0-20" id="__codelineno-0-20" name="__codelineno-0-20"></a>
+<a href="#__codelineno-0-21" id="__codelineno-0-21" name="__codelineno-0-21"></a>ABC &lt;|-- BasePydanticLLM~Model~
+<a href="#__codelineno-0-22" id="__codelineno-0-22" name="__codelineno-0-22"></a>BasePydanticLLM~BaseModel~ &lt;|-- ToolOrchestratingLLM
+<a href="#__codelineno-0-23" id="__codelineno-0-23" name="__codelineno-0-23"></a>
+<a href="#__codelineno-0-24" id="__codelineno-0-24" name="__codelineno-0-24"></a>class BasePromptTemplate
+<a href="#__codelineno-0-25" id="__codelineno-0-25" name="__codelineno-0-25"></a>class PromptTemplate
+<a href="#__codelineno-0-26" id="__codelineno-0-26" name="__codelineno-0-26"></a>BasePromptTemplate &lt;|-- PromptTemplate
+<a href="#__codelineno-0-27" id="__codelineno-0-27" name="__codelineno-0-27"></a>
+<a href="#__codelineno-0-28" id="__codelineno-0-28" name="__codelineno-0-28"></a>class CallableTool
+<a href="#__codelineno-0-29" id="__codelineno-0-29" name="__codelineno-0-29"></a>class StreamingObjectProcessor
+<a href="#__codelineno-0-30" id="__codelineno-0-30" name="__codelineno-0-30"></a>class AgentChatResponse
+<a href="#__codelineno-0-31" id="__codelineno-0-31" name="__codelineno-0-31"></a>class Configs
+<a href="#__codelineno-0-32" id="__codelineno-0-32" name="__codelineno-0-32"></a>
+<a href="#__codelineno-0-33" id="__codelineno-0-33" name="__codelineno-0-33"></a>ToolOrchestratingLLM *-- BasePromptTemplate : _prompt
+<a href="#__codelineno-0-34" id="__codelineno-0-34" name="__codelineno-0-34"></a>ToolOrchestratingLLM *-- FunctionCallingLLM : _llm
+<a href="#__codelineno-0-35" id="__codelineno-0-35" name="__codelineno-0-35"></a>ToolOrchestratingLLM o-- CallableTool : from_model()
+<a href="#__codelineno-0-36" id="__codelineno-0-36" name="__codelineno-0-36"></a>ToolOrchestratingLLM ..&gt; StreamingObjectProcessor : uses
+<a href="#__codelineno-0-37" id="__codelineno-0-37" name="__codelineno-0-37"></a>ToolOrchestratingLLM ..&gt; AgentChatResponse : receives
+<a href="#__codelineno-0-38" id="__codelineno-0-38" name="__codelineno-0-38"></a>ToolOrchestratingLLM ..&gt; Configs : validate_llm()
+<a href="#__codelineno-0-39" id="__codelineno-0-39" name="__codelineno-0-39"></a>@enduml
+</code></pre></div>
+<hr/>
+<h2 id="comprehensive-class-diagram-uml"><a class="toclink" href="#comprehensive-class-diagram-uml">Comprehensive Class Diagram (UML)</a><a class="headerlink" href="#comprehensive-class-diagram-uml" title="Permanent link">#</a></h2>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>classDiagram
+    direction LR
+
+    class ToolOrchestratingLLM {
+        - _output_cls: Type[Model]
+        - _llm: FunctionCallingLLM
+        - _prompt: BasePromptTemplate
+        - _verbose: bool
+        - _allow_parallel_tool_calls: bool
+        - _tool_choice: Optional[str | Dict[str, Any]]
+
+        +__init__(
+            output_cls: Type[Model],
+            prompt: BasePromptTemplate | str,
+            llm: FunctionCallingLLM | None = None,
+            tool_choice: str | Dict[str, Any] | None = None,
+            allow_parallel_tool_calls: bool = False,
+            verbose: bool = False
+          ) -&gt; None
+
+        +output_cls() Type[BaseModel]
+        +prompt() BasePromptTemplate
+        +prompt(prompt: BasePromptTemplate) void
+
+        +__call__(
+            *args: Any,
+            llm_kwargs: Dict[str, Any] | None = None,
+            **kwargs: Any
+          ) BaseModel | List[BaseModel]
+
+        +acall(
+            *args: Any,
+            llm_kwargs: Dict[str, Any] | None = None,
+            **kwargs: Any
+          ) BaseModel | List[BaseModel]
+
+        +stream_call(
+            *args: Any,
+            llm_kwargs: Dict[str, Any] | None = None,
+            **kwargs: Any
+          ) Generator[Model | List[Model], None, None]
+
+        +astream_call(
+            *args: Any,
+            llm_kwargs: Dict[str, Any] | None = None,
+            **kwargs: Any
+          ) AsyncGenerator[Model | List[Model], None]
+
+        +validate_prompt(prompt: BasePromptTemplate | str) BasePromptTemplate
+        +validate_llm(llm: LLM) LLM
+    }
+
+    ToolOrchestratingLLM ..&gt; CallableTool : uses from_model(output_cls)
+    ToolOrchestratingLLM ..&gt; FunctionCallingLLM : predict_and_call()/apredict_and_call()
+    ToolOrchestratingLLM ..&gt; FunctionCallingLLM : stream_chat_with_tools()/astream_chat_with_tools()
+    ToolOrchestratingLLM ..&gt; StreamingObjectProcessor : progressive parsing
+    ToolOrchestratingLLM ..&gt; AgentChatResponse : parse_tool_outputs()
+    ToolOrchestratingLLM ..&gt; PromptTemplate : via validate_prompt()
+    ToolOrchestratingLLM ..&gt; Configs : fallback LLM</code></pre>
+</div>
+<p>PlantUML alternative:</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>@startuml
+<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>class ToolOrchestratingLLM {
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>  - _output_cls : Type[Model]
+<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>  - _llm : FunctionCallingLLM
+<a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>  - _prompt : BasePromptTemplate
+<a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a>  - _verbose : bool
+<a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a>  - _allow_parallel_tool_calls : bool
+<a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a>  - _tool_choice : Optional[Union[str, Dict[str, Any]]]
+<a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a>
+<a href="#__codelineno-1-10" id="__codelineno-1-10" name="__codelineno-1-10"></a>  + __init__(output_cls: Type[Model], prompt: BasePromptTemplate|str, llm: FunctionCallingLLM|None = None, tool_choice: str|Dict[str, Any]|None = None, allow_parallel_tool_calls: bool = False, verbose: bool = False) : None
+<a href="#__codelineno-1-11" id="__codelineno-1-11" name="__codelineno-1-11"></a>  + output_cls() : Type[pydantic.BaseModel]
+<a href="#__codelineno-1-12" id="__codelineno-1-12" name="__codelineno-1-12"></a>  + prompt() : BasePromptTemplate
+<a href="#__codelineno-1-13" id="__codelineno-1-13" name="__codelineno-1-13"></a>  + prompt(prompt: BasePromptTemplate) : None
+<a href="#__codelineno-1-14" id="__codelineno-1-14" name="__codelineno-1-14"></a>  + __call__(*args: Any, llm_kwargs: Dict[str, Any]|None = None, **kwargs: Any) : BaseModel | List[BaseModel]
+<a href="#__codelineno-1-15" id="__codelineno-1-15" name="__codelineno-1-15"></a>  + acall(*args: Any, llm_kwargs: Dict[str, Any]|None = None, **kwargs: Any) : BaseModel | List[BaseModel]
+<a href="#__codelineno-1-16" id="__codelineno-1-16" name="__codelineno-1-16"></a>  + stream_call(*args: Any, llm_kwargs: Dict[str, Any]|None = None, **kwargs: Any) : Generator[Model | List[Model], None, None]
+<a href="#__codelineno-1-17" id="__codelineno-1-17" name="__codelineno-1-17"></a>  + astream_call(*args: Any, llm_kwargs: Dict[str, Any]|None = None, **kwargs: Any) : AsyncGenerator[Model | List[Model], None]
+<a href="#__codelineno-1-18" id="__codelineno-1-18" name="__codelineno-1-18"></a>  + {static} validate_prompt(prompt: BasePromptTemplate|str) : BasePromptTemplate
+<a href="#__codelineno-1-19" id="__codelineno-1-19" name="__codelineno-1-19"></a>  + {static} validate_llm(llm: LLM) : LLM
+<a href="#__codelineno-1-20" id="__codelineno-1-20" name="__codelineno-1-20"></a>}
+<a href="#__codelineno-1-21" id="__codelineno-1-21" name="__codelineno-1-21"></a>
+<a href="#__codelineno-1-22" id="__codelineno-1-22" name="__codelineno-1-22"></a>ToolOrchestratingLLM ..&gt; CallableTool : from_model()
+<a href="#__codelineno-1-23" id="__codelineno-1-23" name="__codelineno-1-23"></a>ToolOrchestratingLLM ..&gt; FunctionCallingLLM : predict_and_call()/apredict_and_call()
+<a href="#__codelineno-1-24" id="__codelineno-1-24" name="__codelineno-1-24"></a>ToolOrchestratingLLM ..&gt; FunctionCallingLLM : stream_chat_with_tools()/astream_chat_with_tools()
+<a href="#__codelineno-1-25" id="__codelineno-1-25" name="__codelineno-1-25"></a>ToolOrchestratingLLM ..&gt; StreamingObjectProcessor : process()
+<a href="#__codelineno-1-26" id="__codelineno-1-26" name="__codelineno-1-26"></a>ToolOrchestratingLLM ..&gt; AgentChatResponse : parse_tool_outputs()
+<a href="#__codelineno-1-27" id="__codelineno-1-27" name="__codelineno-1-27"></a>ToolOrchestratingLLM ..&gt; PromptTemplate : validate_prompt()
+<a href="#__codelineno-1-28" id="__codelineno-1-28" name="__codelineno-1-28"></a>ToolOrchestratingLLM ..&gt; Configs : validate_llm()
+<a href="#__codelineno-1-29" id="__codelineno-1-29" name="__codelineno-1-29"></a>@enduml
+</code></pre></div>
+<hr/>
+<h2 id="component-diagram-uml"><a class="toclink" href="#component-diagram-uml">Component Diagram (UML)</a><a class="headerlink" href="#component-diagram-uml" title="Permanent link">#</a></h2>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>flowchart LR
+    subgraph Structured_Tools
+      TOLL["ToolOrchestratingLLM\n(BasePydanticLLM[BaseModel])"]
+      SOP["StreamingObjectProcessor"]
+      CT["CallableTool"]
+    end
+
+    subgraph LLM_Layer
+      FCLLM["FunctionCallingLLM : LLM"]
+    end
+
+    subgraph Prompts
+      BPT["BasePromptTemplate"]
+      PT["PromptTemplate"]
+    end
+
+    subgraph Chat
+      ACR["AgentChatResponse"]
+    end
+
+    subgraph Configs
+      CFG["Configs.llm fallback"]
+    end
+
+    BM["pydantic.BaseModel"]
+
+    TOLL -- "composition" --&gt; BPT
+    BPT -- "inherits" --&gt; PT
+    TOLL -- "composition" --&gt; FCLLM
+    TOLL -- "uses" --&gt; CT
+    TOLL -- "uses" --&gt; SOP
+    FCLLM -- "returns" --&gt; ACR
+    ACR -- "parsed by" --&gt; TOLL
+    TOLL -- "fallback" --&gt; CFG
+    TOLL -. "output_cls: Type(BaseModel)" .-&gt; BM</code></pre>
+</div>
+<hr/>
+<h2 id="sequence-diagram-call"><a class="toclink" href="#sequence-diagram-call">Sequence Diagram — <strong>call</strong></a><a class="headerlink" href="#sequence-diagram-call" title="Permanent link">#</a></h2>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>sequenceDiagram
+    autonumber
+    actor User
+    participant T as ToolOrchestratingLLM
+    participant P as BasePromptTemplate
+    participant L as FunctionCallingLLM
+    participant Tool as CallableTool
+    participant R as AgentChatResponse
+
+    User-&gt;&gt;T: __call__(llm_kwargs, **vars)
+    T-&gt;&gt;Tool: from_model(T._output_cls)
+    Tool--&gt;&gt;T: tool: CallableTool
+    T-&gt;&gt;P: format_messages(llm=T._llm, **vars)
+    P--&gt;&gt;T: messages: List[Message]
+    T-&gt;&gt;L: _extend_messages(messages)
+    L--&gt;&gt;T: messages'
+    T-&gt;&gt;L: predict_and_call([tool], chat_history=messages', verbose, allow_parallel_tool_calls, **llm_kwargs)
+    L--&gt;&gt;T: R: AgentChatResponse
+    T-&gt;&gt;R: parse_tool_outputs(allow_parallel_tool_calls)
+    alt allow_parallel_tool_calls == True
+        R--&gt;&gt;T: List[BaseModel]
+    else
+        R--&gt;&gt;T: BaseModel
+    end
+    T--&gt;&gt;User: BaseModel | List[BaseModel]</code></pre>
+</div>
+<p>PlantUML alternative:</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>@startuml
+<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>autonumber
+<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>actor User
+<a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>participant T as ToolOrchestratingLLM
+<a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>participant P as BasePromptTemplate
+<a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a>participant L as FunctionCallingLLM
+<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>participant Tool as CallableTool
+<a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a>participant R as AgentChatResponse
+<a href="#__codelineno-2-9" id="__codelineno-2-9" name="__codelineno-2-9"></a>
+<a href="#__codelineno-2-10" id="__codelineno-2-10" name="__codelineno-2-10"></a>User -&gt; T: __call__(llm_kwargs, **vars)
+<a href="#__codelineno-2-11" id="__codelineno-2-11" name="__codelineno-2-11"></a>T -&gt; Tool: from_model(output_cls)
+<a href="#__codelineno-2-12" id="__codelineno-2-12" name="__codelineno-2-12"></a>Tool --&gt; T: CallableTool
+<a href="#__codelineno-2-13" id="__codelineno-2-13" name="__codelineno-2-13"></a>T -&gt; P: format_messages(llm, **vars)
+<a href="#__codelineno-2-14" id="__codelineno-2-14" name="__codelineno-2-14"></a>P --&gt; T: messages
+<a href="#__codelineno-2-15" id="__codelineno-2-15" name="__codelineno-2-15"></a>T -&gt; L: _extend_messages(messages)
+<a href="#__codelineno-2-16" id="__codelineno-2-16" name="__codelineno-2-16"></a>L --&gt; T: messages'
+<a href="#__codelineno-2-17" id="__codelineno-2-17" name="__codelineno-2-17"></a>T -&gt; L: predict_and_call([tool], chat_history=messages', verbose, allow_parallel_tool_calls, **llm_kwargs)
+<a href="#__codelineno-2-18" id="__codelineno-2-18" name="__codelineno-2-18"></a>L --&gt; T: AgentChatResponse
+<a href="#__codelineno-2-19" id="__codelineno-2-19" name="__codelineno-2-19"></a>T -&gt; R: parse_tool_outputs(allow_parallel_tool_calls)
+<a href="#__codelineno-2-20" id="__codelineno-2-20" name="__codelineno-2-20"></a>alt parallel
+<a href="#__codelineno-2-21" id="__codelineno-2-21" name="__codelineno-2-21"></a>  R --&gt; T: List[BaseModel]
+<a href="#__codelineno-2-22" id="__codelineno-2-22" name="__codelineno-2-22"></a>else
+<a href="#__codelineno-2-23" id="__codelineno-2-23" name="__codelineno-2-23"></a>  R --&gt; T: BaseModel
+<a href="#__codelineno-2-24" id="__codelineno-2-24" name="__codelineno-2-24"></a>end
+<a href="#__codelineno-2-25" id="__codelineno-2-25" name="__codelineno-2-25"></a>T --&gt; User: BaseModel | List[BaseModel]
+<a href="#__codelineno-2-26" id="__codelineno-2-26" name="__codelineno-2-26"></a>@enduml
+</code></pre></div>
+<hr/>
+<h2 id="sequence-diagram-streaming-stream_call"><a class="toclink" href="#sequence-diagram-streaming-stream_call">Sequence Diagram — Streaming (<code>stream_call</code>)</a><a class="headerlink" href="#sequence-diagram-streaming-stream_call" title="Permanent link">#</a></h2>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>sequenceDiagram
+    autonumber
+    participant T as ToolOrchestratingLLM
+    participant P as BasePromptTemplate
+    participant L as FunctionCallingLLM
+    participant Tool as CallableTool
+    participant G as ChatResponse~gen~
+    participant S as StreamingObjectProcessor
+
+    T-&gt;&gt;Tool: from_model(output_cls)
+    Tool--&gt;&gt;T: CallableTool
+    T-&gt;&gt;P: format_messages(llm=T._llm, **vars)
+    P--&gt;&gt;T: messages
+    T-&gt;&gt;L: _extend_messages(messages)
+    L--&gt;&gt;T: messages'
+    T-&gt;&gt;L: stream_chat_with_tools([tool], chat_history=messages', verbose, allow_parallel_tool_calls, **llm_kwargs)
+    L--&gt;&gt;T: G: Generator[ChatResponse]
+    loop for partial_resp in G
+        T-&gt;&gt;S: process(partial_resp, cur_objects)
+        S--&gt;&gt;T: objects: BaseModel | List[BaseModel]
+        T-&gt;&gt;T: cur_objects = list(objects)
+        T--&gt;&gt;User: yield objects
+    end</code></pre>
+</div>
+<hr/>
+<h2 id="activity-diagram"><a class="toclink" href="#activity-diagram">Activity Diagram</a><a class="headerlink" href="#activity-diagram" title="Permanent link">#</a></h2>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>flowchart TD
+    A[Init __init__] --&gt; B{validate_prompt}
+    B --&gt;|ok| C[store _prompt]
+    B --&gt;|error| E1[ValueError: invalid prompt]
+
+    A --&gt; D{validate_llm}
+    D --&gt;|ok &amp; function-calling| F[store _llm]
+    D --&gt;|none| E2[AssertionError: llm must be provided or set]
+    D --&gt;|not function-calling| E3[ValueError: model does not support function-calling]
+
+    C &amp; F --&gt; G[__call__/acall]
+    G --&gt; H[Prompt.format_messages]
+    H --&gt; I[CallableTool.from_model]
+    I --&gt; J[FunctionCallingLLM.predict_and_call / apredict_and_call]
+    J --&gt; K[AgentChatResponse.parse_tool_outputs]
+    K --&gt;|allow_parallel_tool_calls=True| O[List of BaseModel]
+    K --&gt;|False| P[BaseModel]
+
+    C &amp; F --&gt; Q[stream_call/astream_call]
+    Q --&gt; H2[Prompt.format_messages]
+    H2 --&gt; J2[FunctionCallingLLM.stream_chat_with_tools / astream_chat_with_tools]
+    J2 --&gt; R[[for each ChatResponse chunk]]
+    R --&gt; S[StreamingObjectProcessor.process]
+    S --&gt; T[update cur_objects]
+    T --&gt; U[yield partial BaseModel or List of BaseModel]
+    S --&gt;|Exception| W[log warning and continue]</code></pre>
+</div>
+<hr/>
+<h2 id="data-flow-diagram"><a class="toclink" href="#data-flow-diagram">Data Flow Diagram</a><a class="headerlink" href="#data-flow-diagram" title="Permanent link">#</a></h2>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>flowchart LR
+    In1[Prompt variables kwargs] --&gt; FMT[Format prompt messages]
+    In2[llm_kwargs] --&gt; CALL
+    FMT --&gt; TOOL[CallableTool.from_model]
+    TOOL --&gt; CALL[FunctionCallingLLM call]
+    CALL --&gt;|predict_and_call| RESP[AgentChatResponse]
+    RESP --&gt; PARSE[parse_tool_outputs allow_parallel_tool_calls]
+    PARSE --&gt; Out1[BaseModel]
+    PARSE --&gt; Out2[List of BaseModel]</code></pre>
+</div>
+<hr/>
+<h2 id="state-machine-diagram-streaming-lifecycle"><a class="toclink" href="#state-machine-diagram-streaming-lifecycle">State Machine Diagram (Streaming Lifecycle)</a><a class="headerlink" href="#state-machine-diagram-streaming-lifecycle" title="Permanent link">#</a></h2>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>stateDiagram-v2
+    [*] --&gt; Idle
+    Idle --&gt; Streaming : start stream_call/astream_call
+    state Streaming {
+        [*] --&gt; AwaitChunk
+        AwaitChunk --&gt; ProcessChunk : on ChatResponse
+        ProcessChunk --&gt; UpdateState : processor.process(partial, cur_objects)
+        UpdateState --&gt; Yield : yield objects
+        Yield --&gt; AwaitChunk
+        ProcessChunk --&gt; WarnOnError : on Exception
+        WarnOnError --&gt; AwaitChunk : continue
+    }
+    Streaming --&gt; Completed : generator exhausted
+    Completed --&gt; [*]</code></pre>
+</div>
+<hr/>
+<h2 id="architecture-overview-block-diagram"><a class="toclink" href="#architecture-overview-block-diagram">Architecture Overview (Block Diagram)</a><a class="headerlink" href="#architecture-overview-block-diagram" title="Permanent link">#</a></h2>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>flowchart TB
+    subgraph Prompts
+      BPT[BasePromptTemplate / PromptTemplate]
+    end
+
+    subgraph Tools
+      CT[CallableTool]
+      SOP[StreamingObjectProcessor]
+    end
+
+    subgraph LLMs
+      LLM[LLM]
+      FCLLM[FunctionCallingLLM]
+      LLM --&gt; FCLLM
+    end
+
+    subgraph Structured_Tools
+      TOLL[ToolOrchestratingLLM]
+    end
+
+    CFG[Configs.llm]
+
+    BPT &lt;--uses--&gt; TOLL
+    CT &lt;--used by--&gt; TOLL
+    SOP &lt;--used by--&gt; TOLL
+    TOLL --sync--&gt; FCLLM:::sync
+    TOLL --async--&gt; FCLLM:::async
+    TOLL --stream--&gt; FCLLM:::stream
+    CFG -.fallback .-&gt; TOLL
+
+    classDef sync stroke:#0b7,stroke-width:2px
+    classDef async stroke:#07b,stroke-width:2px
+    classDef stream stroke:#b70,stroke-width:2px</code></pre>
+</div>
+<hr/>
+<h3 id="notes-and-type-details"><a class="toclink" href="#notes-and-type-details">Notes and Type Details</a><a class="headerlink" href="#notes-and-type-details" title="Permanent link">#</a></h3>
+<ul>
+<li>Generics</li>
+<li><code>BasePydanticLLM[Model]</code> where <code>Model: TypeVar</code> bound to <code>pydantic.BaseModel</code></li>
+<li>
+<p><code>ToolOrchestratingLLM</code> is instantiated as <code>BasePydanticLLM[BaseModel]</code></p>
+</li>
+<li>
+<p>Method return types</p>
+</li>
+<li><code>__call__</code> / <code>acall</code>: <code>BaseModel | List[BaseModel]</code></li>
+<li><code>stream_call</code>: <code>Generator[Model | List[Model], None, None]</code></li>
+<li>
+<p><code>astream_call</code>: <code>AsyncGenerator[Model | List[Model], None]</code></p>
+</li>
+<li>
+<p>Key decisions and error paths</p>
+</li>
+<li><code>validate_llm</code>: raises <code>AssertionError</code> if no LLM provided or configured; raises <code>ValueError</code> if not a function-calling model</li>
+<li><code>validate_prompt</code>: raises <code>ValueError</code> for invalid prompt types</li>
+<li>
+<p><code>stream_call</code>/<code>astream_call</code>: raise <code>ValueError</code> if underlying LLM is not <code>FunctionCallingLLM</code>; warn and continue on streaming parse errors</p>
+</li>
+<li>
+<p>Parallel tool calls</p>
+</li>
+<li>
+<p><code>allow_parallel_tool_calls=True</code> may yield/return <code>List[BaseModel]</code> and affects parsing and selection in streaming</p>
+</li>
+<li>
+<p>Collaborators in method signatures</p>
+</li>
+<li>Parameters: <code>CallableTool</code>, <code>BasePromptTemplate</code>/<code>PromptTemplate</code>, <code>FunctionCallingLLM</code>, <code>StreamingObjectProcessor</code></li>
+<li>Return values: <code>BaseModel</code>, <code>List[BaseModel]</code>, <code>Generator</code>, <code>AsyncGenerator</code>; internally uses <code>AgentChatResponse</code></li>
+</ul>
+</article>
+</div>
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+</div>
+<button class="md-top md-icon" data-md-component="top" hidden="" type="button">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+</main>
+<footer class="md-footer">
+<nav aria-label="Footer" class="md-footer__inner md-grid">
+<a aria-label="Previous: Codebase Map" class="md-footer__link md-footer__link--prev" href="../../../overview/codebase-map/">
+<div class="md-footer__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+</div>
+<div class="md-footer__title">
+<span class="md-footer__direction">
+                Previous
+              </span>
+<div class="md-ellipsis">
+                Codebase Map
+              </div>
+</div>
+</a>
+<a aria-label="Next: Tools Documentation" class="md-footer__link md-footer__link--next" href="../../tools/tools/">
+<div class="md-footer__title">
+<span class="md-footer__direction">
+                Next
+              </span>
+<div class="md-ellipsis">
+                Tools Documentation
+              </div>
+</div>
+<div class="md-footer__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+</div>
+</a>
+</nav>
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+      Material for MkDocs
+    </a>
+</div>
+<div class="md-social">
+<a class="md-social__link" href="https://github.com/Serapieum-of-alex/Serapeum" rel="noopener" target="_blank" title="github.com">
+<svg viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+</a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+<script src="../../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+<script src="../../../assets/javascripts/panzoom.min.js"></script>
+<script src="../../../assets/javascripts/zoompan.js"></script>
+</body>
+</html>

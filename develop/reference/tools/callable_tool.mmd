@@ -1,0 +1,131 @@
+%% Mermaid Class Diagram for serapeum.core.tools
+%% Save as docs/tools/diagrams/uml-classes.mmd
+
+classDiagram
+%% Core models
+    class MinimalToolSchema {
+        +input: str
+    }
+
+    class ToolMetadata {
+        +name: str?
+        +description: str
+        +tool_schema: BaseModel?
+        +return_direct: bool
+        +get_schema() dict
+        +tool_schema_str: str
+        +get_name() str
+        +to_openai_tool(skip_length_check=False) Dict
+    }
+
+    class ToolOutput {
+        +chunks: List~ChunkType~
+        +tool_name: str
+        +raw_input: Dict
+        +raw_output: Any
+        +is_error: bool
+        +content: str
+        +__str__() str
+    }
+
+    class ToolCallArguments {
+        +tool_id: str
+        +tool_name: str
+        +tool_kwargs: Dict~str, Any~
+    }
+
+%% Tool interfaces and adapters
+    class BaseTool {
+        <<abstract>>
+        +metadata: ToolMetadata
+        +__call__(input_values) ToolOutput
+    }
+
+    class AsyncBaseTool {
+        <<abstract>>
+        +call(input_values) ToolOutput
+        +acall(input_values) ToolOutput
+    }
+
+    class BaseToolAsyncAdapter {
+        +base_tool: BaseTool
+        +call(input_values) ToolOutput
+        +acall(input_values) ToolOutput
+    }
+
+%% Callable adapter
+    class CallableTool {
+        +metadata: ToolMetadata
+        +default_arguments: Dict
+        +sync_func(*args, **kwargs) Any
+        +async_func(*args, **kwargs) Awaitable
+        +call(*args, **kwargs) ToolOutput
+        +acall(*args, **kwargs) ToolOutput
+        +from_function(...)
+    }
+
+    class SyncAsyncConverter {
+        +is_async(func) bool
+        +to_async(fn) AsyncCallable
+        +async_to_sync(func_async) Callable
+        -sync_func
+        -async_func
+    }
+
+%% Schema utilities
+    class Docstring {
+        +signature
+        +extract_param_docs() (dict, set)
+        +get_short_summary_line() str
+    }
+
+    class FunctionArgument {
+        +to_field() (Type, FieldInfo)
+    }
+
+    class FunctionConverter {
+        +to_schema() Type~BaseModel~
+    }
+
+%% Execution utilities
+    class ExecutionConfig {
+        +verbose: bool
+        +single_arg_auto_unpack: bool
+        +raise_on_error: bool
+    }
+
+    class ToolExecutor {
+        +execute(tool, arguments) ToolOutput
+        +execute_async(tool, arguments) ToolOutput
+        +execute_with_selection(sel, tools) ToolOutput
+        +execute_async_with_selection(sel, tools) ToolOutput
+    }
+
+%% External content chunk types
+    class TextChunk
+    class Image
+    class Audio
+
+%% Inheritance
+    BaseTool <|-- AsyncBaseTool
+    AsyncBaseTool <|-- BaseToolAsyncAdapter
+    AsyncBaseTool <|-- CallableTool
+
+%% Associations/uses
+    MinimalToolSchema <.. ToolMetadata : default
+    ToolMetadata ..> MinimalToolSchema : fallback
+    ToolOutput ..> TextChunk : contains
+    CallableTool ..> ToolMetadata : uses
+    CallableTool ..> ToolOutput : produces
+    CallableTool ..> Docstring : parses
+    CallableTool ..> FunctionConverter : builds schema
+    CallableTool ..> SyncAsyncConverter : wraps
+    CallableTool ..> TextChunk
+    CallableTool ..> Image
+    CallableTool ..> Audio
+    FunctionConverter ..> FunctionArgument : converts
+    BaseToolAsyncAdapter --> BaseTool : wraps
+    ToolExecutor --> ExecutionConfig : configured by
+    ToolExecutor ..> ToolOutput : returns
+    ToolExecutor ..> AsyncBaseTool : executes
+    ToolCallArguments ..> ToolExecutor : inputs to

@@ -54,6 +54,7 @@ theme:
 plugins:
   - search
   - mkdocs-jupyter
+  - mermaid2
   - panzoom:
       hint_location: "top"
       key: "ctrl"
@@ -90,7 +91,8 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed
   - pymdownx.inlinehilite
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      base_path: .
   - pymdownx.tabbed:
       alternate_style: true
   - admonition
@@ -113,6 +115,11 @@ nav:
   - Architecture:
     - Diagrams: architecture/diagrams.md
   - Reference:
+    - structured_tools:
+        - Tools LLM: reference/structured_tools/tools_llm.md
+    - tools:
+        - reference/tools/tools.md
+        - reference/tools/callable_tools.md
     - API Reference: reference/api-reference.md
   - Tutorials:
     - Getting Started: tutorials/getting-started.md

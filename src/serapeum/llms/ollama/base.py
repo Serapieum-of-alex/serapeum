@@ -60,11 +60,78 @@ def force_single_tool_call(response: ChatResponse) -> None:
 
 
 class Ollama(FunctionCallingLLM):
-    """Ollama LLM.
+    """Ollama.
 
-    Visit https://ollama.com/ to download and install Ollama.
+    This class integrates with the local/remote Ollama server to provide chat,
+    streaming, and structured output capabilities. It supports tool/function
+    calling and JSON mode formatting when the model allows it.
 
-    Run `ollama serve` to start a server.
+    Visit https://ollama.com/ to install Ollama and run ``ollama serve`` to
+    start the server.
+
+    Args:
+        model (str):
+            Identifier of the Ollama model to use (e.g., ``"llama3.1:latest"``).
+        base_url (str):
+            Base URL where the Ollama server is hosted. Defaults to
+            ``"http://localhost:11434"``.
+        temperature (float):
+            Sampling temperature in the range [0.0, 1.0]. Higher values increase
+            randomness. Defaults to 0.75.
+        context_window (int):
+            Maximum context tokens for the model. Defaults to the project
+            ``DEFAULT_CONTEXT_WINDOW``.
+        request_timeout (float):
+            Timeout (seconds) for API calls. Defaults to 60.0.
+        prompt_key (str):
+            Key used for prompt formatting when applicable. Defaults to ``"prompt"``.
+        json_mode (bool):
+            Whether to request JSON-formatted responses when supported. Defaults to ``False``.
+        additional_kwargs (Dict[str, Any]):
+            Extra provider-specific options forwarded under ``options``.
+        client (Optional[Client]):
+            Pre-constructed synchronous Ollama client. When omitted, the client
+            is created lazily from ``base_url`` and ``request_timeout``.
+        async_client (Optional[AsyncClient]):
+            Pre-constructed asynchronous Ollama client. If omitted, a client is
+            created per event loop.
+        is_function_calling_model (bool):
+            Flag indicating whether the selected model supports tool/function
+            calling. Defaults to ``True``.
+        keep_alive (Optional[Union[float, str]]):
+            Controls how long the model stays loaded following the request
+            (e.g., ``"5m"``). When ``None``, provider defaults apply.
+        **kwargs (Any):
+            Reserved for future extensions and compatibility with the base class.
+
+    Examples:
+        - Basic chat using a real Ollama server (requires a running server and a pulled model)
+            ```python
+            >>> from serapeum.core.base.llms.models import Message, MessageRole
+            >>> # Ensure `ollama serve` is running locally and the model is pulled, e.g.:
+            >>> #   ollama pull llama3.1
+            >>> from serapeum.llms.ollama import Ollama
+            >>> llm = Ollama(model="llama3.1", request_timeout=120)
+            >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'pong'.")])  # doctest: +SKIP
+            >>> print(response)
+            assistant: Pong!
+
+            ```
+        - Enabling JSON mode for structured outputs with a real server
+            ```python
+            >>> from serapeum.core.base.llms.models import Message, MessageRole
+            >>> # When json_mode=True, this adapter sets format="json" under the hood.
+            >>> llm = Ollama(model="llama3.1", json_mode=True, request_timeout=120)
+            >>> response = llm.chat([Message(role=MessageRole.USER, content='Return {"ok": true} as JSON')])  # doctest: +SKIP
+            >>> print(response)
+            assistant: {"ok":true}
+
+            ```
+
+    See Also:
+        - chat: Synchronous chat API.
+        - stream_chat: Streaming chat API yielding deltas.
+        - structured_predict: Parse pydantic models from model output.
     """
 
     base_url: str = Field(
@@ -154,22 +221,65 @@ class Ollama(FunctionCallingLLM):
 
     @classmethod
     def class_name(cls) -> str:
+        """Return the registered class name for this provider adapter.
+
+        Returns:
+            str: Provider identifier used in registries or logs.
+
+        Examples:
+            - Retrieve the class identifier
+                ```python
+                >>> Ollama.class_name()
+                'Ollama_llm'
+
+                ```
+        """
         return "Ollama_llm"
 
     @property
     def metadata(self) -> Metadata:
-        """LLM metadata."""
+        """LLM metadata.
+
+        Returns:
+            Metadata: Static capabilities such as context window and chat support.
+
+        Examples:
+            - Inspect chat model capabilities
+                ```python
+                >>> from serapeum.llms.ollama import Ollama
+                >>> Ollama(model="m").metadata.is_chat_model
+                True
+
+                ```
+        """
         return Metadata(
             context_window=self.context_window,
             num_output=DEFAULT_NUM_OUTPUTS,
             model_name=self.model,
-            is_chat_model=True,  # Ollama supports chat API for all models
-            # TODO: Detect if selected model is a function calling model?
+            is_chat_model=True,
             is_function_calling_model=self.is_function_calling_model,
         )
 
     @property
     def client(self) -> Client:
+        """Synchronous Ollama client lazily bound to ``base_url``.
+
+        Returns:
+            Client: Underlying Ollama client instance.
+
+        Examples:
+            - Lazily create the client on first access
+                ```python
+                >>> from serapeum.llms.ollama import Ollama
+                >>> llm = Ollama(model="m", base_url="http://localhost:11434", request_timeout=1.0)
+                >>> c = llm.client  # doctest: +ELLIPSIS
+                >>> type(c) # doctest: + SKIP
+                ollama._client.Client
+                >>> hasattr(c, "chat")
+                True
+
+                ```
+        """
         if self._client is None:
             self._client = Client(host=self.base_url, timeout=self.request_timeout)
         return self._client
@@ -177,8 +287,23 @@ class Ollama(FunctionCallingLLM):
     def _ensure_async_client(self) -> AsyncClient:
         """Return a per-event-loop AsyncClient, recreating when loop changes or closes.
 
-        This avoids 'Event loop is closed' when tests (e.g., with pytest-asyncio)
-        create and close event loops between async invocations.
+        This avoids ``Event loop is closed`` errors when test runners (e.g.,
+        pytest-asyncio) create and close event loops between invocations.
+
+        Returns:
+            AsyncClient: Async client instance associated with the current loop.
+
+        Examples:
+            - Re-create the client when the loop changes
+                ```python
+                >>> import asyncio
+                >>> llm = Ollama(model="m")
+                >>> c1 = llm._ensure_async_client()  # doctest: +ELLIPSIS
+                >>> c2 = llm._ensure_async_client()  # same loop, same client
+                >>> c1 is c2
+                True
+
+                ```
         """
         try:
             current_loop = asyncio.get_running_loop()
@@ -201,11 +326,34 @@ class Ollama(FunctionCallingLLM):
 
     @property
     def async_client(self) -> AsyncClient:
-        """Async Ollama client bound to the current asyncio event loop."""
+        """Async Ollama client bound to the current asyncio event loop.
+
+        Returns:
+            AsyncClient: The async client instance used for asynchronous calls.
+
+        See Also:
+            _ensure_async_client: Ensures the client matches the active event loop.
+        """
         return self._ensure_async_client()
 
     @property
     def _model_kwargs(self) -> Dict[str, Any]:
+        """Assemble provider options forwarded under the ``options`` field.
+
+        Returns:
+            Dict[str, Any]: Merged dictionary where ``additional_kwargs`` override
+            base defaults such as ``temperature`` and ``num_ctx``.
+
+        Examples:
+            - Merge user-provided options with defaults
+                ```python
+                >>> from serapeum.llms.ollama import Ollama
+                >>> llm = Ollama(model="m", additional_kwargs={"mirostat": 2, "temperature": 0.9})
+                >>> print(llm._model_kwargs)
+                {'temperature': 0.9, 'num_ctx': 3900, 'mirostat': 2}
+
+                ```
+        """
         base_kwargs = {
             "temperature": self.temperature,
             "num_ctx": self.context_window,
@@ -215,7 +363,36 @@ class Ollama(FunctionCallingLLM):
             **self.additional_kwargs,
         }
 
-    def _convert_to_ollama_messages(self, messages: MessageList) -> Dict:
+    def _convert_to_ollama_messages(self, messages: MessageList) -> List[Dict[str, Any]]:
+        """Convert internal MessageList to the Ollama wire format.
+
+        Args:
+            messages (MessageList):
+                Sequence of messages to be sent to Ollama.
+
+        Returns:
+            Dict: A list of dicts compatible with the Ollama chat API (role,
+            content, optional images, and tool_calls).
+
+        Raises:
+            ValueError: If a content chunk type is unsupported.
+
+        Examples:
+            - Text-only conversion
+                ```python
+                >>> from serapeum.core.base.llms.models import Message, MessageList, MessageRole
+                >>> from serapeum.llms.ollama import Ollama
+                >>> llm = Ollama(model="m")
+                >>> wire = llm._convert_to_ollama_messages(
+                ...     MessageList.from_list([
+                ...         Message(role=MessageRole.USER, content="hello"),
+                ...     ])
+                ... )
+                >>> print(wire)
+                [{'role': 'user', 'content': 'hello'}]
+
+                ```
+        """
         ollama_messages = []
         for message in messages:
             cur_ollama_message = {
@@ -245,6 +422,25 @@ class Ollama(FunctionCallingLLM):
 
     @staticmethod
     def _get_response_token_counts(raw_response: dict) -> dict:
+        """Extract token usage fields from a raw Ollama response.
+
+        Args:
+            raw_response (dict):
+                Provider response possibly containing token counts.
+
+        Returns:
+            dict: Mapping with ``prompt_tokens``, ``completion_tokens``, and
+            ``total_tokens`` when available; otherwise an empty dict.
+
+        Examples:
+            - Compute totals when both fields are present
+                ```python
+                >>> from serapeum.llms.ollama import Ollama
+                >>> Ollama._get_response_token_counts({"prompt_eval_count": 2, "eval_count": 3})
+                {'prompt_tokens': 2, 'completion_tokens': 3, 'total_tokens': 5}
+
+                ```
+        """
         token_counts = {}
         try:
             prompt_tokens = raw_response["prompt_eval_count"]
@@ -269,6 +465,41 @@ class Ollama(FunctionCallingLLM):
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
     ) -> Dict[str, Any]:
+        """Prepare a chat payload including tool specifications.
+
+        Args:
+            tools (List[BaseTool]): Tools to expose to the model (converted using OpenAI schema).
+            user_msg (Optional[Union[str, Message]]): Optional user message to append.
+            chat_history (Optional[List[Message]]): Optional existing conversation history.
+            verbose (bool): Currently unused verbosity flag.
+            allow_parallel_tool_calls (bool): Indicator forwarded to validators.
+            **kwargs (Any): Reserved for future extensions.
+
+        Returns:
+            Dict[str, Any]: Dict with ``messages`` and ``tools`` entries suitable for chat calls.
+
+        Examples:
+            - Combine history, a new user message, and tool specs
+                ```python
+                >>> from serapeum.core.base.llms.models import Message, MessageRole
+                >>> from serapeum.llms.ollama import Ollama
+                >>> class T:
+                ...     def __init__(self, n):
+                ...         class M:
+                ...             def to_openai_tool(self, skip_length_check=False):
+                ...                 return {"type": "function", "function": {"name": n}}
+                ...         self.metadata = M()
+                ...
+                >>> llm = Ollama(model="m")
+                >>> payload = llm._prepare_chat_with_tools([T("t1")], user_msg="hi", chat_history=[Message(role=MessageRole.SYSTEM, content="s")])
+                >>> payload["messages"]
+                [Message(role=<MessageRole.SYSTEM: 'system'>, additional_kwargs={}, chunks=[TextChunk(content='s', path=None, url=None, type='text')]),
+                 Message(role=<MessageRole.USER: 'user'>, additional_kwargs={}, chunks=[TextChunk(content='hi', path=None, url=None, type='text')])]
+                >>> payload["tools"]
+                [{'type': 'function', 'function': {'name': 't1'}}]
+
+                ```
+        """
         tool_specs = [
             tool.metadata.to_openai_tool(skip_length_check=True) for tool in tools
         ]
@@ -292,7 +523,41 @@ class Ollama(FunctionCallingLLM):
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
     ) -> ChatResponse:
-        """Validate the response from chat_with_tools."""
+        """Validate and normalize a chat-with-tools response.
+
+        If ``allow_parallel_tool_calls`` is ``False``, the response is mutated to
+        include at most a single tool call.
+
+        Args:
+            response (ChatResponse): Response to validate.
+            tools (List[BaseTool]): Tools originally requested (unused, reserved for future checks).
+            allow_parallel_tool_calls (bool): Whether multiple tool calls are allowed.
+            **kwargs (Any): Reserved for future options.
+
+        Returns:
+            ChatResponse: The validated response (possibly mutated in-place).
+
+        Examples:
+            - Force single tool call when multiple are present (remove the multiple tool calls and leave only the first)
+                ```python
+                >>> from serapeum.core.base.llms.models import Message, MessageRole, ChatResponse
+                >>> llm = Ollama(model="m")
+                >>> response = ChatResponse(
+                ...     message=Message(
+                ...         role=MessageRole.ASSISTANT, content="", additional_kwargs={
+                ...             "tool_calls": [
+                ...                 {"function": {"name": "a", "arguments": {}}},
+                ...                 {"function": {"name": "b", "arguments": {}}},
+                ...             ]
+                ...         }
+                ...     )
+                ... )
+                >>> validated_response = llm._validate_chat_with_tools_response(response, tools=[], allow_parallel_tool_calls=False)
+                >>> len( validated_response.message.additional_kwargs.get("tool_calls"))
+                1
+
+                ```
+        """
         if not allow_parallel_tool_calls:
             force_single_tool_call(response)
         return response

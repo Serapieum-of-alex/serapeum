@@ -1,28 +1,23 @@
-from typing import Any, Type, Sequence, Dict
+from typing import Any, Dict, Sequence, Type
 
-from serapeum.core.llm.base import LLM
+from pydantic import BaseModel, Field, SerializeAsAny
 
 from serapeum.core.base.llms.models import (
-    Message,
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
     CompletionResponse,
     CompletionResponseGen,
-    Metadata,
+    Message,
     MessageRole,
+    Metadata,
 )
-from pydantic import (
-    BaseModel,
-    Field,
-    SerializeAsAny,
-)
-
-from serapeum.core.prompts.base import ChatPromptTemplate
 from serapeum.core.base.llms.utils import (
     achat_to_completion_decorator,
     chat_to_completion_decorator,
 )
+from serapeum.core.llm.base import LLM
+from serapeum.core.prompts.base import ChatPromptTemplate
 
 
 class StructuredLLM(LLM):

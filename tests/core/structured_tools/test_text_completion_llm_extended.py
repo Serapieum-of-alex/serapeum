@@ -4,9 +4,9 @@ from pydantic import BaseModel
 from serapeum.core.base.llms.models import (
     ChatResponse,
     CompletionResponse,
-    Metadata,
     Message,
     MessageRole,
+    Metadata,
 )
 from serapeum.core.configs.configs import Configs
 from serapeum.core.output_parsers import BaseOutputParser, PydanticOutputParser

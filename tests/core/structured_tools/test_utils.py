@@ -1,14 +1,16 @@
 """Test program utils."""
 
-import pytest
 from typing import List, Optional
+
+import pytest
 from pydantic import BaseModel, Field
-from serapeum.core.base.llms.models import Message, ChatResponse, MessageRole
+
+from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
 from serapeum.core.structured_tools.utils import (
-    _repair_incomplete_json,
-    StreamingObjectProcessor,
-    num_valid_fields,
     FlexibleModel,
+    StreamingObjectProcessor,
+    _repair_incomplete_json,
+    num_valid_fields,
 )
 
 

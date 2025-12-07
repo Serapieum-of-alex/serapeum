@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Sequence as ABCSequence
 import base64
+from collections.abc import Sequence as ABCSequence
 from enum import Enum
 from io import BytesIO
 from typing import (
@@ -9,16 +9,14 @@ from typing import (
     Any,
     AsyncGenerator,
     Generator,
+    Iterator,
     List,
     Literal,
     Optional,
     Union,
-    Iterator,
 )
 
 from filetype import guess as filetype_guess
-from typing_extensions import Self
-
 from pydantic import (
     AnyUrl,
     BaseModel,
@@ -29,6 +27,8 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from typing_extensions import Self
+
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.utils.base import resolve_binary
 

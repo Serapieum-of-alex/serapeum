@@ -1,29 +1,15 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+
+from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, WithJsonSchema
 from typing_extensions import Annotated
 
-from pydantic import Field, WithJsonSchema, PlainSerializer, BaseModel, ConfigDict
-
-from serapeum.core.base.llms.models import Message
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.base.llms.models import (
-    MessageList,
-)
-from serapeum.core.base.llms.models import ChunkType, TextChunk
-from serapeum.core.prompts.models import PromptType
-from serapeum.core.prompts.utils import get_template_vars, format_string
+from serapeum.core.base.llms.models import ChunkType, Message, MessageList, TextChunk
 from serapeum.core.output_parsers import BaseOutputParser
-
+from serapeum.core.prompts.models import PromptType
+from serapeum.core.prompts.utils import format_string, get_template_vars
 
 AnnotatedCallable = Annotated[
     Callable,
@@ -98,18 +84,22 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
         return self._map_template_vars(new_kwargs)
 
     @abstractmethod
-    def partial_format(self, **kwargs: Any) -> "BasePromptTemplate": ...
+    def partial_format(self, **kwargs: Any) -> "BasePromptTemplate":
+        pass
 
     @abstractmethod
-    def format(self, llm: Optional[BaseLLM] = None, **kwargs: Any) -> str: ...
+    def format(self, llm: Optional[BaseLLM] = None, **kwargs: Any) -> str:
+        pass
 
     @abstractmethod
     def format_messages(
         self, llm: Optional[BaseLLM] = None, **kwargs: Any
-    ) -> List[Message]: ...
+    ) -> List[Message]:
+        pass
 
     @abstractmethod
-    def get_template(self, llm: Optional[BaseLLM] = None) -> str: ...
+    def get_template(self, llm: Optional[BaseLLM] = None) -> str:
+        pass
 
 
 class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]

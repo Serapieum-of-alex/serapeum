@@ -1,5 +1,5 @@
-from typing import Dict, List, Optional
 import re
+from typing import Dict, List, Optional
 
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.models import ChunkType, TextChunk

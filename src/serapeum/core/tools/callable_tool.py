@@ -3,19 +3,15 @@
 import asyncio
 import inspect
 import json
-from typing import Any, Awaitable, Callable, Optional, Type, Dict, Union, List, TypeVar
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Type, TypeVar, Union
+
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
-from serapeum.core.utils.async_utils import asyncio_run
+from serapeum.core.base.llms.models import Audio, ChunkType, Image, TextChunk
 from serapeum.core.tools.models import AsyncBaseTool, ToolMetadata, ToolOutput
-from serapeum.core.base.llms.models import (
-    TextChunk,
-    Image,
-    Audio,
-    ChunkType,
-)
-from serapeum.core.tools.utils import FunctionConverter, Docstring
+from serapeum.core.tools.utils import Docstring, FunctionConverter
+from serapeum.core.utils.async_utils import asyncio_run
 
 AsyncCallable = Callable[..., Awaitable[Any]]
 
@@ -260,7 +256,11 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> async def add(a: int, b: int) -> int:
                 ...     return a + b
-                >>> tool = CallableTool(func=add, metadata=ToolMetadata(name="add", description="Add ints"), default_arguments={"b": 10})
+                >>> tool = CallableTool(
+                ...     func=add,
+                ...     metadata=ToolMetadata(name="add", description="Add ints"),
+                ...     default_arguments={"b": 10},
+                ... )
                 >>> print(asyncio.run(tool.acall(5)).content)
                 15
 
@@ -734,7 +734,11 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def greet(name: str, punct: str = "!") -> str:
                 ...     return f"Hello, {name}{punct}"
-                >>> tool = CallableTool(func=greet, metadata=ToolMetadata(name="greet", description="Greet"), default_arguments={"punct": "!!"})
+                >>> tool = CallableTool(
+                ...     func=greet,
+                ...     metadata=ToolMetadata(name="greet", description="Greet"),
+                ...     default_arguments={"punct": "!!"},
+                ... )
                 >>> print(tool("Ada").content)
                 Hello, Ada!!
                 >>> print(tool("Ada", punct=".").content)
@@ -783,7 +787,11 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.models import ToolMetadata
                 >>> def greet(name: str, punct: str = "!") -> str:
                 ...     return f"Hello, {name}{punct}"
-                >>> tool = CallableTool(func=greet, metadata=ToolMetadata(name="greet", description="Greet"), default_arguments={"punct": "?"})
+                >>> tool = CallableTool(
+                ...     func=greet,
+                ...     metadata=ToolMetadata(name="greet", description="Greet"),
+                ...     default_arguments={"punct": "?"},
+                ... )
                 >>> print(tool.call("Ada").content)
                 Hello, Ada?
                 >>> print(tool.call("Ada", punct=".").content)

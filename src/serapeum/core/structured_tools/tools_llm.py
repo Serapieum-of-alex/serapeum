@@ -2,25 +2,24 @@ import logging
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncGenerator,
     Dict,
+    Generator,
+    List,
     Optional,
     Type,
     Union,
-    List,
-    Generator,
-    AsyncGenerator,
 )
 
-from pydantic import (
-    BaseModel,
-)
-from serapeum.core.llm.function_calling import FunctionCallingLLM
-from serapeum.core.llm.base import LLM
-from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
+from pydantic import BaseModel
+
 from serapeum.core.configs.configs import Configs
+from serapeum.core.llm.base import LLM
+from serapeum.core.llm.function_calling import FunctionCallingLLM
+from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.structured_tools.models import BasePydanticLLM, Model
-from serapeum.core.tools.callable_tool import CallableTool
 from serapeum.core.structured_tools.utils import StreamingObjectProcessor
+from serapeum.core.tools.callable_tool import CallableTool
 
 if TYPE_CHECKING:
     from serapeum.core.chat.models import AgentChatResponse
@@ -112,14 +111,19 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             - Configs: Global configuration for default LLM settings
 
         Examples:
-        - Instantiate the program with a real LLM (Ollama) and a simple prompt string. No network calls occur during initialization.
+        - Instantiate the program with a real LLM (Ollama) and a simple prompt
+          string. No network calls occur during initialization.
             ```python
             >>> from pydantic import BaseModel
             >>> from serapeum.llms.ollama.base import Ollama
             >>> from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
             >>> class Output(BaseModel):
             ...     value: int
-            >>> tools_llm = ToolOrchestratingLLM(Output, 'Prompt here', Ollama(model='llama3.1'))
+            >>> tools_llm = ToolOrchestratingLLM(
+            ...     Output,
+            ...     'Prompt here',
+            ...     Ollama(model='llama3.1'),
+            ... )
             >>> tools_llm.output_cls is Output
             True
 
@@ -155,8 +159,8 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         - Convert a string to a PromptTemplate.
             ```python
             >>> prompt_template = ToolOrchestratingLLM.validate_prompt('Hello, {name}!')
-            >>> print(prompt_template)
-            metadata={'prompt_type': <PromptType.CUSTOM: 'custom'>} template_vars=['name'] kwargs={} output_parser=None template_var_mappings=None function_mappings=None template='Hello, {name}!'
+            >>> print(prompt_template)  # doctest: +ELLIPSIS
+            metadata={'prompt_type': <PromptType.CUSTOM: 'custom'>} ... template='Hello, {name}!'
 
             ```
         - Invalid type raises ValueError.
@@ -252,7 +256,11 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from pydantic import BaseModel
             >>> from serapeum.core.prompts.base import PromptTemplate
             >>> from serapeum.llms.ollama.base import Ollama
-            >>> tools_llm = ToolOrchestratingLLM(output_cls=type('M',(BaseModel,),{}), prompt='Hi', llm=Ollama(model='llama3.1'))
+            >>> tools_llm = ToolOrchestratingLLM(
+            ...     output_cls=type('M', (BaseModel,), {}),
+            ...     prompt='Hi',
+            ...     llm=Ollama(model='llama3.1'),
+            ... )
             >>> isinstance(tools_llm.prompt, PromptTemplate)
             True
 
@@ -273,7 +281,11 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from pydantic import BaseModel
             >>> from serapeum.core.prompts.base import PromptTemplate
             >>> from serapeum.llms.ollama.base import Ollama
-            >>> tools_llm = ToolOrchestratingLLM(output_cls=type('M',(BaseModel,),{}), prompt='Hi', llm=Ollama(model='llama3.1'))
+            >>> tools_llm = ToolOrchestratingLLM(
+            ...     output_cls=type('M', (BaseModel,), {}),
+            ...     prompt='Hi',
+            ...     llm=Ollama(model='llama3.1'),
+            ... )
             >>> tools_llm.prompt = PromptTemplate('New prompt')
             >>> isinstance(tools_llm.prompt, PromptTemplate)
             True
@@ -471,10 +483,13 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> for obj in tools_llm.stream_call():  # doctest: +SKIP
             >>>      print(obj)
             n=1
-            Multiple outputs found, returning first one. If you want to return all outputs, set allow_parallel_tool_calls=True.
+            Multiple outputs found, returning first one.
+            If you want to return all outputs, set allow_parallel_tool_calls=True.
             n=1
-            Multiple outputs found, returning first one. If you want to return all outputs, set allow_parallel_tool_calls=True.
-            Multiple outputs found, returning first one. If you want to return all outputs, set allow_parallel_tool_calls=True.
+            Multiple outputs found, returning first one.
+            If you want to return all outputs, set allow_parallel_tool_calls=True.
+            Multiple outputs found, returning first one.
+            If you want to return all outputs, set allow_parallel_tool_calls=True.
             n=1
             n=1
 
@@ -530,8 +545,10 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
         Returns:
             AsyncGenerator[Union[Model, List[Model]], None]:
-                An async generator that yields progressive updates of the structured output.
-                Must be awaited before iteration. When ``allow_parallel_tool_calls`` is True, a list of models may be yielded.
+                An async generator that yields progressive updates of the structured
+                output. Must be awaited before iteration.
+                When ``allow_parallel_tool_calls`` is True,
+                a list of models may be yielded.
 
         Raises:
             ValueError: If ``self._llm`` is not a ``FunctionCallingLLM`` instance.
@@ -562,10 +579,13 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>>         print(obj)  # doctest: +SKIP
             >>> asyncio.run(consume())  # doctest: +SKIP
             n=1
-            Multiple outputs found, returning first one. If you want to return all outputs, set allow_parallel_tool_calls=True.
+            Multiple outputs found, returning first one.
+            If you want to return all outputs, set allow_parallel_tool_calls=True.
             n=1
-            Multiple outputs found, returning first one. If you want to return all outputs, set allow_parallel_tool_calls=True.
-            Multiple outputs found, returning first one. If you want to return all outputs, set allow_parallel_tool_calls=True.
+            Multiple outputs found, returning first one.
+            If you want to return all outputs, set allow_parallel_tool_calls=True.
+            Multiple outputs found, returning first one.
+            If you want to return all outputs, set allow_parallel_tool_calls=True.
             n=1
             n=1
 

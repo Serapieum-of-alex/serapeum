@@ -2,30 +2,25 @@ from typing import Any, List, Sequence
 
 import pytest
 
+from serapeum.core.base.llms.models import (
+    ChatResponse,
+    ChatResponseAsyncGen,
+    ChatResponseGen,
+    CompletionResponse,
+    CompletionResponseAsyncGen,
+    CompletionResponseGen,
+    Message,
+    MessageRole,
+    Metadata,
+)
 from serapeum.core.llm.base import (
     LLM,
     astream_response_to_tokens,
     default_completion_to_prompt,
     stream_response_to_tokens,
 )
-from serapeum.core.base.llms.models import (
-    ChatResponse,
-    ChatResponseGen,
-    ChatResponseAsyncGen,
-    CompletionResponse,
-    CompletionResponseGen,
-    CompletionResponseAsyncGen,
-    Message,
-    MessageRole,
-    Metadata,
-)
-from serapeum.core.prompts import PromptTemplate, ChatPromptTemplate
 from serapeum.core.output_parsers.models import BaseOutputParser
-
-
-# --------------------
-# Test doubles & helpers
-# --------------------
+from serapeum.core.prompts import ChatPromptTemplate, PromptTemplate
 
 
 class UpperParser(BaseOutputParser):

@@ -1,50 +1,38 @@
 from abc import ABC
 from typing import (
+    TYPE_CHECKING,
     Any,
-    Dict,
-    List,
-    Generator,
     AsyncGenerator,
+    Dict,
+    Generator,
+    List,
     Optional,
     Protocol,
+    Type,
     Union,
     runtime_checkable,
-    TYPE_CHECKING,
-    Type,
 )
+
+from pydantic import BaseModel, Field, WithJsonSchema, field_validator, model_validator
 from typing_extensions import Annotated
 
+from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.models import (
     ChatResponseAsyncGen,
     ChatResponseGen,
     CompletionResponseAsyncGen,
     CompletionResponseGen,
+    Message,
+    MessageList,
     MessageRole,
 )
-from pydantic import (
-    BaseModel,
-    WithJsonSchema,
-    Field,
-    field_validator,
-    model_validator,
-)
-from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.base.llms.models import (
-    MessageList,
-)
-
-from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
 from serapeum.core.models import Model, StructuredLLMMode
 from serapeum.core.output_parsers.models import (
     BaseOutputParser,
     TokenAsyncGen,
     TokenGen,
 )
-
-from serapeum.core.base.llms.models import (
-    Message,
-)
-
+from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
 
 if TYPE_CHECKING:
     from serapeum.core.llm.structured_llm import StructuredLLM
@@ -2148,7 +2136,7 @@ class LLM(BaseLLM, ABC):
                 ...         raise NotImplementedError()
                 ...     async def acomplete(self, prompt, formatted=False, **kwargs):
                 ...         raise NotImplementedError()
-                ...     async def astream_complete(self, prompt, formatted=False, **kwargs) -> CompletionResponseAsyncGen:
+                ...     async def astream_complete(self, prompt, formatted=False, **kwargs):
                 ...         return completion_stream()
                 ...
                 >>> async def demo():

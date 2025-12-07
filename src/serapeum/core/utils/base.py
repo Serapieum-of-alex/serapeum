@@ -1,9 +1,10 @@
 import base64
-import requests
 from io import BytesIO
-from urllib.parse import urlparse
 from pathlib import Path
 from typing import Optional, Union
+from urllib.parse import urlparse
+
+import requests
 
 
 def resolve_binary(

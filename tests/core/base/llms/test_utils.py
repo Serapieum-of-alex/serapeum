@@ -1,15 +1,18 @@
 import pytest
 
-from serapeum.core.base.llms.models import ChatResponse, MessageList
+from serapeum.core.base.llms.models import (
+    ChatResponse,
+    Message,
+    MessageList,
+    MessageRole,
+)
 from serapeum.core.base.llms.utils import (
-    chat_to_completion_decorator,
-    stream_chat_to_completion_decorator,
     achat_to_completion_decorator,
     astream_chat_to_completion_decorator,
+    chat_to_completion_decorator,
     get_from_param_or_env,
+    stream_chat_to_completion_decorator,
 )
-
-from serapeum.core.base.llms.models import Message, MessageRole, TextChunk, Image
 
 
 class TestDecorators:

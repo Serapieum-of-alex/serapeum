@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
 
-
 from serapeum.core.llm import LLM
 from serapeum.core.models import StructuredLLMMode
 

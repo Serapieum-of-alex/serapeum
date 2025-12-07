@@ -13,7 +13,7 @@ import pytest
 from pydantic import BaseModel, Field
 
 from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
-from serapeum.core.structured_tools.utils import StreamingObjectProcessor, FlexibleModel
+from serapeum.core.structured_tools.utils import FlexibleModel, StreamingObjectProcessor
 
 
 class Person(BaseModel):

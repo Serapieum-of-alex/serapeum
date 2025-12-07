@@ -1,9 +1,9 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from serapeum.core.chat.models import AgentChatResponse
 from serapeum.core.tools import ToolOutput
-
 from tests.core.models import MOCK_ALBUM, MOCK_ALBUM_2
 
 

@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generic, List, Type, Union, Generator, AsyncGenerator
+from typing import Any, AsyncGenerator, Generator, Generic, List, Type, Union
+
 from pydantic import BaseModel
+
 from serapeum.core.models import Model
 
 

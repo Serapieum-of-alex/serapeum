@@ -1,26 +1,23 @@
-from abc import ABC, abstractmethod
 import json
+from abc import ABC, abstractmethod
 from typing import (
     Any,
     AsyncGenerator,
     Dict,
     Generator,
+    Generic,
     List,
+    Optional,
     Type,
     Union,
-    Generic,
-    Optional,
 )
-from serapeum.core.output_parsers.utils import extract_json_str
-from serapeum.core.base.llms.models import Message, MessageRole, TextChunk
-from serapeum.core.models import Model
-from pydantic import (
-    BaseModel,
-    GetCoreSchemaHandler,
-    GetJsonSchemaHandler,
-)
+
+from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic_core import CoreSchema, core_schema
 
+from serapeum.core.base.llms.models import Message, MessageRole, TextChunk
+from serapeum.core.models import Model
+from serapeum.core.output_parsers.utils import extract_json_str
 
 TokenGen = Generator[str, None, None]
 TokenAsyncGen = AsyncGenerator[str, None]
@@ -38,7 +35,8 @@ Output a valid JSON object but do not repeat the schema.
 class BaseOutputParser(ABC):
 
     @abstractmethod
-    def parse(self, output: str) -> Any: ...
+    def parse(self, output: str) -> Any:
+        pass
 
     def format(self, query: str) -> str:
         return query

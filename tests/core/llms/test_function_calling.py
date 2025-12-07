@@ -1,18 +1,18 @@
 from typing import Any, AsyncGenerator, Coroutine, Dict, List, Optional, Sequence, Union
 
 import pytest
+from pydantic import BaseModel, Field
+
 from serapeum.core.base.llms.models import (
-    Message,
     ChatResponse,
     ChatResponseGen,
     CompletionResponse,
+    Message,
     Metadata,
 )
 from serapeum.core.llm.function_calling import FunctionCallingLLM
-from serapeum.core.tools.models import ToolCallArguments
 from serapeum.core.structured_tools.tools_llm import CallableTool
-from serapeum.core.tools.models import BaseTool
-from pydantic import BaseModel, Field
+from serapeum.core.tools.models import BaseTool, ToolCallArguments
 
 
 class MockFunctionCallingLLM(FunctionCallingLLM):

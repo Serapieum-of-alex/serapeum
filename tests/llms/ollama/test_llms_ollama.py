@@ -1,16 +1,16 @@
-import pytest
 import os
+from copy import deepcopy
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
+import pytest
+from ollama import ChatResponse, Client
+from ollama import Message as OllamaMessage
 from pydantic import BaseModel
+
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.llm import Message
 from serapeum.core.tools import CallableTool
 from serapeum.llms.ollama import Ollama
-from unittest.mock import patch, AsyncMock, MagicMock, PropertyMock
-from ollama import Client
-from copy import deepcopy
-from ollama import Message as OllamaMessage
-from ollama import ChatResponse
 
 response_dict = {
     "model": "llama3.1:latest",

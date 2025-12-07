@@ -1,48 +1,51 @@
 """Ollama base module."""
+
 from __future__ import annotations
-from ollama import Client, AsyncClient
+
+import asyncio
+import inspect
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncGenerator,
     Dict,
+    Generator,
     List,
     Optional,
     Tuple,
     Type,
     Union,
-    Generator,
-    AsyncGenerator,
 )
 
-from serapeum.core.base.llms.utils import (
-    chat_to_completion_decorator,
-    achat_to_completion_decorator,
-    stream_chat_to_completion_decorator,
-    astream_chat_to_completion_decorator,
-)
+from ollama import AsyncClient, Client
+from pydantic import BaseModel, Field, PrivateAttr
+
 from serapeum.core.base.llms.models import (
-    Message,
-    MessageList,
     ChatResponse,
-    ChatResponseGen,
     ChatResponseAsyncGen,
+    ChatResponseGen,
     CompletionResponse,
     CompletionResponseAsyncGen,
     CompletionResponseGen,
-    Metadata,
-    MessageRole,
-    TextChunk,
     Image,
+    Message,
+    MessageList,
+    MessageRole,
+    Metadata,
+    TextChunk,
 )
-from pydantic import BaseModel, Field, PrivateAttr
+from serapeum.core.base.llms.utils import (
+    achat_to_completion_decorator,
+    astream_chat_to_completion_decorator,
+    chat_to_completion_decorator,
+    stream_chat_to_completion_decorator,
+)
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llm.function_calling import FunctionCallingLLM
-from serapeum.core.prompts import PromptTemplate
-from serapeum.core.tools import ToolCallArguments
 from serapeum.core.models import StructuredLLMMode
+from serapeum.core.prompts import PromptTemplate
 from serapeum.core.structured_tools.utils import StreamingObjectProcessor
-import asyncio
-import inspect
+from serapeum.core.tools import ToolCallArguments
 
 if TYPE_CHECKING:
     from serapeum.core.tools.models import BaseTool

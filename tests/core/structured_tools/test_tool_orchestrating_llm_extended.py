@@ -14,16 +14,13 @@ from typing import Any, AsyncGenerator, Generator, List, Optional, Sequence, Uni
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from pydantic import BaseModel
 
-from serapeum.core.base.llms.models import Message, ChatResponse, Metadata
+from serapeum.core.base.llms.models import ChatResponse, Message, Metadata
 from serapeum.core.chat.models import AgentChatResponse
 from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.prompts.base import PromptTemplate
-from serapeum.core.structured_tools.tools_llm import (
-    ToolOrchestratingLLM,
-)
+from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
 from serapeum.core.tools.models import ToolCallArguments
 

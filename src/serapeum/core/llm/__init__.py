@@ -1,5 +1,5 @@
 from serapeum.core.base.llms.models import (
-    Message,
+    Audio,
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
@@ -7,12 +7,11 @@ from serapeum.core.base.llms.models import (
     CompletionResponseAsyncGen,
     CompletionResponseGen,
     Image,
-    Metadata,
+    Message,
     MessageRole,
+    Metadata,
     TextChunk,
-    Audio,
 )
-
 from serapeum.core.llm.base import LLM
 
 __all__ = [

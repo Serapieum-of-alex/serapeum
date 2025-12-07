@@ -2,20 +2,20 @@ import base64
 from io import BytesIO
 from pathlib import Path
 from unittest import mock
-import pytest
+
 import httpx
+import pytest
+from pydantic import AnyUrl, BaseModel
 
 from serapeum.core.base.llms.models import (
-    Message,
     ChatResponse,
     CompletionResponse,
     Image,
+    Message,
+    MessageList,
     MessageRole,
     TextChunk,
-    MessageList,
 )
-from pydantic import BaseModel
-from pydantic import AnyUrl
 
 
 @pytest.fixture()

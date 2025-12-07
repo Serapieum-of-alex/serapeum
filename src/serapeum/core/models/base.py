@@ -1,19 +1,18 @@
-from typing import Any, Dict, Self
 import json
-import pickle
 import logging
+import pickle
 from enum import Enum
-from typing import TypeVar
-from pydantic_core import CoreSchema
-from pydantic.json_schema import JsonSchemaValue
+from typing import Any, Dict, Self, TypeVar
+
 from pydantic import (
     BaseModel,
     GetJsonSchemaHandler,
-    model_serializer,
-    SerializerFunctionWrapHandler,
     SerializationInfo,
+    SerializerFunctionWrapHandler,
+    model_serializer,
 )
-
+from pydantic.json_schema import JsonSchemaValue
+from pydantic_core import CoreSchema
 
 Model = TypeVar("Model", bound=BaseModel)
 

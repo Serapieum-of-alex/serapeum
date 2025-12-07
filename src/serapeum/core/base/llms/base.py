@@ -1,23 +1,19 @@
 from abc import abstractmethod
-from typing import (
-    Any,
-    List,
-    Sequence,
-)
+from typing import Any, List, Sequence
+
+from pydantic import ConfigDict
 
 from serapeum.core.base.llms.models import (
-    Message,
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
     CompletionResponse,
     CompletionResponseAsyncGen,
     CompletionResponseGen,
+    Message,
     Metadata,
     TextChunk,
 )
-
-from pydantic import ConfigDict
 from serapeum.core.models import SerializableModel
 
 
@@ -57,38 +53,45 @@ class BaseLLM(SerializableModel):
         return converted_messages
 
     @abstractmethod
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse: ...
+    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+        pass
 
     @abstractmethod
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse: ...
+    ) -> CompletionResponse:
+        pass
 
     @abstractmethod
     def stream_chat(
         self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseGen: ...
+    ) -> ChatResponseGen:
+        pass
 
     @abstractmethod
     def stream_complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseGen: ...
+    ) -> CompletionResponseGen:
+        pass
 
     @abstractmethod
-    async def achat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponse: ...
+    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+        pass
 
     @abstractmethod
     async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse: ...
+    ) -> CompletionResponse:
+        pass
 
     @abstractmethod
     async def astream_chat(
         self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseAsyncGen: ...
+    ) -> ChatResponseAsyncGen:
+        pass
+
     @abstractmethod
     async def astream_complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseAsyncGen: ...
+    ) -> CompletionResponseAsyncGen:
+        pass

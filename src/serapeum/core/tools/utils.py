@@ -19,33 +19,38 @@ See Also:
     - serapeum.core.tools.models.ToolCallArguments
 """
 
-import re
+import datetime
 import json
+import re
 from dataclasses import dataclass
-from inspect import signature, Parameter
+from inspect import Parameter, signature
 from typing import (
+    TYPE_CHECKING,
+    Annotated,
     Any,
     Awaitable,
     Callable,
     List,
     Optional,
+    Sequence,
     Tuple,
     Type,
+    TypeVar,
     Union,
     cast,
-    get_origin,
     get_args,
-    Annotated,
-    TYPE_CHECKING,
-    Sequence,
-    TypeVar,
+    get_origin,
 )
-import datetime
 
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
-from serapeum.core.tools.models import BaseTool, ToolOutput, adapt_to_async_tool
-from serapeum.core.tools.models import ToolCallArguments
+
+from serapeum.core.tools.models import (
+    BaseTool,
+    ToolCallArguments,
+    ToolOutput,
+    adapt_to_async_tool,
+)
 
 Model = TypeVar("Model", bound=BaseModel)
 

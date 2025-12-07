@@ -9,19 +9,24 @@ with a docstring that explains inputs, expected behavior, and what is being chec
 
 import asyncio
 import datetime as dt
-from typing import Any, Sequence, Optional
+from typing import Any, Optional, Sequence
 
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.tools.utils import (
-    FunctionConverter,
-    Docstring,
-    ToolExecutor,
-    ExecutionConfig,
+from serapeum.core.tools.models import (
+    AsyncBaseTool,
+    BaseTool,
+    ToolCallArguments,
+    ToolMetadata,
+    ToolOutput,
 )
-from serapeum.core.tools.models import BaseTool, AsyncBaseTool, ToolMetadata, ToolOutput
-from serapeum.core.tools.models import ToolCallArguments
+from serapeum.core.tools.utils import (
+    Docstring,
+    ExecutionConfig,
+    FunctionConverter,
+    ToolExecutor,
+)
 
 
 class MockSong(BaseModel):

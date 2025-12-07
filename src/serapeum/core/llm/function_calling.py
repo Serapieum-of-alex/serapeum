@@ -3,10 +3,10 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Union
 
 from serapeum.core.base.llms.models import (
-    Message,
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
+    Message,
 )
 from serapeum.core.llm.base import LLM
 from serapeum.core.tools.models import ToolCallArguments
@@ -159,7 +159,7 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> "AgentChatResponse":
         """Predict and call the tool."""
-        from serapeum.core.tools.utils import ToolExecutor, ExecutionConfig
+        from serapeum.core.tools.utils import ExecutionConfig, ToolExecutor
 
         response = self.chat_with_tools(
             tools,
@@ -194,7 +194,7 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> "AgentChatResponse":
         """Predict and call the tool."""
-        from serapeum.core.tools.utils import ToolExecutor, ExecutionConfig
+        from serapeum.core.tools.utils import ExecutionConfig, ToolExecutor
 
         response = await self.achat_with_tools(
             tools,

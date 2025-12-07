@@ -1,19 +1,17 @@
 """Test Tool Orchestrating LLM."""
 
+from typing import Any, List, Optional, Union
 from unittest.mock import MagicMock
+
 import pytest
 
-from serapeum.core.base.llms.models import (
-    Message,
-    Metadata,
-)
-from typing import List, Optional, Union, Any
-from serapeum.core.tools.models import BaseTool
+from serapeum.core.base.llms.models import Message, Metadata
 from serapeum.core.chat.models import AgentChatResponse
-from serapeum.core.tools import ToolOutput
 from serapeum.core.structured_tools import ToolOrchestratingLLM
-from tests.core.models import MOCK_ALBUM, MOCK_ALBUM_2, MockAlbum
+from serapeum.core.tools import ToolOutput
+from serapeum.core.tools.models import BaseTool
 from serapeum.llms.ollama import Ollama
+from tests.core.models import MOCK_ALBUM, MOCK_ALBUM_2, MockAlbum
 
 
 def _get_mock_album_response(

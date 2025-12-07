@@ -1,16 +1,12 @@
 import pytest
 from pydantic import BaseModel
 
-from serapeum.core.base.llms.models import (
-    Message,
-    MessageRole,
-)
+from serapeum.core.base.llms.models import Message, MessageRole
 from serapeum.core.configs.configs import Configs
 from serapeum.core.output_parsers import PydanticOutputParser
 from serapeum.core.prompts import ChatPromptTemplate
 from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
-
 
 LLM = Ollama(
     model="llama3.1",

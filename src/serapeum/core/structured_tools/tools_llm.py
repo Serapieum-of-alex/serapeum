@@ -1,3 +1,5 @@
+"""Programs that orchestrate tools/function-calling to produce Pydantic outputs."""
+
 import logging
 from typing import (
     TYPE_CHECKING,

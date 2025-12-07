@@ -1,3 +1,5 @@
+"""LLM mixins and helpers for function/tool calling workflows."""
+
 import asyncio
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Union
@@ -17,8 +19,13 @@ if TYPE_CHECKING:
 
 
 class FunctionCallingLLM(LLM):
+    """LLM base with convenience helpers for tool/function calling flows."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialize the function-calling LLM wrapper.
+
+        Simply forwards all arguments to the base LLM constructor.
+        """
         super().__init__(*args, **kwargs)
 
     def chat_with_tools(

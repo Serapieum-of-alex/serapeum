@@ -1,3 +1,5 @@
+"""LLM base package: abstract interfaces and shared models for LLM backends."""
+
 from serapeum.core.base.llms.models import (
     Audio,
     ChatResponse,

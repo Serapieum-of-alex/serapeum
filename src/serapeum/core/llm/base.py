@@ -1,3 +1,9 @@
+"""Core LLM orchestration utilities and base high-level API.
+
+This module defines the high-level LLM class with helpers for prompts,
+streaming, and structured outputs.
+"""
+
 from abc import ABC
 from typing import (
     TYPE_CHECKING,
@@ -120,7 +126,7 @@ class MessagesToPromptType(Protocol):
 
 @runtime_checkable
 class CompletionToPromptType(Protocol):
-    """Runtime protocol describing prompt adapters invoked before completions.
+    r"""Runtime protocol describing prompt adapters invoked before completions.
 
     Examples:
         - Check that an identity adapter satisfies the protocol
@@ -522,7 +528,7 @@ class LLM(BaseLLM, ABC):
     def set_messages_to_prompt(
         cls, messages_to_prompt: Optional[MessagesToPromptType]
     ) -> MessagesToPromptType:
-        """Select a message-to-prompt adapter, defaulting to MessageList.to_prompt().
+        r"""Select a message-to-prompt adapter, defaulting to MessageList.to_prompt().
 
         Args:
             messages_to_prompt (Optional[MessagesToPromptType]):
@@ -953,7 +959,7 @@ class LLM(BaseLLM, ABC):
         self,
         formatted_prompt: str,
     ) -> str:
-        """Add system and query wrapper prompts to a formatted prompt.
+        r"""Add system and query wrapper prompts to a formatted prompt.
 
         Args:
             formatted_prompt (str): Fully formatted prompt string.

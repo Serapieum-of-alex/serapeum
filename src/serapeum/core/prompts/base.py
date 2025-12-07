@@ -1,3 +1,5 @@
+"""Base classes and implementations for prompt templates used by LLMs."""
+
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
@@ -20,6 +22,12 @@ AnnotatedCallable = Annotated[
 
 
 class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
+    """Abstract base class for prompt templates.
+
+    Subclasses must implement string and chat formatting helpers so the same
+    prompt can be used with both completion and chat models.
+    """
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
     metadata: Dict[str, Any]
     template_vars: List[str]
@@ -85,21 +93,21 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
 
     @abstractmethod
     def partial_format(self, **kwargs: Any) -> "BasePromptTemplate":
-        pass
+        """Return a shallow copy with additional default formatting values."""
 
     @abstractmethod
     def format(self, llm: Optional[BaseLLM] = None, **kwargs: Any) -> str:
-        pass
+        """Render the template to a single string."""
 
     @abstractmethod
     def format_messages(
         self, llm: Optional[BaseLLM] = None, **kwargs: Any
     ) -> List[Message]:
-        pass
+        """Render the template into a list of chat messages."""
 
     @abstractmethod
     def get_template(self, llm: Optional[BaseLLM] = None) -> str:
-        pass
+        """Return the raw template string used by this prompt."""
 
 
 class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
@@ -115,6 +123,17 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         function_mappings: Optional[Dict[str, Callable]] = None,
         **kwargs: Any,
     ) -> None:
+        """Create a plain-text prompt template.
+
+        Args:
+            template: The raw template string (e.g., "Hello {name}").
+            prompt_type: Logical type used for analytics/telemetry.
+            output_parser: Optional output parser bound to this template.
+            metadata: Optional metadata dictionary.
+            template_var_mappings: Optional variable remapping for formatting.
+            function_mappings: Optional mapping of template vars to callables.
+            **kwargs: Default values for template variables.
+        """
         if metadata is None:
             metadata = {}
         metadata["prompt_type"] = prompt_type
@@ -194,6 +213,17 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         function_mappings: Optional[Dict[str, Callable]] = None,
         **kwargs: Any,
     ):
+        """Create a chat-style prompt template.
+
+        Args:
+            message_templates: Sequence of message templates to render.
+            prompt_type: Logical type used for analytics/telemetry.
+            output_parser: Optional output parser bound to this template.
+            metadata: Optional metadata dictionary.
+            template_var_mappings: Optional variable remapping for formatting.
+            function_mappings: Optional mapping of template vars to callables.
+            **kwargs: Default values for template variables.
+        """
         if metadata is None:
             metadata = {}
         metadata["prompt_type"] = prompt_type

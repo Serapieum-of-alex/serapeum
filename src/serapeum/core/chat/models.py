@@ -1,3 +1,5 @@
+"""Chat models and data structures for conversational agents."""
+
 import asyncio
 import logging
 import time

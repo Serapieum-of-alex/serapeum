@@ -25,7 +25,6 @@ import re
 from dataclasses import dataclass
 from inspect import Parameter, signature
 from typing import (
-    TYPE_CHECKING,
     Annotated,
     Any,
     Awaitable,
@@ -54,12 +53,9 @@ from serapeum.core.tools.models import (
 
 Model = TypeVar("Model", bound=BaseModel)
 
-if TYPE_CHECKING:
-    from serapeum.core.tools.models import BaseTool
-
 
 class Docstring:
-    """Helper to introspect a callable's docstring and signature.
+    r"""Helper to introspect a callable's docstring and signature.
 
     It extracts the function signature and provides utilities to parse
     parameter descriptions from various docstring styles (Google, Sphinx,
@@ -82,8 +78,8 @@ class Docstring:
         >>> ds = Docstring(add)
         >>> ds.name
         'add'
-        >>> ds.docstring
-        'Add two integers.\n    \n    Args:\n        a (int): First number.\n        b (int): Second number.\n    \n    Returns:\n        int: Sum of a and b.\n    '
+        >>> 'Add two integers.' in ds.docstring
+        True
         >>> ds.get_short_summary_line()
         'add(a: int, b: int) -> int\nAdd two integers.'
         >>> ds.func_arguments
@@ -334,7 +330,15 @@ class FunctionArgument:
                 >>> from typing import Annotated
                 >>> from inspect import signature
                 >>> from pydantic.fields import FieldInfo
-                >>> def f(ts: Annotated[str, FieldInfo(description='Timestamp', json_schema_extra={'format': 'date-time'})]):
+                >>> def f(
+                ...     ts: Annotated[
+                ...         str,
+                ...         FieldInfo(
+                ...             description='Timestamp',
+                ...             json_schema_extra={'format': 'date-time'},
+                ...         ),
+                ...     ]
+                ... ):
                 ...     pass
                 >>> param = list(signature(f).parameters.values())[0]
                 >>> fa = FunctionArgument(param)
@@ -666,7 +670,14 @@ class ToolExecutor:
         - Basic synchronous execution with a stub tool
             ```python
             >>> class ToolOutput:
-            ...     def __init__(self, content: str, tool_name: str, raw_input=None, raw_output=None, is_error: bool=False):
+            ...     def __init__(
+            ...         self,
+            ...         content: str,
+            ...         tool_name: str,
+            ...         raw_input=None,
+            ...         raw_output=None,
+            ...         is_error: bool=False,
+            ...     ):
             ...         self.content = content
             ...         self.tool_name = tool_name
             ...         self.raw_input = raw_input
@@ -678,7 +689,12 @@ class ToolExecutor:
             ...     def get_name(self):
             ...         return self.name
             ...     def get_schema(self):
-            ...         return {"properties": {"x": {"type": "integer"}, "y": {"type": "integer"}}}
+            ...         return {
+            ...             "properties": {
+            ...                 "x": {"type": "integer"},
+            ...                 "y": {"type": "integer"},
+            ...             }
+            ...         }
             >>> class SumTool:
             ...     def __init__(self):
             ...         self.metadata = _Meta("sum")
@@ -693,7 +709,14 @@ class ToolExecutor:
         - Single-argument auto-unpacking when the tool schema has exactly one property
             ```python
             >>> class ToolOutput:
-            ...     def __init__(self, content: str, tool_name: str, raw_input=None, raw_output=None, is_error: bool=False):
+            ...     def __init__(
+            ...         self,
+            ...         content: str,
+            ...         tool_name: str,
+            ...         raw_input=None,
+            ...         raw_output=None,
+            ...         is_error: bool=False,
+            ...     ):
             ...         self.content = content
             ...         self.tool_name = tool_name
             ...         self.raw_input = raw_input

@@ -1,3 +1,5 @@
+"""Helper adapters to bridge chat and completion interfaces for LLM backends."""
+
 import os
 from typing import Any, Awaitable, Callable, Optional
 
@@ -86,7 +88,11 @@ def get_from_param_or_env(
     env_key: Optional[str] = None,
     default: Optional[str] = None,
 ) -> str:
-    """Get a value from a param or an environment variable."""
+    """Return value from explicit param, environment, or default.
+
+    Resolution order: ``param`` > environment variable ``env_key`` > ``default``.
+    Raises ``ValueError`` when no value can be resolved.
+    """
     if param is not None:
         return param
     elif env_key and env_key in os.environ and os.environ[env_key]:

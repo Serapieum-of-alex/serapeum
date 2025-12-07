@@ -1,3 +1,5 @@
+"""Core data models for LLM interactions (messages, chunks, responses, metadata)."""
+
 from __future__ import annotations
 
 import base64
@@ -46,16 +48,22 @@ class MessageRole(str, Enum):
 
 
 class Chunk(BaseModel):
+    """Base content chunk (text, image, audio)."""
+
     content: bytes | str | None = None
     path: Optional[FilePath | None] = None
     url: Optional[AnyUrl | str | None] = None
 
 
 class TextChunk(Chunk):
+    """Plain text chunk."""
+
     type: Literal["text"] = "text"
 
 
 class Image(Chunk):
+    """Image chunk supporting inline bytes, file paths, or URLs."""
+
     type: Literal["image"] = "image"
     image_mimetype: str | None = None
     detail: str | None = None
@@ -120,6 +128,8 @@ class Image(Chunk):
 
 
 class Audio(Chunk):
+    """Audio chunk supporting inline bytes, file paths, or URLs."""
+
     type: Literal["audio"] = "audio"
     format: str | None = None
 
@@ -184,7 +194,7 @@ class Message(BaseModel):
     chunks: list[ChunkType] = Field(default_factory=list)
 
     def __init__(self, /, content: Any | None = None, **data: Any) -> None:
-        """constructor.
+        """Constructor.
 
         If content was passed and contained text, store a single TextChunk.
         If content was passed and it was a list, assume it's a list of content chunks and store it.
@@ -199,7 +209,7 @@ class Message(BaseModel):
 
     @property
     def content(self) -> str | None:
-        """content
+        """Content.
 
         Returns:
             The cumulative content of all TextBlocks in the message.
@@ -213,7 +223,7 @@ class Message(BaseModel):
 
     @content.setter
     def content(self, content: str) -> None:
-        """content
+        """Set text content.
 
         Raises:
             ValueError: if chunks contains more than a block, or a block that's not TextChunk.
@@ -228,6 +238,7 @@ class Message(BaseModel):
             )
 
     def __str__(self) -> str:
+        """Return a human-readable representation of the message."""
         return f"{self.role.value}: {self.content}"
 
     @classmethod
@@ -266,12 +277,15 @@ class MessageList(BaseModel, ABCSequence):
     messages: List[Message] = Field(default_factory=list)
 
     def __iter__(self) -> Iterator[Message]:
+        """Iterate through contained messages in order."""
         return iter(self.messages)
 
     def __len__(self) -> int:
+        """Return the number of messages in the list."""
         return len(self.messages)
 
     def __getitem__(self, index: Union[int, slice]) -> Union[Message, "MessageList"]:
+        """Retrieve a message or slice of messages."""
         if isinstance(index, slice):
             return MessageList(messages=self.messages[index])
         return self.messages[index]
@@ -346,6 +360,7 @@ class ChatResponse(BaseResponse):
     message: Message
 
     def __str__(self) -> str:
+        """Return the assistant message as a string."""
         return str(self.message)
 
     def to_completion_response(self) -> CompletionResponse:
@@ -416,6 +431,7 @@ class CompletionResponse(BaseResponse):
     text: str
 
     def __str__(self) -> str:
+        """Return the textual content of the completion response."""
         return self.text
 
 
@@ -424,6 +440,8 @@ CompletionResponseAsyncGen = AsyncGenerator[CompletionResponse, None]
 
 
 class Metadata(BaseModel):
+    """Provider and model capabilities and defaults metadata."""
+
     model_config = ConfigDict(
         protected_namespaces=("pydantic_model_",), arbitrary_types_allowed=True
     )

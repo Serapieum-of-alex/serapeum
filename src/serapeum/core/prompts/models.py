@@ -1,8 +1,10 @@
+"""Prompt-related enums and simple types."""
+
 from enum import Enum
 
 
 class PromptType(str, Enum):
-    """Prompt type."""
+    """Enumerates common prompt types used by the library."""
 
     SUMMARY = "summary"
     # tree insert node

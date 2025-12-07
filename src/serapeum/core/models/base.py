@@ -1,3 +1,5 @@
+"""Pydantic base classes and serialization helpers used across Serapeum."""
+
 import json
 import logging
 import pickle
@@ -23,15 +25,13 @@ logger = logging.getLogger(__name__)
 
 
 class SerializableModel(BaseModel):
-    """Serialization and Deserialization functionality."""
+    """Serialization and deserialization helpers for Pydantic models."""
 
     @classmethod
     def __get_pydantic_json_schema__(
         cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler
     ) -> JsonSchemaValue:
-        """
-        Overrides Pydantic's JSON schema generation to include a class_name property
-        """
+        """Override JSON schema generation to include a ``class_name`` property."""
         json_schema = handler(core_schema)
         json_schema = handler.resolve_ref_schema(json_schema)
 
@@ -46,14 +46,16 @@ class SerializableModel(BaseModel):
 
     @classmethod
     def class_name(cls) -> str:
-        """
-        - This is meant to be overridden by the subclass.class_name() method.
-        - Automatically injects the class name into the schema and serialized data.
+        """Return a stable class name identifier for serialization.
+
+        Subclasses should override to provide a meaningful identifier. The
+        value is injected into the JSON schema and serialized payloads to aid
+        with round‑tripping.
         """
         return "base_component"
 
     def json(self, **kwargs: Any) -> str:
-        """alias to to_json"""
+        """Alias to :meth:`to_json`."""
         return self.to_json(**kwargs)
 
     @model_serializer(mode="wrap")
@@ -65,13 +67,14 @@ class SerializableModel(BaseModel):
         return data
 
     def dict(self, **kwargs: Any) -> Dict[str, Any]:
-        """alias to model_dump"""
+        """Alias to :meth:`model_dump`."""
         return self.model_dump(**kwargs)
 
     def __getstate__(self) -> Dict[str, Any]:
-        """
-        - Custom pickling to remove unpickleable attributes.
-        - Scan both __dict__ and __pydantic_private__ for unpickleable attributes.
+        """Return a picklable state, pruning unpickleable attributes.
+
+        Scans both ``__dict__`` and ``__pydantic_private__`` for values that
+        cannot be pickled and removes them from the state.
         """
         state = super().__getstate__()
 
@@ -104,9 +107,7 @@ class SerializableModel(BaseModel):
         return state
 
     def __setstate__(self, state: Dict[str, Any]) -> None:
-        """
-        Custom unpickling to remove unpickleable attributes to reconstruct the class via __init__.
-        """
+        """Reconstruct instance from pickled state safely."""
         # Use the __dict__ and __init__ method to set state
         # so that all variables initialize
         try:
@@ -127,7 +128,7 @@ class SerializableModel(BaseModel):
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any], **kwargs: Any) -> Self:
-        """Creates an instance from a dictionary (Deserialization)."""
+        """Create an instance from a dictionary (deserialization)."""
         data = dict(data)
         if isinstance(kwargs, dict):
             data.update(kwargs)
@@ -136,7 +137,7 @@ class SerializableModel(BaseModel):
 
     @classmethod
     def from_json(cls, data_str: str, **kwargs: Any) -> Self:
-        """Creates an instance from a JSON string (Deserialization)."""
+        """Create an instance from a JSON string (deserialization)."""
         data = json.loads(data_str)
         return cls.from_dict(data, **kwargs)
 

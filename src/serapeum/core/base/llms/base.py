@@ -1,3 +1,9 @@
+"""Abstract base interface for concrete LLM backends.
+
+This module defines the BaseLLM protocol that concrete providers must
+implement to support chat/completion, streaming, and async variants.
+"""
+
 from abc import abstractmethod
 from typing import Any, List, Sequence
 

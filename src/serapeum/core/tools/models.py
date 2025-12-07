@@ -615,7 +615,11 @@ class ToolOutput(BaseModel):
                 ```python
                 >>> from serapeum.core.base.llms.models import TextChunk
                 >>> from serapeum.core.tools.models import ToolOutput
-                >>> out = ToolOutput(tool_name="t", chunks=[TextChunk(content="a"), TextChunk(content="b")],raw_input={})
+                >>> out = ToolOutput(
+                ...     tool_name="t",
+                ...     chunks=[TextChunk(content="a"), TextChunk(content="b")],
+                ...     raw_input={},
+                ... )
                 >>> print(out.content)
                 a
                 b

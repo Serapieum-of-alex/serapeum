@@ -1,3 +1,5 @@
+"""Configuration helpers and runtime settings for Serapeum."""
+
 from dataclasses import dataclass
 from typing import Optional
 

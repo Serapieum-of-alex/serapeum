@@ -678,8 +678,12 @@ class Ollama(FunctionCallingLLM):
                 ...         }
                 ...     )
                 ... )
-                >>> validated_response = llm._validate_chat_with_tools_response(response, tools=[], allow_parallel_tool_calls=False)
-                >>> len( validated_response.message.additional_kwargs.get("tool_calls"))
+                >>> validated_response = llm._validate_chat_with_tools_response(
+                ...     response,
+                ...     tools=[],
+                ...     allow_parallel_tool_calls=False,
+                ... )
+                >>> len(validated_response.message.additional_kwargs.get("tool_calls"))
                 1
 
                 ```
@@ -710,11 +714,23 @@ class Ollama(FunctionCallingLLM):
                 ```python
                 >>> from serapeum.core.base.llms.models import Message, MessageRole, ChatResponse
                 >>> llm = Ollama(model="m")
-                >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="", additional_kwargs={
-                ...     "tool_calls": [{"function": {"name": "run", "arguments": {"a": 1}}}],
-                ... }))
+                >>> r = ChatResponse(
+                ...     message=Message(
+                ...         role=MessageRole.ASSISTANT,
+                ...         content="",
+                ...         additional_kwargs={
+                ...             "tool_calls": [
+                ...                 {"function": {"name": "run", "arguments": {"a": 1}}}
+                ...             ]
+                ...         },
+                ...     )
+                ... )
                 >>> calls = llm.get_tool_calls_from_response(r)
-                >>> (calls[0].tool_id, calls[0].tool_name, calls[0].tool_kwargs["a"]) == ("run", "run", 1)
+                >>> (
+                ...     calls[0].tool_id,
+                ...     calls[0].tool_name,
+                ...     calls[0].tool_kwargs["a"],
+                ... ) == ("run", "run", 1)
                 True
 
                 ```

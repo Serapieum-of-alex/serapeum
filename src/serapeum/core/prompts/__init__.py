@@ -1,3 +1,5 @@
+"""Prompt templates and utilities for formatting LLM inputs."""
+
 from serapeum.core.base.llms.models import Message, MessageRole
 from serapeum.core.prompts.base import (
     BasePromptTemplate,

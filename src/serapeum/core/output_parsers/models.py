@@ -1,3 +1,10 @@
+"""Output parser interfaces and concrete implementations.
+
+This module defines the minimal interfaces for transforming raw LLM text into
+typed Python objects (e.g., Pydantic models) and utilities for formatting
+prompts with schema hints.
+"""
+
 import json
 from abc import ABC, abstractmethod
 from typing import (
@@ -33,15 +40,25 @@ Output a valid JSON object but do not repeat the schema.
 
 
 class BaseOutputParser(ABC):
+    """Abstract interface for parsing and formatting LLM outputs.
+
+    Subclasses must implement :meth:`parse` to turn raw text into a target
+    Python object. Optionally override :meth:`format` and
+    :meth:`format_messages` to inject schema hints or guidance into prompts or
+    messages before sending them to an LLM.
+    """
 
     @abstractmethod
     def parse(self, output: str) -> Any:
+        """Parse a raw text output into a structured Python object."""
         pass
 
     def format(self, query: str) -> str:
+        """Optionally augment the prompt string prior to completion."""
         return query
 
     def _format_message(self, message: Message) -> Message:
+        """Apply :meth:`format` to the appropriate message text chunk."""
         text_blocks: list[tuple[int, TextChunk]] = [
             (idx, block)
             for idx, block in enumerate(message.chunks)
@@ -64,6 +81,7 @@ class BaseOutputParser(ABC):
         return message
 
     def format_messages(self, messages: List[Message]) -> List[Message]:
+        """Optionally augment a list of chat messages prior to chat calls."""
         if messages:
             if messages[0].role == MessageRole.SYSTEM:
                 # get text from the last text chunks
@@ -77,17 +95,25 @@ class BaseOutputParser(ABC):
     def __get_pydantic_core_schema__(
         cls, source: Type[Any], handler: GetCoreSchemaHandler
     ) -> CoreSchema:
+        """Return a permissive core schema for arbitrary parser instances."""
         return core_schema.any_schema()
 
     @classmethod
     def __get_pydantic_json_schema__(
         cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler
     ) -> Dict[str, Any]:
+        """Resolve JSON schema references for Pydantic integration."""
         json_schema = handler(core_schema)
         return handler.resolve_ref_schema(json_schema)
 
 
 class PydanticOutputParser(BaseOutputParser, Generic[Model]):
+    """Parse JSON text into a Pydantic model and provide schema formatting.
+
+    This parser injects a compact JSON schema into the prompt (optional) and
+    extracts the first JSON object from the model output, validating it against
+    the provided ``output_cls``.
+    """
 
     def __init__(
         self,
@@ -95,17 +121,19 @@ class PydanticOutputParser(BaseOutputParser, Generic[Model]):
         excluded_schema_keys_from_format: Optional[List] = None,
         pydantic_format_tmpl: str = PYDANTIC_FORMAT_TMPL,
     ) -> None:
-        """Init params."""
+        """Initialize the parser with a target Pydantic model and options."""
         self._output_cls = output_cls
         self._excluded_schema_keys_from_format = excluded_schema_keys_from_format or []
         self._pydantic_format_tmpl = pydantic_format_tmpl
 
     @property
     def output_cls(self) -> Type[Model]:
+        """Return the target Pydantic model class."""
         return self._output_cls
 
     @property
     def format_string(self) -> str:
+        """Return the schema hint string with JSON braces escaped."""
         return self.get_format_string(escape_json=True)
 
     def get_format_string(self, escape_json: bool = True) -> str:
@@ -125,4 +153,5 @@ class PydanticOutputParser(BaseOutputParser, Generic[Model]):
         return self._output_cls.model_validate_json(json_str)
 
     def format(self, query: str) -> str:
+        """Append an escaped JSON schema hint to the prompt string."""
         return query + "\n\n" + self.get_format_string(escape_json=True)

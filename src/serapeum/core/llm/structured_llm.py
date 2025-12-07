@@ -1,4 +1,5 @@
-from typing import Any, Dict, Sequence, Type
+"""Structured output wrapper and helpers around the core LLM API."""
+from typing import Any, Sequence, Type
 
 from pydantic import BaseModel, Field, SerializeAsAny
 
@@ -21,6 +22,12 @@ from serapeum.core.prompts.base import ChatPromptTemplate
 
 
 class StructuredLLM(LLM):
+    """Wrap an LLM to produce structured Pydantic outputs.
+
+    This adapter delegates to an underlying LLM while exposing the same
+    chat/completion interfaces, converting results to and from the configured
+    ``output_cls`` model when appropriate.
+    """
 
     llm: SerializeAsAny[LLM]
     output_cls: Type[BaseModel] = Field(

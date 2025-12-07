@@ -140,14 +140,14 @@ def asyncio_run(coro: Coroutine) -> Any:
         # If we're here, there's an existing loop but it's not running
         return loop.run_until_complete(coro)
 
-    except RuntimeError as e:
+    except RuntimeError:
         # If we can't get the event loop, we're likely in a different thread, or its already running
         try:
             return asyncio.run(coro)
         except RuntimeError as e:
             raise RuntimeError(
                 "Detected nested async. Please use nest_asyncio.apply() to allow nested event loops."
-                "Or, use async entry methods like `aquery()`, `aretriever`, `achat`, etc."
+                f"Or, use async entry methods like `aquery()`, `aretriever`, `achat`, etc. Error: {e}"
             )
 
 

@@ -1,4 +1,5 @@
 """Test LLM program."""
+
 import pytest
 import json
 from unittest.mock import MagicMock
@@ -24,7 +25,6 @@ LLM = Ollama(
 )
 
 
-
 class MockLLM(MagicMock):
     def complete(self, prompt: str) -> CompletionResponse:
         test_object = {"hello": "world"}
@@ -40,9 +40,7 @@ class MockChatLLM(MagicMock):
     def chat(self, prompt: str) -> ChatResponse:
         test_object = {"hello": "chat"}
         text = json.dumps(test_object)
-        return ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content=text)
-        )
+        return ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=text))
 
     @property
     def metadata(self) -> Metadata:
@@ -54,6 +52,7 @@ class MockChatLLM(MagicMock):
 class ModelTest(BaseModel):
     __test__ = False
     hello: str
+
 
 class TestTextCompletionLLM:
 

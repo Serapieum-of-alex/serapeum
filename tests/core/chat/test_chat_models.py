@@ -223,8 +223,10 @@ class TestAgentChatResponseAsyncResponseGen:
         Expected: Tokens ['foo ', 'bar '].
         Check: List collected from async generator equals expected.
         """
+
         async def _fast_sleep(_x):
             return None
+
         monkeypatch.setattr("serapeum.core.chat.models.asyncio.sleep", _fast_sleep)
         r = AgentChatResponse(response="foo bar", is_dummy_stream=True)
         out = [t async for t in r.async_response_gen()]
@@ -243,14 +245,18 @@ class TestAgentChatResponseAsyncResponseGen:
                 pass
 
     @pytest.mark.asyncio
-    async def test_async_response_gen_multiple_spaces_preserves_empty_tokens(self, monkeypatch):
+    async def test_async_response_gen_multiple_spaces_preserves_empty_tokens(
+        self, monkeypatch
+    ):
         """Input: response="a  b" (two spaces), is_dummy_stream=True; patch asyncio.sleep to no-op.
 
         Expected: ['a ', ' ', 'b '] due to the explicit separator in split(" ").
         Check: Collected list matches expected sequence with the empty middle token.
         """
+
         async def _fast_sleep(_x):
             return None
+
         monkeypatch.setattr("serapeum.core.chat.models.asyncio.sleep", _fast_sleep)
         r = AgentChatResponse(response="a  b", is_dummy_stream=True)
         out = [t async for t in r.async_response_gen()]

@@ -33,6 +33,5 @@ class _Configs:
         self.llm.pydantic_program_mode = pydantic_program_mode
 
 
-
 # Singleton
 Configs = _Configs()

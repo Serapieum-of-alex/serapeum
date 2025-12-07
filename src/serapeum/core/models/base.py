@@ -6,7 +6,13 @@ from enum import Enum
 from typing import TypeVar
 from pydantic_core import CoreSchema
 from pydantic.json_schema import JsonSchemaValue
-from pydantic import BaseModel, GetJsonSchemaHandler, model_serializer, SerializerFunctionWrapHandler, SerializationInfo
+from pydantic import (
+    BaseModel,
+    GetJsonSchemaHandler,
+    model_serializer,
+    SerializerFunctionWrapHandler,
+    SerializationInfo,
+)
 
 
 Model = TypeVar("Model", bound=BaseModel)

@@ -7,6 +7,7 @@ For each function/method, we define a dedicated test class that contains
 individual tests (one per scenario). Each test method includes a docstring
 explaining inputs, expected results, and what is being verified.
 """
+
 from __future__ import annotations
 
 from typing import Any, AsyncGenerator, Generator, List, Optional, Sequence, Union
@@ -96,7 +97,11 @@ class NonFunctionCallingMockLLM(MagicMock):
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
     ) -> AgentChatResponse:
-        models = [SAMPLE_ALBUM] if not allow_parallel_tool_calls else [SAMPLE_ALBUM, SAMPLE_ALBUM_2]
+        models = (
+            [SAMPLE_ALBUM]
+            if not allow_parallel_tool_calls
+            else [SAMPLE_ALBUM, SAMPLE_ALBUM_2]
+        )
         return make_agent_response_from_models(models)
 
     async def apredict_and_call(
@@ -108,7 +113,11 @@ class NonFunctionCallingMockLLM(MagicMock):
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
     ) -> AgentChatResponse:
-        models = [SAMPLE_ALBUM] if not allow_parallel_tool_calls else [SAMPLE_ALBUM, SAMPLE_ALBUM_2]
+        models = (
+            [SAMPLE_ALBUM]
+            if not allow_parallel_tool_calls
+            else [SAMPLE_ALBUM, SAMPLE_ALBUM_2]
+        )
         return make_agent_response_from_models(models)
 
 
@@ -142,6 +151,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         def gen() -> Generator[ChatResponse, None, None]:
             yield ChatResponse(message=Message.from_str("chunk-1"))
             yield ChatResponse(message=Message.from_str("chunk-2"))
+
         return gen()
 
     def stream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
@@ -157,6 +167,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         async def agen() -> AsyncGenerator[ChatResponse, None]:
             yield ChatResponse(message=Message.from_str("chunk-1"))
             yield ChatResponse(message=Message.from_str("chunk-2"))
+
         return agen()
 
     async def astream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
@@ -176,7 +187,9 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         if chat_history is not None:
             messages = chat_history
         elif user_msg is not None:
-            messages = [Message.from_str(user_msg) if isinstance(user_msg, str) else user_msg]
+            messages = [
+                Message.from_str(user_msg) if isinstance(user_msg, str) else user_msg
+            ]
         else:
             messages = []
         return {"messages": messages, **kwargs}
@@ -221,6 +234,7 @@ class TestToolOrchestratingLLM:
         Expected: ValueError with message mentioning the model name
         Check: pytest.raises(ValueError)
         """
+
         class NoFC(NonFunctionCallingMockLLM):
             @property
             def metadata(self) -> Metadata:  # type: ignore[override]
@@ -251,7 +265,11 @@ class TestToolOrchestratingLLM:
         Check: Instance creation succeeds
         """
         patched_llm = NonFunctionCallingMockLLM()
-        monkeypatch.setattr("serapeum.core.structured_tools.tools_llm.Configs.llm", patched_llm, raising=False)
+        monkeypatch.setattr(
+            "serapeum.core.structured_tools.tools_llm.Configs.llm",
+            patched_llm,
+            raising=False,
+        )
         tools_llm = ToolOrchestratingLLM(
             output_cls=Album,
             prompt="Album with {topic}",
@@ -269,7 +287,9 @@ class TestToolOrchestratingLLMProperties:
         Expected: .output_cls is Album
         Check: identity equality
         """
-        tools_llm = ToolOrchestratingLLM(Album, prompt="x {y}", llm=NonFunctionCallingMockLLM())
+        tools_llm = ToolOrchestratingLLM(
+            Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
+        )
         assert tools_llm.output_cls is Album
 
     def test_prompt_getter_setter(self) -> None:
@@ -279,7 +299,9 @@ class TestToolOrchestratingLLMProperties:
         Expected: The .prompt returns the newly set template
         Check: identity equality
         """
-        tools_llm = ToolOrchestratingLLM(Album, prompt="x {y}", llm=NonFunctionCallingMockLLM())
+        tools_llm = ToolOrchestratingLLM(
+            Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
+        )
         new_prompt = PromptTemplate("New {var}")
         tools_llm.prompt = new_prompt
         assert tools_llm.prompt is new_prompt
@@ -463,8 +485,8 @@ class TestToolOrchestratingLLMAStreamCall:
         tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
         with patch("serapeum.core.structured_tools.tools_llm._logger") as mock_logger:
             with patch(
-                    "serapeum.core.structured_tools.tools_llm.StreamingObjectProcessor.process",
-                    side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
+                "serapeum.core.structured_tools.tools_llm.StreamingObjectProcessor.process",
+                side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
             ):
                 agen = await tools_llm.astream_call(topic="x")
                 results: list[Album] = []

@@ -87,7 +87,7 @@ class TestMessage:
         m = Message(
             chunks=[
                 TextChunk(content="test content 1"),
-                TextChunk(content="test content 2")
+                TextChunk(content="test content 2"),
             ]
         )
         assert m.content == "test content 1\ntest content 2"
@@ -126,7 +126,10 @@ class TestMessage:
 
         m = Message(
             content="test content",
-            additional_kwargs={"some_list": ["a", "b", "c"], "some_object": SimpleModel()},
+            additional_kwargs={
+                "some_list": ["a", "b", "c"],
+                "some_object": SimpleModel(),
+            },
         )
         assert m.model_dump(exclude_none=True) == {
             "role": MessageRole.USER,
@@ -191,7 +194,9 @@ class TestImageBlock:
             assert isinstance(img, BytesIO)
             assert img.read() == png_1px_b64
 
-    def test_image_block_resolve_image_data_url_base64(self, png_1px_b64: bytes, png_1px: bytes):
+    def test_image_block_resolve_image_data_url_base64(
+        self, png_1px_b64: bytes, png_1px: bytes
+    ):
         # Test data URL with base64 encoding
         data_url = f"data:image/png;base64,{png_1px_b64.decode('utf-8')}"
         b = Image(url=AnyUrl(url=data_url))
@@ -265,8 +270,14 @@ class TestChatResponseToCompletionResponse:
         Expected: CompletionResponse.text == "Hello"; additional_kwargs are taken from the MESSAGE (not the response) per implementation; raw propagated.
         Checks: Exact equality for text; verify precedence/selection of additional_kwargs.
         """
-        msg = Message(role=MessageRole.ASSISTANT, content="Hello", additional_kwargs={"from": "message"})
-        cr = ChatResponse(message=msg, additional_kwargs={"from": "response"}, raw={"r": True})
+        msg = Message(
+            role=MessageRole.ASSISTANT,
+            content="Hello",
+            additional_kwargs={"from": "message"},
+        )
+        cr = ChatResponse(
+            message=msg, additional_kwargs={"from": "response"}, raw={"r": True}
+        )
         out = cr.to_completion_response()
         assert out.text == "Hello"
         assert out.additional_kwargs == {"from": "message"}
@@ -291,9 +302,20 @@ class TestChatResponseToCompletionResponse:
         Expected: Generator yields corresponding CompletionResponse items mapping fields 1:1 (text, additional_kwargs, delta, raw).
         Checks: Order preserved; values mapped correctly.
         """
+
         def chat_gen():
-            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="A"), delta="A", raw={"i": 0})
-            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="B", additional_kwargs={"x": 2}), delta="B", raw={"i": 1})
+            yield ChatResponse(
+                message=Message(role=MessageRole.ASSISTANT, content="A"),
+                delta="A",
+                raw={"i": 0},
+            )
+            yield ChatResponse(
+                message=Message(
+                    role=MessageRole.ASSISTANT, content="B", additional_kwargs={"x": 2}
+                ),
+                delta="B",
+                raw={"i": 1},
+            )
 
         comp_gen = ChatResponse.stream_to_completion_response(chat_gen())
         out = list(comp_gen)
@@ -310,9 +332,20 @@ class TestChatResponseToCompletionResponse:
         Expected: Async generator of CompletionResponse with field mapping identical to sync version.
         Checks: Sequence and field values preserved.
         """
+
         async def agen():
-            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="X"), delta="x", raw={"k": 0})
-            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="Y", additional_kwargs={"a": 1}), delta="y", raw={"k": 1})
+            yield ChatResponse(
+                message=Message(role=MessageRole.ASSISTANT, content="X"),
+                delta="x",
+                raw={"k": 0},
+            )
+            yield ChatResponse(
+                message=Message(
+                    role=MessageRole.ASSISTANT, content="Y", additional_kwargs={"a": 1}
+                ),
+                delta="y",
+                raw={"k": 1},
+            )
 
         comp_agen = ChatResponse.astream_to_completion_response(agen())
         results = []
@@ -346,11 +379,13 @@ class TestMessageLists:
             message_list = MessageList(messages=messages)
             prompt = message_list.to_prompt()
 
-            expected = "\n".join([
-                "system: You are a bot.",
-                "user: Hello",
-                "assistant: ",
-            ])
+            expected = "\n".join(
+                [
+                    "system: You are a bot.",
+                    "user: Hello",
+                    "assistant: ",
+                ]
+            )
             assert prompt == expected
             assert not prompt.endswith("\n")
 
@@ -372,15 +407,21 @@ class TestMessageLists:
             Expected: Two lines for the message — first "user: Hi", then the dict repr on the next line; final line "assistant: ".
             Checks: Dict structure and ordering preserved in the string; overall line ordering correct.
             """
-            msg = Message(role=MessageRole.USER, content="Hi", additional_kwargs={"tool": {"name": "calc"}})
+            msg = Message(
+                role=MessageRole.USER,
+                content="Hi",
+                additional_kwargs={"tool": {"name": "calc"}},
+            )
             message_list = MessageList(messages=[msg])
             prompt = message_list.to_prompt()
 
-            expected = "\n".join([
-                "user: Hi",
-                "{'tool': {'name': 'calc'}}",
-                "assistant: ",
-            ])
+            expected = "\n".join(
+                [
+                    "user: Hi",
+                    "{'tool': {'name': 'calc'}}",
+                    "assistant: ",
+                ]
+            )
             assert prompt == expected
 
         def test_multiple_text_chunks_joined_with_newline(self):
@@ -389,14 +430,19 @@ class TestMessageLists:
             Expected: Content property becomes "Line1\nLine2" so the rendered line is "user: Line1\nLine2"; final line "assistant: ".
             Checks: Correct newline joining within a single message; no extra blank lines.
             """
-            msg = Message(role=MessageRole.USER, content=[TextChunk(content="Line1"), TextChunk(content="Line2")])
+            msg = Message(
+                role=MessageRole.USER,
+                content=[TextChunk(content="Line1"), TextChunk(content="Line2")],
+            )
             message_list = MessageList(messages=[msg])
             prompt = message_list.to_prompt()
 
-            expected = "\n".join([
-                "user: Line1\nLine2",
-                "assistant: ",
-            ])
+            expected = "\n".join(
+                [
+                    "user: Line1\nLine2",
+                    "assistant: ",
+                ]
+            )
             assert prompt == expected
 
         def test_non_text_chunk_results_in_none_content(self):
@@ -410,10 +456,12 @@ class TestMessageLists:
             message_list = MessageList(messages=[msg])
             prompt = message_list.to_prompt()
 
-            expected = "\n".join([
-                "user: None",
-                "assistant: ",
-            ])
+            expected = "\n".join(
+                [
+                    "user: None",
+                    "assistant: ",
+                ]
+            )
             assert prompt == expected
 
         def test_ordering_is_preserved_and_trailing_assistant_always_added(self):
@@ -431,14 +479,15 @@ class TestMessageLists:
             message_list = MessageList(messages=messages)
             prompt = message_list.to_prompt()
 
-            expected = "\n".join([
-                "user: A",
-                "assistant: B",
-                "tool: C",
-                "assistant: ",
-            ])
+            expected = "\n".join(
+                [
+                    "user: A",
+                    "assistant: B",
+                    "tool: C",
+                    "assistant: ",
+                ]
+            )
             assert prompt == expected
-
 
     class TestMessageListBasics:
         def test_from_list_and_len_getitem_slice_and_append(self):
@@ -472,7 +521,11 @@ class TestMessageLists:
             m3 = Message(role=MessageRole.ASSISTANT, content="Hi!")
             ml.append(m3)
             assert list(ml)[-1] is m3
-            assert [m.role for m in ml] == [MessageRole.SYSTEM, MessageRole.USER, MessageRole.ASSISTANT]
+            assert [m.role for m in ml] == [
+                MessageRole.SYSTEM,
+                MessageRole.USER,
+                MessageRole.ASSISTANT,
+            ]
 
         def test_from_str_constructs_user_message(self):
             """

@@ -149,7 +149,9 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             TextCompletionLLM.validate_output_parser_cls: Validates parser and output class pairing.
             TextCompletionLLM.validate_llm: Resolves the backing LLM instance.
         """
-        self._output_parser, self._output_cls = self.validate_output_parser_cls(output_parser, output_cls)
+        self._output_parser, self._output_cls = self.validate_output_parser_cls(
+            output_parser, output_cls
+        )
         self._llm = self.validate_llm(llm)
         self._prompt = self.validate_prompt(prompt)
         self._verbose = verbose
@@ -192,9 +194,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             TextCompletionLLM.__init__: Calls this validator during initialization.
         """
         if not isinstance(prompt, (BasePromptTemplate, str)):
-            raise ValueError(
-                "prompt must be an instance of BasePromptTemplate or str."
-            )
+            raise ValueError("prompt must be an instance of BasePromptTemplate or str.")
         if isinstance(prompt, str):
             prompt = PromptTemplate(prompt)
         return prompt

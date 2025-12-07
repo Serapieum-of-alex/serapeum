@@ -12,13 +12,7 @@ from typing import (
 )
 from typing_extensions import Annotated
 
-from pydantic import (
-    Field,
-    WithJsonSchema,
-    PlainSerializer,
-    BaseModel,
-    ConfigDict
-)
+from pydantic import Field, WithJsonSchema, PlainSerializer, BaseModel, ConfigDict
 
 from serapeum.core.base.llms.models import Message
 from serapeum.core.base.llms.base import BaseLLM
@@ -306,4 +300,3 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
     def get_template(self, llm: Optional[BaseLLM] = None) -> str:
         return MessageList(messages=self.message_templates).to_prompt()
-

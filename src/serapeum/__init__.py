@@ -1,4 +1,4 @@
-"""serapeum"""
+"""serapeum."""
 
 try:
     from importlib.metadata import PackageNotFoundError  # type: ignore

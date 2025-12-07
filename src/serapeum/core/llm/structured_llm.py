@@ -83,14 +83,10 @@ class StructuredLLM(LLM):
                 raw=partial_output,
             )
 
-    def complete(
-        self, prompt: str, **kwargs: Any
-    ) -> CompletionResponse:
+    def complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
         return self._complete_fn(prompt, **kwargs)
 
-    def stream_complete(
-        self, prompt: str, **kwargs: Any
-    ) -> CompletionResponseGen:
+    def stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
         """Stream completion endpoint for LLM."""
         raise NotImplementedError("stream_complete is not supported by default.")
 
@@ -138,9 +134,7 @@ class StructuredLLM(LLM):
 
         return gen()
 
-    async def acomplete(
-        self, prompt: str, **kwargs: Any
-    ) -> CompletionResponse:
+    async def acomplete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
         return await self._acomplete_fn(prompt, **kwargs)
 
     async def astream_complete(

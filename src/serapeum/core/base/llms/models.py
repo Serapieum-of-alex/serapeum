@@ -13,7 +13,7 @@ from typing import (
     Literal,
     Optional,
     Union,
-    Iterator
+    Iterator,
 )
 
 from filetype import guess as filetype_guess
@@ -59,6 +59,8 @@ class Image(Chunk):
     type: Literal["image"] = "image"
     image_mimetype: str | None = None
     detail: str | None = None
+    # Accept base64 payload provided by callers; mapped into content during validation
+    base64: Optional[bytes | str] = None
 
     @field_validator("url", mode="after")
     @classmethod
@@ -76,6 +78,14 @@ class Image(Chunk):
         we try to guess it using the filetype library. To avoid resource-intense
         operations, we won't load the path or the URL to guess the mimetype.
         """
+        # If explicit base64 is provided and content is missing, use it as content
+        if not self.content and self.base64 is not None:
+            self.content = (
+                self.base64
+                if isinstance(self.base64, bytes)
+                else self.base64.encode("utf-8")
+            )
+
         if not self.content:
             return self
 
@@ -163,9 +173,7 @@ class Audio(Chunk):
         )
 
 
-ChunkType = Annotated[
-    Union[TextChunk, Image, Audio], Field(discriminator="type")
-]
+ChunkType = Annotated[Union[TextChunk, Image, Audio], Field(discriminator="type")]
 
 
 class Message(BaseModel):
@@ -176,7 +184,7 @@ class Message(BaseModel):
     chunks: list[ChunkType] = Field(default_factory=list)
 
     def __init__(self, /, content: Any | None = None, **data: Any) -> None:
-        """Keeps backward compatibility with the old `content` field.
+        """constructor.
 
         If content was passed and contained text, store a single TextChunk.
         If content was passed and it was a list, assume it's a list of content chunks and store it.
@@ -197,7 +205,9 @@ class Message(BaseModel):
             The cumulative content of all TextBlocks in the message.
         """
         texts = [b.content for b in self.chunks if isinstance(b, TextChunk)]
-        result = None if not texts else (texts[0] if len(texts) == 1 else "\n".join(texts))
+        result = (
+            None if not texts else (texts[0] if len(texts) == 1 else "\n".join(texts))
+        )
 
         return result
 
@@ -252,6 +262,7 @@ class Message(BaseModel):
 
 class MessageList(BaseModel, ABCSequence):
     """A collection of Message objects with helper methods."""
+
     messages: List[Message] = Field(default_factory=list)
 
     def __iter__(self) -> Iterator[Message]:
@@ -322,6 +333,7 @@ class LikelihoodScore(BaseModel):
 
 class BaseResponse(BaseModel):
     """Base response."""
+
     raw: Optional[Any] = None
     likelihood_score: Optional[List[List[LikelihoodScore]]] = None
     additional_kwargs: dict = Field(default_factory=dict)
@@ -376,6 +388,7 @@ class ChatResponse(BaseResponse):
         Yields:
             CompletionResponse objects converted from each ChatResponse
         """
+
         async def gen() -> CompletionResponseAsyncGen:
             async for response in chat_response_gen:
                 yield response.to_completion_response()

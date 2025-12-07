@@ -7,7 +7,7 @@ from serapeum.core.base.llms.models import (
     Audio,
     LikelihoodScore,
     CompletionResponse,
-    Metadata
+    Metadata,
 )
 
 

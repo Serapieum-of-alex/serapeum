@@ -513,7 +513,11 @@ class CallableTool(AsyncBaseTool):
         schema_description = schema.get("description", None)
         model_doc = (output_cls.__doc__ or "").strip()
         # Prefer the model's own description/docstring; fall back to a concise default
-        description = schema_description or model_doc or f"Create an instance of {schema['title']}."
+        description = (
+            schema_description
+            or model_doc
+            or f"Create an instance of {schema['title']}."
+        )
 
         # NOTE: this does not specify the schema in the function signature,
         # so instead we'll directly provide it in the tool_schema in the ToolMetadata

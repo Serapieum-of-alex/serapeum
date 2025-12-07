@@ -38,7 +38,7 @@ from typing import (
     Annotated,
     TYPE_CHECKING,
     Sequence,
-    TypeVar
+    TypeVar,
 )
 import datetime
 
@@ -110,7 +110,12 @@ class Docstring:
         ```
     """
 
-    def __init__(self, func: Union[Callable[..., Any], Type[Model]], *,name: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        func: Union[Callable[..., Any], Type[Model]],
+        *,
+        name: Optional[str] = None,
+    ) -> None:
         """Initialize a Docstring helper for a given callable.
 
         Args:
@@ -199,7 +204,7 @@ class Docstring:
 
         # Google style
         for match in re.finditer(
-    r"^\s*(\w+)\s*\(.*?\):\s*(.+)$", self.docstring, re.MULTILINE
+            r"^\s*(\w+)\s*\(.*?\):\s*(.+)$", self.docstring, re.MULTILINE
         ):
             try_add_param(match.group(1), match.group(2))
 
@@ -265,6 +270,7 @@ class FunctionArgument:
 
             ```
     """
+
     def __init__(self, param: Parameter) -> None:
         self.param = param
         # Extract type, description, and extras from annotation
@@ -341,9 +347,10 @@ class FunctionArgument:
                     self.description = meta
                 elif isinstance(meta, FieldInfo):
                     self.description = meta.description
-                    if meta.json_schema_extra and isinstance(meta.json_schema_extra, dict):
+                    if meta.json_schema_extra and isinstance(
+                        meta.json_schema_extra, dict
+                    ):
                         self.json_schema_extra.update(meta.json_schema_extra)
-
 
     def _add_format_if_datetime(self) -> None:
         """Add JSON Schema ``format`` for date/time-like parameter types.
@@ -399,14 +406,20 @@ class FunctionArgument:
                 ```
         """
         default = self.param.default
-        
+
         if default is Parameter.empty:
-            field_info = FieldInfo(description=self.description, json_schema_extra=self.json_schema_extra)
+            field_info = FieldInfo(
+                description=self.description, json_schema_extra=self.json_schema_extra
+            )
         elif isinstance(default, FieldInfo):
             field_info = default
         else:
-            field_info = FieldInfo(default=default, description=self.description, json_schema_extra=self.json_schema_extra)
-        
+            field_info = FieldInfo(
+                default=default,
+                description=self.description,
+                json_schema_extra=self.json_schema_extra,
+            )
+
         return field_info
 
     def to_field(self) -> Tuple[Type[Any], FieldInfo]:
@@ -474,14 +487,15 @@ class FunctionConverter:
 
             ```
     """
+
     def __init__(
         self,
         name: str,
         func: Union[Callable[..., Any], Callable[..., Awaitable[Any]]],
-         additional_fields: Optional[
-             List[Union[Tuple[str, Type, Any], Tuple[str, Type]]]
-         ] = None,
-         ignore_fields: Optional[List[str]] = None
+        additional_fields: Optional[
+            List[Union[Tuple[str, Type, Any], Tuple[str, Type]]]
+        ] = None,
+        ignore_fields: Optional[List[str]] = None,
     ):
         self.name = name
         self.func = func
@@ -521,7 +535,9 @@ class FunctionConverter:
         fields = self._apply_additional_fields(fields)
         return create_model(self.name, **fields)  # type: ignore
 
-    def _collect_fields_from_func_signature(self) -> dict[str, Tuple[Type[Any], FieldInfo]]:
+    def _collect_fields_from_func_signature(
+        self,
+    ) -> dict[str, Tuple[Type[Any], FieldInfo]]:
         """Derive Pydantic fields from the function signature.
 
         Returns:
@@ -551,8 +567,9 @@ class FunctionConverter:
             fields[param_name] = (field_type, field_info)
         return fields
 
-    
-    def _apply_additional_fields(self, fields: dict[str, Tuple[Type[Any], FieldInfo]]) -> dict[str, Tuple[Type[Any], FieldInfo]]:
+    def _apply_additional_fields(
+        self, fields: dict[str, Tuple[Type[Any], FieldInfo]]
+    ) -> dict[str, Tuple[Type[Any], FieldInfo]]:
         """Merge ``additional_fields`` into the collected ``fields`` mapping.
 
         Each entry in ``additional_fields`` is either ``(name, type)`` for a
@@ -622,6 +639,7 @@ class ExecutionConfig:
 
             ```
     """
+
     verbose: bool = False
     single_arg_auto_unpack: bool = True
     raise_on_error: bool = False
@@ -897,9 +915,7 @@ class ToolExecutor:
         return output
 
     async def _invoke_tool_async(
-        self,
-        async_tool: BaseTool,
-        arguments: dict
+        self, async_tool: BaseTool, arguments: dict
     ) -> ToolOutput:
         """Internal method to invoke async tool with argument unpacking logic."""
         if self._should_unpack_single_arg(async_tool, arguments):
@@ -954,17 +970,12 @@ class ToolExecutor:
         else:
             # get the tool schema and check if it's a single arg tool and that the given arguments are a single arg
             schema = tool.metadata.get_schema()
-            val = (
-                    len(schema.get("properties", {})) == 1
-                    and len(arguments) == 1
-            )
+            val = len(schema.get("properties", {})) == 1 and len(arguments) == 1
 
         return val
 
     def _try_single_arg_then_kwargs(
-        self,
-        tool: BaseTool,
-        arguments: dict
+        self, tool: BaseTool, arguments: dict
     ) -> ToolOutput:
         """Try calling with single unpacked arg, fall back to kwargs."""
         try:
@@ -972,14 +983,12 @@ class ToolExecutor:
             output = tool(single_arg)
         except Exception:
             # Some tools require kwargs, so try that instead
-            output =tool(**arguments)
+            output = tool(**arguments)
 
         return output
 
     async def _try_single_arg_then_kwargs_async(
-        self,
-        async_tool: BaseTool,
-        arguments: dict
+        self, async_tool: BaseTool, arguments: dict
     ) -> ToolOutput:
         """Try calling async with single unpacked arg, fall back to kwargs."""
         try:
@@ -992,10 +1001,7 @@ class ToolExecutor:
         return output
 
     def _create_error_output(
-        self,
-        tool: BaseTool,
-        arguments: dict,
-        error: Exception
+        self, tool: BaseTool, arguments: dict, error: Exception
     ) -> ToolOutput:
         """Create a standardized error output."""
         return ToolOutput(
@@ -1006,11 +1012,7 @@ class ToolExecutor:
             is_error=True,
         )
 
-    def _find_tool_by_name(
-        self,
-        name: str,
-        tools: Sequence[BaseTool]
-    ) -> BaseTool:
+    def _find_tool_by_name(self, name: str, tools: Sequence[BaseTool]) -> BaseTool:
         """Find a tool by name from a sequence of tools."""
         tools_by_name = {tool.metadata.name: tool for tool in tools}
         return tools_by_name[name]
@@ -1019,7 +1021,9 @@ class ToolExecutor:
         """Log the start of tool execution."""
         arguments_str = json.dumps(arguments)
         print("=== Calling Function ===")
-        print(f"Calling function: {tool.metadata.get_name()} with args: {arguments_str}")
+        print(
+            f"Calling function: {tool.metadata.get_name()} with args: {arguments_str}"
+        )
 
     def _log_execution_result(self, output: ToolOutput) -> None:
         """Log the result of tool execution."""

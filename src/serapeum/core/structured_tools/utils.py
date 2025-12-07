@@ -2,7 +2,17 @@
 
 from __future__ import annotations
 import logging
-from typing import Any, List, Type, Sequence, Union, Optional, Dict, TYPE_CHECKING, TypeVar
+from typing import (
+    Any,
+    List,
+    Type,
+    Sequence,
+    Union,
+    Optional,
+    Dict,
+    TYPE_CHECKING,
+    TypeVar,
+)
 
 from pydantic import (
     BaseModel,
@@ -25,7 +35,6 @@ if TYPE_CHECKING:
 Model = TypeVar("Model", bound=BaseModel)
 
 _logger = logging.getLogger(__name__)
-
 
 
 class FlexibleModel(BaseModel):
@@ -220,7 +229,9 @@ class StreamingObjectProcessor:
             if obj is not None:
                 parsed.append(obj)
 
-        result = parsed if parsed else list(fallback) if fallback else [self._parsing_cls()]
+        result = (
+            parsed if parsed else list(fallback) if fallback else [self._parsing_cls()]
+        )
 
         return result
 
@@ -250,7 +261,8 @@ class StreamingObjectProcessor:
 
         return (
             new_objects
-            if cur_objects is None or num_valid_fields(new_objects) >= num_valid_fields(cur_objects)
+            if cur_objects is None
+            or num_valid_fields(new_objects) >= num_valid_fields(cur_objects)
             else list(cur_objects)
         )
 
@@ -267,6 +279,8 @@ class StreamingObjectProcessor:
                     )
                     finalized.append(converted)
                 except ValidationError:
+                    # Keep the flexible object as-is when strict validation fails;
+                    # callers may choose to coerce it if needed.
                     finalized.append(obj)
             result = finalized
 
@@ -289,7 +303,7 @@ class StreamingObjectProcessor:
 
 
 def num_valid_fields(
-    obj: Union[BaseModel, Sequence[BaseModel], Dict[str, BaseModel]]
+    obj: Union[BaseModel, Sequence[BaseModel], Dict[str, BaseModel]],
 ) -> int:
     """
     Recursively count the number of fields in a Pydantic object (including nested objects) that aren't None.

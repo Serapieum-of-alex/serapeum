@@ -276,7 +276,9 @@ class TestValidateOutputParserCls:
         assert isinstance(parser, PydanticOutputParser)
         assert output_cls is DummyModel
 
-    def test_validate_output_parser_with_both_arguments_preserves_instances(self) -> None:
+    def test_validate_output_parser_with_both_arguments_preserves_instances(
+        self,
+    ) -> None:
         """
         Inputs: explicit parser and output class
         Expected: returns unchanged inputs

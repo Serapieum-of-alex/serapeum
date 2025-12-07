@@ -27,6 +27,7 @@ from serapeum.core.output_parsers.models import BaseOutputParser
 # Test doubles & helpers
 # --------------------
 
+
 class UpperParser(BaseOutputParser):
     """Simple parser that uppercases text and messages.
 
@@ -66,35 +67,48 @@ class CompletionStubLLM(LLM):
     def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         raise NotImplementedError()
 
-    def complete(self, prompt: str, formatted: bool = False, **kwargs: Any) -> CompletionResponse:
+    def complete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponse:
         # return uppercase to make transformations visible
         return CompletionResponse(text=prompt.upper(), delta=prompt.upper())
 
-    def stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponseGen:
+    def stream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> ChatResponseGen:
         raise NotImplementedError()
 
-    def stream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any) -> CompletionResponseGen:
+    def stream_complete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponseGen:
         def gen() -> CompletionResponseGen:
             # yield delta pieces deterministically
             yield CompletionResponse(text=prompt, delta=prompt[:1])
             yield CompletionResponse(text=prompt, delta=prompt[1:])
+
         return gen()
 
     # -- async
     async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         raise NotImplementedError()
 
-    async def acomplete(self, prompt: str, formatted: bool = False, **kwargs: Any) -> CompletionResponse:
+    async def acomplete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponse:
         return CompletionResponse(text=prompt[::-1], delta=prompt[::-1])
 
-    async def astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponseAsyncGen:
+    async def astream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> ChatResponseAsyncGen:
         raise NotImplementedError()
 
-
-    async def astream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any) -> CompletionResponseAsyncGen:
+    async def astream_complete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponseAsyncGen:
         async def agen() -> CompletionResponseAsyncGen:
             yield CompletionResponse(text=prompt, delta=prompt[:1])
             yield CompletionResponse(text=prompt, delta=prompt[1:])
+
         return agen()
 
 
@@ -109,32 +123,54 @@ class ChatStubLLM(LLM):
     def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         return ChatResponse(message=Message(content="pong", role=MessageRole.ASSISTANT))
 
-    def complete(self, prompt: str, formatted: bool = False, **kwargs: Any) -> CompletionResponse:
+    def complete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponse:
         raise NotImplementedError()
 
-    def stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponseGen:
+    def stream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> ChatResponseGen:
         def gen() -> ChatResponseGen:
-            yield ChatResponse(message=Message(content="ok", role=MessageRole.ASSISTANT), delta="o")
-            yield ChatResponse(message=Message(content="ok", role=MessageRole.ASSISTANT), delta="k")
+            yield ChatResponse(
+                message=Message(content="ok", role=MessageRole.ASSISTANT), delta="o"
+            )
+            yield ChatResponse(
+                message=Message(content="ok", role=MessageRole.ASSISTANT), delta="k"
+            )
+
         return gen()
 
-    def stream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any) -> CompletionResponseGen:
+    def stream_complete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponseGen:
         raise NotImplementedError()
 
     # -- async
     async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         return ChatResponse(message=Message(content="pong", role=MessageRole.ASSISTANT))
 
-    async def acomplete(self, prompt: str, formatted: bool = False, **kwargs: Any) -> CompletionResponse:
+    async def acomplete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponse:
         raise NotImplementedError()
 
-    async def astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponseAsyncGen:
+    async def astream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> ChatResponseAsyncGen:
         async def agen() -> ChatResponseAsyncGen:
-            yield ChatResponse(message=Message(content="ok", role=MessageRole.ASSISTANT), delta="o")
-            yield ChatResponse(message=Message(content="ok", role=MessageRole.ASSISTANT), delta="k")
+            yield ChatResponse(
+                message=Message(content="ok", role=MessageRole.ASSISTANT), delta="o"
+            )
+            yield ChatResponse(
+                message=Message(content="ok", role=MessageRole.ASSISTANT), delta="k"
+            )
+
         return agen()
 
-    async def astream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any) -> CompletionResponseAsyncGen:
+    async def astream_complete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponseAsyncGen:
         raise NotImplementedError()
 
 
@@ -145,6 +181,7 @@ class TestStreamResponseToTokens:
         Expected: tokens reflect exact delta values or empty strings for falsy deltas.
         Checks: list(stream_response_to_tokens(gen())) matches expected sequence.
         """
+
         def responses() -> CompletionResponseGen:
             yield CompletionResponse(text="Hello", delta="He")
             yield CompletionResponse(text="Hello", delta="llo")
@@ -159,11 +196,20 @@ class TestStreamResponseToTokens:
         Expected: yielded tokens equal the deltas or empty strings when falsy.
         Checks: list(stream_response_to_tokens(gen())) equals expected.
         """
+
         def responses() -> ChatResponseGen:
-            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="H")
-            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="i")
-            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="")
-            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=None)
+            yield ChatResponse(
+                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="H"
+            )
+            yield ChatResponse(
+                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="i"
+            )
+            yield ChatResponse(
+                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=""
+            )
+            yield ChatResponse(
+                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=None
+            )
 
         tokens = list(stream_response_to_tokens(responses()))
         assert tokens == ["H", "i", "", ""]
@@ -176,6 +222,7 @@ class TestAStreamResponseToTokens:
         Expected: async generator yields the same sequence of tokens, empty for falsy.
         Checks: collected list equals expected sequence.
         """
+
         async def responses() -> CompletionResponseAsyncGen:
             yield CompletionResponse(text="Hello", delta="He")
             yield CompletionResponse(text="Hello", delta="llo")
@@ -191,11 +238,20 @@ class TestAStreamResponseToTokens:
         Expected: tokens are passed through as-is, empty for falsy values.
         Checks: collected list equals expected.
         """
+
         async def responses() -> ChatResponseAsyncGen:
-            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="H")
-            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="i")
-            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="")
-            yield ChatResponse(message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=None)
+            yield ChatResponse(
+                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="H"
+            )
+            yield ChatResponse(
+                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="i"
+            )
+            yield ChatResponse(
+                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=""
+            )
+            yield ChatResponse(
+                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=None
+            )
 
         agen = await astream_response_to_tokens(responses())
         assert [t async for t in agen] == ["H", "i", "", ""]
@@ -245,6 +301,7 @@ class TestValidators:
         Expected: missing adapters are populated; explicit adapters preserved.
         Checks: callables exist and custom adapter is used.
         """
+
         class Demo(CompletionStubLLM):
             pass
 
@@ -260,25 +317,25 @@ class TestValidators:
         def upper_prompt(prompt: str) -> str:
             return prompt.upper()
 
-        demo2 = Demo(messages_to_prompt=identity_messages, completion_to_prompt=upper_prompt)
+        demo2 = Demo(
+            messages_to_prompt=identity_messages, completion_to_prompt=upper_prompt
+        )
         assert demo2.messages_to_prompt is identity_messages
         assert demo2.completion_to_prompt is upper_prompt
 
-#
-# # --------------------
-# # Prompt/message formatting and extension
-# # --------------------
-#
-# class TestGetPrompt:
-#     @staticmethod
-#     def test_get_prompt_without_parser():
-#         """Inputs: simple PromptTemplate with a variable.
-#         Expected: formatted string with variable substituted and no further changes.
-#         Checks: equals expected formatted output.
-#         """
-#         llm = CompletionStubLLM()
-#         out = llm._get_prompt(PromptTemplate("{subject} summary"), subject="Release")
-#         assert out == "Release summary"
+
+class TestGetPrompt:
+
+    def test_get_prompt_without_parser(self):
+        """Inputs: simple PromptTemplate with a variable.
+        Expected: formatted string with variable substituted and no further changes.
+        Checks: equals expected formatted output.
+        """
+        llm = CompletionStubLLM()
+        out = llm._get_prompt(PromptTemplate("{subject} summary"), subject="Release")
+        assert out == "Release summary"
+
+
 #
 #     @staticmethod
 #     def test_get_prompt_with_output_parser_formatting():

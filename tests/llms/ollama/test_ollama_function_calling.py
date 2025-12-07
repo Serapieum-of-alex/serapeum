@@ -7,6 +7,7 @@ For each function/method, we define a dedicated test class that contains
 individual tests (one per scenario). Each test method includes a docstring
 explaining inputs, expected results, and what is being verified.
 """
+
 from __future__ import annotations
 
 from typing import Sequence
@@ -98,7 +99,11 @@ class TestToolOrchestratingLLMCall:
         Expected: Returns Album object
         Check: isinstance and equality
         """
-        tools_llm = ToolOrchestratingLLM(Album, prompt="can you create Album with {topic}, and two random songs", llm=LLM)
+        tools_llm = ToolOrchestratingLLM(
+            Album,
+            prompt="can you create Album with {topic}, and two random songs",
+            llm=LLM,
+        )
         result = tools_llm(topic="rock")
         assert isinstance(result, Album)
 

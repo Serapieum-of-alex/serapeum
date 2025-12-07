@@ -60,6 +60,7 @@ class TestAsyncioRun:
 
         This checks the RuntimeError branch when get_event_loop() fails.
         """
+
         async def coro():
             return 42
 
@@ -83,6 +84,7 @@ class TestAsyncioRun:
 
         This checks the primary branch when a loop is present but idle.
         """
+
         async def coro():
             return "ok"
 
@@ -105,6 +107,7 @@ class TestAsyncioRun:
 
         This checks the nested-loop error handling path.
         """
+
         async def coro():
             return 1
 
@@ -130,6 +133,7 @@ class TestRunAsyncTasks:
 
         This checks the standard non-progress path.
         """
+
         async def f(x):
             await asyncio.sleep(0)
             return x * 2
@@ -138,7 +142,9 @@ class TestRunAsyncTasks:
         out = run_async_tasks(tasks, show_progress=False)
         assert out == [i * 2 for i in range(5)]
 
-    def test_show_progress_true_falls_back_if_import_or_runtime_fails(self, monkeypatch):
+    def test_show_progress_true_falls_back_if_import_or_runtime_fails(
+        self, monkeypatch
+    ):
         """
         Inputs:
             coroutines with show_progress=True; environment without real tqdm.asyncio.
@@ -148,7 +154,11 @@ class TestRunAsyncTasks:
         This checks the protective try/except path for progress mode.
         """
         # Ensure tqdm.asyncio import will fail by removing if present
-        monkeypatch.setitem(sys.modules, "tqdm.asyncio", None) if "tqdm.asyncio" in sys.modules else None
+        (
+            monkeypatch.setitem(sys.modules, "tqdm.asyncio", None)
+            if "tqdm.asyncio" in sys.modules
+            else None
+        )
 
         async def f(x):
             await asyncio.sleep(0)
@@ -209,6 +219,7 @@ class TestBatchGather:
 
         This checks correct chunking and awaiting of batches.
         """
+
         async def f(x):
             await asyncio.sleep(0)
             return x * x
@@ -227,6 +238,7 @@ class TestBatchGather:
 
         This checks the verbose side-effect and output integrity.
         """
+
         async def f(x):
             await asyncio.sleep(0)
             return x
@@ -241,7 +253,9 @@ class TestBatchGather:
 
 class TestRunJobs:
     @pytest.mark.asyncio
-    async def test_run_jobs_without_progress_limits_concurrency_and_preserves_order(self):
+    async def test_run_jobs_without_progress_limits_concurrency_and_preserves_order(
+        self,
+    ):
         """
         Inputs:
             6 jobs with varying delays; workers=2; show_progress=False.
@@ -250,6 +264,7 @@ class TestRunJobs:
 
         This checks that the semaphore-wrapped workers and gather work correctly.
         """
+
         async def job(x):
             # Staggered small sleeps
             await asyncio.sleep(0.01 * (x % 3))
@@ -288,5 +303,7 @@ class TestRunJobs:
             return x
 
         jobs = [job(i) for i in range(5)]
-        out = await run_jobs(jobs, show_progress=True, workers=DEFAULT_NUM_WORKERS, desc="desc")
+        out = await run_jobs(
+            jobs, show_progress=True, workers=DEFAULT_NUM_WORKERS, desc="desc"
+        )
         assert out == [0, 1, 2, 3, 4]

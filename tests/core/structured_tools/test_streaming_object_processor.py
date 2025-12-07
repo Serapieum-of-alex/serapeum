@@ -241,7 +241,9 @@ class TestParseObjects:
         parsed = p._parse_objects(args, fallback=None)
         assert len(parsed) == 1 and parsed[0].model_dump().get("name") == "Ok"
 
-        parsed2 = p._parse_objects(["bad", None], fallback=[Person(name="Prev", age=40)])
+        parsed2 = p._parse_objects(
+            ["bad", None], fallback=[Person(name="Prev", age=40)]
+        )
         assert len(parsed2) == 1 and isinstance(parsed2[0], Person)
         assert parsed2[0].name == "Prev" and parsed2[0].age == 40
 
@@ -379,7 +381,9 @@ class TestFormatOutput:
         out = p._format_output(objs)
         assert out is objs
 
-    def test_format_output_allow_parallel_false_returns_first_and_warns(self, caplog: Any) -> None:
+    def test_format_output_allow_parallel_false_returns_first_and_warns(
+        self, caplog: Any
+    ) -> None:
         """When allow_parallel is False, returns the first object and logs a warning.
 
         Inputs:
@@ -423,7 +427,11 @@ class TestProcess:
         Checks:
             - Type and field values.
         """
-        resp = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content='{"name": "John", "age": 30}'))
+        resp = ChatResponse(
+            message=Message(
+                role=MessageRole.ASSISTANT, content='{"name": "John", "age": 30}'
+            )
+        )
         p = StreamingObjectProcessor(Person)
         out = p.process(resp)
         assert isinstance(out, Person)
@@ -441,7 +449,9 @@ class TestProcess:
         Checks:
             - Returned instance equals the previous object's values.
         """
-        resp = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content='{"name": "Jo"'))
+        resp = ChatResponse(
+            message=Message(role=MessageRole.ASSISTANT, content='{"name": "Jo"')
+        )
         prev = Person(name="John", age=25)
         p = StreamingObjectProcessor(Person)
         out = p.process(resp, cur_objects=[prev])
@@ -574,7 +584,7 @@ def test_process_streaming_objects() -> None:
 
     processor = StreamingObjectProcessor(
         output_cls=Person,
-        llm=MockLLM(), # type: ignore
+        llm=MockLLM(),  # type: ignore
     )
     result = processor.process(tool_call_response)
 

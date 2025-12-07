@@ -11,36 +11,33 @@ from ollama import Client
 from copy import deepcopy
 from ollama import Message as OllamaMessage
 from ollama import ChatResponse
+
 response_dict = {
-    'model': 'llama3.1:latest',
-    'created_at': '2025-09-20T21:52:10.0615697Z',
-    'done': True,
-    'done_reason': 'stop',
-    'total_duration': 794134100,
-    'load_duration': 214719400,
-    'prompt_eval_count': 195,
-    'prompt_eval_duration': 4125100,
-    'eval_count': 24,
-    'eval_duration': 573800600,
-    'message': dict(
-        role='assistant',
-        content='hello',
+    "model": "llama3.1:latest",
+    "created_at": "2025-09-20T21:52:10.0615697Z",
+    "done": True,
+    "done_reason": "stop",
+    "total_duration": 794134100,
+    "load_duration": 214719400,
+    "prompt_eval_count": 195,
+    "prompt_eval_duration": 4125100,
+    "eval_count": 24,
+    "eval_duration": 573800600,
+    "message": dict(
+        role="assistant",
+        content="hello",
         thinking=None,
         images=None,
         tool_name=None,
-        tool_calls=None
-    )
+        tool_calls=None,
+    ),
 }
 normal_response = ChatResponse(**response_dict)
 response_with_tool_dict = deepcopy(response_dict)
 response_with_tool_dict["message"]["tool_calls"] = [
     OllamaMessage.ToolCall(
         function=OllamaMessage.ToolCall.Function(
-            name='generate_song',
-            arguments={
-                'artist': 'The Beatles',
-                'name': 'Hello!'
-            }
+            name="generate_song", arguments={"artist": "The Beatles", "name": "Hello!"}
         )
     )
 ]
@@ -83,6 +80,7 @@ tool = CallableTool.from_function(func=generate_song)
 def test_embedding_class() -> None:
     names_of_base_classes = [b.__name__ for b in Ollama.__mro__]
     assert BaseLLM.__name__ in names_of_base_classes
+
 
 @pytest.mark.mock
 @patch.object(Ollama, "client")

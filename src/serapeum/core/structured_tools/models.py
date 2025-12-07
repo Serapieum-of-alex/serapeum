@@ -22,14 +22,14 @@ class BasePydanticLLM(ABC, Generic[Model]):
         return self(*args, **kwargs)
 
     def stream_call(
-            self, *args: Any, **kwargs: Any
+        self, *args: Any, **kwargs: Any
     ) -> Generator[
         Union[Model, List[Model], "BaseModel", List["BaseModel"]], None, None
     ]:
         raise NotImplementedError("stream_call is not supported by default.")
 
     async def astream_call(
-            self, *args: Any, **kwargs: Any
+        self, *args: Any, **kwargs: Any
     ) -> AsyncGenerator[
         Union[Model, List[Model], "BaseModel", List["BaseModel"]], None
     ]:

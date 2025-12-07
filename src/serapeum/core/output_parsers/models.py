@@ -9,7 +9,7 @@ from typing import (
     Type,
     Union,
     Generic,
-    Optional
+    Optional,
 )
 from serapeum.core.output_parsers.utils import extract_json_str
 from serapeum.core.base.llms.models import Message, MessageRole, TextChunk
@@ -38,8 +38,7 @@ Output a valid JSON object but do not repeat the schema.
 class BaseOutputParser(ABC):
 
     @abstractmethod
-    def parse(self, output: str) -> Any:
-        ...
+    def parse(self, output: str) -> Any: ...
 
     def format(self, query: str) -> str:
         return query

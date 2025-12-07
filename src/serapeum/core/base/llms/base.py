@@ -57,45 +57,38 @@ class BaseLLM(SerializableModel):
         return converted_messages
 
     @abstractmethod
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
-        ...
+    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse: ...
+
     @abstractmethod
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
-        ...
+    ) -> CompletionResponse: ...
 
     @abstractmethod
     def stream_chat(
         self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseGen:
-        ...
+    ) -> ChatResponseGen: ...
 
     @abstractmethod
     def stream_complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseGen:
-        ...
+    ) -> CompletionResponseGen: ...
 
     @abstractmethod
     async def achat(
         self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponse:
-        ...
+    ) -> ChatResponse: ...
 
     @abstractmethod
     async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
-        ...
+    ) -> CompletionResponse: ...
 
     @abstractmethod
     async def astream_chat(
         self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseAsyncGen:
-        ...
+    ) -> ChatResponseAsyncGen: ...
     @abstractmethod
     async def astream_complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseAsyncGen:
-        ...
+    ) -> CompletionResponseAsyncGen: ...

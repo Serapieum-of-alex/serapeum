@@ -159,10 +159,7 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> "AgentChatResponse":
         """Predict and call the tool."""
-        from serapeum.core.tools.utils import (
-            ToolExecutor,
-            ExecutionConfig
-        )
+        from serapeum.core.tools.utils import ToolExecutor, ExecutionConfig
 
         response = self.chat_with_tools(
             tools,
@@ -181,7 +178,9 @@ class FunctionCallingLLM(LLM):
             for tool_call in tool_calls
         ]
 
-        return self.parse_tool_outputs(tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls)
+        return self.parse_tool_outputs(
+            tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls
+        )
 
     async def apredict_and_call(
         self,
@@ -195,10 +194,7 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> "AgentChatResponse":
         """Predict and call the tool."""
-        from serapeum.core.tools.utils import (
-            ToolExecutor,
-            ExecutionConfig
-        )
+        from serapeum.core.tools.utils import ToolExecutor, ExecutionConfig
 
         response = await self.achat_with_tools(
             tools,
@@ -219,13 +215,18 @@ class FunctionCallingLLM(LLM):
         ]
 
         tool_outputs = await asyncio.gather(*tool_tasks)
-        agent_response = self.parse_tool_outputs(tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls)
+        agent_response = self.parse_tool_outputs(
+            tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls
+        )
 
         return agent_response
 
     @staticmethod
-    def parse_tool_outputs(tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls):
+    def parse_tool_outputs(
+        tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls
+    ):
         from serapeum.core.chat.models import AgentChatResponse
+
         tool_outputs_with_error = [
             tool_output for tool_output in tool_outputs if tool_output.is_error
         ]
@@ -240,7 +241,9 @@ class FunctionCallingLLM(LLM):
             output_text = "\n\n".join(
                 [tool_output.content for tool_output in tool_outputs]
             )
-            agent_response = AgentChatResponse(response=output_text, sources=tool_outputs)
+            agent_response = AgentChatResponse(
+                response=output_text, sources=tool_outputs
+            )
         elif len(tool_outputs) > 1:
             raise ValueError("Invalid")
         elif len(tool_outputs) == 0:

@@ -106,6 +106,7 @@ class TestToolMetadataGetParametersDict:
         assert params["properties"]["input"]["type"] == "string"
         assert params["required"] == ["input"]
 
+
 class TestSchema:
     def test_default_schema_filtered(self):
         """Test that default Pydantic schema is filtered to allowed keys.
@@ -133,6 +134,7 @@ class TestSchema:
         Checks:
           - Either "$defs" or "definitions" key exists in the returned dict.
         """
+
         class SubModel(BaseModel):
             x: int
 
@@ -142,12 +144,32 @@ class TestSchema:
         schema = Schema(full_schema=MainModel.model_json_schema())
         params = schema.resolve_references()
         assert params == {
-            '$defs': {'SubModel': {'properties': {'x': {'title': 'X', 'type': 'integer'}},
-                                   'required': ['x'], 'title': 'SubModel', 'type': 'object'}},
-            'properties': {'sub': {'$ref': '#/$defs/SubModel'}}, 'required': ['sub'], 'type': 'object'}
+            "$defs": {
+                "SubModel": {
+                    "properties": {"x": {"title": "X", "type": "integer"}},
+                    "required": ["x"],
+                    "title": "SubModel",
+                    "type": "object",
+                }
+            },
+            "properties": {"sub": {"$ref": "#/$defs/SubModel"}},
+            "required": ["sub"],
+            "type": "object",
+        }
 
         params = schema.resolve_references(inline=True)
-        assert params == {'properties': {'sub': {'properties': {'x': {'title': 'X', 'type': 'integer'}}, 'required': ['x'], 'title': 'SubModel', 'type': 'object'}}, 'required': ['sub'], 'type': 'object'}
+        assert params == {
+            "properties": {
+                "sub": {
+                    "properties": {"x": {"title": "X", "type": "integer"}},
+                    "required": ["x"],
+                    "title": "SubModel",
+                    "type": "object",
+                }
+            },
+            "required": ["sub"],
+            "type": "object",
+        }
 
 
 class TestToolMetadataFnSchemaStr:
@@ -292,7 +314,9 @@ class TestToolOutput:
           - chunks list equals provided; content equals "a\nb".
         """
         chunks = [TextChunk(content="a"), TextChunk(content="b")]
-        out = ToolOutput(tool_name="t", chunks=chunks, raw_input={"x": 1}, raw_output=None)
+        out = ToolOutput(
+            tool_name="t", chunks=chunks, raw_input={"x": 1}, raw_output=None
+        )
         assert out.chunks == chunks
         assert out.content == "a\nb"
 
@@ -474,7 +498,9 @@ class TestToolCallArguments:
           - tool_id and tool_name match inputs.
           - tool_kwargs is the exact same mapping content provided.
         """
-        sel = ToolCallArguments(tool_id="call-001", tool_name="echo", tool_kwargs={"text": "hi", "count": 2})
+        sel = ToolCallArguments(
+            tool_id="call-001", tool_name="echo", tool_kwargs={"text": "hi", "count": 2}
+        )
         assert sel.tool_id == "call-001"
         assert sel.tool_name == "echo"
         assert sel.tool_kwargs == {"text": "hi", "count": 2}
@@ -489,7 +515,9 @@ class TestToolCallArguments:
         Checks:
           - sel.tool_kwargs == {}.
         """
-        sel = ToolCallArguments(tool_id="id-1", tool_name="echo", tool_kwargs="not-a-dict")
+        sel = ToolCallArguments(
+            tool_id="id-1", tool_name="echo", tool_kwargs="not-a-dict"
+        )
         assert sel.tool_kwargs == {}
 
     def test_non_dict_kwargs_list_coerced_to_empty_dict(self):
@@ -568,7 +596,9 @@ class TestToolCallArguments:
           - Returned tool_kwargs equals the input mapping deep-equal.
         """
         payload = {"filters": {"tags": ["x", "y"], "limit": 10}}
-        sel = ToolCallArguments(tool_id="nested", tool_name="search", tool_kwargs=payload)
+        sel = ToolCallArguments(
+            tool_id="nested", tool_name="search", tool_kwargs=payload
+        )
         assert sel.tool_kwargs == payload
 
     def test_extra_fields_are_ignored(self):

@@ -1,3 +1,5 @@
+"""Ollama base module."""
+from __future__ import annotations
 from ollama import Client, AsyncClient
 from typing import (
     TYPE_CHECKING,
@@ -40,6 +42,7 @@ from serapeum.core.tools import ToolCallArguments
 from serapeum.core.models import StructuredLLMMode
 from serapeum.core.structured_tools.utils import StreamingObjectProcessor
 import asyncio
+import inspect
 
 if TYPE_CHECKING:
     from serapeum.core.tools.models import BaseTool
@@ -50,10 +53,79 @@ DEFAULT_REQUEST_TIMEOUT = 60.0
 def get_additional_kwargs(
     response: Dict[str, Any], exclude: Tuple[str, ...]
 ) -> Dict[str, Any]:
+    """Filter out excluded keys from a response dictionary.
+
+    Args:
+        response (Dict[str, Any]):
+            Source dictionary, typically a raw provider response.
+        exclude (Tuple[str, ...]):
+            Keys that should be omitted from the returned mapping.
+
+    Returns:
+        Dict[str, Any]:
+            A new dictionary containing only entries whose keys are not present in ``exclude``.
+
+    Examples:
+        - Keep only non-excluded keys
+            ```python
+            >>> get_additional_kwargs({"a": 1, "b": 2, "keep": 3}, ("a", "b"))
+            {'keep': 3}
+
+            ```
+        - Return all keys when no exclusions are provided
+            ```python
+            >>> get_additional_kwargs({"x": 10}, tuple())
+            {'x': 10}
+
+            ```
+    """
     return {k: v for k, v in response.items() if k not in exclude}
 
 
 def force_single_tool_call(response: ChatResponse) -> None:
+    """Mutate a response to include at most a single tool call.
+
+    Ollama may return multiple tool calls within a single assistant message. Some
+    consumers require a single call at a time. This helper trims the list to the
+    first occurrence in-place.
+
+    Args:
+        response (ChatResponse):
+            Parsed chat response whose ``message.additional_kwargs['tool_calls']``
+            may contain multiple entries.
+
+    Returns:
+        None: The function mutates ``response`` and returns nothing.
+
+    Examples:
+        - Truncate multiple tool calls to one
+            ```python
+            >>> from serapeum.core.base.llms.models import Message, MessageRole, ChatResponse
+            >>> r = ChatResponse(message=Message(
+            ...     role=MessageRole.ASSISTANT,
+            ...     content="",
+            ...     additional_kwargs={
+            ...         "tool_calls": [
+            ...             {"function": {"name": "a", "arguments": {}}},
+            ...             {"function": {"name": "b", "arguments": {}}},
+            ...         ]
+            ...     },
+            ... ))
+            >>> force_single_tool_call(r)
+            >>> len(r.message.additional_kwargs.get("tool_calls", []))
+            1
+
+            ```
+        - Leave empty or single tool call lists unchanged
+            ```python
+            >>> from serapeum.core.base.llms.models import Message, MessageRole, ChatResponse
+            >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=""))
+            >>> force_single_tool_call(r)
+            >>> r.message.additional_kwargs.get("tool_calls") is None or len(r.message.additional_kwargs.get("tool_calls", [])) == 0
+            True
+
+            ```
+    """
     tool_calls = response.message.additional_kwargs.get("tool_calls", [])
     if len(tool_calls) > 1:
         response.message.additional_kwargs["tool_calls"] = [tool_calls[0]]
@@ -186,13 +258,17 @@ class Ollama(FunctionCallingLLM):
         request_timeout: float = DEFAULT_REQUEST_TIMEOUT,
         prompt_key: str = "prompt",
         json_mode: bool = False,
-        additional_kwargs: Dict[str, Any] = {},
+        additional_kwargs: Dict[str, Any] = None,
         client: Optional[Client] = None,
         async_client: Optional[AsyncClient] = None,
         is_function_calling_model: bool = True,
         keep_alive: Optional[Union[float, str]] = None,
         **kwargs: Any,
     ) -> None:
+        """Initialize the Ollama LLM adapter."""
+        if additional_kwargs is None:
+            additional_kwargs = {}
+
         super().__init__(
             model=model,
             base_url=base_url,
@@ -217,7 +293,9 @@ class Ollama(FunctionCallingLLM):
         self._complete_fn = chat_to_completion_decorator(self.chat)
         self._acomplete_fn = achat_to_completion_decorator(self.achat)
         self._stream_complete_fn = stream_chat_to_completion_decorator(self.stream_chat)
-        self._astream_complete_fn = astream_chat_to_completion_decorator(self.astream_chat)
+        self._astream_complete_fn = astream_chat_to_completion_decorator(
+            self.astream_chat
+        )
 
     @classmethod
     def class_name(cls) -> str:
@@ -311,16 +389,35 @@ class Ollama(FunctionCallingLLM):
             current_loop = None  # No running loop available in this context
 
         cached_loop = getattr(self, "_async_client_loop", None)
-        if (
-            self._async_client is None
-            or cached_loop is None
-            or (hasattr(cached_loop, "is_closed") and cached_loop.is_closed())
-            or (current_loop is not None and cached_loop is not current_loop)
-        ):
+        if self._async_client is None:
+            # No client yet: create and bind to current loop (may be None)
             self._async_client = AsyncClient(
                 host=self.base_url, timeout=self.request_timeout
             )
             self._async_client_loop = current_loop  # type: ignore[attr-defined]
+        else:
+            # If no loop recorded yet (e.g., injected client), bind without recreation
+            if cached_loop is None:
+                self._async_client_loop = current_loop  # type: ignore[attr-defined]
+            # Recreate if the current loop is closed
+            elif (
+                current_loop is not None
+                and hasattr(current_loop, "is_closed")
+                and current_loop.is_closed()
+            ):
+                self._async_client = AsyncClient(
+                    host=self.base_url, timeout=self.request_timeout
+                )
+                self._async_client_loop = current_loop  # type: ignore[attr-defined]
+            # Or if the cached loop has been closed since creation
+            elif hasattr(cached_loop, "is_closed") and cached_loop.is_closed():
+                self._async_client = AsyncClient(
+                    host=self.base_url, timeout=self.request_timeout
+                )
+                self._async_client_loop = current_loop  # type: ignore[attr-defined]
+            else:
+                # Reuse existing client even if loop identity differs but both are open
+                self._async_client_loop = current_loop  # type: ignore[attr-defined]
 
         return self._async_client
 
@@ -363,7 +460,9 @@ class Ollama(FunctionCallingLLM):
             **self.additional_kwargs,
         }
 
-    def _convert_to_ollama_messages(self, messages: MessageList) -> List[Dict[str, Any]]:
+    def _convert_to_ollama_messages(
+        self, messages: MessageList
+    ) -> List[Dict[str, Any]]:
         """Convert internal MessageList to the Ollama wire format.
 
         Args:
@@ -405,9 +504,33 @@ class Ollama(FunctionCallingLLM):
                 elif isinstance(block, Image):
                     if "images" not in cur_ollama_message:
                         cur_ollama_message["images"] = []
-                    cur_ollama_message["images"].append(
-                        block.resolve_image(as_base64=True).read().decode("utf-8")
-                    )
+
+                    # Prefer an explicit base64 attribute if provided by the caller
+                    b64 = getattr(block, "base64", None)
+                    if b64 is None:
+                        extra = getattr(block, "model_extra", None) or {}
+                        b64 = extra.get("base64")
+
+                    if b64 is None:
+                        try:
+                            b64 = dict(block).get("base64")
+                        except Exception:
+                            b64 = None
+
+                    if b64 is None:
+                        b64 = getattr(block, "__dict__", {}).get("base64")
+
+                    if isinstance(b64, (bytes, str)):
+                        base64_str = (
+                            b64.decode("utf-8") if isinstance(b64, bytes) else b64
+                        )
+                    else:
+                        # Fall back to resolving image bytes via the helper
+                        base64_str = (
+                            block.resolve_image(as_base64=True).read().decode("utf-8")
+                        )
+
+                    cur_ollama_message["images"].append(base64_str)
                 else:
                     raise ValueError(f"Unsupported block type: {type(block)}")
 
@@ -567,6 +690,45 @@ class Ollama(FunctionCallingLLM):
         response: "ChatResponse",
         error_on_no_tool_call: bool = True,
     ) -> List[ToolCallArguments]:
+        """Extract tool call selections from a chat response.
+
+        Args:
+            response (ChatResponse): Response potentially containing tool calls.
+            error_on_no_tool_call (bool): Whether to raise when no tool calls are present.
+
+        Returns:
+            List[ToolCallArguments]: Parsed tool selections (empty when allowed and none present).
+
+        Raises:
+            ValueError: When ``error_on_no_tool_call`` is ``True`` and no tool calls exist.
+
+        Examples:
+            - Parse a single tool call
+                ```python
+                >>> from serapeum.core.base.llms.models import Message, MessageRole, ChatResponse
+                >>> llm = Ollama(model="m")
+                >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="", additional_kwargs={
+                ...     "tool_calls": [{"function": {"name": "run", "arguments": {"a": 1}}}],
+                ... }))
+                >>> calls = llm.get_tool_calls_from_response(r)
+                >>> (calls[0].tool_id, calls[0].tool_name, calls[0].tool_kwargs["a"]) == ("run", "run", 1)
+                True
+
+                ```
+            - Raise when no tool call is present and errors are enabled
+                ```python
+                >>> from serapeum.core.base.llms.models import Message, MessageRole, ChatResponse
+                >>> llm = Ollama(model="m")
+                >>> empty = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=""))
+                >>> try:
+                ...     _ = llm.get_tool_calls_from_response(empty, error_on_no_tool_call=True)
+                ... except ValueError as e:
+                ...     msg = str(e)
+                >>> 'Expected at least one tool call' in msg
+                True
+
+                ```
+        """
         tool_calls = response.message.additional_kwargs.get("tool_calls", [])
         if len(tool_calls) < 1:
             if error_on_no_tool_call:
@@ -592,6 +754,29 @@ class Ollama(FunctionCallingLLM):
         return tool_selections
 
     def chat(self, messages: MessageList, **kwargs: Any) -> ChatResponse:
+        """Send a chat request to Ollama and return the assistant message.
+
+        Args:
+            messages (MessageList):
+                Sequence of chat messages.
+            **kwargs (Any):
+                Provider-specific overrides such as ``tools`` or ``format``.
+
+        Returns:
+            ChatResponse: Parsed response containing the assistant message and optional token usage.
+
+        Examples:
+            - Minimal chat against a running Ollama server (requires server and model)
+                ```python
+                >>> from serapeum.core.base.llms.models import Message, MessageRole
+                >>> # Ensure `ollama serve` is running and the model is available locally.
+                >>> llm = Ollama(model="llama3.1", request_timeout=120)
+                >>> resp = llm.chat([Message(role=MessageRole.USER, content="hi")])  # doctest: +SKIP
+                >>> isinstance(resp.message.content, str)  # doctest: +SKIP
+                True
+
+                ```
+        """
         ollama_messages = self._convert_to_ollama_messages(messages)
 
         tools = kwargs.pop("tools", None)
@@ -625,6 +810,18 @@ class Ollama(FunctionCallingLLM):
 
     @staticmethod
     def _parse_tool_call_response(tools_dict, r):
+        """Accumulate streaming content and unique tool calls into a ChatResponse.
+
+        Args:
+            tools_dict (dict): Mutable aggregation state tracking text and tool calls.
+            r (dict): A single streaming chunk from the provider.
+
+        Returns:
+            ChatResponse: Response with cumulative content and the current delta.
+
+        See Also:
+            stream_chat: Uses this helper to materialize per-chunk responses.
+        """
         r = dict(r)
 
         tools_dict["response_txt"] += r["message"]["content"]
@@ -650,10 +847,30 @@ class Ollama(FunctionCallingLLM):
             raw=r,
         )
 
+    def stream_chat(self, messages: MessageList, **kwargs: Any) -> ChatResponseGen:
+        """Stream assistant deltas for a chat request.
 
-    def stream_chat(
-        self, messages: MessageList, **kwargs: Any
-    ) -> ChatResponseGen:
+        Args:
+            messages (MessageList): Sequence of chat messages.
+            **kwargs (Any): Provider-specific options such as ``tools`` or ``format``.
+
+        Yields:
+            ChatResponse: Incremental responses with ``delta`` and cumulative content.
+
+        Examples:
+            - Stream deltas from a real Ollama server (requires server and model)
+                ```python
+                >>> from serapeum.core.base.llms.models import Message, MessageRole
+                >>> # Pre-requisites:
+                >>> #   1) Start the server: `ollama serve`
+                >>> #   2) Pull a model:    `ollama pull llama3.1`
+                >>> llm = Ollama(model="llama3.1", request_timeout=180)
+                >>> chunks = list(llm.stream_chat([Message(role=MessageRole.USER, content="Say hello succinctly")]))  # doctest: +SKIP
+                >>> isinstance(chunks[-1].message.content, str) and len(chunks) >= 1  # doctest: +SKIP
+                True
+
+                ```
+        """
         ollama_messages = self._convert_to_ollama_messages(messages)
 
         tools = kwargs.pop("tools", None)
@@ -673,7 +890,7 @@ class Ollama(FunctionCallingLLM):
             tools_dict = {
                 "response_txt": "",
                 "seen_tool_calls": set(),
-                "all_tool_calls": []
+                "all_tool_calls": [],
             }
 
             for r in response:
@@ -685,6 +902,15 @@ class Ollama(FunctionCallingLLM):
     async def astream_chat(
         self, messages: MessageList, **kwargs: Any
     ) -> ChatResponseAsyncGen:
+        """Asynchronously stream assistant deltas for a chat request.
+
+        Args:
+            messages (MessageList): Sequence of chat messages.
+            **kwargs (Any): Provider-specific options such as ``tools`` or ``format``.
+
+        Returns:
+            ChatResponseAsyncGen: Async generator yielding ``ChatResponse`` chunks.
+        """
         ollama_messages = self._convert_to_ollama_messages(messages)
 
         tools = kwargs.pop("tools", None)
@@ -701,10 +927,15 @@ class Ollama(FunctionCallingLLM):
                 keep_alive=self.keep_alive,
             )
 
+            # Some client/mocking setups may return a coroutine that resolves to
+            # an async iterator; normalize by awaiting when needed.
+            if inspect.iscoroutine(response) and not hasattr(response, "__aiter__"):
+                response = await response
+
             tools_dict = {
                 "response_txt": "",
                 "seen_tool_calls": set(),
-                "all_tool_calls": []
+                "all_tool_calls": [],
             }
 
             async for r in response:
@@ -713,9 +944,16 @@ class Ollama(FunctionCallingLLM):
 
         return gen()
 
-    async def achat(
-        self, messages: MessageList, **kwargs: Any
-    ) -> ChatResponse:
+    async def achat(self, messages: MessageList, **kwargs: Any) -> ChatResponse:
+        """Asynchronously send a chat request and return the assistant message.
+
+        Args:
+            messages (MessageList): Sequence of chat messages.
+            **kwargs (Any): Provider-specific overrides such as ``tools`` or ``format``.
+
+        Returns:
+            ChatResponse: Parsed response containing the assistant message and optional token usage.
+        """
         ollama_messages = self._convert_to_ollama_messages(messages)
 
         tools = kwargs.pop("tools", None)
@@ -747,24 +985,59 @@ class Ollama(FunctionCallingLLM):
             raw=response,
         )
 
-    def complete(
-        self, prompt: str, **kwargs: Any
-    ) -> CompletionResponse:
+    def complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
+        """Synchronous completion wrapper over the chat API.
+
+        The implementation delegates to ``chat`` through a compatibility adapter.
+
+        Args:
+            prompt (str): Pre-formatted prompt string.
+            **kwargs (Any): Provider-specific options.
+
+        Returns:
+            CompletionResponse: Textual response compatible with completion helpers.
+
+        See Also:
+            acomplete: Asynchronous counterpart.
+        """
         return self._complete_fn(prompt, **kwargs)
 
-    async def acomplete(
-        self, prompt: str, **kwargs: Any
-    ) -> CompletionResponse:
+    async def acomplete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
+        """Asynchronous completion wrapper over the chat API.
+
+        Args:
+            prompt (str): Pre-formatted prompt string.
+            **kwargs (Any): Provider-specific options.
+
+        Returns:
+            CompletionResponse: Textual response compatible with completion helpers.
+        """
         return await self._acomplete_fn(prompt, **kwargs)
 
-    def stream_complete(
-        self, prompt: str, **kwargs: Any
-    ) -> CompletionResponseGen:
+    def stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
+        """Stream completion deltas via the chat streaming API.
+
+        Args:
+            prompt (str): Pre-formatted prompt string.
+            **kwargs (Any): Provider-specific options.
+
+        Yields:
+            CompletionResponseGen: Stream yielding completion deltas.
+        """
         return self._stream_complete_fn(prompt, **kwargs)
 
     async def astream_complete(
         self, prompt: str, **kwargs: Any
     ) -> CompletionResponseAsyncGen:
+        """Asynchronously stream completion deltas via the chat streaming API.
+
+        Args:
+            prompt (str): Pre-formatted prompt string.
+            **kwargs (Any): Provider-specific options.
+
+        Returns:
+            CompletionResponseAsyncGen: Async generator producing completion deltas.
+        """
         return await self._astream_complete_fn(prompt, **kwargs)
 
     def structured_predict(
@@ -774,6 +1047,25 @@ class Ollama(FunctionCallingLLM):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **prompt_args: Any,
     ) -> BaseModel:
+        """Parse structured output by instructing the model to emit JSON.
+
+        When operating in ``StructuredLLMMode.DEFAULT``, the method injects the
+        pydantic JSON schema of ``output_cls`` via the ``format`` argument and
+        validates the assistant content using ``output_cls.model_validate_json``.
+
+        Args:
+            output_cls (Type[BaseModel]): Target pydantic model for the output.
+            prompt (PromptTemplate): Prompt template used to construct messages.
+            llm_kwargs (Optional[Dict[str, Any]]): Provider arguments forwarded to ``chat``.
+            **prompt_args (Any): Additional template variables.
+
+        Returns:
+            BaseModel: Instance of ``output_cls`` parsed from the model output.
+
+        See Also:
+            astructured_predict: Async variant.
+            stream_structured_predict: Streaming counterpart producing partial values.
+        """
         if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
             llm_kwargs = llm_kwargs or {}
             llm_kwargs["format"] = output_cls.model_json_schema()
@@ -794,6 +1086,17 @@ class Ollama(FunctionCallingLLM):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **prompt_args: Any,
     ) -> BaseModel:
+        """Async variant of ``structured_predict``.
+
+        Args:
+            output_cls (Type[BaseModel]): Target pydantic model for the output.
+            prompt (PromptTemplate): Prompt template used to construct messages.
+            llm_kwargs (Optional[Dict[str, Any]]): Provider arguments forwarded to ``achat``.
+            **prompt_args (Any): Additional template variables.
+
+        Returns:
+            BaseModel: Instance of ``output_cls`` parsed from the model output.
+        """
         if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
             llm_kwargs = llm_kwargs or {}
             llm_kwargs["format"] = output_cls.model_json_schema()
@@ -814,6 +1117,23 @@ class Ollama(FunctionCallingLLM):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **prompt_args: Any,
     ) -> Generator[Union[BaseModel, List[BaseModel]], None, None]:
+        """Stream structured objects parsed from chat deltas.
+
+        The method incrementally parses partial JSON content into ``output_cls``
+        instances using ``StreamingObjectProcessor`` with flexible mode.
+
+        Args:
+            output_cls (Type[BaseModel]): Pydantic model describing the structure.
+            prompt (PromptTemplate): Prompt template rendered to messages.
+            llm_kwargs (Optional[Dict[str, Any]]): Provider options forwarded to ``stream_chat``.
+            **prompt_args (Any): Additional template variables.
+
+        Yields:
+            Union[BaseModel, List[BaseModel]]: Parsed model(s) per streamed chunk.
+
+        See Also:
+            astream_structured_predict: Asynchronous streaming counterpart.
+        """
         if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
 
             def gen(
@@ -858,7 +1178,20 @@ class Ollama(FunctionCallingLLM):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         **prompt_args: Any,
     ) -> AsyncGenerator[Union[BaseModel, List[BaseModel]], None]:
-        """Async version of stream_structured_predict."""
+        """Asynchronously stream structured objects parsed from chat deltas.
+
+        Args:
+            output_cls (Type[BaseModel]): Pydantic model describing the structure.
+            prompt (PromptTemplate): Prompt template rendered to messages.
+            llm_kwargs (Optional[Dict[str, Any]]): Provider options forwarded to ``astream_chat``.
+            **prompt_args (Any): Additional template variables.
+
+        Returns:
+            AsyncGenerator[Union[BaseModel, List[BaseModel]], None]: Async stream of parsed model(s).
+
+        See Also:
+            stream_structured_predict: Synchronous streaming counterpart.
+        """
         if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
 
             async def gen(

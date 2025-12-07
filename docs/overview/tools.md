@@ -418,4 +418,3 @@ tool = CallableTool(func=echo_list, metadata=ToolMetadata(name="echo_list", desc
 executor = ToolExecutor(ExecutionConfig(single_arg_auto_unpack=True))
 print(executor.execute(tool, {"lst": [1, 2, 3]}).content)  # "1,2,3"
 ```
-

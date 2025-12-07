@@ -1,4 +1,5 @@
 """Test program utils."""
+
 import pytest
 from typing import List, Optional
 from pydantic import BaseModel, Field
@@ -7,7 +8,7 @@ from serapeum.core.structured_tools.utils import (
     _repair_incomplete_json,
     StreamingObjectProcessor,
     num_valid_fields,
-    FlexibleModel
+    FlexibleModel,
 )
 
 
@@ -102,6 +103,7 @@ class TestNumValidFields:
         Input: Family with parent and children Persons.
         Expected: count equals sum of all non-None nesting fields.
         """
+
         class Family(BaseModel):
             parent: Person
             children: List[Person] = Field(default_factory=list)
@@ -139,13 +141,13 @@ class TestNumValidFields:
         assert num_valid_fields(family) == 4  # parent's name & age + child's name & age
 
 
-
 class TestFlexibleModel:
     def test_allows_extra_fields(self) -> None:
         """A subclass of FlexibleModel should allow extra fields without raising.
         Input: Instantiate a subclass with an extra field.
         Expected: Instance created and attribute present.
         """
+
         class Sub(FlexibleModel):
             a: int
 

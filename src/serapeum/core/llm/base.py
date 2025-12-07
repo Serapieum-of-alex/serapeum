@@ -687,7 +687,6 @@ class LLM(BaseLLM, ABC):
             self.messages_to_prompt = lambda message_list: message_list.to_prompt()
         return self
 
-
     def _get_prompt(self, prompt: BasePromptTemplate, **prompt_args: Any) -> str:
         """Format a prompt template with LLM metadata and parser hooks.
 

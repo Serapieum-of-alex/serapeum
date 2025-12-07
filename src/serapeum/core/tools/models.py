@@ -72,7 +72,9 @@ class Schema:
         self.referenced_schema = self.resolve_references(inline=False)
 
     def resolve_references(self, inline: bool = False) -> Dict[str, Any]:
-        defs = self.full_schema.get("$defs") or self.full_schema.get("definitions") or {}
+        defs = (
+            self.full_schema.get("$defs") or self.full_schema.get("definitions") or {}
+        )
         # Inline any local references first
         if inline:
             schema = self._resolve_local_refs(copy.deepcopy(self.full_schema), defs)
@@ -82,11 +84,7 @@ class Schema:
             keys = ["type", "properties", "required", "definitions", "$defs"]
 
         # Now keep only the keys relevant for tool providers
-        parameters = {
-            k: v
-            for k, v in schema.items()
-            if k in keys
-        }
+        parameters = {k: v for k, v in schema.items() if k in keys}
         return parameters
 
     @staticmethod
@@ -99,7 +97,9 @@ class Schema:
                     name = ref.split("/")[-1]
                     if name in defs:
                         # Deep-copy to avoid mutating the original defs
-                        return Schema._resolve_local_refs(copy.deepcopy(defs[name]), defs)
+                        return Schema._resolve_local_refs(
+                            copy.deepcopy(defs[name]), defs
+                        )
                     # If not found, fall through and return as-is
             # Recurse into mapping
             return {k: Schema._resolve_local_refs(v, defs) for k, v in obj.items()}

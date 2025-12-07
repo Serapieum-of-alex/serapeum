@@ -31,9 +31,7 @@ class MockChatLLM(MagicMock):
     def chat(self, prompt: str) -> ChatResponse:
         test_object = {"hello": "chat"}
         text = json.dumps(test_object)
-        return ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content=text)
-        )
+        return ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=text))
 
     @property
     def metadata(self) -> Metadata:
@@ -45,6 +43,7 @@ class MockChatLLM(MagicMock):
 class ModelTest(BaseModel):
     __test__ = False
     hello: str
+
 
 class TestTextCompletionLLM:
     def test_text_completion_llm(self) -> None:

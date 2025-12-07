@@ -29,7 +29,9 @@ class TestDecorators:
             assert messages[0].role == MessageRole.USER
             assert messages[0].content == "Ping"
             seen["called"] = True
-            return ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="OK"))
+            return ChatResponse(
+                message=Message(role=MessageRole.ASSISTANT, content="OK")
+            )
 
         wrapped = chat_to_completion_decorator(chat_impl)
         out = wrapped("Ping")
@@ -42,10 +44,15 @@ class TestDecorators:
         Expected: Wrapper returns a generator yielding two CompletionResponse with the same deltas and text.
         Checks: Full mapping and order.
         """
+
         def chat_stream(messages, **kwargs):
             assert len(messages) == 1 and messages[0].content == "Start"
-            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="S1"), delta="s1")
-            yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="S2"), delta="s2")
+            yield ChatResponse(
+                message=Message(role=MessageRole.ASSISTANT, content="S1"), delta="s1"
+            )
+            yield ChatResponse(
+                message=Message(role=MessageRole.ASSISTANT, content="S2"), delta="s2"
+            )
 
         wrapped = stream_chat_to_completion_decorator(chat_stream)
         out = list(wrapped("Start"))
@@ -59,9 +66,12 @@ class TestDecorators:
         Expected: Awaited wrapper returns CompletionResponse with text "OK".
         Checks: Input normalization and output mapping.
         """
+
         async def chat_async(messages, **kwargs):
             assert len(messages) == 1 and messages[0].content == "Hello"
-            return ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="OK"))
+            return ChatResponse(
+                message=Message(role=MessageRole.ASSISTANT, content="OK")
+            )
 
         wrapped = achat_to_completion_decorator(chat_async)
         out = await wrapped("Hello")
@@ -74,12 +84,19 @@ class TestDecorators:
         Expected: Awaited wrapper returns an async generator of CompletionResponse with correctly mapped fields.
         Checks: Order and values preserved through the wrapper.
         """
+
         async def chat_async_gen(messages, **kwargs):
             assert len(messages) == 1 and messages[0].content == "Go"
 
             async def inner():
-                yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="C1"), delta="d1")
-                yield ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="C2"), delta="d2")
+                yield ChatResponse(
+                    message=Message(role=MessageRole.ASSISTANT, content="C1"),
+                    delta="d1",
+                )
+                yield ChatResponse(
+                    message=Message(role=MessageRole.ASSISTANT, content="C2"),
+                    delta="d2",
+                )
 
             return inner()
 
@@ -101,7 +118,10 @@ class TestGetFromParamOrEnv:
         Checks: Exact equality "VAL".
         """
         monkeypatch.setenv("MY_KEY", "ENV_VAL")
-        assert get_from_param_or_env("k", param="VAL", env_key="MY_KEY", default="DEF") == "VAL"
+        assert (
+            get_from_param_or_env("k", param="VAL", env_key="MY_KEY", default="DEF")
+            == "VAL"
+        )
 
     def test_env_used_when_param_none_and_env_present(self, monkeypatch):
         """
@@ -110,7 +130,12 @@ class TestGetFromParamOrEnv:
         Checks: Exact string from environ.
         """
         monkeypatch.setenv("API_TOKEN", "token123")
-        assert get_from_param_or_env("token", param=None, env_key="API_TOKEN", default="zzz") == "token123"
+        assert (
+            get_from_param_or_env(
+                "token", param=None, env_key="API_TOKEN", default="zzz"
+            )
+            == "token123"
+        )
 
     def test_default_used_when_param_none_env_missing_or_empty(self, monkeypatch):
         """
@@ -120,9 +145,15 @@ class TestGetFromParamOrEnv:
         """
         # ensure env var not present or empty
         monkeypatch.delenv("EMPTY_KEY", raising=False)
-        assert get_from_param_or_env("x", param=None, env_key="EMPTY_KEY", default="D") == "D"
+        assert (
+            get_from_param_or_env("x", param=None, env_key="EMPTY_KEY", default="D")
+            == "D"
+        )
         monkeypatch.setenv("EMPTY_KEY", "")
-        assert get_from_param_or_env("x", param=None, env_key="EMPTY_KEY", default="D2") == "D2"
+        assert (
+            get_from_param_or_env("x", param=None, env_key="EMPTY_KEY", default="D2")
+            == "D2"
+        )
 
     def test_raises_when_all_missing_with_message(self, monkeypatch):
         """
@@ -131,5 +162,7 @@ class TestGetFromParamOrEnv:
         Checks: Use regex to match both the key and env variable name in the error message.
         """
         monkeypatch.delenv("NOT_SET", raising=False)
-        with pytest.raises(ValueError, match=r"Did not find secret,.*`NOT_SET`.*`secret`"):
+        with pytest.raises(
+            ValueError, match=r"Did not find secret,.*`NOT_SET`.*`secret`"
+        ):
             get_from_param_or_env("secret", param=None, env_key="NOT_SET", default=None)

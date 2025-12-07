@@ -16,11 +16,12 @@ __all__ = [
     "stream_chat_to_completion_decorator",
     "achat_to_completion_decorator",
     "astream_chat_to_completion_decorator",
-    "get_from_param_or_env"
+    "get_from_param_or_env",
 ]
 
+
 def chat_to_completion_decorator(
-    func: Callable[..., ChatResponse]
+    func: Callable[..., ChatResponse],
 ) -> Callable[..., CompletionResponse]:
     """Convert a chat function to a completion function."""
 
@@ -35,7 +36,7 @@ def chat_to_completion_decorator(
 
 
 def stream_chat_to_completion_decorator(
-    func: Callable[..., ChatResponseGen]
+    func: Callable[..., ChatResponseGen],
 ) -> Callable[..., CompletionResponseGen]:
     """Convert a streaming chat function to a completion function."""
 
@@ -50,7 +51,7 @@ def stream_chat_to_completion_decorator(
 
 
 def achat_to_completion_decorator(
-    func: Callable[..., Awaitable[ChatResponse]]
+    func: Callable[..., Awaitable[ChatResponse]],
 ) -> Callable[..., Awaitable[CompletionResponse]]:
     """Convert an async chat function to a completion function."""
 
@@ -65,7 +66,7 @@ def achat_to_completion_decorator(
 
 
 def astream_chat_to_completion_decorator(
-    func: Callable[..., Awaitable[ChatResponseAsyncGen]]
+    func: Callable[..., Awaitable[ChatResponseAsyncGen]],
 ) -> Callable[..., Awaitable[CompletionResponseAsyncGen]]:
     """Convert an async streaming chat function to a completion function."""
 

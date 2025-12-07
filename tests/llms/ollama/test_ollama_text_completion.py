@@ -17,6 +17,7 @@ LLM = Ollama(
     request_timeout=180,
 )
 
+
 class DummyModel(BaseModel):
     value: str
 

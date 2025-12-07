@@ -1,3 +1,9 @@
+"""Helpers for extracting and validating structured data from LLM text.
+
+This module provides utilities to parse JSON/code blocks embedded in model
+outputs and a small exception class used by output parsers.
+"""
+
 import contextlib
 import json
 import re
@@ -8,17 +14,7 @@ with contextlib.suppress(ImportError):
 
 
 def _marshal_llm_to_json(output: str) -> str:
-    """
-    Extract a substring containing valid JSON or array from a string.
-
-    Args:
-        output: A string that may contain a valid JSON object or array surrounded by
-        extraneous characters or information.
-
-    Returns:
-        A string containing a valid JSON object or array.
-
-    """
+    """Extract a substring containing a JSON object or array from a string."""
     output = output.strip()
 
     left_square = output.find("[")
@@ -35,8 +31,19 @@ def _marshal_llm_to_json(output: str) -> str:
 
 
 def parse_json_markdown(text: str) -> Any:
+    """Parse a JSON object/array embedded in fenced markdown.
+
+    If the text contains a fenced block marked as JSON (```json), the content
+    of that block is parsed. Otherwise, the function attempts to extract the
+    first JSON object/array substring and deserialize it.
+    """
     if "```json" in text:
-        text = text.split("```json")[1].strip().strip("```").strip()
+        text = text.split("```json", 1)[1].strip()
+        # Remove matching triple backticks without using multi-char strip
+        while text.startswith("```"):
+            text = text.removeprefix("```").lstrip()
+        while text.endswith("```"):
+            text = text.removesuffix("```").rstrip()
 
     json_string = _marshal_llm_to_json(text)
 
@@ -44,10 +51,7 @@ def parse_json_markdown(text: str) -> Any:
         json_obj = json.loads(json_string)
     except json.JSONDecodeError as e_json:
         try:
-            # NOTE: parsing again with pyyaml
-            #       pyyaml is less strict, and allows for trailing commas
-            #       right now we rely on this since guidance program generates
-            #       trailing commas
+            # Try a lenient YAML parser for slightly invalid JSON
             json_obj = yaml.safe_load(json_string)
         except yaml.YAMLError as e_yaml:
             raise OutputParserException(
@@ -61,46 +65,33 @@ def parse_json_markdown(text: str) -> Any:
 
 
 def parse_code_markdown(text: str, only_last: bool) -> List[str]:
-    # Regular expression pattern to match code within triple-backticks
+    """Extract code blocks from fenced markdown.
+
+    Args:
+        text: The source string that may contain fenced code blocks.
+        only_last: When True, return only the last code block; otherwise all.
+    """
     pattern = r"```(.*?)```"
 
-    # Regular expression pattern to match code within triple backticks with
-    # a Python marker. Like: ```python df.columns```
+    # Remove explicit language tag for python blocks to keep output clean
     python_str_pattern = re.compile(r"^```python", re.IGNORECASE)
     text = python_str_pattern.sub("```", text)
 
-    # Find all matches of the pattern in the text
     matches = re.findall(pattern, text, re.DOTALL)
-
-    # Return the last matched group if requested
     code = matches[-1] if matches and only_last else matches
 
-    # If empty we optimistically assume the output is the code
     if not code:
-        # we want to handle cases where the code may start or end with triple
-        # backticks
-        # we also want to handle cases where the code is surrounded by regular
-        # quotes
-        # we can't just remove all backticks due to JS template strings
-
         candidate = text.strip()
 
         if candidate.startswith('"') and candidate.endswith('"'):
             candidate = candidate[1:-1]
-
         if candidate.startswith("'") and candidate.endswith("'"):
             candidate = candidate[1:-1]
-
         if candidate.startswith("`") and candidate.endswith("`"):
             candidate = candidate[1:-1]
 
-        # For triple backticks we split the handling of the start and end
-        # partly because there can be cases where only one and not the other
-        # is present, and partly because we don't need to be so worried
-        # about it being a string in a programming language
         if candidate.startswith("```"):
             candidate = re.sub(r"^```[a-zA-Z]*", "", candidate)
-
         if candidate.endswith("```"):
             candidate = candidate[:-3]
         code = [candidate.strip()]
@@ -109,8 +100,7 @@ def parse_code_markdown(text: str, only_last: bool) -> List[str]:
 
 
 def extract_json_str(text: str) -> str:
-    """Extract JSON string from text."""
-    # NOTE: this regex parsing is taken from langchain.output_parsers.pydantic
+    """Extract the first JSON object substring from text."""
     match = re.search(r"\{.*\}", text.strip(), re.MULTILINE | re.IGNORECASE | re.DOTALL)
     if not match:
         raise ValueError(f"Could not extract json string from output: {text}")
@@ -119,4 +109,4 @@ def extract_json_str(text: str) -> str:
 
 
 class OutputParserException(Exception):
-    pass
+    """Raised when an LLM output cannot be parsed into the expected format."""

@@ -11,7 +11,7 @@ from serapeum.core.base.llms.models import (
 from serapeum.core.configs.configs import Configs
 from serapeum.core.output_parsers import BaseOutputParser, PydanticOutputParser
 from serapeum.core.prompts import ChatPromptTemplate
-from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
+from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 
 

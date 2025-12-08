@@ -72,8 +72,8 @@ max-line-length = 120
 count = true
 
 [tool.pytest.ini_options]
-testpaths = "tests"
-norecursedirs = "docs"
+
+norecursedirs = ["docs"]
 markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
     "mock: marks tests as mock (deselect with '-m \"not mock\"')",

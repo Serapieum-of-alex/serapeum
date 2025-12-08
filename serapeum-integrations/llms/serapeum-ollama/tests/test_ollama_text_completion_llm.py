@@ -3,6 +3,7 @@
 import json
 from unittest.mock import MagicMock
 
+import pytest
 from pydantic import BaseModel
 
 from serapeum.core.base.llms.models import (
@@ -15,6 +16,12 @@ from serapeum.core.base.llms.models import (
 from serapeum.core.output_parsers.models import PydanticOutputParser
 from serapeum.core.prompts import ChatPromptTemplate
 from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.llms.ollama import Ollama
+
+LLM = Ollama(
+    model="llama3.1",
+    request_timeout=180,
+)
 
 
 class MockLLM(MagicMock):
@@ -47,19 +54,21 @@ class ModelTest(BaseModel):
 
 
 class TestTextCompletionLLM:
-    def test_text_completion_llm(self) -> None:
+
+    @pytest.mark.e2e
+    def test_text_completion_llm_ollama(self) -> None:
         """Test LLM program."""
         output_parser = PydanticOutputParser(output_cls=ModelTest)
         text_llm = TextCompletionLLM(
             output_parser=output_parser,
             prompt="This is a test prompt with a {test_input}.",
-            llm=MockLLM(),
+            llm=LLM,
         )
 
         obj_output = text_llm(test_input="hello")
         assert isinstance(obj_output, ModelTest)
-        assert obj_output.hello == "world"
 
+    @pytest.mark.e2e
     def test_text_llm_with_messages(self) -> None:
         """Test LLM program."""
         messages = [Message(role=MessageRole.USER, content="Test")]
@@ -68,13 +77,13 @@ class TestTextCompletionLLM:
         text_llm = TextCompletionLLM(
             output_parser=output_parser,
             prompt=prompt,
-            llm=MockLLM(),
+            llm=LLM,
         )
 
         obj_output = text_llm()
         assert isinstance(obj_output, ModelTest)
-        assert obj_output.hello == "world"
 
+    @pytest.mark.e2e
     def test_llm_program_with_messages_and_chat(self) -> None:
         """Test LLM program."""
         messages = [Message(role=MessageRole.USER, content="Test")]
@@ -83,9 +92,8 @@ class TestTextCompletionLLM:
         text_llm = TextCompletionLLM(
             output_parser=output_parser,
             prompt=prompt,
-            llm=MockChatLLM(),
+            llm=LLM,
         )
 
         obj_output = text_llm()
         assert isinstance(obj_output, ModelTest)
-        assert obj_output.hello == "chat"

@@ -20,7 +20,7 @@ from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
 from serapeum.llms.ollama import Ollama
-from tests.models import Album
+from models import Album
 
 LLM = Ollama(
     model="llama3.1",

@@ -11,7 +11,7 @@ from serapeum.core.structured_tools import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
 from serapeum.core.tools.models import BaseTool
 from serapeum.llms.ollama import Ollama
-from tests.core.models import MOCK_ALBUM, MOCK_ALBUM_2, MockAlbum
+from tests.models import MOCK_ALBUM, MOCK_ALBUM_2, MockAlbum
 
 
 def _get_mock_album_response(

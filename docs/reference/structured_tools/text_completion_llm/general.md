@@ -180,53 +180,9 @@ Output parsing strategy is injected via `PydanticOutputParser`:
 3. Execute LLM (path varies)
 4. Parse output (consistent)
 
-## Error Handling
-
-### Initialization Errors
-- `ValueError`: Invalid parser type or prompt type
-- `AssertionError`: No LLM provided and Configs.llm not set
-
-### Execution Errors
-- `ConnectionError`: Ollama server unreachable
-- `TimeoutError`: Request exceeded timeout
-- `HTTPError`: API error response
-
-### Parsing Errors
-- `ValueError`: Malformed JSON or type mismatch
-- `ValidationError`: Schema validation failed
-
 ## Performance Considerations
 
 1. **Reusable Instances**: `TextCompletionLLM` instances are reusable after initialization
 2. **Async Support**: `acall()` method provides async execution
 3. **Streaming Support**: LLM layer supports streaming responses
 4. **Stateless Execution**: Each call creates independent transient state
-
-## Related Documentation
-
-- [Serapeum Core Documentation](../../reference/structured_tools/tools_llm.md)
-- [Ollama Integration](../../ollama/)
-- [Output Parsers](../../reference/structured_tools/)
-- [Prompt Templates](../../reference/prompts/)
-
-## Diagram Format
-
-All diagrams are written in [Mermaid](https://mermaid.js.org/) format, which can be rendered by:
-- GitHub (automatic rendering in markdown)
-- VS Code (with Mermaid extension)
-- MkDocs (with mermaid plugin)
-- Online Mermaid Live Editor
-
-## Version Information
-
-- **Serapeum Version**: Based on current codebase structure
-- **Test File**: `serapeum-integrations/llms/serapeum-ollama/tests/test_ollama_text_completion_llm.py`
-- **Source Classes**: Located in `serapeum-core/src/serapeum/core/structured_tools/`
-
-## Contributing
-
-When updating these diagrams:
-1. Keep them synchronized with code changes
-2. Test rendering in multiple viewers
-3. Update this README if adding new diagrams
-4. Include practical examples in diagram notes

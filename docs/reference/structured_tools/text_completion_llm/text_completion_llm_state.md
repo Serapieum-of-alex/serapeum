@@ -1,4 +1,4 @@
-# TextCompletionLLM State Diagram
+# Lifecycle States and Transitions
 
 This diagram shows the lifecycle states of a `TextCompletionLLM` instance.
 

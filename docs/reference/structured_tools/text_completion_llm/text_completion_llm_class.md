@@ -1,4 +1,4 @@
-# TextCompletionLLM Class Diagram
+# Architecture and Class Relationships
 
 This diagram shows the class relationships and structure for `TextCompletionLLM`.
 

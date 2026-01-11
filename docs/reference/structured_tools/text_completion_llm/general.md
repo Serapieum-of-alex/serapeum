@@ -37,10 +37,10 @@ obj_output = text_llm(test_input="hello")
 # Returns: ModelTest(hello="...")
 ```
 
-## Available Diagrams
+## Understanding the Workflow
 
-### 1. [Sequence Diagram](./text_completion_llm_sequence.md)
-**Purpose**: Shows the chronological flow of method calls and interactions
+### 1. [Execution Flow and Method Calls](./text_completion_llm_sequence.md)
+Shows the chronological flow of method calls and interactions.
 
 **Best for**:
 - Understanding the order of operations
@@ -52,8 +52,8 @@ obj_output = text_llm(test_input="hello")
 - Execution phase (prompt formatting and LLM invocation)
 - Parsing phase (JSON extraction and Pydantic validation)
 
-### 2. [Class Diagram](./text_completion_llm_class.md)
-**Purpose**: Illustrates the static structure and relationships between classes
+### 2. [Architecture and Class Relationships](./text_completion_llm_class.md)
+Illustrates the static structure and relationships between classes.
 
 **Best for**:
 - Understanding the architecture
@@ -66,8 +66,8 @@ obj_output = text_llm(test_input="hello")
 - `BasePromptTemplate` hierarchy: Prompt formatting
 - `LLM` hierarchy: Model execution
 
-### 3. [Data Flow Diagram](./text_completion_llm_dataflow.md)
-**Purpose**: Tracks how data transforms through the system
+### 3. [Data Transformations and Validation](./text_completion_llm_dataflow.md)
+Tracks how data transforms through the system.
 
 **Best for**:
 - Understanding data transformations
@@ -80,8 +80,8 @@ obj_output = text_llm(test_input="hello")
 - Completion model execution path
 - JSON parsing and validation
 
-### 4. [Component Interaction Diagram](./text_completion_llm_components.md)
-**Purpose**: Shows component boundaries and interaction patterns
+### 4. [Component Boundaries and Interactions](./text_completion_llm_components.md)
+Shows component boundaries and interaction patterns.
 
 **Best for**:
 - Understanding system architecture
@@ -96,8 +96,8 @@ obj_output = text_llm(test_input="hello")
 - Parser layer (output validation)
 - External service (Ollama server)
 
-### 5. [State Diagram](./text_completion_llm_state.md)
-**Purpose**: Depicts the lifecycle states and transitions
+### 5. [Lifecycle States and Transitions](./text_completion_llm_state.md)
+Depicts the lifecycle states and transitions.
 
 **Best for**:
 - Understanding instance lifecycle

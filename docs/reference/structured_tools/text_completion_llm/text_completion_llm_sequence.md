@@ -1,4 +1,4 @@
-# TextCompletionLLM Sequence Diagram
+# Execution Flow and Method Calls
 
 This diagram shows the complete workflow from initialization to execution of `TextCompletionLLM`.
 

@@ -1,4 +1,4 @@
-# TextCompletionLLM Data Flow Diagram
+# Data Transformations and Validation
 
 This diagram shows how data flows through the `TextCompletionLLM` system.
 

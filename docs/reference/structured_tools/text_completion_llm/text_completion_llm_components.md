@@ -1,4 +1,4 @@
-# TextCompletionLLM Component Interaction Diagram
+# Component Boundaries and Interactions
 
 This diagram shows how components interact during the complete lifecycle.
 

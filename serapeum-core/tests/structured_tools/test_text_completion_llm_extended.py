@@ -244,7 +244,7 @@ class TestValidateOutputParserCls:
         """
         parser = PydanticOutputParser(output_cls=DummyModel)
 
-        validated_parser, validated_cls = TextCompletionLLM.validate_output_parser_cls(
+        validated_parser, validated_cls = TextCompletionLLM._validate_output_parser_cls(
             parser,
             None,  # type: ignore[arg-type]
         )
@@ -257,7 +257,7 @@ class TestValidateOutputParserCls:
         parser = DummyNonPydanticParser()
 
         with pytest.raises(ValueError):
-            TextCompletionLLM.validate_output_parser_cls(
+            TextCompletionLLM._validate_output_parser_cls(
                 parser,
                 None,  # type: ignore[arg-type]
             )
@@ -268,7 +268,7 @@ class TestValidateOutputParserCls:
         Expected: new PydanticOutputParser returned
         Checks: factory instantiation.
         """
-        parser, output_cls = TextCompletionLLM.validate_output_parser_cls(
+        parser, output_cls = TextCompletionLLM._validate_output_parser_cls(
             None,  # type: ignore[arg-type]
             DummyModel,
         )
@@ -286,7 +286,7 @@ class TestValidateOutputParserCls:
         """
         parser = PydanticOutputParser(output_cls=DummyModel)
 
-        validated_parser, validated_cls = TextCompletionLLM.validate_output_parser_cls(
+        validated_parser, validated_cls = TextCompletionLLM._validate_output_parser_cls(
             parser,
             DummyModel,
         )

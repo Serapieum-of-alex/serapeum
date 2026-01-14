@@ -150,7 +150,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             TextCompletionLLM.validate_output_parser_cls: Validates parser and output class pairing.
             TextCompletionLLM.validate_llm: Resolves the backing LLM instance.
         """
-        self._output_parser, self._output_cls = self.validate_output_parser_cls(
+        self._output_parser, self._output_cls = self._validate_output_parser_cls(
             output_parser, output_cls
         )
         self._llm = self._validate_llm(llm)
@@ -258,7 +258,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         return llm
 
     @staticmethod
-    def validate_output_parser_cls(
+    def _validate_output_parser_cls(
         output_parser: BaseOutputParser, output_cls: Type[BaseModel]
     ) -> Tuple[BaseOutputParser, Type[BaseModel]]:
         """Validate and normalize parser/schema configuration.
@@ -286,7 +286,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> class Record(BaseModel):
                 ...     value: int
                 >>> parser = PydanticOutputParser(output_cls=Record)
-                >>> resolved_parser, resolved_cls = TextCompletionLLM.validate_output_parser_cls(
+                >>> resolved_parser, resolved_cls = TextCompletionLLM._validate_output_parser_cls(
                 ...     parser,
                 ...     None,  # type: ignore[arg-type]
                 ... )
@@ -303,7 +303,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
                 >>> class Item(BaseModel):
                 ...     name: str
-                >>> parser, schema = TextCompletionLLM.validate_output_parser_cls(
+                >>> parser, schema = TextCompletionLLM._validate_output_parser_cls(
                 ...     None,  # type: ignore[arg-type]
                 ...     Item,
                 ... )
@@ -320,7 +320,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> class PlainParser(BaseOutputParser):
                 ...     def parse(self, output: str):
                 ...         return output
-                >>> TextCompletionLLM.validate_output_parser_cls(
+                >>> TextCompletionLLM._validate_output_parser_cls(
                 ...     PlainParser(),
                 ...     None,  # type: ignore[arg-type]
                 ... )

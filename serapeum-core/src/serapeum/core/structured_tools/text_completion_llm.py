@@ -154,12 +154,12 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             output_parser, output_cls
         )
         self._llm = self.validate_llm(llm)
-        self._prompt = self.validate_prompt(prompt)
+        self._prompt = self._validate_prompt(prompt)
         self._verbose = verbose
         self._prompt.output_parser = output_parser
 
     @staticmethod
-    def validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
+    def _validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
         """Validate that the provided prompt is usable by the program.
 
         Args:
@@ -176,14 +176,14 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             - Promote a raw string into a prompt template
                 ```python
                 >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
-                >>> validated = TextCompletionLLM.validate_prompt("Hello {name}")
+                >>> validated = TextCompletionLLM._validate_prompt("Hello {name}")
                 >>> validated.get_template()
                 'Hello {name}'
 
                 ```
             - Reject unsupported prompt types
                 ```python
-                >>> TextCompletionLLM.validate_prompt(42)
+                >>> TextCompletionLLM._validate_prompt(42)
                 Traceback (most recent call last):
                 ...
                 ValueError: prompt must be an instance of BasePromptTemplate or str.

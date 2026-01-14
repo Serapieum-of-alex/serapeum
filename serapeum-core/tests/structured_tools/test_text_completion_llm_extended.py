@@ -180,13 +180,13 @@ class TestValidatePrompt:
         """Inputs: PromptTemplate already built; Expected: method returns same template; Checks: passthrough behavior."""
         prompt_template = PromptTemplate("Value: {value}")
 
-        validated = TextCompletionLLM.validate_prompt(prompt_template)
+        validated = TextCompletionLLM._validate_prompt(prompt_template)
 
         assert validated is prompt_template
 
     def test_validate_prompt_with_string(self) -> None:
         """Inputs: simple string; Expected: method wraps string into PromptTemplate; Checks: coercion branch."""
-        validated = TextCompletionLLM.validate_prompt("Hi {value}")
+        validated = TextCompletionLLM._validate_prompt("Hi {value}")
 
         assert isinstance(validated, PromptTemplate)
         assert validated.template == "Hi {value}"
@@ -194,7 +194,7 @@ class TestValidatePrompt:
     def test_validate_prompt_with_invalid_type(self) -> None:
         """Inputs: non-string, non-template; Expected: ValueError raised; Checks: guard rails for prompt types."""
         with pytest.raises(ValueError):
-            TextCompletionLLM.validate_prompt(object())  # type: ignore[arg-type]
+            TextCompletionLLM._validate_prompt(object())  # type: ignore[arg-type]
 
 
 class TestValidateLlm:

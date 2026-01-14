@@ -160,14 +160,14 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         Examples:
         - Convert a string to a PromptTemplate.
             ```python
-            >>> prompt_template = ToolOrchestratingLLM.validate_prompt('Hello, {name}!')
+            >>> prompt_template = ToolOrchestratingLLM._validate_prompt('Hello, {name}!')
             >>> print(prompt_template)  # doctest: +ELLIPSIS
             metadata={'prompt_type': <PromptType.CUSTOM: 'custom'>} ... template='Hello, {name}!'
 
             ```
         - Invalid type raises ValueError.
             ```python
-            >>> ToolOrchestratingLLM.validate_prompt(123)  # doctest: +ELLIPSIS
+            >>> ToolOrchestratingLLM._validate_prompt(123)  # doctest: +ELLIPSIS
             Traceback (most recent call last):
             ...
             ValueError: prompt must be an instance of BasePromptTemplate or str.

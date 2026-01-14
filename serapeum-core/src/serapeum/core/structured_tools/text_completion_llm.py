@@ -86,8 +86,8 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
     def __init__(
         self,
         *,
-        output_parser: Optional[BaseOutputParser] = None,
         prompt: Union[BasePromptTemplate, str],
+        output_parser: Optional[BaseOutputParser] = None,
         output_cls: Optional[Type[BaseModel]] = None,
         llm: Optional[LLM] = None,
         verbose: bool = False,

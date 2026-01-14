@@ -206,7 +206,7 @@ class TestValidateLlm:
         """
         llm = DummyLLM()
 
-        validated = TextCompletionLLM.validate_llm(llm)
+        validated = TextCompletionLLM._validate_llm(llm)
 
         assert validated is llm
 
@@ -219,7 +219,7 @@ class TestValidateLlm:
         llm = DummyLLM()
         Configs.llm = llm
 
-        validated = TextCompletionLLM.validate_llm(None)  # type: ignore[arg-type]
+        validated = TextCompletionLLM._validate_llm(None)  # type: ignore[arg-type]
 
         assert validated is llm
 
@@ -232,7 +232,7 @@ class TestValidateLlm:
         Configs.llm = None  # type: ignore[assignment]
 
         with pytest.raises(AssertionError):
-            TextCompletionLLM.validate_llm(None)  # type: ignore[arg-type]
+            TextCompletionLLM._validate_llm(None)  # type: ignore[arg-type]
 
 
 class TestValidateOutputParserCls:

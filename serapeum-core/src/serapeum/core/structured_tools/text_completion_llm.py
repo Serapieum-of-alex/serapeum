@@ -153,7 +153,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         self._output_parser, self._output_cls = self.validate_output_parser_cls(
             output_parser, output_cls
         )
-        self._llm = self.validate_llm(llm)
+        self._llm = self._validate_llm(llm)
         self._prompt = self._validate_prompt(prompt)
         self._verbose = verbose
         self._prompt.output_parser = output_parser
@@ -201,7 +201,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         return prompt
 
     @staticmethod
-    def validate_llm(llm: LLM) -> LLM:
+    def _validate_llm(llm: LLM) -> LLM:
         """Resolve the LLM backing structured completions.
 
         Args:
@@ -222,7 +222,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
                 >>> Configs.llm = None
                 >>> supplied = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
-                >>> TextCompletionLLM.validate_llm(supplied) is supplied
+                >>> TextCompletionLLM._validate_llm(supplied) is supplied
                 True
 
                 ```
@@ -233,7 +233,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
                 >>> fallback = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
                 >>> Configs.llm = fallback
-                >>> TextCompletionLLM.validate_llm(None) is fallback
+                >>> TextCompletionLLM._validate_llm(None) is fallback
                 True
 
                 ```
@@ -242,7 +242,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.core.configs.configs import Configs
                 >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
                 >>> Configs.llm = None
-                >>> TextCompletionLLM.validate_llm(None)
+                >>> TextCompletionLLM._validate_llm(None)
                 Traceback (most recent call last):
                 ...
                 AssertionError: llm must be provided or set in Configs.

@@ -206,7 +206,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         - Accept a model that supports function calling (Ollama).
             ```python
             >>> from serapeum.llms.ollama.base import Ollama
-            >>> out = ToolOrchestratingLLM.validate_llm(Ollama(model='llama3.1'))
+            >>> out = ToolOrchestratingLLM._validate_llm(Ollama(model='llama3.1'))
             >>> out.metadata.model_name
             'llama3.1'
 

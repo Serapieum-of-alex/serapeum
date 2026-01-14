@@ -155,7 +155,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         self._llm = self._validate_llm(llm)
         self._prompt = self._validate_prompt(prompt)
         self._verbose = verbose
-        self._prompt.output_parser = output_parser
+        self._prompt.output_parser = self._output_parser
 
     @staticmethod
     def _validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:

@@ -330,7 +330,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ```
 
         See Also:
-            serapeum.core.output_parsers.models.PydanticOutputParser: Default parser implementation.
+            serapeum.core.output_parsers.PydanticParser: Default parser implementation.
         """
         # decide default output class if not set
         if output_cls is None:

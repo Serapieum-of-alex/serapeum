@@ -21,7 +21,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         prompt (Union[BasePromptTemplate, str]): Prompt template or raw template string that drives
             the LLM request.
         output_cls (Optional[Type[BaseModel]]): Pydantic model that constrains the expected
-            structure. When omitted, it is inferred from a `PydanticOutputParser`.
+            structure. When omitted, it is inferred from a `PydanticParser`.
         llm (Optional[LLM]): Concrete language model implementation. Falls back to `Configs.llm`
             when left unset.
         verbose (bool): Enables verbose tracing in the underlying base class.
@@ -99,7 +99,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             prompt (Union[BasePromptTemplate, str]): Prompt template or string used to query the
                 LLM.
             output_cls (Optional[Type[BaseModel]]): Target Pydantic model type. When omitted, a
-                compatible `PydanticOutputParser` must be supplied.
+                compatible `PydanticParser` must be supplied.
             llm (Optional[LLM]): Language model implementation backing the prompt execution.
             verbose (bool): Enables verbose tracing inherited from the base class.
 
@@ -273,7 +273,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 A parser/schema pair ready for execution.
 
         Raises:
-            ValueError: If neither an `output_cls` nor a compatible `PydanticOutputParser` is
+            ValueError: If neither an `output_cls` nor a compatible `PydanticParser` is
                 supplied.
 
         Examples:
@@ -325,7 +325,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ... )
                 Traceback (most recent call last):
                 ...
-                ValueError: Output parser must be PydanticOutputParser.
+                ValueError: Output parser must be PydanticParser.
 
                 ```
 

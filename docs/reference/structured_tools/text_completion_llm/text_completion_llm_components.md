@@ -21,13 +21,13 @@ graph TB
         subgraph Stored State
             SP["_prompt: BasePromptTemplate"]
             SL["_llm: LLM"]
-            SO["_output_parser: PydanticOutputParser"]
+            SO["_output_parser: PydanticParser"]
             SC["_output_cls: Type ModelTest"]
         end
     end
 
     subgraph Output Parser Layer
-        POP[PydanticOutputParser]
+        POP[PydanticParser]
         EJ[extract_json_str]
         VJ[model_validate_json]
     end
@@ -148,7 +148,7 @@ graph TB
 | Component | Initialization | Execution | Parsing |
 |-----------|---------------|-----------|---------|
 | **TextCompletionLLM** | Validates & stores all components | Routes to chat/complete | Type checks output |
-| **PydanticOutputParser** | Stores output_cls schema | - | Extracts JSON & validates |
+| **PydanticParser** | Stores output_cls schema | - | Extracts JSON & validates |
 | **PromptTemplate** | Created/validated | Formats with variables | - |
 | **Ollama (LLM)** | Validated/stored | Executes requests | - |
 | **ModelTest** | Defines schema | - | Validates parsed data |
@@ -174,7 +174,7 @@ User → TextCompletionLLM.__call__
   ├─→ LLM._extend_messages
   ├─→ Ollama.chat → HTTP → ChatResponse
   ├─→ Extract message.content
-  └─→ PydanticOutputParser.parse → ModelTest
+  └─→ PydanticParser.parse → ModelTest
 ```
 
 ### 3. Completion Model Execution Pattern
@@ -185,13 +185,13 @@ User → TextCompletionLLM.__call__
   ├─→ LLM._extend_prompt
   ├─→ Ollama.complete → HTTP → CompletionResponse
   ├─→ Extract response.text
-  └─→ PydanticOutputParser.parse → ModelTest
+  └─→ PydanticParser.parse → ModelTest
 ```
 
 ## State Management
 
 ### Immutable State (Post-Initialization)
-- `_output_parser`: PydanticOutputParser instance
+- `_output_parser`: PydanticParser instance
 - `_output_cls`: Type[ModelTest]
 - `_llm`: Ollama instance
 

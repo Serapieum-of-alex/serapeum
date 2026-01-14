@@ -5,23 +5,23 @@ This diagram shows the complete workflow from initialization to execution of `Te
 ```mermaid
 sequenceDiagram
     participant User
-    participant PydanticOutputParser
+    participant PydanticParser
     participant TextCompletionLLM
     participant PromptTemplate
     participant Ollama
     participant LLMChat/Complete
 
     Note over User: Initialization Phase
-    User->>PydanticOutputParser: Create parser with ModelTest
-    activate PydanticOutputParser
-    PydanticOutputParser-->>User: parser instance
-    deactivate PydanticOutputParser
+    User->>PydanticParser: Create parser with ModelTest
+    activate PydanticParser
+    PydanticParser-->>User: parser instance
+    deactivate PydanticParser
 
     User->>TextCompletionLLM: __init__(output_parser, prompt, llm)
     activate TextCompletionLLM
 
     TextCompletionLLM->>TextCompletionLLM: validate_output_parser_cls(parser, None)
-    Note over TextCompletionLLM: Validates parser is PydanticOutputParser<br/>Extracts output_cls (ModelTest)
+    Note over TextCompletionLLM: Validates parser is PydanticParser<br/>Extracts output_cls (ModelTest)
 
     TextCompletionLLM->>TextCompletionLLM: validate_llm(llm)
     Note over TextCompletionLLM: Ensures LLM instance is provided<br/>or falls back to Configs.llm
@@ -88,16 +88,16 @@ sequenceDiagram
         Note over TextCompletionLLM: raw_output = response.text
     end
 
-    TextCompletionLLM->>PydanticOutputParser: parse(raw_output)
-    activate PydanticOutputParser
-    PydanticOutputParser->>PydanticOutputParser: extract_json_str(raw_output)
-    Note over PydanticOutputParser: Extracts JSON from text
+    TextCompletionLLM->>PydanticParser: parse(raw_output)
+    activate PydanticParser
+    PydanticParser->>PydanticParser: extract_json_str(raw_output)
+    Note over PydanticParser: Extracts JSON from text
 
-    PydanticOutputParser->>PydanticOutputParser: model_validate_json(json_str)
-    Note over PydanticOutputParser: Validates against ModelTest schema
+    PydanticParser->>PydanticParser: model_validate_json(json_str)
+    Note over PydanticParser: Validates against ModelTest schema
 
-    PydanticOutputParser-->>TextCompletionLLM: ModelTest instance
-    deactivate PydanticOutputParser
+    PydanticParser-->>TextCompletionLLM: ModelTest instance
+    deactivate PydanticParser
 
     TextCompletionLLM->>TextCompletionLLM: Validate isinstance(output, ModelTest)
     Note over TextCompletionLLM: Raises ValueError if type mismatch

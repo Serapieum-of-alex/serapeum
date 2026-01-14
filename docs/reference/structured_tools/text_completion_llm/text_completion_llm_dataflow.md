@@ -8,8 +8,8 @@ flowchart TD
 
     Init --> ValidateParser[Validate Output Parser]
     ValidateParser --> CheckParser{Parser Type?}
-    CheckParser -->|PydanticOutputParser| ExtractClass[Extract output_cls]
-    CheckParser -->|None + output_cls| CreateParser[Create PydanticOutputParser]
+    CheckParser -->|PydanticParser| ExtractClass[Extract output_cls]
+    CheckParser -->|None + output_cls| CreateParser[Create PydanticParser]
     CheckParser -->|Other| Error1[Raise ValueError]
 
     ExtractClass --> ValidateLLM[Validate LLM]
@@ -86,7 +86,7 @@ flowchart TD
 ### Initialization Phase
 ```
 Input:
-  - output_parser: PydanticOutputParser(output_cls=ModelTest)
+  - output_parser: PydanticParser(output_cls=ModelTest)
   - prompt: "This is a test prompt with a {test_input}."
   - llm: Ollama(model="llama3.1")
 
@@ -132,7 +132,7 @@ Output:
 
 ## Error Handling Points
 
-1. **Parser validation**: Ensures PydanticOutputParser is used
+1. **Parser validation**: Ensures PydanticParser is used
 2. **LLM validation**: Ensures LLM instance is available
 3. **Prompt validation**: Ensures prompt is convertible to template
 4. **JSON extraction**: Handles malformed JSON responses

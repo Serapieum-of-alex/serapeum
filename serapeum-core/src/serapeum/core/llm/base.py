@@ -948,7 +948,7 @@ class LLM(BaseLLM, ABC):
 
                 ```
         See Also:
-            BaseOutputParser.parse: Implements the parsing logic invoked here.
+            BaseParser.parse: Implements the parsing logic invoked here.
         """
         if self.output_parser is not None:
             return str(self.output_parser.parse(output))

@@ -17,7 +17,7 @@ classDiagram
         +output_cls: Type[BaseModel]
         +__call__(llm_kwargs, **kwargs) BaseModel
         +acall(llm_kwargs, **kwargs) BaseModel
-        -_output_parser: BaseOutputParser
+        -_output_parser: BaseParser
         -_output_cls: Type[BaseModel]
         -_llm: LLM
         -_prompt: BasePromptTemplate
@@ -27,14 +27,14 @@ classDiagram
         +_validate_output_parser_cls(parser, cls) Tuple
     }
 
-    class BaseOutputParser {
+    class BaseParser {
         <<abstract>>
         +parse(output: str) Any
         +format(query: str) str
         +format_messages(messages) List[Message]
     }
 
-    class PydanticOutputParser~Model~ {
+    class PydanticParser~Model~ {
         -_output_cls: Type[Model]
         -_excluded_schema_keys_from_format: List
         -_pydantic_format_tmpl: str
@@ -51,7 +51,7 @@ classDiagram
         +metadata: Dict[str, Any]
         +template_vars: List[str]
         +kwargs: Dict[str, str]
-        +output_parser: Optional[BaseOutputParser]
+        +output_parser: Optional[BaseParser]
         +template_var_mappings: Optional[Dict]
         +function_mappings: Optional[Dict]
         +partial_format(**kwargs) BasePromptTemplate
@@ -96,7 +96,7 @@ classDiagram
         +system_prompt: Optional[str]
         +messages_to_prompt: MessagesToPromptCallable
         +completion_to_prompt: CompletionToPromptCallable
-        +output_parser: Optional[BaseOutputParser]
+        +output_parser: Optional[BaseParser]
         +pydantic_program_mode: StructuredLLMMode
         +_get_prompt(prompt, **kwargs) str
         +_get_messages(prompt, **kwargs) List[Message]
@@ -138,21 +138,21 @@ classDiagram
     BasePydanticLLM <|-- TextCompletionLLM
     BaseLLM <|-- LLM
     LLM <|-- Ollama
-    BaseOutputParser <|-- PydanticOutputParser
+    BaseParser <|-- PydanticParser
     BasePromptTemplate <|-- PromptTemplate
     BasePromptTemplate <|-- ChatPromptTemplate
     BaseModel <|-- ModelTest
 
-    TextCompletionLLM o-- PydanticOutputParser : uses
+    TextCompletionLLM o-- PydanticParser : uses
     TextCompletionLLM o-- BasePromptTemplate : uses
     TextCompletionLLM o-- LLM : uses
     TextCompletionLLM ..> ModelTest : produces
-    PydanticOutputParser o-- ModelTest : validates against
+    PydanticParser o-- ModelTest : validates against
     PromptTemplate --|> BasePromptTemplate
     ChatPromptTemplate --|> BasePromptTemplate
 
     note for TextCompletionLLM "Main orchestrator that:\n1. Validates parser, prompt, LLM\n2. Formats prompts with variables\n3. Calls LLM (chat or complete)\n4. Parses output to Pydantic model"
-    note for PydanticOutputParser "Extracts JSON from text\nand validates against schema"
+    note for PydanticParser "Extracts JSON from text\nand validates against schema"
     note for Ollama "Concrete LLM implementation\nfor Ollama server"
 ```
 
@@ -164,7 +164,7 @@ classDiagram
 - **Routes** to chat or completion based on LLM metadata
 - **Ensures** type safety of output
 
-### PydanticOutputParser
+### PydanticParser
 - **Extracts** JSON from raw LLM output
 - **Validates** JSON against Pydantic schema
 - **Formats** prompts with schema hints

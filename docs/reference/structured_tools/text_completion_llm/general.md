@@ -63,7 +63,7 @@ Illustrates the static structure and relationships between classes.
 
 **Key Classes**:
 - `TextCompletionLLM`: Main orchestrator
-- `PydanticOutputParser`: Output validation
+- `PydanticParser`: Output validation
 - `BasePromptTemplate` hierarchy: Prompt formatting
 - `LLM` hierarchy: Model execution
 
@@ -115,9 +115,9 @@ Depicts the lifecycle states and transitions.
 
 ### Initialization Workflow
 ```
-1. Create PydanticOutputParser with output schema (ModelTest)
+1. Create PydanticParser with output schema (ModelTest)
 2. Initialize TextCompletionLLM with:
-   - output_parser: PydanticOutputParser
+   - output_parser: PydanticParser
    - prompt: String or BasePromptTemplate
    - llm: Ollama instance
 3. Validation occurs:
@@ -169,7 +169,7 @@ All components are validated during `__init__`, ensuring errors are caught early
 - Completion models → format string
 
 ### 3. **Strategy Pattern**
-Output parsing strategy is injected via `PydanticOutputParser`:
+Output parsing strategy is injected via `PydanticParser`:
 - Customizable JSON extraction
 - Flexible schema validation
 - Extensible error handling

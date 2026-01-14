@@ -18,7 +18,7 @@ from typing import (
 from pydantic import BaseModel, ConfigDict, ValidationError, create_model
 
 from serapeum.core.models import StructuredLLMMode
-from serapeum.core.output_parsers.models import PydanticOutputParser
+from serapeum.core.output_parsers import PydanticParser
 
 if TYPE_CHECKING:
     from serapeum.core.base.llms.models import ChatResponse
@@ -69,7 +69,7 @@ def get_program_for_llm(
             )
 
             return TextCompletionLLM(
-                output_parser=PydanticOutputParser(output_cls=output_cls),
+                output_parser=PydanticParser(output_cls=output_cls),
                 llm=llm,
                 prompt=prompt,
                 **kwargs,
@@ -88,7 +88,7 @@ def get_program_for_llm(
         from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 
         return TextCompletionLLM(
-            output_parser=PydanticOutputParser(output_cls=output_cls),
+            output_parser=PydanticParser(output_cls=output_cls),
             llm=llm,
             prompt=prompt,
             **kwargs,

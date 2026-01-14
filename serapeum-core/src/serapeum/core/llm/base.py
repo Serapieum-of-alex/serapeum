@@ -34,7 +34,7 @@ from serapeum.core.base.llms.models import (
 )
 from serapeum.core.models import Model, StructuredLLMMode
 from serapeum.core.output_parsers.models import (
-    BaseOutputParser,
+    BaseParser,
     TokenAsyncGen,
     TokenGen,
 )
@@ -442,7 +442,7 @@ class LLM(BaseLLM, ABC):
         system_prompt (Optional[str]): Optional system-level preamble applied to every request.
         messages_to_prompt (MessagesToPromptCallable): Callable converting chat messages into prompts.
         completion_to_prompt (CompletionToPromptCallable): Callable adapting prepared prompts for completions.
-        output_parser (Optional[BaseOutputParser]): Parser used to coerce raw model text into structured values.
+        output_parser (Optional[BaseParser]): Parser used to coerce raw model text into structured values.
         pydantic_program_mode (StructuredLLMMode): Strategy for executing pydantic-based structured outputs.
         query_wrapper_prompt (Optional[BasePromptTemplate]): Legacy prompt wrapper retained for backwards compatibility.
 
@@ -509,7 +509,7 @@ class LLM(BaseLLM, ABC):
         default=None,
         exclude=True,
     )
-    output_parser: Optional[BaseOutputParser] = Field(
+    output_parser: Optional[BaseParser] = Field(
         description="Output parser to parse, validate, and correct errors programmatically.",
         default=None,
         exclude=True,
@@ -727,8 +727,8 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
-                >>> from serapeum.core.output_parsers.models import BaseOutputParser
-                >>> class UpperParser(BaseOutputParser):
+                >>> from serapeum.core.output_parsers import BaseParser
+                >>> class UpperParser(BaseParser):
                 ...     def parse(self, output: str) -> str:
                 ...         return output.upper()
                 ...     def format(self, query: str) -> str:
@@ -829,8 +829,8 @@ class LLM(BaseLLM, ABC):
                 ...     CompletionResponse,
                 ...     Metadata,
                 ... )
-                >>> from serapeum.core.output_parsers.models import BaseOutputParser
-                >>> class UpperParser(BaseOutputParser):
+                >>> from serapeum.core.output_parsers import BaseParser
+                >>> class UpperParser(BaseParser):
                 ...     def parse(self, output: str) -> str:
                 ...         return output.upper()
                 ...     def format_messages(self, messages):
@@ -917,9 +917,9 @@ class LLM(BaseLLM, ABC):
                 ```
             - Coerce text via a custom parser before returning
                 ```python
-                >>> from serapeum.core.output_parsers.models import BaseOutputParser
+                >>> from serapeum.core.output_parsers import BaseParser
                 >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
-                >>> class TrimParser(BaseOutputParser):
+                >>> class TrimParser(BaseParser):
                 ...     def parse(self, output: str) -> str:
                 ...         return output.strip()
                 ...

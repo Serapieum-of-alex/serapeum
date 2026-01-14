@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from serapeum.core.base.llms.models import Message, MessageRole
 from serapeum.core.configs.configs import Configs
-from serapeum.core.output_parsers import PydanticOutputParser
+from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.prompts import ChatPromptTemplate
 from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
@@ -22,7 +22,7 @@ class SecondaryModel(BaseModel):
     flag: bool
 
 
-class RecordingPydanticParser(PydanticOutputParser):
+class RecordingPydanticParser(PydanticParser):
     def __init__(
         self,
         *,

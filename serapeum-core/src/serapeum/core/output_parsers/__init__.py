@@ -1,8 +1,8 @@
 """Utilities and base classes for parsing LLM outputs."""
 
-from serapeum.core.output_parsers.models import BaseOutputParser, PydanticOutputParser
+from serapeum.core.output_parsers.models import BaseParser, PydanticParser
 
 __all__ = [
-    "BaseOutputParser",
-    "PydanticOutputParser",
+    "BaseParser",
+    "PydanticParser",
 ]

@@ -13,7 +13,7 @@ from serapeum.core.base.llms.models import (
     MessageRole,
     Metadata,
 )
-from serapeum.core.output_parsers.models import PydanticOutputParser
+from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.prompts import ChatPromptTemplate
 from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
@@ -58,7 +58,7 @@ class TestTextCompletionLLM:
     @pytest.mark.e2e
     def test_text_completion_llm_ollama(self) -> None:
         """Test LLM program."""
-        output_parser = PydanticOutputParser(output_cls=ModelTest)
+        output_parser = PydanticParser(output_cls=ModelTest)
         text_llm = TextCompletionLLM(
             output_parser=output_parser,
             prompt="This is a test prompt with a {test_input}.",
@@ -73,7 +73,7 @@ class TestTextCompletionLLM:
         """Test LLM program."""
         messages = [Message(role=MessageRole.USER, content="Test")]
         prompt = ChatPromptTemplate(message_templates=messages)
-        output_parser = PydanticOutputParser(output_cls=ModelTest)
+        output_parser = PydanticParser(output_cls=ModelTest)
         text_llm = TextCompletionLLM(
             output_parser=output_parser,
             prompt=prompt,
@@ -88,7 +88,7 @@ class TestTextCompletionLLM:
         """Test LLM program."""
         messages = [Message(role=MessageRole.USER, content="Test")]
         prompt = ChatPromptTemplate(message_templates=messages)
-        output_parser = PydanticOutputParser(output_cls=ModelTest)
+        output_parser = PydanticParser(output_cls=ModelTest)
         text_llm = TextCompletionLLM(
             output_parser=output_parser,
             prompt=prompt,

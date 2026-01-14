@@ -19,11 +19,11 @@ from serapeum.core.llm.base import (
     default_completion_to_prompt,
     stream_response_to_tokens,
 )
-from serapeum.core.output_parsers.models import BaseOutputParser
-from serapeum.core.prompts import ChatPromptTemplate, PromptTemplate
+from serapeum.core.output_parsers import BaseParser
+from serapeum.core.prompts import PromptTemplate
 
 
-class UpperParser(BaseOutputParser):
+class UpperParser(BaseParser):
     """Simple parser that uppercases text and messages.
 
     - parse: returns uppercased string
@@ -44,7 +44,7 @@ class UpperParser(BaseOutputParser):
         return messages
 
 
-class FailingParser(BaseOutputParser):
+class FailingParser(BaseParser):
     """Parser that always raises during parse to test error propagation."""
 
     def parse(self, output: str) -> str:

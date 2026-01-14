@@ -9,7 +9,7 @@ from serapeum.core.base.llms.models import (
     Metadata,
 )
 from serapeum.core.configs.configs import Configs
-from serapeum.core.output_parsers import BaseOutputParser, PydanticOutputParser
+from serapeum.core.output_parsers import BaseParser, PydanticParser
 from serapeum.core.prompts import ChatPromptTemplate
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
@@ -23,7 +23,7 @@ class SecondaryModel(BaseModel):
     flag: bool
 
 
-class RecordingPydanticParser(PydanticOutputParser):
+class RecordingPydanticParser(PydanticParser):
     def __init__(
         self,
         *,
@@ -45,7 +45,7 @@ class RecordingPydanticParser(PydanticOutputParser):
         return super().parse(output)
 
 
-class DummyNonPydanticParser(BaseOutputParser):
+class DummyNonPydanticParser(BaseParser):
     def parse(self, output: str):
         return output
 
@@ -104,7 +104,7 @@ def restore_configs_llm():
 class TestTextCompletionLLMInit:
     def test_init_with_provided_parser_and_prompt_template(self) -> None:
         """
-        Inputs: PromptTemplate and ready PydanticOutputParser
+        Inputs: PromptTemplate and ready PydanticParser
         Expected: instance keeps parser/prompt/llm
         Checks: assignments done without mutation.
         """
@@ -137,7 +137,7 @@ class TestTextCompletionLLMInit:
             llm=llm,
         )
 
-        assert isinstance(text_llm._output_parser, PydanticOutputParser)  # type: ignore[attr-defined]
+        assert isinstance(text_llm._output_parser, PydanticParser)  # type: ignore[attr-defined]
         assert text_llm.output_cls is DummyModel
         assert isinstance(text_llm.prompt, PromptTemplate)
 
@@ -242,7 +242,7 @@ class TestValidateOutputParserCls:
         Expected: returns provided parser and its model
         Checks: default model resolution.
         """
-        parser = PydanticOutputParser(output_cls=DummyModel)
+        parser = PydanticParser(output_cls=DummyModel)
 
         validated_parser, validated_cls = TextCompletionLLM._validate_output_parser_cls(
             parser,
@@ -265,7 +265,7 @@ class TestValidateOutputParserCls:
     def test_validate_output_parser_creates_parser_when_missing(self) -> None:
         """
         Inputs: output class without parser
-        Expected: new PydanticOutputParser returned
+        Expected: new PydanticParser returned
         Checks: factory instantiation.
         """
         parser, output_cls = TextCompletionLLM._validate_output_parser_cls(
@@ -273,7 +273,7 @@ class TestValidateOutputParserCls:
             DummyModel,
         )
 
-        assert isinstance(parser, PydanticOutputParser)
+        assert isinstance(parser, PydanticParser)
         assert output_cls is DummyModel
 
     def test_validate_output_parser_with_both_arguments_preserves_instances(
@@ -284,7 +284,7 @@ class TestValidateOutputParserCls:
         Expected: returns unchanged inputs
         Checks: bypass branch when values supplied.
         """
-        parser = PydanticOutputParser(output_cls=DummyModel)
+        parser = PydanticParser(output_cls=DummyModel)
 
         validated_parser, validated_cls = TextCompletionLLM._validate_output_parser_cls(
             parser,
@@ -303,7 +303,7 @@ class TestOutputClsProperty:
         Checks: property passthrough.
         """
         text_llm = TextCompletionLLM(
-            output_parser=PydanticOutputParser(output_cls=DummyModel),
+            output_parser=PydanticParser(output_cls=DummyModel),
             prompt="Value: {value}",
             llm=DummyLLM(),
         )
@@ -316,7 +316,7 @@ class TestPromptProperty:
         """Inputs: initial PromptTemplate; Expected: getter returns same instance; Checks: property pass-through."""
         prompt = PromptTemplate("Value: {value}")
         text_llm = TextCompletionLLM(
-            output_parser=PydanticOutputParser(output_cls=DummyModel),
+            output_parser=PydanticParser(output_cls=DummyModel),
             prompt=prompt,
             llm=DummyLLM(),
         )
@@ -326,7 +326,7 @@ class TestPromptProperty:
     def test_prompt_setter_updates_prompt(self) -> None:
         """Inputs: replacement PromptTemplate; Expected: setter swaps prompt reference; Checks: mutability of prompt property."""
         text_llm = TextCompletionLLM(
-            output_parser=PydanticOutputParser(output_cls=DummyModel),
+            output_parser=PydanticParser(output_cls=DummyModel),
             prompt="Start {value}",
             llm=DummyLLM(),
         )

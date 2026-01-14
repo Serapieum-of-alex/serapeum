@@ -9,7 +9,7 @@ from typing_extensions import Annotated
 
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.models import ChunkType, Message, MessageList, TextChunk
-from serapeum.core.output_parsers import BaseOutputParser
+from serapeum.core.output_parsers import BaseParser
 from serapeum.core.prompts.models import PromptType
 from serapeum.core.prompts.utils import format_string, get_template_vars
 
@@ -32,7 +32,7 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
     metadata: Dict[str, Any]
     template_vars: List[str]
     kwargs: Dict[str, str]
-    output_parser: Optional[BaseOutputParser]
+    output_parser: Optional[BaseParser]
     template_var_mappings: Optional[Dict[str, Any]] = Field(
         default_factory=dict,  # type: ignore
         description="Template variable mappings (Optional).",
@@ -117,7 +117,7 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         self,
         template: str,
         prompt_type: str = PromptType.CUSTOM,
-        output_parser: Optional[BaseOutputParser] = None,
+        output_parser: Optional[BaseParser] = None,
         metadata: Optional[Dict[str, Any]] = None,
         template_var_mappings: Optional[Dict[str, Any]] = None,
         function_mappings: Optional[Dict[str, Callable]] = None,
@@ -207,7 +207,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         self,
         message_templates: Sequence[Message],
         prompt_type: str = PromptType.CUSTOM,
-        output_parser: Optional[BaseOutputParser] = None,
+        output_parser: Optional[BaseParser] = None,
         metadata: Optional[Dict[str, Any]] = None,
         template_var_mappings: Optional[Dict[str, Any]] = None,
         function_mappings: Optional[Dict[str, Callable]] = None,

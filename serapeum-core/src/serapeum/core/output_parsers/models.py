@@ -39,7 +39,7 @@ Output a valid JSON object but do not repeat the schema.
 """
 
 
-class BaseOutputParser(ABC):
+class BaseParser(ABC):
     """Abstract interface for parsing and formatting LLM outputs.
 
     Subclasses must implement :meth:`parse` to turn raw text into a target
@@ -107,7 +107,7 @@ class BaseOutputParser(ABC):
         return handler.resolve_ref_schema(json_schema)
 
 
-class PydanticOutputParser(BaseOutputParser, Generic[Model]):
+class PydanticParser(BaseParser, Generic[Model]):
     """Parse JSON text into a Pydantic model and provide schema formatting.
 
     This parser injects a compact JSON schema into the prompt (optional) and

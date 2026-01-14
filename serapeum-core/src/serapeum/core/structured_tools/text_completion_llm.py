@@ -4,8 +4,7 @@ from pydantic import BaseModel
 
 from serapeum.core.configs.configs import Configs
 from serapeum.core.llm.base import LLM
-from serapeum.core.output_parsers import BaseOutputParser
-from serapeum.core.output_parsers.models import PydanticOutputParser
+from serapeum.core.output_parsers import BaseParser, PydanticParser
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.structured_tools.models import BasePydanticLLM
 
@@ -17,7 +16,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
     validated Pydantic model that matches the declared schema.
 
     Args:
-        output_parser (Optional[BaseOutputParser]): Parser used to coerce raw text into the target
+        output_parser (Optional[BaseParser]): Parser used to coerce raw text into the target
             model. Required when `output_cls` is not supplied.
         prompt (Union[BasePromptTemplate, str]): Prompt template or raw template string that drives
             the LLM request.
@@ -40,7 +39,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             ```python
             >>> from types import SimpleNamespace
             >>> from pydantic import BaseModel
-            >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+            >>> from serapeum.core.output_parsers import PydanticParser
             >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
             >>> from serapeum.llms.ollama import Ollama
             >>> LLM = Ollama(
@@ -51,7 +50,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             ...     message: str
             >>>
             >>> tool = TextCompletionLLM(
-            ...     output_parser=PydanticOutputParser(output_cls=Greeting),
+            ...     output_parser=PydanticParser(output_cls=Greeting),
             ...     prompt="message",
             ...     llm=LLM,
             ... )
@@ -64,12 +63,12 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             >>> from types import SimpleNamespace
             >>> from pydantic import BaseModel
             >>> from serapeum.core.prompts.base import PromptTemplate
-            >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+            >>> from serapeum.core.output_parsers import PydanticParser
             >>> class Greeting(BaseModel):
             ...     message: str
             >>> prompt = PromptTemplate("Say hello to {name}.")
             >>> tool = TextCompletionLLM(
-            ...     output_parser=PydanticOutputParser(output_cls=Greeting),
+            ...     output_parser=PydanticParser(output_cls=Greeting),
             ...     prompt=prompt,
             ...     llm=LLM,
             ... )
@@ -87,7 +86,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         self,
         *,
         prompt: Union[BasePromptTemplate, str],
-        output_parser: Optional[BaseOutputParser] = None,
+        output_parser: Optional[BaseParser] = None,
         output_cls: Optional[Type[BaseModel]] = None,
         llm: Optional[LLM] = None,
         verbose: bool = False,
@@ -95,7 +94,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         """Initialize the structured completion pipeline.
 
         Args:
-            output_parser (Optional[BaseOutputParser]): Parser responsible for translating the raw
+            output_parser (Optional[BaseParser]): Parser responsible for translating the raw
                 LLM response into a structured object.
             prompt (Union[BasePromptTemplate, str]): Prompt template or string used to query the
                 LLM.
@@ -259,18 +258,18 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
 
     @staticmethod
     def _validate_output_parser_cls(
-        output_parser: BaseOutputParser, output_cls: Type[BaseModel]
-    ) -> Tuple[BaseOutputParser, Type[BaseModel]]:
+        output_parser: BaseParser, output_cls: Type[BaseModel]
+    ) -> Tuple[BaseParser, Type[BaseModel]]:
         """Validate and normalize parser/schema configuration.
 
         Args:
-            output_parser (Optional[BaseOutputParser]):
+            output_parser (Optional[BaseParser]):
                 Parser responsible for producing structured responses.
             output_cls (Optional[Type[BaseModel]]):
                 Target Pydantic model that defines the schema.
 
         Returns:
-            Tuple[BaseOutputParser, Type[BaseModel]]:
+            Tuple[BaseParser, Type[BaseModel]]:
                 A parser/schema pair ready for execution.
 
         Raises:
@@ -281,11 +280,11 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             - Derive the output class from a supplied parser
                 ```python
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.core.output_parsers import PydanticParser
                 >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
                 >>> class Record(BaseModel):
                 ...     value: int
-                >>> parser = PydanticOutputParser(output_cls=Record)
+                >>> parser = PydanticParser(output_cls=Record)
                 >>> resolved_parser, resolved_cls = TextCompletionLLM._validate_output_parser_cls(
                 ...     parser,
                 ...     None,  # type: ignore[arg-type]
@@ -299,7 +298,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             - Auto-create a parser when only the schema is provided
                 ```python
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.core.output_parsers import PydanticParser
                 >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
                 >>> class Item(BaseModel):
                 ...     name: str
@@ -307,7 +306,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ...     None,  # type: ignore[arg-type]
                 ...     Item,
                 ... )
-                >>> isinstance(parser, PydanticOutputParser)
+                >>> isinstance(parser, PydanticParser)
                 True
                 >>> schema is Item
                 True
@@ -315,9 +314,9 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ```
             - Reject unsupported parser types without a schema
                 ```python
-                >>> from serapeum.core.output_parsers import BaseOutputParser
+                >>> from serapeum.core.output_parsers import BaseParser
                 >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
-                >>> class PlainParser(BaseOutputParser):
+                >>> class PlainParser(BaseParser):
                 ...     def parse(self, output: str):
                 ...         return output
                 >>> TextCompletionLLM._validate_output_parser_cls(
@@ -335,12 +334,12 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         """
         # decide default output class if not set
         if output_cls is None:
-            if not isinstance(output_parser, PydanticOutputParser):
-                raise ValueError("Output parser must be PydanticOutputParser.")
+            if not isinstance(output_parser, PydanticParser):
+                raise ValueError("Output parser must be PydanticParser.")
             output_cls = output_parser.output_cls
         else:
             if output_parser is None:
-                output_parser = PydanticOutputParser(output_cls=output_cls)
+                output_parser = PydanticParser(output_cls=output_cls)
 
         return output_parser, output_cls
 
@@ -356,7 +355,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ```python
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.core.output_parsers import PydanticParser
                 >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
                 >>> from serapeum.llms.ollama import Ollama
                 >>> LLM = Ollama(
@@ -365,7 +364,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> )
                 >>> class Item(BaseModel):
                 ...     value: int
-                >>> parser = PydanticOutputParser(output_cls=Item)
+                >>> parser = PydanticParser(output_cls=Item)
                 >>> text_llm = TextCompletionLLM(output_parser=parser, prompt="?", llm=LLM)
                 >>> text_llm.output_cls is Item
                 True
@@ -393,7 +392,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ```python
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.core.output_parsers import PydanticParser
                 >>> from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
                 >>> from serapeum.llms.ollama import Ollama
                 >>> LLM = Ollama(
@@ -486,7 +485,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ```python
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.core.output_parsers import PydanticParser
                 >>> from serapeum.llms.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
@@ -495,7 +494,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> class Record(BaseModel):
                 ...     value: int
                 >>> text_llm = TextCompletionLLM(
-                ...     output_parser=PydanticOutputParser(output_cls=Record),
+                ...     output_parser=PydanticParser(output_cls=Record),
                 ...     prompt="Return an integer.",
                 ...     llm=LLM,
                 ... )
@@ -507,10 +506,10 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ```python
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.output_parsers import BaseOutputParser
+                >>> from serapeum.core.output_parsers import BaseParser
                 >>> class Record(BaseModel):
                 ...     value: int
-                >>> class EchoParser(BaseOutputParser):
+                >>> class EchoParser(BaseParser):
                 ...     def parse(self, output: str):
                 ...         return output
                 >>> text_llm = TextCompletionLLM(
@@ -577,7 +576,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> import asyncio
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.output_parsers.models import PydanticOutputParser
+                >>> from serapeum.core.output_parsers import PydanticParser
                 >>> from serapeum.llms.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
@@ -586,7 +585,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> class Record(BaseModel):
                 ...     value: int
                 >>> text_llm = TextCompletionLLM(
-                ...     output_parser=PydanticOutputParser(output_cls=Record),
+                ...     output_parser=PydanticParser(output_cls=Record),
                 ...     prompt="Return a number.",
                 ...     llm=LLM,
                 ... )
@@ -599,10 +598,10 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> import asyncio
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.output_parsers import BaseOutputParser
+                >>> from serapeum.core.output_parsers import BaseParser
                 >>> class Record(BaseModel):
                 ...     value: int
-                >>> class EchoParser(BaseOutputParser):
+                >>> class EchoParser(BaseParser):
                 ...     def parse(self, output: str):
                 ...         return output
                 >>>

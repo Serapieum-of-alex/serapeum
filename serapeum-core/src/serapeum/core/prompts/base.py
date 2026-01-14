@@ -92,10 +92,6 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
         return self._map_template_vars(new_kwargs)
 
     @abstractmethod
-    def partial_format(self, **kwargs: Any) -> "BasePromptTemplate":
-        """Return a shallow copy with additional default formatting values."""
-
-    @abstractmethod
     def format(self, llm: Optional[BaseLLM] = None, **kwargs: Any) -> str:
         """Render the template to a single string."""
 
@@ -149,22 +145,6 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
             template_var_mappings=template_var_mappings,
             function_mappings=function_mappings,
         )
-
-    def partial_format(self, **kwargs: Any) -> "PromptTemplate":
-        """Partially format the prompt."""
-        # NOTE: this is a hack to get around deepcopy failing on output parser
-        output_parser = self.output_parser
-        self.output_parser = None
-
-        # get function and fixed kwargs, and add that to a copy
-        # of the current prompt object
-        prompt = deepcopy(self)
-        prompt.kwargs.update(kwargs)
-
-        # NOTE: put the output parser back
-        prompt.output_parser = output_parser
-        self.output_parser = output_parser
-        return prompt
 
     def format(
         self,
@@ -255,11 +235,6 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
                 for role, content in message_templates
             ]
         return cls(message_templates=message_templates, **kwargs)  # type: ignore[arg-type]
-
-    def partial_format(self, **kwargs: Any) -> "ChatPromptTemplate":
-        prompt = deepcopy(self)
-        prompt.kwargs.update(kwargs)
-        return prompt
 
     def format(
         self,

@@ -12,19 +12,19 @@ classDiagram
     }
 
     class TextCompletionLLM~BaseModel~ {
+        +__init__(output_parser, prompt, output_cls, llm, verbose)
+        +prompt: BasePromptTemplate
+        +output_cls: Type[BaseModel]
+        +__call__(llm_kwargs, **kwargs) BaseModel
+        +acall(llm_kwargs, **kwargs) BaseModel
         -_output_parser: BaseOutputParser
         -_output_cls: Type[BaseModel]
         -_llm: LLM
         -_prompt: BasePromptTemplate
         -_verbose: bool
-        +__init__(output_parser, prompt, output_cls, llm, verbose)
-        +validate_prompt(prompt) BasePromptTemplate
-        +validate_llm(llm) LLM
-        +validate_output_parser_cls(parser, cls) Tuple
-        +output_cls: Type[BaseModel]
-        +prompt: BasePromptTemplate
-        +__call__(llm_kwargs, **kwargs) BaseModel
-        +acall(llm_kwargs, **kwargs) BaseModel
+        +_validate_prompt(prompt) BasePromptTemplate
+        +_validate_llm(llm) LLM
+        +_validate_output_parser_cls(parser, cls) Tuple
     }
 
     class BaseOutputParser {

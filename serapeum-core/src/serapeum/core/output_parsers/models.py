@@ -32,10 +32,12 @@ RESPONSE_TEXT_TYPE = Union[BaseModel, str, TokenGen, TokenAsyncGen]
 
 
 PYDANTIC_FORMAT_TMPL = """
-Here's a JSON schema to follow:
+Here's a JSON schema to follow strictly:
 {schema}
 
-Output a valid JSON object but do not repeat the schema.
+IMPORTANT: Return ONLY a valid JSON object with the actual data, NOT the schema itself.
+Do not include "properties", "required", "title", or "type" fields in your response.
+Return the data as a JSON object that matches the schema structure.
 """
 
 

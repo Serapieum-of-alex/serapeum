@@ -1,7 +1,6 @@
 """Base classes and implementations for prompt templates used by LLMs."""
 
 from abc import ABC, abstractmethod
-from copy import deepcopy
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, WithJsonSchema
@@ -92,17 +91,17 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
         return self._map_template_vars(new_kwargs)
 
     @abstractmethod
-    def format(self, llm: Optional[BaseLLM] = None, **kwargs: Any) -> str:
+    def format(self, **kwargs: Any) -> str:
         """Render the template to a single string."""
 
     @abstractmethod
     def format_messages(
-        self, llm: Optional[BaseLLM] = None, **kwargs: Any
+        self, **kwargs: Any
     ) -> List[Message]:
         """Render the template into a list of chat messages."""
 
     @abstractmethod
-    def get_template(self, llm: Optional[BaseLLM] = None) -> str:
+    def get_template(self) -> str:
         """Return the raw template string used by this prompt."""
 
 
@@ -148,7 +147,6 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
     def format(
         self,
-        llm: Optional[BaseLLM] = None,
         completion_to_prompt: Optional[Callable[[str], str]] = None,
         **kwargs: Any,
     ) -> str:
@@ -170,13 +168,13 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         return prompt
 
     def format_messages(
-        self, llm: Optional[BaseLLM] = None, **kwargs: Any
+        self, **kwargs: Any
     ) -> List[Message]:
         """Format the prompt into a list of chat messages."""
         prompt = self.format(**kwargs)
         return list(MessageList.from_str(prompt))
 
-    def get_template(self, llm: Optional[BaseLLM] = None) -> str:
+    def get_template(self) -> str:
         return self.template
 
 
@@ -238,11 +236,9 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
     def format(
         self,
-        llm: Optional[BaseLLM] = None,
         messages_to_prompt: Optional[Callable[[Sequence[Message]], str]] = None,
         **kwargs: Any,
     ) -> str:
-        del llm  # unused
         messages = self.format_messages(**kwargs)
 
         if messages_to_prompt is not None:
@@ -251,9 +247,8 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         return MessageList(messages=messages).to_prompt()
 
     def format_messages(
-        self, llm: Optional[BaseLLM] = None, **kwargs: Any
+        self, **kwargs: Any
     ) -> List[Message]:
-        del llm  # unused
         """Format the prompt into a list of chat messages."""
         all_kwargs = {
             **self.kwargs,
@@ -293,5 +288,5 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
         return messages
 
-    def get_template(self, llm: Optional[BaseLLM] = None) -> str:
+    def get_template(self) -> str:
         return MessageList(messages=self.message_templates).to_prompt()

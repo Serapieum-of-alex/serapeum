@@ -531,13 +531,13 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         """
         llm_kwargs = llm_kwargs or {}
         if self._llm.metadata.is_chat_model:
-            messages = self._prompt.format_messages(llm=self._llm, **kwargs)
+            messages = self._prompt.format_messages(**kwargs)
             messages = self._llm._extend_messages(messages)
             chat_response = self._llm.chat(messages, **llm_kwargs)
 
             raw_output = chat_response.message.content or ""
         else:
-            formatted_prompt = self._prompt.format(llm=self._llm, **kwargs)
+            formatted_prompt = self._prompt.format(**kwargs)
 
             response = self._llm.complete(formatted_prompt, **llm_kwargs)
 
@@ -624,13 +624,13 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         """
         llm_kwargs = llm_kwargs or {}
         if self._llm.metadata.is_chat_model:
-            messages = self._prompt.format_messages(llm=self._llm, **kwargs)
+            messages = self._prompt.format_messages(**kwargs)
             messages = self._llm._extend_messages(messages)
             chat_response = await self._llm.achat(messages, **llm_kwargs)
 
             raw_output = chat_response.message.content or ""
         else:
-            formatted_prompt = self._prompt.format(llm=self._llm, **kwargs)
+            formatted_prompt = self._prompt.format(**kwargs)
 
             response = await self._llm.acomplete(formatted_prompt, **llm_kwargs)
 

@@ -871,7 +871,7 @@ class LLM(BaseLLM, ABC):
             _extend_messages: Adds system prompts to the generated message list.
             _get_prompt: Equivalent logic for completion-style prompts.
         """
-        messages = prompt.format_messages(llm=self, **prompt_args)
+        messages = prompt.format_messages(**prompt_args)
         if self.output_parser is not None:
             messages = self.output_parser.format_messages(messages)
         return self._extend_messages(messages)

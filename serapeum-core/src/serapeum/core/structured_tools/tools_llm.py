@@ -366,7 +366,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         llm_kwargs = llm_kwargs or {}
         tool = CallableTool.from_model(self._output_cls)
         # convert the prompt into messages
-        messages = self.prompt.format_messages(llm=self._llm, **kwargs)
+        messages = self.prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
         agent_response: AgentChatResponse = self._llm.predict_and_call(
@@ -431,7 +431,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
         agent_response = await self._llm.apredict_and_call(
             [tool],
-            chat_history=self._prompt.format_messages(llm=self._llm, **kwargs),
+            chat_history=self._prompt.format_messages(**kwargs),
             verbose=self._verbose,
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
             **llm_kwargs,
@@ -503,7 +503,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         llm_kwargs = llm_kwargs or {}
         tool = CallableTool.from_model(self._output_cls)
 
-        messages = self._prompt.format_messages(llm=self._llm, **kwargs)
+        messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
         chat_response_gen = self._llm.stream_chat_with_tools(
@@ -598,7 +598,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
         tool = CallableTool.from_model(self._output_cls)
 
-        messages = self._prompt.format_messages(llm=self._llm, **kwargs)
+        messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
         chat_response_gen = await self._llm.astream_chat_with_tools(

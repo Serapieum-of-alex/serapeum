@@ -99,13 +99,135 @@ def parse_code_markdown(text: str, only_last: bool) -> List[str]:
     return code
 
 
-def extract_json_str(text: str) -> str:
-    """Extract the first JSON object substring from text."""
-    match = re.search(r"\{.*\}", text.strip(), re.MULTILINE | re.IGNORECASE | re.DOTALL)
-    if not match:
-        raise ValueError(f"Could not extract json string from output: {text}")
+class JsonParser:
+    """Utility class for parsing and fixing malformed JSON from LLM outputs.
 
-    return match.group()
+    This class handles common JSON formatting issues that arise from LLM responses,
+    such as literal newlines in strings, unescaped control characters, and
+    improperly escaped quotes.
+    """
+    def __init__(self, text: str) -> None:
+        text = text.strip()
+        self.text = text
+
+    @staticmethod
+    def parse(json_str: str) -> Any:
+        """Parse a JSON string with automatic error recovery.
+
+        Args:
+            json_str: Raw JSON string that may contain formatting issues.
+
+        Returns:
+            Parsed JSON object (dict, list, etc.).
+
+        Raises:
+            ValueError: If the JSON cannot be parsed even after attempting fixes.
+
+        Examples:
+            >>> JsonParser.parse('{"name": "test"}')
+            {'name': 'test'}
+
+            >>> # Handles literal newlines in strings
+            >>> JsonParser.parse('{"text": "line1\\nline2"}')
+            {'text': 'line1\\nline2'}
+        """
+        try:
+            return json.loads(json_str)
+        except json.JSONDecodeError as e:
+            # Try to fix common issues and retry
+            try:
+                fixed_json = JsonParser.fix_json_string(json_str)
+                return json.loads(fixed_json)
+            except json.JSONDecodeError as retry_error:
+                raise ValueError(
+                    f"Failed to parse JSON from LLM output. "
+                    f"Original error: {e}. Retry error: {retry_error}. "
+                    f"JSON string (first 500 chars): {json_str[:500]}"
+                )
+
+    def extract_str(self) -> str:
+        """Extract the first JSON object substring from text."""
+
+        json_str = _marshal_llm_to_json(self.text)
+
+        # Validate it's actually valid JSON
+        try:
+            json.loads(json_str)
+            return json_str
+        except json.JSONDecodeError:
+            # Fall back to regex with non-greedy matching
+            match = re.search(r"\{.*?\}", self.text, re.MULTILINE | re.IGNORECASE | re.DOTALL)
+            if not match:
+                raise ValueError(f"Could not extract json string from output: {self.text}")
+
+            return match.group()
+
+    @staticmethod
+    def fix_json_string(json_str: str) -> str:
+        """Fix common JSON formatting issues from LLM outputs.
+
+        Handles:
+        - Single-escaped quotes (\\') that should be unescaped
+        - Literal newlines inside string values
+        - Literal carriage returns and tabs
+        - Other control characters (converted to unicode escapes)
+
+        Args:
+            json_str: Raw JSON string with potential formatting issues.
+
+        Returns:
+            Fixed JSON string that should be valid JSON.
+
+        Examples:
+            >>> JsonParser.fix_json_string('{"key": "value"}')
+            '{"key": "value"}'
+
+            >>> # Fixes literal newlines
+            >>> result = JsonParser.fix_json_string('{"text": "line1\\nline2"}')
+            >>> '\\\\n' in result
+            True
+        """
+        # Replace single-escaped quotes that should be unescaped
+        json_str = json_str.replace(r"\'", "'")
+
+        # Fix literal newlines/control chars inside JSON strings
+        result = []
+        in_string = False
+        escape_next = False
+
+        for char in json_str:
+            if escape_next:
+                result.append(char)
+                escape_next = False
+                continue
+
+            if char == '\\':
+                result.append(char)
+                escape_next = True
+                continue
+
+            if char == '"':
+                in_string = not in_string
+                result.append(char)
+                continue
+
+            # If we're inside a string, escape control characters
+            if in_string:
+                if char == '\n':
+                    result.append('\\n')
+                elif char == '\r':
+                    result.append('\\r')
+                elif char == '\t':
+                    result.append('\\t')
+                elif ord(char) < 32:
+                    # Escape other control characters as unicode
+                    result.append(f'\\u{ord(char):04x}')
+                else:
+                    result.append(char)
+            else:
+                result.append(char)
+
+        return ''.join(result)
 
 
 class OutputParserException(Exception):

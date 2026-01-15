@@ -5,7 +5,6 @@ typed Python objects (e.g., Pydantic models) and utilities for formatting
 prompts with schema hints.
 """
 
-import json
 from abc import ABC, abstractmethod
 from typing import (
     Any,
@@ -24,7 +23,7 @@ from pydantic_core import CoreSchema, core_schema
 
 from serapeum.core.base.llms.models import Message, MessageRole, TextChunk
 from serapeum.core.models import Model
-from serapeum.core.output_parsers.utils import extract_json_str
+from serapeum.core.output_parsers.utils import JsonParser
 
 TokenGen = Generator[str, None, None]
 TokenAsyncGen = AsyncGenerator[str, None]
@@ -151,8 +150,21 @@ class PydanticParser(BaseParser, Generic[Model]):
             return output_str
 
     def parse(self, text: str) -> Any:
-        json_str = extract_json_str(text)
-        return self._output_cls.model_validate_json(json_str)
+        """Parse LLM output text into a validated Pydantic model.
+
+        Args:
+            text: Raw text output from the LLM.
+
+        Returns:
+            Instance of the configured Pydantic model.
+
+        Raises:
+            ValueError: If JSON extraction or parsing fails.
+        """
+        json_parser = JsonParser(text)
+        json_str = json_parser.extract_str()
+        parsed_data = json_parser.parse(json_str)
+        return self._output_cls.model_validate(parsed_data)
 
     def format(self, query: str) -> str:
         """Append an escaped JSON schema hint to the prompt string."""

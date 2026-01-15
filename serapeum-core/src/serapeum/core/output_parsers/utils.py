@@ -7,7 +7,18 @@ outputs and a small exception class used by output parsers.
 import contextlib
 import json
 import re
-from typing import Any, List
+from typing import Any, List, Optional
+
+
+PYDANTIC_FORMAT_TMPL = """
+Here's a JSON schema to follow strictly:
+{schema}
+
+IMPORTANT: Return ONLY a valid JSON object with the actual data, NOT the schema itself.
+Do not include "properties", "required", "title", or "type" fields in your response.
+Return the data as a JSON object that matches the schema structure.
+"""
+
 
 with contextlib.suppress(ImportError):
     import yaml
@@ -229,6 +240,105 @@ class JsonParser:
 
         return ''.join(result)
 
+
+class SchemaFormatter:
+    """Utility class for formatting JSON schemas into LLM-friendly representations.
+
+    This class converts verbose Pydantic JSON schemas into simplified, readable
+    formats that are easier for LLMs to understand and follow.
+    """
+
+    @staticmethod
+    def simplify(schema_dict: dict, excluded_keys: Optional[List[str]] = None) -> str:
+        """Create a simplified, example-based schema representation.
+
+        Converts a full JSON Schema dictionary into a cleaner format showing
+        field names, types, and requirements without the verbose schema structure.
+
+        Args:
+            schema_dict: Full JSON Schema dictionary from Pydantic's model_json_schema().
+            excluded_keys: List of schema keys to exclude from the output.
+
+        Returns:
+            Simplified schema string in a human-readable format.
+
+        Examples:
+            >>> from pydantic import BaseModel
+            >>> class Person(BaseModel):
+            ...     name: str
+            ...     age: int
+            >>> schema = Person.model_json_schema()
+            >>> print(SchemaFormatter.simplify(schema))
+            Expected JSON structure:
+            {
+              "name": <string> [REQUIRED],
+              "age": <integer> [REQUIRED]
+            }
+        """
+        # Create a copy to avoid mutating the original
+        schema_dict = dict(schema_dict)
+
+        # Remove excluded keys
+        for key in excluded_keys or []:
+            schema_dict.pop(key, None)
+
+        properties = schema_dict.get("properties", {})
+        required = schema_dict.get("required", [])
+
+        # Build a cleaner format showing field names, types, and requirements
+        lines = ["Expected JSON structure:", "{"]
+
+        for i, (field_name, field_info) in enumerate(properties.items()):
+            field_type = field_info.get("type", "any")
+            field_desc = field_info.get("description", "")
+            is_required = field_name in required
+
+            # Format: "field_name": <type> [REQUIRED] - description
+            req_marker = " [REQUIRED]" if is_required else " [OPTIONAL]"
+            desc_marker = f" - {field_desc}" if field_desc else ""
+
+            comma = "," if i < len(properties) - 1 else ""
+            lines.append(f'  "{field_name}": <{field_type}>{req_marker}{desc_marker}{comma}')
+
+        lines.append("}")
+
+        return "\n".join(lines)
+
+    @staticmethod
+    def format_for_llm(
+        schema_dict: dict,
+        template: str = PYDANTIC_FORMAT_TMPL,
+        excluded_keys: Optional[List[str]] = None,
+        escape_json: bool = True,
+    ) -> str:
+        """Format a schema dictionary for inclusion in an LLM prompt.
+
+        Args:
+            schema_dict: Full JSON Schema dictionary.
+            template: Template string with {schema} placeholder.
+            excluded_keys: List of schema keys to exclude.
+            escape_json: Whether to escape JSON braces for prompt templates.
+
+        Returns:
+            Formatted string ready to be added to LLM prompts.
+
+        Examples:
+            >>> from pydantic import BaseModel
+            >>> class Task(BaseModel):
+            ...     title: str
+            ...     done: bool = False
+            >>> schema = Task.model_json_schema()
+            >>> prompt = SchemaFormatter.format_for_llm(schema, escape_json=False)
+            >>> "Expected JSON structure" in prompt
+            True
+        """
+        simplified_schema = SchemaFormatter.simplify(schema_dict, excluded_keys)
+        output_str = template.format(schema=simplified_schema)
+
+        if escape_json:
+            return output_str.replace("{", "{{").replace("}", "}}")
+        else:
+            return output_str
 
 class OutputParserException(Exception):
     """Raised when an LLM output cannot be parsed into the expected format."""

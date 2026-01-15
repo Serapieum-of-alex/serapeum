@@ -23,21 +23,11 @@ from pydantic_core import CoreSchema, core_schema
 
 from serapeum.core.base.llms.models import Message, MessageRole, TextChunk
 from serapeum.core.models import Model
-from serapeum.core.output_parsers.utils import JsonParser
+from serapeum.core.output_parsers.utils import JsonParser, SchemaFormatter, PYDANTIC_FORMAT_TMPL
 
 TokenGen = Generator[str, None, None]
 TokenAsyncGen = AsyncGenerator[str, None]
 RESPONSE_TEXT_TYPE = Union[BaseModel, str, TokenGen, TokenAsyncGen]
-
-
-PYDANTIC_FORMAT_TMPL = """
-Here's a JSON schema to follow strictly:
-{schema}
-
-IMPORTANT: Return ONLY a valid JSON object with the actual data, NOT the schema itself.
-Do not include "properties", "required", "title", or "type" fields in your response.
-Return the data as a JSON object that matches the schema structure.
-"""
 
 
 class BaseParser(ABC):
@@ -138,16 +128,21 @@ class PydanticParser(BaseParser, Generic[Model]):
         return self.get_format_string(escape_json=True)
 
     def get_format_string(self, escape_json: bool = True) -> str:
-        schema_dict = self._output_cls.model_json_schema()
-        for key in self._excluded_schema_keys_from_format:
-            del schema_dict[key]
+        """Generate a formatted schema string for LLM prompts.
 
-        schema_str = json.dumps(schema_dict)
-        output_str = self._pydantic_format_tmpl.format(schema=schema_str)
-        if escape_json:
-            return output_str.replace("{", "{{").replace("}", "}}")
-        else:
-            return output_str
+        Args:
+            escape_json: Whether to escape JSON braces for use in prompt templates.
+
+        Returns:
+            Formatted schema string ready for inclusion in prompts.
+        """
+        schema_dict = self._output_cls.model_json_schema()
+        return SchemaFormatter.format_for_llm(
+            schema_dict=schema_dict,
+            template=self._pydantic_format_tmpl,
+            excluded_keys=self._excluded_schema_keys_from_format,
+            escape_json=escape_json,
+        )
 
     def parse(self, text: str) -> Any:
         """Parse LLM output text into a validated Pydantic model.

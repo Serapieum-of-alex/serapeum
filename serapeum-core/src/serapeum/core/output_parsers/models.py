@@ -64,7 +64,9 @@ class BaseParser(ABC):
 
             if format_idx != -1:
                 # this should always be a text block
-                assert isinstance(message.chunks[format_idx], TextChunk)
+                if not isinstance(message.chunks[format_idx], TextChunk):
+                    raise ValueError(f"Expected TextChunk at index {format_idx}, got {type(message.chunks[format_idx])}")
+
                 message.chunks[format_idx].content = self.format(format_text)  # type: ignore
         else:
             message.chunks.append(TextChunk(content=self.format(format_text)))
@@ -75,7 +77,7 @@ class BaseParser(ABC):
         """Optionally augment a list of chat messages prior to chat calls."""
         if messages:
             if messages[0].role == MessageRole.SYSTEM:
-                # get text from the last text chunks
+                # get text from the first text chunks
                 messages[0] = self._format_message(messages[0])
             else:
                 messages[-1] = self._format_message(messages[-1])

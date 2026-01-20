@@ -251,7 +251,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         See Also:
             serapeum.core.configs.configs.Configs: Houses the global LLM configuration.
         """
-        llm = llm or Configs.llm  # type: ignore
+        llm = llm or Configs.llm
         if llm is None:
             raise AssertionError("llm must be provided or set in Configs.")
         return llm

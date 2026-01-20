@@ -184,7 +184,7 @@ class TestToolOrchestratingLLMAStreamCall:
 
         agen = await tools_llm.astream_call(topic="x")
         results: list[Album] = []
-        async for item in agen:  # type: ignore
+        async for item in agen:
             results.append(item)
         assert len(results) == 2
         assert all(isinstance(obj, Album) for obj in results)

@@ -70,7 +70,7 @@ class Image(Chunk):
     # Accept base64 payload provided by callers; mapped into content during validation
     base64: Optional[bytes | str] = None
 
-    @field_validator("url", mode="after")
+    @field_validator("url", mode="after")  # type: ignore[misc]
     @classmethod
     def url_str_to_any_url(cls, url: str | AnyUrl) -> AnyUrl:
         """Store the url as Anyurl."""
@@ -78,7 +78,7 @@ class Image(Chunk):
             return url
         return AnyUrl(url=url)
 
-    @model_validator(mode="after")
+    @model_validator(mode="after")  # type: ignore[misc]
     def to_base64(self) -> Self:
         """Store the image as base64 and guess the mimetype when possible.
 
@@ -133,7 +133,7 @@ class Audio(Chunk):
     type: Literal["audio"] = "audio"
     format: str | None = None
 
-    @field_validator("url", mode="after")
+    @field_validator("url", mode="after")  # type: ignore[misc]
     @classmethod
     def url_str_to_any_url(cls, url: str | AnyUrl) -> AnyUrl:
         """Store the url as Anyurl."""
@@ -141,7 +141,7 @@ class Audio(Chunk):
             return url
         return AnyUrl(url=url)
 
-    @model_validator(mode="after")
+    @model_validator(mode="after")  # type: ignore[misc]
     def to_base64(self) -> Self:
         """Store the audio as base64 and guess the mimetype when possible.
 
@@ -255,7 +255,7 @@ class Message(BaseModel):
     def _recursive_serialization(self, value: Any) -> Any:
         if isinstance(value, BaseModel):
             value.model_rebuild()  # ensures all fields are initialized and serializable
-            return value.model_dump()  # type: ignore
+            return value.model_dump()
         if isinstance(value, dict):
             return {
                 key: self._recursive_serialization(value)
@@ -266,7 +266,7 @@ class Message(BaseModel):
             return [self._recursive_serialization(item) for item in value]
         return value
 
-    @field_serializer("additional_kwargs", check_fields=False)
+    @field_serializer("additional_kwargs", check_fields=False)  # type: ignore[misc]
     def serialize_additional_kwargs(self, value: Any, _info: Any) -> Any:
         return self._recursive_serialization(value)
 

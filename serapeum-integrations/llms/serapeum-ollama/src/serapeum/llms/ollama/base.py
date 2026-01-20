@@ -8,16 +8,14 @@ from typing import (
     TYPE_CHECKING,
     Any,
     AsyncGenerator,
-    Dict,
     Generator,
-    List,
     Optional,
-    Tuple,
-    Type,
     Union,
+    List,
+    Tuple
 )
 
-from ollama import AsyncClient, Client
+from ollama import AsyncClient, Client  # type: ignore[attr-defined]
 from pydantic import BaseModel, Field, PrivateAttr
 
 from serapeum.core.base.llms.models import (
@@ -54,18 +52,18 @@ DEFAULT_REQUEST_TIMEOUT = 60.0
 
 
 def get_additional_kwargs(
-    response: Dict[str, Any], exclude: Tuple[str, ...]
-) -> Dict[str, Any]:
+    response: dict[str, Any], exclude: Tuple[str, ...]
+) -> dict[str, Any]:
     """Filter out excluded keys from a response dictionary.
 
     Args:
-        response (Dict[str, Any]):
+        response (dict[str, Any]):
             Source dictionary, typically a raw provider response.
         exclude (Tuple[str, ...]):
             Keys that should be omitted from the returned mapping.
 
     Returns:
-        Dict[str, Any]:
+        dict[str, Any]:
             A new dictionary containing only entries whose keys are not present in ``exclude``.
 
     Examples:
@@ -162,7 +160,7 @@ class Ollama(FunctionCallingLLM):
             Key used for prompt formatting when applicable. Defaults to ``"prompt"``.
         json_mode (bool):
             Whether to request JSON-formatted responses when supported. Defaults to ``False``.
-        additional_kwargs (Dict[str, Any]):
+        additional_kwargs (dict[str, Any]):
             Extra provider-specific options forwarded under ``options``.
         client (Optional[Client]):
             Pre-constructed synchronous Ollama client. When omitted, the client
@@ -236,7 +234,7 @@ class Ollama(FunctionCallingLLM):
         default=False,
         description="Whether to use JSON mode for the Ollama API.",
     )
-    additional_kwargs: Dict[str, Any] = Field(
+    additional_kwargs: dict[str, Any] = Field(
         default_factory=dict,
         description="Additional model parameters for the Ollama API.",
     )
@@ -261,7 +259,7 @@ class Ollama(FunctionCallingLLM):
         request_timeout: float = DEFAULT_REQUEST_TIMEOUT,
         prompt_key: str = "prompt",
         json_mode: bool = False,
-        additional_kwargs: Dict[str, Any] = None,
+        additional_kwargs: dict[str, Any] | None = None,
         client: Optional[Client] = None,
         async_client: Optional[AsyncClient] = None,
         is_function_calling_model: bool = True,
@@ -290,7 +288,7 @@ class Ollama(FunctionCallingLLM):
         self._async_client = async_client
         # Track the event loop associated with the async client to avoid
         # reusing a client bound to a closed event loop across tests/runs
-        self._async_client_loop = None
+        self._async_client_loop: Optional[asyncio.AbstractEventLoop] = None
 
         # Cache decorated methods to avoid creating wrappers on every call
         self._complete_fn = chat_to_completion_decorator(self.chat)
@@ -397,11 +395,11 @@ class Ollama(FunctionCallingLLM):
             self._async_client = AsyncClient(
                 host=self.base_url, timeout=self.request_timeout
             )
-            self._async_client_loop = current_loop  # type: ignore[attr-defined]
+            self._async_client_loop = current_loop
         else:
             # If no loop recorded yet (e.g., injected client), bind without recreation
             if cached_loop is None:
-                self._async_client_loop = current_loop  # type: ignore[attr-defined]
+                self._async_client_loop = current_loop
             # Recreate if the current loop is closed
             elif (
                 current_loop is not None
@@ -411,16 +409,16 @@ class Ollama(FunctionCallingLLM):
                 self._async_client = AsyncClient(
                     host=self.base_url, timeout=self.request_timeout
                 )
-                self._async_client_loop = current_loop  # type: ignore[attr-defined]
+                self._async_client_loop = current_loop
             # Or if the cached loop has been closed since creation
             elif hasattr(cached_loop, "is_closed") and cached_loop.is_closed():
                 self._async_client = AsyncClient(
                     host=self.base_url, timeout=self.request_timeout
                 )
-                self._async_client_loop = current_loop  # type: ignore[attr-defined]
+                self._async_client_loop = current_loop
             else:
                 # Reuse existing client even if loop identity differs but both are open
-                self._async_client_loop = current_loop  # type: ignore[attr-defined]
+                self._async_client_loop = current_loop
 
         return self._async_client
 
@@ -437,11 +435,11 @@ class Ollama(FunctionCallingLLM):
         return self._ensure_async_client()
 
     @property
-    def _model_kwargs(self) -> Dict[str, Any]:
+    def _model_kwargs(self) -> dict[str, Any]:
         """Assemble provider options forwarded under the ``options`` field.
 
         Returns:
-            Dict[str, Any]: Merged dictionary where ``additional_kwargs`` override
+            dict[str, Any]: Merged dictionary where ``additional_kwargs`` override
             base defaults such as ``temperature`` and ``num_ctx``.
 
         Examples:
@@ -465,7 +463,7 @@ class Ollama(FunctionCallingLLM):
 
     def _convert_to_ollama_messages(
         self, messages: MessageList
-    ) -> List[Dict[str, Any]]:
+    ) -> List[dict[str, Any]]:
         """Convert internal MessageList to the Ollama wire format.
 
         Args:
@@ -547,7 +545,7 @@ class Ollama(FunctionCallingLLM):
         return ollama_messages
 
     @staticmethod
-    def _get_response_token_counts(raw_response: dict) -> dict:
+    def _get_response_token_counts(raw_response: dict[str, Any]) -> dict[str, Any]:
         """Extract token usage fields from a raw Ollama response.
 
         Args:
@@ -586,23 +584,23 @@ class Ollama(FunctionCallingLLM):
         self,
         tools: List["BaseTool"],
         user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[List[Message]] = None,
+        chat_history: Optional[list[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Prepare a chat payload including tool specifications.
 
         Args:
             tools (List[BaseTool]): Tools to expose to the model (converted using OpenAI schema).
             user_msg (Optional[Union[str, Message]]): Optional user message to append.
-            chat_history (Optional[List[Message]]): Optional existing conversation history.
+            chat_history (Optional[list[Message]]): Optional existing conversation history.
             verbose (bool): Currently unused verbosity flag.
             allow_parallel_tool_calls (bool): Indicator forwarded to validators.
             **kwargs (Any): Reserved for future extensions.
 
         Returns:
-            Dict[str, Any]: Dict with ``messages`` and ``tools`` entries suitable for chat calls.
+            dict[str, Any]: Dict with ``messages`` and ``tools`` entries suitable for chat calls.
 
         Examples:
             - Combine history, a new user message, and tool specs
@@ -828,7 +826,7 @@ class Ollama(FunctionCallingLLM):
         )
 
     @staticmethod
-    def _parse_tool_call_response(tools_dict, r):
+    def _parse_tool_call_response(tools_dict: dict[str, Any], r: dict[str, Any]) -> ChatResponse:
         """Accumulate streaming content and unique tool calls into a ChatResponse.
 
         Args:
@@ -1061,9 +1059,9 @@ class Ollama(FunctionCallingLLM):
 
     def structured_predict(
         self,
-        output_cls: Type[BaseModel],
+        output_cls: type[BaseModel],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
     ) -> BaseModel:
         """Parse structured output by instructing the model to emit JSON.
@@ -1073,9 +1071,9 @@ class Ollama(FunctionCallingLLM):
         validates the assistant content using ``output_cls.model_validate_json``.
 
         Args:
-            output_cls (Type[BaseModel]): Target pydantic model for the output.
+            output_cls (type[BaseModel]): Target pydantic model for the output.
             prompt (PromptTemplate): Prompt template used to construct messages.
-            llm_kwargs (Optional[Dict[str, Any]]): Provider arguments forwarded to ``chat``.
+            llm_kwargs (dict[str, Any] | None): Provider arguments forwarded to ``chat``.
             **prompt_args (Any): Additional template variables.
 
         Returns:
@@ -1100,17 +1098,17 @@ class Ollama(FunctionCallingLLM):
 
     async def astructured_predict(
         self,
-        output_cls: Type[BaseModel],
+        output_cls: type[BaseModel],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
     ) -> BaseModel:
         """Async variant of ``structured_predict``.
 
         Args:
-            output_cls (Type[BaseModel]): Target pydantic model for the output.
+            output_cls (type[BaseModel]): Target pydantic model for the output.
             prompt (PromptTemplate): Prompt template used to construct messages.
-            llm_kwargs (Optional[Dict[str, Any]]): Provider arguments forwarded to ``achat``.
+            llm_kwargs (dict[str, Any] | None): Provider arguments forwarded to ``achat``.
             **prompt_args (Any): Additional template variables.
 
         Returns:
@@ -1131,24 +1129,24 @@ class Ollama(FunctionCallingLLM):
 
     def stream_structured_predict(
         self,
-        output_cls: Type[BaseModel],
+        output_cls: type[BaseModel],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
-    ) -> Generator[Union[BaseModel, List[BaseModel]], None, None]:
+    ) -> Generator[BaseModel | list[BaseModel], None, None]:
         """Stream structured objects parsed from chat deltas.
 
         The method incrementally parses partial JSON content into ``output_cls``
         instances using ``StreamingObjectProcessor`` with flexible mode.
 
         Args:
-            output_cls (Type[BaseModel]): Pydantic model describing the structure.
+            output_cls (type[BaseModel]): Pydantic model describing the structure.
             prompt (PromptTemplate): Prompt template rendered to messages.
-            llm_kwargs (Optional[Dict[str, Any]]): Provider options forwarded to ``stream_chat``.
+            llm_kwargs (dict[str, Any] | None): Provider options forwarded to ``stream_chat``.
             **prompt_args (Any): Additional template variables.
 
         Yields:
-            Union[BaseModel, List[BaseModel]]: Parsed model(s) per streamed chunk.
+            BaseModel | list[BaseModel]: Parsed model(s) per streamed chunk.
 
         See Also:
             astream_structured_predict: Asynchronous streaming counterpart.
@@ -1156,11 +1154,11 @@ class Ollama(FunctionCallingLLM):
         if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
 
             def gen(
-                output_cls: Type[BaseModel],
+                output_cls: type[BaseModel],
                 prompt: PromptTemplate,
-                llm_kwargs: Dict[str, Any],
-                prompt_args: Dict[str, Any],
-            ) -> Generator[Union[BaseModel, List[BaseModel]], None, None]:
+                llm_kwargs: dict[str, Any] | None,
+                prompt_args: dict[str, Any],
+            ) -> Generator[BaseModel | list[BaseModel], None, None]:
                 llm_kwargs = llm_kwargs or {}
                 llm_kwargs["format"] = output_cls.model_json_schema()
 
@@ -1186,27 +1184,27 @@ class Ollama(FunctionCallingLLM):
 
             return gen(output_cls, prompt, llm_kwargs, prompt_args)
         else:
-            return super().stream_structured_predict(
+            return super().stream_structured_predict(  # type: ignore[return-value]
                 output_cls, prompt, llm_kwargs, **prompt_args
             )
 
     async def astream_structured_predict(
         self,
-        output_cls: Type[BaseModel],
+        output_cls: type[BaseModel],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
-    ) -> AsyncGenerator[Union[BaseModel, List[BaseModel]], None]:
+    ) -> AsyncGenerator[BaseModel | list[BaseModel], None]:
         """Asynchronously stream structured objects parsed from chat deltas.
 
         Args:
-            output_cls (Type[BaseModel]): Pydantic model describing the structure.
+            output_cls (type[BaseModel]): Pydantic model describing the structure.
             prompt (PromptTemplate): Prompt template rendered to messages.
-            llm_kwargs (Optional[Dict[str, Any]]): Provider options forwarded to ``astream_chat``.
+            llm_kwargs (dict[str, Any] | None): Provider options forwarded to ``astream_chat``.
             **prompt_args (Any): Additional template variables.
 
         Returns:
-            AsyncGenerator[Union[BaseModel, List[BaseModel]], None]: Async stream of parsed model(s).
+            AsyncGenerator[BaseModel | list[BaseModel], None]: Async stream of parsed model(s).
 
         See Also:
             stream_structured_predict: Synchronous streaming counterpart.
@@ -1214,11 +1212,11 @@ class Ollama(FunctionCallingLLM):
         if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
 
             async def gen(
-                output_cls: Type[BaseModel],
+                output_cls: type[BaseModel],
                 prompt: PromptTemplate,
-                llm_kwargs: Dict[str, Any],
-                prompt_args: Dict[str, Any],
-            ) -> AsyncGenerator[Union[BaseModel, List[BaseModel]], None]:
+                llm_kwargs: dict[str, Any] | None,
+                prompt_args: dict[str, Any],
+            ) -> AsyncGenerator[BaseModel | list[BaseModel], None]:
                 llm_kwargs = llm_kwargs or {}
                 llm_kwargs["format"] = output_cls.model_json_schema()
 
@@ -1245,6 +1243,6 @@ class Ollama(FunctionCallingLLM):
             return gen(output_cls, prompt, llm_kwargs, prompt_args)
         else:
             # Fall back to non-streaming structured predict
-            return await super().astream_structured_predict(
+            return await super().astream_structured_predict(  # type: ignore[return-value]
                 output_cls, prompt, llm_kwargs, **prompt_args
             )

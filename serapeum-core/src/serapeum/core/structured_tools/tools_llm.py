@@ -212,7 +212,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
             ```
         """
-        llm = llm or Configs.llm  # type: ignore
+        llm = llm or Configs.llm
         if llm is None:
             raise AssertionError("llm must be provided or set in Configs.")
 
@@ -378,7 +378,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         )
         return agent_response.parse_tool_outputs(
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
-        )  # type: ignore
+        )
 
     async def acall(
         self,
@@ -438,9 +438,9 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         )
         return agent_response.parse_tool_outputs(
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
-        )  # type: ignore
+        )
 
-    def stream_call(  # type: ignore
+    def stream_call(
         self, *args: Any, llm_kwargs: Optional[Dict[str, Any]] = None, **kwargs: Any
     ) -> Generator[Union[Model, List[Model]], None, None]:
         """Stream structured output generation with incremental updates.
@@ -526,12 +526,12 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
                 objects = processor.process(partial_resp, cur_objects)
 
                 cur_objects = objects if isinstance(objects, list) else [objects]
-                yield objects  # type: ignore
+                yield objects
             except Exception as e:
                 _logger.warning(f"Failed to parse streaming response: {e}")
                 continue
 
-    async def astream_call(  # type: ignore
+    async def astream_call(
         self, *args: Any, llm_kwargs: Optional[Dict[str, Any]] = None, **kwargs: Any
     ) -> AsyncGenerator[Union[Model, List[Model]], None]:
         """Asynchronously stream structured output generation with incremental updates.
@@ -622,7 +622,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
                     objects = processor.process(partial_resp, cur_objects)
 
                     cur_objects = objects if isinstance(objects, list) else [objects]
-                    yield objects  # type: ignore
+                    yield objects
                 except Exception as e:
                     _logger.warning(f"Failed to parse streaming response: {e}")
                     continue

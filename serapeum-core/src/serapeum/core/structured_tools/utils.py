@@ -43,7 +43,7 @@ class FlexibleModel(BaseModel):
             f"Flexible{model.__name__}",
             __base__=cls,
             **{field: (Optional[Any], None) for field in model.model_fields},
-        )  # type: ignore
+        )
 
 
 def get_program_for_llm(

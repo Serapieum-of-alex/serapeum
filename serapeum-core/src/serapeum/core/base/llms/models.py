@@ -97,13 +97,20 @@ class Image(Chunk):
         if not self.content:
             return self
 
+        decoded_img: bytes
         try:
             # Check if image is already base64 encoded
             decoded_img = base64.b64decode(self.content)
         except Exception:
-            decoded_img = self.content
             # Not base64 - encode it
-            self.content = base64.b64encode(self.content)
+            if isinstance(self.content, str):
+                content_bytes = self.content.encode()
+            elif isinstance(self.content, bytes):
+                content_bytes = self.content
+            else:
+                return self  # None case
+            decoded_img = content_bytes
+            self.content = base64.b64encode(content_bytes)
 
         self._guess_mimetype(decoded_img)
         return self
@@ -152,13 +159,20 @@ class Audio(Chunk):
         if not self.content:
             return self
 
+        decoded_audio: bytes
         try:
             # Check if audio is already base64 encoded
             decoded_audio = base64.b64decode(self.content)
         except Exception:
-            decoded_audio = self.content
             # Not base64 - encode it
-            self.content = base64.b64encode(self.content)
+            if isinstance(self.content, str):
+                content_bytes = self.content.encode()
+            elif isinstance(self.content, bytes):
+                content_bytes = self.content
+            else:
+                return self  # None case
+            decoded_audio = content_bytes
+            self.content = base64.b64encode(content_bytes)
 
         self._guess_format(decoded_audio)
 

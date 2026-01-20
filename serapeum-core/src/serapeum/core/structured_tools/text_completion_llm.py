@@ -456,7 +456,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ```
 
         See Also:
-            TextCompletionLLM.validate_prompt: Performs validation when constructing instances.
+            TextCompletionLLM._validate_prompt: Performs validation when constructing instances.
         """
         self._prompt = prompt
         self._prompt.output_parser = self._output_parser

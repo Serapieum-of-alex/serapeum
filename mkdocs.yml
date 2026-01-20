@@ -124,6 +124,14 @@ nav:
             - Data Flow: reference/structured_tools/text_completion_llm/text_completion_llm_dataflow.md
             - Components: reference/structured_tools/text_completion_llm/text_completion_llm_components.md
             - Lifecycle: reference/structured_tools/text_completion_llm/text_completion_llm_state.md
+        - Tool Orchestrating LLM:
+            - Overview: reference/structured_tools/tool_orchestrating_llm/general.md
+            - Examples: reference/structured_tools/tool_orchestrating_llm/examples.md
+            - Execution Flow: reference/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_sequence.md
+            - Architecture: reference/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_class.md
+            - Data Flow: reference/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_dataflow.md
+            - Components: reference/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_components.md
+            - Lifecycle: reference/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_state.md
         - Tools LLM: reference/structured_tools/tools_llm.md
     - tools:
         - reference/tools/tools.md

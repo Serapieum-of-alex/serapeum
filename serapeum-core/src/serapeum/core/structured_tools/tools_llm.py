@@ -132,14 +132,14 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ```
         """
         self._output_cls = output_cls
-        self._llm = self.validate_llm(llm)
-        self._prompt = self.validate_prompt(prompt)
+        self._llm = self._validate_llm(llm)
+        self._prompt = self._validate_prompt(prompt)
         self._verbose = verbose
         self._allow_parallel_tool_calls = allow_parallel_tool_calls
         self._tool_choice = tool_choice
 
     @staticmethod
-    def validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
+    def _validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
         """Validate and normalize a prompt input.
 
         If a plain string is provided, it is wrapped in a ``PromptTemplate``.
@@ -184,7 +184,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         return prompt
 
     @staticmethod
-    def validate_llm(llm: LLM) -> LLM:
+    def _validate_llm(llm: LLM) -> LLM:
         """Validate that an LLM supports function calling and resolve defaults.
 
         If ``llm`` is falsy, attempts to use ``Configs.llm``. Ensures the chosen

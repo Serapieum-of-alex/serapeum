@@ -9,14 +9,10 @@ from typing import (
     TYPE_CHECKING,
     Any,
     AsyncGenerator,
-    Dict,
     Generator,
-    List,
-    Optional,
     Protocol,
-    Type,
-    Union,
     runtime_checkable,
+    Optional
 )
 
 from pydantic import BaseModel, Field, WithJsonSchema, field_validator, model_validator
@@ -195,7 +191,7 @@ class CompletionToPromptType(Protocol):
 
 
 def stream_response_to_tokens(
-    completion_response_gen: Union[CompletionResponseGen, ChatResponseGen],
+    completion_response_gen: CompletionResponseGen | ChatResponseGen,
 ) -> TokenGen:
     """Materialize a token generator from streaming completion responses.
 
@@ -281,7 +277,7 @@ def stream_response_to_tokens(
 
 
 async def astream_response_to_tokens(
-    completion_response_gen: Union[CompletionResponseAsyncGen, ChatResponseAsyncGen],
+    completion_response_gen: CompletionResponseAsyncGen | ChatResponseAsyncGen,
 ) -> TokenAsyncGen:
     """Convert async completion responses into an async token generator.
 
@@ -523,7 +519,7 @@ class LLM(BaseLLM, ABC):
         exclude=True,
     )
 
-    @field_validator("messages_to_prompt")
+    @field_validator("messages_to_prompt")  # type: ignore[misc]
     @classmethod
     def set_messages_to_prompt(
         cls, messages_to_prompt: Optional[MessagesToPromptType]
@@ -560,7 +556,7 @@ class LLM(BaseLLM, ABC):
             return lambda message_list: message_list.to_prompt()
         return messages_to_prompt
 
-    @field_validator("completion_to_prompt")
+    @field_validator("completion_to_prompt")  # type: ignore[misc]
     @classmethod
     def set_completion_to_prompt(
         cls, completion_to_prompt: Optional[CompletionToPromptType]
@@ -597,7 +593,7 @@ class LLM(BaseLLM, ABC):
         """
         return completion_to_prompt or default_completion_to_prompt
 
-    @model_validator(mode="after")
+    @model_validator(mode="after")  # type: ignore[misc]
     def check_prompts(self) -> "LLM":
         """Populate prompt adapters after pydantic validation completes.
 
@@ -774,7 +770,7 @@ class LLM(BaseLLM, ABC):
 
     def _get_messages(
         self, prompt: BasePromptTemplate, **prompt_args: Any
-    ) -> List[Message]:
+    ) -> list[Message]:
         """Render chat messages from a prompt template.
 
         Args:
@@ -782,7 +778,7 @@ class LLM(BaseLLM, ABC):
             **prompt_args (Any): Named values inserted into the template.
 
         Returns:
-            List[Message]: Sequence of messages ready for chat model consumption.
+            list[Message]: Sequence of messages ready for chat model consumption.
 
         Raises:
             ValueError: Propagated when the template cannot be formatted with ``prompt_args``.
@@ -1041,14 +1037,14 @@ class LLM(BaseLLM, ABC):
 
         return extended_prompt
 
-    def _extend_messages(self, messages: List[Message]) -> List[Message]:
+    def _extend_messages(self, messages: list[Message]) -> list[Message]:
         """Add optional system prompts to the chat message list.
 
         Args:
-            messages (List[Message]): Sequence of user/assistant messages.
+            messages (list[Message]): Sequence of user/assistant messages.
 
         Returns:
-            List[Message]: Message list with system context prepended when configured.
+            list[Message]: Message list with system context prepended when configured.
 
         Raises:
             Nothing: Operates purely on in-memory message lists.
@@ -1131,17 +1127,17 @@ class LLM(BaseLLM, ABC):
 
     def structured_predict(
         self,
-        output_cls: Type[BaseModel],
+        output_cls: type[BaseModel],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
     ) -> BaseModel:
         """Invoke the structured output program for synchronous predictions.
 
         Args:
-            output_cls (Type[BaseModel]): Pydantic model describing the expected output schema.
+            output_cls (type[BaseModel]): Pydantic model describing the expected output schema.
             prompt (PromptTemplate): Template used to gather inputs and instructions.
-            llm_kwargs (Optional[Dict[str, Any]]): Provider-specific arguments forwarded to the underlying LLM.
+            llm_kwargs (dict[str, Any] | None): Provider-specific arguments forwarded to the underlying LLM.
             **prompt_args (Any): Additional template variables passed to ``prompt``.
 
         Returns:
@@ -1254,17 +1250,17 @@ class LLM(BaseLLM, ABC):
 
     async def astructured_predict(
         self,
-        output_cls: Type[BaseModel],
+        output_cls: type[BaseModel],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
     ) -> BaseModel:
         """Run the structured output program asynchronously.
 
         Args:
-            output_cls (Type[BaseModel]): Pydantic model describing the target schema.
+            output_cls (type[BaseModel]): Pydantic model describing the target schema.
             prompt (PromptTemplate): Template used to generate program inputs.
-            llm_kwargs (Optional[Dict[str, Any]]): Optional provider arguments forwarded to the program.
+            llm_kwargs (dict[str, Any] | None): Optional provider arguments forwarded to the program.
             **prompt_args (Any): Additional inputs passed to the template.
 
         Returns:
@@ -1392,21 +1388,21 @@ class LLM(BaseLLM, ABC):
 
     def stream_structured_predict(
         self,
-        output_cls: Type[BaseModel],
+        output_cls: type[BaseModel],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
-    ) -> Generator[Union[Model, List[Model]], None, None]:
+    ) -> Generator[Model | list[Model], None, None]:
         """Stream structured predictions as they become available.
 
         Args:
-            output_cls (Type[BaseModel]): Pydantic model describing the structured response.
+            output_cls (type[BaseModel]): Pydantic model describing the structured response.
             prompt (PromptTemplate): Template orchestrating the program execution.
-            llm_kwargs (Optional[Dict[str, Any]]): Additional arguments forwarded to the underlying LLM.
+            llm_kwargs (dict[str, Any] | None): Additional arguments forwarded to the underlying LLM.
             **prompt_args (Any): Keyword arguments interpolated into the template.
 
         Yields:
-            Union[Model, List[Model]]: Incremental structured values emitted by the program.
+            Model | list[Model]: Incremental structured values emitted by the program.
 
         Raises:
             RuntimeError: Propagated from the structured program when streaming fails.
@@ -1528,23 +1524,23 @@ class LLM(BaseLLM, ABC):
 
     async def _structured_astream_call(
         self,
-        output_cls: Type[Model],
+        output_cls: type[Model],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
     ) -> AsyncGenerator[
-        Union[Model, List[Model], "BaseModel", List["BaseModel"]], None
+        Model | list[Model] | BaseModel | list[BaseModel], None
     ]:
         """Obtain the async structured program stream without additional wrapping.
 
         Args:
-            output_cls (Type[Model]): Structured output model requested by the caller.
+            output_cls (type[Model]): Structured output model requested by the caller.
             prompt (PromptTemplate): Template defining the structured program execution.
-            llm_kwargs (Optional[Dict[str, Any]]): Keyword arguments forwarded to the LLM.
+            llm_kwargs (dict[str, Any] | None): Keyword arguments forwarded to the LLM.
             **prompt_args (Any): Arguments substituted into ``prompt``.
 
         Returns:
-            AsyncGenerator[Union[Model, List[Model]]]: Async generator streaming structured values.
+            AsyncGenerator[Model | list[Model]]: Async generator streaming structured values.
 
         Raises:
             RuntimeError: Propagated when the structured program fails to initialize.
@@ -1617,25 +1613,25 @@ class LLM(BaseLLM, ABC):
             pydantic_program_mode=self.pydantic_program_mode,
         )
 
-        return await program.astream_call(llm_kwargs=llm_kwargs, **prompt_args)
+        return await program.astream_call(llm_kwargs=llm_kwargs, **prompt_args)  # type: ignore[return-value]
 
     async def astream_structured_predict(
         self,
-        output_cls: Type[BaseModel],
+        output_cls: type[BaseModel],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
-    ) -> AsyncGenerator[Union[Model, List[Model]], None]:
+    ) -> AsyncGenerator[Model | list[Model], None]:
         """Stream structured predictions asynchronously.
 
         Args:
-            output_cls (Type[BaseModel]): Structured response model expected from the program.
+            output_cls (type[BaseModel]): Structured response model expected from the program.
             prompt (PromptTemplate): Prompt orchestrating the structured interaction.
-            llm_kwargs (Optional[Dict[str, Any]]): Provider arguments injected into the structured program.
+            llm_kwargs (dict[str, Any] | None): Provider arguments injected into the structured program.
             **prompt_args (Any): Additional inputs formatted into ``prompt``.
 
         Yields:
-            Union[Model, List[Model]]: Structured values produced asynchronously.
+            Model | list[Model]: Structured values produced asynchronously.
 
         Raises:
             RuntimeError: Propagated when the underlying program encounters streaming issues.
@@ -1756,7 +1752,7 @@ class LLM(BaseLLM, ABC):
             _structured_astream_call: Internal helper that retrieves the structured async stream.
         """
 
-        async def gen() -> AsyncGenerator[Union[Model, List[Model]], None]:
+        async def gen() -> AsyncGenerator[Model | list[Model], None]:
             from serapeum.core.structured_tools.utils import get_program_for_llm
 
             program = get_program_for_llm(
@@ -2224,13 +2220,13 @@ class LLM(BaseLLM, ABC):
 
     def as_structured_llm(
         self,
-        output_cls: Type[BaseModel],
+        output_cls: type[BaseModel],
         **kwargs: Any,
     ) -> "StructuredLLM":
         """Wrap this LLM with structured output capabilities.
 
         Args:
-            output_cls (Type[BaseModel]): Pydantic model describing the structured response schema.
+            output_cls (type[BaseModel]): Pydantic model describing the structured response schema.
             **kwargs (Any): Additional keyword arguments forwarded to ``StructuredLLM``.
 
         Returns:

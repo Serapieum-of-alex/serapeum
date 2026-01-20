@@ -23,7 +23,7 @@ import datetime
 import json
 import re
 from dataclasses import dataclass
-from inspect import Parameter, signature
+from inspect import Parameter, signature, Signature
 from typing import (
     Annotated,
     Any,
@@ -40,7 +40,6 @@ from typing import (
     get_args,
     get_origin,
 )
-
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 
@@ -131,7 +130,7 @@ class Docstring:
         self.func_arguments = set(self.func_signature.parameters.keys())
 
     @property
-    def signature(self):
+    def signature(self) -> Signature:
         """The inspect.Signature of the wrapped callable.
 
         Returns:
@@ -140,7 +139,7 @@ class Docstring:
         return self.func_signature
 
     @signature.setter
-    def signature(self, sig):
+    def signature(self, sig: Signature) -> None:
         """Override the stored ``inspect.Signature``.
 
         Args:
@@ -148,7 +147,7 @@ class Docstring:
         """
         self.func_signature = sig
 
-    def extract_param_docs(self) -> Tuple[dict, set]:
+    def extract_param_docs(self) -> Tuple[dict[str, str], set[str]]:
         """Parse parameter descriptions from this callable's docstring.
 
         Supports Sphinx (``:param name: desc``), Google (``name (type): desc``),
@@ -302,7 +301,7 @@ class FunctionArgument:
         """
         return get_origin(self.param.annotation) is Annotated
 
-    def _extract_annotated_info(self):
+    def _extract_annotated_info(self) -> None:
         """Extract metadata from typing.Annotated annotations.
 
         For parameters annotated as ``Annotated[T, meta]``, this method sets the
@@ -502,7 +501,7 @@ class FunctionConverter:
         name: str,
         func: Union[Callable[..., Any], Callable[..., Awaitable[Any]]],
         additional_fields: Optional[
-            List[Union[Tuple[str, Type, Any], Tuple[str, Type]]]
+            List[Union[Tuple[str, type[Any], Any], Tuple[str, type[Any]]]]
         ] = None,
         ignore_fields: Optional[List[str]] = None,
     ):
@@ -611,12 +610,10 @@ class FunctionConverter:
         additional_fields = self.additional_fields or []
         for field_info in additional_fields:
             if len(field_info) == 3:
-                field_info = cast(Tuple[str, Type, Any], field_info)
-                field_name, field_type, field_default = field_info
+                field_name, field_type, field_default = field_info  # type: ignore[misc]
                 fields[field_name] = (field_type, FieldInfo(default=field_default))
             elif len(field_info) == 2:
-                field_info = cast(Tuple[str, Type], field_info)
-                field_name, field_type = field_info
+                field_name, field_type = field_info  # type: ignore[misc]
                 fields[field_name] = (field_type, FieldInfo())
             else:
                 raise ValueError(
@@ -751,13 +748,13 @@ class ToolExecutor:
         """
         self.config = config or ExecutionConfig()
 
-    def execute(self, tool: BaseTool, arguments: dict) -> ToolOutput:
+    def execute(self, tool: BaseTool, arguments: dict[str, Any]) -> ToolOutput:
         """Execute a tool synchronously with error handling.
 
         Args:
             tool (BaseTool): The tool instance to call. Must expose ``metadata``
                 with ``get_name()`` and ``get_schema()`` and be callable.
-            arguments (dict): Keyword arguments for the tool.
+            arguments (dict[str, Any]): Keyword arguments for the tool.
 
         Returns:
             ToolOutput: The tool's output, or a standardized error output if
@@ -810,7 +807,7 @@ class ToolExecutor:
                 raise
             return self._create_error_output(tool, arguments, e)
 
-    async def execute_async(self, tool: BaseTool, arguments: dict) -> ToolOutput:
+    async def execute_async(self, tool: BaseTool, arguments: dict[str, Any]) -> ToolOutput:
         """Execute a tool asynchronously with error handling.
 
         Args:
@@ -933,7 +930,7 @@ class ToolExecutor:
         tool = self._find_tool_by_name(tool_call.tool_name, tools)
         return await self.execute_async(tool, tool_call.tool_kwargs)
 
-    def _invoke_tool(self, tool: BaseTool, arguments: dict) -> ToolOutput:
+    def _invoke_tool(self, tool: BaseTool, arguments: dict[str, Any]) -> ToolOutput:
         """Internal method to invoke tool with argument unpacking logic."""
         if self._should_unpack_single_arg(tool, arguments):
             output = self._try_single_arg_then_kwargs(tool, arguments)
@@ -943,7 +940,7 @@ class ToolExecutor:
         return output
 
     async def _invoke_tool_async(
-        self, async_tool: BaseTool, arguments: dict
+        self, async_tool: BaseTool, arguments: dict[str, Any]
     ) -> ToolOutput:
         """Internal method to invoke async tool with argument unpacking logic."""
         if self._should_unpack_single_arg(async_tool, arguments):
@@ -953,7 +950,7 @@ class ToolExecutor:
 
         return output
 
-    def _should_unpack_single_arg(self, tool: BaseTool, arguments: dict) -> bool:
+    def _should_unpack_single_arg(self, tool: BaseTool, arguments: dict[str, Any]) -> bool:
         """Determine whether to auto-unpack a single argument.
 
         Auto-unpacking is allowed when the executor config enables it and when
@@ -1003,7 +1000,7 @@ class ToolExecutor:
         return val
 
     def _try_single_arg_then_kwargs(
-        self, tool: BaseTool, arguments: dict
+        self, tool: BaseTool, arguments: dict[str, Any]
     ) -> ToolOutput:
         """Try calling with single unpacked arg, fall back to kwargs."""
         try:
@@ -1016,7 +1013,7 @@ class ToolExecutor:
         return output
 
     async def _try_single_arg_then_kwargs_async(
-        self, async_tool: BaseTool, arguments: dict
+        self, async_tool: BaseTool, arguments: dict[str, Any]
     ) -> ToolOutput:
         """Try calling async with single unpacked arg, fall back to kwargs."""
         try:
@@ -1029,7 +1026,7 @@ class ToolExecutor:
         return output
 
     def _create_error_output(
-        self, tool: BaseTool, arguments: dict, error: Exception
+        self, tool: BaseTool, arguments: dict[str, Any], error: Exception
     ) -> ToolOutput:
         """Create a standardized error output."""
         return ToolOutput(
@@ -1045,7 +1042,7 @@ class ToolExecutor:
         tools_by_name = {tool.metadata.name: tool for tool in tools}
         return tools_by_name[name]
 
-    def _log_execution_start(self, tool: BaseTool, arguments: dict) -> None:
+    def _log_execution_start(self, tool: BaseTool, arguments: dict[str, Any]) -> None:
         """Log the start of tool execution."""
         arguments_str = json.dumps(arguments)
         print("=== Calling Function ===")

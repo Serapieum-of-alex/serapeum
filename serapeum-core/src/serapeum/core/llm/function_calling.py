@@ -2,7 +2,7 @@
 
 import asyncio
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Sequence
 
 from serapeum.core.base.llms.models import (
     ChatResponse,
@@ -31,8 +31,8 @@ class FunctionCallingLLM(LLM):
     def chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[List[Message]] = None,
+        user_msg: str | Message | None = None,
+        chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
@@ -57,8 +57,8 @@ class FunctionCallingLLM(LLM):
     async def achat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[List[Message]] = None,
+        user_msg: str | Message | None = None,
+        chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
@@ -83,8 +83,8 @@ class FunctionCallingLLM(LLM):
     def stream_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[List[Message]] = None,
+        user_msg: str | Message | None = None,
+        chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
@@ -104,8 +104,8 @@ class FunctionCallingLLM(LLM):
     async def astream_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[List[Message]] = None,
+        user_msg: str | Message | None = None,
+        chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
@@ -125,12 +125,12 @@ class FunctionCallingLLM(LLM):
     def _prepare_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[List[Message]] = None,
+        user_msg: str | Message | None = None,
+        chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Prepare the arguments needed to let the LLM chat with tools."""
 
     def _validate_chat_with_tools_response(
@@ -148,7 +148,7 @@ class FunctionCallingLLM(LLM):
         response: ChatResponse,
         error_on_no_tool_call: bool = True,
         **kwargs: Any,
-    ) -> List[ToolCallArguments]:
+    ) -> list[ToolCallArguments]:
         """Predict and call the tool."""
         raise NotImplementedError(
             "get_tool_calls_from_response is not supported by default."
@@ -157,8 +157,8 @@ class FunctionCallingLLM(LLM):
     def predict_and_call(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[List[Message]] = None,
+        user_msg: str | Message | None = None,
+        chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         error_on_no_tool_call: bool = True,
@@ -192,8 +192,8 @@ class FunctionCallingLLM(LLM):
     async def apredict_and_call(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[List[Message]] = None,
+        user_msg: str | Message | None = None,
+        chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         error_on_no_tool_call: bool = True,
@@ -230,8 +230,11 @@ class FunctionCallingLLM(LLM):
 
     @staticmethod
     def parse_tool_outputs(
-        tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls
-    ):
+        tool_outputs: list[Any],
+        response: ChatResponse,
+        error_on_tool_error: bool,
+        allow_parallel_tool_calls: bool,
+    ) -> "AgentChatResponse":
         from serapeum.core.chat.models import AgentChatResponse
 
         tool_outputs_with_error = [

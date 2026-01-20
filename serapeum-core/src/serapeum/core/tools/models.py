@@ -69,7 +69,7 @@ class Schema:
     resolved_schema: Optional[Dict[str, Any]] = None
     referenced_schema: Optional[Dict[str, Any]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.resolved_schema = self.resolve_references(inline=True)
         self.referenced_schema = self.resolve_references(inline=False)
 
@@ -216,7 +216,7 @@ class ToolMetadata:
     tool_schema: Optional[Type[BaseModel]] = MinimalToolSchema
     return_direct: bool = False
 
-    def get_schema(self) -> dict:
+    def get_schema(self) -> dict[str, Any]:
         """Return the JSON Schema dictionary for this tool's parameters.
 
         If ``tool_schema`` is ``None``, a minimal schema with a single string field

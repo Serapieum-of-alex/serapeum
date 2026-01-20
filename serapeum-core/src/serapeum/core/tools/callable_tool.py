@@ -20,7 +20,7 @@ Model = TypeVar("Model", bound=BaseModel)
 
 class SyncAsyncConverter:
     def __init__(self, func: Callable[..., Any]) -> None:
-        if not isinstance(func, Callable):
+        if not callable(func):
             raise ValueError("func must be a callable")
 
         if self.is_async(func):
@@ -31,7 +31,7 @@ class SyncAsyncConverter:
             self.async_func = self.to_async(func)
 
     @staticmethod
-    def is_async(func) -> bool:
+    def is_async(func: Union[Callable[..., Any], Callable[..., Awaitable[Any]]]) -> bool:
         return inspect.iscoroutinefunction(func)
 
     @staticmethod
@@ -92,7 +92,7 @@ class SyncAsyncConverter:
         return _async_wrapped_fn
 
     @staticmethod
-    def async_to_sync(func_async: AsyncCallable) -> Callable:
+    def async_to_sync(func_async: AsyncCallable) -> Callable[..., Any]:
         """Wrap an async callable so it can be used from synchronous code.
 
         This wrapper runs the coroutine to completion using

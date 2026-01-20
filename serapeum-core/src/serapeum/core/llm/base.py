@@ -12,7 +12,6 @@ from typing import (
     Generator,
     Protocol,
     runtime_checkable,
-    Optional
 )
 
 from pydantic import BaseModel, Field, WithJsonSchema, field_validator, model_validator
@@ -420,13 +419,13 @@ def default_completion_to_prompt(prompt: str) -> str:
 
 
 MessagesToPromptCallable = Annotated[
-    Optional[MessagesToPromptType],
+    MessagesToPromptType | None,
     WithJsonSchema({"type": "string"}),
 ]
 
 
 CompletionToPromptCallable = Annotated[
-    Optional[CompletionToPromptType],
+    CompletionToPromptType | None,
     WithJsonSchema({"type": "string"}),
 ]
 
@@ -492,7 +491,7 @@ class LLM(BaseLLM, ABC):
         StructuredLLM: Wrapper that exposes structured interactions on top of an ``LLM`` instance.
     """
 
-    system_prompt: Optional[str] = Field(
+    system_prompt: str | None = Field(
         default=None, description="System prompt for LLM calls."
     )
     messages_to_prompt: MessagesToPromptCallable = Field(
@@ -505,7 +504,7 @@ class LLM(BaseLLM, ABC):
         default=None,
         exclude=True,
     )
-    output_parser: Optional[BaseParser] = Field(
+    output_parser: BaseParser | None = Field(
         description="Output parser to parse, validate, and correct errors programmatically.",
         default=None,
         exclude=True,
@@ -513,7 +512,7 @@ class LLM(BaseLLM, ABC):
     pydantic_program_mode: StructuredLLMMode = StructuredLLMMode.DEFAULT
 
     # # deprecated
-    query_wrapper_prompt: Optional[BasePromptTemplate] = Field(
+    query_wrapper_prompt: BasePromptTemplate | None = Field(
         description="Query wrapper prompt for LLM calls.",
         default=None,
         exclude=True,
@@ -522,7 +521,7 @@ class LLM(BaseLLM, ABC):
     @field_validator("messages_to_prompt")  # type: ignore[misc]
     @classmethod
     def set_messages_to_prompt(
-        cls, messages_to_prompt: Optional[MessagesToPromptType]
+        cls, messages_to_prompt: MessagesToPromptType | None
     ) -> MessagesToPromptType:
         r"""Select a message-to-prompt adapter, defaulting to MessageList.to_prompt().
 
@@ -559,7 +558,7 @@ class LLM(BaseLLM, ABC):
     @field_validator("completion_to_prompt")  # type: ignore[misc]
     @classmethod
     def set_completion_to_prompt(
-        cls, completion_to_prompt: Optional[CompletionToPromptType]
+        cls, completion_to_prompt: CompletionToPromptType | None
     ) -> CompletionToPromptType:
         """Ensure completion adapters always default to ``default_completion_to_prompt``.
 

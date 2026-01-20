@@ -9,10 +9,6 @@ from typing import (
     Any,
     AsyncGenerator,
     Generator,
-    Optional,
-    Union,
-    List,
-    Tuple
 )
 
 from ollama import AsyncClient, Client  # type: ignore[attr-defined]
@@ -52,7 +48,7 @@ DEFAULT_REQUEST_TIMEOUT = 60.0
 
 
 def get_additional_kwargs(
-    response: dict[str, Any], exclude: Tuple[str, ...]
+    response: dict[str, Any], exclude: tuple[str, ...]
 ) -> dict[str, Any]:
     """Filter out excluded keys from a response dictionary.
 
@@ -162,16 +158,16 @@ class Ollama(FunctionCallingLLM):
             Whether to request JSON-formatted responses when supported. Defaults to ``False``.
         additional_kwargs (dict[str, Any]):
             Extra provider-specific options forwarded under ``options``.
-        client (Optional[Client]):
+        client (Client | None):
             Pre-constructed synchronous Ollama client. When omitted, the client
             is created lazily from ``base_url`` and ``request_timeout``.
-        async_client (Optional[AsyncClient]):
+        async_client (AsyncClient | None):
             Pre-constructed asynchronous Ollama client. If omitted, a client is
             created per event loop.
         is_function_calling_model (bool):
             Flag indicating whether the selected model supports tool/function
             calling. Defaults to ``True``.
-        keep_alive (Optional[Union[float, str]]):
+        keep_alive (float | str | None):
             Controls how long the model stays loaded following the request
             (e.g., ``"5m"``). When ``None``, provider defaults apply.
         **kwargs (Any):
@@ -242,13 +238,13 @@ class Ollama(FunctionCallingLLM):
         default=True,
         description="Whether the model is a function calling model.",
     )
-    keep_alive: Optional[Union[float, str]] = Field(
+    keep_alive: float | str | None = Field(
         default="5m",
         description="controls how long the model will stay loaded into memory following the request(default: 5m)",
     )
 
-    _client: Optional[Client] = PrivateAttr()
-    _async_client: Optional[AsyncClient] = PrivateAttr()
+    _client: Client | None = PrivateAttr()
+    _async_client: AsyncClient | None = PrivateAttr()
 
     def __init__(
         self,
@@ -260,10 +256,10 @@ class Ollama(FunctionCallingLLM):
         prompt_key: str = "prompt",
         json_mode: bool = False,
         additional_kwargs: dict[str, Any] | None = None,
-        client: Optional[Client] = None,
-        async_client: Optional[AsyncClient] = None,
+        client: Client | None = None,
+        async_client: AsyncClient | None = None,
         is_function_calling_model: bool = True,
-        keep_alive: Optional[Union[float, str]] = None,
+        keep_alive: float | str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the Ollama LLM adapter."""
@@ -288,7 +284,7 @@ class Ollama(FunctionCallingLLM):
         self._async_client = async_client
         # Track the event loop associated with the async client to avoid
         # reusing a client bound to a closed event loop across tests/runs
-        self._async_client_loop: Optional[asyncio.AbstractEventLoop] = None
+        self._async_client_loop: asyncio.AbstractEventLoop | None = None
 
         # Cache decorated methods to avoid creating wrappers on every call
         self._complete_fn = chat_to_completion_decorator(self.chat)
@@ -463,7 +459,7 @@ class Ollama(FunctionCallingLLM):
 
     def _convert_to_ollama_messages(
         self, messages: MessageList
-    ) -> List[dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Convert internal MessageList to the Ollama wire format.
 
         Args:
@@ -582,9 +578,9 @@ class Ollama(FunctionCallingLLM):
 
     def _prepare_chat_with_tools(
         self,
-        tools: List["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[list[Message]] = None,
+        tools: list["BaseTool"],
+        user_msg: str | Message | None = None,
+        chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
@@ -593,8 +589,8 @@ class Ollama(FunctionCallingLLM):
 
         Args:
             tools (List[BaseTool]): Tools to expose to the model (converted using OpenAI schema).
-            user_msg (Optional[Union[str, Message]]): Optional user message to append.
-            chat_history (Optional[list[Message]]): Optional existing conversation history.
+            user_msg (str | Message | None): Optional user message to append.
+            chat_history (list[Message] | None): Optional existing conversation history.
             verbose (bool): Currently unused verbosity flag.
             allow_parallel_tool_calls (bool): Indicator forwarded to validators.
             **kwargs (Any): Reserved for future extensions.
@@ -643,7 +639,7 @@ class Ollama(FunctionCallingLLM):
     def _validate_chat_with_tools_response(
         self,
         response: ChatResponse,
-        tools: List["BaseTool"],
+        tools: list["BaseTool"],
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
     ) -> ChatResponse:
@@ -694,7 +690,7 @@ class Ollama(FunctionCallingLLM):
         self,
         response: "ChatResponse",
         error_on_no_tool_call: bool = True,
-    ) -> List[ToolCallArguments]:
+    ) -> list[ToolCallArguments]:
         """Extract tool call selections from a chat response.
 
         Args:
@@ -702,7 +698,7 @@ class Ollama(FunctionCallingLLM):
             error_on_no_tool_call (bool): Whether to raise when no tool calls are present.
 
         Returns:
-            List[ToolCallArguments]: Parsed tool selections (empty when allowed and none present).
+            list[ToolCallArguments]: Parsed tool selections (empty when allowed and none present).
 
         Raises:
             ValueError: When ``error_on_no_tool_call`` is ``True`` and no tool calls exist.

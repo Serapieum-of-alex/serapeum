@@ -5,7 +5,7 @@ implement to support chat/completion, streaming, and async variants.
 """
 
 from abc import abstractmethod
-from typing import Any, List, Sequence
+from typing import Any, Sequence
 
 from pydantic import ConfigDict
 
@@ -38,13 +38,13 @@ class BaseLLM(SerializableModel):
             Metadata: LLM metadata containing various information about the LLM.
         """
 
-    def convert_chat_messages(self, messages: Sequence[Message]) -> List[Any]:
+    def convert_chat_messages(self, messages: Sequence[Message]) -> list[Any]:
         """Convert chat messages to an LLM specific message format."""
         converted_messages = []
         for message in messages:
             if isinstance(message.content, str):
                 converted_messages.append(message)
-            elif isinstance(message.content, List):
+            elif isinstance(message.content, list):
                 content_string = ""
                 for block in message.content:
                     if isinstance(block, TextChunk):

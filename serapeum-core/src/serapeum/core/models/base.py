@@ -4,7 +4,7 @@ import json
 import logging
 import pickle
 from enum import Enum
-from typing import Any, Dict, Self, TypeVar
+from typing import Any, Self, TypeVar, Dict
 
 from pydantic import (
     BaseModel,
@@ -61,12 +61,12 @@ class SerializableModel(BaseModel):
     @model_serializer(mode="wrap")
     def custom_model_dump(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         data = handler(self)
         data["class_name"] = self.class_name()
         return data
 
-    def dict(self, **kwargs: Any) -> Dict[str, Any]:
+    def dict(self, **kwargs: Any) -> dict[str, Any]:
         """Alias to :meth:`model_dump`."""
         return self.model_dump(**kwargs)
 

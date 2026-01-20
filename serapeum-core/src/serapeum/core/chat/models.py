@@ -4,7 +4,7 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, AsyncGenerator, Dict, Generator, List, Optional, Union, cast
+from typing import Any, AsyncGenerator, Generator, cast
 
 from pydantic import BaseModel
 
@@ -60,9 +60,9 @@ class AgentChatResponse:
     """
 
     response: str = ""
-    sources: List[ToolOutput] = field(default_factory=list)
+    sources: list[ToolOutput] = field(default_factory=list)
     is_dummy_stream: bool = False
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
     def __str__(self) -> str:
         """Return the textual response as the string representation.
@@ -179,7 +179,7 @@ class AgentChatResponse:
     def parse_tool_outputs(
         self,
         allow_parallel_tool_calls: bool = False,
-    ) -> Union[BaseModel, List[BaseModel]]:
+    ) -> BaseModel | list[BaseModel]:
         """Parse structured tool outputs from ``sources``.
 
         Extracts the Pydantic models placed in ``ToolOutput.raw_output`` and

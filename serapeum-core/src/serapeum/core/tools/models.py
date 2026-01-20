@@ -5,7 +5,7 @@ import copy
 import json
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Type
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -65,15 +65,15 @@ class MinimalToolSchema(BaseModel):
 
 @dataclass
 class Schema:
-    full_schema: Dict[str, Any]
-    resolved_schema: Optional[Dict[str, Any]] = None
-    referenced_schema: Optional[Dict[str, Any]] = None
+    full_schema: dict[str, Any]
+    resolved_schema: dict[str, Any] | None = None
+    referenced_schema: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         self.resolved_schema = self.resolve_references(inline=True)
         self.referenced_schema = self.resolve_references(inline=False)
 
-    def resolve_references(self, inline: bool = False) -> Dict[str, Any]:
+    def resolve_references(self, inline: bool = False) -> dict[str, Any]:
         defs = (
             self.full_schema.get("$defs") or self.full_schema.get("definitions") or {}
         )
@@ -90,7 +90,7 @@ class Schema:
         return parameters
 
     @staticmethod
-    def _resolve_local_refs(obj: Any, defs: Dict[str, Any]) -> Any:
+    def _resolve_local_refs(obj: Any, defs: dict[str, Any]) -> Any:
         """Recursively inline local $ref objects using the provided defs."""
         if isinstance(obj, dict):
             if "$ref" in obj and isinstance(obj["$ref"], str):
@@ -212,8 +212,8 @@ class ToolMetadata:
     """
 
     description: str
-    name: Optional[str] = None
-    tool_schema: Optional[Type[BaseModel]] = MinimalToolSchema
+    name: str | None = None
+    tool_schema: Type[BaseModel] | None = MinimalToolSchema
     return_direct: bool = False
 
     def get_schema(self) -> dict[str, Any]:
@@ -384,7 +384,7 @@ class ToolMetadata:
             raise ValueError("name is None.")
         return self.name
 
-    def to_openai_tool(self, skip_length_check: bool = False) -> Dict[str, Any]:
+    def to_openai_tool(self, skip_length_check: bool = False) -> dict[str, Any]:
         """Export this metadata as an OpenAI function-calling tool spec.
 
         Builds a dictionary compatible with OpenAI-style function tools. By default,
@@ -396,7 +396,7 @@ class ToolMetadata:
                 description length. Defaults to ``False``.
 
         Returns:
-            Dict[str, Any]: A dictionary with keys ``type`` and ``function``. The
+            dict[str, Any]: A dictionary with keys ``type`` and ``function``. The
                 latter contains ``name``, ``description``, and ``parameters``.
 
         Raises:
@@ -463,12 +463,12 @@ class ToolOutput(BaseModel):
     :class:`serapeum.core.base.llms.models.TextChunk`).
 
     Args:
-        chunks (List[ChunkType]):
+        chunks (list[ChunkType]):
             A list of content chunks. If ``content`` is supplied, this value
             is ignored and replaced by a single ``TextChunk``.
         tool_name (str):
             The name of the tool that produced this output.
-        raw_input (Dict[str, Any]):
+        raw_input (dict[str, Any]):
             the schema of the tool's input.
             ```
             {"args": (), "kwargs": {"arg1": "val1"}
@@ -522,19 +522,19 @@ class ToolOutput(BaseModel):
         - ToolMetadata: Describes the tool that produced this output.
     """
 
-    chunks: List[ChunkType]
+    chunks: list[ChunkType]
     tool_name: str
-    raw_input: Optional[Dict[str, Any]]
+    raw_input: dict[str, Any] | None
     raw_output: Any
     is_error: bool = False
 
     def __init__(
         self,
         tool_name: str,
-        content: Optional[str] = None,
-        chunks: Optional[List[ChunkType]] = None,
-        raw_input: Optional[Dict[str, Any]] = None,
-        raw_output: Optional[Any] = None,
+        content: str | None = None,
+        chunks: list[ChunkType] | None = None,
+        raw_input: dict[str, Any] | None = None,
+        raw_output: Any | None = None,
         is_error: bool = False,
     ):
         """Initialize a ToolOutput instance.
@@ -547,9 +547,9 @@ class ToolOutput(BaseModel):
                 The name of the producing tool.
             content (Optional[str]):
                 A convenience text payload. If supplied, ``chunks`` must be omitted.
-            chunks (Optional[List[ChunkType]]):
+            chunks (Optional[list[ChunkType]]):
                 Explicit chunk list. If supplied, ``content`` must be omitted.
-            raw_input (Optional[Dict[str, Any]]):
+            raw_input (Optional[dict[str, Any]]):
                 Optional debug/provenance input.
             raw_output (Optional[Any]):
                 Optional raw output from the tool.
@@ -961,7 +961,7 @@ class ToolCallArguments(BaseModel):
             An identifier for the tool call (e.g., provider-specific id).
         tool_name (str):
             The name of the tool to execute.
-        tool_kwargs (Dict[str, Any]):
+        tool_kwargs (dict[str, Any]):
             Keyword arguments for the tool. If a non-dict value is supplied, it is coerced to an empty dict by
             validation.
 
@@ -1009,11 +1009,11 @@ class ToolCallArguments(BaseModel):
 
     tool_id: str = Field(description="Tool ID to select.")
     tool_name: str = Field(description="Tool name to select.")
-    tool_kwargs: Dict[str, Any] = Field(description="Keyword arguments for the tool.")
+    tool_kwargs: dict[str, Any] = Field(description="Keyword arguments for the tool.")
 
     @field_validator("tool_kwargs", mode="wrap")
     @classmethod
-    def ignore_non_dict_arguments(cls, v: Any, handler: Any) -> Dict[str, Any]:
+    def ignore_non_dict_arguments(cls, v: Any, handler: Any) -> dict[str, Any]:
         try:
             return handler(v)
         except ValidationError:

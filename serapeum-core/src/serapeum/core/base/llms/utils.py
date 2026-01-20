@@ -1,7 +1,7 @@
 """Helper adapters to bridge chat and completion interfaces for LLM backends."""
 
 import os
-from typing import Any, Awaitable, Callable, Optional
+from typing import Any, Awaitable, Callable
 
 from serapeum.core.base.llms.models import (
     ChatResponse,
@@ -84,9 +84,9 @@ def astream_chat_to_completion_decorator(
 
 def get_from_param_or_env(
     key: str,
-    param: Optional[str] = None,
-    env_key: Optional[str] = None,
-    default: Optional[str] = None,
+    param: str | None = None,
+    env_key: str | None = None,
+    default: str | None = None,
 ) -> str:
     """Return value from explicit param, environment, or default.
 

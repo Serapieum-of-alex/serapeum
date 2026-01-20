@@ -12,10 +12,7 @@ from typing import (
     AsyncGenerator,
     Generator,
     Iterator,
-    List,
     Literal,
-    Optional,
-    Union,
 )
 
 from filetype import guess as filetype_guess
@@ -51,8 +48,8 @@ class Chunk(BaseModel):
     """Base content chunk (text, image, audio)."""
 
     content: bytes | str | None = None
-    path: Optional[FilePath | None] = None
-    url: Optional[AnyUrl | str | None] = None
+    path: FilePath | None = None
+    url: AnyUrl | str | None = None
 
 
 class TextChunk(Chunk):
@@ -68,7 +65,7 @@ class Image(Chunk):
     image_mimetype: str | None = None
     detail: str | None = None
     # Accept base64 payload provided by callers; mapped into content during validation
-    base64: Optional[bytes | str] = None
+    base64: bytes | str | None = None
 
     @field_validator("url", mode="after")  # type: ignore[misc]
     @classmethod
@@ -197,7 +194,7 @@ class Audio(Chunk):
         )
 
 
-ChunkType = Annotated[Union[TextChunk, Image, Audio], Field(discriminator="type")]
+ChunkType = Annotated[TextChunk | Image | Audio, Field(discriminator="type")]
 
 
 class Message(BaseModel):
@@ -259,7 +256,7 @@ class Message(BaseModel):
     def from_str(
         cls,
         content: str,
-        role: Union[MessageRole, str] = MessageRole.USER,
+        role: MessageRole | str = MessageRole.USER,
         **kwargs: Any,
     ) -> Self:
         if isinstance(role, str):
@@ -288,7 +285,7 @@ class Message(BaseModel):
 class MessageList(BaseModel, ABCSequence):
     """A collection of Message objects with helper methods."""
 
-    messages: List[Message] = Field(default_factory=list)
+    messages: list[Message] = Field(default_factory=list)
 
     def __iter__(self) -> Iterator[Message]:
         """Iterate through contained messages in order."""
@@ -298,7 +295,7 @@ class MessageList(BaseModel, ABCSequence):
         """Return the number of messages in the list."""
         return len(self.messages)
 
-    def __getitem__(self, index: Union[int, slice]) -> Union[Message, "MessageList"]:
+    def __getitem__(self, index: int | slice) -> Message | "MessageList":
         """Retrieve a message or slice of messages."""
         if isinstance(index, slice):
             return MessageList(messages=self.messages[index])
@@ -329,7 +326,7 @@ class MessageList(BaseModel, ABCSequence):
         self.messages.append(message)
 
     @classmethod
-    def from_list(cls, messages: List[Message]) -> "MessageList":
+    def from_list(cls, messages: list[Message]) -> "MessageList":
         """Create from a standard list."""
         return cls(messages=messages)
 
@@ -356,16 +353,16 @@ class LikelihoodScore(BaseModel):
 
     token: str = Field(default_factory=str)
     next_token_log_prob: float = Field(default_factory=float)
-    bytes: List[int] = Field(default_factory=list)
+    bytes: list[int] = Field(default_factory=list)
 
 
 class BaseResponse(BaseModel):
     """Base response."""
 
-    raw: Optional[Any] = None
-    likelihood_score: Optional[List[List[LikelihoodScore]]] = None
+    raw: Any | None = None
+    likelihood_score: list[list[LikelihoodScore]] | None = None
     additional_kwargs: dict = Field(default_factory=dict)
-    delta: Optional[str] = None
+    delta: str | None = None
 
 
 class ChatResponse(BaseResponse):

@@ -3,7 +3,7 @@
 import asyncio
 import inspect
 import json
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, Awaitable, Callable, Type, TypeVar
 
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
@@ -31,7 +31,7 @@ class SyncAsyncConverter:
             self.async_func = self.to_async(func)
 
     @staticmethod
-    def is_async(func: Union[Callable[..., Any], Callable[..., Awaitable[Any]]]) -> bool:
+    def is_async(func: Callable[..., Any] | Callable[..., Awaitable[Any]]) -> bool:
         return inspect.iscoroutinefunction(func)
 
     @staticmethod
@@ -210,9 +210,9 @@ class CallableTool(AsyncBaseTool):
 
     def __init__(
         self,
-        func: Optional[Callable[..., Any] | AsyncCallable],
-        metadata: Optional[ToolMetadata] = None,
-        default_arguments: Optional[Dict[str, Any]] = None,
+        func: Callable[..., Any] | AsyncCallable | None,
+        metadata: ToolMetadata | None = None,
+        default_arguments: dict[str, Any] | None = None,
     ) -> None:
         """Initialize a CallableTool.
 
@@ -225,11 +225,11 @@ class CallableTool(AsyncBaseTool):
             func (Optional[Callable[..., Any]]):
                 Synchronous or asynchronous callable to wrap. Mutually exclusive
                 with ``async_fn``.
-            metadata (Optional[ToolMetadata]):
+            metadata (ToolMetadata | None):
                 Required metadata describing the tool. Use
                 :meth:`CallableTool.from_defaults` if you prefer automatic
                 metadata derivation.
-            default_arguments (Optional[Dict[str, Any]]):
+            default_arguments (dict[str, Any] | None):
                 Default keyword arguments that will be merged into each call,
                 allowing you to pre-configure parameters.
 
@@ -282,13 +282,13 @@ class CallableTool(AsyncBaseTool):
     @classmethod
     def from_function(
         cls,
-        func: Optional[Callable[..., Any] | AsyncCallable],
-        name: Optional[str] = None,
-        description: Optional[str] = None,
+        func: Callable[..., Any] | AsyncCallable | None,
+        name: str | None = None,
+        description: str | None = None,
         return_direct: bool = False,
-        tool_schema: Optional[Type[BaseModel]] = None,
-        tool_metadata: Optional[ToolMetadata] = None,
-        default_arguments: Optional[Dict[str, Any]] = None,
+        tool_schema: Type[BaseModel] | None = None,
+        tool_metadata: ToolMetadata | None = None,
+        default_arguments: dict[str, Any] | None = None,
     ) -> "CallableTool":
         """Construct a ``CallableTool`` and infer metadata/schema when needed.
 
@@ -303,23 +303,23 @@ class CallableTool(AsyncBaseTool):
         Args:
             func (Optional[Callable[..., Any]]):
                 Synchronous or Asynchronous function to wrap.
-            name (Optional[str]):
+            name (str | None):
                 Override for the tool name. Defaults to the function's
                 ``__name__``.
-            description (Optional[str]):
+            description (str | None):
                 Override for the tool description. If omitted, a description is
                 constructed using the function signature and the first
                 non-empty line of its docstring, if available.
             return_direct (bool):
                 Whether the tool's content should be returned directly by some
                 orchestrators. Defaults to ``False``.
-            tool_schema (Optional[Type[BaseModel]]):
+            tool_schema (Type[BaseModel] | None):
                 Optional Pydantic model to use as the input schema. If omitted,
                 one is created from the function signature.
-            tool_metadata (Optional[ToolMetadata]):
+            tool_metadata (ToolMetadata | None):
                 Provide explicit metadata. If given, it is used as-is and no
                 inference occurs.
-            default_arguments (Optional[Dict[str, Any]]):
+            default_arguments (dict[str, Any] | None):
                 Default keyword arguments to merge into every call.
 
         Returns:
@@ -618,11 +618,11 @@ class CallableTool(AsyncBaseTool):
         return self._async_func
 
     @property
-    def input_func(self) -> Union[Callable[..., Any], AsyncCallable]:
+    def input_func(self) -> Callable[..., Any] | AsyncCallable:
         """Return the original callable that was wrapped.
 
         Returns:
-            Union[Callable[..., Any], AsyncCallable]: The underlying function as
+            Callable[..., Any] | AsyncCallable: The underlying function as
             provided to the constructor.
 
         Raises:
@@ -650,7 +650,7 @@ class CallableTool(AsyncBaseTool):
         return self._input_func
 
     @staticmethod
-    def _parse_tool_output(raw_output: Any) -> List[ChunkType]:
+    def _parse_tool_output(raw_output: Any) -> list[ChunkType]:
         """Normalize raw function output into a list of content chunks.
 
         The following conversions are performed:
@@ -663,7 +663,7 @@ class CallableTool(AsyncBaseTool):
             raw_output (Any): The raw value returned by the wrapped callable.
 
         Returns:
-            List[ChunkType]: A list of content chunks suitable for
+            list[ChunkType]: A list of content chunks suitable for
             :class:`~serapeum.core.tools.models.ToolOutput`.
 
         Examples:

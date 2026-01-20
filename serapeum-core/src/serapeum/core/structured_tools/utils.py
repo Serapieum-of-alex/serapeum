@@ -6,13 +6,9 @@ import logging
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
-    List,
-    Optional,
     Sequence,
     Type,
     TypeVar,
-    Union,
 )
 
 from pydantic import BaseModel, ConfigDict, ValidationError, create_model
@@ -42,7 +38,7 @@ class FlexibleModel(BaseModel):
         return create_model(
             f"Flexible{model.__name__}",
             __base__=cls,
-            **{field: (Optional[Any], None) for field in model.model_fields},
+            **{field: (Any | None, None) for field in model.model_fields},
         )
 
 
@@ -142,7 +138,7 @@ class StreamingObjectProcessor:
         output_cls: Type[BaseModel],
         flexible_mode: bool = True,
         allow_parallel_tool_calls: bool = False,
-        llm: Optional[FunctionCallingLLM] = None,
+        llm: FunctionCallingLLM | None = None,
     ) -> None:
         """Initialize the streaming object processor.
 
@@ -165,8 +161,8 @@ class StreamingObjectProcessor:
     def process(
         self,
         chat_response: ChatResponse,
-        cur_objects: Optional[Sequence[BaseModel]] = None,
-    ) -> Union[BaseModel, List[BaseModel]]:
+        cur_objects: Sequence[BaseModel] | None = None,
+    ) -> BaseModel | list[BaseModel]:
         """Process a streaming chat response into structured objects.
 
         Args:
@@ -186,7 +182,7 @@ class StreamingObjectProcessor:
 
         return self._format_output(finalized)
 
-    def _extract_args(self, chat_response: ChatResponse) -> List[Any]:
+    def _extract_args(self, chat_response: ChatResponse) -> list[Any]:
         """Extract output arguments from chat response."""
         tool_calls_data = chat_response.message.additional_kwargs.get("tool_calls")
 
@@ -214,11 +210,11 @@ class StreamingObjectProcessor:
 
     def _parse_objects(
         self,
-        args: List[Any],
-        fallback: Optional[Sequence[BaseModel]],
-    ) -> List[BaseModel]:
+        args: list[Any],
+        fallback: Sequence[BaseModel] | None,
+    ) -> list[BaseModel]:
         """Parse arguments into Pydantic objects with error recovery."""
-        parsed: List[BaseModel] = []
+        parsed: list[BaseModel] = []
 
         for args_set in args:
             obj = self._parse_single(args_set)
@@ -231,7 +227,7 @@ class StreamingObjectProcessor:
 
         return result
 
-    def _parse_single(self, args: Any) -> Optional[BaseModel]:
+    def _parse_single(self, args: Any) -> BaseModel | None:
         """Parse a single set of arguments into a Pydantic object."""
         result = None
         # Try direct validation
@@ -250,9 +246,9 @@ class StreamingObjectProcessor:
 
     def _select_best(
         self,
-        new_objects: List[BaseModel],
-        cur_objects: Optional[Sequence[BaseModel]],
-    ) -> List[BaseModel]:
+        new_objects: list[BaseModel],
+        cur_objects: Sequence[BaseModel] | None,
+    ) -> list[BaseModel]:
         """Select object set with more valid fields."""
 
         return (
@@ -262,12 +258,12 @@ class StreamingObjectProcessor:
             else list(cur_objects)
         )
 
-    def _finalize(self, objects: List[BaseModel]) -> List[BaseModel]:
+    def _finalize(self, objects: list[BaseModel]) -> list[BaseModel]:
         """Convert flexible objects to target schema if applicable."""
         if not self._flexible_mode:
             result = objects
         else:
-            finalized: List[BaseModel] = []
+            finalized: list[BaseModel] = []
             for obj in objects:
                 try:
                     converted = self._output_cls.model_validate(
@@ -283,8 +279,8 @@ class StreamingObjectProcessor:
         return result
 
     def _format_output(
-        self, objects: List[BaseModel]
-    ) -> Union[BaseModel, List[BaseModel]]:
+        self, objects: list[BaseModel]
+    ) -> BaseModel | list[BaseModel]:
         """Format output based on parallel tool calls setting."""
         if self._allow_parallel:
             result = objects
@@ -299,7 +295,7 @@ class StreamingObjectProcessor:
 
 
 def num_valid_fields(
-    obj: Union[BaseModel, Sequence[BaseModel], Dict[str, BaseModel]],
+    obj: BaseModel | Sequence[BaseModel] | dict[str, BaseModel],
 ) -> int:
     """
     Recursively count the number of fields in a Pydantic object (including nested objects) that aren't None.

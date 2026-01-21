@@ -705,6 +705,266 @@ result = tools_llm(input="test")
 
 ---
 
+## Using Regular Functions with ToolOrchestratingLLM
+
+`ToolOrchestratingLLM` now supports both Pydantic models and regular Python functions as `output_cls`. When you pass a function, the system automatically detects it and creates the appropriate tool.
+
+### 1. Using Regular Functions
+
+Pass regular Python functions directly as `output_cls`:
+
+```python
+from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.llms.ollama import Ollama
+
+def calculate_statistics(numbers: list[float], operation: str) -> dict[str, float]:
+    """Calculate statistics on a list of numbers.
+
+    Args:
+        numbers: List of numbers to analyze
+        operation: Type of operation (mean, sum, max, min)
+
+    Returns:
+        Dictionary with the result
+    """
+    if operation == "mean":
+        result = sum(numbers) / len(numbers)
+    elif operation == "sum":
+        result = sum(numbers)
+    elif operation == "max":
+        result = max(numbers)
+    elif operation == "min":
+        result = min(numbers)
+    else:
+        raise ValueError(f"Unknown operation: {operation}")
+
+    return {
+        "operation": operation,
+        "result": result,
+        "count": len(numbers)
+    }
+
+# Use function directly with ToolOrchestratingLLM
+llm = Ollama(model="llama3.1", request_timeout=80)
+
+tools_llm = ToolOrchestratingLLM(
+    output_cls=calculate_statistics,  # Pass function directly!
+    prompt="Calculate the mean of these numbers: {text}",
+    llm=llm,
+)
+
+# Call with input
+result = tools_llm(text="10, 20, 30, 40, 50")
+
+print(f"Operation: {result['operation']}")
+print(f"Result: {result['result']}")
+print(f"Count: {result['count']}")
+```
+
+### 2. Using Functions with Regular Classes
+
+Wrap regular Python classes in functions and use with ToolOrchestratingLLM:
+
+```python
+from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.llms.ollama import Ollama
+
+class EmailValidator:
+    """Regular Python class for email validation."""
+
+    def __init__(self, email: str, check_mx: bool = False):
+        self.email = email
+        self.check_mx = check_mx
+        self.is_valid = self._validate()
+
+    def _validate(self) -> bool:
+        """Simple email validation."""
+        return "@" in self.email and "." in self.email.split("@")[1]
+
+    def to_dict(self) -> dict:
+        return {
+            "email": self.email,
+            "is_valid": self.is_valid,
+            "check_mx": self.check_mx
+        }
+
+def validate_email(email: str, check_mx: bool = False) -> dict:
+    """Validate an email address.
+
+    Args:
+        email: Email address to validate
+        check_mx: Whether to check MX records (not implemented)
+
+    Returns:
+        Validation result dictionary
+    """
+    validator = EmailValidator(email, check_mx)
+    return validator.to_dict()
+
+# Use function with ToolOrchestratingLLM
+llm = Ollama(model="llama3.1", request_timeout=80)
+
+tools_llm = ToolOrchestratingLLM(
+    output_cls=validate_email,  # Pass function that uses the class
+    prompt="Validate this email: {email_text}",
+    llm=llm,
+)
+
+result = tools_llm(email_text="user@example.com")
+
+print(f"Email: {result['email']}")
+print(f"Valid: {result['is_valid']}")
+```
+
+### 3. Factory Functions with Dataclasses
+
+Use factory functions that return dataclass instances:
+
+```python
+from dataclasses import dataclass
+from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.llms.ollama import Ollama
+
+@dataclass
+class Product:
+    """Regular dataclass (not Pydantic)."""
+    name: str
+    price: float
+    category: str
+    in_stock: bool
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "price": self.price,
+            "category": self.category,
+            "in_stock": self.in_stock
+        }
+
+def create_product(name: str, price: float, category: str, in_stock: bool = True) -> dict:
+    """Create a product from parameters.
+
+    Args:
+        name: Product name
+        price: Product price in USD
+        category: Product category
+        in_stock: Whether product is in stock
+
+    Returns:
+        Product data as dictionary
+    """
+    product = Product(name, price, category, in_stock)
+    return product.to_dict()
+
+# Use factory function with ToolOrchestratingLLM
+llm = Ollama(model="llama3.1", request_timeout=80)
+
+tools_llm = ToolOrchestratingLLM(
+    output_cls=create_product,  # Pass factory function
+    prompt="Create a product entry for: {product_info}",
+    llm=llm,
+)
+
+result = tools_llm(product_info="Laptop, $999, Electronics, available")
+
+print(f"Product: {result['name']}")
+print(f"Price: ${result['price']}")
+print(f"Category: {result['category']}")
+```
+
+### 4. Async Functions
+
+Use async functions directly with ToolOrchestratingLLM:
+
+```python
+import asyncio
+from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.llms.ollama import Ollama
+
+async def fetch_user_data(user_id: int, include_posts: bool = False) -> dict:
+    """Asynchronously fetch user data.
+
+    Args:
+        user_id: User ID to fetch
+        include_posts: Whether to include user posts
+
+    Returns:
+        User data dictionary
+    """
+    # Simulate async API call
+    await asyncio.sleep(0.1)
+
+    user_data = {
+        "user_id": user_id,
+        "username": f"user_{user_id}",
+        "email": f"user{user_id}@example.com"
+    }
+
+    if include_posts:
+        user_data["posts"] = [
+            {"id": 1, "title": "First post"},
+            {"id": 2, "title": "Second post"}
+        ]
+
+    return user_data
+
+# Use async function with ToolOrchestratingLLM
+async def main():
+    llm = Ollama(model="llama3.1", request_timeout=80)
+
+    tools_llm = ToolOrchestratingLLM(
+        output_cls=fetch_user_data,  # Pass async function
+        prompt="Fetch data for user ID {user_id_text} with their posts",
+        llm=llm,
+    )
+
+    # Use acall for async execution
+    result = await tools_llm.acall(user_id_text="42")
+
+    print(f"User: {result['username']}")
+    print(f"Email: {result['email']}")
+    if "posts" in result:
+        print(f"Posts: {len(result['posts'])}")
+
+# Run async example
+asyncio.run(main())
+```
+
+### 5. Lambda Functions
+
+Use lambda functions for simple transformations:
+
+```python
+from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.llms.ollama import Ollama
+
+# Simple lambda function for temperature conversion
+convert_temp = lambda celsius: {
+    "celsius": celsius,
+    "fahrenheit": (celsius * 9/5) + 32,
+    "kelvin": celsius + 273.15
+}
+
+llm = Ollama(model="llama3.1", request_timeout=80)
+
+tools_llm = ToolOrchestratingLLM(
+    output_cls=convert_temp,  # Pass lambda function
+    prompt="Convert {temperature} degrees Celsius",
+    llm=llm,
+)
+
+result = tools_llm(temperature="25")
+
+print(f"Celsius: {result['celsius']}")
+print(f"Fahrenheit: {result['fahrenheit']}")
+print(f"Kelvin: {result['kelvin']}")
+```
+
+**Note**: Lambda functions work but have limitations:
+- No docstring for the LLM to understand the function
+- Parameters aren't well-documented
+- Better to use regular functions with proper documentation for complex cases
+
 ## Error Handling
 
 ### 1. Handling LLM Validation Errors

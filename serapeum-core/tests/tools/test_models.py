@@ -7,6 +7,7 @@ from pydantic import BaseModel, ValidationError
 
 from serapeum.core.base.llms.models import Audio, Image, TextChunk
 from serapeum.core.tools.models import (
+    ArgumentCoercer,
     AsyncBaseTool,
     BaseTool,
     BaseToolAsyncAdapter,
@@ -613,3 +614,485 @@ class TestToolCallArguments:
         """
         sel = ToolCallArguments(tool_id="e1", tool_name="echo", tool_kwargs={}, extra_field=123)  # type: ignore[call-arg]
         assert getattr(sel, "extra_field", None) is None
+
+
+class TestArgumentCoercer:
+    """Test suite for the ArgumentCoercer class.
+
+    Tests cover all methods and edge cases for coercing LLM-returned arguments
+    to match expected tool schema types.
+    """
+
+    class TestParseJsonString:
+
+        def test_parse_json_string_with_valid_dict_string(self):
+            """Test parsing a valid JSON string containing a dictionary.
+
+            Inputs:
+              - raw_arguments: '{"a": 1, "b": "hello"}'
+            Expected:
+              - Returns parsed dict: {"a": 1, "b": "hello"}
+            Checks:
+              - Result is a dict with correct keys and values.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._parse_json_string('{"a": 1, "b": "hello"}')
+            assert result == {"a": 1, "b": "hello"}
+
+        def test_parse_json_string_with_dict_input(self):
+            """Test that passing a dict directly returns it unchanged.
+
+            Inputs:
+              - raw_arguments: {"x": 10, "y": 20} (already a dict)
+            Expected:
+              - Returns the same dict unchanged.
+            Checks:
+              - Result equals input dict.
+            """
+            coercer = ArgumentCoercer()
+            input_dict = {"x": 10, "y": 20}
+            result = coercer._parse_json_string(input_dict)
+            assert result == input_dict
+
+        def test_parse_json_string_with_invalid_json(self):
+            """Test that invalid JSON string returns empty dict.
+
+            Inputs:
+              - raw_arguments: '{invalid json}' (malformed JSON)
+            Expected:
+              - Returns empty dict {} to handle gracefully.
+            Checks:
+              - Result is an empty dict.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._parse_json_string("{invalid json}")
+            assert result == {}
+
+        def test_parse_json_string_with_json_array(self):
+            """Test that JSON array string returns empty dict (not a dict).
+
+            Inputs:
+              - raw_arguments: '[1, 2, 3]' (JSON array, not object)
+            Expected:
+              - Returns empty dict because result is not a dictionary.
+            Checks:
+              - Result is an empty dict.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._parse_json_string("[1, 2, 3]")
+            assert result == {}
+
+        def test_parse_json_string_with_empty_string(self):
+            """Test that empty string returns empty dict.
+
+            Inputs:
+              - raw_arguments: '' (empty string)
+            Expected:
+              - Returns empty dict due to JSON parsing failure.
+            Checks:
+              - Result is an empty dict.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._parse_json_string("")
+            assert result == {}
+
+        def test_parse_json_string_with_non_string_non_dict(self):
+            """Test that non-string, non-dict input returns empty dict.
+
+            Inputs:
+              - raw_arguments: 123 (integer)
+            Expected:
+              - Returns empty dict as fallback.
+            Checks:
+              - Result is an empty dict.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._parse_json_string(123)  # type: ignore[arg-type]
+            assert result == {}
+
+    class TestTryParseStringValue:
+
+        def test_try_parse_string_value_with_json_list(self):
+            """Test parsing a string containing a JSON list.
+
+            Inputs:
+              - value: '[1, 2, 3]' (JSON array string)
+            Expected:
+              - Returns parsed list: [1, 2, 3]
+            Checks:
+              - Result is a list with correct values.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._try_parse_string_value("[1, 2, 3]")
+            assert result == [1, 2, 3]
+
+        def test_try_parse_string_value_with_json_dict(self):
+            """Test parsing a string containing a JSON object.
+
+            Inputs:
+              - value: '{"key": "value"}' (JSON object string)
+            Expected:
+              - Returns parsed dict: {"key": "value"}
+            Checks:
+              - Result is a dict with correct key-value.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._try_parse_string_value('{"key": "value"}')
+            assert result == {"key": "value"}
+
+        def test_try_parse_string_value_with_json_number(self):
+            """Test parsing a string containing a JSON number.
+
+            Inputs:
+              - value: '42' (JSON number string)
+            Expected:
+              - Returns parsed int: 42
+            Checks:
+              - Result is an integer.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._try_parse_string_value("42")
+            assert result == 42
+
+        def test_try_parse_string_value_with_json_boolean(self):
+            """Test parsing a string containing a JSON boolean.
+
+            Inputs:
+              - value: 'true' (JSON boolean string)
+            Expected:
+              - Returns parsed bool: True
+            Checks:
+              - Result is True.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._try_parse_string_value("true")
+            assert result is True
+
+        def test_try_parse_string_value_with_plain_string(self):
+            """Test that plain text string returns unchanged.
+
+            Inputs:
+              - value: 'hello world' (not valid JSON)
+            Expected:
+              - Returns the original string unchanged.
+            Checks:
+              - Result equals input string.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._try_parse_string_value("hello world")
+            assert result == "hello world"
+
+        def test_try_parse_string_value_with_non_string(self):
+            """Test that non-string values return unchanged.
+
+            Inputs:
+              - value: [1, 2, 3] (already a list)
+            Expected:
+              - Returns the list unchanged.
+            Checks:
+              - Result equals input list.
+            """
+            coercer = ArgumentCoercer()
+            input_list = [1, 2, 3]
+            result = coercer._try_parse_string_value(input_list)
+            assert result == input_list
+
+        def test_try_parse_string_value_with_nested_json(self):
+            """Test parsing deeply nested JSON string.
+
+            Inputs:
+              - value: '{"outer": {"inner": [1, 2, 3]}}'
+            Expected:
+              - Returns parsed nested structure.
+            Checks:
+              - Result matches expected nested dict.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._try_parse_string_value('{"outer": {"inner": [1, 2, 3]}}')
+            assert result == {"outer": {"inner": [1, 2, 3]}}
+
+    class TestsParseStringFields:
+
+        def test_parse_string_fields_with_mixed_types(self):
+            """Test parsing dict with mixed value types.
+
+            Inputs:
+              - argument_dict: {"a": "[1,2,3]", "b": "plain", "c": 42}
+            Expected:
+              - "a" is parsed to list [1,2,3]
+              - "b" remains string "plain"
+              - "c" remains int 42
+            Checks:
+              - Result has correct types for each field.
+            """
+            coercer = ArgumentCoercer()
+            input_dict = {"a": "[1,2,3]", "b": "plain", "c": 42}
+            result = coercer._parse_string_fields(input_dict)
+            assert result == {"a": [1, 2, 3], "b": "plain", "c": 42}
+
+        def test_parse_string_fields_with_all_json_strings(self):
+            """Test parsing dict where all values are JSON strings.
+
+            Inputs:
+              - argument_dict: {"nums": "[10, 20]", "flag": "true", "nested": '{"x": 1}'}
+            Expected:
+              - All values are parsed to their JSON representations.
+            Checks:
+              - nums becomes list, flag becomes bool, nested becomes dict.
+            """
+            coercer = ArgumentCoercer()
+            input_dict = {"nums": "[10, 20]", "flag": "true", "nested": '{"x": 1}'}
+            result = coercer._parse_string_fields(input_dict)
+            assert result == {"nums": [10, 20], "flag": True, "nested": {"x": 1}}
+
+        def test_parse_string_fields_with_empty_dict(self):
+            """Test parsing empty dict returns empty dict.
+
+            Inputs:
+              - argument_dict: {}
+            Expected:
+              - Returns empty dict.
+            Checks:
+              - Result is empty dict.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer._parse_string_fields({})
+            assert result == {}
+
+        def test_parse_string_fields_preserves_non_string_values(self):
+            """Test that non-string values are preserved unchanged.
+
+            Inputs:
+              - argument_dict: {"list": [1, 2], "dict": {"a": 1}, "int": 5}
+            Expected:
+              - All values remain unchanged.
+            Checks:
+              - Result equals input dict.
+            """
+            coercer = ArgumentCoercer()
+            input_dict = {"list": [1, 2], "dict": {"a": 1}, "int": 5}
+            result = coercer._parse_string_fields(input_dict)
+            assert result == input_dict
+
+    class TestsValidateWithSchema:
+
+        def test_validate_with_schema_no_schema(self):
+            """Test validation when no schema is provided returns input unchanged.
+
+            Inputs:
+              - tool_schema: None
+              - coerced_dict: {"a": "5", "b": "text"}
+            Expected:
+              - Returns input dict unchanged (no validation).
+            Checks:
+              - Result equals input dict.
+            """
+            coercer = ArgumentCoercer(tool_schema=None)
+            input_dict = {"a": "5", "b": "text"}
+            result = coercer._validate_with_schema(input_dict)
+            assert result == input_dict
+
+        def test_validate_with_schema_coerces_types(self):
+            """Test that Pydantic schema coerces string types to expected types.
+
+            Inputs:
+              - tool_schema: Model with int and bool fields
+              - coerced_dict: {"count": "42", "active": "true"}
+            Expected:
+              - Pydantic coerces "42" to int 42 and "true" to bool True.
+            Checks:
+              - Result has correct types after validation.
+            """
+            class TestSchema(BaseModel):
+                count: int
+                active: bool
+
+            coercer = ArgumentCoercer(tool_schema=TestSchema)
+            input_dict = {"count": "42", "active": "true"}
+            result = coercer._validate_with_schema(input_dict)
+            assert result == {"count": 42, "active": True}
+
+        def test_validate_with_schema_handles_list_fields(self):
+            """Test that Pydantic schema validates list fields correctly.
+
+            Inputs:
+              - tool_schema: Model with list[float] field
+              - coerced_dict: {"numbers": [1.0, 2.0, 3.0]}
+            Expected:
+              - List is validated and returned correctly.
+            Checks:
+              - Result has list field with correct values.
+            """
+            class TestSchema(BaseModel):
+                numbers: list[float]
+
+            coercer = ArgumentCoercer(tool_schema=TestSchema)
+            input_dict = {"numbers": [1.0, 2.0, 3.0]}
+            result = coercer._validate_with_schema(input_dict)
+            assert result == {"numbers": [1.0, 2.0, 3.0]}
+
+        def test_validate_with_schema_validation_fails_returns_input(self):
+            """Test that validation failure returns input dict unchanged.
+
+            Inputs:
+              - tool_schema: Model requiring specific fields
+              - coerced_dict: {"wrong_field": "value"} (invalid for schema)
+            Expected:
+              - Validation fails, returns input dict as fallback.
+            Checks:
+              - Result equals input dict (fallback behavior).
+            """
+            class TestSchema(BaseModel):
+                required_field: str
+
+            coercer = ArgumentCoercer(tool_schema=TestSchema)
+            input_dict = {"wrong_field": "value"}
+            result = coercer._validate_with_schema(input_dict)
+            assert result == input_dict
+
+        def test_validate_with_schema_with_optional_fields(self):
+            """Test validation with schema containing optional fields.
+
+            Inputs:
+              - tool_schema: Model with optional field
+              - coerced_dict: {"name": "test"} (missing optional field)
+            Expected:
+              - Validation succeeds, optional field gets default value.
+            Checks:
+              - Result has default value for optional field.
+            """
+            class TestSchema(BaseModel):
+                name: str
+                count: int = 0
+
+            coercer = ArgumentCoercer(tool_schema=TestSchema)
+            input_dict = {"name": "test"}
+            result = coercer._validate_with_schema(input_dict)
+            assert result == {"name": "test", "count": 0}
+
+    class TestIntegration:
+
+        def test_coerce_integration_json_string_to_typed_dict(self):
+            """Test full coercion pipeline: JSON string -> parsed -> validated.
+
+            Inputs:
+              - raw_arguments: '{"numbers": "[1.0, 2.0]", "operation": "sum"}'
+              - tool_schema: Model with list[float] and str fields
+            Expected:
+              - JSON string is parsed, nested list is parsed, types are validated.
+            Checks:
+              - Result has correctly typed fields.
+            """
+            class ToolSchema(BaseModel):
+                numbers: list[float]
+                operation: str
+
+            coercer = ArgumentCoercer(tool_schema=ToolSchema)
+            raw_args = '{"numbers": "[1.0, 2.0]", "operation": "sum"}'
+            result = coercer.coerce(raw_args)
+            assert result == {"numbers": [1.0, 2.0], "operation": "sum"}
+
+        def test_coerce_integration_dict_with_string_fields(self):
+            """Test coercion with dict input containing stringified fields.
+
+            Inputs:
+              - raw_arguments: {"count": "5", "items": "[10, 20, 30]"}
+              - tool_schema: Model with int and list[int] fields
+            Expected:
+              - String fields are parsed and types are coerced.
+            Checks:
+              - count is int 5, items is list [10, 20, 30].
+            """
+            class ToolSchema(BaseModel):
+                count: int
+                items: list[int]
+
+            coercer = ArgumentCoercer(tool_schema=ToolSchema)
+            raw_args = {"count": "5", "items": "[10, 20, 30]"}
+            result = coercer.coerce(raw_args)
+            assert result == {"count": 5, "items": [10, 20, 30]}
+
+        def test_coerce_integration_no_schema(self):
+            """Test coercion without schema does JSON parsing only.
+
+            Inputs:
+              - raw_arguments: '{"data": "[1, 2, 3]", "name": "test"}'
+              - tool_schema: None
+            Expected:
+              - JSON is parsed, nested string is parsed, but no type coercion.
+            Checks:
+              - Result has parsed JSON structure.
+            """
+            coercer = ArgumentCoercer(tool_schema=None)
+            raw_args = '{"data": "[1, 2, 3]", "name": "test"}'
+            result = coercer.coerce(raw_args)
+            assert result == {"data": [1, 2, 3], "name": "test"}
+
+        def test_coerce_integration_invalid_json_returns_empty_dict(self):
+            """Test that invalid JSON returns empty dict gracefully.
+
+            Inputs:
+              - raw_arguments: '{broken json' (malformed)
+            Expected:
+              - Returns empty dict without raising exception.
+            Checks:
+              - Result is empty dict.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer.coerce("{broken json")
+            assert result == {}
+
+        def test_coerce_integration_complex_nested_structure(self):
+            """Test coercion with complex nested structure.
+
+            Inputs:
+              - raw_arguments: dict with nested dicts and lists as strings
+              - tool_schema: Model with nested structure
+            Expected:
+              - All nested strings are parsed correctly.
+            Checks:
+              - Result has fully parsed nested structure.
+            """
+            class NestedSchema(BaseModel):
+                config: dict[str, Any]
+                values: list[int]
+
+            coercer = ArgumentCoercer(tool_schema=NestedSchema)
+            raw_args = {"config": '{"key": "value"}', "values": "[1, 2, 3]"}
+            result = coercer.coerce(raw_args)
+            assert result == {"config": {"key": "value"}, "values": [1, 2, 3]}
+
+        def test_coerce_integration_preserves_already_correct_types(self):
+            """Test that already-correct types are preserved through coercion.
+
+            Inputs:
+              - raw_arguments: {"count": 42, "items": [1, 2, 3], "name": "test"}
+              - tool_schema: Matching schema
+            Expected:
+              - All values pass through unchanged.
+            Checks:
+              - Result equals input.
+            """
+            class ToolSchema(BaseModel):
+                count: int
+                items: list[int]
+                name: str
+
+            coercer = ArgumentCoercer(tool_schema=ToolSchema)
+            raw_args = {"count": 42, "items": [1, 2, 3], "name": "test"}
+            result = coercer.coerce(raw_args)
+            assert result == {"count": 42, "items": [1, 2, 3], "name": "test"}
+
+        def test_coerce_integration_empty_dict_returns_empty_dict(self):
+            """Test that empty dict input returns empty dict.
+
+            Inputs:
+              - raw_arguments: {}
+            Expected:
+              - Returns empty dict.
+            Checks:
+              - Result is empty dict.
+            """
+            coercer = ArgumentCoercer()
+            result = coercer.coerce({})
+            assert result == {}

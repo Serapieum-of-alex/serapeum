@@ -1018,3 +1018,159 @@ class ToolCallArguments(BaseModel):
             return handler(v)
         except ValidationError:
             return handler({})
+
+
+class ArgumentCoercer:
+    """Coerce LLM-returned tool arguments to match expected tool schema types.
+
+    LLMs often return arguments with incorrect types (e.g., lists as JSON strings,
+    numbers as strings). This class provides a multi-stage coercion strategy to
+    handle various type mismatches and ensure arguments are properly formatted
+    before being passed to tool functions.
+
+    The coercion process follows three stages:
+    1. Parse entire argument payload if it's a JSON string
+    2. Parse individual string fields as JSON (handles nested structures)
+    3. Validate and coerce types using Pydantic schema if available
+
+    Examples:
+        - Basic coercion without schema
+            >>> coercer = ArgumentCoercer()
+            >>> args = '{"numbers": "[1, 2, 3]", "operation": "sum"}'
+            >>> result = coercer.coerce(args)
+            >>> result["numbers"]
+            [1, 2, 3]
+
+        - Coercion with Pydantic schema
+            >>> from pydantic import BaseModel
+            >>> class Args(BaseModel):
+            ...     count: int
+            ...     values: list[float]
+            >>> coercer = ArgumentCoercer(tool_schema=Args)
+            >>> args = {"count": "5", "values": "[1.0, 2.0]"}
+            >>> result = coercer.coerce(args)
+            >>> result["count"]
+            5
+
+    See Also:
+        - CallableTool.from_model: Uses similar coercion logic
+        - get_tool_calls_from_response: Uses this class to coerce arguments
+    """
+
+    def __init__(self, tool_schema: type[BaseModel] | None = None) -> None:
+        """Initialize the argument coercer.
+
+        Args:
+            tool_schema: Optional Pydantic model defining expected argument types
+        """
+        self.tool_schema = tool_schema
+
+    def coerce(self, raw_arguments: dict[str, Any] | str) -> dict[str, Any]:
+        """Coerce raw LLM arguments to proper types.
+
+        This is the main entry point for argument coercion. It orchestrates
+        the multi-stage coercion process.
+
+        Args:
+            raw_arguments: Raw arguments from LLM (dict or JSON string)
+
+        Returns:
+            dict[str, Any]: Coerced arguments with correct types
+        """
+        # Stage 1: Parse JSON string to dict
+        argument_dict = self._parse_json_string(raw_arguments)
+
+        # Stage 2: Parse individual string fields
+        coerced_dict = self._parse_string_fields(argument_dict)
+
+        # Stage 3: Validate with Pydantic schema if available
+        result = self._validate_with_schema(coerced_dict)
+
+        return result
+
+    def _parse_json_string(self, raw_arguments: dict[str, Any] | str) -> dict[str, Any]:
+        """Parse raw arguments if they are a JSON string.
+
+        Args:
+            raw_arguments: Raw arguments (dict or JSON string)
+
+        Returns:
+            dict[str, Any]: Parsed dictionary or empty dict if parsing fails
+        """
+        result: dict[str, Any] = {}
+
+        if isinstance(raw_arguments, dict):
+            result = raw_arguments
+        elif isinstance(raw_arguments, str):
+            try:
+                parsed = json.loads(raw_arguments)
+                if isinstance(parsed, dict):
+                    result = parsed
+            except (json.JSONDecodeError, ValueError):
+                pass
+
+        return result
+
+    def _parse_string_fields(self, argument_dict: dict[str, Any]) -> dict[str, Any]:
+        """Parse individual string fields that may contain JSON.
+
+        Attempts to parse each string value as JSON to handle cases where
+        the LLM returns lists or dicts as stringified JSON.
+
+        Args:
+            argument_dict: Dictionary with potentially stringified values
+
+        Returns:
+            dict[str, Any]: Dictionary with parsed values
+        """
+        coerced_kwargs: dict[str, Any] = {}
+
+        for key, value in argument_dict.items():
+            parsed_value = self._try_parse_string_value(value)
+            coerced_kwargs[key] = parsed_value
+
+        return coerced_kwargs
+
+    def _try_parse_string_value(self, value: Any) -> Any:
+        """Try to parse a single value if it's a JSON string.
+
+        Args:
+            value: Value to potentially parse
+
+        Returns:
+            Any: Parsed value if JSON string, otherwise original value
+        """
+        result = value
+
+        if isinstance(value, str):
+            try:
+                result = json.loads(value)
+            except (json.JSONDecodeError, ValueError):
+                pass
+
+        return result
+
+    def _validate_with_schema(self, coerced_dict: dict[str, Any]) -> dict[str, Any]:
+        """Validate and coerce arguments using Pydantic schema.
+
+        If a tool_schema is available, use Pydantic's validation to coerce
+        types (e.g., "5" -> 5, "true" -> True). Falls back to the input
+        dict if validation fails.
+
+        Args:
+            coerced_dict: Dictionary with already-coerced values
+
+        Returns:
+            dict[str, Any]: Validated and coerced dictionary
+        """
+        result = coerced_dict
+
+        if self.tool_schema is not None:
+            try:
+                validated = self.tool_schema(**coerced_dict)
+                result = validated.model_dump()
+            except Exception:
+                # Validation failed, use the manually coerced dict
+                pass
+
+        return result

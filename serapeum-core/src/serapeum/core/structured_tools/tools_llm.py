@@ -5,6 +5,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     AsyncGenerator,
+    Callable,
     Dict,
     Generator,
     List,
@@ -30,16 +31,21 @@ _logger = logging.getLogger(__name__)
 
 
 class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
-    """Orchestrate function-calling LLMs to produce structured Pydantic outputs.
+    """Orchestrate function-calling LLMs to produce structured outputs.
 
-    This program converts a Pydantic model into a callable tool and asks a
-    function-calling LLM to use that tool to produce strictly structured data.
-    It handles prompt formatting, invoking the LLM (sync/async), optional
-    streaming, and parsing the tool outputs back into Pydantic model instances.
+    This program converts either a Pydantic model or a regular Python function
+    into a callable tool and asks a function-calling LLM to use that tool to
+    produce structured data. It handles prompt formatting, invoking the LLM
+    (sync/async), optional streaming, and parsing the tool outputs.
+
+    The class automatically detects the type of ``output_cls`` and uses the
+    appropriate factory method:
+    - Pydantic models → ``CallableTool.from_model()``
+    - Regular functions → ``CallableTool.from_function()``
 
     Attributes:
-        _output_cls (Type[Model]): The Pydantic model class defining the
-            structure of the expected output.
+        _output_cls (Union[Type[Model], Callable]): Either a Pydantic model class
+            or a callable function defining the expected output structure.
         _llm (FunctionCallingLLM): The language model with function-calling
             support. Must advertise support via ``llm.metadata.is_function_calling_model``.
         _prompt (BasePromptTemplate): The prompt template used to format chat
@@ -54,6 +60,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     See Also:
         - BasePydanticLLM: Base abstraction for Pydantic-powered programs
         - CallableTool.from_model: Helper to convert Pydantic models into tools
+        - CallableTool.from_function: Helper to convert functions into tools
         - FunctionCallingLLM: LLM abstraction with function calling support
 
     Examples:
@@ -79,7 +86,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
     def __init__(
         self,
-        output_cls: Type[Model],
+        output_cls: Union[Type[Model], Callable[..., Any]],
         prompt: Union[BasePromptTemplate, str],
         llm: Optional[FunctionCallingLLM] = None,
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
@@ -89,9 +96,11 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         """Initialize the ToolOrchestratingLLM instance.
 
         Args:
-            output_cls (Type[Model]): Pydantic model class defining the expected
-                structure of the output. This is converted into a callable tool
-                used by the LLM.
+            output_cls (Union[Type[Model], Callable[..., Any]]): Either a Pydantic
+                model class or a callable function defining the expected output.
+                If a Pydantic model is provided, it will be converted into a tool via
+                ``CallableTool.from_model()``. If a callable function is provided,
+                it will be converted via ``CallableTool.from_function()``.
             prompt (Union[BasePromptTemplate, str]): Template (or plain string)
                 used to generate messages for the LLM. If a string is provided it
                 is wrapped in a ``PromptTemplate``.
@@ -108,13 +117,15 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         Raises:
             AssertionError: If no LLM is provided and ``Configs.llm`` is not set.
             ValueError: If the provided LLM does not support function calling.
+            TypeError: If output_cls is neither a Pydantic model nor a callable.
 
         See Also:
             - Configs: Global configuration for default LLM settings
+            - CallableTool.from_model: Factory for Pydantic models
+            - CallableTool.from_function: Factory for regular functions
 
         Examples:
-        - Instantiate the program with a real LLM (Ollama) and a simple prompt
-          string. No network calls occur during initialization.
+        - Instantiate with a Pydantic model (recommended). No network calls occur during initialization.
             ```python
             >>> from pydantic import BaseModel
             >>> from serapeum.llms.ollama.base import Ollama
@@ -130,6 +141,23 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             True
 
             ```
+
+        - Instantiate with a regular function (alternative approach).
+            ```python
+            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+            >>> def calculate_sum(a: int, b: int) -> dict:
+            ...     '''Calculate the sum of two numbers.'''
+            ...     return {'result': a + b}
+            >>> tools_llm = ToolOrchestratingLLM(
+            ...     calculate_sum,
+            ...     'Calculate the sum of {x} and {y}',
+            ...     Ollama(model='llama3.1'),
+            ... )
+            >>> callable(tools_llm.output_cls)
+            True
+
+            ```
         """
         self._output_cls = output_cls
         self._llm = self._validate_llm(llm)
@@ -137,6 +165,30 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         self._verbose = verbose
         self._allow_parallel_tool_calls = allow_parallel_tool_calls
         self._tool_choice = tool_choice
+
+    def _create_tool(self) -> CallableTool:
+        """Create a CallableTool from the output_cls.
+
+        Automatically detects whether output_cls is a Pydantic model or a callable
+        function and uses the appropriate factory method.
+
+        Returns:
+            CallableTool: Tool instance created from output_cls.
+
+        Raises:
+            TypeError: If output_cls is neither a Pydantic model nor a callable.
+        """
+        # Check if it's a Pydantic model (class that inherits from BaseModel)
+        if isinstance(self._output_cls, type) and issubclass(self._output_cls, BaseModel):
+            return CallableTool.from_model(self._output_cls)
+        # Check if it's a callable (function, method, or callable class)
+        elif callable(self._output_cls):
+            return CallableTool.from_function(self._output_cls)
+        else:
+            raise TypeError(
+                f"output_cls must be either a Pydantic BaseModel subclass or a callable function. "
+                f"Got {type(self._output_cls)}"
+            )
 
     @staticmethod
     def _validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
@@ -364,7 +416,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ```
         """
         llm_kwargs = llm_kwargs or {}
-        tool = CallableTool.from_model(self._output_cls)
+        tool = self._create_tool()
         # convert the prompt into messages
         messages = self.prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
@@ -427,7 +479,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ```
         """
         llm_kwargs = llm_kwargs or {}
-        tool = CallableTool.from_model(self._output_cls)
+        tool = self._create_tool()
 
         agent_response = await self._llm.apredict_and_call(
             [tool],
@@ -501,7 +553,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             raise ValueError("stream_call is only supported for LLMs.")
 
         llm_kwargs = llm_kwargs or {}
-        tool = CallableTool.from_model(self._output_cls)
+        tool = self._create_tool()
 
         messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
@@ -596,7 +648,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         if not isinstance(self._llm, FunctionCallingLLM):
             raise ValueError("stream_call is only supported for LLMs.")
 
-        tool = CallableTool.from_model(self._output_cls)
+        tool = self._create_tool()
 
         messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)

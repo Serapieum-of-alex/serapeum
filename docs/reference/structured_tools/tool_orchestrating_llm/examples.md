@@ -965,6 +965,72 @@ print(f"Kelvin: {result['kelvin']}")
 - Parameters aren't well-documented
 - Better to use regular functions with proper documentation for complex cases
 
+### 6. Functions with Complex Return Types
+
+Use functions that return complex data structures:
+
+```python
+from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.llms.ollama import Ollama
+
+def analyze_text(text: str, language: str = "en") -> dict:
+    """Analyze text and return basic metrics.
+
+    Args:
+        text: Text to analyze
+        language: Language code
+
+    Returns:
+        Analysis metrics including word count, character count, and average word length
+    """
+    words = text.split()
+    return {
+        "word_count": len(words),
+        "char_count": len(text),
+        "language": language,
+        "avg_word_length": sum(len(w) for w in words) / len(words) if words else 0
+    }
+
+llm = Ollama(model="llama3.1", request_timeout=80)
+
+tools_llm = ToolOrchestratingLLM(
+    output_cls=analyze_text,  # Pass function with complex return
+    prompt="Analyze this text: {text_input}",
+    llm=llm,
+)
+
+result = tools_llm(text_input="Hello world, this is a test message.")
+
+print(f"Word count: {result['word_count']}")
+print(f"Character count: {result['char_count']}")
+print(f"Average word length: {result['avg_word_length']:.2f}")
+```
+
+### Important Notes
+
+**Advantages of using functions as output_cls:**
+1. Works with existing Python functions - no need to convert to Pydantic
+2. Full access to all `ToolOrchestratingLLM` features (streaming, async, etc.)
+3. Automatic tool creation and orchestration
+4. Simple and direct - just pass your function
+
+**When to use functions vs Pydantic models:**
+- **Use functions** when:
+  - You have existing functions you want to reuse
+  - You need simple dict/list returns
+  - You're prototyping quickly
+  - Working with legacy code
+
+- **Use Pydantic models** when:
+  - You need strict validation of outputs
+  - You want better type safety and IDE support
+  - Building production systems with clear schemas
+  - Need automatic documentation from models
+
+**Both approaches work equally well** with `ToolOrchestratingLLM` - choose based on your needs!
+
+---
+
 ## Error Handling
 
 ### 1. Handling LLM Validation Errors

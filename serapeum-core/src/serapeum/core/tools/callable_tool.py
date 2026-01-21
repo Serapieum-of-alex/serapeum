@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
 from serapeum.core.base.llms.models import Audio, ChunkType, Image, TextChunk
-from serapeum.core.tools.models import AsyncBaseTool, ToolMetadata, ToolOutput
+from serapeum.core.tools.models import AsyncBaseTool, ToolMetadata, ToolOutput, ArgumentCoercer
 from serapeum.core.tools.utils import Docstring, FunctionConverter
 from serapeum.core.utils.async_utils import asyncio_run
 
@@ -523,17 +523,8 @@ class CallableTool(AsyncBaseTool):
         # so instead we'll directly provide it in the tool_schema in the ToolMetadata
         def model_fn(**kwargs: Any) -> BaseModel:
             """Model function."""
-            # Be a bit forgiving: some LLMs return JSON-like strings for complex fields
-            # (e.g., lists or dicts). Attempt to parse such strings before validation.
-            coerced_kwargs = {}
-            for k, v in kwargs.items():
-                if isinstance(v, str):
-                    try:
-                        coerced_kwargs[k] = json.loads(v)
-                        continue
-                    except Exception:
-                        pass
-                coerced_kwargs[k] = v
+            coercer = ArgumentCoercer(tool_schema=output_cls)
+            coerced_kwargs = coercer.coerce(kwargs)
             return output_cls(**coerced_kwargs)
 
         return cls.from_function(

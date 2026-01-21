@@ -39,7 +39,7 @@ from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.models import StructuredLLMMode
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.structured_tools.utils import StreamingObjectProcessor
-from serapeum.core.tools import ToolCallArguments
+from serapeum.core.tools import ToolCallArguments, ArgumentCoercer
 
 if TYPE_CHECKING:
     from serapeum.core.tools.models import BaseTool
@@ -752,8 +752,12 @@ class Ollama(FunctionCallingLLM):
                 return []
 
         tool_selections = []
+        coercer = ArgumentCoercer()
+
         for tool_call in tool_calls:
-            argument_dict = tool_call["function"]["arguments"]
+            # Coerce arguments to proper types (handles JSON strings, type mismatches, etc.)
+            raw_arguments = tool_call["function"]["arguments"]
+            argument_dict = coercer.coerce(raw_arguments)
 
             tool_selections.append(
                 ToolCallArguments(

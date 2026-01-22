@@ -334,7 +334,7 @@ Using tools with Ollama:
 ```python
 from pydantic import BaseModel
 from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.core.tools import CallableTool, ToolMetadata
+from serapeum.core.tools import CallableTool
 from serapeum.llms.ollama import Ollama
 
 

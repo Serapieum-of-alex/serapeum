@@ -3,6 +3,7 @@ site_description: LLM package
 site_url: https://serapieum-of-alex.github.io/Serapeum/
 repo_url: https://github.com/Serapieum-of-alex/Serapeum
 repo_name: Serapieum-of-alex/Serapeum
+dev_addr: '127.0.0.1:10000'
 
 theme:
   name: material
@@ -115,27 +116,31 @@ nav:
   - Architecture:
     - Diagrams: architecture/diagrams.md
   - Reference:
-    - structured_tools:
-        - Text Completion LLM:
-            - Overview: reference/structured_tools/text_completion_llm/general.md
-            - Examples: reference/structured_tools/text_completion_llm/examples.md
-            - Execution Flow: reference/structured_tools/text_completion_llm/text_completion_llm_sequence.md
-            - Architecture: reference/structured_tools/text_completion_llm/text_completion_llm_class.md
-            - Data Flow: reference/structured_tools/text_completion_llm/text_completion_llm_dataflow.md
-            - Components: reference/structured_tools/text_completion_llm/text_completion_llm_components.md
-            - Lifecycle: reference/structured_tools/text_completion_llm/text_completion_llm_state.md
-        - Tool Orchestrating LLM:
-            - Overview: reference/structured_tools/tool_orchestrating_llm/general.md
-            - Examples: reference/structured_tools/tool_orchestrating_llm/examples.md
-            - Execution Flow: reference/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_sequence.md
-            - Architecture: reference/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_class.md
-            - Data Flow: reference/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_dataflow.md
-            - Components: reference/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_components.md
-            - Lifecycle: reference/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_state.md
-    - tools:
-        - reference/tools/tools.md
-        - reference/tools/callable_tools.md
+    - Core:
+        - structured_tools:
+            - Text Completion LLM:
+                - Overview: reference/core/structured_tools/text_completion_llm/general.md
+                - Examples: reference/core/structured_tools/text_completion_llm/examples.md
+                - Execution Flow: reference/core/structured_tools/text_completion_llm/text_completion_llm_sequence.md
+                - Architecture: reference/core/structured_tools/text_completion_llm/text_completion_llm_class.md
+                - Data Flow: reference/core/structured_tools/text_completion_llm/text_completion_llm_dataflow.md
+                - Components: reference/core/structured_tools/text_completion_llm/text_completion_llm_components.md
+                - Lifecycle: reference/core/structured_tools/text_completion_llm/text_completion_llm_state.md
+            - Tool Orchestrating LLM:
+                - Overview: reference/core/structured_tools/tool_orchestrating_llm/general.md
+                - Examples: reference/core/structured_tools/tool_orchestrating_llm/examples.md
+                - Execution Flow: reference/core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_sequence.md
+                - Architecture: reference/core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_class.md
+                - Data Flow: reference/core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_dataflow.md
+                - Components: reference/core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_components.md
+                - Lifecycle: reference/core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_state.md
+        - tools:
+            - reference/core/tools/tools.md
+            - reference/core/tools/callable_tools.md
     - API Reference: reference/api-reference.md
+    - LLMs:
+        - Ollama Overview: ollama/README.md
+        - Ollama Index: ollama/SUMMARY.md
   - Tutorials:
     - Getting Started: tutorials/getting-started.md
     - Advanced Usage: tutorials/advanced-usage.md

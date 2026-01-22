@@ -709,7 +709,7 @@ async def async_stream_example():
 
     messages = [Message(role=MessageRole.USER, content="Count to 5")]
 
-    async for chunk in llm.astream_chat(messages):
+    async for chunk in await llm.astream_chat(messages):
         print(chunk.message.content, end="", flush=True)
 
 

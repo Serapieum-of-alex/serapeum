@@ -138,9 +138,16 @@ nav:
             - reference/core/tools/tools.md
             - reference/core/tools/callable_tools.md
     - API Reference: reference/api-reference.md
-    - LLMs:
-        - Ollama Overview: ollama/README.md
-        - Ollama Index: ollama/SUMMARY.md
+    - Integrations:
+        - LLMs:
+            - Ollama:
+                - Overview: reference/integrations/llms/ollama/general.md
+                - Examples: reference/integrations/llms/ollama/examples.md
+                - Execution Flow: reference/integrations/llms/ollama/ollama_sequence.md
+                - Architecture: reference/integrations/llms/ollama/ollama_class.md
+                - Data Flow: reference/integrations/llms/ollama/ollama_dataflow.md
+                - Components: reference/integrations/llms/ollama/ollama_components.md
+                - Lifecycle: reference/integrations/llms/ollama/ollama_state.md
   - Tutorials:
     - Getting Started: tutorials/getting-started.md
     - Advanced Usage: tutorials/advanced-usage.md

@@ -354,15 +354,13 @@ llm = Ollama(model="llama3.1", request_timeout=180)
 # Create tool from function
 tool = CallableTool.from_function(create_album)
 
-messages = [
-    Message(
-        role=MessageRole.USER,
-        content="Create a rock album with two songs"
-    )
-]
+message =  Message(
+    role=MessageRole.USER,
+    content="Create a rock album with two songs"
+)
 
 # Call with tools
-response = llm.chat_with_tools(messages, tools=[tool])
+response = llm.chat_with_tools(tools=[tool], user_msg=message)
 
 # Extract tool calls
 tool_calls = llm.get_tool_calls_from_response(response)
@@ -392,14 +390,12 @@ llm = Ollama(model="llama3.1", request_timeout=180)
 # Create tool from Pydantic model
 tool = CallableTool.from_model(Album)
 
-messages = [
-    Message(
-        role=MessageRole.USER,
-        content="Create a jazz album with title 'Blue Notes' by Miles Davis with 3 songs"
-    )
-]
+message = Message(
+    role=MessageRole.USER,
+    content="Create a jazz album with title 'Blue Notes' by Miles Davis with 3 songs"
+)
 
-response = llm.chat_with_tools(messages, tools=[tool])
+response = llm.chat_with_tools(tools=[tool], user_msg=message)
 
 # Extract and execute tool call
 tool_calls = llm.get_tool_calls_from_response(response)
@@ -430,17 +426,15 @@ llm = Ollama(model="llama3.1", request_timeout=180)
 
 tool = CallableTool.from_model(Album)
 
-messages = [
-    Message(
-        role=MessageRole.USER,
-        content="Create two albums"
-    )
-]
+message = Message(
+    role=MessageRole.USER,
+    content="Create two albums"
+)
 
 # Force single tool call
 response = llm.chat_with_tools(
-    messages,
     tools=[tool],
+    user_msg=message,
     allow_parallel_tool_calls=False,  # Only one tool call allowed
 )
 
@@ -469,17 +463,15 @@ llm = Ollama(model="llama3.1", request_timeout=180)
 
 tool = CallableTool.from_model(Album)
 
-messages = [
-    Message(
-        role=MessageRole.USER,
-        content="Create two albums: one rock album and one jazz album"
-    )
-]
+message = Message(
+    role=MessageRole.USER,
+    content="Create two albums: one rock album and one jazz album"
+)
 
 # Allow parallel tool calls
 response = llm.chat_with_tools(
-    messages,
     tools=[tool],
+    user_msg=message,
     allow_parallel_tool_calls=True,
 )
 
@@ -512,15 +504,13 @@ llm = Ollama(model="llama3.1", request_timeout=180)
 
 tool = CallableTool.from_model(Album)
 
-messages = [
-    Message(
-        role=MessageRole.USER,
-        content="Create a pop album"
-    )
-]
+message = Message(
+    role=MessageRole.USER,
+    content="Create a pop album"
+)
 
 # Stream with tools
-for chunk in llm.stream_chat_with_tools(messages, tools=[tool]):
+for chunk in llm.stream_chat_with_tools(tools=[tool], user_msg=message):
     # Process streaming tool calls
     if chunk.message.additional_kwargs.get("tool_calls"):
         print(f"Tool call chunk: {chunk.message.additional_kwargs['tool_calls']}")

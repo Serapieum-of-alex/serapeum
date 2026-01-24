@@ -384,7 +384,58 @@ class ToolMetadata:
             raise ValueError("name is None.")
         return self.name
 
-    def to_openai_tool(self, skip_length_check: bool = False) -> dict[str, Any]:
+    def get_schema_guidance(self) -> str:
+        """Generate guidance text about required fields for LLM understanding.
+
+        Creates a formatted string that lists all required fields with their types
+        and descriptions. This helps LLMs understand what must be included when
+        calling the tool.
+
+        Returns:
+            str: Formatted guidance text, or empty string if no required fields.
+
+        Examples:
+            - Generate guidance for a model with required fields
+                ```python
+                >>> from pydantic import BaseModel, Field
+                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> class Album(BaseModel):
+                ...     name: str = Field(description="Album name")
+                ...     artist: str = Field(description="Artist name")
+                >>> meta = ToolMetadata(description="Create album", name="Album", tool_schema=Album)
+                >>> guidance = meta.get_schema_guidance()
+                >>> "name" in guidance and "artist" in guidance
+                True
+
+                ```
+        """
+        schema = self.get_schema()
+        required_fields = schema.get("required", [])
+        properties = schema.get("properties", {})
+
+        if not required_fields:
+            return ""
+
+        # Build a clear description of required fields
+        field_descriptions = []
+        for field_name in required_fields:
+            field_info = properties.get(field_name, {})
+            field_type = field_info.get("type", "value")
+            field_desc = field_info.get("description", "")
+
+            if field_desc:
+                field_descriptions.append(f"  - {field_name} ({field_type}): {field_desc}")
+            else:
+                field_descriptions.append(f"  - {field_name} ({field_type})")
+
+        guidance = (
+            "\n\nRequired fields:\n"
+            + "\n".join(field_descriptions)
+        )
+
+        return guidance
+
+    def to_openai_tool(self, skip_length_check: bool = False, include_schema_guidance: bool = True) -> dict[str, Any]:
         """Export this metadata as an OpenAI function-calling tool spec.
 
         Builds a dictionary compatible with OpenAI-style function tools. By default,
@@ -394,6 +445,8 @@ class ToolMetadata:
         Args:
             skip_length_check (bool): If ``True``, bypass validation of the
                 description length. Defaults to ``False``.
+            include_schema_guidance (bool): If ``True``, append schema guidance about
+                required fields to the description. Defaults to ``True``.
 
         Returns:
             dict[str, Any]: A dictionary with keys ``type`` and ``function``. The
@@ -439,7 +492,14 @@ class ToolMetadata:
 
                 ```
         """
-        if not skip_length_check and len(self.description) > 1024:
+        # Build enhanced description with schema guidance
+        description = self.description
+        if include_schema_guidance:
+            schema_guidance = self.get_schema_guidance()
+            if schema_guidance:
+                description = description + schema_guidance
+
+        if not skip_length_check and len(description) > 1024:
             raise ValueError(
                 "Tool description exceeds maximum length of 1024 characters. "
                 "Please shorten your description or move it to the prompt."
@@ -448,7 +508,7 @@ class ToolMetadata:
             "type": "function",
             "function": {
                 "name": self.name,
-                "description": self.description,
+                "description": description,
                 "parameters": self.get_schema(),
             },
         }

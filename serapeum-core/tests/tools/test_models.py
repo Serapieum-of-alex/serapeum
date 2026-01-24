@@ -249,7 +249,7 @@ class TestToolMetadataToOpenAITool:
         tool = meta.to_openai_tool()
         assert tool["type"] == "function"
         assert tool["function"]["name"] == "tool"
-        assert tool["function"]["description"] == "desc"
+        assert tool["function"]["description"] == "desc\n\nRequired fields:\n  - input (string)"
         assert tool["function"]["parameters"] == meta.get_schema()
 
     def test_raises_on_long_description(self):
@@ -280,7 +280,7 @@ class TestToolMetadataToOpenAITool:
         long_desc = "x" * 5000
         meta = ToolMetadata(description=long_desc, name="tool")
         tool = meta.to_openai_tool(skip_length_check=True)
-        assert tool["function"]["description"] == long_desc
+        assert tool["function"]["description"] == f"{long_desc}\n\nRequired fields:\n  - input (string)"
 
 
 class TestToolOutput:

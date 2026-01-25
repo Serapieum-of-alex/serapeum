@@ -126,8 +126,8 @@ class TestCallableToolInit:
     """Test CallableTool initialization logic."""
 
     def test_init_with_sync_fn(self):
-        """
-        Inputs: A simple sync function and ToolMetadata(name="t", description="d").
+        """Inputs: A simple sync function and ToolMetadata(name=\"t\", description=\"d\").
+
         Expected: CallableTool initializes, exposing .func (sync) and .async_fn (async wrapper), and .real_fn is the original function.
         Checks: Correct wrapping decisions and metadata attachment.
         """
@@ -143,8 +143,8 @@ class TestCallableToolInit:
         assert tool.metadata.get_name() == "t"
 
     def test_init_with_async_fn(self):
-        """
-        Inputs: An async function and ToolMetadata.
+        """Inputs: An async function and ToolMetadata.
+
         Expected: .async_fn is the original async function, .func is a sync wrapper that runs it, and .real_fn is the async function.
         Checks: Wrapping from async to sync path and consistency of returned values through both call styles.
         """
@@ -162,8 +162,8 @@ class TestCallableToolInit:
         assert tool.input_func is aecho
 
     def test_init_without_metadata_raises(self):
-        """
-        Inputs: A valid function but metadata=None.
+        """Inputs: A valid function but metadata=None.
+
         Expected: ValueError with message indicating metadata must be provided.
         Checks: Constructor validation for required metadata argument.
         """
@@ -175,8 +175,8 @@ class TestCallableToolInit:
             _ = CallableTool(func=f, metadata=None)  # type: ignore[arg-type]
 
     def test_init_without_fn_or_async_fn_raises(self):
-        """
-        Inputs: Both func=None and async_fn=None.
+        """Inputs: Both func=None and async_fn=None.
+
         Expected: ValueError stating that one of func or async_fn must be provided.
         Checks: Constructor enforces presence of at least one callable.
         """

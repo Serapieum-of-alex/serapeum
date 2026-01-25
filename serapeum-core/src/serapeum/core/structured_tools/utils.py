@@ -40,7 +40,7 @@ class FlexibleModel(BaseModel):
         return create_model(
             f"Flexible{model.__name__}",
             __base__=cls,
-            **{field: (Any | None, None) for field in model.model_fields},
+            **{field: (Any, None) for field in model.model_fields},
         )
 
 
@@ -51,6 +51,7 @@ def get_program_for_llm(
     pydantic_program_mode: StructuredLLMMode = StructuredLLMMode.DEFAULT,
     **kwargs: Any,
 ) -> BasePydanticLLM:
+    """Get the appropriate program for the LLM based on the output class and prompt."""
     if pydantic_program_mode == StructuredLLMMode.DEFAULT:
         if llm.metadata.is_function_calling_model:
             from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM

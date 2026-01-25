@@ -67,7 +67,8 @@ class TestCallMethod:
 
     @pytest.mark.e2e
     def test_call_non_chat_llm_success(self) -> None:
-        """
+        """Test synchronous call with text LLM.
+
         Inputs: text LLM and prompt args with llm kwargs.
         Expected: parse returns DummyModel.
         Checks: complete path and kwargs forwarding.
@@ -87,7 +88,8 @@ class TestCallMethod:
 
     @pytest.mark.e2e
     def test_call_chat_llm_success(self) -> None:
-        """
+        """Test synchronous call with chat LLM.
+
         Inputs: chat LLM with chat response.
         Expected: parse returns DummyModel.
         Checks: chat branch and message extension.
@@ -109,7 +111,8 @@ class TestCallMethod:
 
     @pytest.mark.e2e
     def test_call_raises_when_parser_returns_wrong_type(self) -> None:
-        """
+        """Test error when parser returns wrong type.
+
         Inputs: parser returning SecondaryModel.
         Expected: ValueError complaining about mismatch.
         Checks: runtime type guard.
@@ -134,7 +137,8 @@ class TestAcallMethod:
     @pytest.mark.e2e
     @pytest.mark.asyncio
     async def test_acall_non_chat_llm_success(self) -> None:
-        """
+        """Test async call with text LLM.
+
         Inputs: async call on text LLM.
         Expected: DummyModel returned.
         Checks: asynchronous complete branch.
@@ -154,7 +158,8 @@ class TestAcallMethod:
     @pytest.mark.e2e
     @pytest.mark.asyncio
     async def test_acall_chat_llm_success(self) -> None:
-        """
+        """Test async call with chat LLM.
+
         Inputs: async call on chat LLM.
         Expected: DummyModel returned.
         Checks: asynchronous chat branch.
@@ -178,7 +183,8 @@ class TestAcallMethod:
     @pytest.mark.e2e
     @pytest.mark.asyncio
     async def test_acall_raises_when_parser_returns_wrong_type(self) -> None:
-        """
+        """Test error when parser returns wrong type in async call.
+
         Inputs: parser returning SecondaryModel.
         Expected: ValueError for wrong type.
         Checks: async guard mirrored from sync path.

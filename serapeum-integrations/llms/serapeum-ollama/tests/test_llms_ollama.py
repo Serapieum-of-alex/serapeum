@@ -80,6 +80,10 @@ tool = CallableTool.from_function(func=generate_song)
 
 
 def test_embedding_class() -> None:
+    """Test Ollama class inheritance structure.
+
+    Checks: Ollama inherits from BaseLLM.
+    """
     names_of_base_classes = [b.__name__ for b in Ollama.__mro__]
     assert BaseLLM.__name__ in names_of_base_classes
 
@@ -87,6 +91,11 @@ def test_embedding_class() -> None:
 @pytest.mark.mock
 @patch.object(Ollama, "client")
 def test_ollama_chat(mock_ollama_client) -> None:
+    """Test chat method with mock client.
+
+    Inputs: mock_ollama_client with chat method returning normal_response.
+    Expected: llm.chat returns a non-empty response string.
+    """
     mock_ollama_client.chat = MagicMock(return_value=normal_response)
     llm = Ollama(model=test_model, request_timeout=80)
     response = llm.chat([Message(role="user", content="Hello!")])
@@ -97,6 +106,11 @@ def test_ollama_chat(mock_ollama_client) -> None:
 @pytest.mark.mock
 @patch.object(Ollama, "client")
 def test_ollama_complete(mock_ollama_client) -> None:
+    """Test complete method with mock client.
+
+    Inputs: mock_ollama_client with chat method returning normal_response.
+    Expected: llm.complete returns a non-empty response string.
+    """
     mock_ollama_client.chat = MagicMock(return_value=normal_response)
     llm = Ollama(model=test_model, request_timeout=80)
     response = llm.complete("Hello!")
@@ -108,6 +122,11 @@ def test_ollama_complete(mock_ollama_client) -> None:
     client is None, reason="Ollama client is not available or test model is missing"
 )
 def test_ollama_stream_chat() -> None:
+    """Test stream_chat method with real client.
+
+    Inputs: test_model and user message.
+    Expected: Each streamed response is non-empty and has a delta.
+    """
     llm = Ollama(model=test_model, request_timeout=100)
     response = llm.stream_chat([Message(role="user", content="Hello!")])
     for r in response:
@@ -121,6 +140,11 @@ def test_ollama_stream_chat() -> None:
     client is None, reason="Ollama client is not available or test model is missing"
 )
 def test_ollama_stream_complete() -> None:
+    """Test stream_complete method with real client.
+
+    Inputs: test_model and prompt string.
+    Expected: Each streamed response is non-empty and has a delta.
+    """
     llm = Ollama(model=test_model)
     response = llm.stream_complete("Hello!")
     for r in response:
@@ -135,6 +159,11 @@ def test_ollama_stream_complete() -> None:
 )
 @pytest.mark.asyncio()
 async def test_ollama_async_chat() -> None:
+    """Test async chat method with real client.
+
+    Inputs: test_model and user message.
+    Expected: Response is non-empty string.
+    """
     llm = Ollama(model=test_model)
     response = await llm.achat([Message(role="user", content="Hello!")])
     assert response is not None
@@ -147,6 +176,11 @@ async def test_ollama_async_chat() -> None:
 )
 @pytest.mark.asyncio()
 async def test_ollama_async_complete() -> None:
+    """Test async complete method with real client.
+
+    Inputs: test_model and prompt string.
+    Expected: Response is non-empty string.
+    """
     llm = Ollama(model=test_model)
     response = await llm.acomplete("Hello!")
     assert response is not None
@@ -159,6 +193,11 @@ async def test_ollama_async_complete() -> None:
 )
 @pytest.mark.asyncio()
 async def test_ollama_async_stream_chat() -> None:
+    """Test async stream_chat method with real client.
+
+    Inputs: test_model and user message.
+    Expected: Each streamed response is non-empty and has a delta.
+    """
     llm = Ollama(model=test_model, request_timeout=80)
     response = await llm.astream_chat([Message(role="user", content="Hello!")])
     async for r in response:
@@ -173,6 +212,11 @@ async def test_ollama_async_stream_chat() -> None:
 )
 @pytest.mark.asyncio()
 async def test_ollama_async_stream_complete() -> None:
+    """Test async stream_complete method with real client.
+
+    Inputs: test_model and prompt string.
+    Expected: Each streamed response is non-empty and has a delta.
+    """
     llm = Ollama(model=test_model)
     response = await llm.astream_complete("Hello!")
     async for r in response:
@@ -184,6 +228,11 @@ async def test_ollama_async_stream_complete() -> None:
 @pytest.mark.mock
 @patch.object(Ollama, "client")
 def test_chat_with_tools(mock_ollama_client) -> None:
+    """Test chat_with_tools method with mock client.
+
+    Inputs: mock_ollama_client with chat returning response_for_tool_call.
+    Expected: Tool call is detected and tool result is correct type.
+    """
     mock_ollama_client.chat = MagicMock(return_value=response_for_tool_call)
     llm = Ollama(model=test_model, request_timeout=80)
     response = llm.chat_with_tools([tool], user_msg="Hello!")
@@ -200,6 +249,11 @@ def test_chat_with_tools(mock_ollama_client) -> None:
 @pytest.mark.asyncio()
 @patch.object(Ollama, "async_client", new_callable=PropertyMock)
 async def test_async_chat_with_tools(mock_ollama_async_prop) -> None:
+    """Test async chat_with_tools method with mock client.
+
+    Inputs: mock_ollama_async_client with chat returning response_for_tool_call.
+    Expected: Tool call is detected and tool result is correct type.
+    """
     mock_ollama_async_client = MagicMock()
     mock_ollama_async_client.chat = AsyncMock(return_value=response_for_tool_call)
     mock_ollama_async_prop.return_value = mock_ollama_async_client

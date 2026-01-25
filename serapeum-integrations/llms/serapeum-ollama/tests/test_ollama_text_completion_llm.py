@@ -1,4 +1,7 @@
-"""Test LLM program."""
+"""Test LLM program for Ollama text completion LLM integration.
+
+This module contains tests for the TextCompletionLLM class using the Ollama backend.
+"""
 
 import json
 from unittest.mock import MagicMock
@@ -25,6 +28,8 @@ LLM = Ollama(
 
 
 class MockLLM(MagicMock):
+    """Mock LLM for simulating completion responses."""
+
     def complete(self, prompt: str) -> CompletionResponse:
         test_object = {"hello": "world"}
         text = json.dumps(test_object)
@@ -36,6 +41,8 @@ class MockLLM(MagicMock):
 
 
 class MockChatLLM(MagicMock):
+    """Mock chat LLM for simulating chat responses."""
+
     def chat(self, prompt: str) -> ChatResponse:
         test_object = {"hello": "chat"}
         text = json.dumps(test_object)
@@ -49,15 +56,18 @@ class MockChatLLM(MagicMock):
 
 
 class ModelTest(BaseModel):
+    """Pydantic model for test output."""
+
     __test__ = False
     hello: str
 
 
 class TestTextCompletionLLM:
+    """Test suite for TextCompletionLLM with Ollama backend."""
 
     @pytest.mark.e2e
     def test_text_completion_llm_ollama(self) -> None:
-        """Test LLM program."""
+        """Test LLM program with string prompt."""
         output_parser = PydanticParser(output_cls=ModelTest)
         text_llm = TextCompletionLLM(
             output_parser=output_parser,
@@ -70,7 +80,7 @@ class TestTextCompletionLLM:
 
     @pytest.mark.e2e
     def test_text_llm_with_messages(self) -> None:
-        """Test LLM program."""
+        """Test LLM program with message prompt."""
         messages = [Message(role=MessageRole.USER, content="Test")]
         prompt = ChatPromptTemplate(message_templates=messages)
         output_parser = PydanticParser(output_cls=ModelTest)
@@ -85,7 +95,7 @@ class TestTextCompletionLLM:
 
     @pytest.mark.e2e
     def test_llm_program_with_messages_and_chat(self) -> None:
-        """Test LLM program."""
+        """Test LLM program with chat model and message prompt."""
         messages = [Message(role=MessageRole.USER, content="Test")]
         prompt = ChatPromptTemplate(message_templates=messages)
         output_parser = PydanticParser(output_cls=ModelTest)

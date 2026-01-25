@@ -110,7 +110,9 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Installation: installation.md
+  - Developer Guide:
+      - Installation: developer-guide/installation.md
+      - contributing: developer-guide/contributing.md
   - Overview:
     - Codebase Map: overview/codebase-map.md
   - Architecture:
@@ -137,7 +139,6 @@ nav:
         - tools:
             - reference/core/tools/tools.md
             - reference/core/tools/callable_tools.md
-    - API Reference: reference/api-reference.md
     - Integrations:
         - LLMs:
             - Ollama:

@@ -3,11 +3,12 @@
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
-from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, WithJsonSchema
+from pydantic import (BaseModel, ConfigDict, Field, PlainSerializer,
+                      WithJsonSchema)
 from typing_extensions import Annotated
 
-from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.base.llms.models import ChunkType, Message, MessageList, TextChunk
+from serapeum.core.base.llms.models import (ChunkType, Message, MessageList,
+                                            TextChunk)
 from serapeum.core.output_parsers import BaseParser
 from serapeum.core.prompts.models import PromptType
 from serapeum.core.prompts.utils import format_string, get_template_vars
@@ -64,9 +65,6 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
         # first generate the values for the functions
         new_kwargs = {}
         for k, v in function_mappings.items():
-            # TODO: figure out what variables to pass into each function
-            # is it the kwargs specified during query time? just the fixed kwargs?
-            # all kwargs?
             new_kwargs[k] = v(**kwargs)
 
         # then, add the fixed variables only if not in new_kwargs already
@@ -104,6 +102,8 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
 
 
 class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
+    """Prompt template for string-based LLM prompts."""
+
     template: str
 
     def __init__(
@@ -175,6 +175,8 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
 
 class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
+    """Prompt template for chat-based LLM prompts."""
+
     message_templates: List[Message]
 
     def __init__(

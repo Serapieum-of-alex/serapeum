@@ -1,3 +1,5 @@
+"""Tests for Ollama LLM integration and related functionality."""
+
 import os
 from copy import deepcopy
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch

@@ -249,7 +249,10 @@ class TestToolMetadataToOpenAITool:
         tool = meta.to_openai_tool()
         assert tool["type"] == "function"
         assert tool["function"]["name"] == "tool"
-        assert tool["function"]["description"] == "desc\n\nRequired fields:\n  - input (string)"
+        assert (
+            tool["function"]["description"]
+            == "desc\n\nRequired fields:\n  - input (string)"
+        )
         assert tool["function"]["parameters"] == meta.get_schema()
 
     def test_raises_on_long_description(self):
@@ -280,7 +283,10 @@ class TestToolMetadataToOpenAITool:
         long_desc = "x" * 5000
         meta = ToolMetadata(description=long_desc, name="tool")
         tool = meta.to_openai_tool(skip_length_check=True)
-        assert tool["function"]["description"] == f"{long_desc}\n\nRequired fields:\n  - input (string)"
+        assert (
+            tool["function"]["description"]
+            == f"{long_desc}\n\nRequired fields:\n  - input (string)"
+        )
 
 
 class TestToolOutput:
@@ -903,6 +909,7 @@ class TestArgumentCoercer:
             Checks:
               - Result has correct types after validation.
             """
+
             class TestSchema(BaseModel):
                 count: int
                 active: bool
@@ -923,6 +930,7 @@ class TestArgumentCoercer:
             Checks:
               - Result has list field with correct values.
             """
+
             class TestSchema(BaseModel):
                 numbers: list[float]
 
@@ -942,6 +950,7 @@ class TestArgumentCoercer:
             Checks:
               - Result equals input dict (fallback behavior).
             """
+
             class TestSchema(BaseModel):
                 required_field: str
 
@@ -961,6 +970,7 @@ class TestArgumentCoercer:
             Checks:
               - Result has default value for optional field.
             """
+
             class TestSchema(BaseModel):
                 name: str
                 count: int = 0
@@ -983,6 +993,7 @@ class TestArgumentCoercer:
             Checks:
               - Result has correctly typed fields.
             """
+
             class ToolSchema(BaseModel):
                 numbers: list[float]
                 operation: str
@@ -1003,6 +1014,7 @@ class TestArgumentCoercer:
             Checks:
               - count is int 5, items is list [10, 20, 30].
             """
+
             class ToolSchema(BaseModel):
                 count: int
                 items: list[int]
@@ -1053,6 +1065,7 @@ class TestArgumentCoercer:
             Checks:
               - Result has fully parsed nested structure.
             """
+
             class NestedSchema(BaseModel):
                 config: dict[str, Any]
                 values: list[int]
@@ -1073,6 +1086,7 @@ class TestArgumentCoercer:
             Checks:
               - Result equals input.
             """
+
             class ToolSchema(BaseModel):
                 count: int
                 items: list[int]

@@ -179,7 +179,9 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             TypeError: If output_cls is neither a Pydantic model nor a callable.
         """
         # Check if it's a Pydantic model (class that inherits from BaseModel)
-        if isinstance(self._output_cls, type) and issubclass(self._output_cls, BaseModel):
+        if isinstance(self._output_cls, type) and issubclass(
+            self._output_cls, BaseModel
+        ):
             return CallableTool.from_model(self._output_cls)
         # Check if it's a callable (function, method, or callable class)
         elif callable(self._output_cls):

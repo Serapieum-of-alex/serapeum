@@ -117,6 +117,7 @@ class JsonParser:
     such as literal newlines in strings, unescaped control characters, and
     improperly escaped quotes.
     """
+
     def __init__(self, text: str) -> None:
         text = text.strip()
         self.text = text
@@ -167,9 +168,13 @@ class JsonParser:
             return json_str
         except json.JSONDecodeError:
             # Fall back to regex with non-greedy matching
-            match = re.search(r"\{.*?\}", self.text, re.MULTILINE | re.IGNORECASE | re.DOTALL)
+            match = re.search(
+                r"\{.*?\}", self.text, re.MULTILINE | re.IGNORECASE | re.DOTALL
+            )
             if not match:
-                raise ValueError(f"Could not extract json string from output: {self.text}")
+                raise ValueError(
+                    f"Could not extract json string from output: {self.text}"
+                )
 
             return match.group()
 
@@ -212,7 +217,7 @@ class JsonParser:
                 escape_next = False
                 continue
 
-            if char == '\\':
+            if char == "\\":
                 result.append(char)
                 escape_next = True
                 continue
@@ -224,21 +229,21 @@ class JsonParser:
 
             # If we're inside a string, escape control characters
             if in_string:
-                if char == '\n':
-                    result.append('\\n')
-                elif char == '\r':
-                    result.append('\\r')
-                elif char == '\t':
-                    result.append('\\t')
+                if char == "\n":
+                    result.append("\\n")
+                elif char == "\r":
+                    result.append("\\r")
+                elif char == "\t":
+                    result.append("\\t")
                 elif ord(char) < 32:
                     # Escape other control characters as unicode
-                    result.append(f'\\u{ord(char):04x}')
+                    result.append(f"\\u{ord(char):04x}")
                 else:
                     result.append(char)
             else:
                 result.append(char)
 
-        return ''.join(result)
+        return "".join(result)
 
 
 class SchemaFormatter:
@@ -298,7 +303,9 @@ class SchemaFormatter:
             desc_marker = f" - {field_desc}" if field_desc else ""
 
             comma = "," if i < len(properties) - 1 else ""
-            lines.append(f'  "{field_name}": <{field_type}>{req_marker}{desc_marker}{comma}')
+            lines.append(
+                f'  "{field_name}": <{field_type}>{req_marker}{desc_marker}{comma}'
+            )
 
         lines.append("}")
 
@@ -339,6 +346,7 @@ class SchemaFormatter:
             return output_str.replace("{", "{{").replace("}", "}}")
         else:
             return output_str
+
 
 class OutputParserException(Exception):
     """Raised when an LLM output cannot be parsed into the expected format."""

@@ -1,4 +1,5 @@
 """Structured output wrapper and helpers around the core LLM API."""
+
 from typing import Any, Sequence, Type
 
 from pydantic import BaseModel, Field, SerializeAsAny

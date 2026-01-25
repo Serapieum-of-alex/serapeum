@@ -278,9 +278,7 @@ class StreamingObjectProcessor:
 
         return result
 
-    def _format_output(
-        self, objects: list[BaseModel]
-    ) -> BaseModel | list[BaseModel]:
+    def _format_output(self, objects: list[BaseModel]) -> BaseModel | list[BaseModel]:
         """Format output based on parallel tool calls setting."""
         if self._allow_parallel:
             result = objects

@@ -807,7 +807,9 @@ class ToolExecutor:
                 raise
             return self._create_error_output(tool, arguments, e)
 
-    async def execute_async(self, tool: BaseTool, arguments: dict[str, Any]) -> ToolOutput:
+    async def execute_async(
+        self, tool: BaseTool, arguments: dict[str, Any]
+    ) -> ToolOutput:
         """Execute a tool asynchronously with error handling.
 
         Args:
@@ -950,7 +952,9 @@ class ToolExecutor:
 
         return output
 
-    def _should_unpack_single_arg(self, tool: BaseTool, arguments: dict[str, Any]) -> bool:
+    def _should_unpack_single_arg(
+        self, tool: BaseTool, arguments: dict[str, Any]
+    ) -> bool:
         """Determine whether to auto-unpack a single argument.
 
         Auto-unpacking is allowed when the executor config enables it and when

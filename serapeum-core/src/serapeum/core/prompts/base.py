@@ -95,9 +95,7 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
         """Render the template to a single string."""
 
     @abstractmethod
-    def format_messages(
-        self, **kwargs: Any
-    ) -> List[Message]:
+    def format_messages(self, **kwargs: Any) -> List[Message]:
         """Render the template into a list of chat messages."""
 
     @abstractmethod
@@ -167,9 +165,7 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
         return prompt
 
-    def format_messages(
-        self, **kwargs: Any
-    ) -> List[Message]:
+    def format_messages(self, **kwargs: Any) -> List[Message]:
         """Format the prompt into a list of chat messages."""
         prompt = self.format(**kwargs)
         return list(MessageList.from_str(prompt))
@@ -246,9 +242,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
         return MessageList(messages=messages).to_prompt()
 
-    def format_messages(
-        self, **kwargs: Any
-    ) -> List[Message]:
+    def format_messages(self, **kwargs: Any) -> List[Message]:
         """Format the prompt into a list of chat messages."""
         all_kwargs = {
             **self.kwargs,

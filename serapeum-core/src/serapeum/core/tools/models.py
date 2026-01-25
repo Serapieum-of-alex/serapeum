@@ -424,18 +424,19 @@ class ToolMetadata:
             field_desc = field_info.get("description", "")
 
             if field_desc:
-                field_descriptions.append(f"  - {field_name} ({field_type}): {field_desc}")
+                field_descriptions.append(
+                    f"  - {field_name} ({field_type}): {field_desc}"
+                )
             else:
                 field_descriptions.append(f"  - {field_name} ({field_type})")
 
-        guidance = (
-            "\n\nRequired fields:\n"
-            + "\n".join(field_descriptions)
-        )
+        guidance = "\n\nRequired fields:\n" + "\n".join(field_descriptions)
 
         return guidance
 
-    def to_openai_tool(self, skip_length_check: bool = False, include_schema_guidance: bool = True) -> dict[str, Any]:
+    def to_openai_tool(
+        self, skip_length_check: bool = False, include_schema_guidance: bool = True
+    ) -> dict[str, Any]:
         """Export this metadata as an OpenAI function-calling tool spec.
 
         Builds a dictionary compatible with OpenAI-style function tools. By default,

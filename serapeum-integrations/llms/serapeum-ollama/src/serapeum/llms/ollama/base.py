@@ -826,7 +826,9 @@ class Ollama(FunctionCallingLLM):
         )
 
     @staticmethod
-    def _parse_tool_call_response(tools_dict: dict[str, Any], r: dict[str, Any]) -> ChatResponse:
+    def _parse_tool_call_response(
+        tools_dict: dict[str, Any], r: dict[str, Any]
+    ) -> ChatResponse:
         """Accumulate streaming content and unique tool calls into a ChatResponse.
 
         Args:

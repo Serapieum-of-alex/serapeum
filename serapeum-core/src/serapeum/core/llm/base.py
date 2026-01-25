@@ -1527,9 +1527,7 @@ class LLM(BaseLLM, ABC):
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
-    ) -> AsyncGenerator[
-        Model | list[Model] | BaseModel | list[BaseModel], None
-    ]:
+    ) -> AsyncGenerator[Model | list[Model] | BaseModel | list[BaseModel], None]:
         """Obtain the async structured program stream without additional wrapping.
 
         Args:

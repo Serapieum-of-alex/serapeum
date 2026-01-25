@@ -128,12 +128,13 @@ class JsonParser:
     """
 
     def __init__(self, text: str) -> None:
+        """Initialize JsonParser with the given text."""
         text = text.strip()
         self.text = text
 
     @staticmethod
     def parse(json_str: str) -> Any:
-        """Parse a JSON string with automatic error recovery.
+        r"""Parse a JSON string with automatic error recovery.
 
         Args:
             json_str: Raw JSON string that may contain formatting issues.
@@ -168,7 +169,6 @@ class JsonParser:
 
     def extract_str(self) -> str:
         """Extract the first JSON object substring from text."""
-
         json_str = _marshal_llm_to_json(self.text)
 
         # Validate it's actually valid JSON
@@ -178,7 +178,7 @@ class JsonParser:
         except json.JSONDecodeError:
             # Fall back to regex with non-greedy matching
             match = re.search(
-                r"\{.*?\}", self.text, re.MULTILINE | re.IGNORECASE | re.DOTALL
+                r"{.*?}", self.text, re.MULTILINE | re.IGNORECASE | re.DOTALL
             )
             if not match:
                 raise ValueError(
@@ -189,10 +189,10 @@ class JsonParser:
 
     @staticmethod
     def fix_json_string(json_str: str) -> str:
-        """Fix common JSON formatting issues from LLM outputs.
+        r"""Fix common JSON formatting issues from LLM outputs.
 
         Handles:
-        - Single-escaped quotes (\\') that should be unescaped
+        - Single-escaped quotes (\') that should be unescaped
         - Literal newlines inside string values
         - Literal carriage returns and tabs
         - Other control characters (converted to unicode escapes)
@@ -209,7 +209,7 @@ class JsonParser:
 
             >>> # Fixes literal newlines
             >>> result = JsonParser.fix_json_string('{"text": "line1\\nline2"}')
-            >>> '\\\\n' in result
+            >>> '\\n' in result
             True
         """
         # Replace single-escaped quotes that should be unescaped

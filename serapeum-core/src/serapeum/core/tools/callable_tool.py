@@ -2,7 +2,6 @@
 
 import asyncio
 import inspect
-import json
 from typing import Any, Awaitable, Callable, Type, TypeVar
 
 from pydantic import BaseModel
@@ -24,7 +23,10 @@ Model = TypeVar("Model", bound=BaseModel)
 
 
 class SyncAsyncConverter:
+    """Sync/async function converter for tool callables."""
+
     def __init__(self, func: Callable[..., Any]) -> None:
+        """Initialize SyncAsyncConverter with a callable."""
         if not callable(func):
             raise ValueError("func must be a callable")
 

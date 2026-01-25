@@ -30,6 +30,8 @@ _logger = logging.getLogger(__name__)
 
 
 class FlexibleModel(BaseModel):
+    """Flexible Pydantic model that allows any fields."""
+
     model_config = ConfigDict(extra="allow")
 
     @classmethod

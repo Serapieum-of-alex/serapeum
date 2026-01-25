@@ -1,3 +1,5 @@
+"""Utilities for resolving binary data from various sources into BytesIO objects."""
+
 import base64
 from io import BytesIO
 from pathlib import Path

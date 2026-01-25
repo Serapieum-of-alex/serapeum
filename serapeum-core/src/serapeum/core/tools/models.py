@@ -70,6 +70,7 @@ class Schema:
     referenced_schema: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
+        """Post-init docstring."""
         self.resolved_schema = self.resolve_references(inline=True)
         self.referenced_schema = self.resolve_references(inline=False)
 

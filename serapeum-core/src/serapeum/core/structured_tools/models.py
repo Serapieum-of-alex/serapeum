@@ -1,3 +1,5 @@
+"""Base classes for LLM-powered structured tools using Pydantic models."""
+
 from abc import ABC, abstractmethod
 from typing import Any, AsyncGenerator, Generator, Generic, List, Type, Union
 
@@ -7,9 +9,7 @@ from serapeum.core.models import Model
 
 
 class BasePydanticLLM(ABC, Generic[Model]):
-    """
-    A base class for LLM-powered function that return a pydantic model.
-    """
+    """A base class for LLM-powered function that return a pydantic model."""
 
     @property
     @abstractmethod

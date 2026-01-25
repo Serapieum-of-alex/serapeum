@@ -24,6 +24,12 @@ with contextlib.suppress(ImportError):
     import yaml
 
 
+class OutputParserException(Exception):
+    """Exception raised for errors encountered during output parsing."""
+
+    pass
+
+
 def _marshal_llm_to_json(output: str) -> str:
     """Extract a substring containing a JSON object or array from a string."""
     output = output.strip()
@@ -42,7 +48,7 @@ def _marshal_llm_to_json(output: str) -> str:
 
 
 def parse_json_markdown(text: str) -> Any:
-    """Parse a JSON object/array embedded in fenced markdown.
+    r"""Parse a JSON object/array embedded in fenced markdown.
 
     If the text contains a fenced block marked as JSON (```json), the content
     of that block is parsed. Otherwise, the function attempts to extract the
@@ -76,11 +82,14 @@ def parse_json_markdown(text: str) -> Any:
 
 
 def parse_code_markdown(text: str, only_last: bool) -> List[str]:
-    """Extract code blocks from fenced markdown.
+    r"""Extract code blocks from fenced markdown.
 
     Args:
-        text: The source string that may contain fenced code blocks.
-        only_last: When True, return only the last code block; otherwise all.
+        text (str): The markdown text to parse.
+        only_last (bool): If True, return only the last code block.
+
+    Returns:
+        List[str]: List of code block contents.
     """
     pattern = r"```(.*?)```"
 
@@ -346,7 +355,3 @@ class SchemaFormatter:
             return output_str.replace("{", "{{").replace("}", "}}")
         else:
             return output_str
-
-
-class OutputParserException(Exception):
-    """Raised when an LLM output cannot be parsed into the expected format."""

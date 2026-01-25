@@ -1,3 +1,5 @@
+"""Unit tests for LLM models in serapeum-core."""
+
 import base64
 from io import BytesIO
 from pathlib import Path

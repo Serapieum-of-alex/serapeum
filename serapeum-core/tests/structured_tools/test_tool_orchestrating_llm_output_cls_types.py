@@ -17,12 +17,12 @@ Test organization:
 import asyncio
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.base.llms.models import Message, MessageRole, Metadata
+from serapeum.core.base.llms.models import Message, Metadata
 from serapeum.core.chat.models import AgentChatResponse
 from serapeum.core.structured_tools import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput

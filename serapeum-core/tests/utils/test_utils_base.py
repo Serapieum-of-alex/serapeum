@@ -1,3 +1,5 @@
+"""Tests for serapeum.core.utils.base utility functions."""
+
 import base64
 from io import BytesIO
 from pathlib import Path
@@ -10,14 +12,16 @@ from serapeum.core.utils.base import resolve_binary, truncate_text
 
 
 class TestResolveBinary:
+    """Test cases for resolve_binary utility function."""
+
     class TestRawBytes:
+        """Test raw_bytes input handling in resolve_binary."""
+
         def test_raw_bytes_non_base64_no_encoding(self):
             """
-            Inputs:
-                raw_bytes set to an arbitrary byte sequence; as_base64=False.
-            Expectation:
-                Per current implementation, function attempts base64 decoding; if decoding fails it
-                returns the original bytes, otherwise it returns the decoded bytes.
+            Inputs: raw_bytes set to an arbitrary byte sequence; as_base64=False.
+            Expectation: Per current implementation, function attempts base64 decoding; if decoding fails it
+            returns the original bytes, otherwise it returns the decoded bytes.
 
             This documents the current behavior of the auto-decode logic.
             """
@@ -32,12 +36,11 @@ class TestResolveBinary:
 
         def test_raw_bytes_non_base64_with_encoding(self):
             """
-            Inputs:
-                raw_bytes set to an arbitrary byte sequence; as_base64=True.
-            Expectation:
-                Per current implementation, function decodes then re-encodes to base64; thus
-                base64-decoding the result equals either base64.b64decode(raw_bytes) if decoding succeeds
-                or the original raw bytes if decoding fails.
+            Inputs: raw_bytes set to an arbitrary byte sequence; as_base64=True.
+
+            Expectation: Per current implementation, function decodes then re-encodes to base64; thus
+            base64-decoding the result equals either base64.b64decode(raw_bytes) if decoding succeeds
+            or the original raw bytes if decoding fails.
 
             This documents the decode-then-encode behavior for raw bytes.
             """
@@ -51,11 +54,10 @@ class TestResolveBinary:
 
         def test_raw_bytes_is_base64_decoded_when_as_base64_false(self):
             """
-            Inputs:
-                raw_bytes is a base64-encoded payload; as_base64=False.
-            Expectation:
-                Function detects base64 and returns the decoded binary data in BytesIO.
-                This checks the auto-detection and decoding path for base64 input.
+            Inputs: raw_bytes is a base64-encoded payload; as_base64=False.
+
+            Expectation: Function detects base64 and returns the decoded binary data in BytesIO.
+            This checks the auto-detection and decoding path for base64 input.
             """
             original = b"hello world"
             raw_b64 = base64.b64encode(original)
@@ -64,10 +66,9 @@ class TestResolveBinary:
 
         def test_raw_bytes_is_base64_and_as_base64_true_returns_b64(self):
             """
-            Inputs:
-                raw_bytes is base64-encoded; as_base64=True.
-            Expectation:
-                Function decodes then re-encodes and returns base64 bytes, equivalent to normalized input.
+            Inputs: raw_bytes is base64-encoded; as_base64=True.
+
+            Expectation: Function decodes then re-encodes and returns base64 bytes, equivalent to normalized input.
 
             This checks that the return remains base64 when requested.
             """
@@ -77,12 +78,13 @@ class TestResolveBinary:
             assert base64.b64decode(bio.getvalue()) == original
 
     class TestPath:
+        """Test path input handling in resolve_binary."""
+
         def test_path_bytes_no_encoding(self, tmp_path: Path):
             """
-            Inputs:
-                path to a file containing arbitrary bytes; as_base64=False.
-            Expectation:
-                BytesIO contains the exact bytes read from file.
+            Inputs: path to a file containing arbitrary bytes; as_base64=False.
+
+            Expectation: BytesIO contains the exact bytes read from file.
 
             This checks the "path" source handling with Path object.
             """
@@ -94,10 +96,9 @@ class TestResolveBinary:
 
         def test_path_bytes_with_encoding_str_path(self, tmp_path: Path):
             """
-            Inputs:
-                path (as string) to a file; as_base64=True.
-            Expectation:
-                BytesIO contains base64-encoded content of the file.
+            Inputs: path (as string) to a file; as_base64=True.
+
+            Expectation: BytesIO contains base64-encoded content of the file.
 
             This checks string-path handling and base64 encoding option.
             """
@@ -108,12 +109,13 @@ class TestResolveBinary:
             assert base64.b64decode(bio.getvalue()) == data
 
     class TestURL:
+        """Test url input handling in resolve_binary."""
+
         def test_url_data_scheme_base64_no_encoding(self):
             """
-            Inputs:
-                url is a data: URL with base64 payload; as_base64=False.
-            Expectation:
-                BytesIO contains decoded binary content.
+            Inputs: url is a data: URL with base64 payload; as_base64=False.
+
+            Expectation: BytesIO contains decoded binary content.
 
             This checks parsing and decoding of data URLs with base64 flag.
             """
@@ -124,10 +126,9 @@ class TestResolveBinary:
 
         def test_url_data_scheme_base64_with_encoding(self):
             """
-            Inputs:
-                url is a data: URL with base64 payload; as_base64=True.
-            Expectation:
-                BytesIO contains base64-encoded version of the decoded payload (i.e., remains base64).
+            Inputs: url is a data: URL with base64 payload; as_base64=True.
+
+            Expectation: BytesIO contains base64-encoded version of the decoded payload (i.e., remains base64).
 
             This checks the as_base64 flag with data URLs.
             """
@@ -138,10 +139,9 @@ class TestResolveBinary:
 
         def test_url_data_scheme_plain_text(self):
             """
-            Inputs:
-                url is a data: URL with plain text (no base64); as_base64=False.
-            Expectation:
-                BytesIO contains the UTF-8 bytes of the text portion as-is.
+            Inputs: url is a data: URL with plain text (no base64); as_base64=False.
+
+            Expectation: BytesIO contains the UTF-8 bytes of the text portion as-is.
 
             This checks the non-base64 data URL branch.
             """
@@ -152,10 +152,9 @@ class TestResolveBinary:
 
         def test_url_data_scheme_plain_text_as_base64(self):
             """
-            Inputs:
-                url is a data: URL with plain text; as_base64=True.
-            Expectation:
-                BytesIO contains base64-encoded UTF-8 bytes of the text.
+            Inputs: url is a data: URL with plain text; as_base64=True.
+
+            Expectation: BytesIO contains base64-encoded UTF-8 bytes of the text.
 
             This checks encoding behavior for non-base64 data URLs.
             """
@@ -166,10 +165,9 @@ class TestResolveBinary:
 
         def test_url_data_scheme_invalid_format_raises(self):
             """
-            Inputs:
-                url is a malformed data: URL missing the comma separator.
-            Expectation:
-                ValueError is raised indicating invalid format.
+            Inputs: url is a malformed data: URL missing the comma separator.
+
+            Expectation: ValueError is raised indicating invalid format.
 
             This checks error handling for improperly formatted data URLs.
             """
@@ -179,11 +177,10 @@ class TestResolveBinary:
 
         def test_http_url_fetches_and_respects_as_base64(self):
             """
-            Inputs:
-                url is an http(s) URL; as_base64 toggles output format.
-            Expectation:
-                requests.get is called, response.raise_for_status is used, and content is returned
-                either raw or base64 encoded depending on the flag.
+            Inputs: url is an http(s) URL; as_base64 toggles output format.
+
+            Expectation: requests.get is called, response.raise_for_status is used, and content is returned
+            either raw or base64 encoded depending on the flag.
 
             This checks the external HTTP fetch path with proper error handling.
             """
@@ -218,7 +215,9 @@ class TestResolveBinary:
                 assert base64.b64decode(bio2.getvalue()) == content
 
         def test_no_valid_source_raises(self):
-            """Inputs: All source arguments are None (no raw_bytes, no path, no url).
+            """
+            Inputs: All source arguments are None (no raw_bytes, no path, no url).
+
             Expectation: ValueError is raised indicating no valid source was provided.
             This checks the final error path.
             """
@@ -227,22 +226,30 @@ class TestResolveBinary:
 
 
 class TestTruncateText:
+    """Test cases for truncate_text utility function."""
+
     def test_text_shorter_than_max_length(self):
-        """Inputs: text length less than max_length.
+        """
+        Inputs: text length less than max_length.
+
         Expectation: Function returns the original text unchanged.
         This verifies the early return condition when no truncation is needed.
         """
         assert truncate_text("hello", 10) == "hello"
 
     def test_text_equal_to_max_length(self):
-        """Inputs: text length exactly equals max_length.
+        """
+        Inputs: text length exactly equals max_length.
+
         Expectation: Function returns the original text unchanged.
         This ensures equality boundary behaves like the shorter case.
         """
         assert truncate_text("12345", 5) == "12345"
 
     def test_text_longer_than_max_length_adds_ellipsis(self):
-        """Inputs: text length greater than max_length.
+        """
+        Inputs: text length greater than max_length.
+
         Expectation: Function returns a string of length max_length, created as text[:max_length-3] + '...'.
         This checks the truncation and ellipsis logic.
         """
@@ -251,7 +258,9 @@ class TestTruncateText:
         assert len(result) == 8
 
     def test_small_max_length_edge_case(self):
-        """Inputs: very small max_length (less than length of '...').
+        """
+        Inputs: very small max_length (less than length of '...').
+
         Expectation: Per current implementation, negative slice may produce a string longer than max_length.
         This test documents current behavior rather than enforcing a specific UX rule.
         """

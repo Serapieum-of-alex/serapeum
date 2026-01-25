@@ -1,3 +1,5 @@
+"""Tests for CallableTool and related tool utilities."""
+
 import asyncio
 from typing import List, Optional
 
@@ -47,7 +49,11 @@ class MockModelWithOptionalFields(BaseModel):
 
 
 class TestSyncAsyncConverter:
+    """Test SyncAsyncConverter utility for sync/async conversion."""
+
     class TestSyncToAsync:
+        """Test sync to async conversion."""
+
         def test_returns_awaitable_and_result(self):
             """
             Inputs:
@@ -82,6 +88,8 @@ class TestSyncAsyncConverter:
                 asyncio.run(wrapped())
 
     class TestAsyncToSync:
+        """Test async to sync conversion."""
+
         def test_returns_result(self):
             """
             Inputs: An async function add(a, b) that returns a + b, wrapped by async_to_sync and called synchronously as func(5, 7).
@@ -115,6 +123,8 @@ class TestSyncAsyncConverter:
 
 
 class TestCallableToolInit:
+    """Test CallableTool initialization logic."""
+
     def test_init_with_sync_fn(self):
         """
         Inputs: A simple sync function and ToolMetadata(name="t", description="d").
@@ -177,6 +187,8 @@ class TestCallableToolInit:
 
 
 class TestCallableToolFromFunction:
+    """Test CallableTool.from_function factory method."""
+
     def test_builds_metadata_name_description_and_schema_with_docs(self):
         """
         Inputs:
@@ -262,7 +274,7 @@ class TestCallableToolFromFunction:
 
 
 class TestCallableToolFromModel:
-    """Test class for get_function_tool function."""
+    """Test CallableTool.from_model factory method."""
 
     def test_get_function_tool_basic_model(self):
         """Test creating function tool from basic model.
@@ -343,6 +355,8 @@ class TestCallableToolFromModel:
 
 
 class TestCallableToolParseToolOutput:
+    """Test _parse_tool_output method of CallableTool."""
+
     def test_single_text_chunk(self):
         """
         Inputs: _parse_tool_output with a single TextChunk("hello").
@@ -401,6 +415,8 @@ class TestCallableToolParseToolOutput:
 
 
 class TestCallableToolCall:
+    """Test call method of CallableTool."""
+
     def test_sync_call_with_partial_and_kwargs_and_positional(self):
         """
         Inputs: Sync function f(a, b, c=3) that returns a tuple (a, b, c).
@@ -445,6 +461,8 @@ class TestCallableToolCall:
 
 
 class TestCallableToolDunderCall:
+    """Test __call__ dunder method of CallableTool."""
+
     def test_dunder_call_delegates_and_merges_default_arguments(self):
         """
         Inputs:
@@ -476,6 +494,8 @@ class TestCallableToolDunderCall:
 
 
 class TestCallableToolACall:
+    """Test async acall method of CallableTool."""
+
     @pytest.mark.asyncio
     async def test_async_call_with_partial_and_kwargs(self):
         """

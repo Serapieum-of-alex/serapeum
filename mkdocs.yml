@@ -110,7 +110,9 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Installation: installation.md
+  - Developer Guide:
+      - Installation: developer-guide/installation.md
+      - contributing: developer-guide/contributing.md
   - Overview:
     - Codebase Map: overview/codebase-map.md
   - Architecture:
@@ -137,7 +139,6 @@ nav:
         - tools:
             - reference/core/tools/tools.md
             - reference/core/tools/callable_tools.md
-    - API Reference: reference/api-reference.md
     - Integrations:
         - LLMs:
             - Ollama:
@@ -148,15 +149,10 @@ nav:
                 - Data Flow: reference/integrations/llms/ollama/ollama_dataflow.md
                 - Components: reference/integrations/llms/ollama/ollama_components.md
                 - Lifecycle: reference/integrations/llms/ollama/ollama_state.md
-  - Tutorials:
-    - Getting Started: tutorials/getting-started.md
-    - Advanced Usage: tutorials/advanced-usage.md
   - About:
     - Change-log: change-log.md
-    - Code of Conduct: CODE_OF_CONDUCT.md
     - Contributing: contributing.md
     - License: LICENSE.md
-    - Authors: AUTHORS.md
 
 extra:
   social:

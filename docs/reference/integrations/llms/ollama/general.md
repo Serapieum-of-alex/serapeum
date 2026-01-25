@@ -456,7 +456,6 @@ Solution: Enable json_mode
 
 ## See Also
 
-- [Serapeum Core Documentation](../../core/) - Core abstractions and base classes
-- [TextCompletionLLM](../../core/structured_tools/text_completion_llm/) - Structured completion orchestrator
-- [ToolOrchestratingLLM](../../core/structured_tools/tool_orchestrating_llm/) - Tool-based orchestrator
+- [TextCompletionLLM](../../../core/structured_tools/text_completion_llm/general.md) - Structured completion orchestrator
+- [ToolOrchestratingLLM](../../../core/structured_tools/tool_orchestrating_llm/general.md) - Tool-based orchestrator
 - [Ollama Official Documentation](https://ollama.com/docs) - Ollama server documentation

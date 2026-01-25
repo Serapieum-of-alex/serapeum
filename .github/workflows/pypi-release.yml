@@ -3,6 +3,9 @@
 
 name: pypi-release
 
+permissions:
+    contents: read
+
 on:
     workflow_dispatch:
     release:
@@ -18,14 +21,21 @@ jobs:
               uses: actions/setup-python@v4
               with:
                   python-version: "3.x"
-            - name: Install dependencies
-              run: |
-                  python -m pip install --upgrade pip
-                  pip install setuptools wheel twine
+
+            - name: Set up Python
+              uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
+              with:
+                  python-version: ${{ matrix.python-version }}
+                  install-groups: dev
+                  verify-lock: true
+
+            - name: Build package
+              run: uv build
+
             - name: Build and publish
               env:
                   TWINE_USERNAME: ${{ secrets.PYPI_USERS }}
                   TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
               run: |
-                  python setup.py sdist bdist_wheel
+                  pip install twine
                   twine upload dist/*

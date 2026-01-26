@@ -22,7 +22,7 @@ from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
-from serapeum.core.tools.models import ToolCallArguments
+from serapeum.core.tools.models import BaseTool, ToolCallArguments
 
 
 class Song(BaseModel):
@@ -128,6 +128,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     """
 
     def __init__(self) -> None:
+        """Initializer."""
         super().__init__()
         # Note: avoid declaring `tool_calls` as a Pydantic field; keep it as a plain attribute
         # to prevent BaseModel validation from requiring it at construction time.
@@ -290,7 +291,7 @@ class TestToolOrchestratingLLMProperties:
         assert tools_llm.output_cls is Album
 
     def test_prompt_getter_setter(self) -> None:
-        """prompt property getter and setter work as expected.
+        """Prompt property getter and setter work as expected.
 
         Input: Set a new PromptTemplate on the program
         Expected: The .prompt returns the newly set template
@@ -347,7 +348,7 @@ class TestToolOrchestratingLLMAsyncCall:
     """Async execution via acall covering standard single-output scenario."""
 
     async def test_async_single_output(self) -> None:
-        """acall returns a single Album when parallel=False.
+        """Acall returns a single Album when parallel=False.
 
         Input: Program with allow_parallel_tool_calls=False using NonFunctionCallingMockLLM
         Expected: Returns Album equal to SAMPLE_ALBUM

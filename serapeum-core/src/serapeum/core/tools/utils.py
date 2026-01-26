@@ -23,7 +23,7 @@ import datetime
 import json
 import re
 from dataclasses import dataclass
-from inspect import Parameter, signature, Signature
+from inspect import Parameter, Signature, signature
 from typing import (
     Annotated,
     Any,
@@ -36,10 +36,10 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    cast,
     get_args,
     get_origin,
 )
+
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 
@@ -272,6 +272,7 @@ class FunctionArgument:
     """
 
     def __init__(self, param: Parameter) -> None:
+        """Initialize FunctionArgument with a parameter."""
         self.param = param
         # Extract type, description, and extras from annotation
         self.param_type = self.param.annotation
@@ -505,6 +506,7 @@ class FunctionConverter:
         ] = None,
         ignore_fields: Optional[List[str]] = None,
     ):
+        """Initialize with function, additional fields, and ignore list."""
         self.name = name
         self.func = func
         self.additional_fields = additional_fields
@@ -602,7 +604,7 @@ class FunctionConverter:
                 ...     additional_fields=[('a', int), ('b', str, 'x')]
                 ... )
                 >>> merged = conv._apply_additional_fields({})
-                >>> sorted((k, v[0].__name__) for k, v in merged.items())
+                >>> sorted([(key, value[0].__name__) for key, value in merged.items()])
                 [('a', 'int'), ('b', 'str')]
 
                 ```
@@ -807,7 +809,9 @@ class ToolExecutor:
                 raise
             return self._create_error_output(tool, arguments, e)
 
-    async def execute_async(self, tool: BaseTool, arguments: dict[str, Any]) -> ToolOutput:
+    async def execute_async(
+        self, tool: BaseTool, arguments: dict[str, Any]
+    ) -> ToolOutput:
         """Execute a tool asynchronously with error handling.
 
         Args:
@@ -950,7 +954,9 @@ class ToolExecutor:
 
         return output
 
-    def _should_unpack_single_arg(self, tool: BaseTool, arguments: dict[str, Any]) -> bool:
+    def _should_unpack_single_arg(
+        self, tool: BaseTool, arguments: dict[str, Any]
+    ) -> bool:
         """Determine whether to auto-unpack a single argument.
 
         Auto-unpacking is allowed when the executor config enables it and when

@@ -5,12 +5,12 @@ This diagram shows the complete lifecycle and state transitions of the Ollama LL
 ```mermaid
 stateDiagram-v2
     [*] --> Uninitialized
-    
+
     Uninitialized --> Configured: __init__(model, base_url, ...)
-    
+
     state Configured {
         [*] --> ClientNotCreated
-        
+
         note right of ClientNotCreated
             State: Configuration stored
             - model: str
@@ -21,24 +21,24 @@ stateDiagram-v2
             - _client: None
             - _async_client: None
         end note
-        
+
         ClientNotCreated --> ClientInitialized: First chat/complete call
-        
+
         state ClientInitialized {
             [*] --> Idle
-            
+
             note right of Idle
                 State: Ready for requests
                 - _client: Client instance
                 - _async_client: None or AsyncClient
             end note
-            
+
             Idle --> ProcessingChat: chat(messages)
             Idle --> ProcessingComplete: complete(prompt)
             Idle --> ProcessingStream: stream_chat(messages)
             Idle --> ProcessingAsync: achat(messages)
             Idle --> ProcessingTools: chat_with_tools(messages, tools)
-            
+
             state ProcessingChat {
                 [*] --> BuildingRequest
                 BuildingRequest --> ConvertingMessages: Convert Message objects
@@ -50,7 +50,7 @@ stateDiagram-v2
                 ParsingResponse --> CreatingChatResponse: Create ChatResponse
                 CreatingChatResponse --> [*]
             }
-            
+
             state ProcessingComplete {
                 [*] --> DecoratorWrap
                 DecoratorWrap --> ConvertToMessage: Wrap prompt as Message
@@ -60,12 +60,12 @@ stateDiagram-v2
                 DecoratorUnwrap --> CreateCompletionResponse: Create CompletionResponse
                 CreateCompletionResponse --> [*]
             }
-            
+
             state ProcessingStream {
                 [*] --> BuildingStreamRequest
                 BuildingStreamRequest --> SendingStreamRequest: stream=True
                 SendingStreamRequest --> StreamLoop
-                
+
                 state StreamLoop {
                     [*] --> WaitingChunk
                     WaitingChunk --> ReceivingChunk: Chunk arrives
@@ -77,10 +77,10 @@ stateDiagram-v2
                     CheckDone --> WaitingChunk: done=False
                     CheckDone --> [*]: done=True
                 }
-                
+
                 StreamLoop --> [*]
             }
-            
+
             state ProcessingAsync {
                 [*] --> EnsureAsyncClient
                 EnsureAsyncClient --> BuildingAsyncRequest: Create AsyncClient if needed
@@ -90,7 +90,7 @@ stateDiagram-v2
                 ParsingAsyncResponse --> CreatingAsyncChatResponse: Create ChatResponse
                 CreatingAsyncChatResponse --> [*]
             }
-            
+
             state ProcessingTools {
                 [*] --> PreparingTools
                 PreparingTools --> ConvertingTools: Convert to Ollama format
@@ -106,32 +106,32 @@ stateDiagram-v2
                 ForcingSingle --> [*]
                 ReturningMultiple --> [*]
             }
-            
+
             ProcessingChat --> Idle: Return ChatResponse
             ProcessingComplete --> Idle: Return CompletionResponse
             ProcessingStream --> Idle: Stream complete
             ProcessingAsync --> Idle: Return ChatResponse
             ProcessingTools --> Idle: Return ChatResponse with tools
-            
+
             Idle --> Error: Exception occurs
             ProcessingChat --> Error: Network/Parse error
             ProcessingComplete --> Error: Network/Parse error
             ProcessingStream --> Error: Network/Parse error
             ProcessingAsync --> Error: Network/Parse error
             ProcessingTools --> Error: Tool validation error
-            
+
             state Error {
                 [*] --> LoggingError
                 LoggingError --> RaisingException: Raise appropriate exception
                 RaisingException --> [*]
             }
-            
+
             Error --> Idle: Error handled by caller
         }
     }
-    
+
     Configured --> [*]: Delete instance
-    
+
     note left of Configured
         Lifecycle Phases:
         1. Uninitialized: Before __init__
@@ -386,7 +386,7 @@ graph LR
     I --> J
     J -->|Yes| E
     J -->|No| K[Delete Instance]
-    
+
     style A fill:#e1f5ff
     style B fill:#fff9c4
     style D fill:#f3e5f5
@@ -403,7 +403,7 @@ graph LR
 Ollama instance is NOT thread-safe by default:
   - _client and _async_client are shared state
   - Lazy initialization is not synchronized
-  
+
 Recommendation:
   - Use separate Ollama instance per thread
   - Or use locks around lazy initialization
@@ -414,7 +414,7 @@ Recommendation:
 Ollama async methods are event-loop safe:
   - Uses separate _async_client per event loop
   - No shared mutable state in async methods
-  
+
 Safe to use:
   - Multiple concurrent achat() calls in same loop
   - Multiple event loops with same instance (separate clients)
@@ -425,7 +425,7 @@ Safe to use:
 Each stream maintains its own state:
   - Generator/async generator has local variables
   - No shared state between streams
-  
+
 Safe to have:
   - Multiple concurrent streams from same instance
 ```

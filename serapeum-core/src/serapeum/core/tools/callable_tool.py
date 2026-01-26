@@ -2,14 +2,18 @@
 
 import asyncio
 import inspect
-import json
 from typing import Any, Awaitable, Callable, Type, TypeVar
 
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
 from serapeum.core.base.llms.models import Audio, ChunkType, Image, TextChunk
-from serapeum.core.tools.models import AsyncBaseTool, ToolMetadata, ToolOutput, ArgumentCoercer
+from serapeum.core.tools.models import (
+    ArgumentCoercer,
+    AsyncBaseTool,
+    ToolMetadata,
+    ToolOutput,
+)
 from serapeum.core.tools.utils import Docstring, FunctionConverter
 from serapeum.core.utils.async_utils import asyncio_run
 
@@ -19,7 +23,10 @@ Model = TypeVar("Model", bound=BaseModel)
 
 
 class SyncAsyncConverter:
+    """Sync/async function converter for tool callables."""
+
     def __init__(self, func: Callable[..., Any]) -> None:
+        """Initialize SyncAsyncConverter with a callable."""
         if not callable(func):
             raise ValueError("func must be a callable")
 

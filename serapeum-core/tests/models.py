@@ -1,3 +1,5 @@
+"""Mock models for testing."""
+
 from typing import List
 
 from pydantic import BaseModel
@@ -10,6 +12,8 @@ class MockSong(BaseModel):
 
 
 class MockAlbum(BaseModel):
+    """Mock Album class."""
+
     title: str
     artist: str
     songs: List[MockSong]

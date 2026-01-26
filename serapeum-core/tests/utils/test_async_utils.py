@@ -1,3 +1,5 @@
+"""Unit tests for serapeum.core.utils.async_utils async utilities and helpers."""
+
 import asyncio
 import sys
 import types
@@ -16,25 +18,23 @@ from serapeum.core.utils.async_utils import (
 
 
 class TestGetAsyncioModule:
-    def test_returns_asyncio_when_no_progress(self):
-        """
-        Inputs:
-            show_progress=False.
-        Expectation:
-            Function returns the standard asyncio module.
+    """Tests for get_asyncio_module utility."""
 
+    def test_returns_asyncio_when_no_progress(self):
+        """Test get_asyncio_module with show_progress=False.
+
+        Inputs: show_progress=False.
+        Expectation: Function returns the standard asyncio module.
         This checks the default branch without progress support.
         """
         mod = get_asyncio_module(show_progress=False)
         assert mod is asyncio
 
     def test_returns_tqdm_asyncio_when_progress_true_with_dummy(self, monkeypatch):
-        """
-        Inputs:
-            show_progress=True; inject a dummy tqdm.asyncio module.
-        Expectation:
-            Function returns the dummy tqdm_asyncio object from the injected module.
+        """Test get_asyncio_module with show_progress=True and dummy tqdm.asyncio.
 
+        Inputs: show_progress=True; inject a dummy tqdm.asyncio module.
+        Expectation: Function returns the dummy tqdm_asyncio object from the injected module.
         This checks import and selection logic for the progress-enabled path.
         """
         dummy_module = types.ModuleType("tqdm.asyncio")
@@ -51,13 +51,13 @@ class TestGetAsyncioModule:
 
 
 class TestAsyncioRun:
-    def test_runs_using_asyncio_run_when_no_current_loop(self):
-        """
-        Inputs:
-            coroutine; no current event loop set for this thread.
-        Expectation:
-            Function falls back to asyncio.run and returns the awaited value.
+    """Tests for asyncio_run utility."""
 
+    def test_runs_using_asyncio_run_when_no_current_loop(self):
+        """Test asyncio_run fallback to asyncio.run.
+
+        Inputs: coroutine; no current event loop set for this thread.
+        Expectation: Function falls back to asyncio.run and returns the awaited value.
         This checks the RuntimeError branch when get_event_loop() fails.
         """
 
@@ -76,12 +76,10 @@ class TestAsyncioRun:
         assert result == 42
 
     def test_runs_on_existing_non_running_loop(self):
-        """
-        Inputs:
-            coroutine; a new event loop is created and set as current (not running).
-        Expectation:
-            Function uses loop.run_until_complete and returns the awaited value.
+        """Test asyncio_run with an existing non-running event loop.
 
+        Inputs: coroutine; a new event loop is created and set as current (not running).
+        Expectation: Function uses loop.run_until_complete and returns the awaited value.
         This checks the primary branch when a loop is present but idle.
         """
 
@@ -99,12 +97,10 @@ class TestAsyncioRun:
 
     @pytest.mark.asyncio
     async def test_nested_event_loop_raises_runtime_error(self):
-        """
-        Inputs:
-            call asyncio_run() from within an already running event loop.
-        Expectation:
-            Function raises RuntimeError with guidance about nest_asyncio.
+        """Test asyncio_run raises on nested event loop.
 
+        Inputs: call asyncio_run() from within an already running event loop.
+        Expectation: Function raises RuntimeError with guidance about nest_asyncio.
         This checks the nested-loop error handling path.
         """
 
@@ -124,13 +120,13 @@ class TestAsyncioRun:
 
 
 class TestRunAsyncTasks:
-    def test_runs_tasks_and_returns_results(self):
-        """
-        Inputs:
-            a list of simple coroutines; show_progress=False.
-        Expectation:
-            Returns list of results in order, using asyncio.gather under the hood.
+    """Tests for run_async_tasks utility."""
 
+    def test_runs_tasks_and_returns_results(self):
+        """Test run_async_tasks returns results in order.
+
+        Inputs: a list of simple coroutines; show_progress=False.
+        Expectation: Returns list of results in order, using asyncio.gather under the hood.
         This checks the standard non-progress path.
         """
 
@@ -145,12 +141,10 @@ class TestRunAsyncTasks:
     def test_show_progress_true_falls_back_if_import_or_runtime_fails(
         self, monkeypatch
     ):
-        """
-        Inputs:
-            coroutines with show_progress=True; environment without real tqdm.asyncio.
-        Expectation:
-            Function handles import/runtime errors gracefully and still returns correct results via fallback path.
+        """Test run_async_tasks fallback when show_progress=True and tqdm.asyncio missing.
 
+        Inputs: coroutines with show_progress=True; environment without real tqdm.asyncio.
+        Expectation: Function handles import/runtime errors gracefully and still returns correct results via fallback path.
         This checks the protective try/except path for progress mode.
         """
         # Ensure tqdm.asyncio import will fail by removing if present
@@ -170,13 +164,13 @@ class TestRunAsyncTasks:
 
 
 class TestChunks:
-    def test_chunks_exact_multiple(self):
-        """
-        Inputs:
-            iterable of 6 elements; size=3.
-        Expectation:
-            Produces two tuples of length 3 with no None fill values.
+    """Tests for chunks utility."""
 
+    def test_chunks_exact_multiple(self):
+        """Test chunks with exact multiple of size.
+
+        Inputs: iterable of 6 elements; size=3.
+        Expectation: Produces two tuples of length 3 with no None fill values.
         This checks standard grouping behavior.
         """
         data = [1, 2, 3, 4, 5, 6]
@@ -184,12 +178,10 @@ class TestChunks:
         assert groups == [(1, 2, 3), (4, 5, 6)]
 
     def test_chunks_with_remainder_filled_with_none(self):
-        """
-        Inputs:
-            iterable of 5 elements; size=3.
-        Expectation:
-            Produces two tuples, the last one filled with a trailing None.
+        """Test chunks with remainder filled with None.
 
+        Inputs: iterable of 5 elements; size=3.
+        Expectation: Produces two tuples, the last one filled with a trailing None.
         This checks zip_longest fill behavior.
         """
         data = [1, 2, 3, 4, 5]
@@ -197,26 +189,24 @@ class TestChunks:
         assert groups == [(1, 2, 3), (4, 5, None)]
 
     def test_chunks_empty_iterable(self):
-        """
-        Inputs:
-            empty iterable; any positive size.
-        Expectation:
-            Produces an empty iterator (no groups).
+        """Test chunks with empty iterable.
 
+        Inputs: empty iterable; any positive size.
+        Expectation: Produces an empty iterator (no groups).
         This checks graceful handling of empty input.
         """
         assert list(chunks([], 4)) == []
 
 
 class TestBatchGather:
+    """Tests for batch_gather utility."""
+
     @pytest.mark.asyncio
     async def test_batch_gather_batches_and_concatenates_results(self):
-        """
-        Inputs:
-            7 tasks; batch_size=3; verbose=False.
-        Expectation:
-            Results are concatenated in task order across batches.
+        """Test batch_gather batches and concatenates results.
 
+        Inputs: 7 tasks; batch_size=3; verbose=False.
+        Expectation: Results are concatenated in task order across batches.
         This checks correct chunking and awaiting of batches.
         """
 
@@ -230,12 +220,10 @@ class TestBatchGather:
 
     @pytest.mark.asyncio
     async def test_batch_gather_verbose_prints_progress(self, capsys):
-        """
-        Inputs:
-            4 tasks; batch_size=2; verbose=True.
-        Expectation:
-            Progress messages are printed after each batch; final output contains all results.
+        """Test batch_gather verbose mode prints progress.
 
+        Inputs: 4 tasks; batch_size=2; verbose=True.
+        Expectation: Progress messages are printed after each batch; final output contains all results.
         This checks the verbose side-effect and output integrity.
         """
 
@@ -252,16 +240,16 @@ class TestBatchGather:
 
 
 class TestRunJobs:
+    """Tests for run_jobs utility."""
+
     @pytest.mark.asyncio
     async def test_run_jobs_without_progress_limits_concurrency_and_preserves_order(
         self,
     ):
-        """
-        Inputs:
-            6 jobs with varying delays; workers=2; show_progress=False.
-        Expectation:
-            Returns results in the order of the input jobs (asyncio.gather preserves order).
+        """Test run_jobs without progress limits concurrency and preserves order.
 
+        Inputs: 6 jobs with varying delays; workers=2; show_progress=False.
+        Expectation: Returns results in the order of the input jobs (asyncio.gather preserves order).
         This checks that the semaphore-wrapped workers and gather work correctly.
         """
 
@@ -276,12 +264,10 @@ class TestRunJobs:
 
     @pytest.mark.asyncio
     async def test_run_jobs_with_progress_uses_dummy_tqdm_asyncio(self, monkeypatch):
-        """
-        Inputs:
-            same jobs as above; show_progress=True; inject dummy tqdm.asyncio.tqdm_asyncio with gather.
-        Expectation:
-            The function imports our dummy tqdm_asyncio and uses its gather to collect results.
+        """Test run_jobs with progress uses dummy tqdm_asyncio.
 
+        Inputs: same jobs as above; show_progress=True; inject dummy tqdm.asyncio.tqdm_asyncio with gather.
+        Expectation: The function imports our dummy tqdm_asyncio and uses its gather to collect results.
         This checks the progress branch without requiring the real tqdm dependency.
         """
         # Create dummy tqdm.asyncio with an object that has an async gather

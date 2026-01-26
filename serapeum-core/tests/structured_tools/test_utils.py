@@ -5,24 +5,27 @@ from typing import List, Optional
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
 from serapeum.core.structured_tools.utils import (
     FlexibleModel,
-    StreamingObjectProcessor,
     _repair_incomplete_json,
     num_valid_fields,
 )
 
 
 class Person(BaseModel):
+    """Person helper for tests."""
+
     name: str
     age: Optional[int] = None
     hobbies: List[str] = Field(default_factory=list)
 
 
 class TestRepairIncompleteJson:
+    """Test suite for _repair_incomplete_json function."""
+
     def test_adds_missing_quote(self) -> None:
-        """Given a JSON string ending with an odd number of quotes,
+        """Given a JSON string ending with an odd number of quotes.
+
         the function should append a closing quote and any missing braces.
         Input: '{"name": "John'
         Expected: '{"name": "John"}' (closing quote and brace added).
@@ -30,7 +33,8 @@ class TestRepairIncompleteJson:
         assert _repair_incomplete_json('{"name": "John') == '{"name": "John"}'
 
     def test_adds_missing_brace(self) -> None:
-        """Given a JSON string with unbalanced opening braces,
+        """Given a JSON string with unbalanced opening braces.
+
         the function should add the required number of closing braces.
         Input: '{"name": "John"'
         Expected: '{"name": "John"}' (one closing brace added).
@@ -43,6 +47,7 @@ class TestRepairIncompleteJson:
 
     def test_valid_json_unchanged(self) -> None:
         """A valid JSON string must be returned unchanged.
+
         Input: '{"name": "John", "age": 30}'
         Expected: the same string.
         """
@@ -50,8 +55,8 @@ class TestRepairIncompleteJson:
         assert _repair_incomplete_json(s) == s
 
     def test_multiple_unbalanced_braces(self) -> None:
-        """If the input has more opening than closing braces, add enough braces
-        to balance it.
+        """If the input has more opening than closing braces, add enough braces to balance it.
+
         Input: '{{"a": 1'
         Expected: '{{"a": 1}}' (two closing braces added).
         """
@@ -74,8 +79,11 @@ class TestRepairIncompleteJson:
 
 
 class TestNumValidFields:
+    """Test suite for num_valid_fields function."""
+
     def test_none_and_scalars(self) -> None:
         """None should count as 0; any non-None scalar should count as 1.
+
         Input: None and scalar strings.
         Expected: 0 for None, 1 for non-None.
         """
@@ -84,6 +92,7 @@ class TestNumValidFields:
 
     def test_simple_model(self) -> None:
         """A model with only one set field should be counted as 1.
+
         Input: Person(name='John').
         Expected: 1.
         """
@@ -92,6 +101,7 @@ class TestNumValidFields:
 
     def test_lists_and_dicts(self) -> None:
         """Lists and dicts should be counted recursively across elements/values.
+
         Input: list[Person], dict[str, Person].
         Expected: sum of non-None fields across items.
         """
@@ -102,6 +112,7 @@ class TestNumValidFields:
 
     def test_nested_models(self) -> None:
         """Nested Pydantic models should be traversed to count non-None fields.
+
         Input: Family with parent and children Persons.
         Expected: count equals sum of all non-None nesting fields.
         """
@@ -144,8 +155,11 @@ class TestNumValidFields:
 
 
 class TestFlexibleModel:
+    """Test suite for FlexibleModel class."""
+
     def test_allows_extra_fields(self) -> None:
         """A subclass of FlexibleModel should allow extra fields without raising.
+
         Input: Instantiate a subclass with an extra field.
         Expected: Instance created and attribute present.
         """
@@ -155,13 +169,16 @@ class TestFlexibleModel:
 
         s = Sub(a=1, extra="ok")
         assert s.a == 1
-        assert getattr(s, "extra") == "ok"
+        assert s.extra == "ok"
 
 
 class TestCreateFlexibleModel:
+    """Test suite for FlexibleModel.create method."""
+
     def test_accepts_partial_and_extra(self) -> None:
-        """The dynamically created flexible model should accept partial data and
-        extra fields, defaulting missing declared fields to None.
+        """The dynamically created flexible model should accept partial data and extra fields.
+
+        Defaulting missing declared fields to None.
         Input: name only, and later with an extra field.
         Expected: 'age' defaults to None and extra fields are kept.
         """
@@ -172,10 +189,11 @@ class TestCreateFlexibleModel:
 
         p2 = FlexiblePerson(name="John", extra_field="v")
         assert p2.name == "John"
-        assert getattr(p2, "extra_field") == "v"
+        assert p2.extra_field == "v"
 
     def test_defaults_are_none(self) -> None:
         """All fields in the flexible version should be Optional[...] with default None.
+
         Input: Create FlexiblePerson and inspect defaults.
         Expected: Missing declared attributes are None and model accepts extras.
         """
@@ -186,7 +204,7 @@ class TestCreateFlexibleModel:
         assert p.hobbies is None
         # Extra field still allowed
         p.extra = 123
-        assert getattr(p, "extra") == 123
+        assert p.extra == 123
 
     def test_create_flexible_model(self) -> None:
         """Test creating flexible model."""

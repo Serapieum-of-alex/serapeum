@@ -1,3 +1,5 @@
+"""Tests for tool models."""
+
 import asyncio
 import json
 from typing import Any
@@ -21,7 +23,10 @@ from serapeum.core.tools.models import (
 
 
 class DummySyncTool(BaseTool):
+    """Dummy sync tool for testing."""
+
     def __init__(self, name: str = "dummy_sync"):
+        """Initialize DummySyncTool."""
         self._metadata = ToolMetadata(description="sync tool desc", name=name)
 
     @property
@@ -39,7 +44,10 @@ class DummySyncTool(BaseTool):
 
 
 class DummyAsyncTool(AsyncBaseTool):
+    """Dummy async tool for testing."""
+
     def __init__(self, name: str = "dummy_async"):
+        """Initialize DummyAsyncTool."""
         self._metadata = ToolMetadata(description="async tool desc", name=name)
 
     @property
@@ -62,6 +70,8 @@ class DummyAsyncTool(AsyncBaseTool):
 
 
 class TestDefaultToolFnSchema:
+    """Test suite for MinimalToolSchema."""
+
     def test_valid_input(self):
         """Test creating MinimalToolSchema with a valid string.
 
@@ -90,6 +100,8 @@ class TestDefaultToolFnSchema:
 
 
 class TestToolMetadataGetParametersDict:
+    """Test suite for ToolMetadata.get_schema method."""
+
     def test_tool_schema_none_uses_default_object(self):
         """Test that when tool_schema is None, a default object schema is returned.
 
@@ -109,6 +121,8 @@ class TestToolMetadataGetParametersDict:
 
 
 class TestSchema:
+    """Test suite for Schema."""
+
     def test_default_schema_filtered(self):
         """Test that default Pydantic schema is filtered to allowed keys.
 
@@ -174,6 +188,8 @@ class TestSchema:
 
 
 class TestToolMetadataFnSchemaStr:
+    """Test suite for ToolMetadata.tool_schema_str property."""
+
     def test_returns_json_string(self):
         """Test tool_schema_str returns a JSON string for a valid schema.
 
@@ -206,6 +222,8 @@ class TestToolMetadataFnSchemaStr:
 
 
 class TestToolMetadataGetName:
+    """Test suite for ToolMetadata.get_name method."""
+
     def test_returns_name(self):
         """Test get_name returns the provided name.
 
@@ -235,6 +253,8 @@ class TestToolMetadataGetName:
 
 
 class TestToolMetadataToOpenAITool:
+    """Test suite for ToolMetadata.to_openai_tool method."""
+
     def test_returns_correct_structure(self):
         """Test the returned OpenAI tool structure is correct.
 
@@ -249,7 +269,10 @@ class TestToolMetadataToOpenAITool:
         tool = meta.to_openai_tool()
         assert tool["type"] == "function"
         assert tool["function"]["name"] == "tool"
-        assert tool["function"]["description"] == "desc\n\nRequired fields:\n  - input (string)"
+        assert (
+            tool["function"]["description"]
+            == "desc\n\nRequired fields:\n  - input (string)"
+        )
         assert tool["function"]["parameters"] == meta.get_schema()
 
     def test_raises_on_long_description(self):
@@ -280,10 +303,14 @@ class TestToolMetadataToOpenAITool:
         long_desc = "x" * 5000
         meta = ToolMetadata(description=long_desc, name="tool")
         tool = meta.to_openai_tool(skip_length_check=True)
-        assert tool["function"]["description"] == f"{long_desc}\n\nRequired fields:\n  - input (string)"
+        assert (
+            tool["function"]["description"]
+            == f"{long_desc}\n\nRequired fields:\n  - input (string)"
+        )
 
 
 class TestToolOutput:
+    """Test suite for ToolOutput."""
 
     def test_init_with_content_and_raw_input_populates_chunks(self):
         """Test that providing content with raw_input creates a single TextChunk.
@@ -303,7 +330,7 @@ class TestToolOutput:
         assert out.content == "hello"
 
     def test_init_with_blocks_and_raw_input(self):
-        """Test that providing chunks with raw_input uses the given chunks.
+        r"""Test that providing chunks with raw_input uses the given chunks.
 
         Inputs:
           - tool_name: "t"
@@ -344,7 +371,7 @@ class TestToolOutput:
             )
 
     def test_content_property_filters_non_text_chunks(self):
-        """Test that content getter concatenates only TextChunk contents.
+        r"""Test that content getter concatenates only TextChunk contents.
 
         Inputs:
           - chunks: [TextChunk("a"), Image(url=...), Audio(url=...), TextChunk("b")]
@@ -399,7 +426,7 @@ class TestToolOutput:
 
 
 class TestAsyncBaseToolCall:
-    """Tests for AsyncBaseTool.__call__ dispatching to call"""
+    """Tests for AsyncBaseTool.__call__ dispatching to call."""
 
     def test_dunder_call_dispatches_to_call(self):
         """Test that AsyncBaseTool.__call__ dispatches to the sync call method.
@@ -419,7 +446,7 @@ class TestAsyncBaseToolCall:
 
 
 class TestBaseToolAsyncAdapter:
-    """Tests for BaseToolAsyncAdapter"""
+    """Tests for BaseToolAsyncAdapter."""
 
     @pytest.mark.asyncio
     async def test_metadata_and_call_and_acall(self):
@@ -447,7 +474,7 @@ class TestBaseToolAsyncAdapter:
 
 
 class TestAdaptToAsyncTool:
-    """Tests for adapt_to_async_tool"""
+    """Tests for adapt_to_async_tool."""
 
     @pytest.mark.asyncio
     async def test_returns_same_for_async_tool(self):
@@ -486,6 +513,8 @@ class TestAdaptToAsyncTool:
 
 
 class TestToolCallArguments:
+    """Test suite for ToolCallArguments."""
+
     def test_valid_arguments_with_dict_kwargs(self):
         """Validate standard construction with proper types.
 
@@ -624,6 +653,7 @@ class TestArgumentCoercer:
     """
 
     class TestParseJsonString:
+        """Test suite for _parse_json_string method."""
 
         def test_parse_json_string_with_valid_dict_string(self):
             """Test parsing a valid JSON string containing a dictionary.
@@ -711,6 +741,7 @@ class TestArgumentCoercer:
             assert result == {}
 
     class TestTryParseStringValue:
+        """Test suite for _try_parse_string_value method."""
 
         def test_try_parse_string_value_with_json_list(self):
             """Test parsing a string containing a JSON list.
@@ -812,6 +843,7 @@ class TestArgumentCoercer:
             assert result == {"outer": {"inner": [1, 2, 3]}}
 
     class TestsParseStringFields:
+        """Test suite for _parse_string_fields method."""
 
         def test_parse_string_fields_with_mixed_types(self):
             """Test parsing dict with mixed value types.
@@ -875,6 +907,7 @@ class TestArgumentCoercer:
             assert result == input_dict
 
     class TestsValidateWithSchema:
+        """Test suite for _validate_with_schema method."""
 
         def test_validate_with_schema_no_schema(self):
             """Test validation when no schema is provided returns input unchanged.
@@ -903,6 +936,7 @@ class TestArgumentCoercer:
             Checks:
               - Result has correct types after validation.
             """
+
             class TestSchema(BaseModel):
                 count: int
                 active: bool
@@ -923,6 +957,7 @@ class TestArgumentCoercer:
             Checks:
               - Result has list field with correct values.
             """
+
             class TestSchema(BaseModel):
                 numbers: list[float]
 
@@ -942,6 +977,7 @@ class TestArgumentCoercer:
             Checks:
               - Result equals input dict (fallback behavior).
             """
+
             class TestSchema(BaseModel):
                 required_field: str
 
@@ -961,6 +997,7 @@ class TestArgumentCoercer:
             Checks:
               - Result has default value for optional field.
             """
+
             class TestSchema(BaseModel):
                 name: str
                 count: int = 0
@@ -971,6 +1008,7 @@ class TestArgumentCoercer:
             assert result == {"name": "test", "count": 0}
 
     class TestIntegration:
+        """Test suite for ArgumentCoercer integration tests."""
 
         def test_coerce_integration_json_string_to_typed_dict(self):
             """Test full coercion pipeline: JSON string -> parsed -> validated.
@@ -983,6 +1021,7 @@ class TestArgumentCoercer:
             Checks:
               - Result has correctly typed fields.
             """
+
             class ToolSchema(BaseModel):
                 numbers: list[float]
                 operation: str
@@ -1003,6 +1042,7 @@ class TestArgumentCoercer:
             Checks:
               - count is int 5, items is list [10, 20, 30].
             """
+
             class ToolSchema(BaseModel):
                 count: int
                 items: list[int]
@@ -1053,6 +1093,7 @@ class TestArgumentCoercer:
             Checks:
               - Result has fully parsed nested structure.
             """
+
             class NestedSchema(BaseModel):
                 config: dict[str, Any]
                 values: list[int]
@@ -1073,6 +1114,7 @@ class TestArgumentCoercer:
             Checks:
               - Result equals input.
             """
+
             class ToolSchema(BaseModel):
                 count: int
                 items: list[int]

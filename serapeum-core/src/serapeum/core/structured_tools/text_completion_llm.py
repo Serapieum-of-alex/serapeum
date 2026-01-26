@@ -1,3 +1,5 @@
+"""Structured text completion LLM runner for Pydantic models."""
+
 from typing import Any, Dict, Optional, Tuple, Type, Union
 
 from pydantic import BaseModel

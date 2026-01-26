@@ -1,3 +1,5 @@
+"""Test data models for Ollama integration tests."""
+
 from typing import List
 
 from pydantic import BaseModel

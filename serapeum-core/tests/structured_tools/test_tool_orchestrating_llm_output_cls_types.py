@@ -17,31 +17,33 @@ Test organization:
 import asyncio
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.base.llms.models import Message, MessageRole, Metadata
+from serapeum.core.base.llms.models import Message, Metadata
 from serapeum.core.chat.models import AgentChatResponse
 from serapeum.core.structured_tools import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
 from serapeum.core.tools.callable_tool import CallableTool
 from serapeum.core.tools.models import BaseTool
 
-
 # ============================================================================
 # Test Models and Functions
 # ============================================================================
 
+
 class SimpleOutput(BaseModel):
     """Simple Pydantic model for testing."""
+
     value: str
     count: int = 0
 
 
 class ComplexOutput(BaseModel):
     """Complex nested Pydantic model for testing."""
+
     name: str
     data: Dict[str, Any]
     items: List[str] = Field(default_factory=list)
@@ -79,11 +81,7 @@ def complex_function(a: int, b: int, operation: str = "add") -> dict:
     else:
         result = 0
 
-    return {
-        "operation": operation,
-        "result": result,
-        "inputs": [a, b]
-    }
+    return {"operation": operation, "result": result, "inputs": [a, b]}
 
 
 async def async_function(value: int) -> dict:
@@ -102,6 +100,7 @@ async def async_function(value: int) -> dict:
 @dataclass
 class DataClassOutput:
     """Dataclass for testing."""
+
     name: str
     score: float
     tags: List[str]
@@ -119,11 +118,7 @@ def dataclass_factory(name: str, score: float, tags: List[str]) -> dict:
         Dictionary representation of dataclass
     """
     obj = DataClassOutput(name=name, score=score, tags=tags)
-    return {
-        "name": obj.name,
-        "score": obj.score,
-        "tags": obj.tags
-    }
+    return {"name": obj.name, "score": obj.score, "tags": obj.tags}
 
 
 class CallableClass:
@@ -138,21 +133,19 @@ class CallableClass:
         Returns:
             Dictionary with processed message
         """
-        return {
-            "message": message,
-            "reversed": message[::-1],
-            "upper": message.upper()
-        }
+        return {"message": message, "reversed": message[::-1], "upper": message.upper()}
 
 
 # ============================================================================
 # Mock LLM for Integration Tests
 # ============================================================================
 
+
 class MockLLM(MagicMock):
     """Mock LLM that returns predefined responses."""
 
     def __init__(self, return_value: Any = None, **kwargs):
+        """Initialize MockLLM with optional return value."""
         super().__init__(**kwargs)
         self._return_value = return_value or {"result": "test"}
 
@@ -218,6 +211,7 @@ class MockLLM(MagicMock):
 # ============================================================================
 # Unit Tests: Testing _create_tool() Method
 # ============================================================================
+
 
 class TestCreateToolMethod:
     """Unit tests for the _create_tool() method.
@@ -301,7 +295,9 @@ class TestCreateToolMethod:
         assert tool.metadata.name == "<lambda>"
 
     @pytest.mark.unit
-    @pytest.mark.xfail(reason="CallableTool.from_function() doesn't support callable instances yet")
+    @pytest.mark.xfail(
+        reason="CallableTool.from_function() doesn't support callable instances yet"
+    )
     def test_create_tool_with_callable_class(self):
         """Test _create_tool() with a callable class instance.
 
@@ -337,7 +333,10 @@ class TestCreateToolMethod:
         with pytest.raises(TypeError) as exc_info:
             tools_llm._create_tool()
 
-        assert "must be either a Pydantic BaseModel subclass or a callable function" in str(exc_info.value)
+        assert (
+            "must be either a Pydantic BaseModel subclass or a callable function"
+            in str(exc_info.value)
+        )
 
     @pytest.mark.unit
     def test_create_tool_with_none_raises_error(self):
@@ -375,6 +374,7 @@ class TestCreateToolMethod:
 # ============================================================================
 # Integration Tests: Pydantic Models with Mock LLM
 # ============================================================================
+
 
 class TestPydanticModelsIntegration:
     """Integration tests using Pydantic models with MockLLM.
@@ -435,7 +435,7 @@ class TestPydanticModelsIntegration:
         mock_output = ComplexOutput(
             name="test_complex",
             data={"key": "value", "number": 42},
-            items=["item1", "item2", "item3"]
+            items=["item1", "item2", "item3"],
         )
         llm = MockLLM(return_value=mock_output)
 
@@ -478,6 +478,7 @@ class TestPydanticModelsIntegration:
 # ============================================================================
 # Integration Tests: Regular Functions with Mock LLM
 # ============================================================================
+
 
 class TestRegularFunctionsIntegration:
     """Integration tests using regular Python functions with MockLLM.
@@ -556,11 +557,7 @@ class TestRegularFunctionsIntegration:
 
         Expected: Should execute factory function and return dict.
         """
-        mock_output = {
-            "name": "test_item",
-            "score": 95.5,
-            "tags": ["tag1", "tag2"]
-        }
+        mock_output = {"name": "test_item", "score": 95.5, "tags": ["tag1", "tag2"]}
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
@@ -599,7 +596,9 @@ class TestRegularFunctionsIntegration:
         assert result["product"] == 50
 
     @pytest.mark.integration
-    @pytest.mark.xfail(reason="CallableTool.from_function() doesn't support callable instances yet")
+    @pytest.mark.xfail(
+        reason="CallableTool.from_function() doesn't support callable instances yet"
+    )
     def test_callable_class_instance(self):
         """Test ToolOrchestratingLLM with callable class instance.
 
@@ -607,11 +606,7 @@ class TestRegularFunctionsIntegration:
         callable class instances (only functions). This is a known limitation.
         """
         callable_obj = CallableClass()
-        mock_output = {
-            "message": "hello",
-            "reversed": "olleh",
-            "upper": "HELLO"
-        }
+        mock_output = {"message": "hello", "reversed": "olleh", "upper": "HELLO"}
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
@@ -630,6 +625,7 @@ class TestRegularFunctionsIntegration:
 # ============================================================================
 # Integration Tests: Mixed Usage Patterns
 # ============================================================================
+
 
 class TestMixedUsagePatterns:
     """Integration tests for various usage patterns and edge cases."""
@@ -701,8 +697,7 @@ class TestMixedUsagePatterns:
         )
 
         result = tools_llm(
-            llm_kwargs={"temperature": 0.7, "max_tokens": 100},
-            text="test"
+            llm_kwargs={"temperature": 0.7, "max_tokens": 100}, text="test"
         )
 
         assert isinstance(result, dict)
@@ -711,6 +706,7 @@ class TestMixedUsagePatterns:
 # ============================================================================
 # Integration Tests: Complex Argument Types
 # ============================================================================
+
 
 class TestComplexArgumentTypes:
     """Tests for functions with complex argument types.
@@ -730,6 +726,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle list of strings correctly.
         """
+
         def process_strings(items: List[str]) -> dict:
             """Process a list of strings.
 
@@ -742,13 +739,13 @@ class TestComplexArgumentTypes:
             return {
                 "count": len(items),
                 "joined": ", ".join(items),
-                "lengths": [len(item) for item in items]
+                "lengths": [len(item) for item in items],
             }
 
         mock_output = {
             "count": 3,
             "joined": "apple, banana, cherry",
-            "lengths": [5, 6, 6]
+            "lengths": [5, 6, 6],
         }
         llm = MockLLM(return_value=mock_output)
 
@@ -770,6 +767,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle list of integers correctly.
         """
+
         def calculate_stats(numbers: List[int]) -> dict:
             """Calculate statistics on a list of integers.
 
@@ -784,16 +782,10 @@ class TestComplexArgumentTypes:
                 "average": sum(numbers) / len(numbers) if numbers else 0,
                 "min": min(numbers) if numbers else 0,
                 "max": max(numbers) if numbers else 0,
-                "count": len(numbers)
+                "count": len(numbers),
             }
 
-        mock_output = {
-            "sum": 150,
-            "average": 30.0,
-            "min": 10,
-            "max": 50,
-            "count": 5
-        }
+        mock_output = {"sum": 150, "average": 30.0, "min": 10, "max": 50, "count": 5}
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
@@ -814,6 +806,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle list of floats correctly.
         """
+
         def process_measurements(values: List[float], unit: str = "meters") -> dict:
             """Process a list of measurement values.
 
@@ -828,14 +821,14 @@ class TestComplexArgumentTypes:
                 "total": sum(values),
                 "average": sum(values) / len(values) if values else 0.0,
                 "unit": unit,
-                "precision": 2
+                "precision": 2,
             }
 
         mock_output = {
             "total": 45.7,
             "average": 15.23,
             "unit": "meters",
-            "precision": 2
+            "precision": 2,
         }
         llm = MockLLM(return_value=mock_output)
 
@@ -857,6 +850,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle dictionary arguments correctly.
         """
+
         def process_config(config: Dict[str, Any]) -> dict:
             """Process configuration dictionary.
 
@@ -870,14 +864,14 @@ class TestComplexArgumentTypes:
                 "keys": list(config.keys()),
                 "key_count": len(config),
                 "has_name": "name" in config,
-                "processed": True
+                "processed": True,
             }
 
         mock_output = {
             "keys": ["name", "age", "email"],
             "key_count": 3,
             "has_name": True,
-            "processed": True
+            "processed": True,
         }
         llm = MockLLM(return_value=mock_output)
 
@@ -887,7 +881,9 @@ class TestComplexArgumentTypes:
             llm=llm,
         )
 
-        result = tools_llm(config={"name": "Alice", "age": 30, "email": "alice@example.com"})
+        result = tools_llm(
+            config={"name": "Alice", "age": 30, "email": "alice@example.com"}
+        )
 
         assert isinstance(result, dict)
         assert result["has_name"] is True
@@ -899,6 +895,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle typed dictionary arguments.
         """
+
         def analyze_scores(scores: Dict[str, int]) -> dict:
             """Analyze a dictionary of scores.
 
@@ -919,7 +916,7 @@ class TestComplexArgumentTypes:
             "total_students": 3,
             "average_score": 85.0,
             "highest_score": 95,
-            "lowest_score": 75
+            "lowest_score": 75,
         }
         llm = MockLLM(return_value=mock_output)
 
@@ -940,6 +937,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle optional arguments correctly.
         """
+
         def format_name(first: str, last: str, middle: Optional[str] = None) -> dict:
             """Format a person's name.
 
@@ -957,7 +955,7 @@ class TestComplexArgumentTypes:
                 "last": last,
                 "middle": middle,
                 "full_name": full_name.strip(),
-                "has_middle": middle is not None
+                "has_middle": middle is not None,
             }
 
         mock_output = {
@@ -965,7 +963,7 @@ class TestComplexArgumentTypes:
             "last": "Doe",
             "middle": "Michael",
             "full_name": "John Michael Doe",
-            "has_middle": True
+            "has_middle": True,
         }
         llm = MockLLM(return_value=mock_output)
 
@@ -986,6 +984,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle union type arguments.
         """
+
         def process_value(value: Union[str, int]) -> dict:
             """Process a value that can be string or int.
 
@@ -999,15 +998,10 @@ class TestComplexArgumentTypes:
                 "value": str(value),
                 "type": type(value).__name__,
                 "is_numeric": isinstance(value, int),
-                "length": len(str(value))
+                "length": len(str(value)),
             }
 
-        mock_output = {
-            "value": "42",
-            "type": "int",
-            "is_numeric": True,
-            "length": 2
-        }
+        mock_output = {"value": "42", "type": "int", "is_numeric": True, "length": 2}
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
@@ -1027,6 +1021,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle tuple arguments correctly.
         """
+
         def calculate_distance(point1: tuple, point2: tuple) -> dict:
             """Calculate distance between two points.
 
@@ -1038,20 +1033,13 @@ class TestComplexArgumentTypes:
                 Distance calculation result
             """
             import math
-            distance = math.sqrt(
-                (point2[0] - point1[0])**2 + (point2[1] - point1[1])**2
-            )
-            return {
-                "point1": point1,
-                "point2": point2,
-                "distance": distance
-            }
 
-        mock_output = {
-            "point1": (0, 0),
-            "point2": (3, 4),
-            "distance": 5.0
-        }
+            distance = math.sqrt(
+                (point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
+            )
+            return {"point1": point1, "point2": point2, "distance": distance}
+
+        mock_output = {"point1": (0, 0), "point2": (3, 4), "distance": 5.0}
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
@@ -1071,6 +1059,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle nested list types correctly.
         """
+
         def process_matrix(matrix: List[List[int]]) -> dict:
             """Process a 2D matrix of integers.
 
@@ -1089,7 +1078,7 @@ class TestComplexArgumentTypes:
                 "cols": cols,
                 "total_elements": len(flat),
                 "sum": sum(flat),
-                "dimensions": f"{rows}x{cols}"
+                "dimensions": f"{rows}x{cols}",
             }
 
         mock_output = {
@@ -1097,7 +1086,7 @@ class TestComplexArgumentTypes:
             "cols": 3,
             "total_elements": 9,
             "sum": 45,
-            "dimensions": "3x3"
+            "dimensions": "3x3",
         }
         llm = MockLLM(return_value=mock_output)
 
@@ -1118,6 +1107,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle nested dictionary types correctly.
         """
+
         def process_nested_data(data: Dict[str, Dict[str, int]]) -> dict:
             """Process nested dictionary structure.
 
@@ -1134,14 +1124,14 @@ class TestComplexArgumentTypes:
                 "top_level_keys": total_keys,
                 "total_nested_values": total_values,
                 "keys": list(data.keys()),
-                "structure": "nested"
+                "structure": "nested",
             }
 
         mock_output = {
             "top_level_keys": 2,
             "total_nested_values": 5,
             "keys": ["user1", "user2"],
-            "structure": "nested"
+            "structure": "nested",
         }
         llm = MockLLM(return_value=mock_output)
 
@@ -1151,10 +1141,12 @@ class TestComplexArgumentTypes:
             llm=llm,
         )
 
-        result = tools_llm(data={
-            "user1": {"score": 100, "level": 5},
-            "user2": {"score": 85, "level": 4, "bonus": 10}
-        })
+        result = tools_llm(
+            data={
+                "user1": {"score": 100, "level": 5},
+                "user2": {"score": 85, "level": 4, "bonus": 10},
+            }
+        )
 
         assert isinstance(result, dict)
         assert result["structure"] == "nested"
@@ -1165,6 +1157,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle list of dictionaries correctly.
         """
+
         def process_records(records: List[Dict[str, Any]]) -> dict:
             """Process a list of record dictionaries.
 
@@ -1178,14 +1171,14 @@ class TestComplexArgumentTypes:
                 "record_count": len(records),
                 "total_keys": sum(len(r.keys()) for r in records),
                 "has_data": len(records) > 0,
-                "sample_keys": list(records[0].keys()) if records else []
+                "sample_keys": list(records[0].keys()) if records else [],
             }
 
         mock_output = {
             "record_count": 3,
             "total_keys": 9,
             "has_data": True,
-            "sample_keys": ["name", "age", "city"]
+            "sample_keys": ["name", "age", "city"],
         }
         llm = MockLLM(return_value=mock_output)
 
@@ -1195,11 +1188,13 @@ class TestComplexArgumentTypes:
             llm=llm,
         )
 
-        result = tools_llm(records=[
-            {"name": "Alice", "age": 30, "city": "NYC"},
-            {"name": "Bob", "age": 25, "city": "LA"},
-            {"name": "Charlie", "age": 35, "city": "SF"}
-        ])
+        result = tools_llm(
+            records=[
+                {"name": "Alice", "age": 30, "city": "NYC"},
+                {"name": "Bob", "age": 25, "city": "LA"},
+                {"name": "Charlie", "age": 35, "city": "SF"},
+            ]
+        )
 
         assert isinstance(result, dict)
         assert result["record_count"] == 3
@@ -1210,6 +1205,7 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle optional list arguments.
         """
+
         def process_tags(title: str, tags: Optional[List[str]] = None) -> dict:
             """Process item with optional tags.
 
@@ -1224,14 +1220,14 @@ class TestComplexArgumentTypes:
                 "title": title,
                 "tags": tags or [],
                 "tag_count": len(tags) if tags else 0,
-                "has_tags": tags is not None and len(tags) > 0
+                "has_tags": tags is not None and len(tags) > 0,
             }
 
         mock_output = {
             "title": "Article",
             "tags": ["python", "ai", "ml"],
             "tag_count": 3,
-            "has_tags": True
+            "has_tags": True,
         }
         llm = MockLLM(return_value=mock_output)
 
@@ -1252,8 +1248,9 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle Dict[str, List[Dict[str, Union[int, str]]]] correctly.
         """
+
         def process_complex_structure(
-            data: Dict[str, List[Dict[str, Union[int, str]]]]
+            data: Dict[str, List[Dict[str, Union[int, str]]]],
         ) -> dict:
             """Process a complex nested data structure.
 
@@ -1270,14 +1267,14 @@ class TestComplexArgumentTypes:
                 "total_lists": total_lists,
                 "total_items": total_items,
                 "complexity": "high",
-                "structure_valid": True
+                "structure_valid": True,
             }
 
         mock_output = {
             "total_lists": 2,
             "total_items": 4,
             "complexity": "high",
-            "structure_valid": True
+            "structure_valid": True,
         }
         llm = MockLLM(return_value=mock_output)
 
@@ -1287,16 +1284,12 @@ class TestComplexArgumentTypes:
             llm=llm,
         )
 
-        result = tools_llm(data={
-            "users": [
-                {"id": 1, "name": "Alice"},
-                {"id": 2, "name": "Bob"}
-            ],
-            "products": [
-                {"id": "p1", "price": 100},
-                {"id": "p2", "price": 200}
-            ]
-        })
+        result = tools_llm(
+            data={
+                "users": [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}],
+                "products": [{"id": "p1", "price": 100}, {"id": "p2", "price": 200}],
+            }
+        )
 
         assert isinstance(result, dict)
         assert result["structure_valid"] is True
@@ -1307,11 +1300,12 @@ class TestComplexArgumentTypes:
 
         Expected: Should handle mixed complex types in same function.
         """
+
         def analyze_data(
             names: List[str],
             scores: Dict[str, float],
             metadata: Optional[Dict[str, Any]] = None,
-            threshold: float = 0.5
+            threshold: float = 0.5,
         ) -> dict:
             """Analyze data with mixed complex types.
 
@@ -1329,7 +1323,7 @@ class TestComplexArgumentTypes:
                 "score_count": len(scores),
                 "has_metadata": metadata is not None,
                 "threshold": threshold,
-                "above_threshold": sum(1 for v in scores.values() if v > threshold)
+                "above_threshold": sum(1 for v in scores.values() if v > threshold),
             }
 
         mock_output = {
@@ -1337,7 +1331,7 @@ class TestComplexArgumentTypes:
             "score_count": 3,
             "has_metadata": True,
             "threshold": 0.5,
-            "above_threshold": 2
+            "above_threshold": 2,
         }
         llm = MockLLM(return_value=mock_output)
 
@@ -1350,7 +1344,7 @@ class TestComplexArgumentTypes:
         result = tools_llm(
             names=["Alice", "Bob", "Charlie"],
             scores={"Alice": 0.9, "Bob": 0.3, "Charlie": 0.7},
-            metadata={"source": "test"}
+            metadata={"source": "test"},
         )
 
         assert isinstance(result, dict)
@@ -1360,6 +1354,7 @@ class TestComplexArgumentTypes:
 # ============================================================================
 # E2E Tests: Real Ollama Integration
 # ============================================================================
+
 
 class TestOllamaE2E:
     """End-to-end tests with real Ollama server.
@@ -1407,7 +1402,7 @@ class TestOllamaE2E:
                 "name": name,
                 "age": age,
                 "city": city,
-                "summary": f"{name} is {age} years old and lives in {city}"
+                "summary": f"{name} is {age} years old and lives in {city}",
             }
 
         llm = Ollama(model="llama3.1", request_timeout=80)
@@ -1440,7 +1435,7 @@ class TestOllamaE2E:
             return {
                 "text": text,
                 "length": len(text),
-                "multiplied": len(text) * multiplier
+                "multiplied": len(text) * multiplier,
             }
 
         llm = Ollama(model="llama3.1", request_timeout=80)
@@ -1462,6 +1457,7 @@ class TestOllamaE2E:
 # Edge Case Tests
 # ============================================================================
 
+
 class TestEdgeCases:
     """Tests for edge cases and error conditions."""
 
@@ -1471,6 +1467,7 @@ class TestEdgeCases:
 
         Expected: Should still work as CallableTool.from_function handles it.
         """
+
         def return_string() -> str:
             return "just a string"
 
@@ -1492,6 +1489,7 @@ class TestEdgeCases:
 
         Expected: Should handle parameter-less functions.
         """
+
         def no_params() -> dict:
             return {"message": "no params"}
 
@@ -1512,6 +1510,7 @@ class TestEdgeCases:
 
         Expected: Should handle flexible parameter functions.
         """
+
         def flexible_func(**kwargs) -> dict:
             return kwargs
 
@@ -1538,18 +1537,18 @@ class TestEdgeCases:
             email: str
             age: int
 
-            @field_validator('email')
+            @field_validator("email")
             @classmethod
             def validate_email(cls, v):
-                if '@' not in v:
-                    raise ValueError('Invalid email')
+                if "@" not in v:
+                    raise ValueError("Invalid email")
                 return v
 
-            @field_validator('age')
+            @field_validator("age")
             @classmethod
             def validate_age(cls, v):
                 if v < 0 or v > 150:
-                    raise ValueError('Invalid age')
+                    raise ValueError("Invalid age")
                 return v
 
         llm = MockLLM()

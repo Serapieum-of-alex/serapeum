@@ -3,13 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Sequence,
-    Type,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, Any, Sequence, Type, TypeVar
 
 from pydantic import BaseModel, ConfigDict, ValidationError, create_model
 
@@ -30,6 +24,8 @@ _logger = logging.getLogger(__name__)
 
 
 class FlexibleModel(BaseModel):
+    """Flexible Pydantic model that allows any fields."""
+
     model_config = ConfigDict(extra="allow")
 
     @classmethod
@@ -38,7 +34,7 @@ class FlexibleModel(BaseModel):
         return create_model(
             f"Flexible{model.__name__}",
             __base__=cls,
-            **{field: (Any | None, None) for field in model.model_fields},
+            **{field: (Any, None) for field in model.model_fields},
         )
 
 
@@ -49,6 +45,7 @@ def get_program_for_llm(
     pydantic_program_mode: StructuredLLMMode = StructuredLLMMode.DEFAULT,
     **kwargs: Any,
 ) -> BasePydanticLLM:
+    """Get the appropriate program for the LLM based on the output class and prompt."""
     if pydantic_program_mode == StructuredLLMMode.DEFAULT:
         if llm.metadata.is_function_calling_model:
             from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
@@ -250,7 +247,6 @@ class StreamingObjectProcessor:
         cur_objects: Sequence[BaseModel] | None,
     ) -> list[BaseModel]:
         """Select object set with more valid fields."""
-
         return (
             new_objects
             if cur_objects is None
@@ -278,9 +274,7 @@ class StreamingObjectProcessor:
 
         return result
 
-    def _format_output(
-        self, objects: list[BaseModel]
-    ) -> BaseModel | list[BaseModel]:
+    def _format_output(self, objects: list[BaseModel]) -> BaseModel | list[BaseModel]:
         """Format output based on parallel tool calls setting."""
         if self._allow_parallel:
             result = objects

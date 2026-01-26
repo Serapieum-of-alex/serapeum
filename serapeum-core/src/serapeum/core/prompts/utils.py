@@ -1,3 +1,5 @@
+"""Utility functions for prompt formatting and variable extraction."""
+
 import re
 from typing import Dict, List, Optional
 
@@ -9,14 +11,17 @@ class SafeFormatter:
     """Safe string formatter that does not raise KeyError if key is missing."""
 
     def __init__(self, format_dict: Optional[Dict[str, str]] = None):
+        """Initialize SafeFormatter with an optional format dictionary."""
         self.format_dict = format_dict or {}
 
     def format(self, format_string: str) -> str:
-        return re.sub(r"\{([^{}]+)\}", self._replace_match, format_string)
+        """Format a string, leaving unknown keys unchanged."""
+        return re.sub(r"{([^{}]+)}", self._replace_match, format_string)
 
     def parse(self, format_string: str) -> List[str]:
+        """Extract variable names from a format string."""
         return re.findall(
-            r"\{([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)\}", format_string
+            r"{([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)}", format_string
         )
 
     def _replace_match(self, match: re.Match) -> str:
@@ -38,7 +43,8 @@ def format_content_blocks(
     formatted_blocks: List[ChunkType] = []
     for block in content_blocks:
         if isinstance(block, TextChunk):
-            formatted_blocks.append(TextChunk(text=formatter.format(block.text)))
+            # Use the correct attribute for TextChunk (content)
+            formatted_blocks.append(TextChunk(content=formatter.format(block.content)))
         else:
             formatted_blocks.append(block)
 
@@ -58,4 +64,5 @@ def get_template_vars(template_str: str) -> List[str]:
 
 
 def is_chat_model(llm: BaseLLM) -> bool:
+    """Return True if the LLM is a chat model."""
     return llm.metadata.is_chat_model

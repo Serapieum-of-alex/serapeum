@@ -23,7 +23,11 @@ from pydantic_core import CoreSchema, core_schema
 
 from serapeum.core.base.llms.models import Message, MessageRole, TextChunk
 from serapeum.core.models import Model
-from serapeum.core.output_parsers.utils import JsonParser, SchemaFormatter, PYDANTIC_FORMAT_TMPL
+from serapeum.core.output_parsers.utils import (
+    PYDANTIC_FORMAT_TMPL,
+    JsonParser,
+    SchemaFormatter,
+)
 
 TokenGen = Generator[str, None, None]
 TokenAsyncGen = AsyncGenerator[str, None]
@@ -65,7 +69,9 @@ class BaseParser(ABC):
             if format_idx != -1:
                 # this should always be a text block
                 if not isinstance(message.chunks[format_idx], TextChunk):
-                    raise ValueError(f"Expected TextChunk at index {format_idx}, got {type(message.chunks[format_idx])}")
+                    raise ValueError(
+                        f"Expected TextChunk at index {format_idx}, got {type(message.chunks[format_idx])}"
+                    )
 
                 message.chunks[format_idx].content = self.format(format_text)  # type: ignore
         else:

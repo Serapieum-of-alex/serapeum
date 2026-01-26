@@ -9,7 +9,6 @@ import json
 import re
 from typing import Any, List, Optional
 
-
 PYDANTIC_FORMAT_TMPL = """
 Here's a JSON schema to follow strictly:
 {schema}
@@ -22,6 +21,12 @@ Return the data as a JSON object that matches the schema structure.
 
 with contextlib.suppress(ImportError):
     import yaml
+
+
+class OutputParserException(Exception):
+    """Exception raised for errors encountered during output parsing."""
+
+    pass
 
 
 def _marshal_llm_to_json(output: str) -> str:
@@ -42,7 +47,7 @@ def _marshal_llm_to_json(output: str) -> str:
 
 
 def parse_json_markdown(text: str) -> Any:
-    """Parse a JSON object/array embedded in fenced markdown.
+    r"""Parse a JSON object/array embedded in fenced markdown.
 
     If the text contains a fenced block marked as JSON (```json), the content
     of that block is parsed. Otherwise, the function attempts to extract the
@@ -76,11 +81,14 @@ def parse_json_markdown(text: str) -> Any:
 
 
 def parse_code_markdown(text: str, only_last: bool) -> List[str]:
-    """Extract code blocks from fenced markdown.
+    r"""Extract code blocks from fenced markdown.
 
     Args:
-        text: The source string that may contain fenced code blocks.
-        only_last: When True, return only the last code block; otherwise all.
+        text (str): The markdown text to parse.
+        only_last (bool): If True, return only the last code block.
+
+    Returns:
+        List[str]: List of code block contents.
     """
     pattern = r"```(.*?)```"
 
@@ -117,13 +125,15 @@ class JsonParser:
     such as literal newlines in strings, unescaped control characters, and
     improperly escaped quotes.
     """
+
     def __init__(self, text: str) -> None:
+        """Initialize JsonParser with the given text."""
         text = text.strip()
         self.text = text
 
     @staticmethod
     def parse(json_str: str) -> Any:
-        """Parse a JSON string with automatic error recovery.
+        r"""Parse a JSON string with automatic error recovery.
 
         Args:
             json_str: Raw JSON string that may contain formatting issues.
@@ -158,7 +168,6 @@ class JsonParser:
 
     def extract_str(self) -> str:
         """Extract the first JSON object substring from text."""
-
         json_str = _marshal_llm_to_json(self.text)
 
         # Validate it's actually valid JSON
@@ -167,18 +176,22 @@ class JsonParser:
             return json_str
         except json.JSONDecodeError:
             # Fall back to regex with non-greedy matching
-            match = re.search(r"\{.*?\}", self.text, re.MULTILINE | re.IGNORECASE | re.DOTALL)
+            match = re.search(
+                r"{.*?}", self.text, re.MULTILINE | re.IGNORECASE | re.DOTALL
+            )
             if not match:
-                raise ValueError(f"Could not extract json string from output: {self.text}")
+                raise ValueError(
+                    f"Could not extract json string from output: {self.text}"
+                )
 
             return match.group()
 
     @staticmethod
     def fix_json_string(json_str: str) -> str:
-        """Fix common JSON formatting issues from LLM outputs.
+        r"""Fix common JSON formatting issues from LLM outputs.
 
         Handles:
-        - Single-escaped quotes (\\') that should be unescaped
+        - Single-escaped quotes (\') that should be unescaped
         - Literal newlines inside string values
         - Literal carriage returns and tabs
         - Other control characters (converted to unicode escapes)
@@ -195,7 +208,7 @@ class JsonParser:
 
             >>> # Fixes literal newlines
             >>> result = JsonParser.fix_json_string('{"text": "line1\\nline2"}')
-            >>> '\\\\n' in result
+            >>> '\\n' in result
             True
         """
         # Replace single-escaped quotes that should be unescaped
@@ -212,7 +225,7 @@ class JsonParser:
                 escape_next = False
                 continue
 
-            if char == '\\':
+            if char == "\\":
                 result.append(char)
                 escape_next = True
                 continue
@@ -224,21 +237,21 @@ class JsonParser:
 
             # If we're inside a string, escape control characters
             if in_string:
-                if char == '\n':
-                    result.append('\\n')
-                elif char == '\r':
-                    result.append('\\r')
-                elif char == '\t':
-                    result.append('\\t')
+                if char == "\n":
+                    result.append("\\n")
+                elif char == "\r":
+                    result.append("\\r")
+                elif char == "\t":
+                    result.append("\\t")
                 elif ord(char) < 32:
                     # Escape other control characters as unicode
-                    result.append(f'\\u{ord(char):04x}')
+                    result.append(f"\\u{ord(char):04x}")
                 else:
                     result.append(char)
             else:
                 result.append(char)
 
-        return ''.join(result)
+        return "".join(result)
 
 
 class SchemaFormatter:
@@ -298,7 +311,9 @@ class SchemaFormatter:
             desc_marker = f" - {field_desc}" if field_desc else ""
 
             comma = "," if i < len(properties) - 1 else ""
-            lines.append(f'  "{field_name}": <{field_type}>{req_marker}{desc_marker}{comma}')
+            lines.append(
+                f'  "{field_name}": <{field_type}>{req_marker}{desc_marker}{comma}'
+            )
 
         lines.append("}")
 
@@ -339,6 +354,3 @@ class SchemaFormatter:
             return output_str.replace("{", "{{").replace("}", "}}")
         else:
             return output_str
-
-class OutputParserException(Exception):
-    """Raised when an LLM output cannot be parsed into the expected format."""

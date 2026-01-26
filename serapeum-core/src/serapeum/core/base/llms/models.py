@@ -6,14 +6,7 @@ import base64
 from collections.abc import Sequence as ABCSequence
 from enum import Enum
 from io import BytesIO
-from typing import (
-    Annotated,
-    Any,
-    AsyncGenerator,
-    Generator,
-    Iterator,
-    Literal,
-)
+from typing import Annotated, Any, AsyncGenerator, Generator, Iterator, Literal
 
 from filetype import guess as filetype_guess
 from pydantic import (

@@ -28,11 +28,7 @@ from serapeum.core.base.llms.models import (
     MessageRole,
 )
 from serapeum.core.models import Model, StructuredLLMMode
-from serapeum.core.output_parsers.models import (
-    BaseParser,
-    TokenAsyncGen,
-    TokenGen,
-)
+from serapeum.core.output_parsers.models import BaseParser, TokenAsyncGen, TokenGen
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
 
 if TYPE_CHECKING:
@@ -1527,9 +1523,7 @@ class LLM(BaseLLM, ABC):
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
-    ) -> AsyncGenerator[
-        Model | list[Model] | BaseModel | list[BaseModel], None
-    ]:
+    ) -> AsyncGenerator[Model | list[Model] | BaseModel | list[BaseModel], None]:
         """Obtain the async structured program stream without additional wrapping.
 
         Args:

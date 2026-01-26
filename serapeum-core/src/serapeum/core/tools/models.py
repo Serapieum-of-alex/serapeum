@@ -65,11 +65,14 @@ class MinimalToolSchema(BaseModel):
 
 @dataclass
 class Schema:
+    """Container for resolved and referenced schema variants."""
+
     full_schema: dict[str, Any]
     resolved_schema: dict[str, Any] | None = None
     referenced_schema: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
+        """Post-init docstring."""
         self.resolved_schema = self.resolve_references(inline=True)
         self.referenced_schema = self.resolve_references(inline=False)
 
@@ -424,18 +427,19 @@ class ToolMetadata:
             field_desc = field_info.get("description", "")
 
             if field_desc:
-                field_descriptions.append(f"  - {field_name} ({field_type}): {field_desc}")
+                field_descriptions.append(
+                    f"  - {field_name} ({field_type}): {field_desc}"
+                )
             else:
                 field_descriptions.append(f"  - {field_name} ({field_type})")
 
-        guidance = (
-            "\n\nRequired fields:\n"
-            + "\n".join(field_descriptions)
-        )
+        guidance = "\n\nRequired fields:\n" + "\n".join(field_descriptions)
 
         return guidance
 
-    def to_openai_tool(self, skip_length_check: bool = False, include_schema_guidance: bool = True) -> dict[str, Any]:
+    def to_openai_tool(
+        self, skip_length_check: bool = False, include_schema_guidance: bool = True
+    ) -> dict[str, Any]:
         """Export this metadata as an OpenAI function-calling tool spec.
 
         Builds a dictionary compatible with OpenAI-style function tools. By default,
@@ -1229,8 +1233,8 @@ class ArgumentCoercer:
             try:
                 validated = self.tool_schema(**coerced_dict)
                 result = validated.model_dump()
-            except Exception:
+            except ValidationError:
                 # Validation failed, use the manually coerced dict
-                pass
+                result = coerced_dict
 
         return result

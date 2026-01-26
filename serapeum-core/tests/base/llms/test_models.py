@@ -22,49 +22,56 @@ from serapeum.core.base.llms.models import (
 
 @pytest.fixture()
 def empty_bytes() -> bytes:
+    """Empty bytes."""
     return b""
 
 
 @pytest.fixture()
 def png_1px_b64() -> bytes:
+    """Base64-encoded 1px PNG."""
     return b"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
 
 
 @pytest.fixture()
 def png_1px(png_1px_b64) -> bytes:
+    """Decoded 1px PNG bytes."""
     return base64.b64decode(png_1px_b64)
 
 
 @pytest.fixture()
 def pdf_url() -> str:
+    """PDF test URL."""
     return "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
 
 
 @pytest.fixture()
 def mock_pdf_bytes(pdf_url) -> bytes:
-    """
-    Returns a byte string representing a very simple, minimal PDF file.
-    """
+    """Returns a byte string representing a very simple, minimal PDF file."""
     return httpx.get(pdf_url).content
 
 
 @pytest.fixture()
 def pdf_base64(mock_pdf_bytes) -> bytes:
+    """Base64-encoded PDF bytes."""
     return base64.b64encode(mock_pdf_bytes)
 
 
 @pytest.fixture()
 def mp4_bytes() -> bytes:
+    """Minimal MP4 header bytes."""
     # Minimal fake MP4 header bytes (ftyp box)
     return b"\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42isom"
 
 
 @pytest.fixture()
 def mp4_base64(mp4_bytes: bytes) -> bytes:
+    """Base64-encoded MP4 bytes."""
     return base64.b64encode(mp4_bytes)
 
 
 class TestMessage:
+    """Test Message."""
+
     def test_chat_message_from_str(self):
         m = Message.from_str(content="test content")
         assert m.content == "test content"
@@ -157,6 +164,8 @@ class TestMessage:
 
 
 class TestImageBlock:
+    """Test ImageBlock."""
+
     def test_image_block_resolve_image(self, png_1px: bytes, png_1px_b64: bytes):
         b = Image(content=png_1px)
 
@@ -260,14 +269,18 @@ class TestImageBlock:
 
 
 def test_chat_response():
+    """Test ChatResponse string representation."""
     message = Message("some content")
     cr = ChatResponse(message=message)
     assert str(cr) == str(message)
 
 
 class TestChatResponseToCompletionResponse:
+    """Test suite for ChatResponse to CompletionResponse conversion."""
+
     def test_to_completion_response(self):
-        """
+        """Test conversion to CompletionResponse.
+
         Inputs: ChatResponse with message text "Hello" and raw payload. The Message carries additional_kwargs; the ChatResponse also has its own additional_kwargs.
         Expected: CompletionResponse.text == "Hello"; additional_kwargs are taken from the MESSAGE (not the response) per implementation; raw propagated.
         Checks: Exact equality for text; verify precedence/selection of additional_kwargs.
@@ -286,7 +299,8 @@ class TestChatResponseToCompletionResponse:
         assert out.raw == {"r": True}
 
     def test_when_none_text(self):
-        """
+        """Test conversion when message has no text.
+
         Inputs: ChatResponse whose message has no text chunks (only an Image), so message.content is None.
         Expected: CompletionResponse.text becomes empty string "".
         Checks: Exact empty string, not None.
@@ -299,7 +313,8 @@ class TestChatResponseToCompletionResponse:
         assert out.text == ""
 
     def test_stream_to_completion_response(self):
-        """
+        """Test streaming conversion to CompletionResponse.
+
         Inputs: Generator of two ChatResponse items with different content and delta values.
         Expected: Generator yields corresponding CompletionResponse items mapping fields 1:1 (text, additional_kwargs, delta, raw).
         Checks: Order preserved; values mapped correctly.
@@ -329,7 +344,8 @@ class TestChatResponseToCompletionResponse:
 
     @pytest.mark.asyncio
     async def test_astream_completion_response(self):
-        """
+        """Test async streaming conversion to CompletionResponse.
+
         Inputs: Async generator yielding two ChatResponse objects.
         Expected: Async generator of CompletionResponse with field mapping identical to sync version.
         Checks: Sequence and field values preserved.
@@ -361,11 +377,14 @@ class TestChatResponseToCompletionResponse:
 
 
 def test_completion_response():
+    """Test CompletionResponse string representation."""
     cr = CompletionResponse(text="some text")
     assert str(cr) == "some text"
 
 
 class TestMessageLists:
+    """Test suite for MessageList."""
+
     class TestMessageList:
         def test_happy_path_system_and_user(self):
             """

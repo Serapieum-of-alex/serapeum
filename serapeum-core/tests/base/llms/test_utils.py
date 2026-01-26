@@ -1,3 +1,5 @@
+"""Tests for serapeum.core.base.llms.utils utility functions."""
+
 import pytest
 
 from serapeum.core.base.llms.models import (

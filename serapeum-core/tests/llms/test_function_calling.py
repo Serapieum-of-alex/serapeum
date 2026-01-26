@@ -1,3 +1,5 @@
+"""Tests for FunctionCallingLLM."""
+
 from typing import Any, AsyncGenerator, Coroutine, Dict, List, Optional, Sequence, Union
 
 import pytest
@@ -16,6 +18,8 @@ from serapeum.core.tools.models import BaseTool, ToolCallArguments
 
 
 class MockFunctionCallingLLM(FunctionCallingLLM):
+    """Mock FunctionCallingLLM for testing."""
+
     def __init__(self, tool_selection: List[ToolCallArguments]):
         super().__init__()
         self._tool_selection = tool_selection
@@ -83,16 +87,20 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
 
 
 class Person(BaseModel):
+    """Person model."""
+
     name: str = Field(description="Person name")
 
 
 @pytest.fixture()
 def person_tool() -> CallableTool:
+    """Person tool."""
     return CallableTool.from_model(Person)
 
 
 @pytest.fixture()
 def person_tool_selection(person_tool: CallableTool) -> ToolCallArguments:
+    """Person tool selection."""
     return ToolCallArguments(
         tool_id="",
         tool_name=person_tool.metadata.name,

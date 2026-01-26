@@ -1,3 +1,5 @@
+"""Tests for TextCompletionLLM."""
+
 import pytest
 from pydantic import BaseModel
 
@@ -16,14 +18,20 @@ from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 
 
 class DummyModel(BaseModel):
+    """Dummy model for testing."""
+
     value: str
 
 
 class SecondaryModel(BaseModel):
+    """Secondary model for testing."""
+
     flag: bool
 
 
 class RecordingPydanticParser(PydanticParser):
+    """Recording Pydantic parser for testing."""
+
     def __init__(
         self,
         *,
@@ -46,11 +54,16 @@ class RecordingPydanticParser(PydanticParser):
 
 
 class DummyNonPydanticParser(BaseParser):
+    """Dummy non-Pydantic parser for testing."""
+
     def parse(self, output: str):
+        """Parse output by returning it unchanged."""
         return output
 
 
 class DummyLLM:
+    """Dummy LLM for testing."""
+
     def __init__(
         self,
         *,
@@ -95,15 +108,18 @@ class DummyLLM:
 
 @pytest.fixture(autouse=True)
 def restore_configs_llm():
-    """Ensure Configs.llm is restored after every test."""
+    """Fixture ensuring Configs.llm is restored after every test."""
     original_llm = Configs.llm
     yield
     Configs.llm = original_llm
 
 
 class TestTextCompletionLLMInit:
+    """Test suite for TextCompletionLLM initialization."""
+
     def test_init_with_provided_parser_and_prompt_template(self) -> None:
-        """
+        """Test initialization with provided parser and prompt template.
+
         Inputs: PromptTemplate and ready PydanticParser
         Expected: instance keeps parser/prompt/llm
         Checks: assignments done without mutation.
@@ -124,7 +140,8 @@ class TestTextCompletionLLMInit:
         assert text_llm._llm is llm  # type: ignore[attr-defined]
 
     def test_init_with_output_cls_only_creates_parser(self) -> None:
-        """
+        """Test initialization with output_cls only.
+
         Inputs: output_cls without parser
         Expected: factory builds Pydantic parser and stores model
         Checks: automatic parser and prompt coercion.
@@ -142,7 +159,8 @@ class TestTextCompletionLLMInit:
         assert isinstance(text_llm.prompt, PromptTemplate)
 
     def test_init_with_string_prompt_coerces_to_template(self) -> None:
-        """
+        """Test initialization with string prompt.
+
         Inputs: bare string prompt
         Expected: init wraps string into PromptTemplate
         Checks: prompt getter returns PromptTemplate.
@@ -159,7 +177,8 @@ class TestTextCompletionLLMInit:
         assert isinstance(text_llm.prompt, PromptTemplate)
 
     def test_init_rejects_invalid_prompt_type(self) -> None:
-        """
+        """Test initialization rejects invalid prompt type.
+
         Inputs: unsupported prompt type
         Expected: initializer raises ValueError
         Checks: validate_prompt enforces type safety.
@@ -176,8 +195,15 @@ class TestTextCompletionLLMInit:
 
 
 class TestValidatePrompt:
+    """Test suite for _validate_prompt method."""
+
     def test_validate_prompt_with_template_instance(self) -> None:
-        """Inputs: PromptTemplate already built; Expected: method returns same template; Checks: passthrough behavior."""
+        """Test validation with PromptTemplate instance.
+
+        Inputs: PromptTemplate already built
+        Expected: method returns same template
+        Checks: passthrough behavior.
+        """
         prompt_template = PromptTemplate("Value: {value}")
 
         validated = TextCompletionLLM._validate_prompt(prompt_template)
@@ -185,21 +211,34 @@ class TestValidatePrompt:
         assert validated is prompt_template
 
     def test_validate_prompt_with_string(self) -> None:
-        """Inputs: simple string; Expected: method wraps string into PromptTemplate; Checks: coercion branch."""
+        """Test validation with string prompt.
+
+        Inputs: simple string
+        Expected: method wraps string into PromptTemplate
+        Checks: coercion branch.
+        """
         validated = TextCompletionLLM._validate_prompt("Hi {value}")
 
         assert isinstance(validated, PromptTemplate)
         assert validated.template == "Hi {value}"
 
     def test_validate_prompt_with_invalid_type(self) -> None:
-        """Inputs: non-string, non-template; Expected: ValueError raised; Checks: guard rails for prompt types."""
+        """Test validation rejects invalid prompt type.
+
+        Inputs: non-string, non-template
+        Expected: ValueError raised
+        Checks: guard rails for prompt types.
+        """
         with pytest.raises(ValueError):
             TextCompletionLLM._validate_prompt(object())  # type: ignore[arg-type]
 
 
 class TestValidateLlm:
+    """Test suite for _validate_llm method."""
+
     def test_validate_llm_with_explicit_instance(self) -> None:
-        """
+        """Test validation with explicit LLM instance.
+
         Inputs: direct DummyLLM
         Expected: method returns same instance
         Checks: short-circuit branch.
@@ -211,7 +250,8 @@ class TestValidateLlm:
         assert validated is llm
 
     def test_validate_llm_with_configs_default(self) -> None:
-        """
+        """Test validation with Configs.llm default.
+
         Inputs: None while Configs.llm preset
         Expected: method falls back to Configs.llm
         Checks: default resolution.
@@ -224,7 +264,8 @@ class TestValidateLlm:
         assert validated is llm
 
     def test_validate_llm_without_any_source(self) -> None:
-        """
+        """Test validation without any LLM source.
+
         Inputs: None and Configs.llm unset
         Expected: AssertionError
         Checks: strict requirement for available LLM.
@@ -236,8 +277,11 @@ class TestValidateLlm:
 
 
 class TestValidateOutputParserCls:
+    """Test suite for _validate_output_parser_cls method."""
+
     def test_validate_output_parser_without_output_cls_uses_parser_model(self) -> None:
-        """
+        """Test validation without output_cls uses parser model.
+
         Inputs: Pydantic parser and no output class
         Expected: returns provided parser and its model
         Checks: default model resolution.
@@ -253,7 +297,12 @@ class TestValidateOutputParserCls:
         assert validated_cls is DummyModel
 
     def test_validate_output_parser_requires_pydantic_when_no_output_cls(self) -> None:
-        """Inputs: non-Pydantic parser without output class; Expected: ValueError; Checks: guard for parser type."""
+        """Test validation requires Pydantic parser without output_cls.
+
+        Inputs: non-Pydantic parser without output class
+        Expected: ValueError
+        Checks: guard for parser type.
+        """
         parser = DummyNonPydanticParser()
 
         with pytest.raises(ValueError):
@@ -263,7 +312,8 @@ class TestValidateOutputParserCls:
             )
 
     def test_validate_output_parser_creates_parser_when_missing(self) -> None:
-        """
+        """Test validation creates parser when missing.
+
         Inputs: output class without parser
         Expected: new PydanticParser returned
         Checks: factory instantiation.
@@ -279,7 +329,8 @@ class TestValidateOutputParserCls:
     def test_validate_output_parser_with_both_arguments_preserves_instances(
         self,
     ) -> None:
-        """
+        """Test validation preserves instances with both arguments.
+
         Inputs: explicit parser and output class
         Expected: returns unchanged inputs
         Checks: bypass branch when values supplied.
@@ -296,8 +347,11 @@ class TestValidateOutputParserCls:
 
 
 class TestOutputClsProperty:
+    """Test suite for output_cls property."""
+
     def test_output_cls_returns_configured_model(self) -> None:
-        """
+        """Test output_cls property returns configured model.
+
         Inputs: text_llm built with DummyModel
         Expected: property exposes DummyModel
         Checks: property passthrough.
@@ -312,8 +366,15 @@ class TestOutputClsProperty:
 
 
 class TestPromptProperty:
+    """Test suite for prompt property."""
+
     def test_prompt_getter_returns_current_prompt(self) -> None:
-        """Inputs: initial PromptTemplate; Expected: getter returns same instance; Checks: property pass-through."""
+        """Test prompt getter returns current prompt.
+
+        Inputs: initial PromptTemplate
+        Expected: getter returns same instance
+        Checks: property pass-through.
+        """
         prompt = PromptTemplate("Value: {value}")
         text_llm = TextCompletionLLM(
             output_parser=PydanticParser(output_cls=DummyModel),
@@ -324,7 +385,12 @@ class TestPromptProperty:
         assert text_llm.prompt is prompt
 
     def test_prompt_setter_updates_prompt(self) -> None:
-        """Inputs: replacement PromptTemplate; Expected: setter swaps prompt reference; Checks: mutability of prompt property."""
+        """Test prompt setter updates prompt.
+
+        Inputs: replacement PromptTemplate
+        Expected: setter swaps prompt reference
+        Checks: mutability of prompt property.
+        """
         text_llm = TextCompletionLLM(
             output_parser=PydanticParser(output_cls=DummyModel),
             prompt="Start {value}",
@@ -338,8 +404,11 @@ class TestPromptProperty:
 
 
 class TestCallMethod:
+    """Test suite for __call__ method."""
+
     def test_call_non_chat_llm_success(self) -> None:
-        """
+        """Test call with non-chat LLM success.
+
         Inputs: text LLM and prompt args with llm kwargs
         Expected: parse returns DummyModel
         Checks: complete path and kwargs forwarding.
@@ -359,7 +428,12 @@ class TestCallMethod:
         assert parser.parse_calls == ['{"value": "complete"}']
 
     def test_call_chat_llm_success(self) -> None:
-        """Inputs: chat LLM with chat response; Expected: parse returns DummyModel; Checks: chat branch and message extension."""
+        """Test call with chat LLM success.
+
+        Inputs: chat LLM with chat response
+        Expected: parse returns DummyModel
+        Checks: chat branch and message extension.
+        """
         llm = DummyLLM(is_chat=True, chat_content='{"value": "chat"}')
         parser = RecordingPydanticParser(output_cls=DummyModel)
         messages = [
@@ -379,7 +453,12 @@ class TestCallMethod:
         assert parser.parse_calls == ['{"value": "chat"}']
 
     def test_call_chat_llm_uses_empty_string_when_no_content(self) -> None:
-        """Inputs: chat LLM returning None content; Expected: parser sees empty string; Checks: fallback to empty string."""
+        """Test call with chat LLM using empty string when no content.
+
+        Inputs: chat LLM returning None content
+        Expected: parser sees empty string
+        Checks: fallback to empty string.
+        """
         llm = DummyLLM(is_chat=True, chat_content=None)
         parser = RecordingPydanticParser(
             output_cls=DummyModel,
@@ -401,7 +480,12 @@ class TestCallMethod:
         assert parser.parse_calls == [""]
 
     def test_call_raises_when_parser_returns_wrong_type(self) -> None:
-        """Inputs: parser returning SecondaryModel; Expected: ValueError complaining about mismatch; Checks: runtime type guard."""
+        """Test call raises when parser returns wrong type.
+
+        Inputs: parser returning SecondaryModel
+        Expected: ValueError complaining about mismatch
+        Checks: runtime type guard.
+        """
         llm = DummyLLM(is_chat=False, completion_text='{"value": "complete"}')
         parser = RecordingPydanticParser(
             output_cls=DummyModel,
@@ -418,9 +502,16 @@ class TestCallMethod:
 
 
 class TestAcallMethod:
+    """Test suite for acall method."""
+
     @pytest.mark.asyncio
     async def test_acall_non_chat_llm_success(self) -> None:
-        """Inputs: async call on text LLM; Expected: DummyModel returned; Checks: asynchronous complete branch."""
+        """Test async call with non-chat LLM success.
+
+        Inputs: async call on text LLM
+        Expected: DummyModel returned
+        Checks: asynchronous complete branch.
+        """
         llm = DummyLLM(is_chat=False, completion_text='{"value": "complete"}')
         parser = RecordingPydanticParser(output_cls=DummyModel)
         text_llm = TextCompletionLLM(
@@ -437,7 +528,12 @@ class TestAcallMethod:
 
     @pytest.mark.asyncio
     async def test_acall_chat_llm_success(self) -> None:
-        """Inputs: async call on chat LLM; Expected: DummyModel returned; Checks: asynchronous chat branch."""
+        """Test async call with chat LLM success.
+
+        Inputs: async call on chat LLM
+        Expected: DummyModel returned
+        Checks: asynchronous chat branch.
+        """
         llm = DummyLLM(is_chat=True, chat_content='{"value": "chat"}')
         parser = RecordingPydanticParser(output_cls=DummyModel)
         messages = [
@@ -458,7 +554,12 @@ class TestAcallMethod:
 
     @pytest.mark.asyncio
     async def test_acall_raises_when_parser_returns_wrong_type(self) -> None:
-        """Inputs: parser returning SecondaryModel; Expected: ValueError for wrong type; Checks: async guard mirrored from sync path."""
+        """Test async call raises when parser returns wrong type.
+
+        Inputs: parser returning SecondaryModel
+        Expected: ValueError for wrong type
+        Checks: async guard mirrored from sync path.
+        """
         llm = DummyLLM(is_chat=False, completion_text='{"value": "complete"}')
         parser = RecordingPydanticParser(
             output_cls=DummyModel,

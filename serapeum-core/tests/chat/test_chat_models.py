@@ -1,3 +1,5 @@
+"""Tests for serapeum.core.chat.models module."""
+
 from unittest.mock import patch
 
 import pytest

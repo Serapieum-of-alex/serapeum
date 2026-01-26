@@ -386,6 +386,8 @@ class TestMessageLists:
     """Test suite for MessageList."""
 
     class TestMessageList:
+        """Test MessageList.to_prompt method."""
+
         def test_happy_path_system_and_user(self):
             """
             Inputs: Two messages — system("You are a bot."), user("Hello").
@@ -511,6 +513,8 @@ class TestMessageLists:
             assert prompt == expected
 
     class TestMessageListBasics:
+        """Test MessageList basic operations."""
+
         def test_from_list_and_len_getitem_slice_and_append(self):
             """
             Inputs:

@@ -26,6 +26,7 @@ class DummySyncTool(BaseTool):
     """Dummy sync tool for testing."""
 
     def __init__(self, name: str = "dummy_sync"):
+        """Initialize DummySyncTool."""
         self._metadata = ToolMetadata(description="sync tool desc", name=name)
 
     @property
@@ -46,6 +47,7 @@ class DummyAsyncTool(AsyncBaseTool):
     """Dummy async tool for testing."""
 
     def __init__(self, name: str = "dummy_async"):
+        """Initialize DummyAsyncTool."""
         self._metadata = ToolMetadata(description="async tool desc", name=name)
 
     @property

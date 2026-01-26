@@ -18,6 +18,8 @@ from serapeum.core.base.llms.utils import (
 
 
 class TestDecorators:
+    """Test decorator functions for chat to completion conversion."""
+
     def test_chat_to_completion_decorator(self):
         """
         Inputs: Decorate a chat-style function that receives messages and returns a ChatResponse("OK"). Call wrapper with prompt string.
@@ -116,6 +118,8 @@ class TestDecorators:
 
 
 class TestGetFromParamOrEnv:
+    """Test get_from_param_or_env utility function."""
+
     def test_param_takes_precedence_over_env_and_default(self, monkeypatch):
         """
         Inputs: param="VAL", env_key set in environment to another value, default="DEF".

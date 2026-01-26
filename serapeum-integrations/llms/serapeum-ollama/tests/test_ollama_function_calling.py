@@ -45,7 +45,7 @@ def make_agent_response_from_models(models: Sequence[BaseModel]) -> AgentChatRes
 
 
 class TestToolOrchestratingLLM:
-    """Tests various construction scenarios for `from_defaults`."""
+    """Tests for ToolOrchestratingLLM."""
 
     def test_valid_with_prompt_str_and_llm(self, llm_model: Ollama) -> None:
         """Construct with prompt_template_str and a function-calling-capable LLM.

@@ -56,6 +56,10 @@ class FailingParser(BaseParser):
 class CompletionStubLLM(LLM):
     """LLM stub that implements completion endpoints (non-chat model)."""
 
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize CompletionStubLLM."""
+        super().__init__(**kwargs)
+
     @property
     def metadata(self) -> Metadata:
         return Metadata.model_construct(is_chat_model=False)
@@ -111,6 +115,10 @@ class CompletionStubLLM(LLM):
 
 class ChatStubLLM(LLM):
     """LLM stub that implements chat endpoints (chat model)."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize ChatStubLLM."""
+        super().__init__(**kwargs)
 
     @property
     def metadata(self) -> Metadata:

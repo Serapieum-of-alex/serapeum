@@ -126,8 +126,9 @@ class TestCallableToolInit:
     """Test CallableTool initialization logic."""
 
     def test_init_with_sync_fn(self):
-        """Inputs: A simple sync function and ToolMetadata(name=\"t\", description=\"d\").
+        r"""Test Initializer.
 
+        Inputs: A simple sync function and ToolMetadata(name=\"t\", description=\"d\").
         Expected: CallableTool initializes, exposing .func (sync) and .async_fn (async wrapper), and .real_fn is the original function.
         Checks: Correct wrapping decisions and metadata attachment.
         """

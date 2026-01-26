@@ -48,8 +48,8 @@ class TestRepairIncompleteJson:
         assert _repair_incomplete_json(s) == s
 
     def test_multiple_unbalanced_braces(self) -> None:
-        """If the input has more opening than closing braces, add enough braces
-        to balance it.
+        """If the input has more opening than closing braces, add enough braces to balance it.
+
         Input: '{{"a": 1'
         Expected: '{{"a": 1}}' (two closing braces added).
         """
@@ -72,8 +72,11 @@ class TestRepairIncompleteJson:
 
 
 class TestNumValidFields:
+    """Test suite for num_valid_fields function."""
+
     def test_none_and_scalars(self) -> None:
         """None should count as 0; any non-None scalar should count as 1.
+
         Input: None and scalar strings.
         Expected: 0 for None, 1 for non-None.
         """
@@ -82,6 +85,7 @@ class TestNumValidFields:
 
     def test_simple_model(self) -> None:
         """A model with only one set field should be counted as 1.
+
         Input: Person(name='John').
         Expected: 1.
         """
@@ -90,6 +94,7 @@ class TestNumValidFields:
 
     def test_lists_and_dicts(self) -> None:
         """Lists and dicts should be counted recursively across elements/values.
+
         Input: list[Person], dict[str, Person].
         Expected: sum of non-None fields across items.
         """
@@ -100,6 +105,7 @@ class TestNumValidFields:
 
     def test_nested_models(self) -> None:
         """Nested Pydantic models should be traversed to count non-None fields.
+
         Input: Family with parent and children Persons.
         Expected: count equals sum of all non-None nesting fields.
         """
@@ -142,8 +148,11 @@ class TestNumValidFields:
 
 
 class TestFlexibleModel:
+    """Test suite for FlexibleModel class."""
+
     def test_allows_extra_fields(self) -> None:
         """A subclass of FlexibleModel should allow extra fields without raising.
+
         Input: Instantiate a subclass with an extra field.
         Expected: Instance created and attribute present.
         """
@@ -157,9 +166,12 @@ class TestFlexibleModel:
 
 
 class TestCreateFlexibleModel:
+    """Test suite for FlexibleModel.create method."""
+
     def test_accepts_partial_and_extra(self) -> None:
-        """The dynamically created flexible model should accept partial data and
-        extra fields, defaulting missing declared fields to None.
+        """The dynamically created flexible model should accept partial data and extra fields.
+
+        Defaulting missing declared fields to None.
         Input: name only, and later with an extra field.
         Expected: 'age' defaults to None and extra fields are kept.
         """
@@ -174,6 +186,7 @@ class TestCreateFlexibleModel:
 
     def test_defaults_are_none(self) -> None:
         """All fields in the flexible version should be Optional[...] with default None.
+
         Input: Create FlexiblePerson and inspect defaults.
         Expected: Missing declared attributes are None and model accepts extras.
         """

@@ -21,11 +21,6 @@ from serapeum.core.prompts import ChatPromptTemplate
 from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
-LLM = Ollama(
-    model="llama3.1",
-    request_timeout=180,
-)
-
 
 class MockLLM(MagicMock):
     """Mock LLM for simulating completion responses."""
@@ -70,20 +65,20 @@ class TestTextCompletionLLM:
     """Tests for TestTextCompletionLLM."""
 
     @pytest.mark.e2e
-    def test_text_completion_llm_ollama(self) -> None:
+    def test_text_completion_llm_ollama(self, llm_model: Ollama) -> None:
         """Test text completion llm ollama."""
         output_parser = PydanticParser(output_cls=ModelTest)
         text_llm = TextCompletionLLM(
             output_parser=output_parser,
             prompt="This is a test prompt with a {test_input}.",
-            llm=LLM,
+            llm=llm_model,
         )
 
         obj_output = text_llm(test_input="hello")
         assert isinstance(obj_output, ModelTest)
 
     @pytest.mark.e2e
-    def test_text_llm_with_messages(self) -> None:
+    def test_text_llm_with_messages(self, llm_model: Ollama) -> None:
         """Test text llm with messages."""
         messages = [Message(role=MessageRole.USER, content="Test")]
         prompt = ChatPromptTemplate(message_templates=messages)
@@ -91,14 +86,14 @@ class TestTextCompletionLLM:
         text_llm = TextCompletionLLM(
             output_parser=output_parser,
             prompt=prompt,
-            llm=LLM,
+            llm=llm_model,
         )
 
         obj_output = text_llm()
         assert isinstance(obj_output, ModelTest)
 
     @pytest.mark.e2e
-    def test_llm_program_with_messages_and_chat(self) -> None:
+    def test_llm_program_with_messages_and_chat(self, llm_model: Ollama) -> None:
         """Test llm program with messages and chat."""
         messages = [Message(role=MessageRole.USER, content="Test")]
         prompt = ChatPromptTemplate(message_templates=messages)
@@ -106,7 +101,7 @@ class TestTextCompletionLLM:
         text_llm = TextCompletionLLM(
             output_parser=output_parser,
             prompt=prompt,
-            llm=LLM,
+            llm=llm_model,
         )
 
         obj_output = text_llm()

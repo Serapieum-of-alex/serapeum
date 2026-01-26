@@ -22,11 +22,6 @@ from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
 from serapeum.llms.ollama import Ollama
 
-LLM = Ollama(
-    model="llama3.1",
-    request_timeout=180,
-)
-
 
 def make_agent_response_from_models(models: Sequence[BaseModel]) -> AgentChatResponse:
     """Utility to convert a sequence of BaseModel instances to AgentChatResponse.
@@ -52,7 +47,7 @@ def make_agent_response_from_models(models: Sequence[BaseModel]) -> AgentChatRes
 class TestToolOrchestratingLLM:
     """Tests various construction scenarios for `from_defaults`."""
 
-    def test_valid_with_prompt_str_and_llm(self) -> None:
+    def test_valid_with_prompt_str_and_llm(self, llm_model: Ollama) -> None:
         """Construct with prompt_template_str and a function-calling-capable LLM.
 
         Input:
@@ -65,14 +60,14 @@ class TestToolOrchestratingLLM:
         tools_llm = ToolOrchestratingLLM(
             output_cls=Album,
             prompt="Album with {topic}",
-            llm=LLM,  # metadata says it supports function calling
+            llm=llm_model,  # metadata says it supports function calling
             allow_parallel_tool_calls=True,
             verbose=True,
         )
         assert isinstance(tools_llm, ToolOrchestratingLLM)
         assert isinstance(tools_llm.prompt, PromptTemplate)
 
-    def test_missing_prompt_raises(self) -> None:
+    def test_missing_prompt_raises(self, llm_model: Ollama) -> None:
         """Raise ValueError if neither prompt nor prompt_template_str is provided.
 
         Input: llm provided but both prompt and prompt_template_str are None
@@ -80,14 +75,14 @@ class TestToolOrchestratingLLM:
         Check: pytest.raises(ValueError)
         """
         with pytest.raises(TypeError):
-            ToolOrchestratingLLM(output_cls=Album, llm=LLM)
+            ToolOrchestratingLLM(output_cls=Album, llm=llm_model)
 
 
 class TestToolOrchestratingLLMCall:
     """Synchronous execution via __call__ covering single/multiple outputs."""
 
     @pytest.mark.e2e
-    def test_single_output_call(self) -> None:
+    def test_single_output_call(self, llm_model: Ollama) -> None:
         """Call returns a single Album when parallel=False.
 
         Input: Program with allow_parallel_tool_calls=False using NonFunctionCallingMockLLM
@@ -97,13 +92,13 @@ class TestToolOrchestratingLLMCall:
         tools_llm = ToolOrchestratingLLM(
             Album,
             prompt="can you create Album with {topic}, and two random songs",
-            llm=LLM,
+            llm=llm_model,
         )
         result = tools_llm(topic="rock")
         assert isinstance(result, Album)
 
     @pytest.mark.e2e
-    def test_multiple_outputs_call_parallel_enabled(self) -> None:
+    def test_multiple_outputs_call_parallel_enabled(self, llm_model: Ollama) -> None:
         """Call returns list of Albums when parallel=True.
 
         Input: Program with allow_parallel_tool_calls=True
@@ -113,7 +108,7 @@ class TestToolOrchestratingLLMCall:
         tools_llm = ToolOrchestratingLLM(
             Album,
             prompt="Album with {topic}",
-            llm=LLM,
+            llm=llm_model,
             allow_parallel_tool_calls=True,
         )
         result = tools_llm(topic="jazz")
@@ -127,14 +122,16 @@ class TestToolOrchestratingLLMAsyncCall:
     """Async execution via acall covering standard single-output scenario."""
 
     @pytest.mark.e2e
-    async def test_async_single_output(self) -> None:
+    async def test_async_single_output(self, llm_model: Ollama) -> None:
         """acall returns a single Album when parallel=False.
 
         Input: Program with allow_parallel_tool_calls=False using NonFunctionCallingMockLLM
         Expected: Returns Album equal to ALBUM
         Check: isinstance and equality
         """
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album with {topic}", llm=LLM)
+        tools_llm = ToolOrchestratingLLM(
+            Album, prompt="Album with {topic}", llm=llm_model
+        )
         result = await tools_llm.acall(topic="pop")
         assert isinstance(result, Album)
 
@@ -143,7 +140,7 @@ class TestToolOrchestratingLLMStreamCall:
     """Tests for the synchronous streaming interface `stream_call`."""
 
     @pytest.mark.e2e
-    def test_streaming_yields_processed_objects(self) -> None:
+    def test_streaming_yields_processed_objects(self, llm_model: Ollama) -> None:
         """stream_call yields objects returned by process_streaming_objects per chunk.
 
         Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects
@@ -153,7 +150,7 @@ class TestToolOrchestratingLLMStreamCall:
         tools_llm = ToolOrchestratingLLM(
             output_cls=Album,
             prompt="Album {topic}",
-            llm=LLM,
+            llm=llm_model,
             allow_parallel_tool_calls=False,
         )
 
@@ -168,7 +165,9 @@ class TestToolOrchestratingLLMAStreamCall:
     """Tests for the asynchronous streaming interface `astream_call`."""
 
     @pytest.mark.e2e
-    async def test_async_streaming_yields_processed_objects(self) -> None:
+    async def test_async_streaming_yields_processed_objects(
+        self, llm_model: Ollama
+    ) -> None:
         """astream_call yields objects returned by process_streaming_objects per chunk.
 
         Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects
@@ -178,7 +177,7 @@ class TestToolOrchestratingLLMAStreamCall:
         tools_llm = ToolOrchestratingLLM(
             output_cls=Album,
             prompt="Album {topic}",
-            llm=LLM,
+            llm=llm_model,
             allow_parallel_tool_calls=False,
         )
 

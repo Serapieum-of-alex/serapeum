@@ -10,11 +10,6 @@ from serapeum.core.prompts import ChatPromptTemplate
 from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
-LLM = Ollama(
-    model="llama3.1",
-    request_timeout=180,
-)
-
 
 class DummyModel(BaseModel):
     """Dummy model for testing output parsing."""
@@ -66,7 +61,7 @@ class TestCallMethod:
     """Test synchronous call method for TextCompletionLLM."""
 
     @pytest.mark.e2e
-    def test_call_non_chat_llm_success(self) -> None:
+    def test_call_non_chat_llm_success(self, llm_model: Ollama) -> None:
         """Test synchronous call with text LLM.
 
         Inputs: text LLM and prompt args with llm kwargs.
@@ -77,7 +72,7 @@ class TestCallMethod:
         text_llm = TextCompletionLLM(
             output_parser=parser,
             prompt="Value: {value}",
-            llm=LLM,
+            llm=llm_model,
         )
 
         result = text_llm(llm_kwargs={"temperature": 0.2}, value="input")
@@ -87,7 +82,7 @@ class TestCallMethod:
         assert result.value == "input"
 
     @pytest.mark.e2e
-    def test_call_chat_llm_success(self) -> None:
+    def test_call_chat_llm_success(self, llm_model: Ollama) -> None:
         """Test synchronous call with chat LLM.
 
         Inputs: chat LLM with chat response.
@@ -102,7 +97,7 @@ class TestCallMethod:
         text_llm = TextCompletionLLM(
             output_parser=parser,
             prompt=prompt,
-            llm=LLM,
+            llm=llm_model,
         )
         result = text_llm()
 
@@ -110,7 +105,9 @@ class TestCallMethod:
         assert result.value is not None
 
     @pytest.mark.e2e
-    def test_call_raises_when_parser_returns_wrong_type(self) -> None:
+    def test_call_raises_when_parser_returns_wrong_type(
+        self, llm_model: Ollama
+    ) -> None:
         """Test error when parser returns wrong type.
 
         Inputs: parser returning SecondaryModel.
@@ -124,7 +121,7 @@ class TestCallMethod:
         text_llm = TextCompletionLLM(
             output_parser=parser,
             prompt="Value: {value}",
-            llm=LLM,
+            llm=llm_model,
         )
 
         with pytest.raises(ValueError):
@@ -136,7 +133,7 @@ class TestAcallMethod:
 
     @pytest.mark.e2e
     @pytest.mark.asyncio
-    async def test_acall_non_chat_llm_success(self) -> None:
+    async def test_acall_non_chat_llm_success(self, llm_model: Ollama) -> None:
         """Test async call with text LLM.
 
         Inputs: async call on text LLM.
@@ -147,7 +144,7 @@ class TestAcallMethod:
         text_llm = TextCompletionLLM(
             output_parser=parser,
             prompt="Value: {value}",
-            llm=LLM,
+            llm=llm_model,
         )
 
         result = await text_llm.acall(value="input")
@@ -157,7 +154,7 @@ class TestAcallMethod:
 
     @pytest.mark.e2e
     @pytest.mark.asyncio
-    async def test_acall_chat_llm_success(self) -> None:
+    async def test_acall_chat_llm_success(self, llm_model: Ollama) -> None:
         """Test async call with chat LLM.
 
         Inputs: async call on chat LLM.
@@ -172,7 +169,7 @@ class TestAcallMethod:
         text_llm = TextCompletionLLM(
             output_parser=parser,
             prompt=prompt,
-            llm=LLM,
+            llm=llm_model,
         )
 
         result = await text_llm.acall()
@@ -182,7 +179,9 @@ class TestAcallMethod:
 
     @pytest.mark.e2e
     @pytest.mark.asyncio
-    async def test_acall_raises_when_parser_returns_wrong_type(self) -> None:
+    async def test_acall_raises_when_parser_returns_wrong_type(
+        self, llm_model: Ollama
+    ) -> None:
         """Test error when parser returns wrong type in async call.
 
         Inputs: parser returning SecondaryModel.
@@ -196,7 +195,7 @@ class TestAcallMethod:
         text_llm = TextCompletionLLM(
             output_parser=parser,
             prompt="Value: {value}",
-            llm=LLM,
+            llm=llm_model,
         )
 
         with pytest.raises(ValueError):

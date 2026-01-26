@@ -32,7 +32,7 @@ from serapeum.core.tools.utils import (
 class MockSong(BaseModel):
     """Mock Song class.
 
-        here is a long description of the class.
+    Here is a long description of the class.
 
     Attributes:
         title (str):
@@ -71,7 +71,7 @@ class MockSong(BaseModel):
 
 
 class SingleArgEchoTool(BaseTool):
-    """A single-argument echo tool used to validate positional forwarding path.
+    """Single-argument echo tool for positional forwarding validation.
 
     The tool uses the default MinimalToolSchema with a single "input" string field
     from ToolMetadata. When called with a single positional argument (the inner
@@ -91,7 +91,7 @@ class SingleArgEchoTool(BaseTool):
 
 
 class SingleArgKwOnlyTool(BaseTool):
-    """A single-argument tool that requires a keyword-only argument.
+    """Single-argument tool requiring keyword-only argument.
 
     This exercises the kwargs fallback in ToolExecutor.execute when the positional path fails.
     """
@@ -108,12 +108,14 @@ class SingleArgKwOnlyTool(BaseTool):
 
 
 class TwoArgSumTool(BaseTool):
-    """A two-argument tool that sums two integers via kwargs path.
+    """Two-argument tool summing integers via kwargs path.
 
     The tool uses a custom schema with two properties to exercise kwargs path.
     """
 
     class Args(BaseModel):
+        """Arguments schema for TwoArgSumTool."""
+
         a: int
         b: int
 
@@ -128,7 +130,7 @@ class TwoArgSumTool(BaseTool):
 
 
 class ErrorTool(BaseTool):
-    """A tool that raises an error to test error handling in call helpers."""
+    """Tool that raises an error for error handling testing."""
 
     @property
     def metadata(self) -> ToolMetadata:  # type: ignore[override]
@@ -139,7 +141,7 @@ class ErrorTool(BaseTool):
 
 
 class AsyncSingleArgKwOnlyTool(AsyncBaseTool):
-    """Async variant requiring a keyword-only argument, for ToolExecutor.execute_async fallback."""
+    """Async variant requiring keyword-only argument for execute_async fallback."""
 
     @property
     def metadata(self) -> ToolMetadata:  # type: ignore[override]
@@ -159,9 +161,11 @@ class AsyncSingleArgKwOnlyTool(AsyncBaseTool):
 
 
 class AsyncTwoArgTool(AsyncBaseTool):
-    """Async tool with two kwargs to validate ToolExecutor.execute_async kwargs path."""
+    """Async tool with two kwargs for execute_async validation."""
 
     class Args(BaseModel):
+        """Arguments schema for AsyncTwoArgTool."""
+
         a: int
         b: int
 
@@ -186,7 +190,7 @@ class AsyncTwoArgTool(AsyncBaseTool):
 
 
 class AsyncErrorTool(AsyncBaseTool):
-    """Async tool that raises to test error handling in ToolExecutor.execute_async."""
+    """Async tool that raises for error handling testing."""
 
     @property
     def metadata(self) -> ToolMetadata:  # type: ignore[override]
@@ -200,6 +204,7 @@ class AsyncErrorTool(AsyncBaseTool):
 
 
 class TestDocstring:
+    """Test suite for Docstring."""
 
     def test_pydantic_class(self):
         docstring = Docstring(MockSong)
@@ -216,7 +221,8 @@ class TestDocstring:
         )
 
     def test_extracts_sphinx_google_javadoc_and_filters_unknown(self):
-        """
+        """Test extraction and filtering of multiple docstring styles.
+
         Inputs:
             A composite docstring containing Sphinx (:param), Google (name (type): desc), and Javadoc (@param) parameter docs.
             Known function parameters: {"a", "b"}. Docstring also includes an unknown param "c".
@@ -242,7 +248,8 @@ class TestDocstring:
         assert unknown == {"c"}
 
     def test_conflicting_descriptions_keep_first(self):
-        """
+        """Test conflict resolution for duplicate parameter documentation.
+
         Inputs: A docstring defines the same parameter twice with different descriptions.
         Expected: The first description is retained; the conflicting second one is ignored.
         Checks: Conflict resolution behavior when duplicate param documentation with different text appears.
@@ -262,7 +269,7 @@ class TestDocstring:
 
 
 class TestCreateSchemaFromFunction:
-    """Tests for create_schema_from_function"""
+    """Tests for create_schema_from_function."""
 
     def test_required_default_any_and_field_info(self) -> None:
         """Validate required fields, defaulted fields, Any typing, and Field defaults.
@@ -409,8 +416,10 @@ class TestCreateSchemaFromFunction:
 
 
 class TestToolExecutor:
+    """Test suite for ToolExecutor."""
+
     class TestExecute:
-        """Tests the Extractor.execute method."""
+        """Tests the ToolExecutor.execute method."""
 
         def test_single_arg_positional_forwarding(self) -> None:
             """A single-arg tool called with one-arg schema forwards a positional value.
@@ -490,7 +499,7 @@ class TestToolExecutor:
             assert out.tool_name == tool.metadata.name
 
     class TestExecuteAsync:
-        """Test the ToolExecutor.execute_async method."""
+        """Tests for ToolExecutor.execute_async method."""
 
         @pytest.mark.asyncio
         async def test_single_arg_positional_forwarding_async(self) -> None:
@@ -562,7 +571,7 @@ class TestToolExecutor:
             assert out.content.startswith("Encountered error: ")
 
     class TestExecuteWithSelection:
-        """Test the ToolExecutor.execute_with_selection method and ToolExecutor.execute_async_with_selection method."""
+        """Tests for ToolExecutor.execute_with_selection method."""
 
         def test_calls_correct_tool_and_propagates_output(
             self, capsys: pytest.CaptureFixture[str]
@@ -612,6 +621,8 @@ class TestToolExecutor:
             assert out.content in captured.out
 
     class TestExecuteAsyncWithSelection:
+        """Tests for ToolExecutor.execute_async_with_selection method."""
+
         @pytest.mark.asyncio
         async def test_calls_correct_tool_async_and_propagates_output(self) -> None:
             """Ensure async selection calls the right tool and returns the awaited output.

@@ -284,9 +284,9 @@ class TestCreateSchemaFromFunction:
             - model.model_fields metadata and model_json_schema entries.
         """
 
-        def f(
-            a: int, b: str = "x", c=3, d: int = Field(default=5, description="five")
-        ) -> None:
+        d_field_default = Field(default=5, description="five")
+
+        def f(a: int, b: str = "x", c=3, d: int = d_field_default) -> None:
             return None
 
         function = FunctionConverter("F", f)
@@ -317,9 +317,13 @@ class TestCreateSchemaFromFunction:
         """
         from typing import Annotated as Ann
 
+        counter_desc = "counter value"
+        text_desc = "text"
+        alpha_extra = {"alpha": True}
+
         def g(
-            x: Ann[int, "counter value"],
-            y: Ann[str, Field(description="text", json_schema_extra={"alpha": True})],
+            x: Ann[int, counter_desc],
+            y: Ann[str, Field(description=text_desc, json_schema_extra=alpha_extra)],
         ) -> None:
             return None
 

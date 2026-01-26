@@ -2,9 +2,9 @@
 
 import json
 import logging
-import pickle
+import pickle  # nosec B403
 from enum import Enum
-from typing import Any, Self, TypeVar, Dict
+from typing import Any, Dict, Self, TypeVar
 
 from pydantic import (
     BaseModel,

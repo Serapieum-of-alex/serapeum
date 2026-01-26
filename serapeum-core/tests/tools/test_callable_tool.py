@@ -236,7 +236,9 @@ class TestCallableToolFromFunction:
             Handling of FieldInfo defaults when building the signature for the description.
         """
 
-        def bar(a: int = Field(default=1, description="A")) -> int:  # type: ignore[assignment]
+        field_default = Field(default=1, description="A")
+
+        def bar(a: int = field_default) -> int:  # type: ignore[assignment]
             """Bar summary."""
             return a
 

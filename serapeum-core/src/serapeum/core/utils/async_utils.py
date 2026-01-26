@@ -1,5 +1,5 @@
 """Async utils."""
-
+from __future__ import annotations
 import asyncio
 from itertools import zip_longest
 from typing import Any, Coroutine, Iterable, List, Optional, TypeVar

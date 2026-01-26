@@ -24,9 +24,9 @@ from pydantic_core import CoreSchema, core_schema
 from serapeum.core.base.llms.models import Message, MessageRole, TextChunk
 from serapeum.core.models import Model
 from serapeum.core.output_parsers.utils import (
+    PYDANTIC_FORMAT_TMPL,
     JsonParser,
     SchemaFormatter,
-    PYDANTIC_FORMAT_TMPL,
 )
 
 TokenGen = Generator[str, None, None]

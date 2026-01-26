@@ -9,7 +9,6 @@ import json
 import re
 from typing import Any, List, Optional
 
-
 PYDANTIC_FORMAT_TMPL = """
 Here's a JSON schema to follow strictly:
 {schema}

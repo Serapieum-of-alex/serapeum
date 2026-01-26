@@ -3,13 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Sequence,
-    Type,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, Any, Sequence, Type, TypeVar
 
 from pydantic import BaseModel, ConfigDict, ValidationError, create_model
 
@@ -253,7 +247,6 @@ class StreamingObjectProcessor:
         cur_objects: Sequence[BaseModel] | None,
     ) -> list[BaseModel]:
         """Select object set with more valid fields."""
-
         return (
             new_objects
             if cur_objects is None

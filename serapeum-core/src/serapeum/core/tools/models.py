@@ -65,6 +65,8 @@ class MinimalToolSchema(BaseModel):
 
 @dataclass
 class Schema:
+    """Container for resolved and referenced schema variants."""
+
     full_schema: dict[str, Any]
     resolved_schema: dict[str, Any] | None = None
     referenced_schema: dict[str, Any] | None = None
@@ -1231,8 +1233,8 @@ class ArgumentCoercer:
             try:
                 validated = self.tool_schema(**coerced_dict)
                 result = validated.model_dump()
-            except Exception:
+            except ValidationError:
                 # Validation failed, use the manually coerced dict
-                pass
+                result = coerced_dict
 
         return result

@@ -22,7 +22,7 @@ from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
-from serapeum.core.tools.models import ToolCallArguments
+from serapeum.core.tools.models import BaseTool, ToolCallArguments
 
 
 class Song(BaseModel):

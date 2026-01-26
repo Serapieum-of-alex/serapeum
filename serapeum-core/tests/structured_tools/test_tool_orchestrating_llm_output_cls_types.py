@@ -29,7 +29,6 @@ from serapeum.core.tools import ToolOutput
 from serapeum.core.tools.callable_tool import CallableTool
 from serapeum.core.tools.models import BaseTool
 
-
 # ============================================================================
 # Test Models and Functions
 # ============================================================================

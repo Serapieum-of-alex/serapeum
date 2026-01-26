@@ -4,12 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    AsyncGenerator,
-    Generator,
-)
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Generator
 
 from ollama import AsyncClient, Client  # type: ignore[attr-defined]
 from pydantic import BaseModel, Field, PrivateAttr
@@ -39,7 +34,7 @@ from serapeum.core.llm.function_calling import FunctionCallingLLM
 from serapeum.core.models import StructuredLLMMode
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.structured_tools.utils import StreamingObjectProcessor
-from serapeum.core.tools import ToolCallArguments, ArgumentCoercer
+from serapeum.core.tools import ArgumentCoercer, ToolCallArguments
 
 if TYPE_CHECKING:
     from serapeum.core.tools.models import BaseTool

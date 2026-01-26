@@ -5,10 +5,8 @@ from typing import List, Optional
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
 from serapeum.core.structured_tools.utils import (
     FlexibleModel,
-    StreamingObjectProcessor,
     _repair_incomplete_json,
     num_valid_fields,
 )
@@ -155,7 +153,7 @@ class TestFlexibleModel:
 
         s = Sub(a=1, extra="ok")
         assert s.a == 1
-        assert getattr(s, "extra") == "ok"
+        assert s.extra == "ok"
 
 
 class TestCreateFlexibleModel:
@@ -172,7 +170,7 @@ class TestCreateFlexibleModel:
 
         p2 = FlexiblePerson(name="John", extra_field="v")
         assert p2.name == "John"
-        assert getattr(p2, "extra_field") == "v"
+        assert p2.extra_field == "v"
 
     def test_defaults_are_none(self) -> None:
         """All fields in the flexible version should be Optional[...] with default None.
@@ -186,7 +184,7 @@ class TestCreateFlexibleModel:
         assert p.hobbies is None
         # Extra field still allowed
         p.extra = 123
-        assert getattr(p, "extra") == 123
+        assert p.extra == 123
 
     def test_create_flexible_model(self) -> None:
         """Test creating flexible model."""

@@ -18,6 +18,8 @@ from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
 
 
 class MockLLM(MagicMock):
+    """Mock LLM for simulating completion responses."""
+
     def complete(self, prompt: str) -> CompletionResponse:
         test_object = {"hello": "world"}
         text = json.dumps(test_object)
@@ -29,6 +31,8 @@ class MockLLM(MagicMock):
 
 
 class MockChatLLM(MagicMock):
+    """Mock chat LLM for simulating chat responses."""
+
     def chat(self, prompt: str) -> ChatResponse:
         test_object = {"hello": "chat"}
         text = json.dumps(test_object)
@@ -42,11 +46,15 @@ class MockChatLLM(MagicMock):
 
 
 class ModelTest(BaseModel):
+    """Pydantic model for test output."""
+
     __test__ = False
     hello: str
 
 
 class TestTextCompletionLLM:
+    """Tests for TextCompletionLLM."""
+
     def test_text_completion_llm_core(self) -> None:
         """Test LLM program."""
         output_parser = PydanticParser(output_cls=ModelTest)

@@ -39,6 +39,7 @@ class RecordingPydanticParser(PydanticParser):
         override_result: BaseModel | None = None,
         custom_results: dict[str, BaseModel] | None = None,
     ) -> None:
+        """Initialize RecordingPydanticParser with customizable results."""
         super().__init__(output_cls=output_cls)
         self.override_result = override_result
         self.custom_results = custom_results or {}
@@ -71,6 +72,7 @@ class DummyLLM:
         completion_text: str = '{"value": "from-complete"}',
         chat_content: str | None = '{"value": "from-chat"}',
     ) -> None:
+        """Initialize DummyLLM with predefined responses."""
         self.metadata = Metadata(is_chat_model=is_chat)
         self.completion_response = CompletionResponse(text=completion_text)
         self.chat_response = ChatResponse(

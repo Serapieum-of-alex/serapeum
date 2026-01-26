@@ -13,14 +13,19 @@ from serapeum.core.structured_tools.utils import (
 
 
 class Person(BaseModel):
+    """Person helper for tests."""
+
     name: str
     age: Optional[int] = None
     hobbies: List[str] = Field(default_factory=list)
 
 
 class TestRepairIncompleteJson:
+    """Test suite for _repair_incomplete_json function."""
+
     def test_adds_missing_quote(self) -> None:
-        """Given a JSON string ending with an odd number of quotes,
+        """Given a JSON string ending with an odd number of quotes.
+
         the function should append a closing quote and any missing braces.
         Input: '{"name": "John'
         Expected: '{"name": "John"}' (closing quote and brace added).
@@ -28,7 +33,8 @@ class TestRepairIncompleteJson:
         assert _repair_incomplete_json('{"name": "John') == '{"name": "John"}'
 
     def test_adds_missing_brace(self) -> None:
-        """Given a JSON string with unbalanced opening braces,
+        """Given a JSON string with unbalanced opening braces.
+
         the function should add the required number of closing braces.
         Input: '{"name": "John"'
         Expected: '{"name": "John"}' (one closing brace added).
@@ -41,6 +47,7 @@ class TestRepairIncompleteJson:
 
     def test_valid_json_unchanged(self) -> None:
         """A valid JSON string must be returned unchanged.
+
         Input: '{"name": "John", "age": 30}'
         Expected: the same string.
         """

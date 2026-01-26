@@ -145,6 +145,7 @@ class MockLLM(MagicMock):
     """Mock LLM that returns predefined responses."""
 
     def __init__(self, return_value: Any = None, **kwargs):
+        """Initialize MockLLM with optional return value."""
         super().__init__(**kwargs)
         self._return_value = return_value or {"result": "test"}
 

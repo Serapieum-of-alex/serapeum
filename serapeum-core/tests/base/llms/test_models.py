@@ -389,12 +389,12 @@ class TestMessageLists:
         """Test MessageList.to_prompt method."""
 
         def test_happy_path_system_and_user(self):
-            """
+            """Test that a simple system and user message sequence renders correctly.
+
             Inputs: Two messages — system("You are a bot."), user("Hello").
             Expected: Lines formatted as "system: You are a bot." and "user: Hello", followed by a trailing "assistant: " line.
             Checks: Exact string equality; ordering preserved; single trailing assistant line; no trailing newline at end.
             """
-
             messages = [
                 Message(role=MessageRole.SYSTEM, content="You are a bot."),
                 Message(role=MessageRole.USER, content="Hello"),
@@ -413,7 +413,8 @@ class TestMessageLists:
             assert not prompt.endswith("\n")
 
         def test_empty_messages_yields_assistant_only(self):
-            """
+            """Test that an empty message list yields a single assistant-only line.
+
             Inputs: Empty message sequence.
             Expected: String equals exactly "assistant: " (no preceding or trailing newlines).
             Checks: Deterministic minimal output; no errors.
@@ -425,7 +426,8 @@ class TestMessageLists:
             assert prompt == "assistant: "
 
         def test_additional_kwargs_are_appended_on_new_line(self):
-            """
+            """Test that additional_kwargs are appended to the message content on a new line.
+
             Inputs: One user message with content "Hi" and additional_kwargs {"tool": {"name": "calc"}}.
             Expected: Two lines for the message — first "user: Hi", then the dict repr on the next line; final line "assistant: ".
             Checks: Dict structure and ordering preserved in the string; overall line ordering correct.
@@ -448,7 +450,8 @@ class TestMessageLists:
             assert prompt == expected
 
         def test_multiple_text_chunks_joined_with_newline(self):
-            """
+            r"""Test that multiple TextChunks are joined with a newline character.
+
             Inputs: One user message with two TextChunks: "Line1" and "Line2".
             Expected: Content property becomes "Line1\nLine2" so the rendered line is "user: Line1\nLine2"; final line "assistant: ".
             Checks: Correct newline joining within a single message; no extra blank lines.
@@ -469,7 +472,8 @@ class TestMessageLists:
             assert prompt == expected
 
         def test_non_text_chunk_results_in_none_content(self):
-            """
+            """Test that non-text chunks are rendered as None in the message content.
+
             Inputs: One user message with a single Image chunk and no text chunks.
             Expected: Message.content is None; formatted line is "user: None"; final line "assistant: ".
             Checks: Graceful handling of non-text content without exceptions.
@@ -488,12 +492,12 @@ class TestMessageLists:
             assert prompt == expected
 
         def test_ordering_is_preserved_and_trailing_assistant_always_added(self):
-            """
+            """Test that ordering is preserved and trailing assistant line is always added.
+
             Inputs: Three messages in order: user("A"), assistant("B"), tool("C").
             Expected: Rendered in the same order with their roles and contents, followed by an extra trailing "assistant: " line.
             Checks: Ordering stability and presence of the final assistant prompt starter even when an assistant message exists in input.
             """
-
             messages = [
                 Message(role=MessageRole.USER, content="A"),
                 Message(role=MessageRole.ASSISTANT, content="B"),
@@ -516,7 +520,8 @@ class TestMessageLists:
         """Test MessageList basic operations."""
 
         def test_from_list_and_len_getitem_slice_and_append(self):
-            """
+            """Test MessageList.from_list, __len__, __getitem__, slice, and append.
+
             Inputs:
                 - Start with two messages (system and user).
                 - Use MessageList.from_list to construct, then test __len__, __getitem__ (int), slicing, and append.
@@ -553,7 +558,8 @@ class TestMessageLists:
             ]
 
         def test_from_str_constructs_user_message(self):
-            """
+            """Test MessageList.from_str with a single user message.
+
             Inputs: Use MessageList.from_str with prompt "Ping".
             Expected: Single Message with role=user and content="Ping".
             Checks: Role and content correct; to_prompt adds trailing assistant line.
@@ -566,7 +572,8 @@ class TestMessageLists:
             assert ml.to_prompt().splitlines() == ["user: Ping", "assistant: "]
 
         def test_filter_by_role(self):
-            """
+            """Test MessageList.filter_by_role.
+
             Inputs: Mixed roles (system, user, assistant, tool).
             Expected: filter_by_role returns only messages of that role, as a MessageList.
             Checks: Type and ordering preserved; other roles excluded.

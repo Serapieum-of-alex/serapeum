@@ -40,6 +40,8 @@ def _get_mock_album_response(
 
 
 class MockLLM(MagicMock):
+    """Mock LLM that returns predefined responses."""
+
     def predict_and_call(
         self,
         tools: List["BaseTool"],
@@ -74,6 +76,8 @@ class MockLLM(MagicMock):
 
 
 class TestToolOrchestratingLLM:
+    """Tests for ToolOrchestratingLLM."""
+
     def test_tools_llm(self) -> None:
         """Test Function program."""
         prompt_template_str = """This is a test album with {topic}"""

@@ -37,6 +37,7 @@ class MockLLMReturns:
     """
 
     def __init__(self, calls: Optional[list[dict[str, Any]]] = None) -> None:
+        """Initialize with a list of tool calls to return."""
         self._calls = calls
 
     def get_tool_calls_from_response(self, *args: Any, **kwargs: Any):  # noqa: D401
@@ -161,6 +162,8 @@ class TestExtractArgs:
 
 
 class TestParseSingle:
+    """Tests for the _parse_single method."""
+
     def test_parse_single_with_valid_mapping(self) -> None:
         """Parses a valid mapping directly into the flexible parsing model.
 
@@ -223,6 +226,7 @@ class TestParseSingle:
 
 
 class TestParseObjects:
+    """Tests for the _parse_objects method."""
 
     def test_parse_objects_filters_invalid_and_uses_fallback(self) -> None:
         """Parses only valid args; when none valid, use fallback if provided.
@@ -263,6 +267,7 @@ class TestParseObjects:
 
 
 class TestSelectBest:
+    """Tests for the _select_best method."""
 
     def test_select_best_prefers_more_complete_objects(self) -> None:
         """Selects the object set with greater number of valid fields.
@@ -315,6 +320,7 @@ class TestSelectBest:
 
 
 class TestFinalize:
+    """Tests for the _finalize method."""
 
     def test_finalize_converts_flexible_to_strict_when_valid(self) -> None:
         """In flexible mode, converts flexible objects to the strict output schema.
@@ -366,6 +372,8 @@ class TestFinalize:
 
 
 class TestFormatOutput:
+    """Tests for the _format_output method."""
+
     def test_format_output_allow_parallel_true_returns_list(self) -> None:
         """When allow_parallel is True, returns the objects list as-is.
 
@@ -417,6 +425,8 @@ class TestFormatOutput:
 
 
 class TestProcess:
+    """Tests for the streaming object processor."""
+
     def test_process_with_valid_string_content(self) -> None:
         """End-to-end: valid JSON string content parsed to strict Person.
 

@@ -55,7 +55,8 @@ class TestSyncAsyncConverter:
         """Test sync to async conversion."""
 
         def test_returns_awaitable_and_result(self):
-            """
+            """Test sync to async conversion.
+
             Inputs:
                 A synchronous function f(x, y=2) that returns x * y, wrapped with sync_to_async, then awaited with (3, y=4).
             Expected:
@@ -73,7 +74,8 @@ class TestSyncAsyncConverter:
             assert result == 12
 
         def test_exception_propagates(self):
-            """
+            """Test the sync function raises an exception.
+
             Inputs: A synchronous function that raises ValueError, wrapped via sync_to_async and awaited.
             Expected: The same ValueError is raised when awaiting the wrapper.
             Checks: Exceptions raised in the underlying sync function propagate through the async wrapper.
@@ -91,7 +93,8 @@ class TestSyncAsyncConverter:
         """Test async to sync conversion."""
 
         def test_returns_result(self):
-            """
+            """Test async to sync conversion.
+
             Inputs: An async function add(a, b) that returns a + b, wrapped by async_to_sync and called synchronously as func(5, 7).
             Expected: The wrapper returns 12.
             Checks: The wrapper runs the coroutine to completion and returns its value.
@@ -106,7 +109,8 @@ class TestSyncAsyncConverter:
             assert wrapped(5, 7) == 12
 
         def test_exception_propagates(self):
-            """
+            """Test the async function raises an exception.
+
             Inputs: An async function that raises RuntimeError, wrapped with async_to_sync and invoked synchronously.
             Expected: The wrapper raises a RuntimeError.
             Checks: Errors originating in the async function are raised by the sync wrapper (message may vary depending on event loop handling).
@@ -176,12 +180,12 @@ class TestCallableToolInit:
             _ = CallableTool(func=f, metadata=None)  # type: ignore[arg-type]
 
     def test_init_without_fn_or_async_fn_raises(self):
-        """Inputs: Both func=None and async_fn=None.
+        """Test initialize without func or async_fn.
 
+        Inputs: Both func=None and async_fn=None.
         Expected: ValueError stating that one of func or async_fn must be provided.
         Checks: Constructor enforces presence of at least one callable.
         """
-
         meta = ToolMetadata(name="x", description="d")
         with pytest.raises(ValueError, match="func must be a callable"):
             _ = CallableTool(func=None, metadata=meta)  # type: ignore[arg-type]
@@ -191,7 +195,8 @@ class TestCallableToolFromFunction:
     """Test CallableTool.from_function factory method."""
 
     def test_builds_metadata_name_description_and_schema_with_docs(self):
-        """
+        """Test CallableTool.from_function infers name, description, and schema fields from docstring.
+
         Inputs:
             A function foo(x: int, y: str) -> str with a docstring containing a 1-line summary and parameter
             descriptions for x and y.
@@ -227,7 +232,8 @@ class TestCallableToolFromFunction:
         assert schema.model_fields["y"].description == "y value"
 
     def test_description_signature_strips_pydantic_field_defaults(self):
-        """
+        """Test handling of FieldInfo defaults in auto-generated description.
+
         Inputs:
             A function bar(a: int = Field(default=1, description="A")) with a docstring.
         Expected:
@@ -236,7 +242,6 @@ class TestCallableToolFromFunction:
         Checks:
             Handling of FieldInfo defaults when building the signature for the description.
         """
-
         field_default = Field(default=1, description="A")
 
         def bar(a: int = field_default) -> int:  # type: ignore[assignment]
@@ -253,7 +258,8 @@ class TestCallableToolFromFunction:
         assert "Bar summary." in desc
 
     def test_respects_custom_tool_schema_and_metadata(self):
-        """
+        """Test the `from_function` respects the tool_schema and tool_metadata arguments.
+
         Inputs:
             Provide a custom Pydantic schema and a fully-specified ToolMetadata to from_defaults.
         Expected:
@@ -361,7 +367,8 @@ class TestCallableToolParseToolOutput:
     """Test _parse_tool_output method of CallableTool."""
 
     def test_single_text_chunk(self):
-        """
+        """Test handling of single TextChunk.
+
         Inputs: _parse_tool_output with a single TextChunk("hello").
         Expected: Returns a list containing the given TextChunk.
         Checks: Pass-through behavior for a single valid chunk.
@@ -375,7 +382,8 @@ class TestCallableToolParseToolOutput:
         assert out == [chunk]
 
     def test_single_image_and_audio(self):
-        """
+        """Test handling of single Image and Audio chunks.
+
         Inputs: _parse_tool_output with a single Image and a single Audio instance.
         Expected: Returns lists containing the provided chunk instances respectively.
         Checks: Pass-through behavior for image and audio chunks.
@@ -389,7 +397,8 @@ class TestCallableToolParseToolOutput:
         assert tool._parse_tool_output(aud) == [aud]
 
     def test_list_of_chunks(self):
-        """
+        """Test handling of lists of chunks.
+
         Inputs: _parse_tool_output with a list of mixed chunk types [TextChunk, Image].
         Expected: Returns the same list unchanged.
         Checks: Lists of valid chunk types are passed through as-is.
@@ -401,12 +410,12 @@ class TestCallableToolParseToolOutput:
         assert tool._parse_tool_output(chunks) == chunks
 
     def test_plain_and_nonstring_outputs_become_text_chunks(self):
-        """
+        """Test handling of non-string outputs.
+
         Inputs: _parse_tool_output with a plain string ("ok"), an int (123), and a dict.
         Expected: Each is converted to a single TextChunk with content=str(raw_output).
         Checks: Fallback conversion for non-chunk outputs to text chunks.
         """
-
         tool = CallableTool(
             func=lambda: "ignored", metadata=ToolMetadata(name="t", description="d")
         )
@@ -421,7 +430,8 @@ class TestCallableToolCall:
     """Test call method of CallableTool."""
 
     def test_sync_call_with_partial_and_kwargs_and_positional(self):
-        """
+        """Test Call with partial params and kwargs.
+
         Inputs: Sync function f(a, b, c=3) that returns a tuple (a, b, c).
                 Tool constructed with default_arguments={"c": 10}. Call with args (1,) and kwargs b=2.
         Expected: The merged kwargs result in c=10. The ToolOutput contains the proper chunks, tool_name, raw_input, and raw_output.
@@ -443,7 +453,8 @@ class TestCallableToolCall:
         assert len(out.chunks) == 1 and isinstance(out.chunks[0], TextChunk)
 
     def test_kwargs_override_default_arguments(self):
-        """
+        """Test Call with explicit kwargs overriding default_arguments.
+
         Inputs:
             Same tool as before with default_arguments={"c": 10}. Call with explicit c=20.
         Expected:
@@ -467,7 +478,8 @@ class TestCallableToolDunderCall:
     """Test __call__ dunder method of CallableTool."""
 
     def test_dunder_call_delegates_and_merges_default_arguments(self):
-        """
+        """Test __call__ delegates to call with merged default_arguments and provided kwargs.
+
         Inputs:
             Sync function that concatenates two strings with a separator; tool has default_arguments providing the
             separator.
@@ -501,7 +513,8 @@ class TestCallableToolACall:
 
     @pytest.mark.asyncio
     async def test_async_call_with_partial_and_kwargs(self):
-        """
+        """Test Call with partial params and kwargs.
+
         Inputs: Async function g(a, b, c=3) -> str that returns f"{a+b+c}".
                 Tool constructed with default_arguments={"c": 5}. Call with a=1, b=2 using acall.
         Expected: The result uses c=5 (from partials), so raw_output == "8" and chunks contain a single TextChunk("8").

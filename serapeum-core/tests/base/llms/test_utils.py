@@ -21,7 +21,8 @@ class TestDecorators:
     """Test decorator functions for chat to completion conversion."""
 
     def test_chat_to_completion_decorator(self):
-        """
+        """Test chat to completion decorator.
+
         Inputs: Decorate a chat-style function that receives messages and returns a ChatResponse("OK"). Call wrapper with prompt string.
         Expected: Wrapper converts prompt to single user Message; returns CompletionResponse with text "OK".
         Checks: The inner function sees exactly one message with role=user and content matching prompt; output text mapped.
@@ -46,7 +47,8 @@ class TestDecorators:
         assert out.text == "OK"
 
     def test_stream_chat_to_completion_decorator(self):
-        """
+        """Test stream chat to completion decorator.
+
         Inputs: Decorate a generator-based chat function yielding two ChatResponse chunks.
         Expected: Wrapper returns a generator yielding two CompletionResponse with the same deltas and text.
         Checks: Full mapping and order.
@@ -68,7 +70,8 @@ class TestDecorators:
 
     @pytest.mark.asyncio
     async def test_achat_to_completion_decorator(self):
-        """
+        """Test achat to completion decorator.
+
         Inputs: Decorate an async chat function returning a single ChatResponse("OK"). Call with prompt string.
         Expected: Awaited wrapper returns CompletionResponse with text "OK".
         Checks: Input normalization and output mapping.
@@ -86,7 +89,8 @@ class TestDecorators:
 
     @pytest.mark.asyncio
     async def test_astream_chat_to_completion_decorator(self):
-        """
+        """Test astream chat to completion decorator.
+
         Inputs: Decorate an async function that returns an async generator of ChatResponse.
         Expected: Awaited wrapper returns an async generator of CompletionResponse with correctly mapped fields.
         Checks: Order and values preserved through the wrapper.
@@ -121,7 +125,8 @@ class TestGetFromParamOrEnv:
     """Test get_from_param_or_env utility function."""
 
     def test_param_takes_precedence_over_env_and_default(self, monkeypatch):
-        """
+        """Test param takes precedence over env and default.
+
         Inputs: param="VAL", env_key set in environment to another value, default="DEF".
         Expected: Function returns param value regardless of env/default.
         Checks: Exact equality "VAL".
@@ -133,7 +138,8 @@ class TestGetFromParamOrEnv:
         )
 
     def test_env_used_when_param_none_and_env_present(self, monkeypatch):
-        """
+        """Test environment value when param is None.
+
         Inputs: param=None, env_key present with non-empty value, default set.
         Expected: Returns environment value.
         Checks: Exact string from environ.
@@ -147,7 +153,8 @@ class TestGetFromParamOrEnv:
         )
 
     def test_default_used_when_param_none_env_missing_or_empty(self, monkeypatch):
-        """
+        """Test default value when all inputs are missing.
+
         Inputs: param=None, env_key missing or empty, default provided.
         Expected: Returns default string.
         Checks: Exact match to provided default.
@@ -165,7 +172,8 @@ class TestGetFromParamOrEnv:
         )
 
     def test_raises_when_all_missing_with_message(self, monkeypatch):
-        """
+        """Test error message when all inputs are missing.
+
         Inputs: No param, no env value, no default.
         Expected: Raises ValueError with a message guiding to set env or pass param containing the key name and env key placeholder.
         Checks: Use regex to match both the key and env variable name in the error message.

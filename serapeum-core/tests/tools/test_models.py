@@ -330,7 +330,7 @@ class TestToolOutput:
         assert out.content == "hello"
 
     def test_init_with_blocks_and_raw_input(self):
-        """Test that providing chunks with raw_input uses the given chunks.
+        r"""Test that providing chunks with raw_input uses the given chunks.
 
         Inputs:
           - tool_name: "t"
@@ -371,7 +371,7 @@ class TestToolOutput:
             )
 
     def test_content_property_filters_non_text_chunks(self):
-        """Test that content getter concatenates only TextChunk contents.
+        r"""Test that content getter concatenates only TextChunk contents.
 
         Inputs:
           - chunks: [TextChunk("a"), Image(url=...), Audio(url=...), TextChunk("b")]

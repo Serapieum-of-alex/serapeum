@@ -235,7 +235,6 @@ class TestDocstring:
         def f(a: int, b: str) -> None:
             """Summary line.
 
-
             :param a: value for a
             b (int): value for b
             @param c value for c (unknown)
@@ -258,7 +257,7 @@ class TestDocstring:
         def f(x: int) -> None:
             """
             :param x: first desc
-            :param x: second desc
+            :param x: second desc  # noqa: D205, D400
             """
             pass
 
@@ -290,7 +289,6 @@ class TestCreateSchemaFromFunction:
         Checks:
             - model.model_fields metadata and model_json_schema entries.
         """
-
         d_field_default = Field(default=5, description="five")
 
         def f(a: int, b: str = "x", c=3, d: int = d_field_default) -> None:

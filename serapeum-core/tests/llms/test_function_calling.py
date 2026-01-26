@@ -21,6 +21,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     """Mock FunctionCallingLLM for testing."""
 
     def __init__(self, tool_selection: List[ToolCallArguments]):
+        """Initialize MockFunctionCallingLLM."""
         super().__init__()
         self._tool_selection = tool_selection
 

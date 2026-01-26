@@ -1,3 +1,5 @@
+"""Tests for serapeum.core.llm.base module."""
+
 from typing import Any, List, Sequence
 
 import pytest
@@ -170,9 +172,12 @@ class ChatStubLLM(LLM):
 
 
 class TestStreamResponseToTokens:
+    """Test suite for stream_response_to_tokens function."""
 
     def test_nominal_and_empty_deltas_completion_response(self):
-        """Inputs: two responses with non-empty deltas and then empty/None.
+        """Test nominal and empty deltas for completion responses.
+
+        Inputs: two responses with non-empty deltas and then empty/None.
         Expected: tokens reflect exact delta values or empty strings for falsy deltas.
         Checks: list(stream_response_to_tokens(gen())) matches expected sequence.
         """
@@ -187,7 +192,9 @@ class TestStreamResponseToTokens:
         assert tokens == ["He", "llo", "", ""]
 
     def test_nominal_and_empty_deltas_chat_response(self):
-        """Inputs: chat responses with deltas including empty and None.
+        """Test nominal and empty deltas for chat responses.
+
+        Inputs: chat responses with deltas including empty and None.
         Expected: yielded tokens equal the deltas or empty strings when falsy.
         Checks: list(stream_response_to_tokens(gen())) equals expected.
         """
@@ -211,9 +218,13 @@ class TestStreamResponseToTokens:
 
 
 class TestAStreamResponseToTokens:
+    """Test suite for astream_response_to_tokens function."""
+
     @pytest.mark.asyncio
     async def test_async_nominal_and_empty_deltas_completion_response(self):
-        """Inputs: async completion responses with normal and falsy deltas.
+        """Test nominal and empty deltas for async completion responses.
+
+        Inputs: async completion responses with normal and falsy deltas.
         Expected: async generator yields the same sequence of tokens, empty for falsy.
         Checks: collected list equals expected sequence.
         """
@@ -229,7 +240,9 @@ class TestAStreamResponseToTokens:
 
     @pytest.mark.asyncio
     async def test_async_nominal_and_empty_deltas_chat_response(self):
-        """Inputs: async chat responses with deltas including empty and None.
+        """Test nominal and empty deltas for async chat responses.
+
+        Inputs: async chat responses with deltas including empty and None.
         Expected: tokens are passed through as-is, empty for falsy values.
         Checks: collected list equals expected.
         """
@@ -253,9 +266,12 @@ class TestAStreamResponseToTokens:
 
 
 class TestDefaultCompletionToPrompt:
+    """Test suite for default_completion_to_prompt function."""
 
     def test_identity_behavior(self):
-        """Inputs: various strings including empty.
+        """Test identity behavior for completion_to_prompt adapter.
+
+        Inputs: various strings including empty.
         Expected: identity function, returns the same exact string.
         Checks: equality for typical and boundary values.
         """
@@ -264,9 +280,12 @@ class TestDefaultCompletionToPrompt:
 
 
 class TestValidators:
+    """Test suite for LLM validators."""
 
     def test_set_messages_to_prompt_defaults_and_custom(self):
-        """Inputs: None or a custom callable.
+        """Test set_messages_to_prompt defaults and customs.
+
+        Inputs: None or a custom callable.
         Expected: when None, default generic adapter returned; when custom, same callable returned.
         Checks: callable type and identity for custom.
         """
@@ -279,7 +298,9 @@ class TestValidators:
         assert LLM.set_messages_to_prompt(custom) is custom
 
     def test_set_completion_to_prompt_defaults_and_custom(self):
-        """Inputs: None or custom callable.
+        """Test set_completion_to_prompt defaults and customs.
+
+        Inputs: None or custom callable.
         Expected: default fallback when None; preserve identity when custom provided.
         Checks: callable type and identity.
         """
@@ -292,7 +313,9 @@ class TestValidators:
         assert LLM.set_completion_to_prompt(custom) is custom
 
     def test_check_prompts_sets_defaults_and_respects_customs(self):
-        """Inputs: LLM instances with and without explicit adapters.
+        """Test check_prompts sets defaults and respects customs.
+
+        Inputs: LLM instances with and without explicit adapters.
         Expected: missing adapters are populated; explicit adapters preserved.
         Checks: callables exist and custom adapter is used.
         """
@@ -320,9 +343,12 @@ class TestValidators:
 
 
 class TestGetPrompt:
+    """Test suite for LLM._get_prompt method."""
 
     def test_get_prompt_without_parser(self):
-        """Inputs: simple PromptTemplate with a variable.
+        """Test _get_prompt behavior without output parser.
+
+        Inputs: simple PromptTemplate with a variable.
         Expected: formatted string with variable substituted and no further changes.
         Checks: equals expected formatted output.
         """

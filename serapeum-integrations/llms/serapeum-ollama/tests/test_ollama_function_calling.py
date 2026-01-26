@@ -123,7 +123,7 @@ class TestToolOrchestratingLLMAsyncCall:
 
     @pytest.mark.e2e
     async def test_async_single_output(self, llm_model: Ollama) -> None:
-        """acall returns a single Album when parallel=False.
+        """Acall returns a single Album when parallel=False.
 
         Input: Program with allow_parallel_tool_calls=False using NonFunctionCallingMockLLM
         Expected: Returns Album equal to ALBUM

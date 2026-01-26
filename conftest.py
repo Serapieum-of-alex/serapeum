@@ -1,8 +1,9 @@
+"""Configuration for pytest to add source paths to sys.path."""
+
 from __future__ import annotations
 
 import sys
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parent
 SRC_PATHS = (

@@ -71,6 +71,14 @@ packages = ["src/serapeum"]
 ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
 max-line-length = 120
 count = true
+per-file-ignores = [
+    "tests/*:D",
+    "*/tests/*:D",
+]
+
+[tool.isort]
+profile = "black"
+line_length = 88
 
 [tool.pytest.ini_options]
 

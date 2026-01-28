@@ -9,7 +9,8 @@ from typing import Any, Type
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from serapeum.core.base.llms.models import ChunkType, TextChunk
+from serapeum.core.base.llms.models import ChunkType, TextChunk, Message, MessageRole
+from serapeum.core.output_parsers.utils import PYDANTIC_FORMAT_TMPL
 
 
 class MinimalToolSchema(BaseModel):
@@ -387,7 +388,7 @@ class ToolMetadata:
             raise ValueError("name is None.")
         return self.name
 
-    def get_schema_guidance(self) -> str:
+    def get_schema_guidance_message(self) -> Message | None:
         """Generate guidance text about required fields for LLM understanding.
 
         Creates a formatted string that lists all required fields with their types
@@ -413,29 +414,9 @@ class ToolMetadata:
                 ```
         """
         schema = self.get_schema()
-        required_fields = schema.get("required", [])
-        properties = schema.get("properties", {})
-
-        if not required_fields:
-            return ""
-
-        # Build a clear description of required fields
-        field_descriptions = []
-        for field_name in required_fields:
-            field_info = properties.get(field_name, {})
-            field_type = field_info.get("type", "value")
-            field_desc = field_info.get("description", "")
-
-            if field_desc:
-                field_descriptions.append(
-                    f"  - {field_name} ({field_type}): {field_desc}"
-                )
-            else:
-                field_descriptions.append(f"  - {field_name} ({field_type})")
-
-        guidance = "\n\nRequired fields:\n" + "\n".join(field_descriptions)
-
-        return guidance
+        output_str = PYDANTIC_FORMAT_TMPL.format(schema=schema)
+        message = Message(role=MessageRole.USER, content=output_str)
+        return schema
 
     def to_openai_tool(
         self, skip_length_check: bool = False, include_schema_guidance: bool = True
@@ -496,14 +477,8 @@ class ToolMetadata:
 
                 ```
         """
-        # Build enhanced description with schema guidance
-        description = self.description
-        if include_schema_guidance:
-            schema_guidance = self.get_schema_guidance()
-            if schema_guidance:
-                description = description + schema_guidance
 
-        if not skip_length_check and len(description) > 1024:
+        if not skip_length_check and len(self.description) > 1024:
             raise ValueError(
                 "Tool description exceeds maximum length of 1024 characters. "
                 "Please shorten your description or move it to the prompt."
@@ -512,7 +487,7 @@ class ToolMetadata:
             "type": "function",
             "function": {
                 "name": self.name,
-                "description": description,
+                "description": self.description,
                 "parameters": self.get_schema(),
             },
         }

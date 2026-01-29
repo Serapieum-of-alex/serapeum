@@ -1,6 +1,7 @@
 """Tests for conftest."""
 
 import pytest
+
 from serapeum.llms.ollama import Ollama
 
 

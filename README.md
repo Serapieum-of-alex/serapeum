@@ -1,9 +1,69 @@
-# llm
-## CUDA installation
-- First check which version of CUDA toolkit is available for the version of pytorch you are going to use here
-https://pytorch.org/get-started/locally/
+# Serapeum
 
-- We are using the stable version of pytorch (2.4.0) which is compatible in Windows with CUDA 12.4
-`pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124`
+Serapeum is a modular LLM toolkit. The repo contains a core package with shared
+LLM abstractions plus provider integrations (Ollama, others) and supporting
+docs, examples, and prompts.
 
- https://docs.nvidia.com/cuda/cuda-quick-start-guide/index.html
+## What is in this repo
+
+- `serapeum-core/`: Provider-agnostic core (LLM interfaces, prompts, parsers,
+  tools, structured outputs).
+- `serapeum-integrations/`: Provider adapters (e.g. Ollama).
+- `docs/`: Architecture and reference docs (MkDocs).
+- `examples/`: Usage examples and notebooks.
+- `prompts/`: Prompt templates and assets.
+- `scripts/`: Utility scripts for development and maintenance.
+- `skills/`: Codex skills used for repo automation.
+
+## Packages
+
+- `serapeum-core` (Python package)
+  - Shared LLM models and interfaces.
+  - Prompt templates and output parsers.
+  - Tool schemas and execution utilities.
+- `serapeum-ollama` (Python package under `serapeum-integrations/llms/`)
+  - Ollama-backed LLM adapter.
+  - Tool calling and structured output support when available.
+
+Each package has its own README with details and examples.
+
+## Quick start (editable installs)
+
+From the repo root:
+
+```bash
+python -m pip install -e serapeum-core
+python -m pip install -e serapeum-integrations/llms/serapeum-ollama
+```
+
+## Development setup
+
+Install dev dependencies per package:
+
+```bash
+python -m pip install -e serapeum-core[dev]
+python -m pip install -e serapeum-integrations/llms/serapeum-ollama[dev]
+```
+
+## Testing
+
+Run tests per package:
+
+```bash
+cd serapeum-core
+python -m pytest
+```
+
+```bash
+cd serapeum-integrations/llms/serapeum-ollama
+python -m pytest
+```
+
+Markers are defined in each package `pyproject.toml`.
+
+## Links
+
+- Homepage: https://github.com/Serapieum-of-alex/serapeum
+- Docs: https://serapeum.readthedocs.io/
+- Changelog: https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst
+- Security: `SECURITY.md`

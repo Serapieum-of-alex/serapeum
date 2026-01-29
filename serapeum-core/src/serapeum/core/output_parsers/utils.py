@@ -11,6 +11,7 @@ from typing import Any, List
 from serapeum.core.utils.schemas import marshal_llm_to_json
 
 __all__ = ["OutputParserException", "parse_json_markdown", "parse_code_markdown"]
+
 with contextlib.suppress(ImportError):
     import yaml
 

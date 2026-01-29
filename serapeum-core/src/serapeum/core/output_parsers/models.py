@@ -13,7 +13,6 @@ from typing import (
     Generator,
     Generic,
     List,
-    Optional,
     Type,
     Union,
 )
@@ -117,7 +116,7 @@ class PydanticParser(BaseParser, Generic[Model]):
     def __init__(
         self,
         output_cls: Type[Model],
-        excluded_schema_keys_from_format: Optional[List] = None,
+        excluded_schema_keys_from_format: List | None = None,
         pydantic_format_tmpl: str = PYDANTIC_FORMAT_TMPL,
     ) -> None:
         """Initialize the parser with a target Pydantic model and options."""

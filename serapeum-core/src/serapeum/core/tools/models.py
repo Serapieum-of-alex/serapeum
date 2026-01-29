@@ -1,7 +1,6 @@
 """tools module."""
 
 import asyncio
-import copy
 import json
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -10,7 +9,7 @@ from typing import Any, Type
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from serapeum.core.base.llms.models import ChunkType, TextChunk, Message, MessageRole
-from serapeum.core.output_parsers.utils import PYDANTIC_FORMAT_TMPL
+from serapeum.core.utils.schemas import Schema
 
 
 class MinimalToolSchema(BaseModel):
@@ -62,56 +61,6 @@ class MinimalToolSchema(BaseModel):
     """
 
     input: str
-
-
-@dataclass
-class Schema:
-    """Container for resolved and referenced schema variants."""
-
-    full_schema: dict[str, Any]
-    resolved_schema: dict[str, Any] | None = None
-    referenced_schema: dict[str, Any] | None = None
-
-    def __post_init__(self) -> None:
-        """Post-init docstring."""
-        self.resolved_schema = self.resolve_references(inline=True)
-        self.referenced_schema = self.resolve_references(inline=False)
-
-    def resolve_references(self, inline: bool = False) -> dict[str, Any]:
-        defs = (
-            self.full_schema.get("$defs") or self.full_schema.get("definitions") or {}
-        )
-        # Inline any local references first
-        if inline:
-            schema = self._resolve_local_refs(copy.deepcopy(self.full_schema), defs)
-            keys = ["type", "properties", "required"]
-        else:
-            schema = self.full_schema
-            keys = ["type", "properties", "required", "definitions", "$defs"]
-
-        # Now keep only the keys relevant for tool providers
-        parameters = {k: v for k, v in schema.items() if k in keys}
-        return parameters
-
-    @staticmethod
-    def _resolve_local_refs(obj: Any, defs: dict[str, Any]) -> Any:
-        """Recursively inline local $ref objects using the provided defs."""
-        if isinstance(obj, dict):
-            if "$ref" in obj and isinstance(obj["$ref"], str):
-                ref: str = obj["$ref"]
-                if ref.startswith("#/$defs/") or ref.startswith("#/definitions/"):
-                    name = ref.split("/")[-1]
-                    if name in defs:
-                        # Deep-copy to avoid mutating the original defs
-                        return Schema._resolve_local_refs(
-                            copy.deepcopy(defs[name]), defs
-                        )
-                    # If not found, fall through and return as-is
-            # Recurse into mapping
-            return {k: Schema._resolve_local_refs(v, defs) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            return [Schema._resolve_local_refs(v, defs) for v in obj]
-        return obj
 
 
 @dataclass

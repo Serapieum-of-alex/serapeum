@@ -8,6 +8,7 @@ import contextlib
 import json
 import re
 from typing import Any, List
+
 from serapeum.core.utils.schemas import marshal_llm_to_json
 
 __all__ = ["OutputParserException", "parse_json_markdown", "parse_code_markdown"]
@@ -92,5 +93,3 @@ def parse_code_markdown(text: str, only_last: bool) -> List[str]:
         code = [candidate.strip()]
 
     return code
-
-

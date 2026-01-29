@@ -8,7 +8,7 @@ from typing import Any, Type
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from serapeum.core.base.llms.models import ChunkType, TextChunk, Message, MessageRole
+from serapeum.core.base.llms.models import ChunkType, TextChunk
 from serapeum.core.utils.schemas import Schema
 
 
@@ -340,12 +340,13 @@ class ToolMetadata:
     def get_required_field_description(self) -> str | None:
         """Generate guidance text about required fields for LLM understanding.
 
-        Creates a formatted string that lists all required fields with their types
-        and descriptions. This helps LLMs understand what must be included when
-        calling the tool.
+        Builds a formatted string that starts with the tool description and then
+        lists all required fields, including field descriptions when provided in
+        the schema. This helps LLMs include required inputs when calling the tool.
 
         Returns:
-            Message | None: Message containing formatted guidance text, or None if no schema.
+            str | None: Formatted guidance text, or None when there are no required
+                fields in the schema.
 
         Examples:
             - Generate guidance for a model with required fields
@@ -359,7 +360,6 @@ class ToolMetadata:
                 >>> required_fields = meta.get_required_field_description()
                 >>> print(required_fields)
                 Create album
-
                 Required fields: name (Album name), artist (Artist name).
 
                 ```
@@ -443,7 +443,6 @@ class ToolMetadata:
 
                 ```
         """
-
         # Add guidance about required fields if requested
         if include_schema_guidance and self.tool_schema is not None:
             required_fields_desc = self.get_required_field_description()

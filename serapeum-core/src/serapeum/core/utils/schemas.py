@@ -1,15 +1,17 @@
-from typing import Any
+"""Utilities for working with JSON schemas and LLMs."""
+
+import copy
 import json
 import re
-import copy
 from dataclasses import dataclass
+from typing import Any
 
 __all__ = [
     "SchemaFormatter",
     "Schema",
     "JsonParser",
     "marshal_llm_to_json",
-    "PYDANTIC_FORMAT_TMPL"
+    "PYDANTIC_FORMAT_TMPL",
 ]
 
 PYDANTIC_FORMAT_TMPL = """
@@ -20,6 +22,7 @@ IMPORTANT: Return ONLY a valid JSON object with the actual data, NOT the schema 
 Do not include "properties", "required", "title", or "type" fields in your response.
 Return the data as a JSON object that matches the schema structure.
 """
+
 
 def marshal_llm_to_json(output: str) -> str:
     """Extract a substring containing a JSON object or array from a string."""
@@ -246,10 +249,10 @@ class SchemaFormatter:
 
     @staticmethod
     def format_for_llm(
-            schema_dict: dict,
-            template: str = PYDANTIC_FORMAT_TMPL,
-            excluded_keys: list[str] | None = None,
-            escape_json: bool = True,
+        schema_dict: dict,
+        template: str = PYDANTIC_FORMAT_TMPL,
+        excluded_keys: list[str] | None = None,
+        escape_json: bool = True,
     ) -> str:
         """Format a schema dictionary for inclusion in an LLM prompt.
 
@@ -296,7 +299,7 @@ class Schema:
 
     def resolve_references(self, inline: bool = False) -> dict[str, Any]:
         defs = (
-                self.full_schema.get("$defs") or self.full_schema.get("definitions") or {}
+            self.full_schema.get("$defs") or self.full_schema.get("definitions") or {}
         )
         # Inline any local references first
         if inline:

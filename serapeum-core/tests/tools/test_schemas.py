@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from serapeum.core.tools.models import MinimalToolSchema
 from serapeum.core.utils.schemas import Schema
 

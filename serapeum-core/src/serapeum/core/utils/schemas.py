@@ -4,6 +4,14 @@ import re
 import copy
 from dataclasses import dataclass
 
+__all__ = [
+    "SchemaFormatter",
+    "Schema",
+    "JsonParser",
+    "marshal_llm_to_json",
+    "PYDANTIC_FORMAT_TMPL"
+]
+
 PYDANTIC_FORMAT_TMPL = """
 Here's a JSON schema to follow strictly:
 {schema}

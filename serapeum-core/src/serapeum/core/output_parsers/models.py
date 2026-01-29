@@ -13,7 +13,6 @@ from typing import (
     Generator,
     Generic,
     List,
-    Optional,
     Type,
     Union,
 )
@@ -23,7 +22,7 @@ from pydantic_core import CoreSchema, core_schema
 
 from serapeum.core.base.llms.models import Message, MessageRole, TextChunk
 from serapeum.core.models import Model
-from serapeum.core.output_parsers.utils import (
+from serapeum.core.utils.schemas import (
     PYDANTIC_FORMAT_TMPL,
     JsonParser,
     SchemaFormatter,
@@ -117,7 +116,7 @@ class PydanticParser(BaseParser, Generic[Model]):
     def __init__(
         self,
         output_cls: Type[Model],
-        excluded_schema_keys_from_format: Optional[List] = None,
+        excluded_schema_keys_from_format: List | None = None,
         pydantic_format_tmpl: str = PYDANTIC_FORMAT_TMPL,
     ) -> None:
         """Initialize the parser with a target Pydantic model and options."""

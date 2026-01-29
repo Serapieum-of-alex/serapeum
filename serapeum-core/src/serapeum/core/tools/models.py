@@ -1,7 +1,6 @@
 """tools module."""
 
 import asyncio
-import copy
 import json
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -9,7 +8,8 @@ from typing import Any, Type
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from serapeum.core.base.llms.models import ChunkType, TextChunk
+from serapeum.core.base.llms.models import ChunkType, TextChunk, Message, MessageRole
+from serapeum.core.utils.schemas import Schema
 
 
 class MinimalToolSchema(BaseModel):
@@ -61,56 +61,6 @@ class MinimalToolSchema(BaseModel):
     """
 
     input: str
-
-
-@dataclass
-class Schema:
-    """Container for resolved and referenced schema variants."""
-
-    full_schema: dict[str, Any]
-    resolved_schema: dict[str, Any] | None = None
-    referenced_schema: dict[str, Any] | None = None
-
-    def __post_init__(self) -> None:
-        """Post-init docstring."""
-        self.resolved_schema = self.resolve_references(inline=True)
-        self.referenced_schema = self.resolve_references(inline=False)
-
-    def resolve_references(self, inline: bool = False) -> dict[str, Any]:
-        defs = (
-            self.full_schema.get("$defs") or self.full_schema.get("definitions") or {}
-        )
-        # Inline any local references first
-        if inline:
-            schema = self._resolve_local_refs(copy.deepcopy(self.full_schema), defs)
-            keys = ["type", "properties", "required"]
-        else:
-            schema = self.full_schema
-            keys = ["type", "properties", "required", "definitions", "$defs"]
-
-        # Now keep only the keys relevant for tool providers
-        parameters = {k: v for k, v in schema.items() if k in keys}
-        return parameters
-
-    @staticmethod
-    def _resolve_local_refs(obj: Any, defs: dict[str, Any]) -> Any:
-        """Recursively inline local $ref objects using the provided defs."""
-        if isinstance(obj, dict):
-            if "$ref" in obj and isinstance(obj["$ref"], str):
-                ref: str = obj["$ref"]
-                if ref.startswith("#/$defs/") or ref.startswith("#/definitions/"):
-                    name = ref.split("/")[-1]
-                    if name in defs:
-                        # Deep-copy to avoid mutating the original defs
-                        return Schema._resolve_local_refs(
-                            copy.deepcopy(defs[name]), defs
-                        )
-                    # If not found, fall through and return as-is
-            # Recurse into mapping
-            return {k: Schema._resolve_local_refs(v, defs) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            return [Schema._resolve_local_refs(v, defs) for v in obj]
-        return obj
 
 
 @dataclass
@@ -387,7 +337,7 @@ class ToolMetadata:
             raise ValueError("name is None.")
         return self.name
 
-    def get_schema_guidance(self) -> str:
+    def get_required_field_description(self) -> str | None:
         """Generate guidance text about required fields for LLM understanding.
 
         Creates a formatted string that lists all required fields with their types
@@ -395,7 +345,7 @@ class ToolMetadata:
         calling the tool.
 
         Returns:
-            str: Formatted guidance text, or empty string if no required fields.
+            Message | None: Message containing formatted guidance text, or None if no schema.
 
         Examples:
             - Generate guidance for a model with required fields
@@ -406,9 +356,11 @@ class ToolMetadata:
                 ...     name: str = Field(description="Album name")
                 ...     artist: str = Field(description="Artist name")
                 >>> meta = ToolMetadata(description="Create album", name="Album", tool_schema=Album)
-                >>> guidance = meta.get_schema_guidance()
-                >>> "name" in guidance and "artist" in guidance
-                True
+                >>> required_fields = meta.get_required_field_description()
+                >>> print(required_fields)
+                Create album
+
+                Required fields: name (Album name), artist (Artist name).
 
                 ```
         """
@@ -416,26 +368,21 @@ class ToolMetadata:
         required_fields = schema.get("required", [])
         properties = schema.get("properties", {})
 
-        if not required_fields:
-            return ""
+        description = None
+        if required_fields:
+            field_descriptions = []
+            for field_name in required_fields:
+                field_info = properties.get(field_name, {})
+                field_desc = field_info.get("description", "")
+                if field_desc:
+                    field_descriptions.append(f"{field_name} ({field_desc})")
+                else:
+                    field_descriptions.append(field_name)
 
-        # Build a clear description of required fields
-        field_descriptions = []
-        for field_name in required_fields:
-            field_info = properties.get(field_name, {})
-            field_type = field_info.get("type", "value")
-            field_desc = field_info.get("description", "")
+            if field_descriptions:
+                description = f"{self.description}\nRequired fields: {', '.join(field_descriptions)}."
 
-            if field_desc:
-                field_descriptions.append(
-                    f"  - {field_name} ({field_type}): {field_desc}"
-                )
-            else:
-                field_descriptions.append(f"  - {field_name} ({field_type})")
-
-        guidance = "\n\nRequired fields:\n" + "\n".join(field_descriptions)
-
-        return guidance
+        return description
 
     def to_openai_tool(
         self, skip_length_check: bool = False, include_schema_guidance: bool = True
@@ -496,12 +443,16 @@ class ToolMetadata:
 
                 ```
         """
-        # Build enhanced description with schema guidance
-        description = self.description
-        if include_schema_guidance:
-            schema_guidance = self.get_schema_guidance()
-            if schema_guidance:
-                description = description + schema_guidance
+
+        # Add guidance about required fields if requested
+        if include_schema_guidance and self.tool_schema is not None:
+            required_fields_desc = self.get_required_field_description()
+            if not required_fields_desc:
+                description = self.description
+            else:
+                description = required_fields_desc
+        else:
+            description = self.description
 
         if not skip_length_check and len(description) > 1024:
             raise ValueError(

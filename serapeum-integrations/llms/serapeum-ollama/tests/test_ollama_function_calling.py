@@ -91,7 +91,7 @@ class TestToolOrchestratingLLMCall:
         """
         tools_llm = ToolOrchestratingLLM(
             Album,
-            prompt="can you create Album with {topic}, and two random songs",
+            prompt="Create an Album about {topic} music. Include the album name, artist name, and two songs with their titles.",
             llm=llm_model,
         )
         result = tools_llm(topic="rock")

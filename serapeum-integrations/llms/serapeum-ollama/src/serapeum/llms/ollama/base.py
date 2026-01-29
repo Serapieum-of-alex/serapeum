@@ -119,7 +119,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
             ```
     """
     tool_calls = response.message.additional_kwargs.get("tool_calls", [])
-    if len(tool_calls) > 1:
+    if tool_calls and len(tool_calls) > 1:
         response.message.additional_kwargs["tool_calls"] = [tool_calls[0]]
 
 
@@ -738,10 +738,10 @@ class Ollama(FunctionCallingLLM):
                 ```
         """
         tool_calls = response.message.additional_kwargs.get("tool_calls", [])
-        if len(tool_calls) < 1:
+        if not tool_calls or len(tool_calls) < 1:
             if error_on_no_tool_call:
                 raise ValueError(
-                    f"Expected at least one tool call, but got {len(tool_calls)} tool calls."
+                    f"Expected at least one tool call, but got {len(tool_calls) if tool_calls else 0} tool calls."
                 )
             else:
                 return []

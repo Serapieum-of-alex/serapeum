@@ -64,6 +64,6 @@ Markers are defined in each package `pyproject.toml`.
 ## Links
 
 - Homepage: https://github.com/Serapieum-of-alex/serapeum
-- Docs: https://serapeum.readthedocs.io/
+- Docs: https://serapieum-of-alex.github.io/serapeum
 - Changelog: https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst
 - Security: `SECURITY.md`

@@ -337,37 +337,52 @@ class ToolMetadata:
             raise ValueError("name is None.")
         return self.name
 
-    # def get_schema_guidance_message(self) -> Message | None:
-    #     """Generate guidance text about required fields for LLM understanding.
-    #
-    #     Creates a formatted string that lists all required fields with their types
-    #     and descriptions. This helps LLMs understand what must be included when
-    #     calling the tool.
-    #
-    #     Returns:
-    #         Message | None: Message containing formatted guidance text, or None if no schema.
-    #
-    #     Examples:
-    #         - Generate guidance for a model with required fields
-    #             ```python
-    #             >>> from pydantic import BaseModel, Field
-    #             >>> from serapeum.core.tools.models import ToolMetadata
-    #             >>> class Album(BaseModel):
-    #             ...     name: str = Field(description="Album name")
-    #             ...     artist: str = Field(description="Artist name")
-    #             >>> meta = ToolMetadata(description="Create album", name="Album", tool_schema=Album)
-    #             >>> guidance_msg = meta.get_schema_guidance_message()
-    #             >>> "name" in guidance_msg.content if guidance_msg else False
-    #             True
-    #
-    #             ```
-    #     """
-    #     if self.tool_schema is None:
-    #         return None
-    #     schema = self.get_schema()
-    #     output_str = PYDANTIC_FORMAT_TMPL.format(schema=schema)
-    #     message = Message(role=MessageRole.USER, content=output_str)
-    #     return message
+    def get_required_field_description(self) -> str | None:
+        """Generate guidance text about required fields for LLM understanding.
+
+        Creates a formatted string that lists all required fields with their types
+        and descriptions. This helps LLMs understand what must be included when
+        calling the tool.
+
+        Returns:
+            Message | None: Message containing formatted guidance text, or None if no schema.
+
+        Examples:
+            - Generate guidance for a model with required fields
+                ```python
+                >>> from pydantic import BaseModel, Field
+                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> class Album(BaseModel):
+                ...     name: str = Field(description="Album name")
+                ...     artist: str = Field(description="Artist name")
+                >>> meta = ToolMetadata(description="Create album", name="Album", tool_schema=Album)
+                >>> required_fields = meta.get_required_field_description()
+                >>> print(required_fields)
+                Create album
+
+                Required fields: name (Album name), artist (Artist name).
+
+                ```
+        """
+        schema = self.get_schema()
+        required_fields = schema.get("required", [])
+        properties = schema.get("properties", {})
+
+        description = None
+        if required_fields:
+            field_descriptions = []
+            for field_name in required_fields:
+                field_info = properties.get(field_name, {})
+                field_desc = field_info.get("description", "")
+                if field_desc:
+                    field_descriptions.append(f"{field_name} ({field_desc})")
+                else:
+                    field_descriptions.append(field_name)
+
+            if field_descriptions:
+                description = f"{self.description}\nRequired fields: {', '.join(field_descriptions)}."
+
+        return description
 
     def to_openai_tool(
         self, skip_length_check: bool = False, include_schema_guidance: bool = True

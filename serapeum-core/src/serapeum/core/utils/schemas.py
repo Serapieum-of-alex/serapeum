@@ -178,6 +178,7 @@ class JsonParser:
 
         return "".join(result)
 
+
 class SchemaFormatter:
     """Utility class for formatting JSON schemas into LLM-friendly representations.
 

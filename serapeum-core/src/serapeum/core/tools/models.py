@@ -443,27 +443,16 @@ class ToolMetadata:
 
                 ```
         """
-        description = self.description
 
         # Add guidance about required fields if requested
         if include_schema_guidance and self.tool_schema is not None:
-            schema = self.get_schema()
-            required_fields = schema.get("required", [])
-            properties = schema.get("properties", {})
-
-            if required_fields:
-                field_descriptions = []
-                for field_name in required_fields:
-                    field_info = properties.get(field_name, {})
-                    field_desc = field_info.get("description", "")
-                    if field_desc:
-                        field_descriptions.append(f"{field_name} ({field_desc})")
-                    else:
-                        field_descriptions.append(field_name)
-
-                if field_descriptions:
-                    guidance = " Required fields: " + ", ".join(field_descriptions) + "."
-                    description = description + guidance
+            required_fields_desc = self.get_required_field_description()
+            if not required_fields_desc:
+                description = self.description
+            else:
+                description = required_fields_desc
+        else:
+            description = self.description
 
         if not skip_length_check and len(description) > 1024:
             raise ValueError(

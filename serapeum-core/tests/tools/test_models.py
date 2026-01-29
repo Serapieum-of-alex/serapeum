@@ -203,7 +203,7 @@ class TestToolMetadataToOpenAITool:
         assert tool["function"]["name"] == "tool"
         assert (
             tool["function"]["description"]
-            == "desc\n\nRequired fields:\n  - input (string)"
+            == "desc\nRequired fields: input."
         )
         assert tool["function"]["parameters"] == meta.get_schema()
 
@@ -237,7 +237,7 @@ class TestToolMetadataToOpenAITool:
         tool = meta.to_openai_tool(skip_length_check=True)
         assert (
             tool["function"]["description"]
-            == f"{long_desc}\n\nRequired fields:\n  - input (string)"
+            == f"{long_desc}\nRequired fields: input."
         )
 
 

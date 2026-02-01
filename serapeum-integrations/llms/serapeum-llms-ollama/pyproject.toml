@@ -68,6 +68,9 @@ markers = [
 [tool.uv.sources]
 serapeum-core = { workspace = true }
 
+[tool.uv]
+ #managed = false
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

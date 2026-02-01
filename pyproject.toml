@@ -129,7 +129,7 @@ strict = true
 [tool.uv.workspace]
 members = [
     "serapeum-core",
-    "serapeum-integrations/llms/serapeum-ollama",
+    "serapeum-integrations/llms/serapeum-llms-ollama",
 ]
 
 [tool.uv.sources]

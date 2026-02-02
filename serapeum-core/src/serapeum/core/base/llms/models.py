@@ -20,10 +20,10 @@ from pydantic import (
     model_validator,
 )
 from typing_extensions import Self
-
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.utils.base import resolve_binary
 
+ImageType = str | BytesIO
 
 class MessageRole(str, Enum):
     """Message role."""
@@ -489,3 +489,4 @@ class Metadata(BaseModel):
         description="The role this specific LLM provider"
         "expects for system prompt. E.g. 'SYSTEM' for OpenAI, 'CHATBOT' for Cohere",
     )
+

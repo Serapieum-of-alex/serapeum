@@ -24,6 +24,7 @@ EnumNameSerializer = PlainSerializer(
     lambda e: e.value, return_type="str", when_used="always"
 )
 
+
 class RelatedNodeInfo(SerializableModel):
     id: str
     type: Annotated[ObjectType, EnumNameSerializer] | str | None = None
@@ -33,6 +34,7 @@ class RelatedNodeInfo(SerializableModel):
     @classmethod
     def class_name(cls) -> str:
         return "RelatedNodeInfo"
+
 
 RelatedNodeType = RelatedNodeInfo | list[RelatedNodeInfo]
 
@@ -178,10 +180,9 @@ class BaseNode(SerializableModel):
         error_message: str,
     ) -> RelatedNodeType | None:
         relation = self.relationships.get(relationship)
-        if relation is None:
-            return None
-        if not isinstance(relation, expected_type):
-            raise ValueError(error_message)
+        if relation is not None:
+            if not isinstance(relation, expected_type):
+                raise ValueError(error_message)
         return relation
 
     @property

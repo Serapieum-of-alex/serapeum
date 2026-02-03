@@ -185,6 +185,18 @@ class BaseNode(SerializableModel):
                 raise ValueError(error_message)
         return relation
 
+    def nodes(self):
+        data = [
+            [NodeRelationship.SOURCE, RelatedNodeInfo, "Source object must be a single RelatedNodeInfo object"],
+            [NodeRelationship.PREVIOUS, RelatedNodeInfo, "Previous object must be a single RelatedNodeInfo object"],
+            [NodeRelationship.NEXT, RelatedNodeInfo, "Next object must be a single RelatedNodeInfo object"],
+            [NodeRelationship.PARENT, RelatedNodeInfo, "Parent object must be a single RelatedNodeInfo object"],
+            [NodeRelationship.CHILD, list, "Child objects must be a list of RelatedNodeInfo objects."]
+        ]
+        return [
+            self._get_relationship(data_i[0], data_i[1], error_message=data_i[2]) for data_i in data
+        ]
+
     @property
     def source_node(self) -> RelatedNodeInfo | None:
         """Source object node.

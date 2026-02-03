@@ -5,18 +5,9 @@ streaming, and structured outputs.
 """
 
 from abc import ABC
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    AsyncGenerator,
-    Generator,
-    Protocol,
-    runtime_checkable,
-)
+from typing import Any, AsyncGenerator, Generator, Protocol, TYPE_CHECKING, runtime_checkable, Sequence
 
 from pydantic import BaseModel, Field, WithJsonSchema, field_validator, model_validator
-from typing_extensions import Annotated
-
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.models import (
     ChatResponseAsyncGen,
@@ -26,10 +17,15 @@ from serapeum.core.base.llms.models import (
     Message,
     MessageList,
     MessageRole,
+    ChatResponse,
+    CompletionResponse,
+    stream_completion_response_to_chat_response
 )
 from serapeum.core.models import Model, StructuredLLMMode
 from serapeum.core.output_parsers.models import BaseParser, TokenAsyncGen, TokenGen
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
+from typing_extensions import Annotated
+
 
 if TYPE_CHECKING:
     from serapeum.core.llms.structured_llm import StructuredLLM
@@ -42,7 +38,7 @@ class MessagesToPromptType(Protocol):
     Examples:
         - Join message contents into a newline-separated prompt
             ```python
-            >>> from serapeum.core.llm.base import MessagesToPromptType
+            >>> from serapeum.core.llms.base import MessagesToPromptType
             >>> from serapeum.core.base.llms.models import Message, MessageRole, MessageList
             >>> def newline_join(message_list):
             ...     return '\n'.join(message.content or "" for message in message_list)
@@ -60,7 +56,7 @@ class MessagesToPromptType(Protocol):
             ...         raise ValueError("Missing content")
             ...     return " ".join(str(content) for content in contents)
             ...
-            >>> validated_join(MessageList([Message(content="hi", role=MessageRole.USER)]))
+            >>> validated_join(MessageList(messages=[Message(content="hi", role=MessageRole.USER)]))
             'hi'
 
             ```
@@ -88,7 +84,7 @@ class MessagesToPromptType(Protocol):
                 ...     return " ".join((message.content or "").strip() for message in message_list)
                 ...
                 >>> concatenate(
-                ...     MessageList([
+                ...     MessageList(messages=[
                 ...         Message(content="Hello", role=MessageRole.USER),
                 ...         Message(content="world", role=MessageRole.ASSISTANT),
                 ...     ])
@@ -105,7 +101,7 @@ class MessagesToPromptType(Protocol):
                 ...             raise ValueError("Missing content")
                 ...     return " ".join(str(message.content) for message in message_list)
                 ...
-                >>> strict_concat(MessageList([Message(content="Ping", role=MessageRole.USER)]))
+                >>> strict_concat(MessageList(messages=[Message(content="Ping", role=MessageRole.USER)]))
                 'Ping'
 
                 ```
@@ -122,7 +118,7 @@ class CompletionToPromptType(Protocol):
     Examples:
         - Check that an identity adapter satisfies the protocol
             ```python
-            >>> from serapeum.core.llm.base import CompletionToPromptType
+            >>> from serapeum.core.llms.base import CompletionToPromptType
             >>> def identity(prompt: str) -> str:
             ...     return prompt
             ...
@@ -206,7 +202,7 @@ def stream_response_to_tokens(
             - Collect deltas produced by a completion stream
                 ```python
                 >>> from serapeum.core.base.llms.models import CompletionResponse
-                >>> from serapeum.core.llm.base import stream_response_to_tokens
+                >>> from serapeum.core.llms.base import stream_response_to_tokens
                 >>> def responses():
                 ...     yield CompletionResponse(text="Hello", delta="Hel")
                 ...     yield CompletionResponse(text="Hello", delta="lo")
@@ -291,7 +287,7 @@ async def astream_response_to_tokens(
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.base.llms.models import CompletionResponse
-                >>> from serapeum.core.llm.base import astream_response_to_tokens
+                >>> from serapeum.core.llms.base import astream_response_to_tokens
                 >>> async def responses():
                 ...     yield CompletionResponse(text="Hello", delta="Hel")
                 ...     yield CompletionResponse(text="Hello", delta="lo")
@@ -2298,3 +2294,68 @@ class LLM(BaseLLM, ABC):
         from serapeum.core.llms.structured_llm import StructuredLLM
 
         return StructuredLLM(llm=self, output_cls=output_cls, **kwargs)
+
+class CustomLLM(LLM):
+    """
+    Simple abstract base class for custom LLMs.
+
+    Subclasses must implement the `__init__`, `_complete`,
+        `_stream_complete`, and `metadata` methods.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+
+    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+        assert self.messages_to_prompt is not None
+
+        prompt = self.messages_to_prompt(messages)
+        completion_response = self.complete(prompt, formatted=True, **kwargs)
+        return completion_response.to_chat_response()
+
+    def stream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> ChatResponseGen:
+        assert self.messages_to_prompt is not None
+
+        prompt = self.messages_to_prompt(messages)
+        completion_response_gen = self.stream_complete(prompt, formatted=True, **kwargs)
+        return stream_completion_response_to_chat_response(completion_response_gen)
+
+    async def achat(
+            self,
+            messages: Sequence[Message],
+            **kwargs: Any,
+    ) -> ChatResponse:
+        return self.chat(messages, **kwargs)
+
+    async def astream_chat(
+            self,
+            messages: Sequence[Message],
+            **kwargs: Any,
+    ) -> ChatResponseAsyncGen:
+        async def gen() -> ChatResponseAsyncGen:
+            for message in self.stream_chat(messages, **kwargs):
+                yield message
+
+        # NOTE: convert generator to async generator
+        return gen()
+
+    async def acomplete(
+            self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponse:
+        return self.complete(prompt, formatted=formatted, **kwargs)
+
+    async def astream_complete(
+            self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponseAsyncGen:
+        async def gen() -> CompletionResponseAsyncGen:
+            for message in self.stream_complete(prompt, formatted=formatted, **kwargs):
+                yield message
+
+        # NOTE: convert generator to async generator
+        return gen()
+
+    @classmethod
+    def class_name(cls) -> str:
+        return "custom_llm"

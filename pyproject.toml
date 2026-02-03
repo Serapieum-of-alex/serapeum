@@ -140,8 +140,9 @@ serapeum-core = { workspace = true }
 serapeum-llms-ollama = { workspace = true }
 serapeum-embeddings-ollama = {workspace = true}
 
-#[tool.uv]
-#managed = false
+
+[tool.uv]
+managed = false
 
 [build-system]
 requires = ["hatchling"]

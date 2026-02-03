@@ -70,7 +70,7 @@ markers = [
 serapeum-core = { workspace = true }
 
 [tool.uv]
- #managed = false
+managed = false
 
 [build-system]
 requires = ["hatchling"]

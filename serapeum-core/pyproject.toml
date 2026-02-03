@@ -65,6 +65,9 @@ markers = [
     "integration: marks tests as optional-package (deselect with '-m \"not optional_package\"')",
 ]
 
+[tool.uv]
+managed = false
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

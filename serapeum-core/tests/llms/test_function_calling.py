@@ -12,7 +12,7 @@ from serapeum.core.base.llms.models import (
     Message,
     Metadata,
 )
-from serapeum.core.llm.function_calling import FunctionCallingLLM
+from serapeum.core.llms.function_calling import FunctionCallingLLM
 from serapeum.core.structured_tools.tools_llm import CallableTool
 from serapeum.core.tools.models import BaseTool, ToolCallArguments
 

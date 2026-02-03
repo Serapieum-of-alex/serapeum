@@ -23,15 +23,15 @@ def test_completion_to_prompt_v3_instruct():
 
 def test_messages_to_prompt_v3_instruct():
     messages = [
-        ChatMessage(
+        Message(
             role=MessageRole.USER,
             content="The next sentence said by the assistant is true.",
         ),
-        ChatMessage(
+        Message(
             role=MessageRole.ASSISTANT,
             content="The previous sentence said by the user is false.",
         ),
-        ChatMessage(
+        Message(
             role=MessageRole.USER,
             content="Do you think the last sentence spoke by me is true or false?",
         ),

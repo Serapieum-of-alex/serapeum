@@ -1,11 +1,12 @@
 """Utilities for resolving binary data from various sources into BytesIO objects."""
 
+import os
 import base64
 from io import BytesIO
 from pathlib import Path
 from typing import Optional, Union
 from urllib.parse import urlparse
-
+import platformdirs
 import requests
 
 
@@ -141,3 +142,20 @@ def truncate_text(text: str, max_length: int) -> str:
     if len(text) <= max_length:
         return text
     return text[: max_length - 3] + "..."
+
+
+def get_cache_dir() -> str:
+    """
+    Locate a platform-appropriate cache directory for llama_index,
+    and create it if it doesn't yet exist.
+    """
+    # User override
+    if "LLAMA_INDEX_CACHE_DIR" in os.environ:
+        path = Path(os.environ["LLAMA_INDEX_CACHE_DIR"])
+    else:
+        path = Path(platformdirs.user_cache_dir("llama_index"))
+
+    # Pass exist_ok and call makedirs directly, so we avoid TOCTOU issues
+    path.mkdir(parents=True, exist_ok=True)
+
+    return str(path)

@@ -288,7 +288,7 @@ class MessageList(BaseModel, ABCSequence):
         """Return the number of messages in the list."""
         return len(self.messages)
 
-    def __getitem__(self, index: int | slice) -> Message | "MessageList":
+    def __getitem__(self, index: int | slice) -> "Message | MessageList":
         """Retrieve a message or slice of messages."""
         if isinstance(index, slice):
             return MessageList(messages=self.messages[index])

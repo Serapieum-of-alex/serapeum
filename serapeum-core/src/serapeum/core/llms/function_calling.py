@@ -10,7 +10,7 @@ from serapeum.core.base.llms.models import (
     ChatResponseGen,
     Message,
 )
-from serapeum.core.llm.base import LLM
+from serapeum.core.llms.base import LLM
 from serapeum.core.tools.models import ToolCallArguments
 
 if TYPE_CHECKING:

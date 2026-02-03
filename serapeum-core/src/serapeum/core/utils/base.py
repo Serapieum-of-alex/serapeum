@@ -1,13 +1,13 @@
 """Utilities for resolving binary data from various sources into BytesIO objects."""
-
+import os
 import base64
 from io import BytesIO
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, Iterable
 from urllib.parse import urlparse
 
 import requests
-
+import platformdirs
 
 def resolve_binary(
     raw_bytes: Optional[bytes] = None,
@@ -141,3 +141,35 @@ def truncate_text(text: str, max_length: int) -> str:
     if len(text) <= max_length:
         return text
     return text[: max_length - 3] + "..."
+
+def get_tqdm_iterable(
+    items: Iterable, show_progress: bool, desc: str, total: Optional[int] = None
+) -> Iterable:
+    """
+    Optionally get a tqdm iterable. Ensures tqdm.auto is used.
+    """
+    _iterator = items
+    if show_progress:
+        try:
+            from tqdm.auto import tqdm
+
+            return tqdm(items, desc=desc, total=total)
+        except ImportError:
+            pass
+    return _iterator
+
+def get_cache_dir() -> str:
+    """
+    Locate a platform-appropriate cache directory for serapeum,
+    and create it if it doesn't yet exist.
+    """
+    # User override
+    if "LLAMA_INDEX_CACHE_DIR" in os.environ:
+        path = Path(os.environ["LLAMA_INDEX_CACHE_DIR"])
+    else:
+        path = Path(platformdirs.user_cache_dir("serapeum"))
+
+    # Pass exist_ok and call makedirs directly, so we avoid TOCTOU issues
+    path.mkdir(parents=True, exist_ok=True)
+
+    return str(path)

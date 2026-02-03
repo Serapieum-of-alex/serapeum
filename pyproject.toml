@@ -24,6 +24,7 @@ requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core",
     "serapeum-llms-ollama",
+    "serapeum-llms-llama-cpp"
 ]
 
 
@@ -130,11 +131,13 @@ strict = true
 members = [
     "serapeum-core",
     "serapeum-integrations/llms/serapeum-llms-ollama",
+    "serapeum-integrations/llms/serapeum-llms-llama-cpp",
 ]
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }
 serapeum-llms-ollama = { workspace = true }
+serapeum-llms-llama-cpp = { workspace = true }
 
 #[tool.uv]
 #managed = false

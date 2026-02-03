@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11, <4.0"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -17,7 +17,7 @@ resolution-markers = [
 members = [
     "serapeum",
     "serapeum-core",
-    "serapeum-ollama",
+    "serapeum-llms-ollama",
 ]
 
 [[package]]
@@ -2886,7 +2886,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "serapeum-core" },
-    { name = "serapeum-ollama" },
+    { name = "serapeum-llms-ollama" },
 ]
 
 [package.dev-dependencies]
@@ -2921,7 +2921,7 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "serapeum-core", editable = "serapeum-core" },
-    { name = "serapeum-ollama", editable = "serapeum-integrations/llms/serapeum-ollama" },
+    { name = "serapeum-llms-ollama", editable = "serapeum-integrations/llms/serapeum-llms-ollama" },
 ]
 
 [package.metadata.requires-dev]
@@ -2995,9 +2995,9 @@ dev = [
 ]
 
 [[package]]
-name = "serapeum-ollama"
+name = "serapeum-llms-ollama"
 version = "0.1.0"
-source = { editable = "serapeum-integrations/llms/serapeum-ollama" }
+source = { editable = "serapeum-integrations/llms/serapeum-llms-ollama" }
 dependencies = [
     { name = "ollama" },
     { name = "serapeum-core" },

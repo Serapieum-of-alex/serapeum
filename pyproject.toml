@@ -133,12 +133,14 @@ members = [
     "serapeum-core",
     "serapeum-integrations/llms/serapeum-llms-ollama",
     "serapeum-integrations/embeddings/serapeum-embeddings-ollama",
+    "serapeum-integrations/embeddings/serapeum-embeddings-huggingface",
 ]
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }
 serapeum-llms-ollama = { workspace = true }
-serapeum-embeddings-ollama = {workspace = true}
+serapeum-embeddings-ollama = { workspace = true }
+serapeum-embeddings-huggingface = { workspace = true }
 
 
 [tool.uv]

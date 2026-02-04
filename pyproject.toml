@@ -130,11 +130,13 @@ strict = true
 members = [
     "serapeum-core",
     "serapeum-integrations/llms/serapeum-ollama",
+    "serapeum-integrations/llms/serapeum-llms-huggingface"
 ]
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }
 serapeum-ollama = { workspace = true }
+serapeum-llms-huggingface = { workspace = true }
 
 #[tool.uv]
 #managed = false

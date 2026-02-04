@@ -1,9 +1,12 @@
 """Utilities for resolving binary data from various sources into BytesIO objects."""
 
 import base64
+import threading
+from contextvars import copy_context
 from io import BytesIO
 from pathlib import Path
-from typing import Optional, Union
+from functools import partial
+from typing import Optional, Union, Any, Callable
 from urllib.parse import urlparse
 
 import requests
@@ -141,3 +144,33 @@ def truncate_text(text: str, max_length: int) -> str:
     if len(text) <= max_length:
         return text
     return text[: max_length - 3] + "..."
+
+class Thread(threading.Thread):
+    """
+    A wrapper for threading.Thread that copies the current context and uses the copy to run the target.
+    """
+
+    def __init__(
+            self,
+            group: Optional[Any] = None,
+            target: Optional[Callable[..., Any]] = None,
+            name: Optional[str] = None,
+            args: tuple[Any, ...] = (),
+            kwargs: Optional[dict[str, Any]] = None,
+            *,
+            daemon: Optional[bool] = None,
+    ) -> None:
+        if target is not None:
+            args = (
+                partial(target, *args, **(kwargs if isinstance(kwargs, dict) else {})),
+            )
+        else:
+            args = ()
+
+        super().__init__(
+            group=group,
+            target=copy_context().run,
+            name=name,
+            args=args,
+            daemon=daemon,
+        )

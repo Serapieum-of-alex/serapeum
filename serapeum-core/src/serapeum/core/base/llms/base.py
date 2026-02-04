@@ -38,7 +38,8 @@ class BaseLLM(SerializableModel):
             Metadata: LLM metadata containing various information about the LLM.
         """
 
-    def convert_chat_messages(self, messages: Sequence[Message]) -> list[Any]:
+    @staticmethod
+    def convert_chat_messages(messages: Sequence[Message]) -> list[Any]:
         """Convert chat messages to an LLM specific message format."""
         converted_messages = []
         for message in messages:

@@ -46,37 +46,37 @@ Python 3.11+ is required.
 ### 1) Build a minimal LLM implementation
 
 ```python
-from serapeum.core.llm import LLM
+from serapeum.core.llms import LLM
 from serapeum.core.base.llms.models import CompletionResponse, Metadata
 from serapeum.core.prompts import PromptTemplate
 
 
 class EchoLLM(LLM):
-    metadata = Metadata.model_construct(is_chat_model=False)
+  metadata = Metadata.model_construct(is_chat_model=False)
 
-    def chat(self, messages, **kwargs):
-        raise NotImplementedError()
+  def chat(self, messages, **kwargs):
+    raise NotImplementedError()
 
-    def stream_chat(self, messages, **kwargs):
-        raise NotImplementedError()
+  def stream_chat(self, messages, **kwargs):
+    raise NotImplementedError()
 
-    async def achat(self, messages, **kwargs):
-        raise NotImplementedError()
+  async def achat(self, messages, **kwargs):
+    raise NotImplementedError()
 
-    async def astream_chat(self, messages, **kwargs):
-        raise NotImplementedError()
+  async def astream_chat(self, messages, **kwargs):
+    raise NotImplementedError()
 
-    def complete(self, prompt, formatted=False, **kwargs):
-        return CompletionResponse(text=prompt, delta=prompt)
+  def complete(self, prompt, formatted=False, **kwargs):
+    return CompletionResponse(text=prompt, delta=prompt)
 
-    def stream_complete(self, prompt, formatted=False, **kwargs):
-        raise NotImplementedError()
+  def stream_complete(self, prompt, formatted=False, **kwargs):
+    raise NotImplementedError()
 
-    async def acomplete(self, prompt, formatted=False, **kwargs):
-        return CompletionResponse(text=prompt, delta=prompt)
+  async def acomplete(self, prompt, formatted=False, **kwargs):
+    return CompletionResponse(text=prompt, delta=prompt)
 
-    async def astream_complete(self, prompt, formatted=False, **kwargs):
-        raise NotImplementedError()
+  async def astream_complete(self, prompt, formatted=False, **kwargs):
+    raise NotImplementedError()
 
 
 llm = EchoLLM()

@@ -12,6 +12,7 @@ from typing import (
     Generator,
     Protocol,
     runtime_checkable,
+    Sequence
 )
 
 from pydantic import BaseModel, Field, WithJsonSchema, field_validator, model_validator
@@ -26,6 +27,9 @@ from serapeum.core.base.llms.models import (
     Message,
     MessageList,
     MessageRole,
+    ChatResponse,
+    CompletionResponse,
+    stream_completion_response_to_chat_response
 )
 from serapeum.core.models import Model, StructuredLLMMode
 from serapeum.core.output_parsers.models import BaseParser, TokenAsyncGen, TokenGen
@@ -42,7 +46,7 @@ class MessagesToPromptType(Protocol):
     Examples:
         - Join message contents into a newline-separated prompt
             ```python
-            >>> from serapeum.core.llm.base import MessagesToPromptType
+            >>> from serapeum.core.llms.base import MessagesToPromptType
             >>> from serapeum.core.base.llms.models import Message, MessageRole, MessageList
             >>> def newline_join(message_list):
             ...     return '\n'.join(message.content or "" for message in message_list)
@@ -122,7 +126,7 @@ class CompletionToPromptType(Protocol):
     Examples:
         - Check that an identity adapter satisfies the protocol
             ```python
-            >>> from serapeum.core.llm.base import CompletionToPromptType
+            >>> from serapeum.core.llms.base import CompletionToPromptType
             >>> def identity(prompt: str) -> str:
             ...     return prompt
             ...
@@ -291,7 +295,7 @@ async def astream_response_to_tokens(
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.base.llms.models import CompletionResponse
-                >>> from serapeum.core.llm.base import astream_response_to_tokens
+                >>> from serapeum.core.llms.base import astream_response_to_tokens
                 >>> async def responses():
                 ...     yield CompletionResponse(text="Hello", delta="Hel")
                 ...     yield CompletionResponse(text="Hello", delta="lo")

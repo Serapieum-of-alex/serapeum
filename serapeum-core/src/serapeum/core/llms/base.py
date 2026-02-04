@@ -2303,6 +2303,7 @@ class LLM(BaseLLM, ABC):
 
         return StructuredLLM(llm=self, output_cls=output_cls, **kwargs)
 
+
 class CustomLLM(LLM):
     """
     Simple abstract base class for custom LLMs.

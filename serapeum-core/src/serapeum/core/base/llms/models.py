@@ -288,7 +288,7 @@ class MessageList(BaseModel, ABCSequence):
         """Return the number of messages in the list."""
         return len(self.messages)
 
-    def __getitem__(self, index: int | slice) -> Message | "MessageList":
+    def __getitem__(self, index: int | slice) -> "Message | MessageList":
         """Retrieve a message or slice of messages."""
         if isinstance(index, slice):
             return MessageList(messages=self.messages[index])
@@ -438,10 +438,39 @@ class CompletionResponse(BaseResponse):
         """Return the textual content of the completion response."""
         return self.text
 
+    def to_chat_response(self) -> ChatResponse:
+        """Convert a chat response to a chat response."""
+        return ChatResponse(
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                content=self.text,
+                additional_kwargs=self.additional_kwargs,
+            ),
+            raw=self.raw,
+        )
 
 CompletionResponseGen = Generator[CompletionResponse, None, None]
 CompletionResponseAsyncGen = AsyncGenerator[CompletionResponse, None]
 
+
+def stream_completion_response_to_chat_response(
+    completion_response_gen: CompletionResponseGen,
+) -> ChatResponseGen:
+    """Convert a stream completion response to a stream chat response."""
+
+    def gen() -> ChatResponseGen:
+        for response in completion_response_gen:
+            yield ChatResponse(
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    content=response.text,
+                    additional_kwargs=response.additional_kwargs,
+                ),
+                delta=response.delta,
+                raw=response.raw,
+            )
+
+    return gen()
 
 class Metadata(BaseModel):
     """Provider and model capabilities and defaults metadata."""

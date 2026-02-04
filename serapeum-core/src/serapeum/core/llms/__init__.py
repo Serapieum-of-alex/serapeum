@@ -14,7 +14,7 @@ from serapeum.core.base.llms.models import (
     Metadata,
     TextChunk,
 )
-from serapeum.core.llm.base import LLM
+from serapeum.core.llms.base import LLM
 
 __all__ = [
     "LLM",

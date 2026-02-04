@@ -210,7 +210,7 @@ def stream_response_to_tokens(
             - Collect deltas produced by a completion stream
                 ```python
                 >>> from serapeum.core.base.llms.models import CompletionResponse
-                >>> from serapeum.core.llm.base import stream_response_to_tokens
+                >>> from serapeum.core.llms.base import stream_response_to_tokens
                 >>> def responses():
                 ...     yield CompletionResponse(text="Hello", delta="Hel")
                 ...     yield CompletionResponse(text="Hello", delta="lo")

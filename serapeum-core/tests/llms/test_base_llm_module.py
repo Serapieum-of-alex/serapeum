@@ -1,4 +1,4 @@
-"""Tests for serapeum.core.llm.base module."""
+"""Tests for serapeum.core.llms.base module."""
 
 from typing import Any, List, Sequence
 
@@ -15,7 +15,7 @@ from serapeum.core.base.llms.models import (
     MessageRole,
     Metadata,
 )
-from serapeum.core.llm.base import (
+from serapeum.core.llms.base import (
     LLM,
     astream_response_to_tokens,
     default_completion_to_prompt,

@@ -20,10 +20,12 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
 ]
+
 requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core",
-    "serapeum-ollama",
+    "serapeum-llms-ollama",
+    "serapeum-embeddings-ollama"
 ]
 
 
@@ -129,15 +131,20 @@ strict = true
 [tool.uv.workspace]
 members = [
     "serapeum-core",
-    "serapeum-integrations/llms/serapeum-ollama",
+    "serapeum-integrations/llms/serapeum-llms-ollama",
+    "serapeum-integrations/embeddings/serapeum-embeddings-ollama",
+    "serapeum-integrations/embeddings/serapeum-embeddings-huggingface",
 ]
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }
-serapeum-ollama = { workspace = true }
+serapeum-llms-ollama = { workspace = true }
+serapeum-embeddings-ollama = { workspace = true }
+serapeum-embeddings-huggingface = { workspace = true }
 
-#[tool.uv]
-#managed = false
+
+[tool.uv]
+managed = false
 
 [build-system]
 requires = ["hatchling"]

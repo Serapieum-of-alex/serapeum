@@ -52,7 +52,7 @@ class SerializableModel(BaseModel):
         value is injected into the JSON schema and serialized payloads to aid
         with round‑tripping.
         """
-        return "base_component"
+        return "SerializableModel"
 
     def json(self, **kwargs: Any) -> str:
         """Alias to :meth:`to_json`."""

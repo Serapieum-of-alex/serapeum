@@ -20,10 +20,10 @@ from pydantic import (
     model_validator,
 )
 from typing_extensions import Self
-
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.utils.base import resolve_binary
 
+ImageType = str | BytesIO
 
 class MessageRole(str, Enum):
     """Message role."""
@@ -288,7 +288,7 @@ class MessageList(BaseModel, ABCSequence):
         """Return the number of messages in the list."""
         return len(self.messages)
 
-    def __getitem__(self, index: int | slice) -> Message | "MessageList":
+    def __getitem__(self, index: int | slice) -> "Message | MessageList":
         """Retrieve a message or slice of messages."""
         if isinstance(index, slice):
             return MessageList(messages=self.messages[index])
@@ -489,3 +489,4 @@ class Metadata(BaseModel):
         description="The role this specific LLM provider"
         "expects for system prompt. E.g. 'SYSTEM' for OpenAI, 'CHATBOT' for Cohere",
     )
+

@@ -46,7 +46,7 @@ Python 3.11+ is required.
 ### 1) Build a minimal LLM implementation
 
 ```python
-from serapeum.core.llm import LLM
+from serapeum.core.llms import LLM
 from serapeum.core.base.llms.models import CompletionResponse, Metadata
 from serapeum.core.prompts import PromptTemplate
 

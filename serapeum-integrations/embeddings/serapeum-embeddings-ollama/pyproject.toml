@@ -1,0 +1,52 @@
+[project]
+name = "serapeum-embeddings-ollama"
+version = "0.1.0"
+description = "serapeum embeddings ollama integration"
+authors = [{name = "Mostafa Farrag", email = "moah.farrag@gmail.com"}]
+readme = "README.md"
+license = {text = "GNU General Public License v3"}
+
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "ollama>=0.5.4",
+    "serapeum-core"
+]
+
+[dependency-groups]
+dev = [
+    "ipython>=8.10.0",
+    "jupyter>=1.0.0,<2",
+    "mypy>=1.13.0",
+    "pre-commit>=4.3.0",
+    "pylint>=2.15.10",
+    "pytest>=7.2.1",
+    "pytest-asyncio>=0.23.8",
+    "pytest-mock>=3.11.1",
+    "ruff>=0.11.11",
+    "types-Deprecated>=0.1.0",
+    "types-PyYAML>=6.0.12.12,<7",
+    "types-protobuf>=4.24.0.4,<5",
+    "types-redis>=4.5.5.0",
+    "types-requests>=2.28.11.8",
+    "types-setuptools>=67.1.0.0",
+    "black[jupyter]<=23.9.1,>=23.7.0",
+    "diff-cover>=9.2.0",
+    "pytest-cov>=6.1.1",
+]
+
+
+[tool.hatch.build.targets.sdist]
+packages = ["src/serapeum"]
+include = ["src/serapeum/"]
+exclude = ["**/BUILD"]
+
+[tool.hatch.build.targets.wheel]
+include = ["src/serapeum/"]
+exclude = ["**/BUILD"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+managed = false

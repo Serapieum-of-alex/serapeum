@@ -1,7 +1,7 @@
 [project]
-name = "serapeum-core"
+name = "serapeum-llms-ollama"
 version = "0.1.0"
-description = "llm utility package"
+description = "Ollama integration for Serapeum"
 readme = "README.md"
 license = {text = "GNU General Public License v3"}
 authors = [
@@ -20,12 +20,11 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
 ]
+
 requires-python = ">=3.11,<4.0"
 dependencies = [
-    "numpy",
-    "filetype>=1.2.0",
-    "requests>=2.32.5",
-    "tqdm>=4.67.1",
+    "ollama>=0.5.4",
+    "serapeum-core",
 ]
 
 
@@ -40,7 +39,6 @@ dev = [
     "nbval>=0.11.0",
 ]
 
-
 [project.urls]
 homepage = "https://github.com/Serapieum-of-alex/serapeum"
 repository = "https://github.com/Serapieum-of-alex/serapeum"
@@ -50,6 +48,9 @@ Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/serapeum"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.flake8]
 ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
@@ -64,6 +65,9 @@ markers = [
     "mock: marks tests as mock (deselect with '-m \"not mock\"')",
     "integration: marks tests as optional-package (deselect with '-m \"not optional_package\"')",
 ]
+
+[tool.uv.sources]
+serapeum-core = { workspace = true }
 
 [tool.uv]
 managed = false

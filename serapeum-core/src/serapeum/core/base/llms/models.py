@@ -438,6 +438,57 @@ class CompletionResponse(BaseResponse):
         """Return the textual content of the completion response."""
         return self.text
 
+    def to_chat_response(self) -> ChatResponse:
+        return ChatResponse(
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                content=self.text,
+                additional_kwargs=self.additional_kwargs,
+            ),
+            raw=self.raw,
+        )
+
+    @staticmethod
+    def stream_to_chat_response(
+        completion_response_gen: CompletionResponseGen,
+    ) -> ChatResponseGen:
+        """Convert a stream completion response to a stream chat response."""
+
+        def gen() -> ChatResponseGen:
+            for response in completion_response_gen:
+                yield ChatResponse(
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        content=response.text,
+                        additional_kwargs=response.additional_kwargs,
+                    ),
+                    delta=response.delta,
+                    raw=response.raw,
+                )
+
+        return gen()
+
+    @staticmethod
+    def astream_to_chat_response(
+        completion_response_gen: CompletionResponseAsyncGen,
+    ) -> ChatResponseAsyncGen:
+        """Convert an async stream completion to an async stream chat response."""
+
+        async def gen() -> ChatResponseAsyncGen:
+            async for response in completion_response_gen:
+                yield ChatResponse(
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        content=response.text,
+                        additional_kwargs=response.additional_kwargs,
+                    ),
+                    delta=response.delta,
+                    raw=response.raw,
+                )
+
+        return gen()
+
+
 
 CompletionResponseGen = Generator[CompletionResponse, None, None]
 CompletionResponseAsyncGen = AsyncGenerator[CompletionResponse, None]

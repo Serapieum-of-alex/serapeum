@@ -12,6 +12,7 @@ license = {text = "GNU General Public License v3"}
 requires-python = ">=3.11,<4.0"
 dependencies = [
     "openai>=1.108.1,<3",
+    "tiktoken>=0.12.0",
     "serapeum-core"
 ]
 
@@ -45,6 +46,7 @@ include = ["src/serapeum/"]
 exclude = ["**/BUILD"]
 
 [tool.hatch.build.targets.wheel]
+packages = ["src/serapeum"]
 include = ["src/serapeum/"]
 exclude = ["**/BUILD"]
 

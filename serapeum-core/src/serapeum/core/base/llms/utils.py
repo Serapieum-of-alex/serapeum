@@ -21,6 +21,10 @@ __all__ = [
     "achat_to_completion_decorator",
     "astream_chat_to_completion_decorator",
     "get_from_param_or_env",
+    "acompletion_to_chat_decorator",
+    "astream_completion_to_chat_decorator",
+    "completion_to_chat_decorator",
+    "stream_completion_to_chat_decorator",
 ]
 
 

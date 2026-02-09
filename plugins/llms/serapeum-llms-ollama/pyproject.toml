@@ -1,5 +1,5 @@
 [project]
-name = "serapeum-ollama"
+name = "serapeum-llms-ollama"
 version = "0.1.0"
 description = "Ollama integration for Serapeum"
 readme = "README.md"

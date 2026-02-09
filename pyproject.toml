@@ -23,7 +23,7 @@ classifiers = [
 requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core",
-    "serapeum-ollama",
+    "serapeum-llms-ollama",
 ]
 
 
@@ -129,12 +129,12 @@ strict = true
 [tool.uv.workspace]
 members = [
     "src/serapeum-core",
-    "plugins/llms/serapeum-ollama",
+    "plugins/llms/serapeum-llms-ollama",
 ]
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }
-serapeum-ollama = { workspace = true }
+serapeum-llms-ollama = { workspace = true }
 
 #[tool.uv]
 #managed = false

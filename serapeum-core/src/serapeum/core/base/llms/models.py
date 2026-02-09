@@ -6,7 +6,7 @@ import base64
 from collections.abc import Sequence as ABCSequence
 from enum import Enum
 from io import BytesIO
-from typing import Annotated, Any, AsyncGenerator, Generator, Iterator, Literal
+from typing import Annotated, Any, AsyncGenerator, Generator, Iterator, Literal, Union
 
 from filetype import guess as filetype_guess
 from pydantic import (
@@ -558,3 +558,27 @@ class ThinkingBlock(BaseModel):
         description="Additional information related to the thinking/reasoning process, if available",
         default_factory=dict,
     )
+
+class ToolCallBlock(BaseModel):
+    block_type: Literal["tool_call"] = "tool_call"
+    tool_call_id: str | None = Field(
+        default=None, description="ID of the tool call, if provided"
+    )
+    tool_name: str = Field(description="Name of the called tool")
+    tool_kwargs: dict[str, Any] | str = Field(
+        default_factory=dict,  # type: ignore
+        description="Arguments provided to the tool, if available",
+    )
+
+
+
+ContentBlock = Annotated[
+    Union[
+        TextChunk,
+        Image,
+        Audio,
+        ThinkingBlock,
+        ToolCallBlock,
+    ],
+    Field(discriminator="block_type"),
+]

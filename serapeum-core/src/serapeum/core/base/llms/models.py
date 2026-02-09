@@ -288,7 +288,7 @@ class MessageList(BaseModel, ABCSequence):
         """Return the number of messages in the list."""
         return len(self.messages)
 
-    def __getitem__(self, index: int | slice) -> Message | "MessageList":
+    def __getitem__(self, index: int | slice) -> Message | MessageList:
         """Retrieve a message or slice of messages."""
         if isinstance(index, slice):
             return MessageList(messages=self.messages[index])
@@ -488,4 +488,22 @@ class Metadata(BaseModel):
         default=MessageRole.SYSTEM,
         description="The role this specific LLM provider"
         "expects for system prompt. E.g. 'SYSTEM' for OpenAI, 'CHATBOT' for Cohere",
+    )
+
+
+class ThinkingBlock(BaseModel):
+    """A representation of the content streamed from reasoning/thinking processes by LLMs"""
+
+    block_type: Literal["thinking"] = "thinking"
+    content: str | None = Field(
+        description="Content of the reasoning/thinking process, if available",
+        default=None,
+    )
+    num_tokens: int | None = Field(
+        description="Number of token used for reasoning/thinking, if available",
+        default=None,
+    )
+    additional_information: dict[str, Any] = Field(
+        description="Additional information related to the thinking/reasoning process, if available",
+        default_factory=dict,
     )

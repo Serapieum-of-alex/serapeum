@@ -5,10 +5,13 @@ from __future__ import annotations
 import base64
 from collections.abc import Sequence as ABCSequence
 from enum import Enum
-from io import BytesIO
+from io import BytesIO, IOBase
+from binascii import Error as BinasciiError
+from pathlib import Path
 from typing import Annotated, Any, AsyncGenerator, Generator, Iterator, Literal, Union
 
 from filetype import guess as filetype_guess
+from filetype import get_type
 from pydantic import (
     AnyUrl,
     BaseModel,
@@ -186,6 +189,102 @@ class Audio(Chunk):
             as_base64=as_base64,
         )
 
+
+class DocumentBlock(BaseModel):
+    """A representation of a document to directly pass to the LLM."""
+
+    block_type: Literal["document"] = "document"
+    data: bytes | IOBase | None = None
+    path: FilePath | str | None = None
+    url: str | None = None
+    title: str | None = None
+    document_mimetype: str | None = None
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @model_validator(mode="after")
+    def document_validation(self) -> Self:
+        self.document_mimetype = self.document_mimetype or self._guess_mimetype()
+
+        if not self.title:
+            self.title = "input_document"
+
+        # skip data validation if no byte is provided
+        if not self.data or not isinstance(self.data, bytes):
+            return self
+
+        try:
+            decoded_document = base64.b64decode(self.data, validate=True)
+        except BinasciiError:
+            self.data = base64.b64encode(self.data)
+
+        return self
+
+    @field_serializer("data")
+    def serialize_data(self, data: bytes | IOBase | None) -> bytes | None:
+        """Serialize the data field."""
+        if isinstance(data, bytes):
+            return data
+        if isinstance(data, IOBase):
+            data.seek(0)
+            return data.read()
+        return None
+
+    def resolve_document(self) -> IOBase:
+        """
+        Resolve a document such that it is represented by a BufferIO object.
+        """
+        data_buffer = (
+            self.data
+            if isinstance(self.data, IOBase)
+            else resolve_binary(
+                raw_bytes=self.data,
+                path=self.path,
+                url=str(self.url) if self.url else None,
+                as_base64=False,
+            )
+        )
+        # Check size by seeking to end and getting position
+        data_buffer.seek(0, 2)  # Seek to end
+        size = data_buffer.tell()
+        data_buffer.seek(0)  # Reset to beginning
+
+        if size == 0:
+            raise ValueError("resolve_document returned zero bytes")
+        return data_buffer
+
+    def _get_b64_string(self, data_buffer: IOBase) -> str:
+        """
+        Get base64-encoded string from a IOBase buffer.
+        """
+        data = data_buffer.read()
+        return base64.b64encode(data).decode("utf-8")
+
+    def _get_b64_bytes(self, data_buffer: IOBase) -> bytes:
+        """
+        Get base64-encoded bytes from a IOBase buffer.
+        """
+        data = data_buffer.read()
+        return base64.b64encode(data)
+
+    def guess_format(self) -> str | None:
+        path = self.path or self.url
+        if not path:
+            return None
+
+        return Path(str(path)).suffix.replace(".", "")
+
+    def _guess_mimetype(self) -> str | None:
+        if self.data:
+            guess = filetype_guess(self.data)
+            return str(guess.mime) if guess else None
+
+        suffix = self.guess_format()
+        if not suffix:
+            return None
+
+        guess = get_type(ext=suffix)
+        return str(guess.mime) if guess else None
 
 ChunkType = Annotated[TextChunk | Image | Audio, Field(discriminator="type")]
 
@@ -582,3 +681,11 @@ ContentBlock = Annotated[
     ],
     Field(discriminator="block_type"),
 ]
+
+
+class LogProb(BaseModel):
+    """LogProb of a token."""
+
+    token: str = Field(default_factory=str)
+    logprob: float = Field(default_factory=float)
+    bytes: list[int] = Field(default_factory=list)

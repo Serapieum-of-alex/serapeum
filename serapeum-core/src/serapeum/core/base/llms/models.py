@@ -286,8 +286,41 @@ class DocumentBlock(BaseModel):
         guess = get_type(ext=suffix)
         return str(guess.mime) if guess else None
 
-ChunkType = Annotated[TextChunk | Image | Audio, Field(discriminator="type")]
 
+class ToolCallBlock(BaseModel):
+    block_type: Literal["tool_call"] = "tool_call"
+    tool_call_id: str | None = Field(
+        default=None, description="ID of the tool call, if provided"
+    )
+    tool_name: str = Field(description="Name of the called tool")
+    tool_kwargs: dict[str, Any] | str = Field(
+        default_factory=dict,  # type: ignore
+        description="Arguments provided to the tool, if available",
+    )
+
+
+class ThinkingBlock(BaseModel):
+    """A representation of the content streamed from reasoning/thinking processes by LLMs"""
+
+    block_type: Literal["thinking"] = "thinking"
+    content: str | None = Field(
+        description="Content of the reasoning/thinking process, if available",
+        default=None,
+    )
+    num_tokens: int | None = Field(
+        description="Number of token used for reasoning/thinking, if available",
+        default=None,
+    )
+    additional_information: dict[str, Any] = Field(
+        description="Additional information related to the thinking/reasoning process, if available",
+        default_factory=dict,
+    )
+
+
+ChunkType = Annotated[
+    TextChunk | Image | Audio | DocumentBlock | ToolCallBlock | ThinkingBlock,
+    Field(discriminator="type")
+]
 
 class Message(BaseModel):
     """Message."""
@@ -638,35 +671,6 @@ class Metadata(BaseModel):
         default=MessageRole.SYSTEM,
         description="The role this specific LLM provider"
         "expects for system prompt. E.g. 'SYSTEM' for OpenAI, 'CHATBOT' for Cohere",
-    )
-
-
-class ThinkingBlock(BaseModel):
-    """A representation of the content streamed from reasoning/thinking processes by LLMs"""
-
-    block_type: Literal["thinking"] = "thinking"
-    content: str | None = Field(
-        description="Content of the reasoning/thinking process, if available",
-        default=None,
-    )
-    num_tokens: int | None = Field(
-        description="Number of token used for reasoning/thinking, if available",
-        default=None,
-    )
-    additional_information: dict[str, Any] = Field(
-        description="Additional information related to the thinking/reasoning process, if available",
-        default_factory=dict,
-    )
-
-class ToolCallBlock(BaseModel):
-    block_type: Literal["tool_call"] = "tool_call"
-    tool_call_id: str | None = Field(
-        default=None, description="ID of the tool call, if provided"
-    )
-    tool_name: str = Field(description="Name of the called tool")
-    tool_kwargs: dict[str, Any] | str = Field(
-        default_factory=dict,  # type: ignore
-        description="Arguments provided to the tool, if available",
     )
 
 

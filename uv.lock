@@ -2920,8 +2920,8 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "serapeum-core", editable = "serapeum-core" },
-    { name = "serapeum-ollama", editable = "serapeum-integrations/llms/serapeum-ollama" },
+    { name = "serapeum-core", editable = "src/serapeum-core" },
+    { name = "serapeum-ollama", editable = "plugins/llms/serapeum-ollama" },
 ]
 
 [package.metadata.requires-dev]
@@ -2956,7 +2956,7 @@ docs = [
 [[package]]
 name = "serapeum-core"
 version = "0.1.0"
-source = { editable = "serapeum-core" }
+source = { editable = "src/serapeum-core" }
 dependencies = [
     { name = "filetype" },
     { name = "numpy" },
@@ -2997,7 +2997,7 @@ dev = [
 [[package]]
 name = "serapeum-ollama"
 version = "0.1.0"
-source = { editable = "serapeum-integrations/llms/serapeum-ollama" }
+source = { editable = "plugins/llms/serapeum-ollama" }
 dependencies = [
     { name = "ollama" },
     { name = "serapeum-core" },
@@ -3017,7 +3017,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "ollama", specifier = ">=0.5.4" },
-    { name = "serapeum-core", editable = "serapeum-core" },
+    { name = "serapeum-core", editable = "src/serapeum-core" },
 ]
 
 [package.metadata.requires-dev]

@@ -10,7 +10,7 @@ from ollama import Message as OllamaMessage
 from pydantic import BaseModel
 
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.llm import Message
+from serapeum.llms import Message
 from serapeum.core.tools import CallableTool
 from serapeum.llms.ollama import Ollama
 

@@ -47,6 +47,10 @@ Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/serapeum"]
+include =  ["src/serapeum"]
+
+[tool.hatch.build.targets.sdist]
+include =  ["src/serapeum"]
 
 [tool.hatch.metadata]
 allow-direct-references = true

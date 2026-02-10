@@ -52,12 +52,6 @@ class StructuredLLM(LLM):
 
     def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         """Chat endpoint for LLM."""
-        # TODO:
-
-        # NOTE: we are wrapping existing messages in a ChatPromptTemplate to
-        # make this work with our ToolOrchestratingLLM, even though
-        # the messages don't technically have any variables (they are already formatted)
-
         chat_prompt = ChatPromptTemplate(message_templates=messages)
 
         output = self.llm.structured_predict(
@@ -98,10 +92,6 @@ class StructuredLLM(LLM):
         messages: Sequence[Message],
         **kwargs: Any,
     ) -> ChatResponse:
-        # NOTE: we are wrapping existing messages in a ChatPromptTemplate to
-        # make this work with our ToolOrchestratingLLM, even though
-        # the messages don't technically have any variables (they are already formatted)
-
         chat_prompt = ChatPromptTemplate(message_templates=messages)
 
         output = await self.llm.astructured_predict(

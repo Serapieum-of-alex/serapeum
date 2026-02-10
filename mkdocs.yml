@@ -140,8 +140,8 @@ nav:
         - tools:
             - reference/core/tools/tools.md
             - reference/core/tools/callable_tools.md
-    - Integrations:
-        - LLMs:
+    - Libs:
+        - Providers:
             - Ollama:
                 - Overview: reference/integrations/llms/ollama/general.md
                 - Examples: reference/integrations/llms/ollama/examples.md

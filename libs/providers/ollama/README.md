@@ -20,7 +20,7 @@ server.
 From the repo:
 
 ```bash
-cd serapeum-integrations/llms/serapeum-ollama
+cd libs/providers/serapeum-ollama
 python -m pip install -e .
 ```
 
@@ -117,7 +117,7 @@ tools_llm = ToolOrchestratingLLM(
 
 ## Testing
 
-From `serapeum-integrations/llms/serapeum-ollama/`:
+From `libs/providers/serapeum-ollama/`:
 
 ```bash
 python -m pytest

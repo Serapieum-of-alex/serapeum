@@ -14,7 +14,7 @@ resolution-markers = [
 members = [
     "serapeum",
     "serapeum-core",
-    "serapeum-llms-ollama",
+    "serapeum-ollama",
 ]
 
 [[package]]
@@ -2873,7 +2873,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "serapeum-core" },
-    { name = "serapeum-llms-ollama" },
+    { name = "serapeum-ollama" },
 ]
 
 [package.dev-dependencies]
@@ -2908,7 +2908,7 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "serapeum-core", editable = "src/serapeum-core" },
-    { name = "serapeum-llms-ollama", editable = "plugins/llms/serapeum-llms-ollama" },
+    { name = "serapeum-ollama", editable = "plugins/llms/serapeum-ollama" },
 ]
 
 [package.metadata.requires-dev]
@@ -2982,9 +2982,9 @@ dev = [
 ]
 
 [[package]]
-name = "serapeum-llms-ollama"
+name = "serapeum-ollama"
 version = "0.1.0"
-source = { editable = "plugins/llms/serapeum-llms-ollama" }
+source = { editable = "plugins/llms/serapeum-ollama" }
 dependencies = [
     { name = "ollama" },
     { name = "serapeum-core" },

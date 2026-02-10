@@ -217,7 +217,7 @@ class TestDocstring:
         summary = docstring.get_short_summary_line()
         assert (
             summary
-            == "MockSong(*, title: str, length: Optional[int] = None, author: Optional[str] = None) -> None\nMock Song class."
+            == "MockSong(*, title: str, length: int | None = None, author: str | None = None) -> None\nMock Song class."
         )
 
     def test_extracts_sphinx_google_javadoc_and_filters_unknown(self):

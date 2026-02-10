@@ -20,7 +20,7 @@ This page summarizes the main modules, key classes, and the public API surface o
   - `AgentChatResponse`: aggregates model/tool outputs and provides sync/async streaming generators and tool output parsing.
 - serapeum.core.prompts.base
   - Prompt abstractions: `PromptTemplate` (string prompts) and `ChatPromptTemplate` (message-based prompts) with variable/function mappings.
-- serapeum.core.prompts.models
+- serapeum.core.prompts.types
   - Prompt-related data models and types used by templates and LLMs.
 - serapeum.core.prompts.utils
   - Utilities for working with prompts and templates.

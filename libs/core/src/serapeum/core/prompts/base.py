@@ -8,7 +8,7 @@ from typing_extensions import Annotated
 
 from serapeum.core.base.llms.types import ChunkType, Message, MessageList, TextChunk
 from serapeum.core.output_parsers import BaseParser
-from serapeum.core.prompts.models import PromptType
+from serapeum.core.prompts.types import PromptType
 from serapeum.core.prompts.utils import format_string, get_template_vars
 
 AnnotatedCallable = Annotated[

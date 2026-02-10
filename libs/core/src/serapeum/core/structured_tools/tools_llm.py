@@ -25,7 +25,7 @@ from serapeum.core.structured_tools.utils import StreamingObjectProcessor
 from serapeum.core.tools.callable_tool import CallableTool
 
 if TYPE_CHECKING:
-    from serapeum.core.chat.models import AgentChatResponse
+    from serapeum.core.chat.types import AgentChatResponse
 
 _logger = logging.getLogger(__name__)
 

@@ -1,11 +1,11 @@
-"""Tests for serapeum.core.chat.models module."""
+"""Tests for serapeum.core.chat.types module."""
 
 from unittest.mock import patch
 
 import pytest
 from tests.models import MOCK_ALBUM, MOCK_ALBUM_2
 
-from serapeum.core.chat.models import AgentChatResponse
+from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.tools import ToolOutput
 
 
@@ -64,7 +64,7 @@ class TestParseToolOutputs:
             sources=tool_outputs,
         )
 
-        with patch("serapeum.core.chat.models.logger") as mock_logger:
+        with patch("serapeum.core.chat.types.logger") as mock_logger:
             result = agent_response.parse_tool_outputs(allow_parallel_tool_calls=False)
 
         assert result == MOCK_ALBUM
@@ -175,7 +175,7 @@ class TestAgentChatResponseResponseGen:
         Check: list(response_gen) equals expected token sequence.
         """
         # Speed up the generator by removing real sleep
-        monkeypatch.setattr("serapeum.core.chat.models.time.sleep", lambda _x: None)
+        monkeypatch.setattr("serapeum.core.chat.types.time.sleep", lambda _x: None)
         r = AgentChatResponse(response="hello world", is_dummy_stream=True)
         assert list(r.response_gen) == ["hello ", "world "]
 
@@ -194,7 +194,7 @@ class TestAgentChatResponseResponseGen:
         Expected: Because "".split(" ") == [''], generator yields [' '].
         Check: Exactly one token containing a single space.
         """
-        monkeypatch.setattr("serapeum.core.chat.models.time.sleep", lambda _x: None)
+        monkeypatch.setattr("serapeum.core.chat.types.time.sleep", lambda _x: None)
         r = AgentChatResponse(response="", is_dummy_stream=True)
         assert list(r.response_gen) == [" "]
 
@@ -204,7 +204,7 @@ class TestAgentChatResponseResponseGen:
         Expected: split(" ") preserves empty tokens -> ['a', '', 'b'] => ['a ', ' ', 'b '].
         Check: Generator output matches expected with empty middle token as a single space.
         """
-        monkeypatch.setattr("serapeum.core.chat.models.time.sleep", lambda _x: None)
+        monkeypatch.setattr("serapeum.core.chat.types.time.sleep", lambda _x: None)
         r = AgentChatResponse(response="a  b", is_dummy_stream=True)
         assert list(r.response_gen) == ["a ", " ", "b "]
 
@@ -229,7 +229,7 @@ class TestAgentChatResponseAsyncResponseGen:
         async def _fast_sleep(_x):
             return None
 
-        monkeypatch.setattr("serapeum.core.chat.models.asyncio.sleep", _fast_sleep)
+        monkeypatch.setattr("serapeum.core.chat.types.asyncio.sleep", _fast_sleep)
         r = AgentChatResponse(response="foo bar", is_dummy_stream=True)
         out = [t async for t in r.async_response_gen()]
         assert out == ["foo ", "bar "]
@@ -259,7 +259,7 @@ class TestAgentChatResponseAsyncResponseGen:
         async def _fast_sleep(_x):
             return None
 
-        monkeypatch.setattr("serapeum.core.chat.models.asyncio.sleep", _fast_sleep)
+        monkeypatch.setattr("serapeum.core.chat.types.asyncio.sleep", _fast_sleep)
         r = AgentChatResponse(response="a  b", is_dummy_stream=True)
         out = [t async for t in r.async_response_gen()]
         assert out == ["a ", " ", "b "]

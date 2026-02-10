@@ -7,7 +7,7 @@ import pytest
 from tests.models import MOCK_ALBUM, MOCK_ALBUM_2, MockAlbum
 
 from serapeum.core.base.llms.types import Message, Metadata
-from serapeum.core.chat.models import AgentChatResponse
+from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.structured_tools import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
 from serapeum.core.tools.models import BaseTool

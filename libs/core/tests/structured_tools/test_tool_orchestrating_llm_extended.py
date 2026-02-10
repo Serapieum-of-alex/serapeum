@@ -17,7 +17,7 @@ import pytest
 from pydantic import BaseModel
 
 from serapeum.core.base.llms.types import ChatResponse, Message, Metadata
-from serapeum.core.chat.models import AgentChatResponse
+from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.llms.function_calling import FunctionCallingLLM
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM

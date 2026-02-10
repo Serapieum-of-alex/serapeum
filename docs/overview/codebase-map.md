@@ -16,7 +16,7 @@ This page summarizes the main modules, key classes, and the public API surface o
   - Tool-calling specialization (`FunctionCallingLLM`): chat with tools, tool call extraction/validation, predict-and-call helpers (sync/async, streaming).
 - serapeum.core.llm.structured_llm
   - Wrapper LLM (`StructuredLLM`) that forces structured outputs (`BaseModel`) from another `LLM` while keeping chat/completion interfaces.
-- serapeum.core.chat.models
+- serapeum.core.chat.types
   - `AgentChatResponse`: aggregates model/tool outputs and provides sync/async streaming generators and tool output parsing.
 - serapeum.core.prompts.base
   - Prompt abstractions: `PromptTemplate` (string prompts) and `ChatPromptTemplate` (message-based prompts) with variable/function mappings.

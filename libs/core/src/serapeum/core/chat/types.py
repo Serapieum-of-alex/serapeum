@@ -40,7 +40,7 @@ class AgentChatResponse:
     Examples:
     - Basic usage and string conversion
         ```python
-        >>> from serapeum.core.chat.models import AgentChatResponse
+        >>> from serapeum.core.chat.types import AgentChatResponse
         >>> r = AgentChatResponse(response="Hello, world!")
         >>> str(r)
         'Hello, world!'
@@ -201,7 +201,7 @@ class AgentChatResponse:
         - Single tool output (default behavior returns the first model)
             ```python
             >>> from pydantic import BaseModel
-            >>> from serapeum.core.chat.models import AgentChatResponse
+            >>> from serapeum.core.chat.types import AgentChatResponse
             >>> from serapeum.core.tools import ToolOutput
             >>> class Person(BaseModel):
             ...     name: str
@@ -217,7 +217,7 @@ class AgentChatResponse:
         - Multiple outputs with parallel calls enabled
             ```python
             >>> from pydantic import BaseModel
-            >>> from serapeum.core.chat.models import AgentChatResponse
+            >>> from serapeum.core.chat.types import AgentChatResponse
             >>> from serapeum.core.tools import ToolOutput
             >>> class Person(BaseModel):
             ...     name: str

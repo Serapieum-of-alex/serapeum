@@ -14,7 +14,7 @@ from serapeum.core.llms.base import LLM
 from serapeum.core.tools.models import ToolCallArguments
 
 if TYPE_CHECKING:
-    from serapeum.core.chat.models import AgentChatResponse
+    from serapeum.core.chat.types import AgentChatResponse
     from serapeum.core.tools.models import BaseTool
 
 
@@ -235,7 +235,7 @@ class FunctionCallingLLM(LLM):
         error_on_tool_error: bool,
         allow_parallel_tool_calls: bool,
     ) -> "AgentChatResponse":
-        from serapeum.core.chat.models import AgentChatResponse
+        from serapeum.core.chat.types import AgentChatResponse
 
         tool_outputs_with_error = [
             tool_output for tool_output in tool_outputs if tool_output.is_error

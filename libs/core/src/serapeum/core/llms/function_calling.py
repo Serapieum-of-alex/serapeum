@@ -4,7 +4,7 @@ import asyncio
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Sequence
 
-from serapeum.core.base.llms.models import (
+from serapeum.core.base.llms.types import (
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,

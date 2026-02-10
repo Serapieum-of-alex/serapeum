@@ -9,7 +9,7 @@ from typing import Any, Sequence
 
 from pydantic import ConfigDict
 
-from serapeum.core.base.llms.models import (
+from serapeum.core.base.llms.types import (
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,

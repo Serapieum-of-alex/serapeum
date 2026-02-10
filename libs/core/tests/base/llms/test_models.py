@@ -9,7 +9,7 @@ import httpx
 import pytest
 from pydantic import AnyUrl, BaseModel
 
-from serapeum.core.base.llms.models import (
+from serapeum.core.base.llms.types import (
     ChatResponse,
     CompletionResponse,
     Image,

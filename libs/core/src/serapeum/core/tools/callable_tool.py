@@ -7,7 +7,7 @@ from typing import Any, Awaitable, Callable, Type, TypeVar
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
-from serapeum.core.base.llms.models import Audio, ChunkType, Image, TextChunk
+from serapeum.core.base.llms.types import Audio, ChunkType, Image, TextChunk
 from serapeum.core.tools.models import (
     ArgumentCoercer,
     AsyncBaseTool,
@@ -675,7 +675,7 @@ class CallableTool(AsyncBaseTool):
                 ```
             - List of TextChunk values is preserved
                 ```python
-                >>> from serapeum.core.base.llms.models import TextChunk
+                >>> from serapeum.core.base.llms.types import TextChunk
                 >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> lst = [TextChunk(content="a"), TextChunk(content="b")]
                 >>> chunks = CallableTool._parse_tool_output(lst)

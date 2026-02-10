@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, AsyncGenerator, Generator
 from ollama import AsyncClient, Client  # type: ignore[attr-defined]
 from pydantic import BaseModel, Field, PrivateAttr
 
-from serapeum.core.base.llms.models import (
+from serapeum.core.base.llms.types import (
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
@@ -92,7 +92,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
     Examples:
         - Truncate multiple tool calls to one
             ```python
-            >>> from serapeum.core.base.llms.models import Message, MessageRole, ChatResponse
+            >>> from serapeum.core.base.llms.types import Message, MessageRole, ChatResponse
             >>> r = ChatResponse(message=Message(
             ...     role=MessageRole.ASSISTANT,
             ...     content="",
@@ -110,7 +110,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
             ```
         - Leave empty or single tool call lists unchanged
             ```python
-            >>> from serapeum.core.base.llms.models import Message, MessageRole, ChatResponse
+            >>> from serapeum.core.base.llms.types import Message, MessageRole, ChatResponse
             >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=""))
             >>> force_single_tool_call(r)
             >>> r.message.additional_kwargs.get("tool_calls") is None or len(r.message.additional_kwargs.get("tool_calls", [])) == 0
@@ -171,7 +171,7 @@ class Ollama(FunctionCallingLLM):
     Examples:
         - Basic chat using a real Ollama server (requires a running server and a pulled model)
             ```python
-            >>> from serapeum.core.base.llms.models import Message, MessageRole
+            >>> from serapeum.core.base.llms.types import Message, MessageRole
             >>> # Ensure `ollama serve` is running locally and the model is pulled, e.g.:
             >>> #   ollama pull llama3.1
             >>> from serapeum.llms.ollama import Ollama
@@ -183,7 +183,7 @@ class Ollama(FunctionCallingLLM):
             ```
         - Enabling JSON mode for structured outputs with a real server
             ```python
-            >>> from serapeum.core.base.llms.models import Message, MessageRole
+            >>> from serapeum.core.base.llms.types import Message, MessageRole
             >>> # When json_mode=True, this adapter sets format="json" under the hood.
             >>> llm = Ollama(model="llama3.1", json_mode=True, request_timeout=120)
             >>> response = llm.chat([Message(role=MessageRole.USER, content='Return {"ok": true} as JSON')])  # doctest: +SKIP
@@ -471,7 +471,7 @@ class Ollama(FunctionCallingLLM):
         Examples:
             - Text-only conversion
                 ```python
-                >>> from serapeum.core.base.llms.models import Message, MessageList, MessageRole
+                >>> from serapeum.core.base.llms.types import Message, MessageList, MessageRole
                 >>> from serapeum.llms.ollama import Ollama
                 >>> llm = Ollama(model="m")
                 >>> wire = llm._convert_to_ollama_messages(
@@ -596,7 +596,7 @@ class Ollama(FunctionCallingLLM):
         Examples:
             - Combine history, a new user message, and tool specs
                 ```python
-                >>> from serapeum.core.base.llms.models import Message, MessageRole
+                >>> from serapeum.core.base.llms.types import Message, MessageRole
                 >>> from serapeum.llms.ollama import Ollama
                 >>> class T:
                 ...     def __init__(self, n):
@@ -655,7 +655,7 @@ class Ollama(FunctionCallingLLM):
         Examples:
             - Force single tool call when multiple are present (remove the multiple tool calls and leave only the first)
                 ```python
-                >>> from serapeum.core.base.llms.models import Message, MessageRole, ChatResponse
+                >>> from serapeum.core.base.llms.types import Message, MessageRole, ChatResponse
                 >>> llm = Ollama(model="m")
                 >>> response = ChatResponse(
                 ...     message=Message(
@@ -701,7 +701,7 @@ class Ollama(FunctionCallingLLM):
         Examples:
             - Parse a single tool call
                 ```python
-                >>> from serapeum.core.base.llms.models import Message, MessageRole, ChatResponse
+                >>> from serapeum.core.base.llms.types import Message, MessageRole, ChatResponse
                 >>> llm = Ollama(model="m")
                 >>> r = ChatResponse(
                 ...     message=Message(
@@ -725,7 +725,7 @@ class Ollama(FunctionCallingLLM):
                 ```
             - Raise when no tool call is present and errors are enabled
                 ```python
-                >>> from serapeum.core.base.llms.models import Message, MessageRole, ChatResponse
+                >>> from serapeum.core.base.llms.types import Message, MessageRole, ChatResponse
                 >>> llm = Ollama(model="m")
                 >>> empty = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=""))
                 >>> try:
@@ -780,7 +780,7 @@ class Ollama(FunctionCallingLLM):
         Examples:
             - Minimal chat against a running Ollama server (requires server and model)
                 ```python
-                >>> from serapeum.core.base.llms.models import Message, MessageRole
+                >>> from serapeum.core.base.llms.types import Message, MessageRole
                 >>> # Ensure `ollama serve` is running and the model is available locally.
                 >>> llm = Ollama(model="llama3.1", request_timeout=120)
                 >>> resp = llm.chat([Message(role=MessageRole.USER, content="hi")])  # doctest: +SKIP
@@ -874,7 +874,7 @@ class Ollama(FunctionCallingLLM):
         Examples:
             - Stream deltas from a real Ollama server (requires server and model)
                 ```python
-                >>> from serapeum.core.base.llms.models import Message, MessageRole
+                >>> from serapeum.core.base.llms.types import Message, MessageRole
                 >>> # Pre-requisites:
                 >>> #   1) Start the server: `ollama serve`
                 >>> #   2) Pull a model:    `ollama pull llama3.1`

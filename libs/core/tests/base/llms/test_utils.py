@@ -2,7 +2,7 @@
 
 import pytest
 
-from serapeum.core.base.llms.models import (
+from serapeum.core.base.llms.types import (
     ChatResponse,
     Message,
     MessageList,

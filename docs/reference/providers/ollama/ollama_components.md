@@ -440,7 +440,7 @@ _prepare_chat_with_tools(messages, tools)
 
 ### Ollama Depends On:
 - `ollama.Client` and `ollama.AsyncClient` (external package)
-- `serapeum.core.base.llms.models` (Message, ChatResponse, CompletionResponse, Metadata)
+- `serapeum.core.base.llms.types` (Message, ChatResponse, CompletionResponse, Metadata)
 - `serapeum.core.llm.function_calling.FunctionCallingLLM` (base class)
 - `serapeum.core.base.llms.utils` (decorators)
 - `pydantic` (for configuration)

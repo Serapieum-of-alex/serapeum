@@ -65,7 +65,7 @@ graph LR
     callable_tool --> models
     callable_tool --> utils
     callable_tool --> async_utils["serapeum.core.utils.async_utils"]
-    callable_tool --> core_llms_models["serapeum.core.base.llms.models"]
+    callable_tool --> core_llms_models["serapeum.core.base.llms.types"]
 
     models --> core_llms_models
     models --> pydantic["pydantic"]

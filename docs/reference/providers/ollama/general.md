@@ -16,7 +16,7 @@ The `Ollama` class is a production-ready LLM integration that provides:
 ### Basic Chat
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 # Initialize Ollama

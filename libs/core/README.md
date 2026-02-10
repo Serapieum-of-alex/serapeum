@@ -47,7 +47,7 @@ Python 3.11+ is required.
 
 ```python
 from serapeum.core.llms import LLM
-from serapeum.core.base.llms.models import CompletionResponse, Metadata
+from serapeum.core.base.llms.types import CompletionResponse, Metadata
 from serapeum.core.prompts import PromptTemplate
 
 

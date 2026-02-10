@@ -8,7 +8,7 @@ from typing import Any, Type
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from serapeum.core.base.llms.models import ChunkType, TextChunk
+from serapeum.core.base.llms.types import ChunkType, TextChunk
 from serapeum.core.utils.schemas import Schema
 
 
@@ -474,7 +474,7 @@ class ToolOutput(BaseModel):
     Tool outputs may include structured chunks (e.g., text, images, audio) as well
     as raw input/output payloads from the underlying tool. The ``content`` helper
     provides a convenient view over text chunks (instances of
-    :class:`serapeum.core.base.llms.models.TextChunk`).
+    :class:`serapeum.core.base.llms.types.TextChunk`).
 
     Args:
         chunks (list[ChunkType]):
@@ -511,7 +511,7 @@ class ToolOutput(BaseModel):
 
         - Using chunks directly
             ```python
-            >>> from serapeum.core.base.llms.models import TextChunk
+            >>> from serapeum.core.base.llms.types import TextChunk
             >>> from serapeum.core.tools.models import ToolOutput
             >>> out = ToolOutput(tool_name="echo", chunks=[TextChunk(content="hi")])
             >>> print(out.content)
@@ -521,7 +521,7 @@ class ToolOutput(BaseModel):
 
         - Edge case: providing both ``content`` and ``chunks`` raises an error
             ```python
-            >>> from serapeum.core.base.llms.models import TextChunk
+            >>> from serapeum.core.base.llms.types import TextChunk
             >>> from serapeum.core.tools.models import ToolOutput
             >>> try:
             ...     ToolOutput(tool_name="echo", content="x", chunks=[TextChunk(content="y")])
@@ -554,7 +554,7 @@ class ToolOutput(BaseModel):
         """Initialize a ToolOutput instance.
 
         Exactly one of ``content`` or ``chunks`` may be provided. If ``content`` is
-        given, it is wrapped into a single :class:`~serapeum.core.base.llms.models.TextChunk`.
+        given, it is wrapped into a single :class:`~serapeum.core.base.llms.types.TextChunk`.
 
         Args:
             tool_name (str):
@@ -584,7 +584,7 @@ class ToolOutput(BaseModel):
                 ```
             - Construct with chunks
                 ```python
-                >>> from serapeum.core.base.llms.models import TextChunk
+                >>> from serapeum.core.base.llms.types import TextChunk
                 >>> from serapeum.core.tools.models import ToolOutput
                 >>> out = ToolOutput(tool_name="echo", chunks=[TextChunk(content="hello")])
                 >>> out.content
@@ -627,7 +627,7 @@ class ToolOutput(BaseModel):
         Examples:
             - Multiple text chunks are joined with a newline
                 ```python
-                >>> from serapeum.core.base.llms.models import TextChunk
+                >>> from serapeum.core.base.llms.types import TextChunk
                 >>> from serapeum.core.tools.models import ToolOutput
                 >>> out = ToolOutput(
                 ...     tool_name="t",
@@ -649,7 +649,7 @@ class ToolOutput(BaseModel):
         """Overwrite the text content with a single TextChunk.
 
         This setter replaces any existing chunks with a single
-        :class:`~serapeum.core.base.llms.models.TextChunk` containing ``content``.
+        :class:`~serapeum.core.base.llms.types.TextChunk` containing ``content``.
 
         Args:
             content (str): The new text content to set.

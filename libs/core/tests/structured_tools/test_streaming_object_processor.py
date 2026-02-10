@@ -12,7 +12,7 @@ from typing import Any, List, Optional
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
+from serapeum.core.base.llms.types import ChatResponse, Message, MessageRole
 from serapeum.core.structured_tools.utils import FlexibleModel, StreamingObjectProcessor
 
 

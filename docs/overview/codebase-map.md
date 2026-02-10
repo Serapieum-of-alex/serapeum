@@ -6,7 +6,7 @@ This page summarizes the main modules, key classes, and the public API surface o
 
 - serapeum.core.base.llms.base
   - Base interface for all LLM backends (`BaseLLM`): sync/async chat and completion, streaming endpoints, and message conversion helpers.
-- serapeum.core.base.llms.models
+- serapeum.core.base.llms.types
   - Core data models: `Message`, `MessageList`, `ChatResponse`, `CompletionResponse`, `Metadata`, `MessageRole`, and multimodal chunks (`TextChunk`, `Image`, `Audio`).
 - serapeum.core.base.llms.utils
   - Adapters/decorators to adapt chat endpoints to completion-style calls (`chat_to_completion_decorator`, `achat_to_completion_decorator`).
@@ -60,7 +60,7 @@ This page summarizes the main modules, key classes, and the public API surface o
 - serapeum.core.structured_tools.tools_llm.ToolOrchestratingLLM
 - serapeum.core.tools.callable_tool.CallableTool
 - serapeum.core.tools.models.BaseTool / AsyncBaseTool
-- serapeum.core.base.llms.models.Message / MessageList / ChatResponse / CompletionResponse / Metadata
+- serapeum.core.base.llms.types.Message / MessageList / ChatResponse / CompletionResponse / Metadata
 - serapeum.core.prompts.base.PromptTemplate / ChatPromptTemplate
 - serapeum.core.models.base.SerializableModel
 - serapeum.llms.ollama.base.Ollama

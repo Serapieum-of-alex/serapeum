@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field, WithJsonSchema, field_validator, model_va
 from typing_extensions import Annotated
 
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.base.llms.models import (
+from serapeum.core.base.llms.types import (
     ChatResponseAsyncGen,
     ChatResponseGen,
     CompletionResponseAsyncGen,
@@ -43,7 +43,7 @@ class MessagesToPromptType(Protocol):
         - Join message contents into a newline-separated prompt
             ```python
             >>> from serapeum.core.llm.base import MessagesToPromptType
-            >>> from serapeum.core.base.llms.models import Message, MessageRole, MessageList
+            >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList
             >>> def newline_join(message_list):
             ...     return '\n'.join(message.content or "" for message in message_list)
             ...
@@ -53,7 +53,7 @@ class MessagesToPromptType(Protocol):
             ```
         - Validate message content before rendering the prompt
             ```python
-            >>> from serapeum.core.base.llms.models import Message, MessageRole, MessageList
+            >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList
             >>> def validated_join(message_list):
             ...     contents = [message.content for message in message_list]
             ...     if any(content is None for content in contents):
@@ -83,7 +83,7 @@ class MessagesToPromptType(Protocol):
         Examples:
             - Concatenate user and assistant messages into one prompt
                 ```python
-                >>> from serapeum.core.base.llms.models import Message, MessageRole, MessageList
+                >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList
                 >>> def concatenate(message_list):
                 ...     return " ".join((message.content or "").strip() for message in message_list)
                 ...
@@ -98,7 +98,7 @@ class MessagesToPromptType(Protocol):
                 ```
             - Reject empty message content before joining
                 ```python
-                >>> from serapeum.core.base.llms.models import Message, MessageRole, MessageList
+                >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList
                 >>> def strict_concat(message_list):
                 ...     for message in message_list:
                 ...         if message.content is None:
@@ -205,7 +205,7 @@ def stream_response_to_tokens(
         - CompletionResponse:
             - Collect deltas produced by a completion stream
                 ```python
-                >>> from serapeum.core.base.llms.models import CompletionResponse
+                >>> from serapeum.core.base.llms.types import CompletionResponse
                 >>> from serapeum.core.llm.base import stream_response_to_tokens
                 >>> def responses():
                 ...     yield CompletionResponse(text="Hello", delta="Hel")
@@ -228,7 +228,7 @@ def stream_response_to_tokens(
         - ChatResponse:
             - Collect assistant deltas from a chat stream
                 ```python
-                >>> from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
+                >>> from serapeum.core.base.llms.types import ChatResponse, Message, MessageRole
                 >>> def responses():
                 ...     yield ChatResponse(
                 ...         message=Message(content="Hello", role=MessageRole.ASSISTANT),
@@ -245,7 +245,7 @@ def stream_response_to_tokens(
                 ```
             - Support chat responses without deltas
                 ```python
-                >>> from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
+                >>> from serapeum.core.base.llms.types import ChatResponse, Message, MessageRole
                 >>> def responses():
                 ...     yield ChatResponse(
                 ...         message=Message(content="Partial", role=MessageRole.ASSISTANT),
@@ -290,7 +290,7 @@ async def astream_response_to_tokens(
             - Gather tokens from an asynchronous completion stream
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.base.llms.models import CompletionResponse
+                >>> from serapeum.core.base.llms.types import CompletionResponse
                 >>> from serapeum.core.llm.base import astream_response_to_tokens
                 >>> async def responses():
                 ...     yield CompletionResponse(text="Hello", delta="Hel")
@@ -307,7 +307,7 @@ async def astream_response_to_tokens(
             - Ensure empty delta values propagate as empty strings
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.base.llms.models import CompletionResponse
+                >>> from serapeum.core.base.llms.types import CompletionResponse
                 >>> async def responses():
                 ...     yield CompletionResponse(text="partial", delta=None)
                 ...     yield CompletionResponse(text="done", delta="")
@@ -324,7 +324,7 @@ async def astream_response_to_tokens(
             - Aggregate assistant deltas asynchronously
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
+                >>> from serapeum.core.base.llms.types import ChatResponse, Message, MessageRole
                 >>> async def responses():
                 ...     yield ChatResponse(
                 ...         message=Message(content="Hi", role=MessageRole.ASSISTANT),
@@ -346,7 +346,7 @@ async def astream_response_to_tokens(
             - Surface empty delta entries when no new tokens are produced
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.base.llms.models import ChatResponse, Message, MessageRole
+                >>> from serapeum.core.base.llms.types import ChatResponse, Message, MessageRole
                 >>> async def responses():
                 ...     yield ChatResponse(
                 ...         message=Message(content="Partial", role=MessageRole.ASSISTANT),
@@ -440,7 +440,7 @@ class LLM(BaseLLM, ABC):
     Examples:
         - Produce a simple completion by subclassing ``LLM``
             ```python
-            >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+            >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
             >>> class EchoLLM(LLM):
             ...     metadata = Metadata.model_construct(is_chat_model=False)
             ...     def chat(self, messages, **kwargs):
@@ -601,7 +601,7 @@ class LLM(BaseLLM, ABC):
         Examples:
             - Automatically attach defaults when fields are unset
                 ```python
-                >>> from serapeum.core.base.llms.models import (
+                >>> from serapeum.core.base.llms.types import (
                 ...     CompletionResponse,
                 ...     Metadata,
                 ... )
@@ -631,7 +631,7 @@ class LLM(BaseLLM, ABC):
                 ```
             - Respect explicitly provided adapters
                 ```python
-                >>> from serapeum.core.base.llms.models import Metadata
+                >>> from serapeum.core.base.llms.types import Metadata
                 >>> class DemoLLM(LLM):
                 ...     metadata = Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
@@ -689,7 +689,7 @@ class LLM(BaseLLM, ABC):
             - Expand a template without an output parser
                 ```python
                 >>> from serapeum.core.prompts import ChatPromptTemplate
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
                 ...     metadata = Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
@@ -717,7 +717,7 @@ class LLM(BaseLLM, ABC):
             - Apply an output parser formatter before returning the result
                 ```python
                 >>> from serapeum.core.prompts import PromptTemplate
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> from serapeum.core.output_parsers import BaseParser
                 >>> class UpperParser(BaseParser):
                 ...     def parse(self, output: str) -> str:
@@ -782,7 +782,7 @@ class LLM(BaseLLM, ABC):
             - Generate user-facing messages without an output parser
                 ```python
                 >>> from serapeum.core.prompts import PromptTemplate
-                >>> from serapeum.core.base.llms.models import (
+                >>> from serapeum.core.base.llms.types import (
                 ...     CompletionResponse,
                 ...     Metadata,
                 ... )
@@ -816,7 +816,7 @@ class LLM(BaseLLM, ABC):
             - Apply an output parser hook to the formatted messages
                 ```python
                 >>> from serapeum.core.prompts import ChatPromptTemplate
-                >>> from serapeum.core.base.llms.models import (
+                >>> from serapeum.core.base.llms.types import (
                 ...     CompletionResponse,
                 ...     Metadata,
                 ... )
@@ -882,7 +882,7 @@ class LLM(BaseLLM, ABC):
         Examples:
             - Return the text unchanged when no parser is configured
                 ```python
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
                 ...     metadata = Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
@@ -909,7 +909,7 @@ class LLM(BaseLLM, ABC):
             - Coerce text via a custom parser before returning
                 ```python
                 >>> from serapeum.core.output_parsers import BaseParser
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class TrimParser(BaseParser):
                 ...     def parse(self, output: str) -> str:
                 ...         return output.strip()
@@ -964,7 +964,7 @@ class LLM(BaseLLM, ABC):
         Examples:
             - Return the original text when no decorations are configured
                 ```python
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
                 ...     metadata = Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
@@ -991,7 +991,7 @@ class LLM(BaseLLM, ABC):
             - Prepend a system prompt and wrap the query
                 ```python
                 >>> from serapeum.core.prompts import PromptTemplate
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
                 ...     metadata = Metadata.model_construct(is_chat_model=False)
                 ...     system_prompt = "You are an assistant."

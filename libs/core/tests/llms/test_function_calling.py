@@ -5,7 +5,7 @@ from typing import Any, AsyncGenerator, Coroutine, Dict, List, Optional, Sequenc
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.base.llms.models import (
+from serapeum.core.base.llms.types import (
     ChatResponse,
     ChatResponseGen,
     CompletionResponse,

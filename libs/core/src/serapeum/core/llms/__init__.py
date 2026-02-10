@@ -1,6 +1,6 @@
 """High-level LLM orchestration API and helpers."""
 
-from serapeum.core.base.llms.models import (
+from serapeum.core.base.llms.types import (
     Audio,
     ChatResponse,
     ChatResponseAsyncGen,

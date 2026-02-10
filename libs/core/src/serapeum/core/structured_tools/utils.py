@@ -11,7 +11,7 @@ from serapeum.core.models import StructuredLLMMode
 from serapeum.core.output_parsers import PydanticParser
 
 if TYPE_CHECKING:
-    from serapeum.core.base.llms.models import ChatResponse
+    from serapeum.core.base.llms.types import ChatResponse
     from serapeum.core.llms.base import LLM
     from serapeum.core.llms.function_calling import FunctionCallingLLM
     from serapeum.core.prompts.base import BasePromptTemplate

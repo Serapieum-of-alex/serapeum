@@ -22,7 +22,7 @@ This guide provides comprehensive examples covering all possible ways to use the
 The most straightforward way to use `Ollama`:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 # Initialize Ollama LLM
@@ -131,7 +131,7 @@ llm = Ollama(
 Basic conversation:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
@@ -149,7 +149,7 @@ print(response.message.content)  # "4"
 With conversation history:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
@@ -170,7 +170,7 @@ print(response.message.content)  # "3+3 equals 6."
 Passing custom parameters:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
@@ -191,7 +191,7 @@ response = llm.chat(
 Multi-modal input (if supported by model):
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole, Image
+from serapeum.core.base.llms.types import Message, MessageRole, Image
 from serapeum.llms.ollama import Ollama
 
 llm = Ollama(model="llama4", request_timeout=180)  # Vision model
@@ -272,7 +272,7 @@ print(response.text)  # {"name": "John", "age": 30}
 Real-time streaming chat:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
@@ -306,7 +306,7 @@ for chunk in llm.stream_complete(prompt):
 Access incremental content:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
@@ -333,7 +333,7 @@ Using tools with Ollama:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.tools import CallableTool
 from serapeum.llms.ollama import Ollama
 
@@ -373,7 +373,7 @@ Create tools from Pydantic models:
 
 ```python
 from pydantic import BaseModel, Field
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.tools import CallableTool
 from serapeum.llms.ollama import Ollama
 
@@ -411,7 +411,7 @@ Force single tool call:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.tools import CallableTool
 from serapeum.llms.ollama import Ollama
 
@@ -448,7 +448,7 @@ Allow multiple tool calls:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.tools import CallableTool
 from serapeum.llms.ollama import Ollama
 
@@ -489,7 +489,7 @@ Stream tool calls:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.tools import CallableTool
 from serapeum.llms.ollama import Ollama
 
@@ -659,7 +659,7 @@ Non-blocking chat:
 
 ```python
 import asyncio
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 
@@ -700,7 +700,7 @@ Non-blocking streaming:
 
 ```python
 import asyncio
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 
@@ -722,7 +722,7 @@ Process multiple requests concurrently:
 
 ```python
 import asyncio
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 
@@ -858,7 +858,7 @@ complex_llm = Ollama(model="llama3.1", request_timeout=300)
 Always handle potential errors:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
@@ -895,7 +895,7 @@ llm = Ollama(
 Use metadata for monitoring:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.llms.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)

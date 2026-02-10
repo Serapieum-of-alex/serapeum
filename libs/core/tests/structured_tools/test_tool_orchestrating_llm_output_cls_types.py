@@ -22,7 +22,7 @@ from unittest.mock import MagicMock
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.base.llms.models import Message, Metadata
+from serapeum.core.base.llms.types import Message, Metadata
 from serapeum.core.chat.models import AgentChatResponse
 from serapeum.core.structured_tools import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput

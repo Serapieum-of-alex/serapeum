@@ -4,7 +4,7 @@ import re
 from typing import Dict, List, Optional
 
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.base.llms.models import ChunkType, TextChunk
+from serapeum.core.base.llms.types import ChunkType, TextChunk
 
 
 class SafeFormatter:

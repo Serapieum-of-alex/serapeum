@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from serapeum.core.base.llms.models import Audio, Image, TextChunk
+from serapeum.core.base.llms.types import Audio, Image, TextChunk
 from serapeum.core.tools.models import (
     ArgumentCoercer,
     AsyncBaseTool,

@@ -30,7 +30,7 @@ python -m pip install -e .
 
 ```python
 from serapeum.llms.ollama import Ollama
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole
 
 llm = Ollama(model="llama3.1", request_timeout=120)
 messages = [Message(role=MessageRole.USER, content="Say pong.")]

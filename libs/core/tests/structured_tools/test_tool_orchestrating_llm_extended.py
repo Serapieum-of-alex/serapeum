@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import BaseModel
 
-from serapeum.core.base.llms.models import ChatResponse, Message, Metadata
+from serapeum.core.base.llms.types import ChatResponse, Message, Metadata
 from serapeum.core.chat.models import AgentChatResponse
 from serapeum.core.llms.function_calling import FunctionCallingLLM
 from serapeum.core.prompts.base import PromptTemplate

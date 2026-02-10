@@ -11,11 +11,11 @@ from serapeum.core.base.llms.types import (
     Message,
 )
 from serapeum.core.llms.base import LLM
-from serapeum.core.tools.models import ToolCallArguments
+from serapeum.core.tools.types import ToolCallArguments
 
 if TYPE_CHECKING:
     from serapeum.core.chat.types import AgentChatResponse
-    from serapeum.core.tools.models import BaseTool
+    from serapeum.core.tools.types import BaseTool
 
 
 class FunctionCallingLLM(LLM):

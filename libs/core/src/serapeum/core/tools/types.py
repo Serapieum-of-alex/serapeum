@@ -34,7 +34,7 @@ class MinimalToolSchema(BaseModel):
         - Typical usage: create and access the default schema instance
 
             ```python
-            >>> from serapeum.core.tools.models import MinimalToolSchema
+            >>> from serapeum.core.tools.types import MinimalToolSchema
             >>> schema = MinimalToolSchema(input="what's the weather today?")
             >>> print(schema.input)
             what's the weather today?
@@ -92,7 +92,7 @@ class ToolMetadata:
     Examples:
         - Typical usage with default parameter schema
             ```python
-            >>> from serapeum.core.tools.models import ToolMetadata
+            >>> from serapeum.core.tools.types import ToolMetadata
             >>> meta = ToolMetadata(description="Echo user input back.", name="echo")
             >>> params = meta.get_schema()
             >>> print(params)
@@ -188,7 +188,7 @@ class ToolMetadata:
         Examples:
             - Default schema when no custom ``tool_schema`` is supplied
                 ```python
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> meta = ToolMetadata(description="Echo", name="echo", tool_schema=None)
                 >>> params = meta.get_schema()
                 >>> print(params)
@@ -264,7 +264,7 @@ class ToolMetadata:
                 ```python
                 >>> import json
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> class Args(BaseModel):
                 ...     input: str
                 ...
@@ -284,7 +284,7 @@ class ToolMetadata:
 
             - Error when ``tool_schema`` is ``None``
                 ```python
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> meta = ToolMetadata(description="Echo", name="echo", tool_schema=None)
                 >>> try:
                 ...     _ = meta.tool_schema_str
@@ -314,7 +314,7 @@ class ToolMetadata:
         Examples:
             - Retrieve a valid name
                 ```python
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> meta = ToolMetadata(description="Echo", name="echo")
                 >>> meta.get_name()
                 'echo'
@@ -323,7 +323,7 @@ class ToolMetadata:
 
             - Error when name is missing
                 ```python
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> meta = ToolMetadata(description="No name provided", name=None)
                 >>> try:
                 ...     meta.get_name()
@@ -352,7 +352,7 @@ class ToolMetadata:
             - Generate guidance for a model with required fields
                 ```python
                 >>> from pydantic import BaseModel, Field
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> class Album(BaseModel):
                 ...     name: str = Field(description="Album name")
                 ...     artist: str = Field(description="Artist name")
@@ -410,7 +410,7 @@ class ToolMetadata:
         Examples:
             - Export with default schema
                 ```python
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> meta = ToolMetadata(description="Echo input.", name="echo")
                 >>> print(meta.to_openai_tool())
                 {
@@ -432,7 +432,7 @@ class ToolMetadata:
                 ```
             - Error on overly long descriptions (when not skipped)
                 ```python
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> long_desc = "x" * 1025
                 >>> meta = ToolMetadata(description=long_desc, name="tool")
                 >>> try:
@@ -502,7 +502,7 @@ class ToolOutput(BaseModel):
     Examples:
         - Typical usage with string content
             ```python
-            >>> from serapeum.core.tools.models import ToolOutput
+            >>> from serapeum.core.tools.types import ToolOutput
             >>> out = ToolOutput(tool_name="echo", content="hello")
             >>> out.content
             'hello'
@@ -512,7 +512,7 @@ class ToolOutput(BaseModel):
         - Using chunks directly
             ```python
             >>> from serapeum.core.base.llms.types import TextChunk
-            >>> from serapeum.core.tools.models import ToolOutput
+            >>> from serapeum.core.tools.types import ToolOutput
             >>> out = ToolOutput(tool_name="echo", chunks=[TextChunk(content="hi")])
             >>> print(out.content)
             'hi'
@@ -522,7 +522,7 @@ class ToolOutput(BaseModel):
         - Edge case: providing both ``content`` and ``chunks`` raises an error
             ```python
             >>> from serapeum.core.base.llms.types import TextChunk
-            >>> from serapeum.core.tools.models import ToolOutput
+            >>> from serapeum.core.tools.types import ToolOutput
             >>> try:
             ...     ToolOutput(tool_name="echo", content="x", chunks=[TextChunk(content="y")])
             ... except ValueError as e:
@@ -576,7 +576,7 @@ class ToolOutput(BaseModel):
         Examples:
             - Construct with content
                 ```python
-                >>> from serapeum.core.tools.models import ToolOutput
+                >>> from serapeum.core.tools.types import ToolOutput
                 >>> out = ToolOutput(tool_name="echo", content="hello")
                 >>> out.content
                 'hello'
@@ -585,7 +585,7 @@ class ToolOutput(BaseModel):
             - Construct with chunks
                 ```python
                 >>> from serapeum.core.base.llms.types import TextChunk
-                >>> from serapeum.core.tools.models import ToolOutput
+                >>> from serapeum.core.tools.types import ToolOutput
                 >>> out = ToolOutput(tool_name="echo", chunks=[TextChunk(content="hello")])
                 >>> out.content
                 'hello'
@@ -628,7 +628,7 @@ class ToolOutput(BaseModel):
             - Multiple text chunks are joined with a newline
                 ```python
                 >>> from serapeum.core.base.llms.types import TextChunk
-                >>> from serapeum.core.tools.models import ToolOutput
+                >>> from serapeum.core.tools.types import ToolOutput
                 >>> out = ToolOutput(
                 ...     tool_name="t",
                 ...     chunks=[TextChunk(content="a"), TextChunk(content="b")],
@@ -657,7 +657,7 @@ class ToolOutput(BaseModel):
         Examples:
             - Overwrite existing chunks
                 ```python
-                >>> from serapeum.core.tools.models import ToolOutput
+                >>> from serapeum.core.tools.types import ToolOutput
                 >>> out = ToolOutput(tool_name="t", content="first")
                 >>> out.content
                 'first'
@@ -684,7 +684,7 @@ class ToolOutput(BaseModel):
         Examples:
             - String conversion mirrors ``content``
                 ```python
-                >>> from serapeum.core.tools.models import ToolOutput
+                >>> from serapeum.core.tools.types import ToolOutput
                 >>> out = ToolOutput(tool_name="t", content="hello")
                 >>> str(out)
                 'hello'
@@ -704,7 +704,7 @@ class BaseTool:
     Examples:
         - Minimal echo tool
             ```python
-            >>> from serapeum.core.tools.models import BaseTool, ToolMetadata, ToolOutput
+            >>> from serapeum.core.tools.types import BaseTool, ToolMetadata, ToolOutput
             >>> class Echo(BaseTool):
             ...     @property
             ...     def metadata(self) -> ToolMetadata:
@@ -759,7 +759,7 @@ class AsyncBaseTool(BaseTool):
         - Minimal async echo tool
             ```python
             >>> import asyncio
-            >>> from serapeum.core.tools.models import AsyncBaseTool, ToolMetadata, ToolOutput
+            >>> from serapeum.core.tools.types import AsyncBaseTool, ToolMetadata, ToolOutput
             >>> class EchoAsync(AsyncBaseTool):
             ...     @property
             ...     def metadata(self) -> ToolMetadata:
@@ -831,7 +831,7 @@ class BaseToolAsyncAdapter(AsyncBaseTool):
         - Adapt a synchronous tool to async usage
             ```python
             >>> import asyncio
-            >>> from serapeum.core.tools.models import BaseTool, ToolMetadata, ToolOutput, BaseToolAsyncAdapter
+            >>> from serapeum.core.tools.types import BaseTool, ToolMetadata, ToolOutput, BaseToolAsyncAdapter
             >>> class Echo(BaseTool):
             ...     @property
             ...     def metadata(self) -> ToolMetadata:
@@ -911,7 +911,7 @@ def adapt_to_async_tool(tool: BaseTool) -> AsyncBaseTool:
         - Passing through an already-async tool
             ```python
             >>> import asyncio
-            >>> from serapeum.core.tools.models import AsyncBaseTool, ToolMetadata, ToolOutput, adapt_to_async_tool
+            >>> from serapeum.core.tools.types import AsyncBaseTool, ToolMetadata, ToolOutput, adapt_to_async_tool
             >>> class EchoAsync(AsyncBaseTool):
             ...     @property
             ...     def metadata(self) -> ToolMetadata:
@@ -925,7 +925,7 @@ def adapt_to_async_tool(tool: BaseTool) -> AsyncBaseTool:
             ...
             >>> async_tool = adapt_to_async_tool(EchoAsync())
             >>> type(async_tool)
-            <class 'serapeum.core.tools.models.BaseToolAsyncAdapter'>
+            <class 'serapeum.core.tools.types.BaseToolAsyncAdapter'>
             >>> asyncio.run(async_tool.acall({"input": "ok"})).content
             'ok'
 
@@ -934,7 +934,7 @@ def adapt_to_async_tool(tool: BaseTool) -> AsyncBaseTool:
         - Adapting a synchronous tool
             ```python
             >>> import asyncio
-            >>> from serapeum.core.tools.models import BaseTool, ToolMetadata, ToolOutput, adapt_to_async_tool
+            >>> from serapeum.core.tools.types import BaseTool, ToolMetadata, ToolOutput, adapt_to_async_tool
             >>> class Echo(BaseTool):
             ...     @property
             ...     def metadata(self) -> ToolMetadata:
@@ -945,7 +945,7 @@ def adapt_to_async_tool(tool: BaseTool) -> AsyncBaseTool:
             ...
             >>> async_tool = adapt_to_async_tool(Echo())
             >>> type(async_tool)
-            <class 'serapeum.core.tools.models.BaseToolAsyncAdapter'>
+            <class 'serapeum.core.tools.types.BaseToolAsyncAdapter'>
             >>> asyncio.run(async_tool.acall({"input": "hi"})).content
             'hi'
 
@@ -990,7 +990,7 @@ class ToolCallArguments(BaseModel):
     Examples:
         - Typical usage: construct a selection and access its fields
             ```python
-            >>> from serapeum.core.tools.models import ToolCallArguments
+            >>> from serapeum.core.tools.types import ToolCallArguments
             >>> sel = ToolCallArguments(tool_id="abc123", tool_name="echo", tool_kwargs={"text": "hi"})
             >>> (sel.tool_name, sel.tool_kwargs["text"])
             ('echo', 'hi')

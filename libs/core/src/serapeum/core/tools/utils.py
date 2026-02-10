@@ -14,9 +14,9 @@ self-contained (using local stubs), so they can be executed without any external
 infrastructure.
 
 See Also:
-    - serapeum.core.tools.models.BaseTool
-    - serapeum.core.tools.models.ToolOutput
-    - serapeum.core.tools.models.ToolCallArguments
+    - serapeum.core.tools.types.BaseTool
+    - serapeum.core.tools.types.ToolOutput
+    - serapeum.core.tools.types.ToolCallArguments
 """
 
 import datetime
@@ -43,7 +43,7 @@ from typing import (
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 
-from serapeum.core.tools.models import (
+from serapeum.core.tools.types import (
     BaseTool,
     ToolCallArguments,
     ToolOutput,

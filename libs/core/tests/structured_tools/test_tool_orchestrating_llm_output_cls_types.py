@@ -27,7 +27,7 @@ from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.structured_tools import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
 from serapeum.core.tools.callable_tool import CallableTool
-from serapeum.core.tools.models import BaseTool
+from serapeum.core.tools.types import BaseTool
 
 # ============================================================================
 # Test Models and Functions

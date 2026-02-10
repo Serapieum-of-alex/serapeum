@@ -24,7 +24,7 @@ This page summarizes the main modules, key classes, and the public API surface o
   - Prompt-related data models and types used by templates and LLMs.
 - serapeum.core.prompts.utils
   - Utilities for working with prompts and templates.
-- serapeum.core.tools.models
+- serapeum.core.tools.types
   - Tool system: `ToolMetadata`, JSON schema utilities, `BaseTool`, `AsyncBaseTool`, `ToolOutput`, `ToolCallArguments`, and adapters (e.g., `adapt_to_async_tool`).
 - serapeum.core.tools.callable_tool
   - `CallableTool`: create tools from Python callables or Pydantic models; handles sync/async bridging and output parsing.
@@ -59,7 +59,7 @@ This page summarizes the main modules, key classes, and the public API surface o
 - serapeum.core.llm.structured_llm.StructuredLLM
 - serapeum.core.structured_tools.tools_llm.ToolOrchestratingLLM
 - serapeum.core.tools.callable_tool.CallableTool
-- serapeum.core.tools.models.BaseTool / AsyncBaseTool
+- serapeum.core.tools.types.BaseTool / AsyncBaseTool
 - serapeum.core.base.llms.types.Message / MessageList / ChatResponse / CompletionResponse / Metadata
 - serapeum.core.prompts.base.PromptTemplate / ChatPromptTemplate
 - serapeum.core.models.base.SerializableModel

@@ -10,7 +10,7 @@ from serapeum.core.base.llms.types import Message, Metadata
 from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.structured_tools import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
-from serapeum.core.tools.models import BaseTool
+from serapeum.core.tools.types import BaseTool
 
 
 def _get_mock_album_response(

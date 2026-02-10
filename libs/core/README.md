@@ -110,7 +110,7 @@ prompt = PromptTemplate(
 ### 3) Define tools and execute them safely
 
 ```python
-from serapeum.core.tools.models import BaseTool, ToolMetadata, ToolOutput
+from serapeum.core.tools.types import BaseTool, ToolMetadata, ToolOutput
 from serapeum.core.tools.utils import ToolExecutor
 
 

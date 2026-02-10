@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 from serapeum.core.base.llms.types import Audio, Image, TextChunk
 from serapeum.core.tools.callable_tool import CallableTool, SyncAsyncConverter
-from serapeum.core.tools.models import ToolMetadata, ToolOutput
+from serapeum.core.tools.types import ToolMetadata, ToolOutput
 
 
 class MockSong(BaseModel):

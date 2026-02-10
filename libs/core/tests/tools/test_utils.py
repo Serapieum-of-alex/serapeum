@@ -14,7 +14,7 @@ from typing import Any, Optional, Sequence
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.tools.models import (
+from serapeum.core.tools.types import (
     AsyncBaseTool,
     BaseTool,
     ToolCallArguments,

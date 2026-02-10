@@ -37,7 +37,7 @@ from serapeum.core.structured_tools.utils import StreamingObjectProcessor
 from serapeum.core.tools import ArgumentCoercer, ToolCallArguments
 
 if TYPE_CHECKING:
-    from serapeum.core.tools.models import BaseTool
+    from serapeum.core.tools.types import BaseTool
 
 DEFAULT_REQUEST_TIMEOUT = 60.0
 

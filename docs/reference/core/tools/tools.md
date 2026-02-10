@@ -327,7 +327,7 @@ Wrap a synchronous function and call it
 
 ```python
 from serapeum.core.tools.callable_tool import CallableTool
-from serapeum.core.tools.models import ToolMetadata
+from serapeum.core.tools.types import ToolMetadata
 
 def greet(name: str) -> str:
     """Greet a user by name."""
@@ -343,7 +343,7 @@ Wrap an async function and await it
 ```python
 import asyncio
 from serapeum.core.tools.callable_tool import CallableTool
-from serapeum.core.tools.models import ToolMetadata
+from serapeum.core.tools.types import ToolMetadata
 
 async def add(a: int, b: int) -> int:
     return a + b
@@ -374,7 +374,7 @@ Export as an OpenAI function tool
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.tools.models import ToolMetadata
+from serapeum.core.tools.types import ToolMetadata
 
 class SearchArgs(BaseModel):
     query: str
@@ -387,10 +387,10 @@ print(meta.to_openai_tool())
 Execute with ToolExecutor (selection-based)
 
 ```python
-from serapeum.core.tools.models import ToolCallArguments
+from serapeum.core.tools.types import ToolCallArguments
 from serapeum.core.tools.utils import ToolExecutor
 from serapeum.core.tools.callable_tool import CallableTool
-from serapeum.core.tools.models import ToolMetadata
+from serapeum.core.tools.types import ToolMetadata
 
 # Prepare two tools
 say = CallableTool.from_function(lambda text: text, name="say")
@@ -408,7 +408,7 @@ Single-argument auto-unpack
 
 ```python
 from serapeum.core.tools.utils import ToolExecutor, ExecutionConfig
-from serapeum.core.tools.models import ToolMetadata
+from serapeum.core.tools.types import ToolMetadata
 from serapeum.core.tools.callable_tool import CallableTool
 
 def echo_list(lst: list[int]):

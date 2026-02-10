@@ -55,7 +55,7 @@ class AgentChatResponse:
         ```
 
     See Also:
-        - serapeum.core.tools.models.ToolOutput: Structured tool output container.
+        - serapeum.core.tools.types.ToolOutput: Structured tool output container.
         - AgentChatResponse._parse_tool_outputs: Helper to retrieve structured models from ``sources``.
     """
 
@@ -252,7 +252,7 @@ class AgentChatResponse:
             ```
 
         See Also:
-            - serapeum.core.tools.models.ToolOutput: Container used in ``sources``.
+            - serapeum.core.tools.types.ToolOutput: Container used in ``sources``.
         """
         outputs = [cast(BaseModel, s.raw_output) for s in self.sources]
         if allow_parallel_tool_calls:

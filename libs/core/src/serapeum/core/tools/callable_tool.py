@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
 from serapeum.core.base.llms.types import Audio, ChunkType, Image, TextChunk
-from serapeum.core.tools.models import (
+from serapeum.core.tools.types import (
     ArgumentCoercer,
     AsyncBaseTool,
     ToolMetadata,
@@ -157,8 +157,8 @@ class CallableTool(AsyncBaseTool):
     """Adapter that turns a Python callable into a Tool that can be called from LLMs.
 
     ``CallableTool`` wraps either a synchronous or asynchronous function and
-    normalizes input/output into the standard :class:`~serapeum.core.tools.models.ToolOutput`.
-    It also carries :class:`~serapeum.core.tools.models.ToolMetadata` used by
+    normalizes input/output into the standard :class:`~serapeum.core.tools.types.ToolOutput`.
+    It also carries :class:`~serapeum.core.tools.types.ToolMetadata` used by
     LLM function-calling interfaces.
 
     Use the constructor when you already have a :class:`ToolMetadata` instance,
@@ -169,7 +169,7 @@ class CallableTool(AsyncBaseTool):
         - Wrap a synchronous function
             ```python
             >>> from serapeum.core.tools.callable_tool import CallableTool
-            >>> from serapeum.core.tools.models import ToolMetadata
+            >>> from serapeum.core.tools.types import ToolMetadata
             >>> def greet(name: str) -> str:
             ...     return f"Hello, {name}!"
             >>> meta = ToolMetadata(name="greet", description="Greets a person by name.")
@@ -183,7 +183,7 @@ class CallableTool(AsyncBaseTool):
             ```python
             >>> import asyncio
             >>> from serapeum.core.tools.callable_tool import CallableTool
-            >>> from serapeum.core.tools.models import ToolMetadata
+            >>> from serapeum.core.tools.types import ToolMetadata
             >>> async def add(x: int, y: int) -> int:
             ...     return x + y
             >>> tool = CallableTool(func=add, metadata=ToolMetadata(name="add", description="Add two ints"))
@@ -195,7 +195,7 @@ class CallableTool(AsyncBaseTool):
         - Provide default arguments
             ```python
             >>> from serapeum.core.tools.callable_tool import CallableTool
-            >>> from serapeum.core.tools.models import ToolMetadata
+            >>> from serapeum.core.tools.types import ToolMetadata
             >>> def power(base: int, exp: int = 2) -> int:
             ...     return base ** exp
             >>> tool = CallableTool(
@@ -210,8 +210,8 @@ class CallableTool(AsyncBaseTool):
             ```
 
     See Also:
-        - serapeum.core.tools.models.ToolOutput: Standardized tool output container.
-        - serapeum.core.tools.models.ToolMetadata: Metadata used for function calling.
+        - serapeum.core.tools.types.ToolOutput: Standardized tool output container.
+        - serapeum.core.tools.types.ToolMetadata: Metadata used for function calling.
         - CallableTool.from_defaults: Build a tool with inferred metadata/schema.
     """
 
@@ -248,7 +248,7 @@ class CallableTool(AsyncBaseTool):
             - Synchronous function with metadata
                 ```python
                 >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> def echo(text: str) -> str:
                 ...     return text
                 >>> tool = CallableTool(func=echo, metadata=ToolMetadata(name="echo", description="Echo text"))
@@ -260,7 +260,7 @@ class CallableTool(AsyncBaseTool):
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> async def add(a: int, b: int) -> int:
                 ...     return a + b
                 >>> tool = CallableTool(
@@ -354,7 +354,7 @@ class CallableTool(AsyncBaseTool):
                 ```
             - Provide your own metadata and defaults
                 ```python
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> def echo(text: str) -> str:
                 ...     return text
@@ -552,7 +552,7 @@ class CallableTool(AsyncBaseTool):
             - Access the tool name
                 ```python
                 >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> def noop(x: int) -> int:
                 ...     return x
                 >>> tool = CallableTool(func=noop, metadata=ToolMetadata(name="noop", description="No-op"))
@@ -577,7 +577,7 @@ class CallableTool(AsyncBaseTool):
             - Invoke the underlying function directly
                 ```python
                 >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> def add(a: int, b: int) -> int:
                 ...     return a + b
                 >>> tool = CallableTool(func=add, metadata=ToolMetadata(name="add", description="Add"))
@@ -604,7 +604,7 @@ class CallableTool(AsyncBaseTool):
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> def square(x: int) -> int:
                 ...     return x * x
                 >>> tool = CallableTool(func=square, metadata=ToolMetadata(name="square", description="Square"))
@@ -633,7 +633,7 @@ class CallableTool(AsyncBaseTool):
                 ```python
                 >>> import inspect
                 >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> async def afunc(x: int) -> int:
                 ...     return x
                 >>> tool = CallableTool(func=afunc, metadata=ToolMetadata(name="afunc", description="Async"))
@@ -662,7 +662,7 @@ class CallableTool(AsyncBaseTool):
 
         Returns:
             list[ChunkType]: A list of content chunks suitable for
-            :class:`~serapeum.core.tools.models.ToolOutput`.
+            :class:`~serapeum.core.tools.types.ToolOutput`.
 
         Examples:
             - String is converted into a TextChunk
@@ -717,7 +717,7 @@ class CallableTool(AsyncBaseTool):
             - Delegation to call()
                 ```python
                 >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> def add(a: int, b: int) -> int:
                 ...     return a + b
                 >>> tool = CallableTool(func=add, metadata=ToolMetadata(name="add", description="Add"))
@@ -729,7 +729,7 @@ class CallableTool(AsyncBaseTool):
             - Default arguments are merged
                 ```python
                 >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> def greet(name: str, punct: str = "!") -> str:
                 ...     return f"Hello, {name}{punct}"
                 >>> tool = CallableTool(
@@ -771,7 +771,7 @@ class CallableTool(AsyncBaseTool):
             - Typical usage
                 ```python
                 >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> def concat(a: str, b: str) -> str:
                 ...     return a + b
                 >>> tool = CallableTool(func=concat, metadata=ToolMetadata(name="concat", description="Concat"))
@@ -782,7 +782,7 @@ class CallableTool(AsyncBaseTool):
             - Overriding defaults
                 ```python
                 >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> def greet(name: str, punct: str = "!") -> str:
                 ...     return f"Hello, {name}{punct}"
                 >>> tool = CallableTool(
@@ -835,7 +835,7 @@ class CallableTool(AsyncBaseTool):
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.tools.callable_tool import CallableTool
-                >>> from serapeum.core.tools.models import ToolMetadata
+                >>> from serapeum.core.tools.types import ToolMetadata
                 >>> async def add(a: int, b: int) -> int:
                 ...     return a + b
                 >>> tool = CallableTool(func=add, metadata=ToolMetadata(name="add", description="Add"))

@@ -1634,7 +1634,7 @@ flowchart TD
 <h2 id="usage-examples"><a class="toclink" href="#usage-examples">Usage examples</a><a class="headerlink" href="#usage-examples" title="Permanent link">#</a></h2>
 <p>Wrap a synchronous function and call it</p>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.callable_tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallableTool</span>
-<a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolMetadata</span>
+<a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolMetadata</span>
 <a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>
 <a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">greet</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">    </span><span class="sd">"""Greet a user by name."""</span>
@@ -1647,7 +1647,7 @@ flowchart TD
 <p>Wrap an async function and await it</p>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.callable_tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallableTool</span>
-<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolMetadata</span>
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolMetadata</span>
 <a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>
 <a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
@@ -1672,7 +1672,7 @@ flowchart TD
 </code></pre></div>
 <p>Export as an OpenAI function tool</p>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolMetadata</span>
+<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolMetadata</span>
 <a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>
 <a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">SearchArgs</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a>    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span>
@@ -1682,10 +1682,10 @@ flowchart TD
 <a href="#__codelineno-3-9" id="__codelineno-3-9" name="__codelineno-3-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">to_openai_tool</span><span class="p">())</span>
 </code></pre></div>
 <p>Execute with ToolExecutor (selection-based)</p>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolCallArguments</span>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolCallArguments</span>
 <a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolExecutor</span>
 <a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.callable_tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallableTool</span>
-<a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolMetadata</span>
+<a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolMetadata</span>
 <a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a>
 <a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="c1"># Prepare two tools</span>
 <a href="#__codelineno-4-7" id="__codelineno-4-7" name="__codelineno-4-7"></a><span class="n">say</span> <span class="o">=</span> <span class="n">CallableTool</span><span class="o">.</span><span class="n">from_function</span><span class="p">(</span><span class="k">lambda</span> <span class="n">text</span><span class="p">:</span> <span class="n">text</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"say"</span><span class="p">)</span>
@@ -1700,7 +1700,7 @@ flowchart TD
 </code></pre></div>
 <p>Single-argument auto-unpack</p>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolExecutor</span><span class="p">,</span> <span class="n">ExecutionConfig</span>
-<a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolMetadata</span>
+<a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolMetadata</span>
 <a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools.callable_tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallableTool</span>
 <a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a>
 <a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">echo_list</span><span class="p">(</span><span class="n">lst</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>

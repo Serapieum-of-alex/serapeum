@@ -1,10 +1,13 @@
 """Pydantic base classes and serialization helpers used across Serapeum."""
 
+from __future__ import annotations
+
+import builtins
 import json
 import logging
 import pickle  # nosec B403
 from enum import Enum
-from typing import Any, Dict, Self, TypeVar
+from typing import Any, Self, TypeVar
 
 from pydantic import (
     BaseModel,
@@ -61,16 +64,16 @@ class SerializableModel(BaseModel):
     @model_serializer(mode="wrap")
     def custom_model_dump(
         self, handler: SerializerFunctionWrapHandler, info: SerializationInfo
-    ) -> dict[str, Any]:
+    ) -> builtins.dict[str, Any]:
         data = handler(self)
         data["class_name"] = self.class_name()
         return data
 
-    def dict(self, **kwargs: Any) -> dict[str, Any]:
+    def dict(self, **kwargs: Any) -> builtins.dict[str, Any]:
         """Alias to :meth:`model_dump`."""
         return self.model_dump(**kwargs)
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> builtins.dict[str, Any]:
         """Return a picklable state, pruning unpickleable attributes.
 
         Scans both ``__dict__`` and ``__pydantic_private__`` for values that
@@ -106,7 +109,7 @@ class SerializableModel(BaseModel):
 
         return state
 
-    def __setstate__(self, state: Dict[str, Any]) -> None:
+    def __setstate__(self, state: builtins.dict[str, Any]) -> None:
         """Reconstruct instance from pickled state safely."""
         # Use the __dict__ and __init__ method to set state
         # so that all variables initialize
@@ -117,7 +120,7 @@ class SerializableModel(BaseModel):
             # This may not work if the class had unpickleable attributes
             super().__setstate__(state)
 
-    def to_dict(self, **kwargs: Any) -> Dict[str, Any]:
+    def to_dict(self, **kwargs: Any) -> builtins.dict[str, Any]:
         data = self.dict(**kwargs)
         data["class_name"] = self.class_name()
         return data
@@ -127,7 +130,7 @@ class SerializableModel(BaseModel):
         return json.dumps(data)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any], **kwargs: Any) -> Self:
+    def from_dict(cls, data: builtins.dict[str, Any], **kwargs: Any) -> Self:
         """Create an instance from a dictionary (deserialization)."""
         data = dict(data)
         if isinstance(kwargs, dict):

@@ -1,7 +1,7 @@
 # Serapeum Ollama
 
 Serapeum Ollama is the Ollama backend adapter for Serapeum Core. It implements
-the `serapeum.core.llm.LLM` interface on top of the Ollama Python client,
+the `serapeum.core.llms.LLM` interface on top of the Ollama Python client,
 supporting chat, streaming, async calls, and tool/function calling.
 
 Use this package when you want Serapeum to talk to a local or remote Ollama

@@ -110,7 +110,7 @@ module = "serapeum.core.base.*"
 strict = true
 
 [[tool.mypy.overrides]]
-module = "serapeum.core.llm.*"
+module = "serapeum.core.llms.*"
 strict = true
 
 [[tool.mypy.overrides]]

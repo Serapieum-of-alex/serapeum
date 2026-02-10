@@ -1,4 +1,4 @@
-"""Tests for serapeum.core.llm.base module."""
+"""Tests for serapeum.core.llms.base module."""
 
 from typing import Any, List, Sequence
 

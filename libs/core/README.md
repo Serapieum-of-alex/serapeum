@@ -19,7 +19,7 @@ helpers for prompts, output parsing, and tool calling, this is the package to us
 
 - `serapeum.core.base.llms`: Base interfaces and data models (messages, chunks,
   responses, metadata).
-- `serapeum.core.llm`: High-level LLM class with predict/stream helpers and
+- `serapeum.core.llms`: High-level LLM class with predict/stream helpers and
   structured output utilities.
 - `serapeum.core.prompts`: Prompt templates for text and chat models.
 - `serapeum.core.output_parsers`: Parsers for structured outputs (e.g., Pydantic).

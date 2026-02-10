@@ -4,8 +4,8 @@ vars:
   # Optional override, e.g. `task install:all PYTHON=C:\path\to\python.exe`
   PYTHON: ""
   DIST_DIR: "dist"
-  CORE_LIB_DIR: "src/serapeum-core"
-  PLUGIN_OLLAMA_DIR: "libs/providers/serapeum-ollama"
+  CORE_LIB_DIR: "libs/core"
+  PLUGIN_OLLAMA_DIR: "libs/providers/ollama"
 
 tasks:
   build:core:

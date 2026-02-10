@@ -36,7 +36,7 @@ This page summarizes the main modules, key classes, and the public API surface o
   - Utilities/classes for orchestrating text-completion style LLMs in the structured tools pipeline.
 - serapeum.core.structured_tools.utils
   - Support utilities for the structured tools orchestration layer.
-- serapeum.core.output_parsers.models
+- serapeum.core.output_parsers.types
   - Parsers and base models for converting raw LLM output into typed structures.
 - serapeum.core.output_parsers.utils
   - Helper functions for robust output parsing and error handling.

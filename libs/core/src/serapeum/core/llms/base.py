@@ -28,7 +28,7 @@ from serapeum.core.base.llms.types import (
     MessageRole,
 )
 from serapeum.core.types import Model, StructuredLLMMode
-from serapeum.core.output_parsers.models import BaseParser, TokenAsyncGen, TokenGen
+from serapeum.core.output_parsers.types import BaseParser, TokenAsyncGen, TokenGen
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
 
 if TYPE_CHECKING:

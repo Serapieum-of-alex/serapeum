@@ -18,7 +18,7 @@ from serapeum.core.base.llms.utils import (
     achat_to_completion_decorator,
     chat_to_completion_decorator,
 )
-from serapeum.core.llm.base import LLM
+from serapeum.core.llms.base import LLM
 from serapeum.core.prompts.base import ChatPromptTemplate
 
 

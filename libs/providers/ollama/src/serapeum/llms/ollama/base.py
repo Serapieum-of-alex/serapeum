@@ -31,7 +31,7 @@ from serapeum.core.base.llms.utils import (
 )
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llms.function_calling import FunctionCallingLLM
-from serapeum.core.models import StructuredLLMMode
+from serapeum.core.types import StructuredLLMMode
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.structured_tools.utils import StreamingObjectProcessor
 from serapeum.core.tools import ArgumentCoercer, ToolCallArguments

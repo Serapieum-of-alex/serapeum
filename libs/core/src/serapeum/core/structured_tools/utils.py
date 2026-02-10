@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Sequence, Type, TypeVar
 
 from pydantic import BaseModel, ConfigDict, ValidationError, create_model
 
-from serapeum.core.models import StructuredLLMMode
+from serapeum.core.types import StructuredLLMMode
 from serapeum.core.output_parsers import PydanticParser
 
 if TYPE_CHECKING:

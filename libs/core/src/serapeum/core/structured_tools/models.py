@@ -5,7 +5,7 @@ from typing import Any, AsyncGenerator, Generator, Generic, List, Type, Union
 
 from pydantic import BaseModel
 
-from serapeum.core.models import Model
+from serapeum.core.types import Model
 
 
 class BasePydanticLLM(ABC, Generic[Model]):

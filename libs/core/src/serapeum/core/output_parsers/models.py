@@ -21,7 +21,7 @@ from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic_core import CoreSchema, core_schema
 
 from serapeum.core.base.llms.types import Message, MessageRole, TextChunk
-from serapeum.core.models import Model
+from serapeum.core.types import Model
 from serapeum.core.utils.schemas import (
     PYDANTIC_FORMAT_TMPL,
     JsonParser,

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from serapeum.core.llms import LLM
-from serapeum.core.models import StructuredLLMMode
+from serapeum.core.types import StructuredLLMMode
 
 
 @dataclass

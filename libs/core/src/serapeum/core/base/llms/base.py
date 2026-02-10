@@ -20,7 +20,7 @@ from serapeum.core.base.llms.types import (
     Metadata,
     TextChunk,
 )
-from serapeum.core.models import SerializableModel
+from serapeum.core.types import SerializableModel
 
 
 class BaseLLM(SerializableModel):

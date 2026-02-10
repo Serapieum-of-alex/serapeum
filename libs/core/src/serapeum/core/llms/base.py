@@ -1047,7 +1047,7 @@ class LLM(BaseLLM, ABC):
         Examples:
             - Leave messages unchanged when no system prompt is configured
                 ```python
-                >>> from serapeum.core.base.llms.models import (
+                >>> from serapeum.core.base.llms.types import (
                 ...     CompletionResponse,
                 ...     Message,
                 ...     Metadata,
@@ -1079,7 +1079,7 @@ class LLM(BaseLLM, ABC):
                 ```
             - Prepend a system prompt when configured
                 ```python
-                >>> from serapeum.core.base.llms.models import (
+                >>> from serapeum.core.base.llms.types import (
                 ...     CompletionResponse,
                 ...     Message,
                 ...     Metadata,
@@ -1146,7 +1146,7 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> from unittest.mock import patch
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class Person(BaseModel):
                 ...     name: str
                 ...
@@ -1185,7 +1185,7 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> from unittest.mock import patch
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class Stats(BaseModel):
                 ...     parameter: str
                 ...     config: dict
@@ -1270,7 +1270,7 @@ class LLM(BaseLLM, ABC):
                 >>> import asyncio
                 >>> from unittest.mock import patch
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class Person(BaseModel):
                 ...     name: str
                 ...
@@ -1319,7 +1319,7 @@ class LLM(BaseLLM, ABC):
                 >>> import asyncio
                 >>> from unittest.mock import patch
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class Report(BaseModel):
                 ...     meta: dict
                 ...
@@ -1407,7 +1407,7 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> from unittest.mock import patch
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class Item(BaseModel):
                 ...     value: str
                 ...
@@ -1456,7 +1456,7 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> from unittest.mock import patch
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class Item(BaseModel):
                 ...     value: str
                 ...
@@ -1544,7 +1544,7 @@ class LLM(BaseLLM, ABC):
                 >>> import asyncio
                 >>> from unittest.mock import patch
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class Item(BaseModel):
                 ...     value: str
                 ...
@@ -1635,7 +1635,7 @@ class LLM(BaseLLM, ABC):
                 >>> import asyncio
                 >>> from unittest.mock import patch
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class Item(BaseModel):
                 ...     value: str
                 ...
@@ -1690,7 +1690,7 @@ class LLM(BaseLLM, ABC):
                 >>> import asyncio
                 >>> from unittest.mock import patch
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class Item(BaseModel):
                 ...     value: str
                 ...
@@ -1782,7 +1782,7 @@ class LLM(BaseLLM, ABC):
             - Produce a completion using a non-chat model
                 ```python
                 >>> from serapeum.core.prompts import PromptTemplate
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
                 ...     metadata = Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
@@ -1809,7 +1809,7 @@ class LLM(BaseLLM, ABC):
             - Return the assistant message when operating in chat mode
                 ```python
                 >>> from serapeum.core.prompts import ChatPromptTemplate
-                >>> from serapeum.core.base.llms.models import (
+                >>> from serapeum.core.base.llms.types import (
                 ...     ChatResponse,
                 ...     Message,
                 ...     MessageRole,
@@ -1878,7 +1878,7 @@ class LLM(BaseLLM, ABC):
             - Stream completion tokens for a non-chat model
                 ```python
                 >>> from serapeum.core.prompts import PromptTemplate
-                >>> from serapeum.core.base.llms.models import (
+                >>> from serapeum.core.base.llms.types import (
                 ...     CompletionResponse,
                 ...     CompletionResponseGen,
                 ...     Metadata,
@@ -1915,7 +1915,7 @@ class LLM(BaseLLM, ABC):
             - Stream assistant deltas for a chat model
                 ```python
                 >>> from serapeum.core.prompts import ChatPromptTemplate
-                >>> from serapeum.core.base.llms.models import (
+                >>> from serapeum.core.base.llms.types import (
                 ...     ChatResponse,
                 ...     ChatResponseGen,
                 ...     Message,
@@ -2002,7 +2002,7 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.prompts import PromptTemplate
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
                 ...     metadata = Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
@@ -2033,7 +2033,7 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.prompts import ChatPromptTemplate
-                >>> from serapeum.core.base.llms.models import (
+                >>> from serapeum.core.base.llms.types import (
                 ...     ChatResponse,
                 ...     Message,
                 ...     MessageRole,
@@ -2106,7 +2106,7 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.prompts import PromptTemplate
-                >>> from serapeum.core.base.llms.models import (
+                >>> from serapeum.core.base.llms.types import (
                 ...     CompletionResponse,
                 ...     CompletionResponseAsyncGen,
                 ...     Metadata,
@@ -2146,7 +2146,7 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.prompts import ChatPromptTemplate
-                >>> from serapeum.core.base.llms.models import (
+                >>> from serapeum.core.base.llms.types import (
                 ...     ChatResponse,
                 ...     ChatResponseAsyncGen,
                 ...     Message,
@@ -2232,7 +2232,7 @@ class LLM(BaseLLM, ABC):
             - Construct a structured wrapper with default options
                 ```python
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
                 ...     metadata = Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
@@ -2264,7 +2264,7 @@ class LLM(BaseLLM, ABC):
             - Pass configuration options through to ``StructuredLLM``
                 ```python
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.base.llms.models import CompletionResponse, Metadata
+                >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
                 ...     metadata = Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):

@@ -6,22 +6,22 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="LLM package" name="description"/>
-<link href="https://serapieum-of-alex.github.io/Serapeum/develop/reference/integrations/llms/ollama/ollama_class/" rel="canonical"/>
+<link href="https://serapieum-of-alex.github.io/Serapeum/develop/reference/providers/ollama/ollama_class/" rel="canonical"/>
 <link href="../ollama_sequence/" rel="prev"/>
 <link href="../ollama_dataflow/" rel="next"/>
-<link href="../../../../../assets/images/favicon.png" rel="icon"/>
+<link href="../../../../assets/images/favicon.png" rel="icon"/>
 <meta content="mkdocs-1.6.1, mkdocs-material-9.7.1" name="generator"/>
 <title>Architecture - Serapeum</title>
-<link href="../../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
-<link href="../../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
+<link href="../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
+<link href="../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
 <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-<link href="../../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
-<link href="../../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
-<script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+<link href="../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
+<script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -37,7 +37,7 @@
 </div>
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
 <nav aria-label="Header" class="md-header__inner md-grid">
-<a aria-label="Serapeum" class="md-header__button md-logo" data-md-component="logo" href="../../../../.." title="Serapeum">
+<a aria-label="Serapeum" class="md-header__button md-logo" data-md-component="logo" href="../../../.." title="Serapeum">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
 </a>
 <label class="md-header__button md-icon" for="__drawer">
@@ -120,7 +120,7 @@
 <div class="md-grid">
 <ul class="md-tabs__list">
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../..">
+<a class="md-tabs__link" href="../../../..">
         
   
   
@@ -131,7 +131,7 @@
       </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../../developer-guide/installation/">
+<a class="md-tabs__link" href="../../../../developer-guide/installation/">
           
   
   
@@ -142,7 +142,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../../overview/codebase-map/">
+<a class="md-tabs__link" href="../../../../overview/codebase-map/">
           
   
   
@@ -153,7 +153,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../../architecture/diagrams.md">
+<a class="md-tabs__link" href="../../../../architecture/diagrams.md">
           
   
   
@@ -164,7 +164,7 @@
         </a>
 </li>
 <li class="md-tabs__item md-tabs__item--active">
-<a class="md-tabs__link" href="../../../../core/structured_tools/text_completion_llm/general/">
+<a class="md-tabs__link" href="../../../core/structured_tools/text_completion_llm/general/">
           
   
   
@@ -175,7 +175,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../../change-log/">
+<a class="md-tabs__link" href="../../../../change-log/">
           
   
   
@@ -197,7 +197,7 @@
 <div class="md-sidebar__inner">
 <nav aria-label="Navigation" class="md-nav md-nav--primary md-nav--lifted" data-md-level="0">
 <label class="md-nav__title" for="__drawer">
-<a aria-label="Serapeum" class="md-nav__button md-logo" data-md-component="logo" href="../../../../.." title="Serapeum">
+<a aria-label="Serapeum" class="md-nav__button md-logo" data-md-component="logo" href="../../../.." title="Serapeum">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
 </a>
     Serapeum
@@ -214,7 +214,7 @@
 </div>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../..">
+<a class="md-nav__link" href="../../../..">
 <span class="md-ellipsis">
     
   
@@ -249,7 +249,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../../developer-guide/installation/">
+<a class="md-nav__link" href="../../../../developer-guide/installation/">
 <span class="md-ellipsis">
     
   
@@ -261,7 +261,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../../developer-guide/contributing/">
+<a class="md-nav__link" href="../../../../developer-guide/contributing/">
 <span class="md-ellipsis">
     
   
@@ -273,7 +273,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../../developer-guide/taskfile/">
+<a class="md-nav__link" href="../../../../developer-guide/taskfile/">
 <span class="md-ellipsis">
     
   
@@ -311,7 +311,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../../overview/codebase-map/">
+<a class="md-nav__link" href="../../../../overview/codebase-map/">
 <span class="md-ellipsis">
     
   
@@ -349,7 +349,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../../architecture/diagrams.md">
+<a class="md-nav__link" href="../../../../architecture/diagrams.md">
 <span class="md-ellipsis">
     
   
@@ -456,7 +456,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/text_completion_llm/general/">
+<a class="md-nav__link" href="../../../core/structured_tools/text_completion_llm/general/">
 <span class="md-ellipsis">
     
   
@@ -468,7 +468,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/text_completion_llm/examples/">
+<a class="md-nav__link" href="../../../core/structured_tools/text_completion_llm/examples/">
 <span class="md-ellipsis">
     
   
@@ -480,7 +480,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/text_completion_llm/text_completion_llm_sequence/">
+<a class="md-nav__link" href="../../../core/structured_tools/text_completion_llm/text_completion_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -492,7 +492,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/text_completion_llm/text_completion_llm_class/">
+<a class="md-nav__link" href="../../../core/structured_tools/text_completion_llm/text_completion_llm_class/">
 <span class="md-ellipsis">
     
   
@@ -504,7 +504,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/text_completion_llm/text_completion_llm_dataflow/">
+<a class="md-nav__link" href="../../../core/structured_tools/text_completion_llm/text_completion_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -516,7 +516,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/text_completion_llm/text_completion_llm_components/">
+<a class="md-nav__link" href="../../../core/structured_tools/text_completion_llm/text_completion_llm_components/">
 <span class="md-ellipsis">
     
   
@@ -528,7 +528,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/text_completion_llm/text_completion_llm_state/">
+<a class="md-nav__link" href="../../../core/structured_tools/text_completion_llm/text_completion_llm_state/">
 <span class="md-ellipsis">
     
   
@@ -566,7 +566,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/tool_orchestrating_llm/general/">
+<a class="md-nav__link" href="../../../core/structured_tools/tool_orchestrating_llm/general/">
 <span class="md-ellipsis">
     
   
@@ -578,7 +578,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/tool_orchestrating_llm/examples/">
+<a class="md-nav__link" href="../../../core/structured_tools/tool_orchestrating_llm/examples/">
 <span class="md-ellipsis">
     
   
@@ -590,7 +590,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_sequence/">
+<a class="md-nav__link" href="../../../core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -602,7 +602,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_class/">
+<a class="md-nav__link" href="../../../core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_class/">
 <span class="md-ellipsis">
     
   
@@ -614,7 +614,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_dataflow/">
+<a class="md-nav__link" href="../../../core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -626,7 +626,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_components/">
+<a class="md-nav__link" href="../../../core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_components/">
 <span class="md-ellipsis">
     
   
@@ -638,7 +638,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_state/">
+<a class="md-nav__link" href="../../../core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_state/">
 <span class="md-ellipsis">
     
   
@@ -679,7 +679,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/tools/tools/">
+<a class="md-nav__link" href="../../../core/tools/tools/">
 <span class="md-ellipsis">
     
   
@@ -691,7 +691,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../core/tools/callable_tools/">
+<a class="md-nav__link" href="../../../core/tools/callable_tools/">
 <span class="md-ellipsis">
     
   
@@ -1113,7 +1113,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../../change-log/">
+<a class="md-nav__link" href="../../../../change-log/">
 <span class="md-ellipsis">
     
   
@@ -1125,7 +1125,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../../contributing.md">
+<a class="md-nav__link" href="../../../../contributing.md">
 <span class="md-ellipsis">
     
   
@@ -1137,7 +1137,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../../LICENSE/">
+<a class="md-nav__link" href="../../../../LICENSE/">
 <span class="md-ellipsis">
     
   
@@ -1368,10 +1368,10 @@
 </div>
 <div class="md-content" data-md-component="content">
 <article class="md-content__inner md-typeset">
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/integrations/llms/ollama/ollama_class.md" rel="edit" title="Edit this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/providers/ollama/ollama_class.md" rel="edit" title="Edit this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
 </a>
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/integrations/llms/ollama/ollama_class.md" title="View source of this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/providers/ollama/ollama_class.md" title="View source of this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
 </a>
 <h1 id="architecture-and-class-relationships"><a class="toclink" href="#architecture-and-class-relationships">Architecture and Class Relationships</a><a class="headerlink" href="#architecture-and-class-relationships" title="Permanent link">#</a></h1>
@@ -1791,9 +1791,9 @@ Hold "Ctrl" to enable pan &amp; zoom
 <div class="md-dialog" data-md-component="dialog">
 <div class="md-dialog__inner md-typeset"></div>
 </div>
-<script id="__config" type="application/json">{"annotate": null, "base": "../../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
-<script src="../../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
-<script src="../../../../../assets/javascripts/panzoom.min.js"></script>
-<script src="../../../../../assets/javascripts/zoompan.js"></script>
+<script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+<script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+<script src="../../../../assets/javascripts/panzoom.min.js"></script>
+<script src="../../../../assets/javascripts/zoompan.js"></script>
 </body>
 </html>

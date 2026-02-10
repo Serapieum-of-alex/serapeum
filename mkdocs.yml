@@ -113,6 +113,7 @@ nav:
   - Developer Guide:
       - Installation: developer-guide/installation.md
       - contributing: developer-guide/contributing.md
+      - Taskfile: developer-guide/taskfile.md
   - Overview:
     - Codebase Map: overview/codebase-map.md
   - Architecture:

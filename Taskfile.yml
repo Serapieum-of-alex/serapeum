@@ -5,7 +5,7 @@ vars:
   PYTHON: ""
   DIST_DIR: "dist"
   CORE_LIB_DIR: "src/serapeum-core"
-  PLUGIN_OLLAMA_DIR: "plugins/llms/serapeum-llms-ollama"
+  PLUGIN_OLLAMA_DIR: "libs/llms/serapeum-llms-ollama"
 
 tasks:
   build:core:
@@ -24,7 +24,7 @@ tasks:
       - uv build --wheel -o "{{.DIST_DIR}}" "{{.PLUGIN_OLLAMA_DIR}}"
 
   build:all:
-    desc: Build wheels for core and plugins.
+    desc: Build wheels for core and libs.
     deps:
       - build:core-lib
       - build:core
@@ -48,7 +48,7 @@ tasks:
       - cmd: uv pip install {{if .PYTHON}}-p "{{.PYTHON}}" {{end}}--find-links "{{.DIST_DIR}}" serapeum-core serapeum-llms-ollama serapeum
 
   uninstall:all:
-    desc: Uninstall serapeum and plugins from the target env.
+    desc: Uninstall serapeum and libs from the target env.
     cmds:
       - cmd: uv pip uninstall {{if .PYTHON}}-p "{{.PYTHON}}" {{end}}serapeum serapeum-core serapeum-llms-ollama
 

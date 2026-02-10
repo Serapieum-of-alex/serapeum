@@ -5,7 +5,7 @@ title: Taskfile Usage
 # Taskfile usage
 
 This project uses a Taskfile (`Taskfile.yml`) to standardize build and install
-steps for the core package and plugins. Tasks are run with the `task` CLI.
+steps for the core package and libs. Tasks are run with the `task` CLI.
 
 ## Prerequisites
 
@@ -84,7 +84,7 @@ task clean:dist
 | `build:core` | Build wheel for the root project (`serapeum`). |
 | `build:core-lib` | Build wheel for `serapeum-core`. |
 | `build:plugin:ollama` | Build wheel for the Ollama plugin. |
-| `build:all` | Build wheels for core and plugins. |
+| `build:all` | Build wheels for core and libs. |
 | `install:core` | Install `serapeum-core` wheel into the target env. |
 | `install:plugin:ollama` | Install the Ollama plugin wheel into the target env. |
 | `install:all` | Build and install all wheels into the target env. |

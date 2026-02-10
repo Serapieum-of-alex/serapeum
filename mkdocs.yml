@@ -143,13 +143,13 @@ nav:
     - Libs:
         - Providers:
             - Ollama:
-                - Overview: reference/integrations/llms/ollama/general.md
-                - Examples: reference/integrations/llms/ollama/examples.md
-                - Execution Flow: reference/integrations/llms/ollama/ollama_sequence.md
-                - Architecture: reference/integrations/llms/ollama/ollama_class.md
-                - Data Flow: reference/integrations/llms/ollama/ollama_dataflow.md
-                - Components: reference/integrations/llms/ollama/ollama_components.md
-                - Lifecycle: reference/integrations/llms/ollama/ollama_state.md
+                - Overview: reference/providers/ollama/general.md
+                - Examples: reference/providers/ollama/examples.md
+                - Execution Flow: reference/providers/ollama/ollama_sequence.md
+                - Architecture: reference/providers/ollama/ollama_class.md
+                - Data Flow: reference/providers/ollama/ollama_dataflow.md
+                - Components: reference/providers/ollama/ollama_components.md
+                - Lifecycle: reference/providers/ollama/ollama_state.md
   - About:
     - Change-log: change-log.md
     - Contributing: contributing.md

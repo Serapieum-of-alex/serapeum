@@ -197,7 +197,7 @@ from serapeum.llms.ollama import Ollama
 llm = Ollama(model="llama4", request_timeout=180)  # Vision model
 
 # Create message with image
-image = Image(path="docs/reference/integrations/llms/ollama/images/baharia-oasis.jpg")
+image = Image(path="docs/reference/providers/ollama/images/baharia-oasis.jpg")
 messages = [
     Message(
         role=MessageRole.USER,

@@ -21,7 +21,7 @@ docs, examples, and prompts.
   - Shared LLM models and interfaces.
   - Prompt templates and output parsers.
   - Tool schemas and execution utilities.
-- `serapeum-ollama` (Python package under `serapeum-integrations/llms/`)
+- `serapeum-ollama` (Python package under `libs/providers/ollama/`)
   - Ollama-backed LLM adapter.
   - Tool calling and structured output support when available.
 

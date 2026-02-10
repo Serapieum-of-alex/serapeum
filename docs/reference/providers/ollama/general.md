@@ -377,7 +377,7 @@ ollama serve
 uv pip install serapeum-ollama
 
 # Or install from source
-uv pip install -e serapeum-integrations/llms/serapeum-ollama
+uv pip install -e libs/providers/serapeum-ollama
 ```
 
 ## Common Patterns

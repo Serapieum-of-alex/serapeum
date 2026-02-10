@@ -65,7 +65,7 @@ Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/serapeum"]
+packages = ["src/serapeum-core/src/serapeum"]
 
 [tool.flake8]
 ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]

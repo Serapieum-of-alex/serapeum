@@ -20,7 +20,7 @@ from serapeum.core.configs.configs import Configs
 from serapeum.core.llms.base import LLM
 from serapeum.core.llms.function_calling import FunctionCallingLLM
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
-from serapeum.core.structured_tools.models import BasePydanticLLM, Model
+from serapeum.core.structured_tools.types import BasePydanticLLM, Model
 from serapeum.core.structured_tools.utils import StreamingObjectProcessor
 from serapeum.core.tools.callable_tool import CallableTool
 

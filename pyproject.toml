@@ -129,7 +129,7 @@ strict = true
 [tool.uv.workspace]
 members = [
     "libs/core",
-    "libs/providers/ollama",
+    "libs/providers/*",
 ]
 
 [tool.uv.sources]

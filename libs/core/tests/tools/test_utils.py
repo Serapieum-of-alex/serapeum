@@ -61,8 +61,8 @@ class MockSong(BaseModel):
     """
 
     title: str
-    length: Optional[int] = None
-    author: Optional[str] = Field(default=None, description="author")
+    length: int | None = None
+    author: str | None = Field(default=None, description="author")
 
 
 # -----------------------------------------------------------------------------

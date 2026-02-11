@@ -1,14 +1,15 @@
 """Chat models and data structures for conversational agents."""
-
+from __future__ import annotations
 import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, AsyncGenerator, Generator, cast
+from typing import Any, AsyncGenerator, Generator, cast, TYPE_CHECKING
 
 from pydantic import BaseModel
 
-from serapeum.core.tools import ToolOutput
+if TYPE_CHECKING:
+    from serapeum.core.tools import ToolOutput
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)

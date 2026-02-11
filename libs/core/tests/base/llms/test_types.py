@@ -195,7 +195,7 @@ class TestImageBlock:
         assert img.read() == png_1px_b64
 
     def test_image_block_resolve_image_url(self, png_1px_b64: bytes, png_1px: bytes):
-        with mock.patch("serapeum.core.utils.base.requests") as mocked_req:
+        with mock.patch("serapeum.core.base.llms.types.requests") as mocked_req:
             url_str = "http://example.com"
             mocked_req.get.return_value = mock.MagicMock(content=png_1px)
             b = Image(url=AnyUrl(url=url_str))
@@ -792,7 +792,7 @@ class TestResolveBinary:
 
             dummy = DummyResponse(content)
             with patch(
-                    "serapeum.core.utils.base.requests.get", return_value=dummy
+                    "serapeum.core.base.llms.types.requests.get", return_value=dummy
             ) as mock_get:
                 # as_base64=False
                 bio = resolve_binary(
@@ -803,7 +803,7 @@ class TestResolveBinary:
                 mock_get.assert_called_once()
 
             dummy2 = DummyResponse(content)
-            with patch("serapeum.core.utils.base.requests.get", return_value=dummy2):
+            with patch("serapeum.core.base.llms.types.requests.get", return_value=dummy2):
                 # as_base64=True
                 bio2 = resolve_binary(
                     url="https://example.com/data.bin", as_base64=True

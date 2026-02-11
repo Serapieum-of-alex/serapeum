@@ -1120,6 +1120,64 @@ class LLM(BaseLLM, ABC):
             ]
         return messages
 
+    def _get_program(
+        self,
+        output_cls: type[BaseModel],
+        prompt: PromptTemplate,
+        **kwargs: Any,
+    ):
+        """Select and build the structured program for this LLM.
+
+        The decision is based on ``self.pydantic_program_mode`` and
+        ``self.metadata.is_function_calling_model``. Imports are local to avoid
+        circular dependencies at import time.
+        """
+        from serapeum.core.types import StructuredLLMMode
+
+        if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
+            if self.metadata.is_function_calling_model:
+                from serapeum.core.llms import ToolOrchestratingLLM
+
+                return ToolOrchestratingLLM(
+                    output_cls=output_cls,
+                    llm=self,
+                    prompt=prompt,
+                    **kwargs,
+                )
+            else:
+                from serapeum.core.llms import TextCompletionLLM
+                from serapeum.core.output_parsers import PydanticParser
+
+                return TextCompletionLLM(
+                    output_parser=PydanticParser(output_cls=output_cls),
+                    llm=self,
+                    prompt=prompt,
+                    **kwargs,
+                )
+        elif self.pydantic_program_mode == StructuredLLMMode.FUNCTION:
+            from serapeum.core.llms import ToolOrchestratingLLM
+
+            return ToolOrchestratingLLM(
+                output_cls=output_cls,
+                llm=self,
+                prompt=prompt,
+                **kwargs,
+            )
+        elif self.pydantic_program_mode == StructuredLLMMode.LLM:
+            from serapeum.core.llms import TextCompletionLLM
+            from serapeum.core.output_parsers import PydanticParser
+
+            return TextCompletionLLM(
+                output_parser=PydanticParser(output_cls=output_cls),
+                llm=self,
+                prompt=prompt,
+                **kwargs,
+            )
+        else:
+            raise ValueError(
+                f"Unsupported pydantic program mode: {self.pydantic_program_mode}"
+            )
+
     def structured_predict(
         self,
         output_cls: type[BaseModel],
@@ -1174,7 +1232,7 @@ class LLM(BaseLLM, ABC):
                 ...     return Person(name=kwargs["name"].title())
                 ...
                 >>> with patch(
-                ...     "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
+                ...     "serapeum.core.llms.base.LLM._get_program",
                 ...     return_value=fake_program,
                 ... ):
                 ...     DemoLLM().structured_predict(Person, PromptTemplate("{name}"), name="ada").name
@@ -1214,7 +1272,7 @@ class LLM(BaseLLM, ABC):
                 ...
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> with patch(
-                ...     "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
+                ...     "serapeum.core.llms.base.LLM._get_program",
                 ...     return_value=fake_program,
                 ... ):
                 ...     DemoLLM().structured_predict(
@@ -1230,14 +1288,7 @@ class LLM(BaseLLM, ABC):
             astructured_predict: Async counterpart that awaits the structured program.
             stream_structured_predict: Streams partial structured outputs incrementally.
         """
-        from serapeum.core.llms.orchestrators.utils import get_program_for_llm
-
-        program = get_program_for_llm(
-            output_cls,
-            prompt,
-            self,
-            pydantic_program_mode=self.pydantic_program_mode,
-        )
+        program = self._get_program(output_cls, prompt)
 
         result = program(llm_kwargs=llm_kwargs, **prompt_args)
 
@@ -1299,7 +1350,7 @@ class LLM(BaseLLM, ABC):
                 ...
                 >>> async def demo():
                 ...     with patch(
-                ...         "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
+                ...         "serapeum.core.llms.base.LLM._get_program",
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         from serapeum.core.prompts import PromptTemplate
@@ -1348,7 +1399,7 @@ class LLM(BaseLLM, ABC):
                 ...
                 >>> async def demo():
                 ...     with patch(
-                ...         "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
+                ...         "serapeum.core.llms.base.LLM._get_program",
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         from serapeum.core.prompts import PromptTemplate
@@ -1368,14 +1419,7 @@ class LLM(BaseLLM, ABC):
             structured_predict: Blocking variant using the same structured program.
             astream_structured_predict: Emits partial values asynchronously during execution.
         """
-        from serapeum.core.llms.orchestrators.utils import get_program_for_llm
-
-        program = get_program_for_llm(
-            output_cls,
-            prompt,
-            self,
-            pydantic_program_mode=self.pydantic_program_mode,
-        )
+        program = self._get_program(output_cls, prompt)
 
         result = await program.acall(llm_kwargs=llm_kwargs, **prompt_args)
 
@@ -1437,7 +1481,7 @@ class LLM(BaseLLM, ABC):
                 ...
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> with patch(
-                ...     "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
+                ...     "serapeum.core.llms.base.LLM._get_program",
                 ...     return_value=FakeProgram(),
                 ... ):
                 ...     tokens = [
@@ -1486,7 +1530,7 @@ class LLM(BaseLLM, ABC):
                 ...
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> with patch(
-                ...     "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
+                ...     "serapeum.core.llms.base.LLM._get_program",
                 ...     return_value=FakeProgram(),
                 ... ):
                 ...     batches = list(
@@ -1504,14 +1548,7 @@ class LLM(BaseLLM, ABC):
             astream_structured_predict: Async variant yielding values via an async iterator.
             structured_predict: Non-streaming version that returns the final model directly.
         """
-        from serapeum.core.llms.orchestrators.utils import get_program_for_llm
-
-        program = get_program_for_llm(
-            output_cls,
-            prompt,
-            self,
-            pydantic_program_mode=self.pydantic_program_mode,
-        )
+        program = self._get_program(output_cls, prompt)
 
         result = program.stream_call(llm_kwargs=llm_kwargs, **prompt_args)
         for r in result:
@@ -1577,7 +1614,7 @@ class LLM(BaseLLM, ABC):
                 >>> async def demo():
                 ...     from serapeum.core.prompts import PromptTemplate
                 ...     with patch(
-                ...         "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
+                ...         "serapeum.core.llms.base.LLM._get_program",
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         stream = await DemoLLM()._structured_astream_call(
@@ -1597,14 +1634,7 @@ class LLM(BaseLLM, ABC):
         See Also:
             astream_structured_predict: Public helper that wraps this coroutine for callers.
         """
-        from serapeum.core.llms.orchestrators.utils import get_program_for_llm
-
-        program = get_program_for_llm(
-            output_cls,
-            prompt,
-            self,
-            pydantic_program_mode=self.pydantic_program_mode,
-        )
+        program = self._get_program(output_cls, prompt)
 
         return await program.astream_call(llm_kwargs=llm_kwargs, **prompt_args)  # type: ignore[return-value]
 
@@ -1668,7 +1698,7 @@ class LLM(BaseLLM, ABC):
                 >>> async def demo():
                 ...     from serapeum.core.prompts import PromptTemplate
                 ...     with patch(
-                ...         "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
+                ...         "serapeum.core.llms.base.LLM._get_program",
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         stream = await DemoLLM().astream_structured_predict(
@@ -1723,7 +1753,7 @@ class LLM(BaseLLM, ABC):
                 >>> async def demo():
                 ...     from serapeum.core.prompts import PromptTemplate
                 ...     with patch(
-                ...         "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
+                ...         "serapeum.core.llms.base.LLM._get_program",
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         stream = await DemoLLM().astream_structured_predict(
@@ -1746,14 +1776,7 @@ class LLM(BaseLLM, ABC):
         """
 
         async def gen() -> AsyncGenerator[Model | list[Model], None]:
-            from serapeum.core.llms.orchestrators.utils import get_program_for_llm
-
-            program = get_program_for_llm(
-                output_cls,
-                prompt,
-                self,
-                pydantic_program_mode=self.pydantic_program_mode,
-            )
+            program = self._get_program(output_cls, prompt)
 
             result = await program.astream_call(llm_kwargs=llm_kwargs, **prompt_args)
             async for r in result:

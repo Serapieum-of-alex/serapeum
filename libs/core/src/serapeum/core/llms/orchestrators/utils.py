@@ -38,56 +38,6 @@ class FlexibleModel(BaseModel):
         )
 
 
-def get_program_for_llm(
-    output_cls: Type[BaseModel],
-    prompt: BasePromptTemplate,
-    llm: LLM,
-    pydantic_program_mode: StructuredLLMMode = StructuredLLMMode.DEFAULT,
-    **kwargs: Any,
-) -> BasePydanticLLM:
-    """Get the appropriate program for the LLM based on the output class and prompt."""
-    if pydantic_program_mode == StructuredLLMMode.DEFAULT:
-        if llm.metadata.is_function_calling_model:
-            from serapeum.core.llms import ToolOrchestratingLLM
-
-            return ToolOrchestratingLLM(
-                output_cls=output_cls,
-                llm=llm,
-                prompt=prompt,
-                **kwargs,
-            )
-        else:
-            from serapeum.core.llms import TextCompletionLLM
-
-            return TextCompletionLLM(
-                output_parser=PydanticParser(output_cls=output_cls),
-                llm=llm,
-                prompt=prompt,
-                **kwargs,
-            )
-    elif pydantic_program_mode == StructuredLLMMode.FUNCTION:
-        from serapeum.core.llms import ToolOrchestratingLLM
-
-        return ToolOrchestratingLLM(
-            output_cls=output_cls,
-            llm=llm,
-            prompt=prompt,
-            **kwargs,
-        )
-
-    elif pydantic_program_mode == StructuredLLMMode.LLM:
-        from serapeum.core.llms import TextCompletionLLM
-
-        return TextCompletionLLM(
-            output_parser=PydanticParser(output_cls=output_cls),
-            llm=llm,
-            prompt=prompt,
-            **kwargs,
-        )
-    else:
-        raise ValueError(f"Unsupported pydantic program mode: {pydantic_program_mode}")
-
-
 def _repair_incomplete_json(json_str: str) -> str:
     """Attempt to repair incomplete JSON strings.
 

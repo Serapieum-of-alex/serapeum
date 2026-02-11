@@ -45,7 +45,7 @@ def get_asyncio_module(show_progress: bool = False) -> Any:
         - Return the standard asyncio module
             ```python
             >>> import asyncio as _asyncio
-            >>> from serapeum.core.utils.async_utils import get_asyncio_module
+            >>> from serapeum.core.tools.async_utils import get_asyncio_module
             >>> mod = get_asyncio_module(False)
             >>> mod is _asyncio
             True
@@ -60,7 +60,7 @@ def get_asyncio_module(show_progress: bool = False) -> Any:
             ...     pass
             >>> dummy.tqdm_asyncio = DummyTqdmAsyncio()
             >>> sys.modules["tqdm.asyncio"] = dummy
-            >>> from serapeum.core.utils.async_utils import get_asyncio_module
+            >>> from serapeum.core.tools.async_utils import get_asyncio_module
             >>> mod = get_asyncio_module(True)
             >>> isinstance(mod, DummyTqdmAsyncio)
             True
@@ -111,7 +111,7 @@ def asyncio_run(coro: Coroutine) -> Any:
     Examples:
         - Run a coroutine when no loop is running
             ```python
-            >>> from serapeum.core.utils.async_utils import asyncio_run
+            >>> from serapeum.core.tools.async_utils import asyncio_run
             >>> async def add(a, b):
             ...     return a + b
             >>> asyncio_run(add(2, 3))
@@ -122,7 +122,7 @@ def asyncio_run(coro: Coroutine) -> Any:
             ```python
             >>> import asyncio
             >>> async def inner():
-            ...     from serapeum.core.utils.async_utils import asyncio_run
+            ...     from serapeum.core.tools.async_utils import asyncio_run
             ...     async def one():
             ...         return 1
             ...
@@ -191,7 +191,7 @@ def run_async_tasks(
         - Run tasks without a progress bar
             ```python
             >>> import asyncio
-            >>> from serapeum.core.utils.async_utils import run_async_tasks
+            >>> from serapeum.core.tools.async_utils import run_async_tasks
             >>> async def f(x):
             ...     await asyncio.sleep(0)
             ...     return x * 2
@@ -263,7 +263,7 @@ def chunks(iterable: Iterable, size: int) -> Iterable:
     Examples:
         - Exact multiple of the size
             ```python
-            >>> from serapeum.core.utils.async_utils import chunks
+            >>> from serapeum.core.tools.async_utils import chunks
             >>> list(chunks([1, 2, 3, 4, 5, 6], 3))
             [(1, 2, 3), (4, 5, 6)]
 
@@ -320,7 +320,7 @@ async def batch_gather(
         - Batch execution to limit peak concurrency
             ```python
             >>> import asyncio
-            >>> from serapeum.core.utils.async_utils import batch_gather
+            >>> from serapeum.core.tools.async_utils import batch_gather
             >>> async def f(x):
             ...     await asyncio.sleep(0)
             ...     return x * x
@@ -396,7 +396,7 @@ async def run_jobs(
         - Limit concurrency without a progress bar
             ```python
             >>> import asyncio
-            >>> from serapeum.core.utils.async_utils import run_jobs
+            >>> from serapeum.core.tools.async_utils import run_jobs
             >>> async def job(x):
             ...     await asyncio.sleep(0)
             ...     return x + 1

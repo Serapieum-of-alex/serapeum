@@ -35,13 +35,6 @@ class StructuredLLM(LLM):
         ..., description="Output class for the structured LLM.", exclude=True
     )
 
-    def model_post_init(self, __context: Any) -> None:
-        """Cache decorated methods to avoid creating wrappers on every call."""
-        super().model_post_init(__context)
-        # Cache the decorated methods
-        self._complete_fn = chat_to_completion_decorator(self.chat)
-        self._acomplete_fn = achat_to_completion_decorator(self.achat)
-
     @classmethod
     def class_name(cls) -> str:
         return "structured_llm"
@@ -81,7 +74,8 @@ class StructuredLLM(LLM):
             )
 
     def complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
-        return self._complete_fn(prompt, **kwargs)
+        fn = chat_to_completion_decorator(self.chat)
+        return fn(prompt, **kwargs)
 
     def stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
         """Stream completion endpoint for LLM."""
@@ -128,7 +122,8 @@ class StructuredLLM(LLM):
         return gen()
 
     async def acomplete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
-        return await self._acomplete_fn(prompt, **kwargs)
+        fn = achat_to_completion_decorator(self.achat)
+        return await fn(prompt, **kwargs)
 
     async def astream_complete(
         self, prompt: str, **kwargs: Any

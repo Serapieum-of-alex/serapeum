@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from serapeum.core.llms.base import LLM
     from serapeum.core.llms import FunctionCallingLLM
     from serapeum.core.prompts.base import BasePromptTemplate
-    from serapeum.core.llms import BasePydanticLLM
+    from serapeum.core.llms.orchestrators.types import BasePydanticLLM
     from serapeum.core.tools.types import ToolCallArguments
 
 Model = TypeVar("Model", bound=BaseModel)

@@ -22,7 +22,7 @@ The most straightforward way to use `TextCompletionLLM`:
 ```python
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 
@@ -61,7 +61,7 @@ Provide a fully configured `PydanticParser`:
 ```python
 from pydantic import BaseModel, Field
 from serapeum.core.output_parsers import PydanticParser
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 
@@ -89,7 +89,7 @@ Let `TextCompletionLLM` create the parser for you:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Person(BaseModel):
@@ -117,7 +117,7 @@ Set a default LLM for the entire application:
 ```python
 from pydantic import BaseModel
 from serapeum.core.configs.configs import Configs
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 # Set global LLM
@@ -148,7 +148,7 @@ Simple string prompts are automatically wrapped in `PromptTemplate`:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Summary(BaseModel):
@@ -176,7 +176,7 @@ Use `PromptTemplate` for more control:
 ```python
 from pydantic import BaseModel
 from serapeum.core.prompts.base import PromptTemplate
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Sentiment(BaseModel):
@@ -206,9 +206,9 @@ Use structured message templates for chat models:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 from serapeum.core.prompts import ChatPromptTemplate
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Translation(BaseModel):
@@ -250,7 +250,7 @@ Standard blocking execution:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Answer(BaseModel):
@@ -277,7 +277,7 @@ Non-blocking async execution:
 ```python
 import asyncio
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Analysis(BaseModel):
@@ -308,7 +308,7 @@ Process multiple inputs efficiently:
 ```python
 import asyncio
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Category(BaseModel):
@@ -340,7 +340,7 @@ Forward parameters directly to the LLM:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Story(BaseModel):
@@ -378,7 +378,7 @@ Change the prompt at runtime:
 ```python
 from pydantic import BaseModel
 from serapeum.core.prompts.base import PromptTemplate
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Response(BaseModel):
@@ -408,7 +408,7 @@ Create once, use many times:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Entity(BaseModel):
@@ -442,7 +442,7 @@ Use deeply nested Pydantic models:
 
 ```python
 from pydantic import BaseModel, Field
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Address(BaseModel):
@@ -488,7 +488,7 @@ Handle optional fields and union types:
 ```python
 from typing import Optional, Union
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Event(BaseModel):
@@ -519,7 +519,7 @@ Extract lists of items:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Recipe(BaseModel):
@@ -559,7 +559,7 @@ Catch and handle Pydantic validation errors:
 
 ```python
 from pydantic import BaseModel, ValidationError
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class StrictModel(BaseModel):
@@ -591,7 +591,7 @@ Gracefully handle missing LLM configuration:
 ```python
 from pydantic import BaseModel
 from serapeum.core.configs.configs import Configs
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 
 class Data(BaseModel):
     value: str
@@ -617,7 +617,7 @@ Handle cases where parser returns wrong type:
 ```python
 from pydantic import BaseModel
 from serapeum.core.output_parsers import BaseParser
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 
@@ -656,7 +656,7 @@ Implement retry logic for robustness:
 ```python
 import asyncio
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Result(BaseModel):
@@ -699,7 +699,7 @@ Always define clear Pydantic models with validation:
 
 ```python
 from pydantic import BaseModel, Field, field_validator
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class ValidatedData(BaseModel):
@@ -728,7 +728,7 @@ Provide clear instructions for JSON output:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Output(BaseModel):
@@ -757,7 +757,7 @@ Create instances once and reuse them:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 class Classification(BaseModel):
@@ -771,6 +771,7 @@ classifier = TextCompletionLLM(
     prompt="Classify: {text}",
     llm=llm,
 )
+texts = ["Apple", "Banana", "Pear"]
 
 # Reuse many times - this is efficient!
 for text in texts:

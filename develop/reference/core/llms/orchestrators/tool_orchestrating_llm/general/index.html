@@ -10,31 +10,27 @@
       
       
       
-        <link rel="canonical" href="https://serapieum-of-alex.github.io/Serapeum/develop/reference/core/structured_tools/text_completion_llm/general/">
+        <link rel="canonical" href="https://serapieum-of-alex.github.io/Serapeum/develop/reference/core/llms/orchestrators/tool_orchestrating_llm/general/">
       
       
-        <link rel="prev" href="../../../../../overview/codebase-map/">
-      
-      
-        <link rel="next" href="../examples/">
       
       
         
       
       
-      <link rel="icon" href="../../../../../assets/images/favicon.png">
+      <link rel="icon" href="../../../../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
-        <title>Overview - Serapeum</title>
+        <title>ToolOrchestratingLLM Workflow - Serapeum</title>
       
     
     
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,18 +49,18 @@
       
     
     
-      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/panzoom.css">
+      <link rel="stylesheet" href="../../../../../../assets/stylesheets/panzoom.css">
     
-    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -83,7 +79,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#textcompletionllm-workflow" class="md-skip">
+        <a href="#toolorchestratingllm-workflow" class="md-skip">
           Skip to content
         </a>
       
@@ -103,7 +99,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../../.." title="Serapeum" class="md-header__button md-logo" aria-label="Serapeum" data-md-component="logo">
+    <a href="../../../../../.." title="Serapeum" class="md-header__button md-logo" aria-label="Serapeum" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -123,7 +119,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              ToolOrchestratingLLM Workflow
             
           </span>
         </div>
@@ -240,7 +236,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../../.." class="md-tabs__link">
+      <a href="../../../../../.." class="md-tabs__link">
         
   
   
@@ -261,7 +257,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../../../developer-guide/installation/" class="md-tabs__link">
+        <a href="../../../../../../developer-guide/installation/" class="md-tabs__link">
           
   
   
@@ -283,7 +279,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../../../overview/codebase-map/" class="md-tabs__link">
+        <a href="../../../../../../overview/codebase-map/" class="md-tabs__link">
           
   
   
@@ -305,7 +301,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../../../architecture/diagrams.md" class="md-tabs__link">
+        <a href="../../../../../../architecture/diagrams.md" class="md-tabs__link">
           
   
   
@@ -323,7 +319,12 @@
   
   
   
+  
     
+    
+      
+  
+  
   
   
     
@@ -332,22 +333,11 @@
   
   
   
-    
-  
   
     
     
-      
-  
-  
-  
-    
-  
-  
-    
-    
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../../../code/llm/llm-classes-comparison.md" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../../../../code/llm/llm-classes-comparison.md" class="md-tabs__link">
           
   
   
@@ -375,7 +365,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../../../change-log/" class="md-tabs__link">
+        <a href="../../../../../../change-log/" class="md-tabs__link">
           
   
   
@@ -417,7 +407,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../../.." title="Serapeum" class="md-nav__button md-logo" aria-label="Serapeum" data-md-component="logo">
+    <a href="../../../../../.." title="Serapeum" class="md-nav__button md-logo" aria-label="Serapeum" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -447,7 +437,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../.." class="md-nav__link">
+      <a href="../../../../../.." class="md-nav__link">
         
   
   
@@ -536,7 +526,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../developer-guide/installation/" class="md-nav__link">
+      <a href="../../../../../../developer-guide/installation/" class="md-nav__link">
         
   
   
@@ -564,7 +554,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../developer-guide/contributing/" class="md-nav__link">
+      <a href="../../../../../../developer-guide/contributing/" class="md-nav__link">
         
   
   
@@ -592,7 +582,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../developer-guide/taskfile/" class="md-nav__link">
+      <a href="../../../../../../developer-guide/taskfile/" class="md-nav__link">
         
   
   
@@ -685,7 +675,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../overview/codebase-map/" class="md-nav__link">
+      <a href="../../../../../../overview/codebase-map/" class="md-nav__link">
         
   
   
@@ -778,7 +768,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../architecture/diagrams.md" class="md-nav__link">
+      <a href="../../../../../../architecture/diagrams.md" class="md-nav__link">
         
   
   
@@ -810,10 +800,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -825,22 +813,21 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -858,7 +845,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -873,10 +860,8 @@
                 
   
   
-    
   
   
-  
     
     
       
@@ -891,21 +876,20 @@
     
       
       
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
         
           
-          
         
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_1" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_1" >
         
           
-          <label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="0">
             
   
   
@@ -923,7 +907,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -999,7 +983,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../code/llm/llm-classes-comparison.md" class="md-nav__link">
+      <a href="../../../../../code/llm/llm-classes-comparison.md" class="md-nav__link">
         
   
   
@@ -1032,10 +1016,8 @@
                 
   
   
-    
   
   
-  
     
     
       
@@ -1052,11 +1034,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_1_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_1_2" >
         
           
           <label class="md-nav__link" for="__nav_5_1_2" id="__nav_5_1_2_label" tabindex="0">
@@ -1066,7 +1050,7 @@
   <span class="md-ellipsis">
     
   
-    structured_tools
+    orchestrators
   
 
     
@@ -1077,12 +1061,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_5_1_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_5_1_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5_1_2">
             <span class="md-nav__icon md-icon"></span>
             
   
-    structured_tools
+    orchestrators
   
 
           </label>
@@ -1092,10 +1076,8 @@
                 
   
   
-    
   
   
-  
     
     
       
@@ -1122,11 +1104,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_1_2_1" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_1_2_1" >
         
           
           <label class="md-nav__link" for="__nav_5_1_2_1" id="__nav_5_1_2_1_label" tabindex="0">
@@ -1147,7 +1131,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_5_1_2_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_5_1_2_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5_1_2_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1162,37 +1146,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../../orchestrators/text_completion_llm/general.md" class="md-nav__link">
         
   
   
@@ -1208,231 +1165,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Usage
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#understanding-the-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Understanding the Workflow
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Understanding the Workflow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-execution-flow-and-method-calls" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Execution Flow and Method Calls
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-architecture-and-class-relationships" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Architecture and Class Relationships
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-data-transformations-and-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Data Transformations and Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-component-boundaries-and-interactions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Component Boundaries and Interactions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-lifecycle-states-and-transitions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Lifecycle States and Transitions
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#workflow-summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Summary
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Workflow Summary">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#initialization-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Initialization Workflow
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#execution-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Execution Workflow
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#key-design-patterns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Key Design Patterns
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Key Design Patterns">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-validation-at-construction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Validation at Construction
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-adapter-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Adapter Pattern
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-strategy-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Strategy Pattern
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-template-method-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Template Method Pattern
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#performance-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Performance Considerations
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1445,7 +1177,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/" class="md-nav__link">
+      <a href="../../../../orchestrators/text_completion_llm/examples.md" class="md-nav__link">
         
   
   
@@ -1473,7 +1205,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../text_completion_llm_sequence/" class="md-nav__link">
+      <a href="../../../../orchestrators/text_completion_llm/text_completion_llm_sequence.md" class="md-nav__link">
         
   
   
@@ -1501,7 +1233,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../text_completion_llm_class/" class="md-nav__link">
+      <a href="../../../../orchestrators/text_completion_llm/text_completion_llm_class.md" class="md-nav__link">
         
   
   
@@ -1529,7 +1261,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../text_completion_llm_dataflow/" class="md-nav__link">
+      <a href="../../../../orchestrators/text_completion_llm/text_completion_llm_dataflow.md" class="md-nav__link">
         
   
   
@@ -1557,7 +1289,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../text_completion_llm_components/" class="md-nav__link">
+      <a href="../../../../orchestrators/text_completion_llm/text_completion_llm_components.md" class="md-nav__link">
         
   
   
@@ -1585,7 +1317,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../text_completion_llm_state/" class="md-nav__link">
+      <a href="../../../../orchestrators/text_completion_llm/text_completion_llm_state.md" class="md-nav__link">
         
   
   
@@ -1691,7 +1423,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tool_orchestrating_llm/general/" class="md-nav__link">
+      <a href="../../../../orchestrators/tool_orchestrating_llm/general.md" class="md-nav__link">
         
   
   
@@ -1719,7 +1451,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tool_orchestrating_llm/examples/" class="md-nav__link">
+      <a href="../../../../orchestrators/tool_orchestrating_llm/examples.md" class="md-nav__link">
         
   
   
@@ -1747,7 +1479,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tool_orchestrating_llm/tool_orchestrating_llm_sequence/" class="md-nav__link">
+      <a href="../../../../orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence.md" class="md-nav__link">
         
   
   
@@ -1775,7 +1507,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tool_orchestrating_llm/tool_orchestrating_llm_class/" class="md-nav__link">
+      <a href="../../../../orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class.md" class="md-nav__link">
         
   
   
@@ -1803,7 +1535,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tool_orchestrating_llm/tool_orchestrating_llm_dataflow/" class="md-nav__link">
+      <a href="../../../../orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow.md" class="md-nav__link">
         
   
   
@@ -1831,7 +1563,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tool_orchestrating_llm/tool_orchestrating_llm_components/" class="md-nav__link">
+      <a href="../../../../orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components.md" class="md-nav__link">
         
   
   
@@ -1859,7 +1591,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tool_orchestrating_llm/tool_orchestrating_llm_state/" class="md-nav__link">
+      <a href="../../../../orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state.md" class="md-nav__link">
         
   
   
@@ -1963,7 +1695,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../tools/tools/" class="md-nav__link">
+      <a href="../../../../tools/tools/" class="md-nav__link">
         
   
   
@@ -1991,7 +1723,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../tools/callable_tools/" class="md-nav__link">
+      <a href="../../../../tools/callable_tools/" class="md-nav__link">
         
   
   
@@ -2045,13 +1777,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2060,7 +1789,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
         
           
-          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
             
   
   
@@ -2224,7 +1953,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../providers/ollama/general/" class="md-nav__link">
+      <a href="../../../../../providers/ollama/general/" class="md-nav__link">
         
   
   
@@ -2252,7 +1981,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../providers/ollama/examples/" class="md-nav__link">
+      <a href="../../../../../providers/ollama/examples/" class="md-nav__link">
         
   
   
@@ -2280,7 +2009,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../providers/ollama/ollama_sequence/" class="md-nav__link">
+      <a href="../../../../../providers/ollama/ollama_sequence/" class="md-nav__link">
         
   
   
@@ -2308,7 +2037,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../providers/ollama/ollama_class/" class="md-nav__link">
+      <a href="../../../../../providers/ollama/ollama_class/" class="md-nav__link">
         
   
   
@@ -2336,7 +2065,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../providers/ollama/ollama_dataflow/" class="md-nav__link">
+      <a href="../../../../../providers/ollama/ollama_dataflow/" class="md-nav__link">
         
   
   
@@ -2364,7 +2093,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../providers/ollama/ollama_components/" class="md-nav__link">
+      <a href="../../../../../providers/ollama/ollama_components/" class="md-nav__link">
         
   
   
@@ -2392,7 +2121,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../providers/ollama/ollama_state/" class="md-nav__link">
+      <a href="../../../../../providers/ollama/ollama_state/" class="md-nav__link">
         
   
   
@@ -2513,7 +2242,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../change-log/" class="md-nav__link">
+      <a href="../../../../../../change-log/" class="md-nav__link">
         
   
   
@@ -2541,7 +2270,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../contributing.md" class="md-nav__link">
+      <a href="../../../../../../contributing.md" class="md-nav__link">
         
   
   
@@ -2569,7 +2298,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../LICENSE/" class="md-nav__link">
+      <a href="../../../../../../LICENSE/" class="md-nav__link">
         
   
   
@@ -2769,10 +2498,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-validation-at-construction" class="md-nav__link">
+  <a href="#1-function-calling-pattern" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Validation at Construction
+        1. Function Calling Pattern
       
     </span>
   </a>
@@ -2780,10 +2509,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-adapter-pattern" class="md-nav__link">
+  <a href="#2-tool-abstraction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Adapter Pattern
+        2. Tool Abstraction
       
     </span>
   </a>
@@ -2791,10 +2520,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-strategy-pattern" class="md-nav__link">
+  <a href="#3-flexible-output-modes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Strategy Pattern
+        3. Flexible Output Modes
       
     </span>
   </a>
@@ -2802,10 +2531,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-template-method-pattern" class="md-nav__link">
+  <a href="#4-multi-modal-execution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Template Method Pattern
+        4. Multi-Modal Execution
       
     </span>
   </a>
@@ -2818,10 +2547,121 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#comparison-with-textcompletionllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison with TextCompletionLLM
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#performance-considerations" class="md-nav__link">
     <span class="md-ellipsis">
       
         Performance Considerations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initialization-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialization Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-toolorchestratingllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use ToolOrchestratingLLM
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="When to Use ToolOrchestratingLLM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#use-when" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use When:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-textcompletionllm-when" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use TextCompletionLLM When:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
       
     </span>
   </a>
@@ -2845,7 +2685,7 @@
 
 
   
-    <a href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/core/structured_tools/text_completion_llm/general.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/core/llms/orchestrators/tool_orchestrating_llm/general.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -2854,69 +2694,74 @@
     
       
     
-    <a href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/core/structured_tools/text_completion_llm/general.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/core/llms/orchestrators/tool_orchestrating_llm/general.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
     </a>
   
 
 
-<h1 id="textcompletionllm-workflow"><a class="toclink" href="#textcompletionllm-workflow">TextCompletionLLM Workflow</a><a class="headerlink" href="#textcompletionllm-workflow" title="Permanent link">#</a></h1>
-<p>This directory contains comprehensive explaining the complete workflow of the <code>TextCompletionLLM</code> class, from initialization to execution and output parsing.</p>
+<h1 id="toolorchestratingllm-workflow"><a class="toclink" href="#toolorchestratingllm-workflow">ToolOrchestratingLLM Workflow</a><a class="headerlink" href="#toolorchestratingllm-workflow" title="Permanent link">#</a></h1>
+<p>This directory contains comprehensive documentation explaining the complete workflow of the <code>ToolOrchestratingLLM</code> class, from initialization to execution and structured output extraction.</p>
 <h2 id="overview"><a class="toclink" href="#overview">Overview</a><a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
-<p>The <code>TextCompletionLLM</code> is a structured text completion runner that orchestrates:
-1. <strong>Prompt formatting</strong> with template variables
-2. <strong>LLM execution</strong> (chat or completion mode)
-3. <strong>Output parsing</strong> into validated Pydantic models</p>
+<p>The <code>ToolOrchestratingLLM</code> is a function-calling orchestrator that:
+1. <strong>Converts Pydantic models</strong> into callable tools with JSON schemas
+2. <strong>Formats prompts</strong> with template variables
+3. <strong>Executes function calling</strong> via LLM with tool schemas
+4. <strong>Parses tool outputs</strong> into validated Pydantic model instances</p>
 <h2 id="example-usage"><a class="toclink" href="#example-usage">Example Usage</a><a class="headerlink" href="#example-usage" title="Permanent link">#</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.output_parsers</span><span class="w"> </span><span class="kn">import</span> <span class="n">PydanticParser</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.structured_tools.text_completion_llm</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextCompletionLLM</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Define the output schema</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">ModelTest</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">hello</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolOrchestratingLLM</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Define the output schema</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">MockAlbum</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">artist</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">songs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MockSong</span><span class="p">]</span>
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># Initialize components</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">LLM</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.1&quot;</span><span class="p">,</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">output_parser</span> <span class="o">=</span> <span class="n">PydanticParser</span><span class="p">(</span><span class="n">output_cls</span><span class="o">=</span><span class="n">ModelTest</span><span class="p">)</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="c1"># Create TextCompletionLLM instance</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">text_llm</span> <span class="o">=</span> <span class="n">TextCompletionLLM</span><span class="p">(</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="n">output_parser</span><span class="o">=</span><span class="n">output_parser</span><span class="p">,</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;This is a test prompt with a </span><span class="si">{test_input}</span><span class="s2">.&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">LLM</span><span class="p">,</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="p">)</span>
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="c1"># Execute and get structured output</span>
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="n">obj_output</span> <span class="o">=</span> <span class="n">text_llm</span><span class="p">(</span><span class="n">test_input</span><span class="o">=</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="c1"># Returns: ModelTest(hello=&quot;...&quot;)</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="k">class</span><span class="w"> </span><span class="nc">MockSong</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="c1"># Initialize LLM with function calling support</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;llama3.1&#39;</span><span class="p">,</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="c1"># Create ToolOrchestratingLLM instance</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">tools_llm</span> <span class="o">=</span> <span class="n">ToolOrchestratingLLM</span><span class="p">(</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="n">output_cls</span><span class="o">=</span><span class="n">MockAlbum</span><span class="p">,</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="n">prompt</span><span class="o">=</span><span class="s1">&#39;This is a test album with </span><span class="si">{topic}</span><span class="s1">&#39;</span><span class="p">,</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="p">)</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="c1"># Execute and get structured output via function calling</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="n">obj_output</span> <span class="o">=</span> <span class="n">tools_llm</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="s2">&quot;songs&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="c1"># Returns: MockAlbum(title=&quot;hello&quot;, artist=&quot;world&quot;, songs=[...])</span>
 </code></pre></div>
 <h2 id="understanding-the-workflow"><a class="toclink" href="#understanding-the-workflow">Understanding the Workflow</a><a class="headerlink" href="#understanding-the-workflow" title="Permanent link">#</a></h2>
-<h3 id="1-execution-flow-and-method-calls"><a class="toclink" href="#1-execution-flow-and-method-calls">1. <a href="../text_completion_llm_sequence/">Execution Flow and Method Calls</a></a><a class="headerlink" href="#1-execution-flow-and-method-calls" title="Permanent link">#</a></h3>
+<h3 id="1-execution-flow-and-method-calls"><a class="toclink" href="#1-execution-flow-and-method-calls">1. <a href="../tool_orchestrating_llm_sequence/">Execution Flow and Method Calls</a></a><a class="headerlink" href="#1-execution-flow-and-method-calls" title="Permanent link">#</a></h3>
 <p>Shows the chronological flow of method calls and interactions.</p>
 <p><strong>Best for</strong>:
 - Understanding the order of operations
-- Seeing how objects communicate
+- Seeing how function calling works
 - Debugging execution flow</p>
 <p><strong>Key Sections</strong>:
 - Initialization phase (validation and component setup)
-- Execution phase (prompt formatting and LLM invocation)
-- Parsing phase (JSON extraction and Pydantic validation)</p>
-<h3 id="2-architecture-and-class-relationships"><a class="toclink" href="#2-architecture-and-class-relationships">2. <a href="../text_completion_llm_class/">Architecture and Class Relationships</a></a><a class="headerlink" href="#2-architecture-and-class-relationships" title="Permanent link">#</a></h3>
+- Tool creation (CallableTool.from_model)
+- Execution phase (predict_and_call with tools)
+- Tool execution and output parsing</p>
+<h3 id="2-architecture-and-class-relationships"><a class="toclink" href="#2-architecture-and-class-relationships">2. <a href="../tool_orchestrating_llm_class/">Architecture and Class Relationships</a></a><a class="headerlink" href="#2-architecture-and-class-relationships" title="Permanent link">#</a></h3>
 <p>Illustrates the static structure and relationships between classes.</p>
 <p><strong>Best for</strong>:
 - Understanding the architecture
 - Seeing inheritance and composition
 - Identifying class responsibilities</p>
 <p><strong>Key Classes</strong>:
-- <code>TextCompletionLLM</code>: Main orchestrator
-- <code>PydanticParser</code>: Output validation
-- <code>BasePromptTemplate</code> hierarchy: Prompt formatting
-- <code>LLM</code> hierarchy: Model execution</p>
-<h3 id="3-data-transformations-and-validation"><a class="toclink" href="#3-data-transformations-and-validation">3. <a href="../text_completion_llm_dataflow/">Data Transformations and Validation</a></a><a class="headerlink" href="#3-data-transformations-and-validation" title="Permanent link">#</a></h3>
+- <code>ToolOrchestratingLLM</code>: Main orchestrator
+- <code>CallableTool</code>: Pydantic-to-tool converter
+- <code>FunctionCallingLLM</code>: Abstract function-calling interface
+- <code>Ollama</code>: Concrete LLM implementation
+- <code>AgentChatResponse</code>: Response container with tool outputs</p>
+<h3 id="3-data-transformations-and-validation"><a class="toclink" href="#3-data-transformations-and-validation">3. <a href="../tool_orchestrating_llm_dataflow/">Data Transformations and Validation</a></a><a class="headerlink" href="#3-data-transformations-and-validation" title="Permanent link">#</a></h3>
 <p>Tracks how data transforms through the system.</p>
 <p><strong>Best for</strong>:
 - Understanding data transformations
@@ -2924,10 +2769,11 @@
 - Seeing error handling paths</p>
 <p><strong>Key Flows</strong>:
 - Initialization validation pipeline
-- Chat model execution path
-- Completion model execution path
-- JSON parsing and validation</p>
-<h3 id="4-component-boundaries-and-interactions"><a class="toclink" href="#4-component-boundaries-and-interactions">4. <a href="../text_completion_llm_components/">Component Boundaries and Interactions</a></a><a class="headerlink" href="#4-component-boundaries-and-interactions" title="Permanent link">#</a></h3>
+- Tool schema generation
+- Function calling request preparation
+- Tool execution and validation
+- Single vs. parallel output extraction</p>
+<h3 id="4-component-boundaries-and-interactions"><a class="toclink" href="#4-component-boundaries-and-interactions">4. <a href="../tool_orchestrating_llm_components/">Component Boundaries and Interactions</a></a><a class="headerlink" href="#4-component-boundaries-and-interactions" title="Permanent link">#</a></h3>
 <p>Shows component boundaries and interaction patterns.</p>
 <p><strong>Best for</strong>:
 - Understanding system architecture
@@ -2935,12 +2781,12 @@
 - Identifying interaction patterns</p>
 <p><strong>Key Components</strong>:
 - User space (application code)
-- TextCompletionLLM layer (orchestration)
+- ToolOrchestratingLLM layer (orchestration)
+- Tool layer (CallableTool)
 - Prompt layer (template formatting)
-- LLM layer (model execution)
-- Parser layer (output validation)
-- External service (Ollama server)</p>
-<h3 id="5-lifecycle-states-and-transitions"><a class="toclink" href="#5-lifecycle-states-and-transitions">5. <a href="../text_completion_llm_state/">Lifecycle States and Transitions</a></a><a class="headerlink" href="#5-lifecycle-states-and-transitions" title="Permanent link">#</a></h3>
+- LLM layer (function calling execution)
+- Response layer (AgentChatResponse, ToolOutput)</p>
+<h3 id="5-lifecycle-states-and-transitions"><a class="toclink" href="#5-lifecycle-states-and-transitions">5. <a href="../tool_orchestrating_llm_state/">Lifecycle States and Transitions</a></a><a class="headerlink" href="#5-lifecycle-states-and-transitions" title="Permanent link">#</a></h3>
 <p>Depicts the lifecycle states and transitions.</p>
 <p><strong>Best for</strong>:
 - Understanding instance lifecycle
@@ -2948,76 +2794,182 @@
 - Identifying error states</p>
 <p><strong>Key States</strong>:
 - Initialization states (validation)
-- Execution states (chat vs completion)
-- Parsing states (JSON extraction and validation)
-- Error states (initialization, execution, parsing)</p>
+- Execution states (sync/async/streaming)
+- Tool execution states (single/parallel)
+- Parsing states (output extraction)</p>
 <h2 id="workflow-summary"><a class="toclink" href="#workflow-summary">Workflow Summary</a><a class="headerlink" href="#workflow-summary" title="Permanent link">#</a></h2>
 <h3 id="initialization-workflow"><a class="toclink" href="#initialization-workflow">Initialization Workflow</a><a class="headerlink" href="#initialization-workflow" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>1. Create PydanticParser with output schema (ModelTest)
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>2. Initialize TextCompletionLLM with:
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>   - output_parser: PydanticParser
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>   - prompt: String or BasePromptTemplate
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>   - llm: Ollama instance
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>3. Validation occurs:
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>   - Parser type and output_cls extraction
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>   - LLM instance availability check
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>   - Prompt conversion to template if needed
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>4. Components stored in instance
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>5. Instance ready for execution
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>1. Initialize ToolOrchestratingLLM with:
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>   - output_cls: Pydantic model (MockAlbum)
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>   - prompt: String or BasePromptTemplate
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>   - llm: Function-calling LLM (Ollama)
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>   - tool_choice: Optional tool selection strategy
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>   - allow_parallel_tool_calls: Single vs. multiple outputs
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>2. Validation occurs:
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>   - LLM must support function calling (is_function_calling_model=True)
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>   - Prompt conversion to template if needed
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>3. Components stored in instance
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>4. Instance ready for execution
 </code></pre></div>
 <h3 id="execution-workflow"><a class="toclink" href="#execution-workflow">Execution Workflow</a><a class="headerlink" href="#execution-workflow" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>1. User calls text_llm(test_input=&quot;hello&quot;)
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>2. Check LLM.metadata.is_chat_model:
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>   If Chat Model (True):
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>   a. Format prompt to messages with variables
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>   b. Extend messages with system prompts
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>   c. Call Ollama.chat() → HTTP POST /api/chat
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>   d. Extract message.content from ChatResponse
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>   If Completion Model (False):
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>   a. Format prompt to string with variables
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>   b. Extend prompt with system prompts
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>   c. Call Ollama.complete() → HTTP POST /api/generate
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>   d. Extract text from CompletionResponse
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>3. Parse output:
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>   a. Extract JSON string from raw text
-<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>   b. Validate JSON against Pydantic schema
-<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>   c. Create ModelTest instance
-<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>   d. Type check output
-<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>
-<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>4. Return validated ModelTest instance
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>1. User calls tools_llm(topic=&quot;songs&quot;)
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>2. Convert Pydantic model to tool:
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>   a. CallableTool.from_model(MockAlbum)
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>   b. Extract JSON schema from model
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>   c. Create callable tool with validation
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>3. Format prompt:
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>   a. Apply template variables: topic=&quot;songs&quot;
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>   b. Create messages: [Message(role=USER, content=&quot;...&quot;)]
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>   c. Extend with system prompts
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>4. Execute function calling:
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>   a. Prepare request with tool schemas
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>   b. Call predict_and_call([tool], messages, ...)
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>   c. HTTP POST to Ollama server with tools parameter
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>   d. LLM generates tool_calls in response
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>5. Execute tools:
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>   a. Parse tool_calls from response
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>   b. Extract tool arguments
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>   c. Validate arguments against Pydantic schema
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>   d. Create MockAlbum instance(s)
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>   e. Wrap in ToolOutput with raw_output
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>6. Create AgentChatResponse:
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>   a. Container with response text
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>   b. sources: List[ToolOutput]
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>7. Parse outputs:
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>   a. Extract raw_output from ToolOutput(s)
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>   b. Return MockAlbum or List[MockAlbum]
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>8. Return validated Pydantic instance(s)
 </code></pre></div>
 <h2 id="key-design-patterns"><a class="toclink" href="#key-design-patterns">Key Design Patterns</a><a class="headerlink" href="#key-design-patterns" title="Permanent link">#</a></h2>
-<h3 id="1-validation-at-construction"><a class="toclink" href="#1-validation-at-construction">1. <strong>Validation at Construction</strong></a><a class="headerlink" href="#1-validation-at-construction" title="Permanent link">#</a></h3>
-<p>All components are validated during <code>__init__</code>, ensuring errors are caught early:
-- Parser type checking
-- LLM availability verification
-- Prompt format conversion</p>
-<h3 id="2-adapter-pattern"><a class="toclink" href="#2-adapter-pattern">2. <strong>Adapter Pattern</strong></a><a class="headerlink" href="#2-adapter-pattern" title="Permanent link">#</a></h3>
-<p><code>TextCompletionLLM</code> adapts different prompt types and LLM modes:
-- String prompts → PromptTemplate
-- Chat models → format_messages
-- Completion models → format string</p>
-<h3 id="3-strategy-pattern"><a class="toclink" href="#3-strategy-pattern">3. <strong>Strategy Pattern</strong></a><a class="headerlink" href="#3-strategy-pattern" title="Permanent link">#</a></h3>
-<p>Output parsing strategy is injected via <code>PydanticParser</code>:
-- Customizable JSON extraction
-- Flexible schema validation
-- Extensible error handling</p>
-<h3 id="4-template-method-pattern"><a class="toclink" href="#4-template-method-pattern">4. <strong>Template Method Pattern</strong></a><a class="headerlink" href="#4-template-method-pattern" title="Permanent link">#</a></h3>
-<p><code>__call__</code> defines the algorithm skeleton:
-1. Check model type
-2. Format prompt (strategy varies)
-3. Execute LLM (path varies)
-4. Parse output (consistent)</p>
+<h3 id="1-function-calling-pattern"><a class="toclink" href="#1-function-calling-pattern">1. <strong>Function Calling Pattern</strong></a><a class="headerlink" href="#1-function-calling-pattern" title="Permanent link">#</a></h3>
+<p>Uses LLM's native function calling capabilities:
+- Pydantic models → Tool schemas
+- LLM generates tool_calls
+- Tools execute with validation
+- Structured outputs guaranteed</p>
+<h3 id="2-tool-abstraction"><a class="toclink" href="#2-tool-abstraction">2. <strong>Tool Abstraction</strong></a><a class="headerlink" href="#2-tool-abstraction" title="Permanent link">#</a></h3>
+<p>Automatic conversion from Pydantic models to tools:
+- JSON schema extraction
+- Argument validation
+- Output wrapping</p>
+<h3 id="3-flexible-output-modes"><a class="toclink" href="#3-flexible-output-modes">3. <strong>Flexible Output Modes</strong></a><a class="headerlink" href="#3-flexible-output-modes" title="Permanent link">#</a></h3>
+<p>Single or parallel tool calls:
+- <code>allow_parallel_tool_calls=False</code> → Single model
+- <code>allow_parallel_tool_calls=True</code> → List of models</p>
+<h3 id="4-multi-modal-execution"><a class="toclink" href="#4-multi-modal-execution">4. <strong>Multi-Modal Execution</strong></a><a class="headerlink" href="#4-multi-modal-execution" title="Permanent link">#</a></h3>
+<p>Supports multiple execution modes:
+- Sync: <code>__call__</code>
+- Async: <code>acall</code>
+- Streaming: <code>stream_call</code>
+- Async streaming: <code>astream_call</code></p>
+<h2 id="comparison-with-textcompletionllm"><a class="toclink" href="#comparison-with-textcompletionllm">Comparison with TextCompletionLLM</a><a class="headerlink" href="#comparison-with-textcompletionllm" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>ToolOrchestratingLLM</th>
+<th>TextCompletionLLM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td>Function calling</td>
+<td>Text completion with parsing</td>
+</tr>
+<tr>
+<td><strong>LLM Requirement</strong></td>
+<td>Must support function calling</td>
+<td>Any chat/completion model</td>
+</tr>
+<tr>
+<td><strong>Schema Handling</strong></td>
+<td>Native tool schemas</td>
+<td>JSON in prompt</td>
+</tr>
+<tr>
+<td><strong>Validation</strong></td>
+<td>Before execution (by LLM)</td>
+<td>After generation (by parser)</td>
+</tr>
+<tr>
+<td><strong>Reliability</strong></td>
+<td>Higher (structured by design)</td>
+<td>Depends on LLM output quality</td>
+</tr>
+<tr>
+<td><strong>Parallel Outputs</strong></td>
+<td>Native support</td>
+<td>Not supported</td>
+</tr>
+<tr>
+<td><strong>Streaming</strong></td>
+<td>Partial tool_calls</td>
+<td>Not applicable</td>
+</tr>
+<tr>
+<td><strong>Use Case</strong></td>
+<td>When function calling available</td>
+<td>Fallback for non-function-calling models</td>
+</tr>
+</tbody>
+</table>
 <h2 id="performance-considerations"><a class="toclink" href="#performance-considerations">Performance Considerations</a><a class="headerlink" href="#performance-considerations" title="Permanent link">#</a></h2>
 <ol>
-<li><strong>Reusable Instances</strong>: <code>TextCompletionLLM</code> instances are reusable after initialization</li>
+<li><strong>Reusable Instances</strong>: <code>ToolOrchestratingLLM</code> instances are reusable after initialization</li>
 <li><strong>Async Support</strong>: <code>acall()</code> method provides async execution</li>
-<li><strong>Streaming Support</strong>: LLM layer supports streaming responses</li>
+<li><strong>Streaming Support</strong>: <code>stream_call()</code> yields progressive updates</li>
+<li><strong>Parallel Tool Calls</strong>: Enable with <code>allow_parallel_tool_calls=True</code></li>
 <li><strong>Stateless Execution</strong>: Each call creates independent transient state</li>
+<li><strong>Tool Schema Caching</strong>: Tool schemas are generated once per call</li>
 </ol>
+<h2 id="error-handling"><a class="toclink" href="#error-handling">Error Handling</a><a class="headerlink" href="#error-handling" title="Permanent link">#</a></h2>
+<h3 id="initialization-errors"><a class="toclink" href="#initialization-errors">Initialization Errors</a><a class="headerlink" href="#initialization-errors" title="Permanent link">#</a></h3>
+<ul>
+<li><code>AssertionError</code>: No LLM provided</li>
+<li><code>ValueError</code>: LLM doesn't support function calling</li>
+</ul>
+<h3 id="execution-errors"><a class="toclink" href="#execution-errors">Execution Errors</a><a class="headerlink" href="#execution-errors" title="Permanent link">#</a></h3>
+<ul>
+<li>Network/timeout errors from LLM</li>
+<li>Missing tool_calls in response</li>
+<li>Invalid tool arguments</li>
+</ul>
+<h3 id="validation-errors"><a class="toclink" href="#validation-errors">Validation Errors</a><a class="headerlink" href="#validation-errors" title="Permanent link">#</a></h3>
+<ul>
+<li>Pydantic validation fails on tool arguments</li>
+<li>Type mismatch in output</li>
+</ul>
+<h2 id="when-to-use-toolorchestratingllm"><a class="toclink" href="#when-to-use-toolorchestratingllm">When to Use ToolOrchestratingLLM</a><a class="headerlink" href="#when-to-use-toolorchestratingllm" title="Permanent link">#</a></h2>
+<h3 id="use-when"><a class="toclink" href="#use-when">Use When:</a><a class="headerlink" href="#use-when" title="Permanent link">#</a></h3>
+<p>✅ Your LLM supports function calling (OpenAI, Ollama, etc.)
+✅ You need guaranteed structured outputs
+✅ You want parallel tool calls
+✅ You need streaming with structured updates
+✅ Reliability is critical</p>
+<h3 id="use-textcompletionllm-when"><a class="toclink" href="#use-textcompletionllm-when">Use TextCompletionLLM When:</a><a class="headerlink" href="#use-textcompletionllm-when" title="Permanent link">#</a></h3>
+<p>❌ LLM doesn't support function calling
+❌ You need simple text-to-JSON parsing
+❌ Function calling overhead is unnecessary</p>
+<h2 id="next-steps"><a class="toclink" href="#next-steps">Next Steps</a><a class="headerlink" href="#next-steps" title="Permanent link">#</a></h2>
+<ul>
+<li><a href="../examples/">View Examples</a> - Comprehensive usage examples</li>
+<li><a href="../tool_orchestrating_llm_sequence/">Sequence Diagram</a> - Detailed flow</li>
+<li><a href="../tool_orchestrating_llm_class/">Class Diagram</a> - Architecture</li>
+<li><a href="../tool_orchestrating_llm_dataflow/">Data Flow</a> - Transformations</li>
+<li><a href="../tool_orchestrating_llm_components/">Components</a> - Interactions</li>
+<li><a href="../tool_orchestrating_llm_state/">State Machine</a> - Lifecycle</li>
+</ul>
 
 
 
@@ -3048,44 +3000,6 @@
       
         <footer class="md-footer">
   
-    
-      
-      <nav class="md-footer__inner md-grid" aria-label="Footer" >
-        
-          
-          <a href="../../../../../overview/codebase-map/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Codebase Map">
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-            </div>
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              <div class="md-ellipsis">
-                Codebase Map
-              </div>
-            </div>
-          </a>
-        
-        
-          
-          <a href="../examples/" class="md-footer__link md-footer__link--next" aria-label="Next: Examples">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              <div class="md-ellipsis">
-                Examples
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
-          </a>
-        
-      </nav>
     
   
   <div class="md-footer-meta md-typeset">
@@ -3129,14 +3043,14 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../../../../../assets/javascripts/panzoom.min.js"></script>
+        <script src="../../../../../../assets/javascripts/panzoom.min.js"></script>
       
-        <script src="../../../../../assets/javascripts/zoompan.js"></script>
+        <script src="../../../../../../assets/javascripts/zoompan.js"></script>
       
     
   </body>

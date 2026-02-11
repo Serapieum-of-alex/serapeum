@@ -2845,7 +2845,7 @@
 </code></pre></div>
 <hr />
 <h3 id="2-structuredoutputllm"><a class="toclink" href="#2-structuredoutputllm">2. StructuredOutputLLM</a><a class="headerlink" href="#2-structuredoutputllm" title="Permanent link">#</a></h3>
-<p><strong>Location</strong>: <code>libs/core/src/serapeum/core/llms/structured_llm.py:25</code>
+<p><strong>Location</strong>: <code>libs/core/src/serapeum/core/llms/structured_output_llm.py:25</code>
 <strong>Layer</strong>: LLM Layer (wrapper)
 <strong>Type</strong>: Wrapper class for structured outputs</p>
 <h4 id="purpose_1"><a class="toclink" href="#purpose_1">Purpose</a><a class="headerlink" href="#purpose_1" title="Permanent link">#</a></h4>
@@ -2869,7 +2869,7 @@
 <h4 id="example_1"><a class="toclink" href="#example_1">Example</a><a class="headerlink" href="#example_1" title="Permanent link">#</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms.structured_llm</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuredOutputLLM</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms.structured_output_llm</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuredOutputLLM</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.base.llms.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">PersonInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -3194,7 +3194,7 @@
 <h2 id="code-references"><a class="toclink" href="#code-references">Code References</a><a class="headerlink" href="#code-references" title="Permanent link">#</a></h2>
 <ul>
 <li><strong>FunctionCallingLLM</strong>: <code>libs/core/src/serapeum/core/llms/function_calling.py:21</code></li>
-<li><strong>StructuredOutputLLM</strong>: <code>libs/core/src/serapeum/core/llms/structured_llm.py:25</code></li>
+<li><strong>StructuredOutputLLM</strong>: <code>libs/core/src/serapeum/core/llms/structured_output_llm.py:25</code></li>
 <li><strong>ToolOrchestratingLLM</strong>: <code>libs/core/src/serapeum/core/structured_tools/tools_llm.py:33</code></li>
 <li><strong>TextCompletionLLM</strong>: <code>libs/core/src/serapeum/core/structured_tools/text_completion_llm.py:14</code></li>
 </ul>

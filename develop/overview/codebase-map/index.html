@@ -1124,7 +1124,7 @@
 <li>High-level LLM orchestration (<code>LLM</code>) built on <code>BaseLLM</code>: prompt/message formatting, structured prediction to Pydantic models, and sync/async streaming utilities.</li>
 <li>serapeum.core.llms.function_calling</li>
 <li>Tool-calling specialization (<code>FunctionCallingLLM</code>): chat with tools, tool call extraction/validation, predict-and-call helpers (sync/async, streaming).</li>
-<li>serapeum.core.llms.structured_llm</li>
+<li>serapeum.core.llms.structured_output_llm</li>
 <li>Wrapper LLM (<code>StructuredOutputLLM</code>) that forces structured outputs (<code>BaseModel</code>) from another <code>LLM</code> while keeping chat/completion interfaces.</li>
 <li>serapeum.core.chat.types</li>
 <li><code>AgentChatResponse</code>: aggregates model/tool outputs and provides sync/async streaming generators and tool output parsing.</li>
@@ -1166,7 +1166,7 @@
 <li>serapeum.core.base.llms.base.BaseLLM</li>
 <li>serapeum.core.llms.base.LLM</li>
 <li>serapeum.core.llms.function_calling.FunctionCallingLLM</li>
-<li>serapeum.core.llms.structured_llm.StructuredOutputLLM</li>
+<li>serapeum.core.llms.structured_output_llm.StructuredOutputLLM</li>
 <li>serapeum.core.structured_tools.tools_llm.ToolOrchestratingLLM</li>
 <li>serapeum.core.tools.callable_tool.CallableTool</li>
 <li>serapeum.core.tools.types.BaseTool / AsyncBaseTool</li>

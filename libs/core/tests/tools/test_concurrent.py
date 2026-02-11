@@ -1,4 +1,4 @@
-"""Unit tests for serapeum.core.tools.async_utils async utilities and helpers."""
+"""Unit tests for serapeum.core.tools.concurrent async utilities and helpers."""
 
 import asyncio
 import sys
@@ -6,7 +6,7 @@ import types
 
 import pytest
 
-from serapeum.core.tools.async_utils import (
+from serapeum.core.tools.concurrent import (
     DEFAULT_NUM_WORKERS,
     asyncio_run,
     batch_gather,

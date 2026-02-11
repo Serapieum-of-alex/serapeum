@@ -1,4 +1,4 @@
-"""Unit tests for serapeum.core.tools.utils.
+"""Unit tests for serapeum.core.tools.convert.
 
 This test suite covers all functions in utils.py:
 - create_schema_from_function
@@ -13,7 +13,7 @@ from typing import Any, Optional
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.tools.utils import (
+from serapeum.core.tools.convert import (
     Docstring,
     FunctionConverter,
 )

@@ -6,7 +6,7 @@ import types
 
 import pytest
 
-from serapeum.core.utils.async_utils import (
+from serapeum.core.tools.async_utils import (
     DEFAULT_NUM_WORKERS,
     asyncio_run,
     batch_gather,

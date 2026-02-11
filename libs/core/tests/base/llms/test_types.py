@@ -4,9 +4,10 @@ import base64
 from io import BytesIO
 from pathlib import Path
 from unittest import mock
-
+from unittest.mock import patch
 import httpx
 import pytest
+
 from pydantic import AnyUrl, BaseModel
 
 from serapeum.core.base.llms.types import (
@@ -17,6 +18,7 @@ from serapeum.core.base.llms.types import (
     MessageList,
     MessageRole,
     TextChunk,
+    resolve_binary
 )
 
 
@@ -589,3 +591,232 @@ class TestMessageLists:
             only_users = ml.filter_by_role(MessageRole.USER)
             assert isinstance(only_users, MessageList)
             assert [m.content for m in only_users] == ["U1", "U2"]
+
+
+class TestResolveBinary:
+    """Test cases for resolve_binary utility function."""
+
+    class TestRawBytes:
+        """Test raw_bytes input handling in resolve_binary."""
+
+        def test_raw_bytes_non_base64_no_encoding(self):
+            """Test raw bytes without base64 encoding.
+
+            Inputs: raw_bytes set to an arbitrary byte sequence; as_base64=False.
+            Expectation: Per current implementation, function attempts base64 decoding; if decoding fails it
+            returns the original bytes, otherwise it returns the decoded bytes.
+
+            This documents the current behavior of the auto-decode logic.
+            """
+            raw: bytes = b"\xff\x00\xfeRAW-BYTES\x01\x02"
+            bio = resolve_binary(raw_bytes=raw, as_base64=False)
+            assert isinstance(bio, BytesIO)
+            try:
+                expected = base64.b64decode(raw)
+            except Exception:
+                expected = raw
+            assert bio.getvalue() == expected
+
+        def test_raw_bytes_non_base64_with_encoding(self):
+            """Test raw bytes with base64 encoding.
+
+            Inputs: raw_bytes set to an arbitrary byte sequence; as_base64=True.
+
+            Expectation: Per current implementation, function decodes then re-encodes to base64; thus
+            base64-decoding the result equals either base64.b64decode(raw_bytes) if decoding succeeds
+            or the original raw bytes if decoding fails.
+
+            This documents the decode-then-encode behavior for raw bytes.
+            """
+            raw: bytes = b"\x00\x10not-base64\x99"
+            bio = resolve_binary(raw_bytes=raw, as_base64=True)
+            try:
+                expected_decoded = base64.b64decode(raw)
+            except Exception:
+                expected_decoded = raw
+            assert base64.b64decode(bio.getvalue()) == expected_decoded
+
+        def test_raw_bytes_is_base64_decoded_when_as_base64_false(self):
+            """Test base64 raw bytes decoded when as_base64 is false.
+
+            Inputs: raw_bytes is a base64-encoded payload; as_base64=False.
+
+            Expectation: Function detects base64 and returns the decoded binary data in BytesIO.
+            This checks the auto-detection and decoding path for base64 input.
+            """
+            original = b"hello world"
+            raw_b64 = base64.b64encode(original)
+            bio = resolve_binary(raw_bytes=raw_b64, as_base64=False)
+            assert bio.getvalue() == original
+
+        def test_raw_bytes_is_base64_and_as_base64_true_returns_b64(self):
+            """Test base64 raw bytes returns base64 when as_base64 is true.
+
+            Inputs: raw_bytes is base64-encoded; as_base64=True.
+
+            Expectation: Function decodes then re-encodes and returns base64 bytes, equivalent to normalized input.
+
+            This checks that the return remains base64 when requested.
+            """
+            original = b"binary-\x00-\xff-data"
+            raw_b64 = base64.b64encode(original)
+            bio = resolve_binary(raw_bytes=raw_b64, as_base64=True)
+            assert base64.b64decode(bio.getvalue()) == original
+
+    class TestPath:
+        """Test path input handling in resolve_binary."""
+
+        def test_path_bytes_no_encoding(self, tmp_path: Path):
+            """Test path bytes without encoding.
+
+            Inputs: path to a file containing arbitrary bytes; as_base64=False.
+
+            Expectation: BytesIO contains the exact bytes read from file.
+
+            This checks the "path" source handling with Path object.
+            """
+            p = tmp_path / "data.bin"
+            data = b"\x01\x02payload\x03"
+            p.write_bytes(data)
+            bio = resolve_binary(path=p, as_base64=False)
+            assert bio.getvalue() == data
+
+        def test_path_bytes_with_encoding_str_path(self, tmp_path: Path):
+            """Test path bytes with encoding using string path.
+
+            Inputs: path (as string) to a file; as_base64=True.
+
+            Expectation: BytesIO contains base64-encoded content of the file.
+
+            This checks string-path handling and base64 encoding option.
+            """
+            p = tmp_path / "data2.bin"
+            data = b"\x09content-2\x10"
+            p.write_bytes(data)
+            bio = resolve_binary(path=str(p), as_base64=True)
+            assert base64.b64decode(bio.getvalue()) == data
+
+    class TestURL:
+        """Test url input handling in resolve_binary."""
+
+        def test_url_data_scheme_base64_no_encoding(self):
+            """Test data URL with base64 and no encoding.
+
+            Inputs: url is a data: URL with base64 payload; as_base64=False.
+
+            Expectation: BytesIO contains decoded binary content.
+
+            This checks parsing and decoding of data URLs with base64 flag.
+            """
+            data = b"ABC\x00DEF"
+            url = f"data:application/octet-stream;base64,{base64.b64encode(data).decode()}"
+            bio = resolve_binary(url=url, as_base64=False)
+            assert bio.getvalue() == data
+
+        def test_url_data_scheme_base64_with_encoding(self):
+            """Test data URL with base64 and encoding.
+
+            Inputs: url is a data: URL with base64 payload; as_base64=True.
+
+            Expectation: BytesIO contains base64-encoded version of the decoded payload (i.e., remains base64).
+
+            This checks the as_base64 flag with data URLs.
+            """
+            data = b"\x00\x01\x02hello"
+            url = f"data:application/octet-stream;base64,{base64.b64encode(data).decode()}"
+            bio = resolve_binary(url=url, as_base64=True)
+            assert base64.b64decode(bio.getvalue()) == data
+
+        def test_url_data_scheme_plain_text(self):
+            """Test data URL with plain text.
+
+            Inputs: url is a data: URL with plain text (no base64); as_base64=False.
+
+            Expectation: BytesIO contains the UTF-8 bytes of the text portion as-is.
+
+            This checks the non-base64 data URL branch.
+            """
+            text = "hello-data"
+            url = f"data:text/plain,{text}"
+            bio = resolve_binary(url=url, as_base64=False)
+            assert bio.getvalue() == text.encode("utf-8")
+
+        def test_url_data_scheme_plain_text_as_base64(self):
+            """Test data URL with plain text as base64.
+
+            Inputs: url is a data: URL with plain text; as_base64=True.
+
+            Expectation: BytesIO contains base64-encoded UTF-8 bytes of the text.
+
+            This checks encoding behavior for non-base64 data URLs.
+            """
+            text = "hi"
+            url = f"data:text/plain,{text}"
+            bio = resolve_binary(url=url, as_base64=True)
+            assert base64.b64decode(bio.getvalue()) == text.encode("utf-8")
+
+        def test_url_data_scheme_invalid_format_raises(self):
+            """Test invalid data URL format raises ValueError.
+
+            Inputs: url is a malformed data: URL missing the comma separator.
+
+            Expectation: ValueError is raised indicating invalid format.
+
+            This checks error handling for improperly formatted data URLs.
+            """
+            bad_url = "data:text/plain;base64SGVsbG8="  # missing comma
+            with pytest.raises(ValueError):
+                resolve_binary(url=bad_url)
+
+        def test_http_url_fetches_and_respects_as_base64(self):
+            """Test HTTP URL fetches and respects as_base64 flag.
+
+            Inputs: url is an http(s) URL; as_base64 toggles output format.
+
+            Expectation: requests.get is called, response.raise_for_status is used, and content is returned
+            either raw or base64 encoded depending on the flag.
+
+            This checks the external HTTP fetch path with proper error handling.
+            """
+            content = b"net-bytes\x00\x01"
+
+            class DummyResponse:
+                """Dummy response for testing."""
+
+                def __init__(self, content: bytes | None):
+                    self.content = content
+                    self.raise_called = False
+
+                def raise_for_status(self):
+                    self.raise_called = True
+
+            dummy = DummyResponse(content)
+            with patch(
+                    "serapeum.core.utils.base.requests.get", return_value=dummy
+            ) as mock_get:
+                # as_base64=False
+                bio = resolve_binary(
+                    url="https://example.com/data.bin", as_base64=False
+                )
+                assert bio.getvalue() == content
+                assert dummy.raise_called is True
+                mock_get.assert_called_once()
+
+            dummy2 = DummyResponse(content)
+            with patch("serapeum.core.utils.base.requests.get", return_value=dummy2):
+                # as_base64=True
+                bio2 = resolve_binary(
+                    url="https://example.com/data.bin", as_base64=True
+                )
+                assert base64.b64decode(bio2.getvalue()) == content
+
+        def test_no_valid_source_raises(self):
+            """Test no valid source raises ValueError.
+
+            Inputs: All source arguments are None (no raw_bytes, no path, no url).
+
+            Expectation: ValueError is raised indicating no valid source was provided.
+            This checks the final error path.
+            """
+            with pytest.raises(ValueError):
+                resolve_binary()

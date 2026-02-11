@@ -1,4 +1,4 @@
-"""Unit tests for serapeum.core.utils.async_utils async utilities and helpers."""
+"""Unit tests for serapeum.core.tools.async_utils async utilities and helpers."""
 
 import asyncio
 import sys

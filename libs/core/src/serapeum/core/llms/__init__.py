@@ -22,6 +22,7 @@ from serapeum.core.base.llms.types import (
     MessageRole,
     Metadata,
     TextChunk,
+    MessageList
 )
 from serapeum.core.base.llms.base import BaseLLM
 
@@ -55,6 +56,7 @@ __all__ = [
     "Image",
     "TextChunk",
     "Audio",
+    "MessageList",
     # Core abstractions
     "FunctionCallingLLM",
     "StructuredOutputLLM",

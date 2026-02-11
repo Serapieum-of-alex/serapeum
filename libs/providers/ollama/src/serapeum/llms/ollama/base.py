@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, AsyncGenerator, Generator
 from ollama import AsyncClient, Client  # type: ignore[attr-defined]
 from pydantic import BaseModel, Field, PrivateAttr
 
-from serapeum.core.base.llms.types import (
+from serapeum.core.llms import (
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,

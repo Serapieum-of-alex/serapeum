@@ -1,4 +1,4 @@
-"""Extended tests for serapeum.core.structured_tools.tools_llm.
+"""Extended tests for serapeum.core.llms.abstractions.
 
 This suite provides comprehensive, scenario-based unit tests for the
 `_parse_tool_outputs` function and the `ToolOrchestratingLLM` class.
@@ -18,7 +18,7 @@ from pydantic import BaseModel
 
 from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.prompts.base import PromptTemplate
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
 from serapeum.llms.ollama import Ollama
 

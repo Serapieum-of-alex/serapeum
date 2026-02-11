@@ -5,7 +5,7 @@ from typing import List, Optional
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.structured_tools.utils import (
+from serapeum.core.llms.orchestrators.utils import (
     FlexibleModel,
     _repair_incomplete_json,
     num_valid_fields,

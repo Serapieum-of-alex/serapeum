@@ -32,7 +32,7 @@ from serapeum.core.output_parsers.types import BaseParser, TokenAsyncGen, TokenG
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
 
 if TYPE_CHECKING:
-    from serapeum.core.llms.structured_output_llm import StructuredOutputLLM
+    from serapeum.core.llms import StructuredOutputLLM
 
 
 @runtime_checkable
@@ -1230,7 +1230,7 @@ class LLM(BaseLLM, ABC):
             astructured_predict: Async counterpart that awaits the structured program.
             stream_structured_predict: Streams partial structured outputs incrementally.
         """
-        from serapeum.core.structured_tools.utils import get_program_for_llm
+        from serapeum.core.llms.orchestrators.utils import get_program_for_llm
 
         program = get_program_for_llm(
             output_cls,
@@ -1368,7 +1368,7 @@ class LLM(BaseLLM, ABC):
             structured_predict: Blocking variant using the same structured program.
             astream_structured_predict: Emits partial values asynchronously during execution.
         """
-        from serapeum.core.structured_tools.utils import get_program_for_llm
+        from serapeum.core.llms.orchestrators.utils import get_program_for_llm
 
         program = get_program_for_llm(
             output_cls,
@@ -1504,7 +1504,7 @@ class LLM(BaseLLM, ABC):
             astream_structured_predict: Async variant yielding values via an async iterator.
             structured_predict: Non-streaming version that returns the final model directly.
         """
-        from serapeum.core.structured_tools.utils import get_program_for_llm
+        from serapeum.core.llms.orchestrators.utils import get_program_for_llm
 
         program = get_program_for_llm(
             output_cls,
@@ -1597,7 +1597,7 @@ class LLM(BaseLLM, ABC):
         See Also:
             astream_structured_predict: Public helper that wraps this coroutine for callers.
         """
-        from serapeum.core.structured_tools.utils import get_program_for_llm
+        from serapeum.core.llms.orchestrators.utils import get_program_for_llm
 
         program = get_program_for_llm(
             output_cls,
@@ -1746,7 +1746,7 @@ class LLM(BaseLLM, ABC):
         """
 
         async def gen() -> AsyncGenerator[Model | list[Model], None]:
-            from serapeum.core.structured_tools.utils import get_program_for_llm
+            from serapeum.core.llms.orchestrators.utils import get_program_for_llm
 
             program = get_program_for_llm(
                 output_cls,
@@ -2295,6 +2295,6 @@ class LLM(BaseLLM, ABC):
         See Also:
             StructuredOutputLLM: Provides structured prediction helpers built atop the base LLM.
         """
-        from serapeum.core.llms.structured_output_llm import StructuredOutputLLM
+        from serapeum.core.llms import StructuredOutputLLM
 
         return StructuredOutputLLM(llm=self, output_cls=output_cls, **kwargs)

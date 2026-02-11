@@ -14,7 +14,7 @@ from serapeum.core.configs.configs import Configs
 from serapeum.core.output_parsers import BaseParser, PydanticParser
 from serapeum.core.prompts import ChatPromptTemplate
 from serapeum.core.prompts.base import PromptTemplate
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 
 
 class DummyModel(BaseModel):

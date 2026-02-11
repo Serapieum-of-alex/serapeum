@@ -1,4 +1,13 @@
-"""High-level LLM orchestration API and helpers."""
+"""High-level LLM orchestration API and helpers.
+
+This module provides a unified interface for working with LLMs in Serapeum.
+It exports both core abstractions and high-level orchestrators.
+
+Organization:
+- Base LLM classes and types for core functionality
+- Abstractions (llms.abstractions): Core LLM abstractions for providers
+- Orchestrators (llms.orchestrators): High-level structured output generators
+"""
 
 from serapeum.core.base.llms.types import (
     Audio,
@@ -15,9 +24,24 @@ from serapeum.core.base.llms.types import (
     TextChunk,
 )
 from serapeum.core.llms.base import LLM
+from serapeum.core.base.llms.base import BaseLLM
+
+# Core LLM abstractions
+from serapeum.core.llms.abstractions import (
+    FunctionCallingLLM,
+    StructuredOutputLLM,
+)
+
+# High-level orchestrators
+from serapeum.core.llms.orchestrators import (
+    ToolOrchestratingLLM,
+    TextCompletionLLM,
+)
 
 __all__ = [
+    # Base LLM and types
     "LLM",
+    "BaseLLM",
     "Message",
     "ChatResponse",
     "ChatResponseAsyncGen",
@@ -30,4 +54,10 @@ __all__ = [
     "Image",
     "TextChunk",
     "Audio",
+    # Core abstractions
+    "FunctionCallingLLM",
+    "StructuredOutputLLM",
+    # Orchestrators
+    "ToolOrchestratingLLM",
+    "TextCompletionLLM",
 ]

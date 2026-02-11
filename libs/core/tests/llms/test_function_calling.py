@@ -12,8 +12,8 @@ from serapeum.core.base.llms.types import (
     Message,
     Metadata,
 )
-from serapeum.core.llms.function_calling import FunctionCallingLLM
-from serapeum.core.structured_tools.tools_llm import CallableTool
+from serapeum.core.llms import FunctionCallingLLM
+from serapeum.core.tools import CallableTool
 from serapeum.core.tools.types import BaseTool, ToolCallArguments
 
 

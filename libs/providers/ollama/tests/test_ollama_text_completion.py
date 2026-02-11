@@ -7,7 +7,7 @@ from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.configs.configs import Configs
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.prompts import ChatPromptTemplate
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 

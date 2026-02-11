@@ -1,4 +1,4 @@
-"""Extended tests for serapeum.core.structured_tools.tools_llm.
+"""Extended tests for serapeum.core.llms.abstractions.
 
 This suite provides comprehensive, scenario-based unit tests for the
 `_parse_tool_outputs` function and the `ToolOrchestratingLLM` class.
@@ -16,11 +16,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import BaseModel
 
-from serapeum.core.base.llms.types import ChatResponse, Message, Metadata
+from serapeum.core.llms import ChatResponse, Message, Metadata, FunctionCallingLLM, ToolOrchestratingLLM
 from serapeum.core.chat.types import AgentChatResponse
-from serapeum.core.llms.function_calling import FunctionCallingLLM
 from serapeum.core.prompts.base import PromptTemplate
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
 from serapeum.core.tools.types import BaseTool, ToolCallArguments
 
@@ -264,7 +262,7 @@ class TestToolOrchestratingLLM:
         """
         patched_llm = NonFunctionCallingMockLLM()
         monkeypatch.setattr(
-            "serapeum.core.structured_tools.tools_llm.Configs.llm",
+            "serapeum.core.llms.orchestrators.tool_based.Configs.llm",
             patched_llm,
             raising=False,
         )
@@ -396,7 +394,7 @@ class TestToolOrchestratingLLMStreamCall:
         obj1 = Album(title="t1", artist="a1", songs=[Song(title="s1")])
         obj2 = Album(title="t2", artist="a2", songs=[Song(title="s2")])
         with patch(
-            "serapeum.core.structured_tools.tools_llm.StreamingObjectProcessor.process",
+            "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
             side_effect=[obj1, obj2],
         ) as mock_proc:
 
@@ -413,9 +411,9 @@ class TestToolOrchestratingLLMStreamCall:
         """
         llm = MockFunctionCallingLLM()
         tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
-        with patch("serapeum.core.structured_tools.tools_llm._logger") as mock_logger:
+        with patch("serapeum.core.llms.orchestrators.tool_based._logger") as mock_logger:
             with patch(
-                "serapeum.core.structured_tools.tools_llm.StreamingObjectProcessor.process",
+                "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
                 side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
             ):
                 out = list(tools_llm.stream_call(topic="x"))
@@ -462,7 +460,7 @@ class TestToolOrchestratingLLMAStreamCall:
         obj1 = Album(title="t1", artist="a1", songs=[Song(title="s1")])
         obj2 = Album(title="t2", artist="a2", songs=[Song(title="s2")])
         with patch(
-            "serapeum.core.structured_tools.tools_llm.StreamingObjectProcessor.process",
+            "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
             side_effect=[obj1, obj2],
         ) as mock_proc:
             agen = await tools_llm.astream_call(topic="x")
@@ -481,9 +479,9 @@ class TestToolOrchestratingLLMAStreamCall:
         """
         llm = MockFunctionCallingLLM()
         tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
-        with patch("serapeum.core.structured_tools.tools_llm._logger") as mock_logger:
+        with patch("serapeum.core.llms.orchestrators.tool_based._logger") as mock_logger:
             with patch(
-                "serapeum.core.structured_tools.tools_llm.StreamingObjectProcessor.process",
+                "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
                 side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
             ):
                 agen = await tools_llm.astream_call(topic="x")

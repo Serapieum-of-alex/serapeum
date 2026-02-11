@@ -12,8 +12,8 @@ from typing import Any, List, Optional
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.base.llms.types import ChatResponse, Message, MessageRole
-from serapeum.core.structured_tools.utils import FlexibleModel, StreamingObjectProcessor
+from serapeum.core.llms import ChatResponse, Message, MessageRole
+from serapeum.core.llms.orchestrators.utils import FlexibleModel, StreamingObjectProcessor
 
 
 class Person(BaseModel):

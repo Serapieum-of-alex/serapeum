@@ -12,7 +12,6 @@ __all__ = [
     "SchemaFormatter",
     "Schema",
     "JsonParser",
-    "marshal_llm_to_json",
     "PYDANTIC_FORMAT_TMPL",
 ]
 

@@ -120,6 +120,8 @@ nav:
     - Diagrams: architecture/diagrams.md
   - Reference:
     - Core:
+        - llms:
+            - LLM Classes Comparison: reference/code/llm/llm-classes-comparison.md
         - structured_tools:
             - Text Completion LLM:
                 - Overview: reference/core/structured_tools/text_completion_llm/general.md

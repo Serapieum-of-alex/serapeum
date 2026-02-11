@@ -32,7 +32,7 @@ from serapeum.core.output_parsers.types import BaseParser, TokenAsyncGen, TokenG
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
 
 if TYPE_CHECKING:
-    from serapeum.core.llms.structured_llm import StructuredOutputLLM
+    from serapeum.core.llms.structured_output_llm import StructuredOutputLLM
 
 
 @runtime_checkable
@@ -2295,6 +2295,6 @@ class LLM(BaseLLM, ABC):
         See Also:
             StructuredOutputLLM: Provides structured prediction helpers built atop the base LLM.
         """
-        from serapeum.core.llms.structured_llm import StructuredOutputLLM
+        from serapeum.core.llms.structured_output_llm import StructuredOutputLLM
 
         return StructuredOutputLLM(llm=self, output_cls=output_cls, **kwargs)

@@ -82,7 +82,7 @@ class MyProviderLLM(FunctionCallingLLM):
 
 ### 2. StructuredOutputLLM
 
-**Location**: `libs/core/src/serapeum/core/llms/structured_llm.py:25`
+**Location**: `libs/core/src/serapeum/core/llms/structured_output_llm.py:25`
 **Layer**: LLM Layer (wrapper)
 **Type**: Wrapper class for structured outputs
 
@@ -107,7 +107,7 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 ```python
 from pydantic import BaseModel
 from serapeum.llms.ollama import Ollama
-from serapeum.core.llms.structured_llm import StructuredOutputLLM
+from serapeum.core.llms.structured_output_llm import StructuredOutputLLM
 from serapeum.core.base.llms.types import Message
 
 class PersonInfo(BaseModel):
@@ -374,7 +374,7 @@ Do you just want to wrap an existing LLM to enforce a format?
 ## Code References
 
 - **FunctionCallingLLM**: `libs/core/src/serapeum/core/llms/function_calling.py:21`
-- **StructuredOutputLLM**: `libs/core/src/serapeum/core/llms/structured_llm.py:25`
+- **StructuredOutputLLM**: `libs/core/src/serapeum/core/llms/structured_output_llm.py:25`
 - **ToolOrchestratingLLM**: `libs/core/src/serapeum/core/structured_tools/tools_llm.py:33`
 - **TextCompletionLLM**: `libs/core/src/serapeum/core/structured_tools/text_completion_llm.py:14`
 

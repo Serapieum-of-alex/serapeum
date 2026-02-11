@@ -14,7 +14,7 @@ This page summarizes the main modules, key classes, and the public API surface o
   - High-level LLM orchestration (`LLM`) built on `BaseLLM`: prompt/message formatting, structured prediction to Pydantic models, and sync/async streaming utilities.
 - serapeum.core.llms.function_calling
   - Tool-calling specialization (`FunctionCallingLLM`): chat with tools, tool call extraction/validation, predict-and-call helpers (sync/async, streaming).
-- serapeum.core.llms.structured_llm
+- serapeum.core.llms.structured_output_llm
   - Wrapper LLM (`StructuredOutputLLM`) that forces structured outputs (`BaseModel`) from another `LLM` while keeping chat/completion interfaces.
 - serapeum.core.chat.types
   - `AgentChatResponse`: aggregates model/tool outputs and provides sync/async streaming generators and tool output parsing.
@@ -56,7 +56,7 @@ This page summarizes the main modules, key classes, and the public API surface o
 - serapeum.core.base.llms.base.BaseLLM
 - serapeum.core.llms.base.LLM
 - serapeum.core.llms.function_calling.FunctionCallingLLM
-- serapeum.core.llms.structured_llm.StructuredOutputLLM
+- serapeum.core.llms.structured_output_llm.StructuredOutputLLM
 - serapeum.core.structured_tools.tools_llm.ToolOrchestratingLLM
 - serapeum.core.tools.callable_tool.CallableTool
 - serapeum.core.tools.types.BaseTool / AsyncBaseTool

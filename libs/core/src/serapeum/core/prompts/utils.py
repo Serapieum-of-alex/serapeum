@@ -61,8 +61,3 @@ def get_template_vars(template_str: str) -> List[str]:
             variables.append(variable_name)
 
     return variables
-
-
-def is_chat_model(llm: BaseLLM) -> bool:
-    """Return True if the LLM is a chat model."""
-    return llm.metadata.is_chat_model

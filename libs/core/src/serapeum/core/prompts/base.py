@@ -1,7 +1,7 @@
 """Base classes and implementations for prompt templates used by LLMs."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, WithJsonSchema
 from typing_extensions import Annotated
@@ -22,20 +22,20 @@ AnnotatedCallable = Annotated[
 class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
     """Abstract base class for prompt templates.
 
-    Subclasses must implement string and chat formatting helpers so the same
+    Subclasses must implement string and chat formatting helpers, so the same
     prompt can be used with both completion and chat models.
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    metadata: Dict[str, Any]
-    template_vars: List[str]
-    kwargs: Dict[str, str]
-    output_parser: Optional[BaseParser]
-    template_var_mappings: Optional[Dict[str, Any]] = Field(
+    metadata: dict[str, Any]
+    template_vars: list[str]
+    kwargs: dict[str, str]
+    output_parser: BaseParser | None
+    template_var_mappings: dict[str, Any] | None = Field(
         default_factory=dict,  # type: ignore
         description="Template variable mappings (Optional).",
     )
-    function_mappings: Optional[Dict[str, AnnotatedCallable]] = Field(
+    function_mappings: dict[str, AnnotatedCallable] | None = Field(
         default_factory=dict,  # type: ignore
         description=(
             "Function mappings (Optional). This is a mapping from template "
@@ -44,12 +44,12 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
         ),
     )
 
-    def _map_template_vars(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    def _map_template_vars(self, kwargs: dict[str, Any]) -> dict[str, Any]:
         """For keys in template_var_mappings, swap in the right keys."""
         template_var_mappings = self.template_var_mappings or {}
         return {template_var_mappings.get(k, k): v for k, v in kwargs.items()}
 
-    def _map_function_vars(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    def _map_function_vars(self, kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         For keys in function_mappings, compute values and combine w/ kwargs.
 
@@ -73,7 +73,7 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
 
         return new_kwargs
 
-    def _map_all_vars(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    def _map_all_vars(self, kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Map both template and function variables.
 
@@ -83,7 +83,7 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
         """
         # map function
         new_kwargs = self._map_function_vars(kwargs)
-        # map template vars (to point to existing format vars in string template)
+        # map template vars (to point to existing format vars in the string template)
         return self._map_template_vars(new_kwargs)
 
     @abstractmethod
@@ -91,7 +91,7 @@ class BasePromptTemplate(BaseModel, ABC):  # type: ignore[no-redef]
         """Render the template to a single string."""
 
     @abstractmethod
-    def format_messages(self, **kwargs: Any) -> List[Message]:
+    def format_messages(self, **kwargs: Any) -> list[Message]:
         """Render the template into a list of chat messages."""
 
     @abstractmethod
@@ -108,10 +108,10 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         self,
         template: str,
         prompt_type: str = PromptType.CUSTOM,
-        output_parser: Optional[BaseParser] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        template_var_mappings: Optional[Dict[str, Any]] = None,
-        function_mappings: Optional[Dict[str, Callable]] = None,
+        output_parser: BaseParser | None = None,
+        metadata: dict[str, Any] | None = None,
+        template_var_mappings: dict[str, Any] | None = None,
+        function_mappings: dict[str, Callable] | None = None,
         **kwargs: Any,
     ) -> None:
         """Create a plain-text prompt template.
@@ -143,7 +143,7 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
     def format(
         self,
-        completion_to_prompt: Optional[Callable[[str], str]] = None,
+        completion_to_prompt: Callable[[str], str] | None = None,
         **kwargs: Any,
     ) -> str:
         """Format the prompt into a string."""
@@ -163,7 +163,7 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
         return prompt
 
-    def format_messages(self, **kwargs: Any) -> List[Message]:
+    def format_messages(self, **kwargs: Any) -> list[Message]:
         """Format the prompt into a list of chat messages."""
         prompt = self.format(**kwargs)
         return list(MessageList.from_str(prompt))
@@ -175,16 +175,16 @@ class PromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
     """Prompt template for chat-based LLM prompts."""
 
-    message_templates: List[Message]
+    message_templates: list[Message]
 
     def __init__(
         self,
         message_templates: Sequence[Message],
         prompt_type: str = PromptType.CUSTOM,
-        output_parser: Optional[BaseParser] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        template_var_mappings: Optional[Dict[str, Any]] = None,
-        function_mappings: Optional[Dict[str, Callable]] = None,
+        output_parser: BaseParser | None = None,
+        metadata: dict[str, Any] | None = None,
+        template_var_mappings: dict[str, Any] | None = None,
+        function_mappings: dict[str, Callable] | None = None,
         **kwargs: Any,
     ):
         """Create a chat-style prompt template.
@@ -219,7 +219,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
     @classmethod
     def from_messages(
         cls,
-        message_templates: Union[List[Tuple[str, str]], List[Message]],
+        message_templates: list[tuple[str, str]] | list[Message],
         **kwargs: Any,
     ) -> "ChatPromptTemplate":
         """From messages."""
@@ -232,7 +232,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
     def format(
         self,
-        messages_to_prompt: Optional[Callable[[Sequence[Message]], str]] = None,
+        messages_to_prompt: Callable[[Sequence[Message]], str] | None = None,
         **kwargs: Any,
     ) -> str:
         messages = self.format_messages(**kwargs)
@@ -242,7 +242,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
 
         return MessageList(messages=messages).to_prompt()
 
-    def format_messages(self, **kwargs: Any) -> List[Message]:
+    def format_messages(self, **kwargs: Any) -> list[Message]:
         """Format the prompt into a list of chat messages."""
         all_kwargs = {
             **self.kwargs,
@@ -250,11 +250,11 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         }
         mapped_all_kwargs = self._map_all_vars(all_kwargs)
 
-        messages: List[Message] = []
+        messages: list[Message] = []
         for message_template in self.message_templates:
             # Handle messages with multiple chunks
             if message_template.chunks:
-                formatted_blocks: List[ChunkType] = []
+                formatted_blocks: list[ChunkType] = []
                 for block in message_template.chunks:
                     if isinstance(block, TextChunk):
                         template_vars = get_template_vars(block.content)

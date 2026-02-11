@@ -23,8 +23,9 @@ from serapeum.core.base.llms.types import (
     Metadata,
     TextChunk,
 )
-from serapeum.core.llms.base import LLM
 from serapeum.core.base.llms.base import BaseLLM
+
+from serapeum.core.llms.base import LLM
 
 # Core LLM abstractions
 from serapeum.core.llms.abstractions import (

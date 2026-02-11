@@ -22,7 +22,7 @@ from serapeum.core.llms.base import LLM
 from serapeum.core.prompts.base import ChatPromptTemplate
 
 
-class StructuredLLM(LLM):
+class StructuredOutputLLM(LLM):
     """Wrap an LLM to produce structured Pydantic outputs.
 
     This adapter delegates to an underlying LLM while exposing the same
@@ -37,7 +37,7 @@ class StructuredLLM(LLM):
 
     @classmethod
     def class_name(cls) -> str:
-        return "structured_llm"
+        return "StructuredOutputLLM"
 
     @property
     def metadata(self) -> Metadata:

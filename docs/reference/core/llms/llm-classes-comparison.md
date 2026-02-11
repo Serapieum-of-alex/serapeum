@@ -22,7 +22,7 @@ Serapeum provides four distinct LLM classes organized across two architectural l
 ┌─────────────────────────────────────────────────────────────┐
 │  LLM Layer (Core abstractions)                              │
 ├─────────────────────────────────────────────────────────────┤
-│  FunctionCallingLLM         │  StructuredLLM                 │
+│  FunctionCallingLLM         │  StructuredOutputLLM                 │
 │  (base for providers)       │  (wrapper for structured IO)  │
 │  - Tool calling interface   │  - Forces Pydantic outputs    │
 │  - Provider implementations │  - Wraps any LLM              │
@@ -80,7 +80,7 @@ class MyProviderLLM(FunctionCallingLLM):
 
 ---
 
-### 2. StructuredLLM
+### 2. StructuredOutputLLM
 
 **Location**: `libs/core/src/serapeum/core/llms/structured_llm.py:25`
 **Layer**: LLM Layer (wrapper)
@@ -107,7 +107,7 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 ```python
 from pydantic import BaseModel
 from serapeum.llms.ollama import Ollama
-from serapeum.core.llms.structured_llm import StructuredLLM
+from serapeum.core.llms.structured_llm import StructuredOutputLLM
 from serapeum.core.base.llms.types import Message
 
 class PersonInfo(BaseModel):
@@ -117,7 +117,7 @@ class PersonInfo(BaseModel):
 
 # Wrap an LLM to always return PersonInfo
 base_llm = Ollama(model="llama3.1", request_timeout=90)
-structured_llm = StructuredLLM(
+structured_llm = StructuredOutputLLM(
     llm=base_llm,
     output_cls=PersonInfo
 )
@@ -308,7 +308,7 @@ Product(name='iPhone 15 Pro', price=999.0)
 
 ## Comparison Matrix
 
-| Feature | FunctionCallingLLM | StructuredLLM | ToolOrchestratingLLM | TextCompletionLLM |
+| Feature | FunctionCallingLLM | StructuredOutputLLM | ToolOrchestratingLLM | TextCompletionLLM |
 |---------|-------------------|---------------|---------------------|------------------|
 | **Layer** | LLM | LLM | Orchestration | Orchestration |
 | **Type** | Base class | Wrapper | Orchestrator | Pipeline |
@@ -337,7 +337,7 @@ Does your LLM support function calling?
 └─ YES → Continue...
 
 Do you just want to wrap an existing LLM to enforce a format?
-├─ YES → Use StructuredLLM
+├─ YES → Use StructuredOutputLLM
 └─ NO → Use ToolOrchestratingLLM (recommended for most use cases)
 ```
 
@@ -355,7 +355,7 @@ Do you just want to wrap an existing LLM to enforce a format?
    - You prefer explicit text parsing
    - You need simpler, more predictable behavior
 
-3. **Use `StructuredLLM`** when:
+3. **Use `StructuredOutputLLM`** when:
    - You have an existing LLM instance you want to wrap
    - You just need to enforce an output format
    - You don't need tool orchestration features
@@ -374,7 +374,7 @@ Do you just want to wrap an existing LLM to enforce a format?
 ## Code References
 
 - **FunctionCallingLLM**: `libs/core/src/serapeum/core/llms/function_calling.py:21`
-- **StructuredLLM**: `libs/core/src/serapeum/core/llms/structured_llm.py:25`
+- **StructuredOutputLLM**: `libs/core/src/serapeum/core/llms/structured_llm.py:25`
 - **ToolOrchestratingLLM**: `libs/core/src/serapeum/core/structured_tools/tools_llm.py:33`
 - **TextCompletionLLM**: `libs/core/src/serapeum/core/structured_tools/text_completion_llm.py:14`
 

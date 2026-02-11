@@ -32,7 +32,7 @@ from serapeum.core.output_parsers.types import BaseParser, TokenAsyncGen, TokenG
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
 
 if TYPE_CHECKING:
-    from serapeum.core.llms.structured_llm import StructuredLLM
+    from serapeum.core.llms.structured_llm import StructuredOutputLLM
 
 
 @runtime_checkable
@@ -484,7 +484,7 @@ class LLM(BaseLLM, ABC):
             ```
     See Also:
         BaseLLM: Abstract interface specifying the contract implemented by ``LLM`` subclasses.
-        StructuredLLM: Wrapper that exposes structured interactions on top of an ``LLM`` instance.
+        StructuredOutputLLM: Wrapper that exposes structured interactions on top of an ``LLM`` instance.
     """
 
     system_prompt: str | None = Field(
@@ -2215,18 +2215,18 @@ class LLM(BaseLLM, ABC):
         self,
         output_cls: type[BaseModel],
         **kwargs: Any,
-    ) -> "StructuredLLM":
+    ) -> "StructuredOutputLLM":
         """Wrap this LLM with structured output capabilities.
 
         Args:
             output_cls (type[BaseModel]): Pydantic model describing the structured response schema.
-            **kwargs (Any): Additional keyword arguments forwarded to ``StructuredLLM``.
+            **kwargs (Any): Additional keyword arguments forwarded to ``StructuredOutputLLM``.
 
         Returns:
-            StructuredLLM: Wrapper that exposes structured inference helpers.
+            StructuredOutputLLM: Wrapper that exposes structured inference helpers.
 
         Raises:
-            Nothing: Construction simply instantiates ``StructuredLLM``.
+            Nothing: Construction simply instantiates ``StructuredOutputLLM``.
 
         Examples:
             - Construct a structured wrapper with default options
@@ -2261,7 +2261,7 @@ class LLM(BaseLLM, ABC):
                 True
 
                 ```
-            - Pass configuration options through to ``StructuredLLM``
+            - Pass configuration options through to ``StructuredOutputLLM``
                 ```python
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
@@ -2293,8 +2293,8 @@ class LLM(BaseLLM, ABC):
 
                 ```
         See Also:
-            StructuredLLM: Provides structured prediction helpers built atop the base LLM.
+            StructuredOutputLLM: Provides structured prediction helpers built atop the base LLM.
         """
-        from serapeum.core.llms.structured_llm import StructuredLLM
+        from serapeum.core.llms.structured_llm import StructuredOutputLLM
 
-        return StructuredLLM(llm=self, output_cls=output_cls, **kwargs)
+        return StructuredOutputLLM(llm=self, output_cls=output_cls, **kwargs)

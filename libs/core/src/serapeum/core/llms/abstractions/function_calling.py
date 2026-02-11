@@ -166,7 +166,7 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> "AgentChatResponse":
         """Predict and call the tool."""
-        from serapeum.core.tools.utils import ExecutionConfig, ToolExecutor
+        from serapeum.core.tools import ExecutionConfig, ToolExecutor
 
         response = self.chat_with_tools(
             tools,
@@ -201,7 +201,7 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> "AgentChatResponse":
         """Predict and call the tool."""
-        from serapeum.core.tools.utils import ExecutionConfig, ToolExecutor
+        from serapeum.core.tools import ExecutionConfig, ToolExecutor
 
         response = await self.achat_with_tools(
             tools,

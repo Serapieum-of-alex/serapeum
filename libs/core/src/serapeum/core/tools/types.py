@@ -1017,8 +1017,8 @@ class ToolCallArguments(BaseModel):
             ```
 
     See Also:
-        - serapeum.core.tools.utils.ToolExecutor.execute_with_selection: Execute a selection synchronously.
-        - serapeum.core.tools.utils.ToolExecutor.execute_async_with_selection: Execute a selection asynchronously.
+        - serapeum.core.tools.invoke.ToolExecutor.execute_with_selection: Execute a selection synchronously.
+        - serapeum.core.tools.invoke.ToolExecutor.execute_async_with_selection: Execute a selection asynchronously.
     """
 
     tool_id: str = Field(description="Tool ID to select.")

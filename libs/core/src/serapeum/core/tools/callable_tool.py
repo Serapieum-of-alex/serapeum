@@ -14,7 +14,7 @@ from serapeum.core.tools.types import (
     ToolMetadata,
     ToolOutput,
 )
-from serapeum.core.tools.utils import Docstring, FunctionConverter
+from serapeum.core.tools.convert import Docstring, FunctionConverter
 from serapeum.core.tools.async_utils import asyncio_run
 
 AsyncCallable = Callable[..., Awaitable[Any]]

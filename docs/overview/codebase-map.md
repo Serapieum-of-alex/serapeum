@@ -30,11 +30,11 @@ This page summarizes the main modules, key classes, and the public API surface o
   - `CallableTool`: create tools from Python callables or Pydantic models; handles sync/async bridging and output parsing.
 - serapeum.core.tools.utils
   - General-purpose helpers for the tool subsystem.
-- serapeum.core.structured_tools.tools_llm
+- serapeum.core.llms.orchestrators
   - `ToolOrchestratingLLM`: composes prompts, an LLM, and a toolset to drive structured tool-calling conversations (sync/async, streaming).
-- serapeum.core.structured_tools.text_completion_llm
+- serapeum.core.llms
   - Utilities/classes for orchestrating text-completion style LLMs in the structured tools pipeline.
-- serapeum.core.structured_tools.utils
+- serapeum.core.llms.orchestrators.utils
   - Support utilities for the structured tools orchestration layer.
 - serapeum.core.output_parsers.types
   - Parsers and base models for converting raw LLM output into typed structures.
@@ -57,7 +57,7 @@ This page summarizes the main modules, key classes, and the public API surface o
 - serapeum.core.llms.base.LLM
 - serapeum.core.llms.function_calling.FunctionCallingLLM
 - serapeum.core.llms.structured_output_llm.StructuredOutputLLM
-- serapeum.core.structured_tools.tools_llm.ToolOrchestratingLLM
+- serapeum.core.llms.orchestrators.ToolOrchestratingLLM
 - serapeum.core.tools.callable_tool.CallableTool
 - serapeum.core.tools.types.BaseTool / AsyncBaseTool
 - serapeum.core.base.llms.types.Message / MessageList / ChatResponse / CompletionResponse / Metadata

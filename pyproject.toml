@@ -117,9 +117,6 @@ strict = true
 module = "serapeum.core.tools.*"
 strict = true
 
-[[tool.mypy.overrides]]
-module = "serapeum.core.structured_tools.*"
-strict = true
 
 [[tool.mypy.overrides]]
 module = "serapeum.llms.ollama.*"

@@ -1174,7 +1174,7 @@ class LLM(BaseLLM, ABC):
                 ...     return Person(name=kwargs["name"].title())
                 ...
                 >>> with patch(
-                ...     "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...     "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
                 ...     return_value=fake_program,
                 ... ):
                 ...     DemoLLM().structured_predict(Person, PromptTemplate("{name}"), name="ada").name
@@ -1214,7 +1214,7 @@ class LLM(BaseLLM, ABC):
                 ...
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> with patch(
-                ...     "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...     "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
                 ...     return_value=fake_program,
                 ... ):
                 ...     DemoLLM().structured_predict(
@@ -1299,7 +1299,7 @@ class LLM(BaseLLM, ABC):
                 ...
                 >>> async def demo():
                 ...     with patch(
-                ...         "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...         "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         from serapeum.core.prompts import PromptTemplate
@@ -1348,7 +1348,7 @@ class LLM(BaseLLM, ABC):
                 ...
                 >>> async def demo():
                 ...     with patch(
-                ...         "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...         "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         from serapeum.core.prompts import PromptTemplate
@@ -1437,7 +1437,7 @@ class LLM(BaseLLM, ABC):
                 ...
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> with patch(
-                ...     "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...     "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
                 ...     return_value=FakeProgram(),
                 ... ):
                 ...     tokens = [
@@ -1486,7 +1486,7 @@ class LLM(BaseLLM, ABC):
                 ...
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> with patch(
-                ...     "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...     "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
                 ...     return_value=FakeProgram(),
                 ... ):
                 ...     batches = list(
@@ -1577,7 +1577,7 @@ class LLM(BaseLLM, ABC):
                 >>> async def demo():
                 ...     from serapeum.core.prompts import PromptTemplate
                 ...     with patch(
-                ...         "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...         "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         stream = await DemoLLM()._structured_astream_call(
@@ -1668,7 +1668,7 @@ class LLM(BaseLLM, ABC):
                 >>> async def demo():
                 ...     from serapeum.core.prompts import PromptTemplate
                 ...     with patch(
-                ...         "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...         "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         stream = await DemoLLM().astream_structured_predict(
@@ -1723,7 +1723,7 @@ class LLM(BaseLLM, ABC):
                 >>> async def demo():
                 ...     from serapeum.core.prompts import PromptTemplate
                 ...     with patch(
-                ...         "serapeum.core.structured_tools.utils.get_program_for_llm",
+                ...         "serapeum.core.llms.orchestrators.utils.get_program_for_llm",
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         stream = await DemoLLM().astream_structured_predict(

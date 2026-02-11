@@ -1,1 +1,1 @@
-"""Tests for serapeum.core.structured_tools module."""
+"""Tests for serapeum.core.llms.orchestrators module."""

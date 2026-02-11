@@ -60,7 +60,7 @@ Provides the foundation for LLM providers that support function/tool calling. Th
 
 #### Example
 ```python
-from serapeum.core.llms.function_calling import FunctionCallingLLM
+from serapeum.core.llms import FunctionCallingLLM
 
 class MyProviderLLM(FunctionCallingLLM):
     """Custom provider implementation."""
@@ -107,7 +107,7 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 ```python
 from pydantic import BaseModel
 from serapeum.llms.ollama import Ollama
-from serapeum.core.llms.structured_output_llm import StructuredOutputLLM
+from serapeum.core.llms import StructuredOutputLLM
 from serapeum.core.base.llms.types import Message
 
 class PersonInfo(BaseModel):
@@ -134,7 +134,7 @@ PersonInfo(name='Alice', age=30, occupation='Engineer')
 
 ### 3. ToolOrchestratingLLM
 
-**Location**: `libs/core/src/serapeum/core/structured_tools/tools_llm.py:33`
+**Location**: `libs/core/src/serapeum/core/llms/orchestrators/tool_based.py:33`
 **Layer**: Orchestration Layer (high-level)
 **Type**: Orchestrator for function-calling workflows
 
@@ -165,7 +165,7 @@ High-level orchestrator that converts Pydantic models or Python functions into t
 ```python
 from pydantic import BaseModel
 from serapeum.llms.ollama import Ollama
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.core.llms import ToolOrchestratingLLM
 
 class WeatherInfo(BaseModel):
     """Weather information for a location."""
@@ -191,7 +191,7 @@ WeatherInfo(location='San Francisco', temperature=72.0, conditions='sunny')
 #### Example with Function
 ```python
 from serapeum.llms.ollama import Ollama
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.core.llms import ToolOrchestratingLLM
 
 def calculate_sum(a: int, b: int) -> dict:
     """Calculate the sum of two numbers."""
@@ -213,7 +213,7 @@ print(result)
 ```python
 from pydantic import BaseModel
 from serapeum.llms.ollama import Ollama
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.core.llms import ToolOrchestratingLLM
 
 class Story(BaseModel):
     title: str
@@ -235,7 +235,7 @@ for partial_story in story_generator.stream_call(genre="sci-fi"):
 
 ### 4. TextCompletionLLM
 
-**Location**: `libs/core/src/serapeum/core/structured_tools/text_completion_llm.py:14`
+**Location**: `libs/core/src/serapeum/core/llms/orchestrators/text_completion_llm.py:14`
 **Layer**: Orchestration Layer (simpler alternative)
 **Type**: Text-based structured output generator
 
@@ -261,7 +261,7 @@ Provides structured outputs by parsing raw text completions (without using funct
 from pydantic import BaseModel
 from serapeum.llms.ollama import Ollama
 from serapeum.core.output_parsers import PydanticParser
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 
 class Task(BaseModel):
     title: str
@@ -286,7 +286,7 @@ Task(title='Finish the report', priority=1, completed=False)
 ```python
 from pydantic import BaseModel
 from serapeum.llms.ollama import Ollama
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 
 class Product(BaseModel):
     name: str
@@ -373,10 +373,10 @@ Do you just want to wrap an existing LLM to enforce a format?
 
 ## Code References
 
-- **FunctionCallingLLM**: `libs/core/src/serapeum/core/llms/function_calling.py:21`
-- **StructuredOutputLLM**: `libs/core/src/serapeum/core/llms/structured_output_llm.py:25`
-- **ToolOrchestratingLLM**: `libs/core/src/serapeum/core/structured_tools/tools_llm.py:33`
-- **TextCompletionLLM**: `libs/core/src/serapeum/core/structured_tools/text_completion_llm.py:14`
+- **FunctionCallingLLM**: `libs/core/src/serapeum/core/llms/function_calling.py`
+- **StructuredOutputLLM**: `libs/core/src/serapeum/core/llms/structured_output_llm.py`
+- **ToolOrchestratingLLM**: `libs/core/src/serapeum/core/llms/orchestrators/tool_based.py`
+- **TextCompletionLLM**: `libs/core/src/serapeum/core/llms/orchestrators/text_completion_llm.py`
 
 ## Related Documentation
 

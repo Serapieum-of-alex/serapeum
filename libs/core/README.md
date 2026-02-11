@@ -24,7 +24,7 @@ helpers for prompts, output parsing, and tool calling, this is the package to us
 - `serapeum.core.prompts`: Prompt templates for text and chat models.
 - `serapeum.core.output_parsers`: Parsers for structured outputs (e.g., Pydantic).
 - `serapeum.core.tools`: Tool metadata, tool interfaces, and tool execution.
-- `serapeum.core.structured_tools`: Higher-level programs for structured outputs
+- `serapeum.core.llms.orchestrators`: Higher-level programs for structured outputs
   and function-calling orchestration.
 - `serapeum.core.utils`: JSON/schema helpers and async utilities.
 - `serapeum.core.configs`: Global configuration singleton (`Configs`).

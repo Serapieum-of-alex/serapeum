@@ -36,7 +36,7 @@ print(response.message.content)  # "Pong!"
 ```python
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 
@@ -63,7 +63,7 @@ result = text_llm(value="input")
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.llms.ollama import Ollama
 
 
@@ -456,6 +456,7 @@ Solution: Enable json_mode
 
 ## See Also
 
-- [TextCompletionLLM](../../../core/structured_tools/text_completion_llm/general.md) - Structured completion orchestrator
-- [ToolOrchestratingLLM](../../../core/structured_tools/tool_orchestrating_llm/general.md) - Tool-based orchestrator
+- [TextCompletionLLM](../../../core/llms/orchestrator/text_completion_llm/general.md) - Structured completion 
+  orchestrator
+- [ToolOrchestratingLLM](../../../core/llms/orchestrator/tool_orchestrating_llm/general.md) - Tool-based orchestrator
 - [Ollama Official Documentation](https://ollama.com/docs) - Ollama server documentation

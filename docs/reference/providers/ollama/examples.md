@@ -527,7 +527,7 @@ Use Ollama with `TextCompletionLLM` for structured outputs:
 ```python
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
+from serapeum.core.llms import TextCompletionLLM
 from serapeum.llms.ollama import Ollama
 
 
@@ -559,7 +559,7 @@ Use Ollama with `ToolOrchestratingLLM` for tool-based workflows:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.llms.ollama import Ollama
 
 
@@ -592,7 +592,7 @@ Using `ToolOrchestratingLLM` with parallel tools:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.llms.ollama import Ollama
 
 
@@ -625,7 +625,7 @@ Stream tool execution results:
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.llms.ollama import Ollama
 
 
@@ -754,7 +754,7 @@ Async tool orchestration:
 ```python
 import asyncio
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.llms.ollama import Ollama
 
 
@@ -787,7 +787,7 @@ Async streaming tool execution:
 ```python
 import asyncio
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.llms.ollama import Ollama
 
 

@@ -585,7 +585,7 @@ class TestGetPrompt:
 #
 #     def _patch_program(self, monkeypatch, program):
 #         monkeypatch.setattr(
-#             "serapeum.core.structured_tools.utils.get_program_for_llm",
+#             "serapeum.core.llms/orchestrators.utils.get_program_for_llm",
 #             lambda output_cls, prompt, llm, pydantic_program_mode=None: program,
 #         )
 #

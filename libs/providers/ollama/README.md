@@ -77,7 +77,7 @@ prompt = PromptTemplate(
 ```python
 from pydantic import BaseModel, Field
 from serapeum.llms.ollama import Ollama
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
+from serapeum.core.llms import ToolOrchestratingLLM
 
 
 class Album(BaseModel):

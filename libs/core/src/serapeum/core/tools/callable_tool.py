@@ -15,7 +15,7 @@ from serapeum.core.tools.types import (
     ToolOutput,
 )
 from serapeum.core.tools.convert import Docstring, FunctionConverter
-from serapeum.core.tools.async_utils import asyncio_run
+from serapeum.core.tools.concurrent import asyncio_run
 
 AsyncCallable = Callable[..., Awaitable[Any]]
 
@@ -103,7 +103,7 @@ class SyncAsyncConverter:
         """Wrap an async callable so it can be used from synchronous code.
 
         This wrapper runs the coroutine to completion using
-        :func:`serapeum.core.tools.async_utils.asyncio_run`, which handles common
+        :func:`serapeum.core.tools.concurrent.asyncio_run`, which handles common
         environments (including notebooks with existing loops) and provides a clear
         error message for nested event loops.
 

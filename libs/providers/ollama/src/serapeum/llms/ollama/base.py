@@ -22,6 +22,7 @@ from serapeum.core.llms import (
     MessageRole,
     Metadata,
     TextChunk,
+    FunctionCallingLLM
 )
 from serapeum.core.base.llms.utils import (
     achat_to_completion_decorator,
@@ -30,7 +31,6 @@ from serapeum.core.base.llms.utils import (
     stream_chat_to_completion_decorator,
 )
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
-from serapeum.core.llms import FunctionCallingLLM
 from serapeum.core.types import StructuredLLMMode
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.llms.orchestrators import StreamingObjectProcessor

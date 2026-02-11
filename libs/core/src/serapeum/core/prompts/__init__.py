@@ -1,6 +1,5 @@
 """Prompt templates and utilities for formatting LLM inputs."""
 
-from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.prompts.base import (
     BasePromptTemplate,
     ChatPromptTemplate,
@@ -13,6 +12,4 @@ __all__ = [
     "ChatPromptTemplate",
     "BasePromptTemplate",
     "PromptType",
-    "Message",
-    "MessageRole",
 ]

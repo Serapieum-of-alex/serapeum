@@ -1132,8 +1132,6 @@ class LLM(BaseLLM, ABC):
         ``self.metadata.is_function_calling_model``. Imports are local to avoid
         circular dependencies at import time.
         """
-        from serapeum.core.types import StructuredLLMMode
-
         if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
             if self.metadata.is_function_calling_model:
                 from serapeum.core.llms import ToolOrchestratingLLM

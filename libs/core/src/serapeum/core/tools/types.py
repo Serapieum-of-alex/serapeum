@@ -1,4 +1,5 @@
 """tools module."""
+
 from __future__ import annotations
 import asyncio
 import json
@@ -21,6 +22,7 @@ __all__ = [
     "BaseTool",
     "AsyncBaseTool",
 ]
+
 
 class MinimalToolSchema(BaseModel):
     """Default function-arguments schema for tools.
@@ -786,6 +788,7 @@ class BaseTool:
                 ```
         """
         return BaseToolAsyncAdapter(self)
+
 
 class AsyncBaseTool(BaseTool):
     """Async-capable tool interface.

@@ -58,9 +58,7 @@ def test_node_id(MyNode):
 
 def test_source_node(MyNode):
     n1 = MyNode()
-    n2 = MyNode(
-        relationships={NodeRelationship.SOURCE: RelatedNodeInfo(id=n1.node_id)}
-    )
+    n2 = MyNode(relationships={NodeRelationship.SOURCE: RelatedNodeInfo(id=n1.node_id)})
     assert n2.source_node.hash == n1.hash
     assert n1.source_node is None
 
@@ -68,9 +66,7 @@ def test_source_node(MyNode):
         ValueError, match="Source object must be a single RelatedNodeInfo object"
     ):
         n3 = MyNode(
-            relationships={
-                NodeRelationship.SOURCE: [RelatedNodeInfo(id=n1.node_id)]
-            }
+            relationships={NodeRelationship.SOURCE: [RelatedNodeInfo(id=n1.node_id)]}
         )
         n3.source_node
 
@@ -87,18 +83,14 @@ def test_prev_node(MyNode):
         ValueError, match="Previous object must be a single RelatedNodeInfo object"
     ):
         n3 = MyNode(
-            relationships={
-                NodeRelationship.PREVIOUS: [RelatedNodeInfo(id=n1.node_id)]
-            }
+            relationships={NodeRelationship.PREVIOUS: [RelatedNodeInfo(id=n1.node_id)]}
         )
         n3.prev_node
 
 
 def test_next_node(MyNode):
     n1 = MyNode()
-    n2 = MyNode(
-        relationships={NodeRelationship.NEXT: RelatedNodeInfo(id=n1.node_id)}
-    )
+    n2 = MyNode(relationships={NodeRelationship.NEXT: RelatedNodeInfo(id=n1.node_id)})
     assert n2.next_node.hash == n1.hash
     assert n1.next_node is None
 
@@ -113,9 +105,7 @@ def test_next_node(MyNode):
 
 def test_parent_node(MyNode):
     n1 = MyNode()
-    n2 = MyNode(
-        relationships={NodeRelationship.PARENT: RelatedNodeInfo(id=n1.node_id)}
-    )
+    n2 = MyNode(relationships={NodeRelationship.PARENT: RelatedNodeInfo(id=n1.node_id)})
     assert n2.parent_node.hash == n1.hash
     assert n1.parent_node is None
 
@@ -123,9 +113,7 @@ def test_parent_node(MyNode):
         ValueError, match="Parent object must be a single RelatedNodeInfo object"
     ):
         n3 = MyNode(
-            relationships={
-                NodeRelationship.PARENT: [RelatedNodeInfo(id=n1.node_id)]
-            }
+            relationships={NodeRelationship.PARENT: [RelatedNodeInfo(id=n1.node_id)]}
         )
         n3.parent_node
 

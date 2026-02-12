@@ -1,4 +1,5 @@
 """Ollama."""
+
 from serapeum.ollama.embedding import OllamaEmbedding
 
 from serapeum.ollama.llm import Ollama

@@ -91,12 +91,16 @@ class OllamaEmbedding(BaseEmbedding):
         formatted_texts = [self._format_text(text) for text in texts]
         return self.get_general_text_embeddings(formatted_texts)
 
-    async def _aget_text_embeddings(self, texts: list[str]) -> Sequence[Sequence[float]]:
+    async def _aget_text_embeddings(
+        self, texts: list[str]
+    ) -> Sequence[Sequence[float]]:
         """Asynchronously get text embeddings."""
         formatted_texts = [self._format_text(text) for text in texts]
         return await self.aget_general_text_embeddings(formatted_texts)
 
-    def get_general_text_embeddings(self, texts: list[str]) -> Sequence[Sequence[float]]:
+    def get_general_text_embeddings(
+        self, texts: list[str]
+    ) -> Sequence[Sequence[float]]:
         """Get Ollama embeddings."""
         result = self._client.embed(
             model=self.model_name,
@@ -106,7 +110,9 @@ class OllamaEmbedding(BaseEmbedding):
         )
         return result.embeddings
 
-    async def aget_general_text_embeddings(self, texts: list[str]) -> Sequence[Sequence[float]]:
+    async def aget_general_text_embeddings(
+        self, texts: list[str]
+    ) -> Sequence[Sequence[float]]:
         """Asynchronously get Ollama embeddings."""
         result = await self._async_client.embed(
             model=self.model_name,

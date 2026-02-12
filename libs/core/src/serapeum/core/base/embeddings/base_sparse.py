@@ -105,19 +105,17 @@ class BaseSparseEmbedding(BaseModel):
     async def _aget_query_embedding(self, query: str) -> SparseEmbedding:
         """Embed the input query asynchronously."""
 
-
     def get_query_embedding(self, query: str) -> SparseEmbedding:
         """Embed the input query."""
-        model_dict = self.model_dump()
+        # model_dict = self.model_dump()
 
         query_embedding = self._get_query_embedding(query)
 
         return query_embedding
 
-
     async def aget_query_embedding(self, query: str) -> SparseEmbedding:
         """Get query embedding."""
-        model_dict = self.model_dump()
+        # model_dict = self.model_dump()
         query_embedding = await self._aget_query_embedding(query)
         return query_embedding
 
@@ -168,30 +166,26 @@ class BaseSparseEmbedding(BaseModel):
             *[self._aget_text_embedding(text) for text in texts]
         )
 
-
     def get_text_embedding(self, text: str) -> SparseEmbedding:
         """Embed the input text."""
-        model_dict = self.model_dump()
+        # model_dict = self.model_dump()
         text_embedding = self._get_text_embedding(text)
 
         return text_embedding
 
-
     async def aget_text_embedding(self, text: str) -> SparseEmbedding:
         """Async get text embedding."""
-        model_dict = self.model_dump()
+        # model_dict = self.model_dump()
         text_embedding = await self._aget_text_embedding(text)
 
         return text_embedding
-
 
     def get_text_embedding_batch(
         self,
         texts: List[str],
         show_progress: bool = False,
-        **kwargs: Any,
     ) -> List[SparseEmbedding]:
-        """Get a list of text embeddings, with batching."""
+        """Get a list of text embeddings with batching."""
         cur_batch: List[str] = []
         result_embeddings: List[SparseEmbedding] = []
 
@@ -199,7 +193,7 @@ class BaseSparseEmbedding(BaseModel):
             get_tqdm_iterable(texts, show_progress, "Generating embeddings")
         )
 
-        model_dict = self.model_dump()
+        # model_dict = self.model_dump()
         for idx, text in queue_with_progress:
             cur_batch.append(text)
             if idx == len(texts) - 1 or len(cur_batch) == self.embed_batch_size:
@@ -217,11 +211,10 @@ class BaseSparseEmbedding(BaseModel):
         """Asynchronously get a list of text embeddings, with batching."""
         num_workers = self.num_workers
 
-        model_dict = self.model_dump()
+        # model_dict = self.model_dump()
 
         cur_batch: List[str] = []
         callback_payloads: List[List[str]] = []
-        result_embeddings: List[SparseEmbedding] = []
         embeddings_coroutines: List[Coroutine] = []
         for idx, text in enumerate(texts):
             cur_batch.append(text)
@@ -233,8 +226,6 @@ class BaseSparseEmbedding(BaseModel):
                 cur_batch = []
 
         # flatten the results of asyncio.gather, which is a list of embeddings lists
-        nested_embeddings = []
-
         if num_workers and num_workers > 1:
             nested_embeddings = await run_jobs(
                 embeddings_coroutines,
@@ -263,8 +254,8 @@ class BaseSparseEmbedding(BaseModel):
 
         return result_embeddings
 
+    @staticmethod
     def similarity(
-        self,
         embedding1: SparseEmbedding,
         embedding2: SparseEmbedding,
     ) -> float:

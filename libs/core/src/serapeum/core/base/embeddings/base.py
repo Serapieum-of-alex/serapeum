@@ -2,23 +2,26 @@
 
 import asyncio
 import uuid
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Callable, Coroutine, List, Optional, Sequence, Tuple, cast
+from typing import Any, Callable, Coroutine, Sequence, cast
 
 import numpy as np
 from pydantic import (
     Field,
     ConfigDict,
 )
-from serapeum.core.configs.defaults import (
+from serapeum.core.configs import (
     DEFAULT_EMBED_BATCH_SIZE,
 )
-from serapeum.core.base.embeddings.models import BaseNode, MetadataMode, TransformComponent
-from serapeum.core.utils.base import get_tqdm_iterable
-from serapeum.core.utils.base import run_jobs
+from serapeum.core.base.embeddings.models import (
+    BaseNode,
+    MetadataMode,
+    TransformComponent,
+)
+from serapeum.core.utils.base import get_tqdm_iterable, run_jobs
 
-Embedding = List[float]
+Embedding = list[float]
 
 
 class SimilarityMode(str, Enum):
@@ -29,7 +32,7 @@ class SimilarityMode(str, Enum):
     EUCLIDEAN = "euclidean"
 
 
-def mean_agg(embeddings: List[Embedding]) -> Embedding:
+def mean_agg(embeddings: list[Embedding]) -> Embedding:
     """Mean aggregation for embeddings."""
     if not embeddings:
         raise ValueError("No embeddings to aggregate")
@@ -45,16 +48,18 @@ def similarity(
     """Get embedding similarity."""
     if mode == SimilarityMode.EUCLIDEAN:
         # Using -euclidean distance as similarity to achieve same ranking order
-        return -float(np.linalg.norm(np.array(embedding1) - np.array(embedding2)))
+        val = -float(np.linalg.norm(np.array(embedding1) - np.array(embedding2)))
     elif mode == SimilarityMode.DOT_PRODUCT:
-        return np.dot(embedding1, embedding2)
+        val = np.dot(embedding1, embedding2)
     else:
         product = np.dot(embedding1, embedding2)
         norm = np.linalg.norm(embedding1) * np.linalg.norm(embedding2)
-        return product / norm
+        val = product / norm
+
+    return val
 
 
-class BaseEmbedding(TransformComponent):
+class BaseEmbedding(TransformComponent, ABC):
     """Base class for embeddings."""
 
     model_config = ConfigDict(
@@ -69,25 +74,15 @@ class BaseEmbedding(TransformComponent):
         gt=0,
         le=2048,
     )
-    num_workers: Optional[int] = Field(
+    num_workers: int | None = Field(
         default=None,
         description="The number of workers to use for async embedding calls.",
     )
     # Use Any to avoid import loops
-    embeddings_cache: Optional[Any] = Field(
+    embeddings_cache: Any | None = Field(
         default=None,
         description="Cache for the embeddings: if None, the embeddings are not cached",
     )
-
-    # @model_validator(mode="after")
-    # def check_base_embeddings_class(self) -> Self:
-    #     from serapeum.core.storage.kvstore.types import BaseKVStore
-    #
-    #     if self.embeddings_cache is not None and not isinstance(
-    #         self.embeddings_cache, BaseKVStore
-    #     ):
-    #         raise TypeError("embeddings_cache must be of type BaseKVStore")
-    #     return self
 
     @abstractmethod
     def _get_query_embedding(self, query: str) -> Embedding:
@@ -107,7 +102,6 @@ class BaseEmbedding(TransformComponent):
         docstring for more information.
         """
 
-
     def get_query_embedding(self, query: str) -> Embedding:
         """
         Embed the input query.
@@ -124,9 +118,7 @@ class BaseEmbedding(TransformComponent):
         if not self.embeddings_cache:
             query_embedding = self._get_query_embedding(query)
         elif self.embeddings_cache is not None:
-            cached_emb = self.embeddings_cache.get(
-                key=query, collection="embeddings"
-            )
+            cached_emb = self.embeddings_cache.get(key=query, collection="embeddings")
             if cached_emb is not None:
                 cached_key = next(iter(cached_emb.keys()))
                 query_embedding = cached_emb[cached_key]
@@ -139,7 +131,6 @@ class BaseEmbedding(TransformComponent):
                 )
 
         return query_embedding
-
 
     async def aget_query_embedding(self, query: str) -> Embedding:
         """Get query embedding."""
@@ -167,8 +158,8 @@ class BaseEmbedding(TransformComponent):
 
     def get_agg_embedding_from_queries(
         self,
-        queries: List[str],
-        agg_fn: Optional[Callable[..., Embedding]] = None,
+        queries: list[str],
+        agg_fn: Callable[..., Embedding] | None = None,
     ) -> Embedding:
         """Get aggregated embedding from multiple queries."""
         query_embeddings = [self.get_query_embedding(query) for query in queries]
@@ -177,8 +168,8 @@ class BaseEmbedding(TransformComponent):
 
     async def aget_agg_embedding_from_queries(
         self,
-        queries: List[str],
-        agg_fn: Optional[Callable[..., Embedding]] = None,
+        queries: list[str],
+        agg_fn: Callable[..., Embedding] | None = None,
     ) -> Embedding:
         """Async get aggregated embedding from multiple queries."""
         query_embeddings = [await self.aget_query_embedding(query) for query in queries]
@@ -205,7 +196,7 @@ class BaseEmbedding(TransformComponent):
         # Default implementation just falls back on _get_text_embedding
         return self._get_text_embedding(text)
 
-    def _get_text_embeddings(self, texts: List[str]) -> List[Embedding]:
+    def _get_text_embeddings(self, texts: list[str]) -> list[Embedding]:
         """
         Embed the input sequence of text synchronously.
 
@@ -214,7 +205,7 @@ class BaseEmbedding(TransformComponent):
         # Default implementation just loops over _get_text_embedding
         return [self._get_text_embedding(text) for text in texts]
 
-    async def _aget_text_embeddings(self, texts: List[str]) -> List[Embedding]:
+    async def _aget_text_embeddings(self, texts: list[str]) -> list[Embedding]:
         """
         Embed the input sequence of text asynchronously.
 
@@ -224,16 +215,17 @@ class BaseEmbedding(TransformComponent):
             *[self._aget_text_embedding(text) for text in texts]
         )
 
-    def _get_text_embeddings_cached(self, texts: List[str]) -> List[Embedding]:
-        """
-        Get text embeddings from cache. If not in cache, generate them.
+    def _get_text_embeddings_cached(self, texts: list[str]) -> list[Embedding]:
+        """Get text embeddings from cache.
+
+        If not in cache, generate them.
         """
         if self.embeddings_cache is None:
             raise ValueError("embeddings_cache must be defined")
 
-        embeddings: List[Optional[Embedding]] = [None for i in range(len(texts))]
+        embeddings: list[Embedding | None] = [None for i in range(len(texts))]
         # Tuples of (index, text) to be able to keep same order of embeddings
-        non_cached_texts: List[Tuple[int, str]] = []
+        non_cached_texts: list[tuple[int, str]] = []
         for i, txt in enumerate(texts):
             cached_emb = self.embeddings_cache.get(key=txt, collection="embeddings")
             if cached_emb is not None:
@@ -254,18 +246,19 @@ class BaseEmbedding(TransformComponent):
                     val={str(uuid.uuid4()): text_embedding},
                     collection="embeddings",
                 )
-        return cast(List[Embedding], embeddings)
+        return cast(list[Embedding], embeddings)
 
-    async def _aget_text_embeddings_cached(self, texts: List[str]) -> List[Embedding]:
-        """
-        Asynchronously get text embeddings from cache. If not in cache, generate them.
+    async def _aget_text_embeddings_cached(self, texts: list[str]) -> list[Embedding]:
+        """Asynchronously get text embeddings from cache.
+
+        If not in cache, generate them.
         """
         if self.embeddings_cache is None:
             raise ValueError("embeddings_cache must be defined")
 
-        embeddings: List[Optional[Embedding]] = [None for i in range(len(texts))]
+        embeddings: list[Embedding | None] = [None for i in range(len(texts))]
         # Tuples of (index, text) to be able to keep same order of embeddings
-        non_cached_texts: List[Tuple[int, str]] = []
+        non_cached_texts: list[tuple[int, str]] = []
         for i, txt in enumerate(texts):
             cached_emb = await self.embeddings_cache.aget(
                 key=txt, collection="embeddings"
@@ -288,8 +281,7 @@ class BaseEmbedding(TransformComponent):
                     val={str(uuid.uuid4()): text_embedding},
                     collection="embeddings",
                 )
-        return cast(List[Embedding], embeddings)
-
+        return cast(list[Embedding], embeddings)
 
     def get_text_embedding(self, text: str) -> Embedding:
         """
@@ -306,9 +298,7 @@ class BaseEmbedding(TransformComponent):
         if not self.embeddings_cache:
             text_embedding = self._get_text_embedding(text)
         elif self.embeddings_cache is not None:
-            cached_emb = self.embeddings_cache.get(
-                key=text, collection="embeddings"
-            )
+            cached_emb = self.embeddings_cache.get(key=text, collection="embeddings")
             if cached_emb is not None:
                 cached_key = next(iter(cached_emb.keys()))
                 text_embedding = cached_emb[cached_key]
@@ -322,12 +312,10 @@ class BaseEmbedding(TransformComponent):
 
         return text_embedding
 
-
     async def aget_text_embedding(self, text: str) -> Embedding:
         """Async get text embedding."""
         model_dict = self.to_dict()
         model_dict.pop("api_key", None)
-
 
         if not self.embeddings_cache:
             text_embedding = await self._aget_text_embedding(text)
@@ -348,16 +336,15 @@ class BaseEmbedding(TransformComponent):
 
         return text_embedding
 
-
     def get_text_embedding_batch(
         self,
-        texts: List[str],
+        texts: list[str],
         show_progress: bool = False,
         **kwargs: Any,
-    ) -> List[Embedding]:
+    ) -> list[Embedding]:
         """Get a list of text embeddings, with batching."""
-        cur_batch: List[str] = []
-        result_embeddings: List[Embedding] = []
+        cur_batch: list[str] = []
+        result_embeddings: list[Embedding] = []
 
         queue_with_progress = enumerate(
             get_tqdm_iterable(texts, show_progress, "Generating embeddings")
@@ -381,19 +368,18 @@ class BaseEmbedding(TransformComponent):
 
     async def aget_text_embedding_batch(
         self,
-        texts: List[str],
+        texts: list[str],
         show_progress: bool = False,
         **kwargs: Any,
-    ) -> List[Embedding]:
+    ) -> list[Embedding]:
         """Asynchronously get a list of text embeddings, with batching."""
         num_workers = self.num_workers
 
         model_dict = self.to_dict()
         model_dict.pop("api_key", None)
 
-        cur_batch: List[str] = []
-        embeddings_coroutines: List[Coroutine] = []
-        callback_payloads: List[Tuple[str, List[str]]] = []
+        cur_batch: list[str] = []
+        embeddings_coroutines: list[Coroutine] = []
 
         # for idx, text in queue_with_progress:
         for idx, text in enumerate(texts):

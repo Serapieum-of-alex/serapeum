@@ -45,13 +45,13 @@ def test_get_text_embeddings(
     """Test get queued text embeddings."""
     embed_model = MockEmbedding(embed_dim=8)
     texts_to_embed = []
-    for i in range(8):
+    for _ in range(8):
         texts_to_embed.append("Hello world.")
-    for i in range(8):
+    for _ in range(8):
         texts_to_embed.append("This is a test.")
-    for i in range(4):
+    for _ in range(4):
         texts_to_embed.append("This is another test.")
-    for i in range(4):
+    for _ in range(4):
         texts_to_embed.append("This is a test v2.")
 
     result_embeddings = embed_model.get_text_embedding_batch(texts_to_embed)

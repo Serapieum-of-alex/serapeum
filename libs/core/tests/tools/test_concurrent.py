@@ -15,6 +15,7 @@ from serapeum.core.tools.concurrent import (
 )
 from serapeum.core.utils.base import run_jobs, DEFAULT_NUM_WORKERS
 
+
 class TestGetAsyncioModule:
     """Tests for get_asyncio_module utility."""
 

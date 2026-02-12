@@ -102,8 +102,7 @@ class MultiModalEmbedding(BaseEmbedding):
     ) -> List[Embedding]:
         """Asynchronously get a list of image embeddings, with batching."""
         cur_batch: List[ImageType] = []
-        callback_payloads: List[Tuple[str, List[ImageType]]] = []
-        result_embeddings: List[Embedding] = []
+
         embeddings_coroutines: List[Coroutine] = []
         for idx, img_file_path in enumerate(img_file_paths):
             cur_batch.append(img_file_path)

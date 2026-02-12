@@ -187,14 +187,35 @@ class BaseNode(SerializableModel):
 
     def nodes(self):
         data = [
-            [NodeRelationship.SOURCE, RelatedNodeInfo, "Source object must be a single RelatedNodeInfo object"],
-            [NodeRelationship.PREVIOUS, RelatedNodeInfo, "Previous object must be a single RelatedNodeInfo object"],
-            [NodeRelationship.NEXT, RelatedNodeInfo, "Next object must be a single RelatedNodeInfo object"],
-            [NodeRelationship.PARENT, RelatedNodeInfo, "Parent object must be a single RelatedNodeInfo object"],
-            [NodeRelationship.CHILD, list, "Child objects must be a list of RelatedNodeInfo objects."]
+            [
+                NodeRelationship.SOURCE,
+                RelatedNodeInfo,
+                "Source object must be a single RelatedNodeInfo object",
+            ],
+            [
+                NodeRelationship.PREVIOUS,
+                RelatedNodeInfo,
+                "Previous object must be a single RelatedNodeInfo object",
+            ],
+            [
+                NodeRelationship.NEXT,
+                RelatedNodeInfo,
+                "Next object must be a single RelatedNodeInfo object",
+            ],
+            [
+                NodeRelationship.PARENT,
+                RelatedNodeInfo,
+                "Parent object must be a single RelatedNodeInfo object",
+            ],
+            [
+                NodeRelationship.CHILD,
+                list,
+                "Child objects must be a list of RelatedNodeInfo objects.",
+            ],
         ]
         return [
-            self._get_relationship(data_i[0], data_i[1], error_message=data_i[2]) for data_i in data
+            self._get_relationship(data_i[0], data_i[1], error_message=data_i[2])
+            for data_i in data
         ]
 
     @property
@@ -293,7 +314,7 @@ class TransformComponent(SerializableModel):
         """Transform nodes."""
 
     async def acall(
-            self, nodes: Sequence[BaseNode], **kwargs: Any
+        self, nodes: Sequence[BaseNode], **kwargs: Any
     ) -> Sequence[BaseNode]:
         """Async transform nodes."""
         return self.__call__(nodes, **kwargs)

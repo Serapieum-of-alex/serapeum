@@ -7,8 +7,6 @@ from itertools import zip_longest
 from typing import Any, Coroutine, Iterable, List, Optional, TypeVar
 
 
-
-
 def get_asyncio_module(show_progress: bool = False) -> Any:
     """Return the asyncio-like module to use, optionally with progress support.
 

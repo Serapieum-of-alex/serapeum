@@ -261,6 +261,7 @@ class TestExecute:
         assert out.raw_input == args
         assert out.tool_name == tool.metadata.name
 
+
 class TestExecuteAsync:
     """Tests for ToolExecutor.execute_async method."""
 
@@ -333,6 +334,7 @@ class TestExecuteAsync:
         assert out.is_error is True
         assert out.content.startswith("Encountered error: ")
 
+
 class TestExecuteWithSelection:
     """Tests for ToolExecutor.execute_with_selection method."""
 
@@ -383,6 +385,7 @@ class TestExecuteWithSelection:
         assert '"input": "zzz"' in caplog.text
         assert "=== Function Output ===" in caplog.text
         assert out.content in caplog.text
+
 
 class TestExecuteAsyncWithSelection:
     """Tests for ToolExecutor.execute_async_with_selection method."""

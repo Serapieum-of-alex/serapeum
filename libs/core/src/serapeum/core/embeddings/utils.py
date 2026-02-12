@@ -72,7 +72,7 @@ def resolve_embed_model(
                 embed_model.split(":")[1] if ":" in embed_model else "ViT-B/32"
             )
             embed_model = ClipEmbedding(model_name=clip_model_name)
-        except ImportError as e:
+        except ImportError:
             raise ImportError(
                 "`llama-index-embeddings-clip` package not found, "
                 "please run `pip install llama-index-embeddings-clip` and `pip install git+https://github.com/openai/CLIP.git`"
@@ -110,7 +110,7 @@ def resolve_embed_model(
             )  # pants: no-infer-dep
 
             embed_model = LangchainEmbedding(embed_model)
-        except ImportError as e:
+        except ImportError:
             raise ImportError(
                 "`llama-index-embeddings-langchain` package not found, "
                 "please run `pip install llama-index-embeddings-langchain`"

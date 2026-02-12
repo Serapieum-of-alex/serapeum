@@ -28,6 +28,7 @@ from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_O
 
 ImageType = str | BytesIO
 
+
 class MessageRole(str, Enum):
     """Message role."""
 

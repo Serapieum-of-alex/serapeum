@@ -1,5 +1,4 @@
 from __future__ import annotations
-import os
 import pytest
 
 from unittest.mock import patch
@@ -8,10 +7,7 @@ from serapeum.ollama import OllamaEmbedding
 
 from ollama import Client
 
-
-# This section of code checks and actual integration with a local ollama server (if it exists)
-# And the actual embedding
-test_model = os.environ.get("OLLAMA_TEST_MODEL", "llama3.1:latest")
+test_model = "llama3.1:latest"
 
 try:
     client = Client()  # pragma: no cover
@@ -62,7 +58,6 @@ def test_embedding_class():
     assert isinstance(emb, BaseEmbedding)
 
 
-@pytest.mark.asyncio
 class TestInstructionFunctionality:
     """Test cases for the new instruction functionality."""
 
@@ -164,6 +159,7 @@ class TestInstructionFunctionality:
         # Verify the formatting was applied
         mock_embed.assert_called_once_with("Text: AI is computer science")
 
+    @pytest.mark.asyncio
     @patch.object(OllamaEmbedding, "aget_general_text_embedding")
     async def test_async_query_embedding_uses_instruction(self, mock_embed):
         """Test that async query embedding methods use instructions."""
@@ -178,6 +174,7 @@ class TestInstructionFunctionality:
         # Verify the formatting was applied
         mock_embed.assert_called_once_with("Async Query: What is AI?")
 
+    @pytest.mark.asyncio
     @patch.object(OllamaEmbedding, "aget_general_text_embedding")
     async def test_async_text_embedding_uses_instruction(self, mock_embed):
         """Test that async text embedding methods use instructions."""
@@ -205,6 +202,7 @@ class TestInstructionFunctionality:
         # Verify the formatting was applied
         mock_embed.assert_called_once_with(expected_calls)
 
+    @pytest.mark.asyncio
     @patch.object(OllamaEmbedding, "aget_general_text_embeddings")
     async def test_async_batch_text_embeddings_use_instruction(self, mock_embed):
         """Test that async batch text embedding methods use instructions."""

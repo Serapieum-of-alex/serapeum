@@ -11,6 +11,7 @@ DEFAULT_NUM_WORKERS = 4
 
 T = TypeVar("T")
 
+
 def truncate_text(text: str, max_length: int) -> str:
     """Truncate text to a maximum length."""
     if len(text) <= max_length:
@@ -34,6 +35,7 @@ def get_tqdm_iterable(
             pass
     return _iterator
 
+
 def get_cache_dir() -> str:
     """
     Locate a platform-appropriate cache directory for serapeum,
@@ -49,6 +51,7 @@ def get_cache_dir() -> str:
     path.mkdir(parents=True, exist_ok=True)
 
     return str(path)
+
 
 async def run_jobs(
     jobs: list[Coroutine[Any, Any, T]],

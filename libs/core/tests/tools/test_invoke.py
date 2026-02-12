@@ -1,5 +1,7 @@
 import asyncio
 import logging
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Sequence
 
 import pytest
@@ -72,6 +74,17 @@ class TwoArgSumTool(BaseTool):
 
     def __call__(self, *, a: int, b: int) -> ToolOutput:  # type: ignore[override]
         return ToolOutput(tool_name=self.metadata.name or "sum2", content=str(a + b))
+
+
+class KwargsOnlyTool(BaseTool):
+    """Tool that accepts kwargs and ignores input values."""
+
+    @property
+    def metadata(self) -> ToolMetadata:  # type: ignore[override]
+        return ToolMetadata(description="Ignore args.", name="ignore_args")
+
+    def __call__(self, **kwargs: Any) -> ToolOutput:  # type: ignore[override]
+        return ToolOutput(tool_name=self.metadata.name or "ignore_args", content="ok")
 
 
 class ErrorTool(BaseTool):
@@ -209,6 +222,26 @@ class TestToolExecutor:
             tool_executor = ToolExecutor()
             out = tool_executor.execute(tool, {"a": 2, "b": 3})
             assert out.content == "5"
+
+        def test_verbose_logging_handles_rich_objects(self) -> None:
+            """Verbose logging should not raise on non-JSON-serializable arguments.
+
+            Inputs:
+                - Tool accepting kwargs.
+                - arguments containing datetime and Path objects.
+            Expected:
+                - Execution succeeds and returns ToolOutput.
+            Checks:
+                - Output content equals "ok".
+            """
+            tool = KwargsOnlyTool()
+            tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
+            args = {
+                "when": datetime(2026, 1, 1, tzinfo=timezone.utc),
+                "path": Path("C:/tmp/example.txt"),
+            }
+            out = tool_executor.execute(tool, args)
+            assert out.content == "ok"
 
         def test_error_handling_returns_tool_output(self) -> None:
             """Errors raised by the tool are captured and returned as ToolOutput.

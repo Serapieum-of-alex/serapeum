@@ -447,7 +447,7 @@ class ToolExecutor:
     @staticmethod
     def _log_execution_start(tool: BaseTool, arguments: dict[str, Any]) -> None:
         """Log the start of tool execution."""
-        arguments_str = json.dumps(arguments)
+        arguments_str = json.dumps(arguments, default=str)
         logger.info("=== Calling Function ===")
         logger.info(
             f"Calling function: {tool.metadata.get_name()} with args: {arguments_str}"

@@ -1,7 +1,7 @@
 from typing import Any
 
 import pytest
-from serapeum.core.base.embeddings.models import (
+from serapeum.core.base.embeddings.types import (
     BaseNode,
     MetadataMode,
     NodeRelationship,

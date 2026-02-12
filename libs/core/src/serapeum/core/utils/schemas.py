@@ -1,5 +1,5 @@
 """Utilities for working with JSON schemas and LLMs."""
-
+from __future__ import annotations
 import copy
 import json
 import re

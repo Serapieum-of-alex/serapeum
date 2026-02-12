@@ -10,6 +10,5 @@ __all__ = [
     "ToolCallArguments",
     "ArgumentCoercer",
     "ToolExecutor",
-    "ToolExecutor",
     "ExecutionConfig",
 ]

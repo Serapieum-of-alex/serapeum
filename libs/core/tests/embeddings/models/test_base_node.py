@@ -124,7 +124,7 @@ def test_parent_node(MyNode):
     ):
         n3 = MyNode(
             relationships={
-                NodeRelationship.PARENT: [RelatedNodeInfo(node_id=n1.node_id)]
+                NodeRelationship.PARENT: [RelatedNodeInfo(id=n1.node_id)]
             }
         )
         n3.parent_node
@@ -133,7 +133,7 @@ def test_parent_node(MyNode):
 def test_child_node(MyNode):
     n1 = MyNode()
     n2 = MyNode(
-        relationships={NodeRelationship.CHILD: [RelatedNodeInfo(node_id=n1.id)]}
+        relationships={NodeRelationship.CHILD: [RelatedNodeInfo(id=n1.node_id)]}
     )
     assert n2.child_nodes[0].hash == n1.hash
     assert n1.child_nodes is None
@@ -142,7 +142,7 @@ def test_child_node(MyNode):
         ValueError, match="Child objects must be a list of RelatedNodeInfo objects"
     ):
         n3 = MyNode(
-            relationships={NodeRelationship.CHILD: RelatedNodeInfo(node_id=n1.id)}
+            relationships={NodeRelationship.CHILD: RelatedNodeInfo(id=n1.node_id)}
         )
         n3.child_nodes
 

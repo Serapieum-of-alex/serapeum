@@ -15,7 +15,7 @@ The `TextCompletionLLM` is a structured text completion runner that orchestrates
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.llms import TextCompletionLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 # Define the output schema

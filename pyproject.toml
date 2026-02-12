@@ -25,7 +25,6 @@ requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core",
     "serapeum-ollama",
-    "serapeum-embeddings-ollama"
 ]
 
 
@@ -121,7 +120,7 @@ strict = true
 
 
 [[tool.mypy.overrides]]
-module = "serapeum.llms.ollama.*"
+module = "serapeum.ollama.*"
 strict = true
 
 
@@ -129,13 +128,11 @@ strict = true
 members = [
     "libs/core",
     "libs/providers/*",
-    "serapeum-integrations/embeddings/serapeum-embeddings-ollama",
 ]
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }
 serapeum-ollama = { workspace = true }
-serapeum-embeddings-ollama = {workspace = true}
 
 #[tool.uv]
 #managed = false

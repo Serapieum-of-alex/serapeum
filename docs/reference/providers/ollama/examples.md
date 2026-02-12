@@ -23,7 +23,7 @@ The most straightforward way to use `Ollama`:
 
 ```python
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Initialize Ollama LLM
 llm = Ollama(
@@ -44,7 +44,7 @@ print(response.message.content)  # "Pong!"
 Using the completion API:
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Initialize Ollama LLM
 llm = Ollama(
@@ -66,7 +66,7 @@ print(response.text)  # "Pong!"
 Minimal configuration:
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama3.1")
 ```
@@ -76,7 +76,7 @@ llm = Ollama(model="llama3.1")
 With all common parameters:
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(
     model="llama3.1",
@@ -96,7 +96,7 @@ Pre-configured Ollama client:
 
 ```python
 from ollama import Client
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Create custom client
 client = Client(host="http://localhost:11434", timeout=300)
@@ -113,7 +113,7 @@ llm = Ollama(
 Enable JSON formatting:
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(
     model="llama3.1",
@@ -132,7 +132,7 @@ Basic conversation:
 
 ```python
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
 
@@ -150,7 +150,7 @@ With conversation history:
 
 ```python
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
 
@@ -171,7 +171,7 @@ Passing custom parameters:
 
 ```python
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
 
@@ -192,7 +192,7 @@ Multi-modal input (if supported by model):
 
 ```python
 from serapeum.core.base.llms.types import Message, MessageRole, Image
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama4", request_timeout=180)  # Vision model
 
@@ -219,7 +219,7 @@ print(response.message.content)
 Simple text completion:
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
 
@@ -233,7 +233,7 @@ print(response.text)  # "Paris"
 Custom generation settings:
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
 
@@ -250,7 +250,7 @@ print(response.text)
 Force JSON output:
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(
     model="llama3.1",
@@ -273,7 +273,7 @@ Real-time streaming chat:
 
 ```python
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
 
@@ -290,7 +290,7 @@ for chunk in llm.stream_chat(messages):
 Real-time streaming completion:
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
 
@@ -307,7 +307,7 @@ Access incremental content:
 
 ```python
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
 
@@ -335,7 +335,7 @@ Using tools with Ollama:
 from pydantic import BaseModel
 from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.tools import CallableTool
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -375,7 +375,7 @@ Create tools from Pydantic models:
 from pydantic import BaseModel, Field
 from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.tools import CallableTool
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -413,7 +413,7 @@ Force single tool call:
 from pydantic import BaseModel
 from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.tools import CallableTool
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -450,7 +450,7 @@ Allow multiple tool calls:
 from pydantic import BaseModel
 from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.tools import CallableTool
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -491,7 +491,7 @@ Stream tool calls:
 from pydantic import BaseModel
 from serapeum.core.base.llms.types import Message, MessageRole
 from serapeum.core.tools import CallableTool
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -528,7 +528,7 @@ Use Ollama with `TextCompletionLLM` for structured outputs:
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.llms import TextCompletionLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class DummyModel(BaseModel):
@@ -560,7 +560,7 @@ Use Ollama with `ToolOrchestratingLLM` for tool-based workflows:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):

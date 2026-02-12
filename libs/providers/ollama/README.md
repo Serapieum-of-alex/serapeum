@@ -29,7 +29,7 @@ python -m pip install -e .
 ### Basic chat
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 from serapeum.core.base.llms.types import Message, MessageRole
 
 llm = Ollama(model="llama3.1", request_timeout=120)
@@ -41,7 +41,7 @@ print(response)
 ### Completion style usage
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 from serapeum.core.prompts import PromptTemplate
 
 llm = Ollama(model="llama3.1")
@@ -53,7 +53,7 @@ print(llm.predict(prompt, name="Serapeum"))
 
 ```python
 from pydantic import BaseModel
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.prompts import PromptTemplate
 
@@ -76,7 +76,7 @@ result = llm.predict(prompt, text="Hello")  # requires running Ollama server
 
 ```python
 from pydantic import BaseModel, Field
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
 
 
@@ -143,7 +143,7 @@ Before using this integration, ensure you have:
 ### Simple Embedding Generation
 
 ```python
-from serapeum.llms.ollama import OllamaEmbedding
+from serapeum.ollama import OllamaEmbedding
 
 # Initialize the embedding model
 embed_model = OllamaEmbedding(
@@ -181,7 +181,7 @@ The most common use case is to integrate Ollama embeddings with Serapeum's vecto
 
 ```python
 from serapeum.core import VectorStoreIndex, SimpleDirectoryReader, Settings
-from serapeum.llms.ollama import OllamaEmbedding
+from serapeum.ollama import OllamaEmbedding
 
 # Set the embedding model globally
 Settings.embed_model = OllamaEmbedding(
@@ -207,8 +207,8 @@ You can combine Ollama embeddings with other LLMs (including Ollama LLMs):
 
 ```python
 from serapeum.core.configs import Configs
-from serapeum.llms.ollama import OllamaEmbedding
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import OllamaEmbedding
+from serapeum.ollama import Ollama
 
 # Set both LLM and embedding model
 Configs.llm = Ollama(model="llama3.1", base_url="http://localhost:11434")
@@ -275,7 +275,7 @@ The integration supports asynchronous operations for better performance:
 
 ```python
 import asyncio
-from serapeum.llms.ollama import OllamaEmbedding
+from serapeum.ollama import OllamaEmbedding
 
 embed_model = OllamaEmbedding(model_name="nomic-embed-text")
 

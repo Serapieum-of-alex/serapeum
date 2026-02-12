@@ -19,7 +19,7 @@ from serapeum.core.base.llms.types import (
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.prompts import ChatPromptTemplate
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class MockLLM(MagicMock):

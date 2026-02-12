@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from serapeum.core.llms import BaseLLM, Message
 from serapeum.core.tools import CallableTool
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 response_dict = {
     "model": "llama3.1:latest",

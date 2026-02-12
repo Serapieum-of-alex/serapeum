@@ -167,7 +167,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             >>> from serapeum.core.base.llms.types import Message, MessageRole
             >>> # Ensure `ollama serve` is running locally and the model is pulled, e.g.:
             >>> #   ollama pull llama3.1
-            >>> from serapeum.llms.ollama import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> llm = Ollama(model="llama3.1", request_timeout=120)
             >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'pong'.")])  # doctest: +SKIP
             >>> print(response)
@@ -301,7 +301,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         Examples:
             - Inspect chat model capabilities
                 ```python
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> Ollama(model="m").metadata.is_chat_model
                 True
 
@@ -325,7 +325,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         Examples:
             - Lazily create the client on first access
                 ```python
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> llm = Ollama(model="m", base_url="http://localhost:11434", request_timeout=1.0)
                 >>> c = llm.client  # doctest: +ELLIPSIS
                 >>> type(c) # doctest: + SKIP
@@ -421,7 +421,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         Examples:
             - Merge user-provided options with defaults
                 ```python
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> llm = Ollama(model="m", additional_kwargs={"mirostat": 2, "temperature": 0.9})
                 >>> print(llm._model_kwargs)
                 {'temperature': 0.9, 'num_ctx': 3900, 'mirostat': 2}
@@ -457,7 +457,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             - Text-only conversion
                 ```python
                 >>> from serapeum.core.base.llms.types import Message, MessageList, MessageRole
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> llm = Ollama(model="m")
                 >>> wire = llm._convert_to_ollama_messages(
                 ...     MessageList.from_list([
@@ -535,7 +535,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         Examples:
             - Compute totals when both fields are present
                 ```python
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> Ollama._get_response_token_counts({"prompt_eval_count": 2, "eval_count": 3})
                 {'prompt_tokens': 2, 'completion_tokens': 3, 'total_tokens': 5}
 
@@ -582,7 +582,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             - Combine history, a new user message, and tool specs
                 ```python
                 >>> from serapeum.core.base.llms.types import Message, MessageRole
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> class T:
                 ...     def __init__(self, n):
                 ...         class M:

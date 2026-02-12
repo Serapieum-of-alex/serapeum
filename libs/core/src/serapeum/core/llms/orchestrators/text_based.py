@@ -43,7 +43,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             >>> from pydantic import BaseModel
             >>> from serapeum.core.output_parsers import PydanticParser
             >>> from serapeum.core.llms import TextCompletionLLM
-            >>> from serapeum.llms.ollama import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> LLM = Ollama(
             ...     model="llama3.1",
             ...     request_timeout=180,
@@ -117,7 +117,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ```python
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
                 ...     request_timeout=180,
@@ -359,7 +359,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.output_parsers import PydanticParser
                 >>> from serapeum.core.llms import TextCompletionLLM
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
                 ...     request_timeout=180,
@@ -396,7 +396,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.output_parsers import PydanticParser
                 >>> from serapeum.core.llms import TextCompletionLLM
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
                 ...     request_timeout=180,
@@ -439,7 +439,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.prompts.base import PromptTemplate
                 >>> from serapeum.core.llms import TextCompletionLLM
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
                 ...     request_timeout=180,
@@ -489,7 +489,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.output_parsers import PydanticParser
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
                 ...     request_timeout=180,
@@ -580,7 +580,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.output_parsers import PydanticParser
-                >>> from serapeum.llms.ollama import Ollama
+                >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
                 ...     request_timeout=180,

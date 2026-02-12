@@ -4,7 +4,7 @@ import pytest
 
 from unittest.mock import patch
 from serapeum.core.base.embeddings.base import BaseEmbedding
-from serapeum.llms.ollama import OllamaEmbedding
+from serapeum.ollama import OllamaEmbedding
 
 from ollama import Client
 

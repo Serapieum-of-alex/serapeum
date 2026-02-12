@@ -106,7 +106,7 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 #### Example
 ```python
 from pydantic import BaseModel
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 from serapeum.core.llms import StructuredOutputLLM
 from serapeum.core.base.llms.types import Message
 
@@ -164,7 +164,7 @@ High-level orchestrator that converts Pydantic models or Python functions into t
 #### Example with Pydantic Model
 ```python
 from pydantic import BaseModel
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
 
 class WeatherInfo(BaseModel):
@@ -190,7 +190,7 @@ WeatherInfo(location='San Francisco', temperature=72.0, conditions='sunny')
 
 #### Example with Function
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
 
 def calculate_sum(a: int, b: int) -> dict:
@@ -212,7 +212,7 @@ print(result)
 #### Example with Streaming
 ```python
 from pydantic import BaseModel
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
 
 class Story(BaseModel):
@@ -259,7 +259,7 @@ Provides structured outputs by parsing raw text completions (without using funct
 #### Example
 ```python
 from pydantic import BaseModel
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.llms import TextCompletionLLM
 
@@ -285,7 +285,7 @@ Task(title='Finish the report', priority=1, completed=False)
 #### Example with Just output_cls
 ```python
 from pydantic import BaseModel
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 from serapeum.core.llms import TextCompletionLLM
 
 class Product(BaseModel):

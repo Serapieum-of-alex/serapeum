@@ -7,15 +7,13 @@ import types
 import pytest
 
 from serapeum.core.tools.concurrent import (
-    DEFAULT_NUM_WORKERS,
     asyncio_run,
     batch_gather,
     chunks,
     get_asyncio_module,
     run_async_tasks,
-    run_jobs,
 )
-
+from serapeum.core.utils.base import run_jobs, DEFAULT_NUM_WORKERS
 
 class TestGetAsyncioModule:
     """Tests for get_asyncio_module utility."""

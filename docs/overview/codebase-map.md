@@ -46,7 +46,7 @@ This page summarizes the main modules, key classes, and the public API surface o
   - Common utilities (sync/async helpers, base helpers) shared across modules.
 - serapeum.core.models.base
   - `SerializableModel` (JSON/pickle serialization helpers) and `StructuredLLMMode` enum.
-- serapeum.llms.ollama.base
+- serapeum.ollama.base
   - `Ollama`: concrete `FunctionCallingLLM` implementation for the Ollama server; supports chat/completion, tool calling, and structured prediction (sync/async/streaming).
 - serapeum.datasource
   - Convenience helpers for integrating external data sources (if used by your application code).
@@ -63,7 +63,7 @@ This page summarizes the main modules, key classes, and the public API surface o
 - serapeum.core.base.llms.types.Message / MessageList / ChatResponse / CompletionResponse / Metadata
 - serapeum.core.prompts.base.PromptTemplate / ChatPromptTemplate
 - serapeum.core.models.base.SerializableModel
-- serapeum.llms.ollama.base.Ollama
+- serapeum.ollama.base.Ollama
 
 ## Representative Public Methods
 

@@ -121,27 +121,27 @@ nav:
   - Reference:
     - Core:
         - llms:
-            - LLM Classes Comparison: reference/code/llm/llm-classes-comparison.md
+            - LLM Classes Comparison: reference/core/llms/llm-classes-comparison.md
         - orchestrators:
             - Text Completion LLM:
-                - Overview: reference/core/orchestrators/text_completion_llm/general.md
-                - Examples: reference/core/orchestrators/text_completion_llm/examples.md
-                - Execution Flow: reference/core/orchestrators/text_completion_llm/text_completion_llm_sequence.md
-                - Architecture: reference/core/orchestrators/text_completion_llm/text_completion_llm_class.md
-                - Data Flow: reference/core/orchestrators/text_completion_llm/text_completion_llm_dataflow.md
-                - Components: reference/core/orchestrators/text_completion_llm/text_completion_llm_components.md
-                - Lifecycle: reference/core/orchestrators/text_completion_llm/text_completion_llm_state.md
+                - Overview: reference/core/llms/orchestrators/text_completion_llm/general.md
+                - Examples: reference/core/llms/orchestrators/text_completion_llm/examples.md
+                - Execution Flow: reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_sequence.md
+                - Architecture: reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_class.md
+                - Data Flow: reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_dataflow.md
+                - Components: reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_components.md
+                - Lifecycle: reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_state.md
             - Tool Orchestrating LLM:
-                - Overview: reference/core/orchestrators/tool_orchestrating_llm/general.md
-                - Examples: reference/core/orchestrators/tool_orchestrating_llm/examples.md
-                - Execution Flow: reference/core/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence.md
-                - Architecture: reference/core/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class.md
-                - Data Flow: reference/core/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow.md
-                - Components: reference/core/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components.md
-                - Lifecycle: reference/core/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state.md
+                - Overview: reference/core/llms/orchestrators/tool_orchestrating_llm/general.md
+                - Examples: reference/core/llms/orchestrators/tool_orchestrating_llm/examples.md
+                - Execution Flow: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence.md
+                - Architecture: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class.md
+                - Data Flow: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow.md
+                - Components: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components.md
+                - Lifecycle: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state.md
         - tools:
-            - reference/core/tools/tools.md
-            - reference/core/tools/callable_tools.md
+            - Overview: reference/core/tools/tools.md
+            - CallableTools: reference/core/tools/callable_tools.md
     - Libs:
         - Providers:
             - Ollama:

@@ -2,7 +2,7 @@
 
 import asyncio
 from abc import abstractmethod
-from typing import Coroutine, List, Tuple
+from typing import Coroutine, List
 
 from serapeum.core.base.embeddings.base import (
     BaseEmbedding,

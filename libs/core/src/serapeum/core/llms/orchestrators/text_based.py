@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Tuple, Type, Union
 
 from pydantic import BaseModel
 
-from serapeum.core.configs.configs import Configs
+from serapeum.core.configs import Configs
 from serapeum.core.llms.base import LLM
 from serapeum.core.llms.orchestrators.types import BasePydanticLLM
 from serapeum.core.output_parsers import BaseParser, PydanticParser

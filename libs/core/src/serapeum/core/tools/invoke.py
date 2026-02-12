@@ -9,6 +9,7 @@ from serapeum.core.tools.types import (
     ToolCallArguments,
     ToolOutput,
     adapt_to_async_tool,
+    AsyncBaseTool
 )
 
 __all__ = ["ExecutionConfig", "ToolExecutor"]
@@ -332,7 +333,7 @@ class ToolExecutor:
         return output
 
     async def _invoke_tool_async(
-        self, async_tool: BaseTool, arguments: dict[str, Any]
+        self, async_tool: AsyncBaseTool, arguments: dict[str, Any]
     ) -> ToolOutput:
         """Internal method to invoke async tool with argument unpacking logic."""
         if self._should_unpack_single_arg(async_tool, arguments):
@@ -407,7 +408,7 @@ class ToolExecutor:
         return output
 
     async def _try_single_arg_then_kwargs_async(
-        self, async_tool: BaseTool, arguments: dict[str, Any]
+        self, async_tool: AsyncBaseTool, arguments: dict[str, Any]
     ) -> ToolOutput:
         """Try calling async with single unpacked arg, fall back to kwargs."""
         try:

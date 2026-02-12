@@ -17,7 +17,6 @@ from serapeum.core.tools.types import (
     ToolCallArguments,
     ToolMetadata,
     ToolOutput,
-    adapt_to_async_tool,
 )
 
 
@@ -439,24 +438,7 @@ class TestBaseToolAsyncAdapter:
 
 
 class TestAdaptToAsyncTool:
-    """Tests for adapt_to_async_tool."""
-
-    @pytest.mark.asyncio
-    async def test_returns_same_for_async_tool(self):
-        """Test that an AsyncBaseTool is returned unchanged by adapt_to_async_tool.
-
-        Inputs:
-          - A DummyAsyncTool instance.
-        Expected:
-          - adapt_to_async_tool returns the exact same object (identity preserved).
-        Checks:
-          - The returned object `is` the original tool and acall works.
-        """
-        async_tool = DummyAsyncTool(name="async")
-        adapted = adapt_to_async_tool(async_tool)
-        assert adapted is async_tool
-        out = await adapted.acall("x")
-        assert out.content == "x"
+    """Tests for BaseTool.to_async_tool."""
 
     @pytest.mark.asyncio
     async def test_wraps_sync_tool(self):
@@ -465,12 +447,12 @@ class TestAdaptToAsyncTool:
         Inputs:
           - A DummySyncTool instance.
         Expected:
-          - adapt_to_async_tool returns a BaseToolAsyncAdapter whose acall echoes input.
+          - to_async_tool returns a BaseToolAsyncAdapter whose acall echoes input.
         Checks:
           - isinstance check for adapter and content/value checks on acall output.
         """
         sync_tool = DummySyncTool(name="sync")
-        adapted = adapt_to_async_tool(sync_tool)
+        adapted = sync_tool.to_async_tool()
         assert isinstance(adapted, BaseToolAsyncAdapter)
         out = await adapted.acall(123)
         assert out.tool_name == "sync"

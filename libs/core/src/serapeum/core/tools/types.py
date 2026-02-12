@@ -1,5 +1,5 @@
 """tools module."""
-
+from __future__ import annotations
 import asyncio
 import json
 from abc import abstractmethod
@@ -18,7 +18,6 @@ __all__ = [
     "ToolCallArguments",
     "ToolMetadata",
     "ToolOutput",
-    "adapt_to_async_tool",
     "BaseTool",
     "AsyncBaseTool",
 ]
@@ -172,7 +171,6 @@ class ToolMetadata:
 
     See Also:
         - MinimalToolSchema: The built-in fallback schema.
-        - adapt_to_async_tool: Helper to make a sync tool usable in async flows.
     """
 
     description: str
@@ -708,7 +706,7 @@ class BaseTool:
 
     Implementations should provide :pyattr:`metadata` and implement ``__call__``
     to perform the tool's logic. For async compatibility, see
-    :class:`AsyncBaseTool` and :func:`adapt_to_async_tool`.
+    :class:`AsyncBaseTool` and :func:`to_async_tool`.
 
     Examples:
         - Minimal echo tool
@@ -755,13 +753,46 @@ class BaseTool:
         """
         pass
 
+    def to_async_tool(self) -> AsyncBaseTool:
+        """Return an async-capable tool, adapting sync tools when necessary.
+
+        If ``tool`` already subclasses :class:`AsyncBaseTool`, it is returned as-is.
+        Otherwise, it is wrapped with :class:`BaseToolAsyncAdapter` to provide an
+        asynchronous interface via :meth:`AsyncBaseTool.acall`.
+
+        Returns:
+            AsyncBaseTool: Either the original tool (if already async-capable) or an
+                adapter around it.
+
+        Examples:
+            - Adapting a synchronous tool
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.tools.types import BaseTool, ToolMetadata, ToolOutput
+                >>> class Echo(BaseTool):
+                ...     @property
+                ...     def metadata(self) -> ToolMetadata:
+                ...         return ToolMetadata(description="Echo", name="echo")
+                ...
+                ...     def __call__(self, input_values: dict) -> ToolOutput:
+                ...         return ToolOutput(tool_name="echo", content=input_values.get("input", ""))
+                ...
+                >>> async_tool = Echo().to_async_tool()
+                >>> type(async_tool)
+                <class 'serapeum.core.tools.types.BaseToolAsyncAdapter'>
+                >>> asyncio.run(async_tool.acall({"input": "hi"})).content
+                'hi'
+
+                ```
+        """
+        return BaseToolAsyncAdapter(self)
 
 class AsyncBaseTool(BaseTool):
     """Async-capable tool interface.
 
     Subclasses should implement both :meth:`call` (sync) and :meth:`acall` (async)
     to support a wide range of execution contexts. ``__call__`` delegates to the
-    synchronous :meth:`call` by default. Use :func:`adapt_to_async_tool` to adapt a
+    synchronous :meth:`call` by default. Use :func:`to_async_tool` to adapt a
     purely synchronous :class:`BaseTool` into an async-capable tool.
 
     Examples:
@@ -897,73 +928,6 @@ class BaseToolAsyncAdapter(AsyncBaseTool):
             ToolOutput: The result, awaited from a worker thread.
         """
         return await asyncio.to_thread(self.call, input_values)
-
-
-def adapt_to_async_tool(tool: BaseTool) -> AsyncBaseTool:
-    """Return an async-capable tool, adapting sync tools when necessary.
-
-    If ``tool`` already subclasses :class:`AsyncBaseTool`, it is returned as-is.
-    Otherwise, it is wrapped with :class:`BaseToolAsyncAdapter` to provide an
-    asynchronous interface via :meth:`AsyncBaseTool.acall`.
-
-    Args:
-        tool (BaseTool): The tool instance to make async-capable.
-
-    Returns:
-        AsyncBaseTool: Either the original tool (if already async-capable) or an
-            adapter around it.
-
-    Raises:
-        None
-
-    Examples:
-        - Passing through an already-async tool
-            ```python
-            >>> import asyncio
-            >>> from serapeum.core.tools.types import AsyncBaseTool, ToolMetadata, ToolOutput, adapt_to_async_tool
-            >>> class EchoAsync(AsyncBaseTool):
-            ...     @property
-            ...     def metadata(self) -> ToolMetadata:
-            ...         return ToolMetadata(description="Echo (async)", name="echo_async")
-            ...
-            ...     def call(self, input_values: dict) -> ToolOutput:
-            ...         return ToolOutput(tool_name="echo_async", content=input_values.get("input", ""))
-            ...
-            ...     async def acall(self, input_values: dict) -> ToolOutput:
-            ...         return self.call(input_values)
-            ...
-            >>> async_tool = adapt_to_async_tool(EchoAsync())
-            >>> type(async_tool)
-            <class 'serapeum.core.tools.types.BaseToolAsyncAdapter'>
-            >>> asyncio.run(async_tool.acall({"input": "ok"})).content
-            'ok'
-
-            ```
-
-        - Adapting a synchronous tool
-            ```python
-            >>> import asyncio
-            >>> from serapeum.core.tools.types import BaseTool, ToolMetadata, ToolOutput, adapt_to_async_tool
-            >>> class Echo(BaseTool):
-            ...     @property
-            ...     def metadata(self) -> ToolMetadata:
-            ...         return ToolMetadata(description="Echo", name="echo")
-            ...
-            ...     def __call__(self, input_values: dict) -> ToolOutput:
-            ...         return ToolOutput(tool_name="echo", content=input_values.get("input", ""))
-            ...
-            >>> async_tool = adapt_to_async_tool(Echo())
-            >>> type(async_tool)
-            <class 'serapeum.core.tools.types.BaseToolAsyncAdapter'>
-            >>> asyncio.run(async_tool.acall({"input": "hi"})).content
-            'hi'
-
-            ```
-    """
-    if isinstance(tool, AsyncBaseTool):
-        return tool
-    else:
-        return BaseToolAsyncAdapter(tool)
 
 
 class ToolCallArguments(BaseModel):

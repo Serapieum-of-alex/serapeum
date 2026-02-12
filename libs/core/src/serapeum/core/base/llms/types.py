@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 import base64
-import requests
-from pathlib import Path
-from urllib.parse import urlparse
 from collections.abc import Sequence as ABCSequence
 from enum import Enum
 from io import BytesIO
+from pathlib import Path
 from typing import Annotated, Any, AsyncGenerator, Generator, Iterator, Literal
+from urllib.parse import urlparse
 
+import requests
 from filetype import guess as filetype_guess
 from pydantic import (
     AnyUrl,

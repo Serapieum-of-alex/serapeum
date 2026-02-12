@@ -1,10 +1,12 @@
 """Chat models and data structures for conversational agents."""
+
 from __future__ import annotations
+
 import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, AsyncGenerator, Generator, cast, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Generator, cast
 
 from pydantic import BaseModel
 

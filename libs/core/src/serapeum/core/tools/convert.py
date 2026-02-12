@@ -487,8 +487,9 @@ class FunctionConverter:
         self,
         name: str,
         func: Callable[..., Any] | Callable[..., Awaitable[Any]],
-        additional_fields:
-            list[tuple[str, type[Any], Any] | tuple[str, type[Any]]] | None = None,
+        additional_fields: (
+            list[tuple[str, type[Any], Any] | tuple[str, type[Any]]] | None
+        ) = None,
         ignore_fields: list[str] | None = None,
     ):
         """Initialize with function, additional fields, and ignore list."""

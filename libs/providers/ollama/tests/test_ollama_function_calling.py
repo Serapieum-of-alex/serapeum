@@ -17,8 +17,8 @@ from models import Album
 from pydantic import BaseModel
 
 from serapeum.core.chat.types import AgentChatResponse
-from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.llms import ToolOrchestratingLLM
+from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.tools import ToolOutput
 from serapeum.llms.ollama import Ollama
 

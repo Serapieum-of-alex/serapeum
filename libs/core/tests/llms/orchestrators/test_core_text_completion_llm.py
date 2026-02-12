@@ -11,10 +11,10 @@ from serapeum.core.llms import (
     Message,
     MessageRole,
     Metadata,
+    TextCompletionLLM,
 )
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.prompts import ChatPromptTemplate
-from serapeum.core.llms import TextCompletionLLM
 
 
 class MockLLM(MagicMock):

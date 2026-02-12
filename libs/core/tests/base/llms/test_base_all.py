@@ -1,4 +1,3 @@
-import asyncio
 from typing import Any, AsyncGenerator, ClassVar, Generator, Sequence
 
 import pytest
@@ -14,8 +13,8 @@ from serapeum.core.base.llms.types import (
 )
 from serapeum.core.llms import TextCompletionLLM, ToolOrchestratingLLM
 from serapeum.core.llms.base import (
-    CompletionToPromptType,
     LLM,
+    CompletionToPromptType,
     MessagesToPromptType,
     astream_response_to_tokens,
     default_completion_to_prompt,
@@ -240,6 +239,7 @@ class TestStreamResponseToTokens:
         Expected result: tokens mirror the delta values in order.
         Checks: list(token_gen) equals the deltas.
         """
+
         # arrange
         def responses() -> Generator[CompletionResponse, None, None]:
             yield CompletionResponse(text="hello", delta="he")
@@ -257,6 +257,7 @@ class TestStreamResponseToTokens:
         Expected result: tokens yield empty strings for missing deltas.
         Checks: list(token_gen) returns empty strings.
         """
+
         # arrange
         def responses() -> Generator[ChatResponse, None, None]:
             yield ChatResponse(
@@ -283,6 +284,7 @@ class TestAstreamResponseToTokens:
         Expected result: async tokens mirror the delta values in order.
         Checks: collected tokens match the deltas.
         """
+
         # arrange
         async def responses() -> AsyncGenerator[CompletionResponse, None]:
             yield CompletionResponse(text="hi", delta="h")
@@ -302,6 +304,7 @@ class TestAstreamResponseToTokens:
         Expected result: async tokens emit empty strings for missing deltas.
         Checks: collected tokens are empty strings.
         """
+
         # arrange
         async def responses() -> AsyncGenerator[ChatResponse, None]:
             yield ChatResponse(
@@ -346,9 +349,7 @@ class TestSetMessagesToPrompt:
         Checks: output matches MessageList.to_prompt for sample data.
         """
         # arrange
-        messages = MessageList.from_list(
-            [Message(role=MessageRole.USER, content="hi")]
-        )
+        messages = MessageList.from_list([Message(role=MessageRole.USER, content="hi")])
 
         # act
         adapter = LLM.set_messages_to_prompt(None)
@@ -363,11 +364,10 @@ class TestSetMessagesToPrompt:
         Expected result: same callable returned without wrapping.
         Checks: returned object is the same as the input.
         """
+
         # arrange
         def reverse_messages(message_list: MessageList) -> str:
-            return "|".join(
-                message.content or "" for message in reversed(message_list)
-            )
+            return "|".join(message.content or "" for message in reversed(message_list))
 
         # act
         adapter = LLM.set_messages_to_prompt(reverse_messages)
@@ -396,6 +396,7 @@ class TestSetCompletionToPrompt:
         Expected result: same callable returned.
         Checks: returned adapter is the original callable.
         """
+
         # arrange
         def prefix(prompt: str) -> str:
             return f"PREFIX: {prompt}"
@@ -431,6 +432,7 @@ class TestCheckPrompts:
         Expected result: adapters preserved on the instance.
         Checks: adapter outputs match the custom implementations.
         """
+
         # arrange
         def to_prompt(message_list: MessageList) -> str:
             return "CUSTOM"
@@ -660,7 +662,9 @@ class TestGetProgram:
 
 
 class TestStructuredPredict:
-    def test_program_invoked_with_llm_kwargs(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_program_invoked_with_llm_kwargs(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """
         Inputs: fake program callable and llm_kwargs passed to structured_predict.
         Expected result: program is invoked with llm_kwargs and prompt args.
@@ -697,7 +701,9 @@ class TestAStructuredPredict:
         prompt = PromptTemplate("{name}")
 
         class FakeProgram:
-            async def acall(self, llm_kwargs: dict | None = None, **kwargs: Any) -> _OutputModel:
+            async def acall(
+                self, llm_kwargs: dict | None = None, **kwargs: Any
+            ) -> _OutputModel:
                 return _OutputModel(name=f"{kwargs['name']}:{llm_kwargs['seed']}")
 
         monkeypatch.setattr(llm, "_get_program", lambda *args, **kwargs: FakeProgram())
@@ -732,9 +738,7 @@ class TestStreamStructuredPredict:
         # act
         results = [
             item.name
-            for item in llm.stream_structured_predict(
-                _OutputModel, prompt, name="flow"
-            )
+            for item in llm.stream_structured_predict(_OutputModel, prompt, name="flow")
         ]
 
         # assert
@@ -743,7 +747,9 @@ class TestStreamStructuredPredict:
 
 class TestStructuredAstreamCall:
     @pytest.mark.asyncio
-    async def test_returns_async_generator(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    async def test_returns_async_generator(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """
         Inputs: fake program returning async generator.
         Expected result: _structured_astream_call returns that generator.
@@ -773,7 +779,9 @@ class TestStructuredAstreamCall:
 
 class TestAstreamStructuredPredict:
     @pytest.mark.asyncio
-    async def test_wraps_program_astream_call(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    async def test_wraps_program_astream_call(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """
         Inputs: fake program with async stream results.
         Expected result: astream_structured_predict yields values from program.

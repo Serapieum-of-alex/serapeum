@@ -8,7 +8,7 @@ with a docstring that explains inputs, expected behavior, and what is being chec
 """
 
 import datetime as dt
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 from pydantic import BaseModel, Field

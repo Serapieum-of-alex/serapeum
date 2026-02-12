@@ -3,7 +3,9 @@
 This module defines the BaseLLM protocol that concrete providers must
 implement to support chat/completion, streaming, and async variants.
 """
+
 from __future__ import annotations
+
 from abc import abstractmethod
 from typing import Any, Sequence
 

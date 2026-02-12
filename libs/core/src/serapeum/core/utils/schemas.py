@@ -5,8 +5,8 @@ import json
 import re
 from dataclasses import dataclass
 from typing import Any
-import yaml
 
+import yaml
 
 __all__ = [
     "SchemaFormatter",
@@ -339,6 +339,7 @@ class MarkdownParserException(Exception):
     """Exception raised for errors encountered during output parsing."""
 
     pass
+
 
 def parse_json_markdown(text: str) -> Any:
     r"""Parse a JSON object/array embedded in fenced markdown.

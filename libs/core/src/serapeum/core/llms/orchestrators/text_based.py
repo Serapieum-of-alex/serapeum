@@ -6,9 +6,9 @@ from pydantic import BaseModel
 
 from serapeum.core.configs.configs import Configs
 from serapeum.core.llms.base import LLM
+from serapeum.core.llms.orchestrators.types import BasePydanticLLM
 from serapeum.core.output_parsers import BaseParser, PydanticParser
 from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
-from serapeum.core.llms.orchestrators.types import BasePydanticLLM
 
 
 class TextCompletionLLM(BasePydanticLLM[BaseModel]):

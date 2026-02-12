@@ -16,8 +16,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import BaseModel
 
-from serapeum.core.llms import ChatResponse, Message, Metadata, FunctionCallingLLM, ToolOrchestratingLLM
 from serapeum.core.chat.types import AgentChatResponse
+from serapeum.core.llms import (
+    ChatResponse,
+    FunctionCallingLLM,
+    Message,
+    Metadata,
+    ToolOrchestratingLLM,
+)
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.tools import ToolOutput
 from serapeum.core.tools.types import BaseTool, ToolCallArguments
@@ -411,7 +417,9 @@ class TestToolOrchestratingLLMStreamCall:
         """
         llm = MockFunctionCallingLLM()
         tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
-        with patch("serapeum.core.llms.orchestrators.tool_based._logger") as mock_logger:
+        with patch(
+            "serapeum.core.llms.orchestrators.tool_based._logger"
+        ) as mock_logger:
             with patch(
                 "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
                 side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
@@ -479,7 +487,9 @@ class TestToolOrchestratingLLMAStreamCall:
         """
         llm = MockFunctionCallingLLM()
         tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
-        with patch("serapeum.core.llms.orchestrators.tool_based._logger") as mock_logger:
+        with patch(
+            "serapeum.core.llms.orchestrators.tool_based._logger"
+        ) as mock_logger:
             with patch(
                 "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
                 side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],

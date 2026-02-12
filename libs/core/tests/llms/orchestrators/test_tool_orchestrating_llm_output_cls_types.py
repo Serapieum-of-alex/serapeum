@@ -22,9 +22,8 @@ from unittest.mock import MagicMock
 import pytest
 from pydantic import BaseModel, Field
 
-from serapeum.core.llms import Message, Metadata
 from serapeum.core.chat.types import AgentChatResponse
-from serapeum.core.llms import ToolOrchestratingLLM
+from serapeum.core.llms import Message, Metadata, ToolOrchestratingLLM
 from serapeum.core.tools import ToolOutput
 from serapeum.core.tools.callable_tool import CallableTool
 from serapeum.core.tools.types import BaseTool

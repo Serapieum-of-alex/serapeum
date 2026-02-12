@@ -4,7 +4,6 @@ from serapeum.core.prompts.base import (
     BasePromptTemplate,
     ChatPromptTemplate,
     PromptTemplate,
-    PromptType,
 )
 
 __all__ = [

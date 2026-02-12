@@ -456,7 +456,7 @@ Solution: Enable json_mode
 
 ## See Also
 
-- [TextCompletionLLM](../../../core/llms/orchestrator/text_completion_llm/general.md) - Structured completion 
+- [TextCompletionLLM](../../../core/llms/orchestrator/text_completion_llm/general.md) - Structured completion
   orchestrator
 - [ToolOrchestratingLLM](../../../core/llms/orchestrator/tool_orchestrating_llm/general.md) - Tool-based orchestrator
 - [Ollama Official Documentation](https://ollama.com/docs) - Ollama server documentation

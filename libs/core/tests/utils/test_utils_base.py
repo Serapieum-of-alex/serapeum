@@ -1,6 +1,5 @@
 """Tests for serapeum.core.utils.base utility functions."""
 
-
 from serapeum.core.utils.base import truncate_text
 
 

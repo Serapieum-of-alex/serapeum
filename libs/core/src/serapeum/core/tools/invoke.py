@@ -1,6 +1,8 @@
+"""Tool invocation utilities."""
+
 import json
-from typing import Any, Sequence
 from dataclasses import dataclass
+from typing import Any, Sequence
 
 from serapeum.core.tools.types import (
     BaseTool,
@@ -196,7 +198,7 @@ class ToolExecutor:
             return self._create_error_output(tool, arguments, e)
 
     async def execute_async(
-            self, tool: BaseTool, arguments: dict[str, Any]
+        self, tool: BaseTool, arguments: dict[str, Any]
     ) -> ToolOutput:
         """Execute a tool asynchronously with error handling.
 
@@ -238,9 +240,9 @@ class ToolExecutor:
             return self._create_error_output(tool, arguments, e)
 
     def execute_with_selection(
-            self,
-            tool_call: ToolCallArguments,
-            tools: Sequence[BaseTool],
+        self,
+        tool_call: ToolCallArguments,
+        tools: Sequence[BaseTool],
     ) -> ToolOutput:
         """Execute a tool based on a tool selection.
 
@@ -293,9 +295,9 @@ class ToolExecutor:
         return self.execute(tool, tool_call.tool_kwargs)
 
     async def execute_async_with_selection(
-            self,
-            tool_call: ToolCallArguments,
-            tools: Sequence[BaseTool],
+        self,
+        tool_call: ToolCallArguments,
+        tools: Sequence[BaseTool],
     ) -> ToolOutput:
         """Execute a tool asynchronously based on a tool selection.
 
@@ -330,7 +332,7 @@ class ToolExecutor:
         return output
 
     async def _invoke_tool_async(
-            self, async_tool: BaseTool, arguments: dict[str, Any]
+        self, async_tool: BaseTool, arguments: dict[str, Any]
     ) -> ToolOutput:
         """Internal method to invoke async tool with argument unpacking logic."""
         if self._should_unpack_single_arg(async_tool, arguments):
@@ -341,7 +343,7 @@ class ToolExecutor:
         return output
 
     def _should_unpack_single_arg(
-            self, tool: BaseTool, arguments: dict[str, Any]
+        self, tool: BaseTool, arguments: dict[str, Any]
     ) -> bool:
         """Determine whether to auto-unpack a single argument.
 
@@ -392,7 +394,7 @@ class ToolExecutor:
         return val
 
     def _try_single_arg_then_kwargs(
-            self, tool: BaseTool, arguments: dict[str, Any]
+        self, tool: BaseTool, arguments: dict[str, Any]
     ) -> ToolOutput:
         """Try calling with single unpacked arg, fall back to kwargs."""
         try:
@@ -405,7 +407,7 @@ class ToolExecutor:
         return output
 
     async def _try_single_arg_then_kwargs_async(
-            self, async_tool: BaseTool, arguments: dict[str, Any]
+        self, async_tool: BaseTool, arguments: dict[str, Any]
     ) -> ToolOutput:
         """Try calling async with single unpacked arg, fall back to kwargs."""
         try:
@@ -418,7 +420,7 @@ class ToolExecutor:
         return output
 
     def _create_error_output(
-            self, tool: BaseTool, arguments: dict[str, Any], error: Exception
+        self, tool: BaseTool, arguments: dict[str, Any], error: Exception
     ) -> ToolOutput:
         """Create a standardized error output."""
         return ToolOutput(

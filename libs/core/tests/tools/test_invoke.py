@@ -1,16 +1,17 @@
-import pytest
 import asyncio
-from typing import Sequence, Any
+from typing import Any, Sequence
+
+import pytest
 from pydantic import BaseModel
+
+from serapeum.core.tools.invoke import ExecutionConfig, ToolExecutor
 from serapeum.core.tools.types import (
     AsyncBaseTool,
     BaseTool,
+    ToolCallArguments,
     ToolMetadata,
     ToolOutput,
-    ToolCallArguments
 )
-
-from serapeum.core.tools.invoke import ToolExecutor, ExecutionConfig
 
 
 class SingleArgEchoTool(BaseTool):
@@ -49,6 +50,7 @@ class SingleArgKwOnlyTool(BaseTool):
             tool_name=self.metadata.name or "single_kw", content=input_values
         )
 
+
 class TwoArgSumTool(BaseTool):
     """Two-argument tool summing integers via kwargs path.
 
@@ -80,7 +82,6 @@ class ErrorTool(BaseTool):
 
     def __call__(self, input_values: Any) -> ToolOutput:  # type: ignore[override]
         raise RuntimeError("boom")
-
 
 
 class AsyncSingleArgKwOnlyTool(AsyncBaseTool):
@@ -305,7 +306,7 @@ class TestToolExecutor:
         """Tests for ToolExecutor.execute_with_selection method."""
 
         def test_calls_correct_tool_and_propagates_output(
-                self, capsys: pytest.CaptureFixture[str]
+            self, capsys: pytest.CaptureFixture[str]
         ) -> None:
             """Ensure the correct tool is selected by name and the output is returned.
 
@@ -326,7 +327,7 @@ class TestToolExecutor:
             assert out.content == "ok"
 
         def test_verbose_prints_arguments_and_output(
-                self, capsys: pytest.CaptureFixture[str]
+            self, capsys: pytest.CaptureFixture[str]
         ) -> None:
             """Verify verbose mode prints the function call info and output content.
 
@@ -375,7 +376,7 @@ class TestToolExecutor:
 
         @pytest.mark.asyncio
         async def test_verbose_prints_arguments_and_output_async(
-                self, capsys: pytest.CaptureFixture[str]
+            self, capsys: pytest.CaptureFixture[str]
         ) -> None:
             """Verbose mode prints details for async tool calls as well.
 

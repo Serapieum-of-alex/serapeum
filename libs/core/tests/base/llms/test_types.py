@@ -5,9 +5,9 @@ from io import BytesIO
 from pathlib import Path
 from unittest import mock
 from unittest.mock import patch
+
 import httpx
 import pytest
-
 from pydantic import AnyUrl, BaseModel
 
 from serapeum.core.base.llms.types import (
@@ -18,7 +18,7 @@ from serapeum.core.base.llms.types import (
     MessageList,
     MessageRole,
     TextChunk,
-    resolve_binary
+    resolve_binary,
 )
 
 
@@ -792,7 +792,7 @@ class TestResolveBinary:
 
             dummy = DummyResponse(content)
             with patch(
-                    "serapeum.core.base.llms.types.requests.get", return_value=dummy
+                "serapeum.core.base.llms.types.requests.get", return_value=dummy
             ) as mock_get:
                 # as_base64=False
                 bio = resolve_binary(
@@ -803,7 +803,9 @@ class TestResolveBinary:
                 mock_get.assert_called_once()
 
             dummy2 = DummyResponse(content)
-            with patch("serapeum.core.base.llms.types.requests.get", return_value=dummy2):
+            with patch(
+                "serapeum.core.base.llms.types.requests.get", return_value=dummy2
+            ):
                 # as_base64=True
                 bio2 = resolve_binary(
                     url="https://example.com/data.bin", as_base64=True

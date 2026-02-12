@@ -1,6 +1,7 @@
 """Tool invocation utilities."""
 
 import json
+import logging
 from dataclasses import dataclass
 from typing import Any, Sequence
 
@@ -13,6 +14,8 @@ from serapeum.core.tools.types import (
 )
 
 __all__ = ["ExecutionConfig", "ToolExecutor"]
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -438,15 +441,17 @@ class ToolExecutor:
         tools_by_name = {tool.metadata.get_name(): tool for tool in tools}
         return tools_by_name[name]
 
-    def _log_execution_start(self, tool: BaseTool, arguments: dict[str, Any]) -> None:
+    @staticmethod
+    def _log_execution_start(tool: BaseTool, arguments: dict[str, Any]) -> None:
         """Log the start of tool execution."""
         arguments_str = json.dumps(arguments)
-        print("=== Calling Function ===")
-        print(
+        logger.info("=== Calling Function ===")
+        logger.info(
             f"Calling function: {tool.metadata.get_name()} with args: {arguments_str}"
         )
 
-    def _log_execution_result(self, output: ToolOutput) -> None:
+    @staticmethod
+    def _log_execution_result(output: ToolOutput) -> None:
         """Log the result of tool execution."""
-        print("=== Function Output ===")
-        print(output.content)
+        logger.info("=== Function Output ===")
+        logger.info(output.content)

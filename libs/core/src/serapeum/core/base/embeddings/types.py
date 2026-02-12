@@ -66,7 +66,7 @@ class NodeRelationship(str, Enum):
     CHILD = auto()
 
 
-class BaseNode(SerializableModel):
+class BaseNode(SerializableModel, ABC):
     """Base node Object.
 
     Attributes:
@@ -79,7 +79,7 @@ class BaseNode(SerializableModel):
     # hash is computed on local field, during the validation process
     model_config = ConfigDict(populate_by_name=True, validate_assignment=True)
 
-    id_: str = Field(
+    id: str = Field(
         default_factory=lambda: str(uuid.uuid4()), description="Unique ID of the node."
     )
     embedding: list[float] | None = Field(
@@ -159,14 +159,6 @@ class BaseNode(SerializableModel):
     @abstractmethod
     def hash(self) -> str:
         """Get hash of node."""
-
-    @property
-    def node_id(self) -> str:
-        return self.id_
-
-    @node_id.setter
-    def node_id(self, value: str) -> None:
-        self.id_ = value
 
     def _get_relationship(
         self,
@@ -277,7 +269,7 @@ class BaseNode(SerializableModel):
         source_text_wrapped = textwrap.fill(
             f"Text: {source_text_truncated}\n", width=WRAP_WIDTH
         )
-        return f"Node ID: {self.node_id}\n{source_text_wrapped}"
+        return f"Node ID: {self.id}\n{source_text_wrapped}"
 
     def get_embedding(self) -> list[float]:
         """
@@ -293,7 +285,7 @@ class BaseNode(SerializableModel):
     def as_related_node_info(self) -> RelatedNodeInfo:
         """Get node as RelatedNodeInfo."""
         return RelatedNodeInfo(
-            id=self.node_id,
+            id=self.id,
             type=self.get_type(),
             metadata=self.metadata,
             hash=self.hash,

@@ -41,27 +41,39 @@ class ChatToCompletionMixin:
         Basic usage with a custom LLM class:
 
         ```python
-        from serapeum.core.llms import FunctionCallingLLM
-        from serapeum.core.llms.abstractions.mixins import ChatToCompletionMixin
-
-        class MyLLM(FunctionCallingLLM, ChatToCompletionMixin):
-            def chat(self, messages, **kwargs):
-                # Implementation
-                return ChatResponse(...)
-
-            def stream_chat(self, messages, **kwargs):
-                # Implementation
-                yield ChatResponse(...)
-
-            async def achat(self, messages, **kwargs):
-                # Implementation
-                return ChatResponse(...)
-
-            async def astream_chat(self, messages, **kwargs):
-                # Implementation
-                yield ChatResponse(...)
-
-            # Completion methods automatically available from mixin
+        >>> from serapeum.core.llms import FunctionCallingLLM, ChatResponse, Message, MessageRole
+        >>> from serapeum.core.llms.abstractions.mixins import ChatToCompletionMixin
+        >>>
+        >>> class MyLLM(ChatToCompletionMixin, FunctionCallingLLM):
+        ...     def chat(self, messages, **kwargs):
+        ...         return ChatResponse(
+        ...             message=Message(role=MessageRole.ASSISTANT, content="Response")
+        ...         )
+        ...     def stream_chat(self, messages, **kwargs):
+        ...         yield ChatResponse(
+        ...             message=Message(role=MessageRole.ASSISTANT, content="Response"),
+        ...             delta="Response"
+        ...         )
+        ...     async def achat(self, messages, **kwargs):
+        ...         return ChatResponse(
+        ...             message=Message(role=MessageRole.ASSISTANT, content="Response")
+        ...         )
+        ...     async def astream_chat(self, messages, **kwargs):
+        ...         async def gen():
+        ...             yield ChatResponse(
+        ...                 message=Message(role=MessageRole.ASSISTANT, content="Response"),
+        ...                 delta="Response"
+        ...             )
+        ...         return gen()
+        ...     @property
+        ...     def metadata(self):
+        ...         from serapeum.core.llms import Metadata
+        ...         return Metadata(is_chat_model=True, is_function_calling_model=True)
+        ...     def _prepare_chat_with_tools(self, tools, **kwargs):
+        ...         return {"messages": [], "tools": []}
+        >>>
+        >>> # Now MyLLM has complete() and other completion methods automatically
+        >>> llm = MyLLM(model="example")
         ```
 
     See Also:
@@ -87,10 +99,11 @@ class ChatToCompletionMixin:
 
         Examples:
             ```python
-            >>> llm = MyLLM()  # Assumes MyLLM uses ChatToCompletionMixin
+            >>> # Assuming MyLLM is defined as shown in class docstring
+            >>> llm = MyLLM(model="example")
             >>> response = llm.complete("Hello, world!")
             >>> print(response.text)
-            'Hello! How can I assist you today?'
+            'Response'
             ```
         """
         messages = MessageList.from_str(prompt)
@@ -115,10 +128,11 @@ class ChatToCompletionMixin:
 
         Examples:
             ```python
-            >>> llm = MyLLM()  # Assumes MyLLM uses ChatToCompletionMixin
+            >>> # Assuming MyLLM is defined as shown in class docstring
+            >>> llm = MyLLM(model="example")
             >>> for chunk in llm.stream_complete("Tell me a story"):
             ...     print(chunk.delta, end='')
-            'Once upon a time...'
+            'Response'
             ```
         """
         messages = MessageList.from_str(prompt)
@@ -143,10 +157,14 @@ class ChatToCompletionMixin:
 
         Examples:
             ```python
-            >>> llm = MyLLM()  # Assumes MyLLM uses ChatToCompletionMixin
-            >>> response = await llm.acomplete("Hello, world!")
-            >>> print(response.text)
-            'Hello! How can I assist you today?'
+            >>> import asyncio
+            >>> # Assuming MyLLM is defined as shown in class docstring
+            >>> async def example():
+            ...     llm = MyLLM(model="example")
+            ...     response = await llm.acomplete("Hello, world!")
+            ...     return response.text
+            >>> asyncio.run(example())
+            'Response'
             ```
         """
         messages = MessageList.from_str(prompt)
@@ -171,10 +189,15 @@ class ChatToCompletionMixin:
 
         Examples:
             ```python
-            >>> llm = MyLLM()  # Assumes MyLLM uses ChatToCompletionMixin
-            >>> async for chunk in await llm.astream_complete("Tell me a story"):
-            ...     print(chunk.delta, end='')
-            'Once upon a time...'
+            >>> import asyncio
+            >>> # Assuming MyLLM is defined as shown in class docstring
+            >>> async def example():
+            ...     llm = MyLLM(model="example")
+            ...     stream = await llm.astream_complete("Tell me a story")
+            ...     async for chunk in stream:
+            ...         print(chunk.delta, end='')
+            >>> asyncio.run(example())
+            'Response'
             ```
         """
         messages = MessageList.from_str(prompt)

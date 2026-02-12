@@ -6,20 +6,20 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="LLM package" name="description"/>
-<link href="https://serapieum-of-alex.github.io/Serapeum/main/reference/core/tools/callable_tools/" rel="canonical"/>
-<link href="../tools/" rel="prev"/>
-<link href="../../../providers/ollama/general/" rel="next"/>
-<link href="../../../../assets/images/favicon.png" rel="icon"/>
+<link href="https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class/" rel="canonical"/>
+<link href="../tool_orchestrating_llm_sequence/" rel="prev"/>
+<link href="../tool_orchestrating_llm_dataflow/" rel="next"/>
+<link href="../../../../../../assets/images/favicon.png" rel="icon"/>
 <meta content="mkdocs-1.6.1, mkdocs-material-9.7.1" name="generator"/>
-<title>CallableTools - Serapeum</title>
-<link href="../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
-<link href="../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
+<title>Architecture - Serapeum</title>
+<link href="../../../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
+<link href="../../../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
 <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-<link href="../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
-<link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
-<script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+<link href="../../../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
+<script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
 <meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
@@ -27,7 +27,7 @@
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
 <label class="md-overlay" for="__drawer"></label>
 <div data-md-component="skip">
-<a class="md-skip" href="#callable-tools">
+<a class="md-skip" href="#architecture-and-class-relationships">
           Skip to content
         </a>
 </div>
@@ -37,7 +37,7 @@
 </div>
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
 <nav aria-label="Header" class="md-header__inner md-grid">
-<a aria-label="Serapeum" class="md-header__button md-logo" data-md-component="logo" href="../../../.." title="Serapeum">
+<a aria-label="Serapeum" class="md-header__button md-logo" data-md-component="logo" href="../../../../../.." title="Serapeum">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
 </a>
 <label class="md-header__button md-icon" for="__drawer">
@@ -53,7 +53,7 @@
 <div class="md-header__topic" data-md-component="header-topic">
 <span class="md-ellipsis">
             
-              CallableTools
+              Architecture
             
           </span>
 </div>
@@ -120,7 +120,7 @@
 <div class="md-grid">
 <ul class="md-tabs__list">
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../..">
+<a class="md-tabs__link" href="../../../../../..">
         
   
   
@@ -131,7 +131,7 @@
       </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../developer-guide/installation/">
+<a class="md-tabs__link" href="../../../../../../developer-guide/installation/">
           
   
   
@@ -142,7 +142,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../overview/codebase-map/">
+<a class="md-tabs__link" href="../../../../../../overview/codebase-map/">
           
   
   
@@ -153,7 +153,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../architecture/diagrams.md">
+<a class="md-tabs__link" href="../../../../../../architecture/diagrams.md">
           
   
   
@@ -164,7 +164,7 @@
         </a>
 </li>
 <li class="md-tabs__item md-tabs__item--active">
-<a class="md-tabs__link" href="../../llms/llm-classes-comparison/">
+<a class="md-tabs__link" href="../../../llm-classes-comparison/">
           
   
   
@@ -175,7 +175,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../change-log/">
+<a class="md-tabs__link" href="../../../../../../change-log/">
           
   
   
@@ -197,7 +197,7 @@
 <div class="md-sidebar__inner">
 <nav aria-label="Navigation" class="md-nav md-nav--primary md-nav--lifted" data-md-level="0">
 <label class="md-nav__title" for="__drawer">
-<a aria-label="Serapeum" class="md-nav__button md-logo" data-md-component="logo" href="../../../.." title="Serapeum">
+<a aria-label="Serapeum" class="md-nav__button md-logo" data-md-component="logo" href="../../../../../.." title="Serapeum">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
 </a>
     Serapeum
@@ -214,7 +214,7 @@
 </div>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../..">
+<a class="md-nav__link" href="../../../../../..">
 <span class="md-ellipsis">
     
   
@@ -249,7 +249,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../developer-guide/installation/">
+<a class="md-nav__link" href="../../../../../../developer-guide/installation/">
 <span class="md-ellipsis">
     
   
@@ -261,7 +261,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../developer-guide/contributing/">
+<a class="md-nav__link" href="../../../../../../developer-guide/contributing/">
 <span class="md-ellipsis">
     
   
@@ -273,7 +273,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../developer-guide/taskfile/">
+<a class="md-nav__link" href="../../../../../../developer-guide/taskfile/">
 <span class="md-ellipsis">
     
   
@@ -311,7 +311,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../overview/codebase-map/">
+<a class="md-nav__link" href="../../../../../../overview/codebase-map/">
 <span class="md-ellipsis">
     
   
@@ -349,7 +349,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../architecture/diagrams.md">
+<a class="md-nav__link" href="../../../../../../architecture/diagrams.md">
 <span class="md-ellipsis">
     
   
@@ -433,7 +433,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/llm-classes-comparison/">
+<a class="md-nav__link" href="../../../llm-classes-comparison/">
 <span class="md-ellipsis">
     
   
@@ -447,8 +447,8 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_2" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_2" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_2" id="__nav_5_1_2_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -460,7 +460,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_1_2_label" class="md-nav" data-md-level="3">
+<nav aria-expanded="true" aria-labelledby="__nav_5_1_2_label" class="md-nav" data-md-level="3">
 <label class="md-nav__title" for="__nav_5_1_2">
 <span class="md-nav__icon md-icon"></span>
             
@@ -494,7 +494,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/general/">
+<a class="md-nav__link" href="../../text_completion_llm/general/">
 <span class="md-ellipsis">
     
   
@@ -506,7 +506,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/examples/">
+<a class="md-nav__link" href="../../text_completion_llm/examples/">
 <span class="md-ellipsis">
     
   
@@ -518,7 +518,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_sequence/">
+<a class="md-nav__link" href="../../text_completion_llm/text_completion_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -530,7 +530,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_class/">
+<a class="md-nav__link" href="../../text_completion_llm/text_completion_llm_class/">
 <span class="md-ellipsis">
     
   
@@ -542,7 +542,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_dataflow/">
+<a class="md-nav__link" href="../../text_completion_llm/text_completion_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -554,7 +554,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_components/">
+<a class="md-nav__link" href="../../text_completion_llm/text_completion_llm_components/">
 <span class="md-ellipsis">
     
   
@@ -566,7 +566,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_state/">
+<a class="md-nav__link" href="../../text_completion_llm/text_completion_llm_state/">
 <span class="md-ellipsis">
     
   
@@ -580,8 +580,8 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_2_2" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_2_2" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_2_2" id="__nav_5_1_2_2_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -593,7 +593,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_1_2_2_label" class="md-nav" data-md-level="4">
+<nav aria-expanded="true" aria-labelledby="__nav_5_1_2_2_label" class="md-nav" data-md-level="4">
 <label class="md-nav__title" for="__nav_5_1_2_2">
 <span class="md-nav__icon md-icon"></span>
             
@@ -604,7 +604,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/general/">
+<a class="md-nav__link" href="../general/">
 <span class="md-ellipsis">
     
   
@@ -616,7 +616,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/examples/">
+<a class="md-nav__link" href="../examples/">
 <span class="md-ellipsis">
     
   
@@ -628,7 +628,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence/">
+<a class="md-nav__link" href="../tool_orchestrating_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -639,8 +639,20 @@
   </span>
 </a>
 </li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class/">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
 <span class="md-ellipsis">
     
   
@@ -650,9 +662,93 @@
     
   </span>
 </a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#class-responsibilities">
+<span class="md-ellipsis">
+      
+        Class Responsibilities
+      
+    </span>
+</a>
+<nav aria-label="Class Responsibilities" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#toolorchestratingllm">
+<span class="md-ellipsis">
+      
+        ToolOrchestratingLLM
+      
+    </span>
+</a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow/">
+<a class="md-nav__link" href="#callabletool">
+<span class="md-ellipsis">
+      
+        CallableTool
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#functioncallingllm-abstract">
+<span class="md-ellipsis">
+      
+        FunctionCallingLLM (Abstract)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#ollama">
+<span class="md-ellipsis">
+      
+        Ollama
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#agentchatresponse">
+<span class="md-ellipsis">
+      
+        AgentChatResponse
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#streamingobjectprocessor">
+<span class="md-ellipsis">
+      
+        StreamingObjectProcessor
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#key-design-patterns">
+<span class="md-ellipsis">
+      
+        Key Design Patterns
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../tool_orchestrating_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -664,7 +760,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components/">
+<a class="md-nav__link" href="../tool_orchestrating_llm_components/">
 <span class="md-ellipsis">
     
   
@@ -676,7 +772,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state/">
+<a class="md-nav__link" href="../tool_orchestrating_llm_state/">
 <span class="md-ellipsis">
     
   
@@ -693,8 +789,8 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--active md-nav__item--nested">
-<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_3" type="checkbox"/>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_3" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_3" id="__nav_5_1_3_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -706,7 +802,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="true" aria-labelledby="__nav_5_1_3_label" class="md-nav" data-md-level="3">
+<nav aria-expanded="false" aria-labelledby="__nav_5_1_3_label" class="md-nav" data-md-level="3">
 <label class="md-nav__title" for="__nav_5_1_3">
 <span class="md-nav__icon md-icon"></span>
             
@@ -717,7 +813,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../tools/">
+<a class="md-nav__link" href="../../../../tools/tools/">
 <span class="md-ellipsis">
     
   
@@ -728,9 +824,8 @@
   </span>
 </a>
 </li>
-<li class="md-nav__item md-nav__item--active">
-<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
-<a class="md-nav__link md-nav__link--active" href="./">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../tools/callable_tools/">
 <span class="md-ellipsis">
     
   
@@ -817,7 +912,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/general/">
+<a class="md-nav__link" href="../../../../../providers/ollama/general/">
 <span class="md-ellipsis">
     
   
@@ -829,7 +924,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/examples/">
+<a class="md-nav__link" href="../../../../../providers/ollama/examples/">
 <span class="md-ellipsis">
     
   
@@ -841,7 +936,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_sequence/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_sequence/">
 <span class="md-ellipsis">
     
   
@@ -853,7 +948,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_class/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_class/">
 <span class="md-ellipsis">
     
   
@@ -865,7 +960,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_dataflow/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -877,7 +972,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_components/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_components/">
 <span class="md-ellipsis">
     
   
@@ -889,7 +984,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_state/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_state/">
 <span class="md-ellipsis">
     
   
@@ -927,7 +1022,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/add_new_providers/">
+<a class="md-nav__link" href="../../../../../providers/add_new_providers/">
 <span class="md-ellipsis">
     
   
@@ -974,7 +1069,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../change-log/">
+<a class="md-nav__link" href="../../../../../../change-log/">
 <span class="md-ellipsis">
     
   
@@ -986,7 +1081,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../contributing.md">
+<a class="md-nav__link" href="../../../../../../contributing.md">
 <span class="md-ellipsis">
     
   
@@ -998,7 +1093,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../LICENSE/">
+<a class="md-nav__link" href="../../../../../../LICENSE/">
 <span class="md-ellipsis">
     
   
@@ -1021,19 +1116,102 @@
 <div class="md-sidebar__scrollwrap">
 <div class="md-sidebar__inner">
 <nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#class-responsibilities">
+<span class="md-ellipsis">
+      
+        Class Responsibilities
+      
+    </span>
+</a>
+<nav aria-label="Class Responsibilities" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#toolorchestratingllm">
+<span class="md-ellipsis">
+      
+        ToolOrchestratingLLM
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#callabletool">
+<span class="md-ellipsis">
+      
+        CallableTool
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#functioncallingllm-abstract">
+<span class="md-ellipsis">
+      
+        FunctionCallingLLM (Abstract)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#ollama">
+<span class="md-ellipsis">
+      
+        Ollama
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#agentchatresponse">
+<span class="md-ellipsis">
+      
+        AgentChatResponse
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#streamingobjectprocessor">
+<span class="md-ellipsis">
+      
+        StreamingObjectProcessor
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#key-design-patterns">
+<span class="md-ellipsis">
+      
+        Key Design Patterns
+      
+    </span>
+</a>
+</li>
+</ul>
 </nav>
 </div>
 </div>
 </div>
 <div class="md-content" data-md-component="content">
 <article class="md-content__inner md-typeset">
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/core/tools/callable_tools.md" rel="edit" title="Edit this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class.md" rel="edit" title="Edit this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
 </a>
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/core/tools/callable_tools.md" title="View source of this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class.md" title="View source of this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
 </a>
-<h1 id="callable-tools"><a class="toclink" href="#callable-tools">Callable Tools</a><a class="headerlink" href="#callable-tools" title="Permanent link">#</a></h1>
+<h1 id="architecture-and-class-relationships"><a class="toclink" href="#architecture-and-class-relationships">Architecture and Class Relationships</a><a class="headerlink" href="#architecture-and-class-relationships" title="Permanent link">#</a></h1>
+<p>This diagram shows the class relationships and structure for <code>ToolOrchestratingLLM</code>.</p>
 <div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
 <div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
 Hold "Ctrl" to enable pan &amp; zoom
@@ -1057,8 +1235,276 @@ Hold "Ctrl" to enable pan &amp; zoom
 </svg>
 </button>
 </nav>
-<pre class="mermaid"><code></code></pre>
+<pre class="mermaid"><code>classDiagram
+    class BasePydanticLLM~BaseModel~ {
+        &lt;&lt;abstract&gt;&gt;
+        +output_cls: Type[BaseModel]
+        +__call__(**kwargs) BaseModel
+        +acall(**kwargs) BaseModel
+    }
+
+    class ToolOrchestratingLLM~Model~ {
+        +__init__(output_cls, prompt, llm, tool_choice, allow_parallel, verbose)
+        +output_cls: Type[Model]
+        +prompt: BasePromptTemplate
+        +__call__(llm_kwargs, **kwargs) Union[Model, List[Model]]
+        +acall(llm_kwargs, **kwargs) Union[Model, List[Model]]
+        +stream_call(llm_kwargs, **kwargs) Generator[Model, None, None]
+        +astream_call(llm_kwargs, **kwargs) AsyncGenerator[Model, None]
+        -_output_cls: Type[Model]
+        -_llm: FunctionCallingLLM
+        -_prompt: BasePromptTemplate
+        -_verbose: bool
+        -_allow_parallel_tool_calls: bool
+        -_tool_choice: Optional[Union[str, Dict]]
+        +_validate_prompt(prompt) BasePromptTemplate
+        +_validate_llm(llm) LLM
+    }
+
+    class BasePydanticLLM~BaseModel~ {
+        &lt;&lt;abstract&gt;&gt;
+        +output_cls: Type[BaseModel]
+    }
+
+    class BaseTool {
+        &lt;&lt;abstract&gt;&gt;
+        +metadata: ToolMetadata
+        +call(**kwargs) ToolOutput
+        +acall(**kwargs) ToolOutput
+    }
+
+    class CallableTool {
+        +__init__(fn, metadata)
+        +from_function(fn) CallableTool
+        +from_model(model_cls) CallableTool
+        +call(**kwargs) ToolOutput
+        +acall(**kwargs) ToolOutput
+        -_fn: Callable
+        -_async_fn: Optional[Callable]
+        -_metadata: ToolMetadata
+    }
+
+    class BasePromptTemplate {
+        &lt;&lt;abstract&gt;&gt;
+        +metadata: Dict[str, Any]
+        +template_vars: List[str]
+        +kwargs: Dict[str, str]
+        +output_parser: Optional[BaseParser]
+        +template_var_mappings: Optional[Dict]
+        +function_mappings: Optional[Dict]
+        +partial_format(**kwargs) BasePromptTemplate
+        +format(llm, **kwargs) str
+        +format_messages(llm, **kwargs) List[Message]
+        +get_template(llm) str
+    }
+
+    class PromptTemplate {
+        +template: str
+        +__init__(template, prompt_type, output_parser, metadata, ...)
+        +partial_format(**kwargs) PromptTemplate
+        +format(llm, completion_to_prompt, **kwargs) str
+        +format_messages(llm, **kwargs) List[Message]
+        +get_template(llm) str
+    }
+
+    class ChatPromptTemplate {
+        +message_templates: List[Message]
+        +__init__(message_templates, prompt_type, output_parser, ...)
+        +from_messages(message_templates, **kwargs) ChatPromptTemplate
+        +partial_format(**kwargs) ChatPromptTemplate
+        +format(llm, messages_to_prompt, **kwargs) str
+        +format_messages(llm, **kwargs) List[Message]
+        +get_template(llm) str
+    }
+
+    class BaseLLM {
+        &lt;&lt;abstract&gt;&gt;
+        +metadata: Metadata
+        +chat(messages, **kwargs) ChatResponse
+        +stream_chat(messages, **kwargs) ChatResponseGen
+        +achat(messages, **kwargs) ChatResponse
+        +astream_chat(messages, **kwargs) ChatResponseAsyncGen
+        +complete(prompt, **kwargs) CompletionResponse
+        +stream_complete(prompt, **kwargs) CompletionResponseGen
+        +acomplete(prompt, **kwargs) CompletionResponse
+        +astream_complete(prompt, **kwargs) CompletionResponseAsyncGen
+    }
+
+    class LLM {
+        +system_prompt: Optional[str]
+        +messages_to_prompt: MessagesToPromptCallable
+        +completion_to_prompt: CompletionToPromptCallable
+        +output_parser: Optional[BaseParser]
+        +pydantic_program_mode: StructuredLLMMode
+        +_get_prompt(prompt, **kwargs) str
+        +_get_messages(prompt, **kwargs) List[Message]
+        +_parse_output(output) str
+        +_extend_prompt(formatted_prompt) str
+        +_extend_messages(messages) List[Message]
+        +predict(prompt, **kwargs) str
+        +stream(prompt, **kwargs) TokenGen
+        +apredict(prompt, **kwargs) str
+        +astream(prompt, **kwargs) TokenAsyncGen
+        +structured_predict(output_cls, prompt, **kwargs) Model
+    }
+
+    class FunctionCallingLLM {
+        &lt;&lt;abstract&gt;&gt;
+        +predict_and_call(tools, chat_history, ...) AgentChatResponse
+        +apredict_and_call(tools, chat_history, ...) AgentChatResponse
+        +stream_chat_with_tools(tools, chat_history, ...) Generator
+        +astream_chat_with_tools(tools, chat_history, ...) AsyncGenerator
+        +chat_with_tools(tools, chat_history, ...) AgentChatResponse
+        +achat_with_tools(tools, chat_history, ...) AgentChatResponse
+        -_prepare_chat_with_tools(tools, chat_history, ...) Tuple
+        -_validate_chat_with_tools_response(...) AgentChatResponse
+    }
+
+    class Ollama {
+        +model: str
+        +base_url: str
+        +request_timeout: int
+        +temperature: float
+        +metadata: Metadata
+        +__init__(model, base_url, request_timeout, ...)
+        +chat(messages, **kwargs) ChatResponse
+        +achat(messages, **kwargs) ChatResponse
+        +complete(prompt, **kwargs) CompletionResponse
+        +acomplete(prompt, **kwargs) CompletionResponse
+        +predict_and_call(tools, ...) AgentChatResponse
+        +apredict_and_call(tools, ...) AgentChatResponse
+        +stream_chat_with_tools(tools, ...) Generator
+        +astream_chat_with_tools(tools, ...) AsyncGenerator
+        -_chat_request(messages, stream, **kwargs) dict
+        -_complete_request(prompt, stream, **kwargs) dict
+        -_prepare_tools_schema(tools) List[Dict]
+    }
+
+    class AgentChatResponse {
+        +response: str
+        +sources: List[ToolOutput]
+        +is_dummy_stream: bool
+        +metadata: Optional[Dict]
+        +__str__() str
+        +response_gen: Generator[str, None, None]
+        +async_response_gen: AsyncGenerator[str, None]
+        +parse_tool_outputs(allow_parallel) Union[Any, List[Any]]
+    }
+
+    class ToolOutput {
+        +content: str
+        +tool_name: str
+        +raw_input: Dict[str, Any]
+        +raw_output: Any
+        +is_error: bool
+    }
+
+    class StreamingObjectProcessor {
+        +__init__(output_cls, flexible_mode, allow_parallel, llm)
+        +process(partial_resp, cur_objects) Union[Model, List[Model]]
+        -_output_cls: Type[Model]
+        -_flexible_mode: bool
+        -_allow_parallel_tool_calls: bool
+        -_llm: FunctionCallingLLM
+    }
+
+    class BaseModel {
+        &lt;&lt;pydantic&gt;&gt;
+        +model_validate(data) BaseModel
+        +model_validate_json(json_data) BaseModel
+        +model_json_schema() dict
+    }
+
+    class MockAlbum {
+        +title: str
+        +artist: str
+        +songs: List[MockSong]
+    }
+
+    class MockSong {
+        +title: str
+    }
+
+    BasePydanticLLM &lt;|-- ToolOrchestratingLLM
+    BaseLLM &lt;|-- LLM
+    LLM &lt;|-- FunctionCallingLLM
+    FunctionCallingLLM &lt;|-- Ollama
+    BaseTool &lt;|-- CallableTool
+    BasePromptTemplate &lt;|-- PromptTemplate
+    BasePromptTemplate &lt;|-- ChatPromptTemplate
+    BaseModel &lt;|-- MockAlbum
+    BaseModel &lt;|-- MockSong
+
+    ToolOrchestratingLLM o-- FunctionCallingLLM : uses
+    ToolOrchestratingLLM o-- BasePromptTemplate : uses
+    ToolOrchestratingLLM ..&gt; CallableTool : creates from model
+    ToolOrchestratingLLM ..&gt; AgentChatResponse : receives
+    ToolOrchestratingLLM ..&gt; MockAlbum : produces
+    ToolOrchestratingLLM ..&gt; StreamingObjectProcessor : uses for streaming
+    CallableTool ..&gt; MockAlbum : validates against schema
+    CallableTool ..&gt; ToolOutput : produces
+    AgentChatResponse o-- ToolOutput : contains list
+    ToolOutput o-- MockAlbum : contains as raw_output
+    MockAlbum o-- MockSong : contains list
+
+    note for ToolOrchestratingLLM "Main orchestrator that:\n1. Converts Pydantic model to tool\n2. Formats prompts with variables\n3. Calls LLM with function calling\n4. Parses tool outputs to models\n5. Supports sync/async/streaming"
+    note for CallableTool "Converts Pydantic models\nto callable tools with\nJSON schema validation"
+    note for AgentChatResponse "Container for LLM response\nand tool execution results"
+    note for Ollama "Concrete implementation\nfor Ollama with\nfunction calling support"</code></pre>
 </div>
+<h2 id="class-responsibilities"><a class="toclink" href="#class-responsibilities">Class Responsibilities</a><a class="headerlink" href="#class-responsibilities" title="Permanent link">#</a></h2>
+<h3 id="toolorchestratingllm"><a class="toclink" href="#toolorchestratingllm">ToolOrchestratingLLM</a><a class="headerlink" href="#toolorchestratingllm" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Orchestrates</strong> the complete function-calling workflow</li>
+<li><strong>Validates</strong> LLM supports function calling during initialization</li>
+<li><strong>Converts</strong> Pydantic models to callable tools</li>
+<li><strong>Routes</strong> execution through predict_and_call</li>
+<li><strong>Supports</strong> single or parallel tool calls</li>
+<li><strong>Handles</strong> sync, async, and streaming modes</li>
+</ul>
+<h3 id="callabletool"><a class="toclink" href="#callabletool">CallableTool</a><a class="headerlink" href="#callabletool" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Converts</strong> Pydantic models to function schemas</li>
+<li><strong>Validates</strong> tool arguments against JSON schema</li>
+<li><strong>Executes</strong> tool functions (sync/async)</li>
+<li><strong>Wraps</strong> results in ToolOutput</li>
+</ul>
+<h3 id="functioncallingllm-abstract"><a class="toclink" href="#functioncallingllm-abstract">FunctionCallingLLM (Abstract)</a><a class="headerlink" href="#functioncallingllm-abstract" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Defines</strong> interface for function-calling LLMs</li>
+<li><strong>Provides</strong> predict_and_call abstraction</li>
+<li><strong>Handles</strong> tool schema preparation</li>
+<li><strong>Manages</strong> tool execution orchestration</li>
+</ul>
+<h3 id="ollama"><a class="toclink" href="#ollama">Ollama</a><a class="headerlink" href="#ollama" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Implements</strong> FunctionCallingLLM for Ollama server</li>
+<li><strong>Formats</strong> requests with tool schemas</li>
+<li><strong>Parses</strong> tool_calls from responses</li>
+<li><strong>Executes</strong> tools and aggregates results</li>
+</ul>
+<h3 id="agentchatresponse"><a class="toclink" href="#agentchatresponse">AgentChatResponse</a><a class="headerlink" href="#agentchatresponse" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Contains</strong> LLM response text and tool outputs</li>
+<li><strong>Parses</strong> tool outputs to extract structured models</li>
+<li><strong>Supports</strong> single or list of outputs</li>
+<li><strong>Provides</strong> streaming helpers</li>
+</ul>
+<h3 id="streamingobjectprocessor"><a class="toclink" href="#streamingobjectprocessor">StreamingObjectProcessor</a><a class="headerlink" href="#streamingobjectprocessor" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Processes</strong> partial streaming responses</li>
+<li><strong>Maintains</strong> state across chunks</li>
+<li><strong>Yields</strong> progressively updated models</li>
+<li><strong>Handles</strong> flexible/strict parsing modes</li>
+</ul>
+<h2 id="key-design-patterns"><a class="toclink" href="#key-design-patterns">Key Design Patterns</a><a class="headerlink" href="#key-design-patterns" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>Protocol-Based Interfaces</strong>: Uses abstract base classes for extensibility</li>
+<li><strong>Pydantic Integration</strong>: First-class support for structured outputs</li>
+<li><strong>Async-First</strong>: All operations support sync/async/streaming</li>
+<li><strong>Tool Abstraction</strong>: Pydantic models become callable tools automatically</li>
+<li><strong>Response Aggregation</strong>: AgentChatResponse unifies text and structured outputs</li>
+</ol>
 </article>
 </div>
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
@@ -1070,7 +1516,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 </main>
 <footer class="md-footer">
 <nav aria-label="Footer" class="md-footer__inner md-grid">
-<a aria-label="Previous: Overview" class="md-footer__link md-footer__link--prev" href="../tools/">
+<a aria-label="Previous: Execution Flow" class="md-footer__link md-footer__link--prev" href="../tool_orchestrating_llm_sequence/">
 <div class="md-footer__button md-icon">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
 </div>
@@ -1079,17 +1525,17 @@ Hold "Ctrl" to enable pan &amp; zoom
                 Previous
               </span>
 <div class="md-ellipsis">
-                Overview
+                Execution Flow
               </div>
 </div>
 </a>
-<a aria-label="Next: Overview" class="md-footer__link md-footer__link--next" href="../../../providers/ollama/general/">
+<a aria-label="Next: Data Flow" class="md-footer__link md-footer__link--next" href="../tool_orchestrating_llm_dataflow/">
 <div class="md-footer__title">
 <span class="md-footer__direction">
                 Next
               </span>
 <div class="md-ellipsis">
-                Overview
+                Data Flow
               </div>
 </div>
 <div class="md-footer__button md-icon">
@@ -1119,9 +1565,9 @@ Hold "Ctrl" to enable pan &amp; zoom
 <div class="md-dialog" data-md-component="dialog">
 <div class="md-dialog__inner md-typeset"></div>
 </div>
-<script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
-<script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
-<script src="../../../../assets/javascripts/panzoom.min.js"></script>
-<script src="../../../../assets/javascripts/zoompan.js"></script>
+<script id="__config" type="application/json">{"annotate": null, "base": "../../../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+<script src="../../../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+<script src="../../../../../../assets/javascripts/panzoom.min.js"></script>
+<script src="../../../../../../assets/javascripts/zoompan.js"></script>
 </body>
 </html>

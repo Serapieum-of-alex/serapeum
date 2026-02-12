@@ -6,20 +6,20 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="LLM package" name="description"/>
-<link href="https://serapieum-of-alex.github.io/Serapeum/main/reference/core/tools/callable_tools/" rel="canonical"/>
-<link href="../tools/" rel="prev"/>
-<link href="../../../providers/ollama/general/" rel="next"/>
-<link href="../../../../assets/images/favicon.png" rel="icon"/>
+<link href="https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_state/" rel="canonical"/>
+<link href="../text_completion_llm_components/" rel="prev"/>
+<link href="../../tool_orchestrating_llm/general/" rel="next"/>
+<link href="../../../../../../assets/images/favicon.png" rel="icon"/>
 <meta content="mkdocs-1.6.1, mkdocs-material-9.7.1" name="generator"/>
-<title>CallableTools - Serapeum</title>
-<link href="../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
-<link href="../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
+<title>Lifecycle - Serapeum</title>
+<link href="../../../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
+<link href="../../../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
 <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-<link href="../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
-<link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
-<script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+<link href="../../../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
+<script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
 <meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
@@ -27,7 +27,7 @@
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
 <label class="md-overlay" for="__drawer"></label>
 <div data-md-component="skip">
-<a class="md-skip" href="#callable-tools">
+<a class="md-skip" href="#lifecycle-states-and-transitions">
           Skip to content
         </a>
 </div>
@@ -37,7 +37,7 @@
 </div>
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
 <nav aria-label="Header" class="md-header__inner md-grid">
-<a aria-label="Serapeum" class="md-header__button md-logo" data-md-component="logo" href="../../../.." title="Serapeum">
+<a aria-label="Serapeum" class="md-header__button md-logo" data-md-component="logo" href="../../../../../.." title="Serapeum">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
 </a>
 <label class="md-header__button md-icon" for="__drawer">
@@ -53,7 +53,7 @@
 <div class="md-header__topic" data-md-component="header-topic">
 <span class="md-ellipsis">
             
-              CallableTools
+              Lifecycle
             
           </span>
 </div>
@@ -120,7 +120,7 @@
 <div class="md-grid">
 <ul class="md-tabs__list">
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../..">
+<a class="md-tabs__link" href="../../../../../..">
         
   
   
@@ -131,7 +131,7 @@
       </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../developer-guide/installation/">
+<a class="md-tabs__link" href="../../../../../../developer-guide/installation/">
           
   
   
@@ -142,7 +142,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../overview/codebase-map/">
+<a class="md-tabs__link" href="../../../../../../overview/codebase-map/">
           
   
   
@@ -153,7 +153,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../architecture/diagrams.md">
+<a class="md-tabs__link" href="../../../../../../architecture/diagrams.md">
           
   
   
@@ -164,7 +164,7 @@
         </a>
 </li>
 <li class="md-tabs__item md-tabs__item--active">
-<a class="md-tabs__link" href="../../llms/llm-classes-comparison/">
+<a class="md-tabs__link" href="../../../llm-classes-comparison/">
           
   
   
@@ -175,7 +175,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../change-log/">
+<a class="md-tabs__link" href="../../../../../../change-log/">
           
   
   
@@ -197,7 +197,7 @@
 <div class="md-sidebar__inner">
 <nav aria-label="Navigation" class="md-nav md-nav--primary md-nav--lifted" data-md-level="0">
 <label class="md-nav__title" for="__drawer">
-<a aria-label="Serapeum" class="md-nav__button md-logo" data-md-component="logo" href="../../../.." title="Serapeum">
+<a aria-label="Serapeum" class="md-nav__button md-logo" data-md-component="logo" href="../../../../../.." title="Serapeum">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
 </a>
     Serapeum
@@ -214,7 +214,7 @@
 </div>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../..">
+<a class="md-nav__link" href="../../../../../..">
 <span class="md-ellipsis">
     
   
@@ -249,7 +249,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../developer-guide/installation/">
+<a class="md-nav__link" href="../../../../../../developer-guide/installation/">
 <span class="md-ellipsis">
     
   
@@ -261,7 +261,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../developer-guide/contributing/">
+<a class="md-nav__link" href="../../../../../../developer-guide/contributing/">
 <span class="md-ellipsis">
     
   
@@ -273,7 +273,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../developer-guide/taskfile/">
+<a class="md-nav__link" href="../../../../../../developer-guide/taskfile/">
 <span class="md-ellipsis">
     
   
@@ -311,7 +311,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../overview/codebase-map/">
+<a class="md-nav__link" href="../../../../../../overview/codebase-map/">
 <span class="md-ellipsis">
     
   
@@ -349,7 +349,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../architecture/diagrams.md">
+<a class="md-nav__link" href="../../../../../../architecture/diagrams.md">
 <span class="md-ellipsis">
     
   
@@ -433,7 +433,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/llm-classes-comparison/">
+<a class="md-nav__link" href="../../../llm-classes-comparison/">
 <span class="md-ellipsis">
     
   
@@ -447,8 +447,8 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_2" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_2" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_2" id="__nav_5_1_2_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -460,7 +460,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_1_2_label" class="md-nav" data-md-level="3">
+<nav aria-expanded="true" aria-labelledby="__nav_5_1_2_label" class="md-nav" data-md-level="3">
 <label class="md-nav__title" for="__nav_5_1_2">
 <span class="md-nav__icon md-icon"></span>
             
@@ -470,8 +470,8 @@
 
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_2_1" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_2_1" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_2_1" id="__nav_5_1_2_1_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -483,7 +483,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_1_2_1_label" class="md-nav" data-md-level="4">
+<nav aria-expanded="true" aria-labelledby="__nav_5_1_2_1_label" class="md-nav" data-md-level="4">
 <label class="md-nav__title" for="__nav_5_1_2_1">
 <span class="md-nav__icon md-icon"></span>
             
@@ -494,7 +494,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/general/">
+<a class="md-nav__link" href="../general/">
 <span class="md-ellipsis">
     
   
@@ -506,7 +506,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/examples/">
+<a class="md-nav__link" href="../examples/">
 <span class="md-ellipsis">
     
   
@@ -518,7 +518,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_sequence/">
+<a class="md-nav__link" href="../text_completion_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -530,7 +530,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_class/">
+<a class="md-nav__link" href="../text_completion_llm_class/">
 <span class="md-ellipsis">
     
   
@@ -542,7 +542,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_dataflow/">
+<a class="md-nav__link" href="../text_completion_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -554,7 +554,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_components/">
+<a class="md-nav__link" href="../text_completion_llm_components/">
 <span class="md-ellipsis">
     
   
@@ -565,8 +565,20 @@
   </span>
 </a>
 </li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_state/">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
 <span class="md-ellipsis">
     
   
@@ -576,6 +588,130 @@
     
   </span>
 </a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#state-descriptions">
+<span class="md-ellipsis">
+      
+        State Descriptions
+      
+    </span>
+</a>
+<nav aria-label="State Descriptions" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#initialization-states">
+<span class="md-ellipsis">
+      
+        Initialization States
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#execution-states-chat-path">
+<span class="md-ellipsis">
+      
+        Execution States (Chat Path)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#execution-states-completion-path">
+<span class="md-ellipsis">
+      
+        Execution States (Completion Path)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#parsing-states">
+<span class="md-ellipsis">
+      
+        Parsing States
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-states">
+<span class="md-ellipsis">
+      
+        Error States
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#state-transitions-example">
+<span class="md-ellipsis">
+      
+        State Transitions Example
+      
+    </span>
+</a>
+<nav aria-label="State Transitions Example" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#successful-execution-flow">
+<span class="md-ellipsis">
+      
+        Successful Execution Flow
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-during-initialization">
+<span class="md-ellipsis">
+      
+        Error During Initialization
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-during-execution">
+<span class="md-ellipsis">
+      
+        Error During Execution
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-during-parsing">
+<span class="md-ellipsis">
+      
+        Error During Parsing
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#concurrency-notes">
+<span class="md-ellipsis">
+      
+        Concurrency Notes
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
 </li>
 </ul>
 </nav>
@@ -604,7 +740,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/general/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/general/">
 <span class="md-ellipsis">
     
   
@@ -616,7 +752,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/examples/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/examples/">
 <span class="md-ellipsis">
     
   
@@ -628,7 +764,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -640,7 +776,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_class/">
 <span class="md-ellipsis">
     
   
@@ -652,7 +788,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -664,7 +800,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_components/">
 <span class="md-ellipsis">
     
   
@@ -676,7 +812,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_state/">
 <span class="md-ellipsis">
     
   
@@ -693,8 +829,8 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--active md-nav__item--nested">
-<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_3" type="checkbox"/>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_3" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_3" id="__nav_5_1_3_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -706,7 +842,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="true" aria-labelledby="__nav_5_1_3_label" class="md-nav" data-md-level="3">
+<nav aria-expanded="false" aria-labelledby="__nav_5_1_3_label" class="md-nav" data-md-level="3">
 <label class="md-nav__title" for="__nav_5_1_3">
 <span class="md-nav__icon md-icon"></span>
             
@@ -717,7 +853,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../tools/">
+<a class="md-nav__link" href="../../../../tools/tools/">
 <span class="md-ellipsis">
     
   
@@ -728,9 +864,8 @@
   </span>
 </a>
 </li>
-<li class="md-nav__item md-nav__item--active">
-<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
-<a class="md-nav__link md-nav__link--active" href="./">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../tools/callable_tools/">
 <span class="md-ellipsis">
     
   
@@ -817,7 +952,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/general/">
+<a class="md-nav__link" href="../../../../../providers/ollama/general/">
 <span class="md-ellipsis">
     
   
@@ -829,7 +964,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/examples/">
+<a class="md-nav__link" href="../../../../../providers/ollama/examples/">
 <span class="md-ellipsis">
     
   
@@ -841,7 +976,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_sequence/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_sequence/">
 <span class="md-ellipsis">
     
   
@@ -853,7 +988,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_class/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_class/">
 <span class="md-ellipsis">
     
   
@@ -865,7 +1000,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_dataflow/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -877,7 +1012,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_components/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_components/">
 <span class="md-ellipsis">
     
   
@@ -889,7 +1024,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_state/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_state/">
 <span class="md-ellipsis">
     
   
@@ -927,7 +1062,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/add_new_providers/">
+<a class="md-nav__link" href="../../../../../providers/add_new_providers/">
 <span class="md-ellipsis">
     
   
@@ -974,7 +1109,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../change-log/">
+<a class="md-nav__link" href="../../../../../../change-log/">
 <span class="md-ellipsis">
     
   
@@ -986,7 +1121,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../contributing.md">
+<a class="md-nav__link" href="../../../../../../contributing.md">
 <span class="md-ellipsis">
     
   
@@ -998,7 +1133,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../LICENSE/">
+<a class="md-nav__link" href="../../../../../../LICENSE/">
 <span class="md-ellipsis">
     
   
@@ -1021,19 +1156,142 @@
 <div class="md-sidebar__scrollwrap">
 <div class="md-sidebar__inner">
 <nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#state-descriptions">
+<span class="md-ellipsis">
+      
+        State Descriptions
+      
+    </span>
+</a>
+<nav aria-label="State Descriptions" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#initialization-states">
+<span class="md-ellipsis">
+      
+        Initialization States
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#execution-states-chat-path">
+<span class="md-ellipsis">
+      
+        Execution States (Chat Path)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#execution-states-completion-path">
+<span class="md-ellipsis">
+      
+        Execution States (Completion Path)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#parsing-states">
+<span class="md-ellipsis">
+      
+        Parsing States
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-states">
+<span class="md-ellipsis">
+      
+        Error States
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#state-transitions-example">
+<span class="md-ellipsis">
+      
+        State Transitions Example
+      
+    </span>
+</a>
+<nav aria-label="State Transitions Example" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#successful-execution-flow">
+<span class="md-ellipsis">
+      
+        Successful Execution Flow
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-during-initialization">
+<span class="md-ellipsis">
+      
+        Error During Initialization
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-during-execution">
+<span class="md-ellipsis">
+      
+        Error During Execution
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-during-parsing">
+<span class="md-ellipsis">
+      
+        Error During Parsing
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#concurrency-notes">
+<span class="md-ellipsis">
+      
+        Concurrency Notes
+      
+    </span>
+</a>
+</li>
+</ul>
 </nav>
 </div>
 </div>
 </div>
 <div class="md-content" data-md-component="content">
 <article class="md-content__inner md-typeset">
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/core/tools/callable_tools.md" rel="edit" title="Edit this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_state.md" rel="edit" title="Edit this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
 </a>
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/core/tools/callable_tools.md" title="View source of this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_state.md" title="View source of this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
 </a>
-<h1 id="callable-tools"><a class="toclink" href="#callable-tools">Callable Tools</a><a class="headerlink" href="#callable-tools" title="Permanent link">#</a></h1>
+<h1 id="lifecycle-states-and-transitions"><a class="toclink" href="#lifecycle-states-and-transitions">Lifecycle States and Transitions</a><a class="headerlink" href="#lifecycle-states-and-transitions" title="Permanent link">#</a></h1>
+<p>This diagram shows the lifecycle states of a <code>TextCompletionLLM</code> instance.</p>
 <div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
 <div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
 Hold "Ctrl" to enable pan &amp; zoom
@@ -1057,8 +1315,301 @@ Hold "Ctrl" to enable pan &amp; zoom
 </svg>
 </button>
 </nav>
-<pre class="mermaid"><code></code></pre>
+<pre class="mermaid"><code>stateDiagram-v2
+    [*] --&gt; Uninitialized: User creates instance
+
+    Uninitialized --&gt; ValidatingParser: __init__ called
+    ValidatingParser --&gt; ValidatingLLM: Parser validated
+    ValidatingParser --&gt; InitError: Invalid parser type
+    ValidatingLLM --&gt; ValidatingPrompt: LLM validated
+    ValidatingLLM --&gt; InitError: No LLM available
+    ValidatingPrompt --&gt; Ready: Prompt validated
+    ValidatingPrompt --&gt; InitError: Invalid prompt type
+
+    Ready --&gt; ExecutingChat: __call__ invoked\n(is_chat_model=True)
+    Ready --&gt; ExecutingComplete: __call__ invoked\n(is_chat_model=False)
+    Ready --&gt; ExecutingAsync: acall invoked
+
+    ExecutingChat --&gt; FormattingMessages: Format prompt to messages
+    FormattingMessages --&gt; ExtendingMessages: Apply template vars
+    ExtendingMessages --&gt; CallingChatAPI: Add system prompts
+    CallingChatAPI --&gt; WaitingChatResponse: HTTP request sent
+    WaitingChatResponse --&gt; ParsingOutput: ChatResponse received
+    WaitingChatResponse --&gt; ExecutionError: Network/API error
+
+    ExecutingComplete --&gt; FormattingPrompt: Format prompt string
+    FormattingPrompt --&gt; ExtendingPrompt: Apply template vars
+    ExtendingPrompt --&gt; CallingCompleteAPI: Add system prompts
+    CallingCompleteAPI --&gt; WaitingCompleteResponse: HTTP request sent
+    WaitingCompleteResponse --&gt; ParsingOutput: CompletionResponse received
+    WaitingCompleteResponse --&gt; ExecutionError: Network/API error
+
+    ExecutingAsync --&gt; FormattingMessages: Similar to sync
+    ExecutingAsync --&gt; FormattingPrompt: but async
+
+    ParsingOutput --&gt; ExtractingJSON: Parse raw text
+    ExtractingJSON --&gt; ValidatingSchema: JSON extracted
+    ExtractingJSON --&gt; ParsingError: Malformed JSON
+    ValidatingSchema --&gt; TypeChecking: Pydantic validation passed
+    ValidatingSchema --&gt; ParsingError: Schema validation failed
+    TypeChecking --&gt; Completed: Type check passed
+    TypeChecking --&gt; ParsingError: Type mismatch
+
+    Completed --&gt; Ready: Return to caller
+    InitError --&gt; [*]: Exception raised
+    ExecutionError --&gt; [*]: Exception raised
+    ParsingError --&gt; [*]: Exception raised
+
+    note right of Ready
+        Instance is reusable
+        Can be called multiple times
+    end note
+
+    note right of ExecutingChat
+        Branch depends on
+        LLM.metadata.is_chat_model
+    end note
+
+    note right of ParsingOutput
+        Output parser extracts
+        structured data from
+        raw LLM response
+    end note
+
+    note right of Completed
+        Returns validated
+        Pydantic model instance
+        matching output_cls
+    end note</code></pre>
 </div>
+<h2 id="state-descriptions"><a class="toclink" href="#state-descriptions">State Descriptions</a><a class="headerlink" href="#state-descriptions" title="Permanent link">#</a></h2>
+<h3 id="initialization-states"><a class="toclink" href="#initialization-states">Initialization States</a><a class="headerlink" href="#initialization-states" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Description</th>
+<th>Exit Conditions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Uninitialized</strong></td>
+<td>Object construction in progress</td>
+<td><code>__init__</code> called</td>
+</tr>
+<tr>
+<td><strong>ValidatingParser</strong></td>
+<td>Checking output_parser and output_cls compatibility</td>
+<td>Valid: → ValidatingLLM<br/>Invalid: → InitError</td>
+</tr>
+<tr>
+<td><strong>ValidatingLLM</strong></td>
+<td>Ensuring LLM instance is available</td>
+<td>Valid: → ValidatingPrompt<br/>Missing: → InitError</td>
+</tr>
+<tr>
+<td><strong>ValidatingPrompt</strong></td>
+<td>Converting/validating prompt template</td>
+<td>Valid: → Ready<br/>Invalid: → InitError</td>
+</tr>
+<tr>
+<td><strong>Ready</strong></td>
+<td>Instance fully initialized and ready for calls</td>
+<td>User calls instance</td>
+</tr>
+</tbody>
+</table>
+<h3 id="execution-states-chat-path"><a class="toclink" href="#execution-states-chat-path">Execution States (Chat Path)</a><a class="headerlink" href="#execution-states-chat-path" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Description</th>
+<th>Exit Conditions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ExecutingChat</strong></td>
+<td>Entry point for chat model execution</td>
+<td>→ FormattingMessages</td>
+</tr>
+<tr>
+<td><strong>FormattingMessages</strong></td>
+<td>Converting prompt to message list</td>
+<td>→ ExtendingMessages</td>
+</tr>
+<tr>
+<td><strong>ExtendingMessages</strong></td>
+<td>Applying template variables to messages</td>
+<td>→ CallingChatAPI</td>
+</tr>
+<tr>
+<td><strong>CallingChatAPI</strong></td>
+<td>Invoking Ollama.chat method</td>
+<td>→ WaitingChatResponse</td>
+</tr>
+<tr>
+<td><strong>WaitingChatResponse</strong></td>
+<td>HTTP request in flight</td>
+<td>Success: → ParsingOutput<br/>Error: → ExecutionError</td>
+</tr>
+</tbody>
+</table>
+<h3 id="execution-states-completion-path"><a class="toclink" href="#execution-states-completion-path">Execution States (Completion Path)</a><a class="headerlink" href="#execution-states-completion-path" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Description</th>
+<th>Exit Conditions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ExecutingComplete</strong></td>
+<td>Entry point for completion model execution</td>
+<td>→ FormattingPrompt</td>
+</tr>
+<tr>
+<td><strong>FormattingPrompt</strong></td>
+<td>Converting prompt to string</td>
+<td>→ ExtendingPrompt</td>
+</tr>
+<tr>
+<td><strong>ExtendingPrompt</strong></td>
+<td>Applying template variables to prompt</td>
+<td>→ CallingCompleteAPI</td>
+</tr>
+<tr>
+<td><strong>CallingCompleteAPI</strong></td>
+<td>Invoking Ollama.complete method</td>
+<td>→ WaitingCompleteResponse</td>
+</tr>
+<tr>
+<td><strong>WaitingCompleteResponse</strong></td>
+<td>HTTP request in flight</td>
+<td>Success: → ParsingOutput<br/>Error: → ExecutionError</td>
+</tr>
+</tbody>
+</table>
+<h3 id="parsing-states"><a class="toclink" href="#parsing-states">Parsing States</a><a class="headerlink" href="#parsing-states" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Description</th>
+<th>Exit Conditions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ParsingOutput</strong></td>
+<td>Starting output parsing process</td>
+<td>→ ExtractingJSON</td>
+</tr>
+<tr>
+<td><strong>ExtractingJSON</strong></td>
+<td>Extracting JSON from raw text</td>
+<td>Valid JSON: → ValidatingSchema<br/>Invalid: → ParsingError</td>
+</tr>
+<tr>
+<td><strong>ValidatingSchema</strong></td>
+<td>Validating against Pydantic schema</td>
+<td>Valid: → TypeChecking<br/>Invalid: → ParsingError</td>
+</tr>
+<tr>
+<td><strong>TypeChecking</strong></td>
+<td>Verifying output matches output_cls</td>
+<td>Match: → Completed<br/>Mismatch: → ParsingError</td>
+</tr>
+<tr>
+<td><strong>Completed</strong></td>
+<td>Successful execution with valid output</td>
+<td>→ Ready (return result)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="error-states"><a class="toclink" href="#error-states">Error States</a><a class="headerlink" href="#error-states" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Description</th>
+<th>Exceptions Raised</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>InitError</strong></td>
+<td>Initialization validation failed</td>
+<td>ValueError, AssertionError</td>
+</tr>
+<tr>
+<td><strong>ExecutionError</strong></td>
+<td>LLM execution failed</td>
+<td>ConnectionError, TimeoutError, HTTPError</td>
+</tr>
+<tr>
+<td><strong>ParsingError</strong></td>
+<td>Output parsing/validation failed</td>
+<td>ValueError, ValidationError</td>
+</tr>
+</tbody>
+</table>
+<h2 id="state-transitions-example"><a class="toclink" href="#state-transitions-example">State Transitions Example</a><a class="headerlink" href="#state-transitions-example" title="Permanent link">#</a></h2>
+<h3 id="successful-execution-flow"><a class="toclink" href="#successful-execution-flow">Successful Execution Flow</a><a class="headerlink" href="#successful-execution-flow" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>[*]
+<a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a>  → Uninitialized
+<a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>  → ValidatingParser
+<a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a>  → ValidatingLLM
+<a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a>  → ValidatingPrompt
+<a href="#__codelineno-0-6" id="__codelineno-0-6" name="__codelineno-0-6"></a>  → Ready
+<a href="#__codelineno-0-7" id="__codelineno-0-7" name="__codelineno-0-7"></a>  → ExecutingChat (or ExecutingComplete)
+<a href="#__codelineno-0-8" id="__codelineno-0-8" name="__codelineno-0-8"></a>  → FormattingMessages (or FormattingPrompt)
+<a href="#__codelineno-0-9" id="__codelineno-0-9" name="__codelineno-0-9"></a>  → ExtendingMessages (or ExtendingPrompt)
+<a href="#__codelineno-0-10" id="__codelineno-0-10" name="__codelineno-0-10"></a>  → CallingChatAPI (or CallingCompleteAPI)
+<a href="#__codelineno-0-11" id="__codelineno-0-11" name="__codelineno-0-11"></a>  → WaitingChatResponse (or WaitingCompleteResponse)
+<a href="#__codelineno-0-12" id="__codelineno-0-12" name="__codelineno-0-12"></a>  → ParsingOutput
+<a href="#__codelineno-0-13" id="__codelineno-0-13" name="__codelineno-0-13"></a>  → ExtractingJSON
+<a href="#__codelineno-0-14" id="__codelineno-0-14" name="__codelineno-0-14"></a>  → ValidatingSchema
+<a href="#__codelineno-0-15" id="__codelineno-0-15" name="__codelineno-0-15"></a>  → TypeChecking
+<a href="#__codelineno-0-16" id="__codelineno-0-16" name="__codelineno-0-16"></a>  → Completed
+<a href="#__codelineno-0-17" id="__codelineno-0-17" name="__codelineno-0-17"></a>  → Ready (reusable for next call)
+</code></pre></div>
+<h3 id="error-during-initialization"><a class="toclink" href="#error-during-initialization">Error During Initialization</a><a class="headerlink" href="#error-during-initialization" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>[*]
+<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>  → Uninitialized
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>  → ValidatingParser
+<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>  → ValidatingLLM
+<a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>  → InitError (no LLM provided and Configs.llm is None)
+<a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a>  → [*] (AssertionError raised)
+</code></pre></div>
+<h3 id="error-during-execution"><a class="toclink" href="#error-during-execution">Error During Execution</a><a class="headerlink" href="#error-during-execution" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>Ready
+<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>  → ExecutingComplete
+<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>  → FormattingPrompt
+<a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>  → ExtendingPrompt
+<a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>  → CallingCompleteAPI
+<a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a>  → WaitingCompleteResponse
+<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>  → ExecutionError (Ollama server not reachable)
+<a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a>  → [*] (ConnectionError raised)
+</code></pre></div>
+<h3 id="error-during-parsing"><a class="toclink" href="#error-during-parsing">Error During Parsing</a><a class="headerlink" href="#error-during-parsing" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a>WaitingChatResponse
+<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a>  → ParsingOutput (raw_output: "This is not JSON")
+<a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>  → ExtractingJSON
+<a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a>  → ParsingError (cannot find JSON in text)
+<a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a>  → [*] (ValueError raised)
+</code></pre></div>
+<h2 id="concurrency-notes"><a class="toclink" href="#concurrency-notes">Concurrency Notes</a><a class="headerlink" href="#concurrency-notes" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Thread-safe</strong>: The instance is reusable after reaching <code>Ready</code> state</li>
+<li><strong>Stateless execution</strong>: Each <code>__call__</code> creates new transient state</li>
+<li><strong>Immutable config</strong>: Parser, LLM, and output_cls don't change after initialization</li>
+<li><strong>Async support</strong>: <code>acall</code> follows similar state transitions but with async operations</li>
+</ul>
 </article>
 </div>
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
@@ -1070,7 +1621,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 </main>
 <footer class="md-footer">
 <nav aria-label="Footer" class="md-footer__inner md-grid">
-<a aria-label="Previous: Overview" class="md-footer__link md-footer__link--prev" href="../tools/">
+<a aria-label="Previous: Components" class="md-footer__link md-footer__link--prev" href="../text_completion_llm_components/">
 <div class="md-footer__button md-icon">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
 </div>
@@ -1079,11 +1630,11 @@ Hold "Ctrl" to enable pan &amp; zoom
                 Previous
               </span>
 <div class="md-ellipsis">
-                Overview
+                Components
               </div>
 </div>
 </a>
-<a aria-label="Next: Overview" class="md-footer__link md-footer__link--next" href="../../../providers/ollama/general/">
+<a aria-label="Next: Overview" class="md-footer__link md-footer__link--next" href="../../tool_orchestrating_llm/general/">
 <div class="md-footer__title">
 <span class="md-footer__direction">
                 Next
@@ -1119,9 +1670,9 @@ Hold "Ctrl" to enable pan &amp; zoom
 <div class="md-dialog" data-md-component="dialog">
 <div class="md-dialog__inner md-typeset"></div>
 </div>
-<script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
-<script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
-<script src="../../../../assets/javascripts/panzoom.min.js"></script>
-<script src="../../../../assets/javascripts/zoompan.js"></script>
+<script id="__config" type="application/json">{"annotate": null, "base": "../../../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+<script src="../../../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+<script src="../../../../../../assets/javascripts/panzoom.min.js"></script>
+<script src="../../../../../../assets/javascripts/zoompan.js"></script>
 </body>
 </html>

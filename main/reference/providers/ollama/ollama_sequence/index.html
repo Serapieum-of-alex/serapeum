@@ -6,12 +6,12 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="LLM package" name="description"/>
-<link href="https://serapieum-of-alex.github.io/Serapeum/main/reference/core/tools/callable_tools/" rel="canonical"/>
-<link href="../tools/" rel="prev"/>
-<link href="../../../providers/ollama/general/" rel="next"/>
+<link href="https://serapieum-of-alex.github.io/Serapeum/main/reference/providers/ollama/ollama_sequence/" rel="canonical"/>
+<link href="../examples/" rel="prev"/>
+<link href="../ollama_class/" rel="next"/>
 <link href="../../../../assets/images/favicon.png" rel="icon"/>
 <meta content="mkdocs-1.6.1, mkdocs-material-9.7.1" name="generator"/>
-<title>CallableTools - Serapeum</title>
+<title>Execution Flow - Serapeum</title>
 <link href="../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
 <link href="../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -27,7 +27,7 @@
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
 <label class="md-overlay" for="__drawer"></label>
 <div data-md-component="skip">
-<a class="md-skip" href="#callable-tools">
+<a class="md-skip" href="#execution-flow-and-method-calls">
           Skip to content
         </a>
 </div>
@@ -53,7 +53,7 @@
 <div class="md-header__topic" data-md-component="header-topic">
 <span class="md-ellipsis">
             
-              CallableTools
+              Execution Flow
             
           </span>
 </div>
@@ -164,7 +164,7 @@
         </a>
 </li>
 <li class="md-tabs__item md-tabs__item--active">
-<a class="md-tabs__link" href="../../llms/llm-classes-comparison/">
+<a class="md-tabs__link" href="../../../core/llms/llm-classes-comparison/">
           
   
   
@@ -386,8 +386,8 @@
 
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1" type="checkbox"/>
+<li class="md-nav__item md-nav__item--section md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="">
 <span class="md-ellipsis">
     
@@ -399,7 +399,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="true" aria-labelledby="__nav_5_1_label" class="md-nav" data-md-level="2">
+<nav aria-expanded="false" aria-labelledby="__nav_5_1_label" class="md-nav" data-md-level="2">
 <label class="md-nav__title" for="__nav_5_1">
 <span class="md-nav__icon md-icon"></span>
             
@@ -433,7 +433,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/llm-classes-comparison/">
+<a class="md-nav__link" href="../../../core/llms/llm-classes-comparison/">
 <span class="md-ellipsis">
     
   
@@ -494,7 +494,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/general/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/general/">
 <span class="md-ellipsis">
     
   
@@ -506,7 +506,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/examples/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/examples/">
 <span class="md-ellipsis">
     
   
@@ -518,7 +518,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_sequence/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/text_completion_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -530,7 +530,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_class/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/text_completion_llm_class/">
 <span class="md-ellipsis">
     
   
@@ -542,7 +542,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_dataflow/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/text_completion_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -554,7 +554,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_components/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/text_completion_llm_components/">
 <span class="md-ellipsis">
     
   
@@ -566,7 +566,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_state/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/text_completion_llm_state/">
 <span class="md-ellipsis">
     
   
@@ -604,7 +604,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/general/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/general/">
 <span class="md-ellipsis">
     
   
@@ -616,7 +616,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/examples/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/examples/">
 <span class="md-ellipsis">
     
   
@@ -628,7 +628,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -640,7 +640,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class/">
 <span class="md-ellipsis">
     
   
@@ -652,7 +652,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -664,7 +664,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components/">
 <span class="md-ellipsis">
     
   
@@ -676,7 +676,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state/">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state/">
 <span class="md-ellipsis">
     
   
@@ -693,8 +693,8 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--active md-nav__item--nested">
-<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_3" type="checkbox"/>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_3" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_3" id="__nav_5_1_3_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -706,7 +706,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="true" aria-labelledby="__nav_5_1_3_label" class="md-nav" data-md-level="3">
+<nav aria-expanded="false" aria-labelledby="__nav_5_1_3_label" class="md-nav" data-md-level="3">
 <label class="md-nav__title" for="__nav_5_1_3">
 <span class="md-nav__icon md-icon"></span>
             
@@ -717,7 +717,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../tools/">
+<a class="md-nav__link" href="../../../core/tools/tools/">
 <span class="md-ellipsis">
     
   
@@ -728,9 +728,8 @@
   </span>
 </a>
 </li>
-<li class="md-nav__item md-nav__item--active">
-<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
-<a class="md-nav__link md-nav__link--active" href="./">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/tools/callable_tools/">
 <span class="md-ellipsis">
     
   
@@ -747,8 +746,8 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--section md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_2" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_2" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="">
 <span class="md-ellipsis">
     
@@ -760,7 +759,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_2_label" class="md-nav" data-md-level="2">
+<nav aria-expanded="true" aria-labelledby="__nav_5_2_label" class="md-nav" data-md-level="2">
 <label class="md-nav__title" for="__nav_5_2">
 <span class="md-nav__icon md-icon"></span>
             
@@ -770,8 +769,8 @@
 
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_2_1" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_2_1" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_2_1" id="__nav_5_2_1_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -783,7 +782,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_2_1_label" class="md-nav" data-md-level="3">
+<nav aria-expanded="true" aria-labelledby="__nav_5_2_1_label" class="md-nav" data-md-level="3">
 <label class="md-nav__title" for="__nav_5_2_1">
 <span class="md-nav__icon md-icon"></span>
             
@@ -793,8 +792,8 @@
 
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_2_1_1" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_2_1_1" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_2_1_1" id="__nav_5_2_1_1_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -806,7 +805,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_2_1_1_label" class="md-nav" data-md-level="4">
+<nav aria-expanded="true" aria-labelledby="__nav_5_2_1_1_label" class="md-nav" data-md-level="4">
 <label class="md-nav__title" for="__nav_5_2_1_1">
 <span class="md-nav__icon md-icon"></span>
             
@@ -817,7 +816,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/general/">
+<a class="md-nav__link" href="../general/">
 <span class="md-ellipsis">
     
   
@@ -829,7 +828,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/examples/">
+<a class="md-nav__link" href="../examples/">
 <span class="md-ellipsis">
     
   
@@ -840,8 +839,20 @@
   </span>
 </a>
 </li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_sequence/">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    
+  
+    Execution Flow
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
 <span class="md-ellipsis">
     
   
@@ -851,9 +862,84 @@
     
   </span>
 </a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#key-execution-paths">
+<span class="md-ellipsis">
+      
+        Key Execution Paths
+      
+    </span>
+</a>
+<nav aria-label="Key Execution Paths" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-direct-chat-call">
+<span class="md-ellipsis">
+      
+        1. Direct Chat Call
+      
+    </span>
+</a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_class/">
+<a class="md-nav__link" href="#2-complete-call-via-decorator">
+<span class="md-ellipsis">
+      
+        2. Complete Call (via Decorator)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-with-textcompletionllm">
+<span class="md-ellipsis">
+      
+        3. With TextCompletionLLM
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-with-toolorchestratingllm">
+<span class="md-ellipsis">
+      
+        4. With ToolOrchestratingLLM
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#5-streaming">
+<span class="md-ellipsis">
+      
+        5. Streaming
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#important-implementation-details">
+<span class="md-ellipsis">
+      
+        Important Implementation Details
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../ollama_class/">
 <span class="md-ellipsis">
     
   
@@ -865,7 +951,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_dataflow/">
+<a class="md-nav__link" href="../ollama_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -877,7 +963,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_components/">
+<a class="md-nav__link" href="../ollama_components/">
 <span class="md-ellipsis">
     
   
@@ -889,7 +975,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_state/">
+<a class="md-nav__link" href="../ollama_state/">
 <span class="md-ellipsis">
     
   
@@ -927,7 +1013,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/add_new_providers/">
+<a class="md-nav__link" href="../../add_new_providers/">
 <span class="md-ellipsis">
     
   
@@ -1021,19 +1107,93 @@
 <div class="md-sidebar__scrollwrap">
 <div class="md-sidebar__inner">
 <nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#key-execution-paths">
+<span class="md-ellipsis">
+      
+        Key Execution Paths
+      
+    </span>
+</a>
+<nav aria-label="Key Execution Paths" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-direct-chat-call">
+<span class="md-ellipsis">
+      
+        1. Direct Chat Call
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-complete-call-via-decorator">
+<span class="md-ellipsis">
+      
+        2. Complete Call (via Decorator)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-with-textcompletionllm">
+<span class="md-ellipsis">
+      
+        3. With TextCompletionLLM
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-with-toolorchestratingllm">
+<span class="md-ellipsis">
+      
+        4. With ToolOrchestratingLLM
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#5-streaming">
+<span class="md-ellipsis">
+      
+        5. Streaming
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#important-implementation-details">
+<span class="md-ellipsis">
+      
+        Important Implementation Details
+      
+    </span>
+</a>
+</li>
+</ul>
 </nav>
 </div>
 </div>
 </div>
 <div class="md-content" data-md-component="content">
 <article class="md-content__inner md-typeset">
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/core/tools/callable_tools.md" rel="edit" title="Edit this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/providers/ollama/ollama_sequence.md" rel="edit" title="Edit this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
 </a>
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/core/tools/callable_tools.md" title="View source of this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/providers/ollama/ollama_sequence.md" title="View source of this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
 </a>
-<h1 id="callable-tools"><a class="toclink" href="#callable-tools">Callable Tools</a><a class="headerlink" href="#callable-tools" title="Permanent link">#</a></h1>
+<h1 id="execution-flow-and-method-calls"><a class="toclink" href="#execution-flow-and-method-calls">Execution Flow and Method Calls</a><a class="headerlink" href="#execution-flow-and-method-calls" title="Permanent link">#</a></h1>
+<p>This diagram shows the complete workflow from initialization to execution of the <code>Ollama</code> class.</p>
 <div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
 <div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
 Hold "Ctrl" to enable pan &amp; zoom
@@ -1057,8 +1217,241 @@ Hold "Ctrl" to enable pan &amp; zoom
 </svg>
 </button>
 </nav>
-<pre class="mermaid"><code></code></pre>
+<pre class="mermaid"><code>sequenceDiagram
+    participant User
+    participant Ollama
+    participant Client/AsyncClient
+    participant OllamaServer
+    participant TextCompletionLLM
+    participant ToolOrchestratingLLM
+    participant PydanticParser
+
+    Note over User: Initialization Phase
+    User-&gt;&gt;Ollama: __init__(model, base_url, request_timeout, ...)
+    activate Ollama
+
+    Ollama-&gt;&gt;Ollama: Set model configuration
+    Note over Ollama: Store: model, base_url, temperature,&lt;br/&gt;request_timeout, json_mode, etc.
+
+    Ollama-&gt;&gt;Ollama: Initialize metadata
+    Note over Ollama: Set is_chat_model=True&lt;br/&gt;is_function_calling_model=True&lt;br/&gt;context_window, num_output
+
+    alt client not provided
+        Ollama-&gt;&gt;Client/AsyncClient: Create lazy client
+        Note over Client/AsyncClient: Client created on first use&lt;br/&gt;with base_url and timeout
+    else client provided
+        Ollama-&gt;&gt;Ollama: Store provided client
+    end
+
+    Ollama--&gt;&gt;User: Ollama instance
+    deactivate Ollama
+
+    Note over User: Direct Usage - Chat Method
+    User-&gt;&gt;Ollama: chat(messages, **kwargs)
+    activate Ollama
+
+    Ollama-&gt;&gt;Ollama: _prepare_chat_with_tools(messages, tools)
+    Note over Ollama: Convert tools to Ollama format&lt;br/&gt;if tools provided
+
+    Ollama-&gt;&gt;Ollama: _chat(messages, stream=False, **kwargs)
+    Ollama-&gt;&gt;Client/AsyncClient: Ensure client initialized
+    activate Client/AsyncClient
+    Client/AsyncClient--&gt;&gt;Ollama: client instance
+    deactivate Client/AsyncClient
+
+    Ollama-&gt;&gt;Ollama: Build request payload
+    Note over Ollama: Combine: model, messages,&lt;br/&gt;options (temp, etc.), format, tools
+
+    Ollama-&gt;&gt;Client/AsyncClient: client.chat(**request)
+    activate Client/AsyncClient
+    Client/AsyncClient-&gt;&gt;OllamaServer: HTTP POST /api/chat
+    activate OllamaServer
+    OllamaServer--&gt;&gt;Client/AsyncClient: JSON response
+    deactivate OllamaServer
+    Client/AsyncClient--&gt;&gt;Ollama: raw response dict
+    deactivate Client/AsyncClient
+
+    Ollama-&gt;&gt;Ollama: _chat_from_response(response)
+    Note over Ollama: Parse message, tool_calls,&lt;br/&gt;additional_kwargs
+
+    Ollama--&gt;&gt;User: ChatResponse
+    deactivate Ollama
+
+    Note over User: Direct Usage - Complete Method
+    User-&gt;&gt;Ollama: complete(prompt, **kwargs)
+    activate Ollama
+
+    Ollama-&gt;&gt;Ollama: @chat_to_completion_decorator
+    Note over Ollama: Converts prompt to Message&lt;br/&gt;and delegates to chat()
+
+    Ollama-&gt;&gt;Ollama: chat([Message(USER, prompt)], **kwargs)
+    Note over Ollama: Follows chat flow above
+
+    Ollama-&gt;&gt;Ollama: Extract text from ChatResponse
+    Ollama--&gt;&gt;User: CompletionResponse
+    deactivate Ollama
+
+    Note over User: Usage with TextCompletionLLM
+    User-&gt;&gt;PydanticParser: Create with output_cls
+    activate PydanticParser
+    PydanticParser--&gt;&gt;User: parser
+    deactivate PydanticParser
+
+    User-&gt;&gt;TextCompletionLLM: __init__(parser, prompt, llm=Ollama)
+    activate TextCompletionLLM
+    TextCompletionLLM-&gt;&gt;TextCompletionLLM: Validate components
+    TextCompletionLLM--&gt;&gt;User: text_llm instance
+    deactivate TextCompletionLLM
+
+    User-&gt;&gt;TextCompletionLLM: __call__(value="input")
+    activate TextCompletionLLM
+
+    TextCompletionLLM-&gt;&gt;Ollama: Check metadata.is_chat_model
+    activate Ollama
+    Ollama--&gt;&gt;TextCompletionLLM: True
+    deactivate Ollama
+
+    TextCompletionLLM-&gt;&gt;TextCompletionLLM: Format prompt with variables
+    TextCompletionLLM-&gt;&gt;Ollama: chat(formatted_messages)
+    activate Ollama
+    Ollama-&gt;&gt;OllamaServer: HTTP POST /api/chat
+    activate OllamaServer
+    OllamaServer--&gt;&gt;Ollama: JSON response
+    deactivate OllamaServer
+    Ollama--&gt;&gt;TextCompletionLLM: ChatResponse
+    deactivate Ollama
+
+    TextCompletionLLM-&gt;&gt;PydanticParser: parse(response.message.content)
+    activate PydanticParser
+    PydanticParser--&gt;&gt;TextCompletionLLM: Parsed model instance
+    deactivate PydanticParser
+
+    TextCompletionLLM--&gt;&gt;User: DummyModel instance
+    deactivate TextCompletionLLM
+
+    Note over User: Usage with ToolOrchestratingLLM
+    User-&gt;&gt;ToolOrchestratingLLM: __init__(output_cls=Album, prompt, llm=Ollama)
+    activate ToolOrchestratingLLM
+    ToolOrchestratingLLM-&gt;&gt;ToolOrchestratingLLM: Create tool from output_cls
+    Note over ToolOrchestratingLLM: Convert Album Pydantic model&lt;br/&gt;to CallableTool
+    ToolOrchestratingLLM--&gt;&gt;User: tools_llm instance
+    deactivate ToolOrchestratingLLM
+
+    User-&gt;&gt;ToolOrchestratingLLM: __call__(topic="rock")
+    activate ToolOrchestratingLLM
+
+    ToolOrchestratingLLM-&gt;&gt;ToolOrchestratingLLM: Format prompt with topic
+    ToolOrchestratingLLM-&gt;&gt;Ollama: chat(messages, tools=[Album tool])
+    activate Ollama
+
+    Ollama-&gt;&gt;Ollama: _prepare_chat_with_tools(messages, tools)
+    Note over Ollama: Convert CallableTool to&lt;br/&gt;Ollama tool format with schema
+
+    Ollama-&gt;&gt;OllamaServer: HTTP POST /api/chat with tools
+    activate OllamaServer
+    OllamaServer--&gt;&gt;Ollama: Response with tool_calls
+    deactivate OllamaServer
+
+    Ollama--&gt;&gt;ToolOrchestratingLLM: ChatResponse(tool_calls=[...])
+    deactivate Ollama
+
+    ToolOrchestratingLLM-&gt;&gt;ToolOrchestratingLLM: Extract tool calls
+    ToolOrchestratingLLM-&gt;&gt;ToolOrchestratingLLM: Execute tool with arguments
+    Note over ToolOrchestratingLLM: Create Album instance&lt;br/&gt;from tool arguments
+
+    ToolOrchestratingLLM--&gt;&gt;User: Album instance
+    deactivate ToolOrchestratingLLM
+
+    Note over User: Streaming Usage
+    User-&gt;&gt;Ollama: stream_chat(messages)
+    activate Ollama
+
+    Ollama-&gt;&gt;Ollama: _chat(messages, stream=True)
+    Ollama-&gt;&gt;Client/AsyncClient: client.chat(stream=True)
+    activate Client/AsyncClient
+    Client/AsyncClient-&gt;&gt;OllamaServer: HTTP POST /api/chat (streaming)
+    activate OllamaServer
+
+    loop For each chunk
+        OllamaServer--&gt;&gt;Client/AsyncClient: Stream chunk
+        Client/AsyncClient--&gt;&gt;Ollama: Raw chunk dict
+        Ollama-&gt;&gt;Ollama: _chat_stream_from_response(chunk)
+        Note over Ollama: Parse incremental message,&lt;br/&gt;accumulate tool_calls
+        Ollama--&gt;&gt;User: Yield ChatResponse
+    end
+
+    deactivate OllamaServer
+    deactivate Client/AsyncClient
+    deactivate Ollama
+
+    Note over User: Async Usage
+    User-&gt;&gt;Ollama: await achat(messages)
+    activate Ollama
+
+    Ollama-&gt;&gt;Ollama: _achat(messages, stream=False)
+    Ollama-&gt;&gt;Client/AsyncClient: await async_client.chat()
+    activate Client/AsyncClient
+    Client/AsyncClient-&gt;&gt;OllamaServer: HTTP POST /api/chat (async)
+    activate OllamaServer
+    OllamaServer--&gt;&gt;Client/AsyncClient: JSON response
+    deactivate OllamaServer
+    Client/AsyncClient--&gt;&gt;Ollama: raw response dict
+    deactivate Client/AsyncClient
+
+    Ollama-&gt;&gt;Ollama: _chat_from_response(response)
+    Ollama--&gt;&gt;User: ChatResponse
+    deactivate Ollama</code></pre>
 </div>
+<h2 id="key-execution-paths"><a class="toclink" href="#key-execution-paths">Key Execution Paths</a><a class="headerlink" href="#key-execution-paths" title="Permanent link">#</a></h2>
+<h3 id="1-direct-chat-call"><a class="toclink" href="#1-direct-chat-call">1. Direct Chat Call</a><a class="headerlink" href="#1-direct-chat-call" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>User → Ollama.chat
+<a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a>  ├─→ _prepare_chat_with_tools (if tools provided)
+<a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>  ├─→ _chat (build request)
+<a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a>  ├─→ Client.chat → HTTP POST /api/chat
+<a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a>  ├─→ _chat_from_response (parse response)
+<a href="#__codelineno-0-6" id="__codelineno-0-6" name="__codelineno-0-6"></a>  └─→ Return ChatResponse
+</code></pre></div>
+<h3 id="2-complete-call-via-decorator"><a class="toclink" href="#2-complete-call-via-decorator">2. Complete Call (via Decorator)</a><a class="headerlink" href="#2-complete-call-via-decorator" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>User → Ollama.complete
+<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>  ├─→ @chat_to_completion_decorator
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>  ├─→ Convert prompt to Message
+<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>  ├─→ Delegate to chat()
+<a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>  └─→ Return CompletionResponse
+</code></pre></div>
+<h3 id="3-with-textcompletionllm"><a class="toclink" href="#3-with-textcompletionllm">3. With TextCompletionLLM</a><a class="headerlink" href="#3-with-textcompletionllm" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>User → TextCompletionLLM(llm=Ollama)
+<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>  ├─→ Format prompt with variables
+<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>  ├─→ Ollama.chat (get raw response)
+<a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>  ├─→ PydanticParser.parse
+<a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>  └─→ Return validated model instance
+</code></pre></div>
+<h3 id="4-with-toolorchestratingllm"><a class="toclink" href="#4-with-toolorchestratingllm">4. With ToolOrchestratingLLM</a><a class="headerlink" href="#4-with-toolorchestratingllm" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a>User → ToolOrchestratingLLM(llm=Ollama)
+<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a>  ├─→ Convert output_cls to CallableTool
+<a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>  ├─→ Format prompt with variables
+<a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a>  ├─→ Ollama.chat with tools parameter
+<a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a>  ├─→ Ollama converts tools to schema
+<a href="#__codelineno-3-6" id="__codelineno-3-6" name="__codelineno-3-6"></a>  ├─→ Server returns tool_calls
+<a href="#__codelineno-3-7" id="__codelineno-3-7" name="__codelineno-3-7"></a>  ├─→ Execute tool to create instance
+<a href="#__codelineno-3-8" id="__codelineno-3-8" name="__codelineno-3-8"></a>  └─→ Return model instance
+</code></pre></div>
+<h3 id="5-streaming"><a class="toclink" href="#5-streaming">5. Streaming</a><a class="headerlink" href="#5-streaming" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>User → Ollama.stream_chat
+<a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a>  ├─→ _chat(stream=True)
+<a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>  ├─→ Client.chat(stream=True)
+<a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a>  └─→ For each chunk:
+<a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a>      ├─→ _chat_stream_from_response
+<a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a>      └─→ Yield ChatResponse
+</code></pre></div>
+<h2 id="important-implementation-details"><a class="toclink" href="#important-implementation-details">Important Implementation Details</a><a class="headerlink" href="#important-implementation-details" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>Client Lazy Initialization</strong>: The Ollama client is created lazily on first use, not during <code>__init__</code></li>
+<li><strong>Tool Conversion</strong>: When tools are provided, they're converted from <code>BaseTool</code> to Ollama's tool schema format</li>
+<li><strong>Decorator Pattern</strong>: The <code>complete</code> method uses decorators to wrap the <code>chat</code> method for consistency</li>
+<li><strong>Streaming Accumulation</strong>: In streaming mode, tool calls are accumulated across chunks</li>
+<li><strong>Metadata Handling</strong>: Response metadata includes model info, timing, and token counts</li>
+<li><strong>Error Handling</strong>: Network errors, timeout errors, and parsing errors are handled at each stage</li>
+</ol>
 </article>
 </div>
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
@@ -1070,7 +1463,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 </main>
 <footer class="md-footer">
 <nav aria-label="Footer" class="md-footer__inner md-grid">
-<a aria-label="Previous: Overview" class="md-footer__link md-footer__link--prev" href="../tools/">
+<a aria-label="Previous: Examples" class="md-footer__link md-footer__link--prev" href="../examples/">
 <div class="md-footer__button md-icon">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
 </div>
@@ -1079,17 +1472,17 @@ Hold "Ctrl" to enable pan &amp; zoom
                 Previous
               </span>
 <div class="md-ellipsis">
-                Overview
+                Examples
               </div>
 </div>
 </a>
-<a aria-label="Next: Overview" class="md-footer__link md-footer__link--next" href="../../../providers/ollama/general/">
+<a aria-label="Next: Architecture" class="md-footer__link md-footer__link--next" href="../ollama_class/">
 <div class="md-footer__title">
 <span class="md-footer__direction">
                 Next
               </span>
 <div class="md-ellipsis">
-                Overview
+                Architecture
               </div>
 </div>
 <div class="md-footer__button md-icon">

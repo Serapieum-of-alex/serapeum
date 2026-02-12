@@ -6,20 +6,20 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="LLM package" name="description"/>
-<link href="https://serapieum-of-alex.github.io/Serapeum/main/reference/core/tools/callable_tools/" rel="canonical"/>
-<link href="../tools/" rel="prev"/>
-<link href="../../../providers/ollama/general/" rel="next"/>
-<link href="../../../../assets/images/favicon.png" rel="icon"/>
+<link href="https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_components/" rel="canonical"/>
+<link href="../text_completion_llm_dataflow/" rel="prev"/>
+<link href="../text_completion_llm_state/" rel="next"/>
+<link href="../../../../../../assets/images/favicon.png" rel="icon"/>
 <meta content="mkdocs-1.6.1, mkdocs-material-9.7.1" name="generator"/>
-<title>CallableTools - Serapeum</title>
-<link href="../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
-<link href="../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
+<title>Components - Serapeum</title>
+<link href="../../../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
+<link href="../../../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
 <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-<link href="../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
-<link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
-<script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+<link href="../../../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
+<script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
 <meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
@@ -27,7 +27,7 @@
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
 <label class="md-overlay" for="__drawer"></label>
 <div data-md-component="skip">
-<a class="md-skip" href="#callable-tools">
+<a class="md-skip" href="#component-boundaries-and-interactions">
           Skip to content
         </a>
 </div>
@@ -37,7 +37,7 @@
 </div>
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
 <nav aria-label="Header" class="md-header__inner md-grid">
-<a aria-label="Serapeum" class="md-header__button md-logo" data-md-component="logo" href="../../../.." title="Serapeum">
+<a aria-label="Serapeum" class="md-header__button md-logo" data-md-component="logo" href="../../../../../.." title="Serapeum">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
 </a>
 <label class="md-header__button md-icon" for="__drawer">
@@ -53,7 +53,7 @@
 <div class="md-header__topic" data-md-component="header-topic">
 <span class="md-ellipsis">
             
-              CallableTools
+              Components
             
           </span>
 </div>
@@ -120,7 +120,7 @@
 <div class="md-grid">
 <ul class="md-tabs__list">
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../..">
+<a class="md-tabs__link" href="../../../../../..">
         
   
   
@@ -131,7 +131,7 @@
       </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../developer-guide/installation/">
+<a class="md-tabs__link" href="../../../../../../developer-guide/installation/">
           
   
   
@@ -142,7 +142,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../overview/codebase-map/">
+<a class="md-tabs__link" href="../../../../../../overview/codebase-map/">
           
   
   
@@ -153,7 +153,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../architecture/diagrams.md">
+<a class="md-tabs__link" href="../../../../../../architecture/diagrams.md">
           
   
   
@@ -164,7 +164,7 @@
         </a>
 </li>
 <li class="md-tabs__item md-tabs__item--active">
-<a class="md-tabs__link" href="../../llms/llm-classes-comparison/">
+<a class="md-tabs__link" href="../../../llm-classes-comparison/">
           
   
   
@@ -175,7 +175,7 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../change-log/">
+<a class="md-tabs__link" href="../../../../../../change-log/">
           
   
   
@@ -197,7 +197,7 @@
 <div class="md-sidebar__inner">
 <nav aria-label="Navigation" class="md-nav md-nav--primary md-nav--lifted" data-md-level="0">
 <label class="md-nav__title" for="__drawer">
-<a aria-label="Serapeum" class="md-nav__button md-logo" data-md-component="logo" href="../../../.." title="Serapeum">
+<a aria-label="Serapeum" class="md-nav__button md-logo" data-md-component="logo" href="../../../../../.." title="Serapeum">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
 </a>
     Serapeum
@@ -214,7 +214,7 @@
 </div>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../..">
+<a class="md-nav__link" href="../../../../../..">
 <span class="md-ellipsis">
     
   
@@ -249,7 +249,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../developer-guide/installation/">
+<a class="md-nav__link" href="../../../../../../developer-guide/installation/">
 <span class="md-ellipsis">
     
   
@@ -261,7 +261,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../developer-guide/contributing/">
+<a class="md-nav__link" href="../../../../../../developer-guide/contributing/">
 <span class="md-ellipsis">
     
   
@@ -273,7 +273,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../developer-guide/taskfile/">
+<a class="md-nav__link" href="../../../../../../developer-guide/taskfile/">
 <span class="md-ellipsis">
     
   
@@ -311,7 +311,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../overview/codebase-map/">
+<a class="md-nav__link" href="../../../../../../overview/codebase-map/">
 <span class="md-ellipsis">
     
   
@@ -349,7 +349,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../architecture/diagrams.md">
+<a class="md-nav__link" href="../../../../../../architecture/diagrams.md">
 <span class="md-ellipsis">
     
   
@@ -433,7 +433,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/llm-classes-comparison/">
+<a class="md-nav__link" href="../../../llm-classes-comparison/">
 <span class="md-ellipsis">
     
   
@@ -447,8 +447,8 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_2" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_2" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_2" id="__nav_5_1_2_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -460,7 +460,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_1_2_label" class="md-nav" data-md-level="3">
+<nav aria-expanded="true" aria-labelledby="__nav_5_1_2_label" class="md-nav" data-md-level="3">
 <label class="md-nav__title" for="__nav_5_1_2">
 <span class="md-nav__icon md-icon"></span>
             
@@ -470,8 +470,8 @@
 
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_2_1" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_2_1" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_2_1" id="__nav_5_1_2_1_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -483,7 +483,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_1_2_1_label" class="md-nav" data-md-level="4">
+<nav aria-expanded="true" aria-labelledby="__nav_5_1_2_1_label" class="md-nav" data-md-level="4">
 <label class="md-nav__title" for="__nav_5_1_2_1">
 <span class="md-nav__icon md-icon"></span>
             
@@ -494,7 +494,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/general/">
+<a class="md-nav__link" href="../general/">
 <span class="md-ellipsis">
     
   
@@ -506,7 +506,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/examples/">
+<a class="md-nav__link" href="../examples/">
 <span class="md-ellipsis">
     
   
@@ -518,7 +518,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_sequence/">
+<a class="md-nav__link" href="../text_completion_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -530,7 +530,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_class/">
+<a class="md-nav__link" href="../text_completion_llm_class/">
 <span class="md-ellipsis">
     
   
@@ -542,7 +542,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_dataflow/">
+<a class="md-nav__link" href="../text_completion_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -553,8 +553,20 @@
   </span>
 </a>
 </li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_components/">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
 <span class="md-ellipsis">
     
   
@@ -564,9 +576,106 @@
     
   </span>
 </a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-responsibilities-matrix">
+<span class="md-ellipsis">
+      
+        Component Responsibilities Matrix
+      
+    </span>
+</a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/text_completion_llm/text_completion_llm_state/">
+<a class="md-nav__link" href="#interaction-patterns">
+<span class="md-ellipsis">
+      
+        Interaction Patterns
+      
+    </span>
+</a>
+<nav aria-label="Interaction Patterns" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-initialization-pattern-constructor">
+<span class="md-ellipsis">
+      
+        1. Initialization Pattern (Constructor)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-chat-model-execution-pattern">
+<span class="md-ellipsis">
+      
+        2. Chat Model Execution Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-completion-model-execution-pattern">
+<span class="md-ellipsis">
+      
+        3. Completion Model Execution Pattern
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#state-management">
+<span class="md-ellipsis">
+      
+        State Management
+      
+    </span>
+</a>
+<nav aria-label="State Management" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#immutable-state-post-initialization">
+<span class="md-ellipsis">
+      
+        Immutable State (Post-Initialization)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#mutable-state">
+<span class="md-ellipsis">
+      
+        Mutable State
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#transient-state-per-call">
+<span class="md-ellipsis">
+      
+        Transient State (Per Call)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../text_completion_llm_state/">
 <span class="md-ellipsis">
     
   
@@ -604,7 +713,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/general/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/general/">
 <span class="md-ellipsis">
     
   
@@ -616,7 +725,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/examples/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/examples/">
 <span class="md-ellipsis">
     
   
@@ -628,7 +737,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -640,7 +749,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_class/">
 <span class="md-ellipsis">
     
   
@@ -652,7 +761,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -664,7 +773,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_components/">
 <span class="md-ellipsis">
     
   
@@ -676,7 +785,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state/">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_state/">
 <span class="md-ellipsis">
     
   
@@ -693,8 +802,8 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--active md-nav__item--nested">
-<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_3" type="checkbox"/>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_3" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_3" id="__nav_5_1_3_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -706,7 +815,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="true" aria-labelledby="__nav_5_1_3_label" class="md-nav" data-md-level="3">
+<nav aria-expanded="false" aria-labelledby="__nav_5_1_3_label" class="md-nav" data-md-level="3">
 <label class="md-nav__title" for="__nav_5_1_3">
 <span class="md-nav__icon md-icon"></span>
             
@@ -717,7 +826,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../tools/">
+<a class="md-nav__link" href="../../../../tools/tools/">
 <span class="md-ellipsis">
     
   
@@ -728,9 +837,8 @@
   </span>
 </a>
 </li>
-<li class="md-nav__item md-nav__item--active">
-<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
-<a class="md-nav__link md-nav__link--active" href="./">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../tools/callable_tools/">
 <span class="md-ellipsis">
     
   
@@ -817,7 +925,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/general/">
+<a class="md-nav__link" href="../../../../../providers/ollama/general/">
 <span class="md-ellipsis">
     
   
@@ -829,7 +937,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/examples/">
+<a class="md-nav__link" href="../../../../../providers/ollama/examples/">
 <span class="md-ellipsis">
     
   
@@ -841,7 +949,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_sequence/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_sequence/">
 <span class="md-ellipsis">
     
   
@@ -853,7 +961,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_class/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_class/">
 <span class="md-ellipsis">
     
   
@@ -865,7 +973,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_dataflow/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -877,7 +985,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_components/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_components/">
 <span class="md-ellipsis">
     
   
@@ -889,7 +997,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/ollama/ollama_state/">
+<a class="md-nav__link" href="../../../../../providers/ollama/ollama_state/">
 <span class="md-ellipsis">
     
   
@@ -927,7 +1035,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../providers/add_new_providers/">
+<a class="md-nav__link" href="../../../../../providers/add_new_providers/">
 <span class="md-ellipsis">
     
   
@@ -974,7 +1082,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../change-log/">
+<a class="md-nav__link" href="../../../../../../change-log/">
 <span class="md-ellipsis">
     
   
@@ -986,7 +1094,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../contributing.md">
+<a class="md-nav__link" href="../../../../../../contributing.md">
 <span class="md-ellipsis">
     
   
@@ -998,7 +1106,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../LICENSE/">
+<a class="md-nav__link" href="../../../../../../LICENSE/">
 <span class="md-ellipsis">
     
   
@@ -1021,19 +1129,115 @@
 <div class="md-sidebar__scrollwrap">
 <div class="md-sidebar__inner">
 <nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-responsibilities-matrix">
+<span class="md-ellipsis">
+      
+        Component Responsibilities Matrix
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#interaction-patterns">
+<span class="md-ellipsis">
+      
+        Interaction Patterns
+      
+    </span>
+</a>
+<nav aria-label="Interaction Patterns" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-initialization-pattern-constructor">
+<span class="md-ellipsis">
+      
+        1. Initialization Pattern (Constructor)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-chat-model-execution-pattern">
+<span class="md-ellipsis">
+      
+        2. Chat Model Execution Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-completion-model-execution-pattern">
+<span class="md-ellipsis">
+      
+        3. Completion Model Execution Pattern
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#state-management">
+<span class="md-ellipsis">
+      
+        State Management
+      
+    </span>
+</a>
+<nav aria-label="State Management" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#immutable-state-post-initialization">
+<span class="md-ellipsis">
+      
+        Immutable State (Post-Initialization)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#mutable-state">
+<span class="md-ellipsis">
+      
+        Mutable State
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#transient-state-per-call">
+<span class="md-ellipsis">
+      
+        Transient State (Per Call)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
 </nav>
 </div>
 </div>
 </div>
 <div class="md-content" data-md-component="content">
 <article class="md-content__inner md-typeset">
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/core/tools/callable_tools.md" rel="edit" title="Edit this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_components.md" rel="edit" title="Edit this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
 </a>
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/core/tools/callable_tools.md" title="View source of this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_components.md" title="View source of this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
 </a>
-<h1 id="callable-tools"><a class="toclink" href="#callable-tools">Callable Tools</a><a class="headerlink" href="#callable-tools" title="Permanent link">#</a></h1>
+<h1 id="component-boundaries-and-interactions"><a class="toclink" href="#component-boundaries-and-interactions">Component Boundaries and Interactions</a><a class="headerlink" href="#component-boundaries-and-interactions" title="Permanent link">#</a></h1>
+<p>This diagram shows how components interact during the complete lifecycle.</p>
 <div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
 <div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
 Hold "Ctrl" to enable pan &amp; zoom
@@ -1057,8 +1261,235 @@ Hold "Ctrl" to enable pan &amp; zoom
 </svg>
 </button>
 </nav>
-<pre class="mermaid"><code></code></pre>
+<pre class="mermaid"><code>graph TB
+    subgraph User Space
+        UC[User Code]
+        MT[ModelTest Schema]
+    end
+
+    subgraph TextCompletionLLM Components
+        TCL[TextCompletionLLM]
+
+        subgraph Validators
+            VP[validate_prompt]
+            VL[validate_llm]
+            VO[validate_output_parser_cls]
+        end
+
+        subgraph Stored State
+            SP["_prompt: BasePromptTemplate"]
+            SL["_llm: LLM"]
+            SO["_output_parser: PydanticParser"]
+            SC["_output_cls: Type ModelTest"]
+        end
+    end
+
+    subgraph Output Parser Layer
+        POP[PydanticParser]
+        EJ[extract_json_str]
+        VJ[model_validate_json]
+    end
+
+    subgraph Prompt Layer
+        PT[PromptTemplate]
+        CPT[ChatPromptTemplate]
+
+        subgraph Prompt Operations
+            PF[format]
+            FM[format_messages]
+            AV[Apply Variables]
+        end
+    end
+
+    subgraph LLM Layer
+        OL[Ollama]
+
+        subgraph LLM Operations
+            GM[_get_messages]
+            GP[_get_prompt]
+            EM[_extend_messages]
+            EP[_extend_prompt]
+        end
+
+        subgraph API Methods
+            CH[chat]
+            CO[complete]
+        end
+
+        MD[metadata.is_chat_model]
+    end
+
+    subgraph External Service
+        OS[Ollama Server]
+
+        subgraph Endpoints
+            EC["/api/chat"]
+            EG["/api/generate"]
+        end
+    end
+
+    subgraph Response Models
+        CHR[ChatResponse]
+        COR[CompletionResponse]
+    end
+
+    %% Initialization Flow
+    UC --&gt;|1. Create parser| POP
+    POP --&gt;|output_cls| MT
+
+    UC --&gt;|2. Initialize| TCL
+    TCL --&gt;|Validate| VO
+    VO --&gt;|Extract| MT
+
+    TCL --&gt;|Validate| VL
+    VL --&gt;|Check/Fallback| OL
+
+    TCL --&gt;|Validate/Convert| VP
+    VP --&gt;|Create if string| PT
+
+    VO --&gt;|Store| SO
+    VO --&gt;|Store| SC
+    VL --&gt;|Store| SL
+    VP --&gt;|Store| SP
+
+    %% Execution Flow - Chat Path
+    UC --&gt;|3. Call with kwargs| TCL
+    TCL --&gt;|Check| MD
+
+    MD --&gt;|True| FM
+    FM --&gt;|Use kwargs| AV
+    AV --&gt;|Messages| GM
+    GM --&gt;|Add system| EM
+    EM --&gt;|Send| CH
+    CH --&gt;|HTTP POST| EC
+    EC --&gt;|Response| CHR
+    CHR --&gt;|message.content| EJ
+
+    %% Execution Flow - Completion Path
+    MD --&gt;|False| PF
+    PF --&gt;|Use kwargs| AV
+    AV --&gt;|String| GP
+    GP --&gt;|Add system| EP
+    EP --&gt;|Send| CO
+    CO --&gt;|HTTP POST| EG
+    EG --&gt;|Response| COR
+    COR --&gt;|text| EJ
+
+    %% Parsing Flow
+    EJ --&gt;|Extract| VJ
+    VJ --&gt;|Validate| MT
+    MT --&gt;|Instance| TCL
+    TCL --&gt;|Type check| UC
+
+    %% Styling
+    classDef userClass fill:#e1f5ff,stroke:#01579b
+    classDef validatorClass fill:#fff9c4,stroke:#f57f17
+    classDef stateClass fill:#f3e5f5,stroke:#4a148c
+    classDef parserClass fill:#e8f5e9,stroke:#1b5e20
+    classDef promptClass fill:#fce4ec,stroke:#880e4f
+    classDef llmClass fill:#e0f2f1,stroke:#004d40
+    classDef responseClass fill:#fff3e0,stroke:#e65100
+    classDef externalClass fill:#efebe9,stroke:#3e2723
+
+    class UC,MT userClass
+    class VP,VL,VO validatorClass
+    class SP,SL,SO,SC stateClass
+    class POP,EJ,VJ parserClass
+    class PT,CPT,PF,FM,AV promptClass
+    class OL,GM,GP,EM,EP,CH,CO,MD llmClass
+    class CHR,COR responseClass
+    class OS,EC,EG externalClass</code></pre>
 </div>
+<h2 id="component-responsibilities-matrix"><a class="toclink" href="#component-responsibilities-matrix">Component Responsibilities Matrix</a><a class="headerlink" href="#component-responsibilities-matrix" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Initialization</th>
+<th>Execution</th>
+<th>Parsing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>TextCompletionLLM</strong></td>
+<td>Validates &amp; stores all components</td>
+<td>Routes to chat/complete</td>
+<td>Type checks output</td>
+</tr>
+<tr>
+<td><strong>PydanticParser</strong></td>
+<td>Stores output_cls schema</td>
+<td>-</td>
+<td>Extracts JSON &amp; validates</td>
+</tr>
+<tr>
+<td><strong>PromptTemplate</strong></td>
+<td>Created/validated</td>
+<td>Formats with variables</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>Ollama (LLM)</strong></td>
+<td>Validated/stored</td>
+<td>Executes requests</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>ModelTest</strong></td>
+<td>Defines schema</td>
+<td>-</td>
+<td>Validates parsed data</td>
+</tr>
+</tbody>
+</table>
+<h2 id="interaction-patterns"><a class="toclink" href="#interaction-patterns">Interaction Patterns</a><a class="headerlink" href="#interaction-patterns" title="Permanent link">#</a></h2>
+<h3 id="1-initialization-pattern-constructor"><a class="toclink" href="#1-initialization-pattern-constructor">1. Initialization Pattern (Constructor)</a><a class="headerlink" href="#1-initialization-pattern-constructor" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>User → TextCompletionLLM.__init__
+<a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a>  ├─→ validate_output_parser_cls
+<a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>  │   └─→ Extract/Create parser &amp; output_cls
+<a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a>  ├─→ validate_llm
+<a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a>  │   └─→ Use provided or fallback to Configs.llm
+<a href="#__codelineno-0-6" id="__codelineno-0-6" name="__codelineno-0-6"></a>  └─→ validate_prompt
+<a href="#__codelineno-0-7" id="__codelineno-0-7" name="__codelineno-0-7"></a>      └─→ Convert string to PromptTemplate if needed
+</code></pre></div>
+<h3 id="2-chat-model-execution-pattern"><a class="toclink" href="#2-chat-model-execution-pattern">2. Chat Model Execution Pattern</a><a class="headerlink" href="#2-chat-model-execution-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>User → TextCompletionLLM.__call__
+<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>  ├─→ Check metadata.is_chat_model == True
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>  ├─→ PromptTemplate.format_messages(kwargs)
+<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>  ├─→ LLM._extend_messages
+<a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>  ├─→ Ollama.chat → HTTP → ChatResponse
+<a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a>  ├─→ Extract message.content
+<a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a>  └─→ PydanticParser.parse → ModelTest
+</code></pre></div>
+<h3 id="3-completion-model-execution-pattern"><a class="toclink" href="#3-completion-model-execution-pattern">3. Completion Model Execution Pattern</a><a class="headerlink" href="#3-completion-model-execution-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>User → TextCompletionLLM.__call__
+<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>  ├─→ Check metadata.is_chat_model == False
+<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>  ├─→ PromptTemplate.format(kwargs)
+<a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>  ├─→ LLM._extend_prompt
+<a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>  ├─→ Ollama.complete → HTTP → CompletionResponse
+<a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a>  ├─→ Extract response.text
+<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>  └─→ PydanticParser.parse → ModelTest
+</code></pre></div>
+<h2 id="state-management"><a class="toclink" href="#state-management">State Management</a><a class="headerlink" href="#state-management" title="Permanent link">#</a></h2>
+<h3 id="immutable-state-post-initialization"><a class="toclink" href="#immutable-state-post-initialization">Immutable State (Post-Initialization)</a><a class="headerlink" href="#immutable-state-post-initialization" title="Permanent link">#</a></h3>
+<ul>
+<li><code>_output_parser</code>: PydanticParser instance</li>
+<li><code>_output_cls</code>: Type[ModelTest]</li>
+<li><code>_llm</code>: Ollama instance</li>
+</ul>
+<h3 id="mutable-state"><a class="toclink" href="#mutable-state">Mutable State</a><a class="headerlink" href="#mutable-state" title="Permanent link">#</a></h3>
+<ul>
+<li><code>_prompt</code>: Can be updated via setter</li>
+<li><code>_verbose</code>: Controls logging output</li>
+</ul>
+<h3 id="transient-state-per-call"><a class="toclink" href="#transient-state-per-call">Transient State (Per Call)</a><a class="headerlink" href="#transient-state-per-call" title="Permanent link">#</a></h3>
+<ul>
+<li><code>llm_kwargs</code>: Forwarded to LLM methods</li>
+<li><code>**kwargs</code>: Template variables for prompt formatting</li>
+<li><code>raw_output</code>: Intermediate text from LLM</li>
+<li><code>parsed_output</code>: Final validated Pydantic model</li>
+</ul>
 </article>
 </div>
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
@@ -1070,7 +1501,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 </main>
 <footer class="md-footer">
 <nav aria-label="Footer" class="md-footer__inner md-grid">
-<a aria-label="Previous: Overview" class="md-footer__link md-footer__link--prev" href="../tools/">
+<a aria-label="Previous: Data Flow" class="md-footer__link md-footer__link--prev" href="../text_completion_llm_dataflow/">
 <div class="md-footer__button md-icon">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
 </div>
@@ -1079,17 +1510,17 @@ Hold "Ctrl" to enable pan &amp; zoom
                 Previous
               </span>
 <div class="md-ellipsis">
-                Overview
+                Data Flow
               </div>
 </div>
 </a>
-<a aria-label="Next: Overview" class="md-footer__link md-footer__link--next" href="../../../providers/ollama/general/">
+<a aria-label="Next: Lifecycle" class="md-footer__link md-footer__link--next" href="../text_completion_llm_state/">
 <div class="md-footer__title">
 <span class="md-footer__direction">
                 Next
               </span>
 <div class="md-ellipsis">
-                Overview
+                Lifecycle
               </div>
 </div>
 <div class="md-footer__button md-icon">
@@ -1119,9 +1550,9 @@ Hold "Ctrl" to enable pan &amp; zoom
 <div class="md-dialog" data-md-component="dialog">
 <div class="md-dialog__inner md-typeset"></div>
 </div>
-<script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
-<script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
-<script src="../../../../assets/javascripts/panzoom.min.js"></script>
-<script src="../../../../assets/javascripts/zoompan.js"></script>
+<script id="__config" type="application/json">{"annotate": null, "base": "../../../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+<script src="../../../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+<script src="../../../../../../assets/javascripts/panzoom.min.js"></script>
+<script src="../../../../../../assets/javascripts/zoompan.js"></script>
 </body>
 </html>

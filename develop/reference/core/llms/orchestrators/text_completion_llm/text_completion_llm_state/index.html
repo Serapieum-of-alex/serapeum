@@ -7,9 +7,11 @@
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="LLM package" name="description"/>
 <link href="https://serapieum-of-alex.github.io/Serapeum/develop/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_state/" rel="canonical"/>
+<link href="../text_completion_llm_components/" rel="prev"/>
+<link href="../../tool_orchestrating_llm/general/" rel="next"/>
 <link href="../../../../../../assets/images/favicon.png" rel="icon"/>
 <meta content="mkdocs-1.6.1, mkdocs-material-9.7.1" name="generator"/>
-<title>Lifecycle States and Transitions - Serapeum</title>
+<title>Lifecycle - Serapeum</title>
 <link href="../../../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
 <link href="../../../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -19,7 +21,7 @@
 <link href="../../../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -51,7 +53,7 @@
 <div class="md-header__topic" data-md-component="header-topic">
 <span class="md-ellipsis">
             
-              Lifecycle States and Transitions
+              Lifecycle
             
           </span>
 </div>
@@ -161,8 +163,8 @@
 
         </a>
 </li>
-<li class="md-tabs__item">
-<a class="md-tabs__link" href="../../../../../code/llm/llm-classes-comparison.md">
+<li class="md-tabs__item md-tabs__item--active">
+<a class="md-tabs__link" href="../../../llm-classes-comparison/">
           
   
   
@@ -361,9 +363,9 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5" type="checkbox"/>
-<label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5" type="checkbox"/>
+<label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
 <span class="md-ellipsis">
     
   
@@ -374,7 +376,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_label" class="md-nav" data-md-level="1">
+<nav aria-expanded="true" aria-labelledby="__nav_5_label" class="md-nav" data-md-level="1">
 <label class="md-nav__title" for="__nav_5">
 <span class="md-nav__icon md-icon"></span>
             
@@ -384,9 +386,9 @@
 
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1" type="checkbox"/>
-<label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="0">
+<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="">
 <span class="md-ellipsis">
     
   
@@ -397,7 +399,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_1_label" class="md-nav" data-md-level="2">
+<nav aria-expanded="true" aria-labelledby="__nav_5_1_label" class="md-nav" data-md-level="2">
 <label class="md-nav__title" for="__nav_5_1">
 <span class="md-nav__icon md-icon"></span>
             
@@ -431,7 +433,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../../code/llm/llm-classes-comparison.md">
+<a class="md-nav__link" href="../../../llm-classes-comparison/">
 <span class="md-ellipsis">
     
   
@@ -445,8 +447,8 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_2" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_2" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_2" id="__nav_5_1_2_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -458,7 +460,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_1_2_label" class="md-nav" data-md-level="3">
+<nav aria-expanded="true" aria-labelledby="__nav_5_1_2_label" class="md-nav" data-md-level="3">
 <label class="md-nav__title" for="__nav_5_1_2">
 <span class="md-nav__icon md-icon"></span>
             
@@ -468,8 +470,8 @@
 
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_1_2_1" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_5_1_2_1" type="checkbox"/>
 <label class="md-nav__link" for="__nav_5_1_2_1" id="__nav_5_1_2_1_label" tabindex="0">
 <span class="md-ellipsis">
     
@@ -481,7 +483,7 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_1_2_1_label" class="md-nav" data-md-level="4">
+<nav aria-expanded="true" aria-labelledby="__nav_5_1_2_1_label" class="md-nav" data-md-level="4">
 <label class="md-nav__title" for="__nav_5_1_2_1">
 <span class="md-nav__icon md-icon"></span>
             
@@ -492,7 +494,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/text_completion_llm/general.md">
+<a class="md-nav__link" href="../general/">
 <span class="md-ellipsis">
     
   
@@ -504,7 +506,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/text_completion_llm/examples.md">
+<a class="md-nav__link" href="../examples/">
 <span class="md-ellipsis">
     
   
@@ -516,7 +518,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/text_completion_llm/text_completion_llm_sequence.md">
+<a class="md-nav__link" href="../text_completion_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -528,7 +530,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/text_completion_llm/text_completion_llm_class.md">
+<a class="md-nav__link" href="../text_completion_llm_class/">
 <span class="md-ellipsis">
     
   
@@ -540,7 +542,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/text_completion_llm/text_completion_llm_dataflow.md">
+<a class="md-nav__link" href="../text_completion_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -552,7 +554,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/text_completion_llm/text_completion_llm_components.md">
+<a class="md-nav__link" href="../text_completion_llm_components/">
 <span class="md-ellipsis">
     
   
@@ -563,8 +565,20 @@
   </span>
 </a>
 </li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/text_completion_llm/text_completion_llm_state.md">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
 <span class="md-ellipsis">
     
   
@@ -574,6 +588,130 @@
     
   </span>
 </a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#state-descriptions">
+<span class="md-ellipsis">
+      
+        State Descriptions
+      
+    </span>
+</a>
+<nav aria-label="State Descriptions" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#initialization-states">
+<span class="md-ellipsis">
+      
+        Initialization States
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#execution-states-chat-path">
+<span class="md-ellipsis">
+      
+        Execution States (Chat Path)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#execution-states-completion-path">
+<span class="md-ellipsis">
+      
+        Execution States (Completion Path)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#parsing-states">
+<span class="md-ellipsis">
+      
+        Parsing States
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-states">
+<span class="md-ellipsis">
+      
+        Error States
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#state-transitions-example">
+<span class="md-ellipsis">
+      
+        State Transitions Example
+      
+    </span>
+</a>
+<nav aria-label="State Transitions Example" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#successful-execution-flow">
+<span class="md-ellipsis">
+      
+        Successful Execution Flow
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-during-initialization">
+<span class="md-ellipsis">
+      
+        Error During Initialization
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-during-execution">
+<span class="md-ellipsis">
+      
+        Error During Execution
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-during-parsing">
+<span class="md-ellipsis">
+      
+        Error During Parsing
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#concurrency-notes">
+<span class="md-ellipsis">
+      
+        Concurrency Notes
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
 </li>
 </ul>
 </nav>
@@ -602,7 +740,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/tool_orchestrating_llm/general.md">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/general/">
 <span class="md-ellipsis">
     
   
@@ -614,7 +752,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/tool_orchestrating_llm/examples.md">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/examples/">
 <span class="md-ellipsis">
     
   
@@ -626,7 +764,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence.md">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_sequence/">
 <span class="md-ellipsis">
     
   
@@ -638,7 +776,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class.md">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_class/">
 <span class="md-ellipsis">
     
   
@@ -650,7 +788,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow.md">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_dataflow/">
 <span class="md-ellipsis">
     
   
@@ -662,7 +800,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components.md">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_components/">
 <span class="md-ellipsis">
     
   
@@ -674,7 +812,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state.md">
+<a class="md-nav__link" href="../../tool_orchestrating_llm/tool_orchestrating_llm_state/">
 <span class="md-ellipsis">
     
   
@@ -719,7 +857,7 @@
 <span class="md-ellipsis">
     
   
-    serapeum.core.tools — Developer Documentation
+    Overview
   
 
     
@@ -731,7 +869,7 @@
 <span class="md-ellipsis">
     
   
-    Callable Tools
+    CallableTools
   
 
     
@@ -744,9 +882,9 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--nested">
+<li class="md-nav__item md-nav__item--section md-nav__item--nested">
 <input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_5_2" type="checkbox"/>
-<label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+<label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="">
 <span class="md-ellipsis">
     
   
@@ -924,7 +1062,7 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../../providers/add_new_providers.md">
+<a class="md-nav__link" href="../../../../../providers/add_new_providers/">
 <span class="md-ellipsis">
     
   
@@ -1482,6 +1620,34 @@ Hold "Ctrl" to enable pan &amp; zoom
 </button>
 </main>
 <footer class="md-footer">
+<nav aria-label="Footer" class="md-footer__inner md-grid">
+<a aria-label="Previous: Components" class="md-footer__link md-footer__link--prev" href="../text_completion_llm_components/">
+<div class="md-footer__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+</div>
+<div class="md-footer__title">
+<span class="md-footer__direction">
+                Previous
+              </span>
+<div class="md-ellipsis">
+                Components
+              </div>
+</div>
+</a>
+<a aria-label="Next: Overview" class="md-footer__link md-footer__link--next" href="../../tool_orchestrating_llm/general/">
+<div class="md-footer__title">
+<span class="md-footer__direction">
+                Next
+              </span>
+<div class="md-ellipsis">
+                Overview
+              </div>
+</div>
+<div class="md-footer__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+</div>
+</a>
+</nav>
 <div class="md-footer-meta md-typeset">
 <div class="md-footer-meta__inner md-grid">
 <div class="md-copyright">

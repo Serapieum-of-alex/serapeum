@@ -24,8 +24,6 @@ class Pooling(str, Enum):
 
     @classmethod
     @overload
-    # TODO: Remove this `type: ignore` after the false positive problem
-    #  is addressed in mypy: https://github.com/python/mypy/issues/15683 .
     def cls_pooling(cls, array: "torch.Tensor") -> "torch.Tensor":  # type: ignore
         ...
 

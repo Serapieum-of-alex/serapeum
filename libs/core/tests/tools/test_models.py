@@ -298,6 +298,43 @@ class TestToolOutput:
                 raw_output=None,
             )
 
+    def test_init_with_empty_string_content_preserves_text(self):
+        """Test that empty-string content is preserved as a TextChunk.
+
+        Inputs:
+          - tool_name: "t"
+          - content: ""
+        Expected:
+          - chunks contains a single TextChunk with empty content; content is "".
+        Checks:
+          - chunks length, type, and content; content property value.
+        """
+        out = ToolOutput(tool_name="t", content="", raw_input={}, raw_output=None)
+        assert len(out.chunks) == 1 and isinstance(out.chunks[0], TextChunk)
+        assert out.chunks[0].content == ""
+        assert out.content == ""
+
+    def test_init_with_empty_string_content_and_chunks_raises(self):
+        """Test that empty-string content with chunks still raises ValueError.
+
+        Inputs:
+          - tool_name: "t"
+          - content: ""
+          - chunks: [TextChunk("y")]
+        Expected:
+          - ValueError with message about both content and chunks provided.
+        Checks:
+          - ValueError is raised and message matches.
+        """
+        with pytest.raises(ValueError, match="Cannot provide both content and chunks"):
+            ToolOutput(
+                tool_name="t",
+                content="",
+                chunks=[TextChunk(content="y")],
+                raw_input={},
+                raw_output=None,
+            )
+
     def test_content_property_filters_non_text_chunks(self):
         r"""Test that content getter concatenates only TextChunk contents.
 

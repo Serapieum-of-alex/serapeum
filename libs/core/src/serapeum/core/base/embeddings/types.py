@@ -67,19 +67,15 @@ class NodeRelationship(str, Enum):
 
 
 class BaseNode(SerializableModel):
-    """
-    Base node Object.
+    """Base node Object.
 
-    Generic abstract interface for retrievable nodes
-
-    Parameters:
+    Attributes:
         metadata fields
             - injected as part of the text shown to LLMs as context
             - injected as part of the text for generating embeddings
             - used by vector DBs for metadata filtering
 
     """
-
     # hash is computed on local field, during the validation process
     model_config = ConfigDict(populate_by_name=True, validate_assignment=True)
 

@@ -603,14 +603,12 @@ class ToolOutput(BaseModel):
 
                 ```
         """
-        if content and chunks:
+        if content is not None and chunks is not None:
             raise ValueError("Cannot provide both content and chunks.")
 
-        if content:
+        if content is not None:
             chunks = [TextChunk(content=content)]
-        elif chunks:
-            pass
-        else:
+        elif chunks is None:
             chunks = []
 
         super().__init__(

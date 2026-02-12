@@ -78,7 +78,7 @@ class BaseEmbedding(TransformComponent, ABC):
         default=None,
         description="The number of workers to use for async embedding calls.",
     )
-    # Use Any to avoid import loops
+
     embeddings_cache: Any | None = Field(
         default=None,
         description="Cache for the embeddings: if None, the embeddings are not cached",

@@ -152,6 +152,8 @@ nav:
                 - Data Flow: reference/providers/ollama/ollama_dataflow.md
                 - Components: reference/providers/ollama/ollama_components.md
                 - Lifecycle: reference/providers/ollama/ollama_state.md
+            - Add New Providers:
+                - Instructions: reference/providers/add_new_providers.md
   - About:
     - Change-log: change-log.md
     - Contributing: contributing.md

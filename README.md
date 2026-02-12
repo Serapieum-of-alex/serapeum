@@ -33,7 +33,7 @@ From the repo root:
 
 ```bash
 python -m pip install -e libs/core
-python -m pip install -e libs/providers/serapeum-ollama
+python -m pip install -e libs/providers/ollama
 ```
 
 ## Development setup
@@ -42,7 +42,7 @@ Install dev dependencies per package:
 
 ```bash
 python -m pip install -e serapeum-core[dev]
-python -m pip install -e libs/providers/serapeum-ollama[dev]
+python -m pip install -e libs/providers/ollama[dev]
 ```
 
 ## Testing
@@ -55,7 +55,7 @@ python -m pytest
 ```
 
 ```bash
-cd libs/providers/serapeum-ollama
+cd libs/providers/ollama
 python -m pytest
 ```
 

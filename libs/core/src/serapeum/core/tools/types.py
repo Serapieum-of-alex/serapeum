@@ -19,7 +19,8 @@ __all__ = [
     "ToolMetadata",
     "ToolOutput",
     "adapt_to_async_tool",
-    "BaseTool"
+    "BaseTool",
+    "AsyncBaseTool",
 ]
 
 class MinimalToolSchema(BaseModel):

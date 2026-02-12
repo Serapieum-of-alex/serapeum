@@ -21,7 +21,7 @@ docs, examples, and prompts.
   - Shared LLM models and interfaces.
   - Prompt templates and output parsers.
   - Tool schemas and execution utilities.
-- `serapeum-ollama` (Python package under `serapeum-integrations/llms/`)
+- `serapeum-ollama` (Python package under `libs/providers/ollama/`)
   - Ollama-backed LLM adapter.
   - Tool calling and structured output support when available.
 
@@ -32,8 +32,8 @@ Each package has its own README with details and examples.
 From the repo root:
 
 ```bash
-python -m pip install -e serapeum-core
-python -m pip install -e serapeum-integrations/llms/serapeum-ollama
+python -m pip install -e libs/core
+python -m pip install -e libs/providers/ollama
 ```
 
 ## Development setup
@@ -42,7 +42,7 @@ Install dev dependencies per package:
 
 ```bash
 python -m pip install -e serapeum-core[dev]
-python -m pip install -e serapeum-integrations/llms/serapeum-ollama[dev]
+python -m pip install -e libs/providers/ollama[dev]
 ```
 
 ## Testing
@@ -55,7 +55,7 @@ python -m pytest
 ```
 
 ```bash
-cd serapeum-integrations/llms/serapeum-ollama
+cd libs/providers/ollama
 python -m pytest
 ```
 

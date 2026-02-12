@@ -24,7 +24,7 @@ classifiers = [
 requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core",
-    "serapeum-llms-ollama",
+    "serapeum-ollama",
     "serapeum-embeddings-ollama"
 ]
 
@@ -67,7 +67,7 @@ Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/serapeum"]
+packages = ["libs/core/src/serapeum"]
 
 [tool.flake8]
 ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
@@ -112,16 +112,13 @@ module = "serapeum.core.base.*"
 strict = true
 
 [[tool.mypy.overrides]]
-module = "serapeum.core.llm.*"
+module = "serapeum.core.llms.*"
 strict = true
 
 [[tool.mypy.overrides]]
 module = "serapeum.core.tools.*"
 strict = true
 
-[[tool.mypy.overrides]]
-module = "serapeum.core.structured_tools.*"
-strict = true
 
 [[tool.mypy.overrides]]
 module = "serapeum.llms.ollama.*"
@@ -130,19 +127,18 @@ strict = true
 
 [tool.uv.workspace]
 members = [
-    "serapeum-core",
-    "serapeum-integrations/llms/serapeum-llms-ollama",
+    "libs/core",
+    "libs/providers/*",
     "serapeum-integrations/embeddings/serapeum-embeddings-ollama",
 ]
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }
-serapeum-llms-ollama = { workspace = true }
+serapeum-ollama = { workspace = true }
 serapeum-embeddings-ollama = {workspace = true}
 
-
-[tool.uv]
-managed = false
+#[tool.uv]
+#managed = false
 
 [build-system]
 requires = ["hatchling"]

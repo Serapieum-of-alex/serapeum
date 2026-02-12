@@ -1,1 +1,0 @@
-namespace for the embeddings integration packages

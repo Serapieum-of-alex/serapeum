@@ -14,7 +14,7 @@ from pydantic import (
 from serapeum.core.configs import (
     DEFAULT_EMBED_BATCH_SIZE,
 )
-from serapeum.core.base.embeddings.models import (
+from serapeum.core.base.embeddings.types import (
     BaseNode,
     MetadataMode,
     TransformComponent,
@@ -115,15 +115,16 @@ class BaseEmbedding(TransformComponent, ABC):
         model_dict = self.to_dict()
         model_dict.pop("api_key", None)
 
-        if not self.embeddings_cache:
+        query_embedding = None
+        if self.embeddings_cache:
+            cached = self.embeddings_cache.get(key=query, collection="embeddings")
+            if cached:
+                cached_key = next(iter(cached.keys()))
+                query_embedding = cached[cached_key]
+
+        if query_embedding is None:
             query_embedding = self._get_query_embedding(query)
-        elif self.embeddings_cache is not None:
-            cached_emb = self.embeddings_cache.get(key=query, collection="embeddings")
-            if cached_emb is not None:
-                cached_key = next(iter(cached_emb.keys()))
-                query_embedding = cached_emb[cached_key]
-            else:
-                query_embedding = self._get_query_embedding(query)
+            if self.embeddings_cache:
                 self.embeddings_cache.put(
                     key=query,
                     val={str(uuid.uuid4()): query_embedding},
@@ -137,17 +138,16 @@ class BaseEmbedding(TransformComponent, ABC):
         model_dict = self.to_dict()
         model_dict.pop("api_key", None)
 
-        if not self.embeddings_cache:
+        query_embedding = None
+        if self.embeddings_cache:
+            cached = await self.embeddings_cache.aget(key=query, collection="embeddings")
+            if cached:
+                cached_key = next(iter(cached.keys()))
+                query_embedding = cached[cached_key]
+
+        if query_embedding is None:
             query_embedding = await self._aget_query_embedding(query)
-        elif self.embeddings_cache is not None:
-            cached_emb = await self.embeddings_cache.aget(
-                key=query, collection="embeddings"
-            )
-            if cached_emb is not None:
-                cached_key = next(iter(cached_emb.keys()))
-                query_embedding = cached_emb[cached_key]
-            else:
-                query_embedding = await self._aget_query_embedding(query)
+            if self.embeddings_cache:
                 await self.embeddings_cache.aput(
                     key=query,
                     val={str(uuid.uuid4()): query_embedding},
@@ -186,8 +186,7 @@ class BaseEmbedding(TransformComponent, ABC):
         """
 
     async def _aget_text_embedding(self, text: str) -> Embedding:
-        """
-        Embed the input text asynchronously.
+        """Embed the input text asynchronously.
 
         Subclasses can implement this method if there is a true async
         implementation. Reference get_text_embedding's docstring for more
@@ -197,8 +196,7 @@ class BaseEmbedding(TransformComponent, ABC):
         return self._get_text_embedding(text)
 
     def _get_text_embeddings(self, texts: list[str]) -> list[Embedding]:
-        """
-        Embed the input sequence of text synchronously.
+        """Embed the input sequence of text synchronously.
 
         Subclasses can implement this method if batch queries are supported.
         """
@@ -206,8 +204,7 @@ class BaseEmbedding(TransformComponent, ABC):
         return [self._get_text_embedding(text) for text in texts]
 
     async def _aget_text_embeddings(self, texts: list[str]) -> list[Embedding]:
-        """
-        Embed the input sequence of text asynchronously.
+        """Embed the input sequence of text asynchronously.
 
         Subclasses can implement this method if batch queries are supported.
         """
@@ -246,7 +243,7 @@ class BaseEmbedding(TransformComponent, ABC):
                     val={str(uuid.uuid4()): text_embedding},
                     collection="embeddings",
                 )
-        return cast(list[Embedding], embeddings)
+        return embeddings
 
     async def _aget_text_embeddings_cached(self, texts: list[str]) -> list[Embedding]:
         """Asynchronously get text embeddings from cache.
@@ -281,7 +278,7 @@ class BaseEmbedding(TransformComponent, ABC):
                     val={str(uuid.uuid4()): text_embedding},
                     collection="embeddings",
                 )
-        return cast(list[Embedding], embeddings)
+        return embeddings
 
     def get_text_embedding(self, text: str) -> Embedding:
         """
@@ -426,8 +423,8 @@ class BaseEmbedding(TransformComponent, ABC):
         ]
         return result_embeddings
 
+    @staticmethod
     def similarity(
-        self,
         embedding1: Embedding,
         embedding2: Embedding,
         mode: SimilarityMode = SimilarityMode.DEFAULT,

@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import Any, Sequence
 
 import pytest
@@ -327,7 +328,7 @@ class TestToolExecutor:
             assert out.content == "ok"
 
         def test_verbose_prints_arguments_and_output(
-            self, capsys: pytest.CaptureFixture[str]
+            self, caplog: pytest.LogCaptureFixture
         ) -> None:
             """Verify verbose mode prints the function call info and output content.
 
@@ -344,13 +345,14 @@ class TestToolExecutor:
                 tool_id="2", tool_name="single_echo", tool_kwargs={"input": "zzz"}
             )
             tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
-            out = tool_executor.execute_with_selection(sel, tools)
-            captured = capsys.readouterr()
-            assert "=== Calling Function ===" in captured.out
-            assert "single_echo" in captured.out
-            assert '"input": "zzz"' in captured.out
-            assert "=== Function Output ===" in captured.out
-            assert out.content in captured.out
+            with caplog.at_level(logging.INFO, logger="serapeum.core.tools.invoke"):
+                out = tool_executor.execute_with_selection(sel, tools)
+
+            assert "=== Calling Function ===" in caplog.text
+            assert "single_echo" in caplog.text
+            assert '"input": "zzz"' in caplog.text
+            assert "=== Function Output ===" in caplog.text
+            assert out.content in caplog.text
 
     class TestExecuteAsyncWithSelection:
         """Tests for ToolExecutor.execute_async_with_selection method."""
@@ -376,7 +378,7 @@ class TestToolExecutor:
 
         @pytest.mark.asyncio
         async def test_verbose_prints_arguments_and_output_async(
-            self, capsys: pytest.CaptureFixture[str]
+            self, caplog: pytest.LogCaptureFixture
         ) -> None:
             """Verbose mode prints details for async tool calls as well.
 
@@ -392,10 +394,11 @@ class TestToolExecutor:
                 tool_id="4", tool_name="async_sum2", tool_kwargs={"a": 2, "b": 5}
             )
             tool_executor = ToolExecutor(ExecutionConfig(verbose=True))
-            out = await tool_executor.execute_async_with_selection(sel, tools)
-            captured = capsys.readouterr()
-            assert "=== Calling Function ===" in captured.out
-            assert "async_sum2" in captured.out
-            assert '"a": 2' in captured.out and '"b": 5' in captured.out
-            assert "=== Function Output ===" in captured.out
-            assert out.content in captured.out
+            with caplog.at_level(logging.INFO, logger="serapeum.core.tools.invoke"):
+                out = await tool_executor.execute_async_with_selection(sel, tools)
+
+            assert "=== Calling Function ===" in caplog.text
+            assert "async_sum2" in caplog.text
+            assert '"a": 2' in caplog.text and '"b": 5' in caplog.text
+            assert "=== Function Output ===" in caplog.text
+            assert out.content in caplog.text

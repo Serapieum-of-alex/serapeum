@@ -1,4 +1,4 @@
-"""Utilities for resolving binary data from various sources into BytesIO objects."""
+"""Utilities functions."""
 
 
 def truncate_text(text: str, max_length: int) -> str:

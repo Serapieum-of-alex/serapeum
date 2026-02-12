@@ -397,8 +397,9 @@ class ToolExecutor:
 
         return val
 
+    @staticmethod
     def _try_single_arg_then_kwargs(
-        self, tool: BaseTool, arguments: dict[str, Any]
+        tool: BaseTool, arguments: dict[str, Any]
     ) -> ToolOutput:
         """Try calling with single unpacked arg, fall back to kwargs."""
         try:
@@ -410,8 +411,9 @@ class ToolExecutor:
 
         return output
 
+    @staticmethod
     async def _try_single_arg_then_kwargs_async(
-        self, async_tool: AsyncBaseTool, arguments: dict[str, Any]
+        async_tool: AsyncBaseTool, arguments: dict[str, Any]
     ) -> ToolOutput:
         """Try calling async with single unpacked arg, fall back to kwargs."""
         try:
@@ -423,8 +425,9 @@ class ToolExecutor:
 
         return output
 
+    @staticmethod
     def _create_error_output(
-        self, tool: BaseTool, arguments: dict[str, Any], error: Exception
+        tool: BaseTool, arguments: dict[str, Any], error: Exception
     ) -> ToolOutput:
         """Create a standardized error output."""
         return ToolOutput(

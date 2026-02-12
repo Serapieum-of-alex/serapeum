@@ -46,8 +46,7 @@ Python 3.11+ is required.
 ### 1) Build a minimal LLM implementation
 
 ```python
-from serapeum.core.llms import LLM
-from serapeum.core.base.llms.types import CompletionResponse, Metadata
+from serapeum.core.llms import LLM, CompletionResponse, Metadata
 from serapeum.core.prompts import PromptTemplate
 
 
@@ -110,8 +109,7 @@ prompt = PromptTemplate(
 ### 3) Define tools and execute them safely
 
 ```python
-from serapeum.core.tools.types import BaseTool, ToolMetadata, ToolOutput
-from serapeum.core.tools.utils import ToolExecutor
+from serapeum.core.tools import BaseTool, ToolMetadata, ToolOutput, ToolExecutor
 
 
 class EchoTool(BaseTool):

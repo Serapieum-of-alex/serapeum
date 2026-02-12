@@ -4,7 +4,7 @@ import asyncio
 import uuid
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Callable, Coroutine, Sequence, cast
+from typing import Any, Callable, Coroutine, Sequence
 
 import numpy as np
 from pydantic import (
@@ -14,10 +14,11 @@ from pydantic import (
 from serapeum.core.configs import (
     DEFAULT_EMBED_BATCH_SIZE,
 )
+from serapeum.core.types import SerializableModel
 from serapeum.core.base.embeddings.types import (
     BaseNode,
     MetadataMode,
-    TransformComponent,
+    CallMixin,
 )
 from serapeum.core.utils.base import get_tqdm_iterable, run_jobs
 
@@ -59,7 +60,7 @@ def similarity(
     return val
 
 
-class BaseEmbedding(TransformComponent, ABC):
+class BaseEmbedding(SerializableModel, CallMixin, ABC):
     """Base class for embeddings."""
 
     model_config = ConfigDict(

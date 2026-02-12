@@ -1,6 +1,6 @@
 from typing import Any, Annotated, Sequence
 import uuid
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 import textwrap
 from enum import Enum, auto
 from pydantic import ConfigDict, Field, PlainSerializer
@@ -300,7 +300,7 @@ class BaseNode(SerializableModel):
         )
 
 
-class TransformComponent(SerializableModel):
+class CallMixin(ABC):
     """Base class for transform components."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

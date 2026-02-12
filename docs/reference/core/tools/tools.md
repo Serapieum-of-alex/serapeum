@@ -326,8 +326,7 @@ flowchart TD
 Wrap a synchronous function and call it
 
 ```python
-from serapeum.core.tools.callable_tool import CallableTool
-from serapeum.core.tools.types import ToolMetadata
+from serapeum.core.tools import CallableTool, ToolMetadata
 
 def greet(name: str) -> str:
     """Greet a user by name."""
@@ -342,8 +341,7 @@ Wrap an async function and await it
 
 ```python
 import asyncio
-from serapeum.core.tools.callable_tool import CallableTool
-from serapeum.core.tools.types import ToolMetadata
+from serapeum.core.tools import CallableTool, ToolMetadata
 
 async def add(a: int, b: int) -> int:
     return a + b
@@ -356,7 +354,7 @@ print(result.content)  # "5"
 Infer schema and metadata with from_function
 
 ```python
-from serapeum.core.tools.callable_tool import CallableTool
+from serapeum.core.tools import CallableTool
 
 # from_function inspects signature and docstring to infer schema and description
 # (first docstring line + signature)
@@ -374,7 +372,7 @@ Export as an OpenAI function tool
 
 ```python
 from pydantic import BaseModel
-from serapeum.core.tools.types import ToolMetadata
+from serapeum.core.tools import ToolMetadata
 
 class SearchArgs(BaseModel):
     query: str
@@ -387,10 +385,7 @@ print(meta.to_openai_tool())
 Execute with ToolExecutor (selection-based)
 
 ```python
-from serapeum.core.tools.types import ToolCallArguments
-from serapeum.core.tools.utils import ToolExecutor
-from serapeum.core.tools.callable_tool import CallableTool
-from serapeum.core.tools.types import ToolMetadata
+from serapeum.core.tools import ToolCallArguments, ToolExecutor, CallableTool, ToolMetadata
 
 # Prepare two tools
 say = CallableTool.from_function(lambda text: text, name="say")
@@ -407,9 +402,7 @@ print(out.content)  # "hi"
 Single-argument auto-unpack
 
 ```python
-from serapeum.core.tools.utils import ToolExecutor, ExecutionConfig
-from serapeum.core.tools.types import ToolMetadata
-from serapeum.core.tools.callable_tool import CallableTool
+from serapeum.core.tools import ToolExecutor, ExecutionConfig, ToolMetadata, CallableTool
 
 def echo_list(lst: list[int]):
     return ",".join(map(str, lst))

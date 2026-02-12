@@ -8,21 +8,17 @@ from serapeum.core.base.llms.types import (
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
-    CompletionResponse,
     CompletionResponseGen,
     Message,
     MessageRole,
     Metadata,
 )
-from serapeum.core.base.llms.utils import (
-    achat_to_completion_decorator,
-    chat_to_completion_decorator,
-)
+from serapeum.core.llms.abstractions.mixins import ChatToCompletionMixin
 from serapeum.core.llms.base import LLM
 from serapeum.core.prompts.base import ChatPromptTemplate
 
 
-class StructuredOutputLLM(LLM):
+class StructuredOutputLLM(ChatToCompletionMixin, LLM):
     """Wrap an LLM to produce structured Pydantic outputs.
 
     This adapter delegates to an underlying LLM while exposing the same
@@ -73,10 +69,6 @@ class StructuredOutputLLM(LLM):
                 raw=partial_output,
             )
 
-    def complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
-        fn = chat_to_completion_decorator(self.chat)
-        return fn(prompt, **kwargs)
-
     def stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
         """Stream completion endpoint for LLM."""
         raise NotImplementedError("stream_complete is not supported by default.")
@@ -120,10 +112,6 @@ class StructuredOutputLLM(LLM):
                 )
 
         return gen()
-
-    async def acomplete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
-        fn = achat_to_completion_decorator(self.achat)
-        return await fn(prompt, **kwargs)
 
     async def astream_complete(
         self, prompt: str, **kwargs: Any

@@ -13,9 +13,7 @@ from serapeum.core.llms import (
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
-    CompletionResponse,
-    CompletionResponseAsyncGen,
-    CompletionResponseGen,
+    ChatToCompletionMixin,
     Image,
     Message,
     MessageList,
@@ -23,12 +21,6 @@ from serapeum.core.llms import (
     Metadata,
     TextChunk,
     FunctionCallingLLM
-)
-from serapeum.core.base.llms.utils import (
-    achat_to_completion_decorator,
-    astream_chat_to_completion_decorator,
-    chat_to_completion_decorator,
-    stream_chat_to_completion_decorator,
 )
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.types import StructuredLLMMode
@@ -123,7 +115,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
         response.message.additional_kwargs["tool_calls"] = [tool_calls[0]]
 
 
-class Ollama(FunctionCallingLLM):
+class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
     """Ollama.
 
     This class integrates with the local/remote Ollama server to provide chat,
@@ -280,14 +272,6 @@ class Ollama(FunctionCallingLLM):
         # Track the event loop associated with the async client to avoid
         # reusing a client bound to a closed event loop across tests/runs
         self._async_client_loop: asyncio.AbstractEventLoop | None = None
-
-        # Cache decorated methods to avoid creating wrappers on every call
-        self._complete_fn = chat_to_completion_decorator(self.chat)
-        self._acomplete_fn = achat_to_completion_decorator(self.achat)
-        self._stream_complete_fn = stream_chat_to_completion_decorator(self.stream_chat)
-        self._astream_complete_fn = astream_chat_to_completion_decorator(
-            self.astream_chat
-        )
 
     @classmethod
     def class_name(cls) -> str:
@@ -998,61 +982,6 @@ class Ollama(FunctionCallingLLM):
             ),
             raw=response,
         )
-
-    def complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
-        """Synchronous completion wrapper over the chat API.
-
-        The implementation delegates to ``chat`` through a compatibility adapter.
-
-        Args:
-            prompt (str): Pre-formatted prompt string.
-            **kwargs (Any): Provider-specific options.
-
-        Returns:
-            CompletionResponse: Textual response compatible with completion helpers.
-
-        See Also:
-            acomplete: Asynchronous counterpart.
-        """
-        return self._complete_fn(prompt, **kwargs)
-
-    async def acomplete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
-        """Asynchronous completion wrapper over the chat API.
-
-        Args:
-            prompt (str): Pre-formatted prompt string.
-            **kwargs (Any): Provider-specific options.
-
-        Returns:
-            CompletionResponse: Textual response compatible with completion helpers.
-        """
-        return await self._acomplete_fn(prompt, **kwargs)
-
-    def stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
-        """Stream completion deltas via the chat streaming API.
-
-        Args:
-            prompt (str): Pre-formatted prompt string.
-            **kwargs (Any): Provider-specific options.
-
-        Yields:
-            CompletionResponseGen: Stream yielding completion deltas.
-        """
-        return self._stream_complete_fn(prompt, **kwargs)
-
-    async def astream_complete(
-        self, prompt: str, **kwargs: Any
-    ) -> CompletionResponseAsyncGen:
-        """Asynchronously stream completion deltas via the chat streaming API.
-
-        Args:
-            prompt (str): Pre-formatted prompt string.
-            **kwargs (Any): Provider-specific options.
-
-        Returns:
-            CompletionResponseAsyncGen: Async generator producing completion deltas.
-        """
-        return await self._astream_complete_fn(prompt, **kwargs)
 
     def structured_predict(
         self,

@@ -432,9 +432,10 @@ class ToolExecutor:
             is_error=True,
         )
 
-    def _find_tool_by_name(self, name: str, tools: Sequence[BaseTool]) -> BaseTool:
+    @staticmethod
+    def _find_tool_by_name(name: str, tools: Sequence[BaseTool]) -> BaseTool:
         """Find a tool by name from a sequence of tools."""
-        tools_by_name = {tool.metadata.name: tool for tool in tools}
+        tools_by_name = {tool.metadata.get_name(): tool for tool in tools}
         return tools_by_name[name]
 
     def _log_execution_start(self, tool: BaseTool, arguments: dict[str, Any]) -> None:

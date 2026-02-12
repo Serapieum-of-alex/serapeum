@@ -7,8 +7,8 @@ import json
 import logging
 import pickle  # nosec B403
 from enum import Enum
-from typing import Any, Self, TypeVar
-
+from typing import Any, TypeVar
+from typing_extensions import Self
 from pydantic import (
     BaseModel,
     GetJsonSchemaHandler,

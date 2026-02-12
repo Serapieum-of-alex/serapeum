@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-import yaml
+from yaml import safe_load, YAMLError
 
 __all__ = [
     "SchemaFormatter",
@@ -361,16 +361,17 @@ def parse_json_markdown(text: str) -> Any:
     try:
         json_obj = json.loads(json_string)
     except json.JSONDecodeError as e_json:
+
         try:
             # Try a lenient YAML parser for slightly invalid JSON
-            json_obj = yaml.safe_load(json_string)
-        except yaml.YAMLError as e_yaml:
+            json_obj = safe_load(json_string)
+        except YAMLError as e_yaml:
             raise MarkdownParserException(
                 f"Got invalid JSON object. Error: {e_json} {e_yaml}. "
                 f"Got JSON string: {json_string}"
             )
-        except NameError as exc:
-            raise ImportError("Please pip install PyYAML.") from exc
+        except Exception as exc:
+            raise Exception(exc)
 
     return json_obj
 

@@ -3,7 +3,7 @@ import uuid
 from abc import abstractmethod, ABC
 import textwrap
 from enum import Enum, auto
-from pydantic import ConfigDict, Field, PlainSerializer
+from pydantic import ConfigDict, Field, PlainSerializer, PrivateAttr
 from serapeum.core.utils.base import truncate_text
 from serapeum.core.types import SerializableModel
 
@@ -168,6 +168,8 @@ class BaseNode(SerializableModel, ABC):
     """
     # hash is computed on a local field, during the validation process
     model_config = ConfigDict(populate_by_name=True, validate_assignment=True)
+    _linked_nodes_cache: LinkedNodes | None = PrivateAttr(default=None)
+    _linked_nodes_cache_relationships_id: int | None = PrivateAttr(default=None)
 
     id: str = Field(
         default_factory=lambda: str(uuid.uuid4()), description="Unique ID of the node."
@@ -248,12 +250,23 @@ class BaseNode(SerializableModel, ABC):
 
     @property
     def linked_nodes(self) -> LinkedNodes:
-        return LinkedNodes.from_relationships(self.relationships)
+        cached = self._linked_nodes_cache
+        relationships_id = id(self.links)
+        if (
+            cached is None
+            or self._linked_nodes_cache_relationships_id != relationships_id
+        ):
+            cached = LinkedNodes.create(self.links)
+            self._linked_nodes_cache = cached
+            self._linked_nodes_cache_relationships_id = relationships_id
+        return cached
 
-    @property
-    def ref_doc_id(self) -> str | None:  # pragma: no cover
-        """Deprecated: Get ref doc id."""
-        return self.linked_nodes.source_id
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name == "links":
+            object.__setattr__(self, "_linked_nodes_cache", None)
+            object.__setattr__(self, "_linked_nodes_cache_relationships_id", None)
+        super().__setattr__(name, value)
+
 
     def __str__(self) -> str:
         source_text_truncated = truncate_text(

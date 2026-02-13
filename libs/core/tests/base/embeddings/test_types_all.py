@@ -106,44 +106,40 @@ class TestLinkedNodesCreate:
         assert linked.children == [ref]
 
     @pytest.mark.parametrize(
-        "relationship, invalid_value, error_message",
+        "node_type, invalid_value",
         [
             (
                     NodeType.SOURCE,
                     [NodeInfo(id="a")],
-                    LinkedNodes.SOURCE_ERROR,
             ),
             (
                     NodeType.PREVIOUS,
                     [NodeInfo(id="a")],
-                    LinkedNodes.PREVIOUS_ERROR,
             ),
             (
                     NodeType.NEXT,
                     [NodeInfo(id="a")],
-                    LinkedNodes.NEXT_ERROR,
             ),
             (
                     NodeType.PARENT,
                     [NodeInfo(id="a")],
-                    LinkedNodes.PARENT_ERROR,
             ),
             (
                     NodeType.CHILD,
                     NodeInfo(id="a"),
-                    LinkedNodes.CHILDREN_ERROR,
             ),
         ],
     )
     def test_invalid_types_raise_value_error(
-        self, relationship, invalid_value, error_message
+        self, node_type, invalid_value
     ):
         """
         Inputs: links with invalid value types for each key.
         Expected result: ValueError with the specific error message.
         Checks: exception type and exact message.
         """
-        linked_nodes = {relationship: invalid_value}
+        linked_nodes = {node_type: invalid_value}
+        error_message = f"The {node_type.value.title()} Node must be a single NodeInfo object"
         with pytest.raises(ValueError, match=error_message):
             LinkedNodes.create(linked_nodes)
 
@@ -158,10 +154,10 @@ class TestLinkedNodesGetSingle:
         ref = NodeInfo(id="a")
         linked_nodes = {NodeType.SOURCE: ref}
         value_present = LinkedNodes._get_single(
-            linked_nodes, NodeType.SOURCE, LinkedNodes.SOURCE_ERROR
+            linked_nodes, NodeType.SOURCE
         )
         value_missing = LinkedNodes._get_single(
-            linked_nodes, NodeType.NEXT, LinkedNodes.NEXT_ERROR
+            linked_nodes, NodeType.NEXT
         )
         assert value_present is ref
         assert value_missing is None
@@ -173,9 +169,10 @@ class TestLinkedNodesGetSingle:
         Checks: exact exception type and message.
         """
         linked_nodes = {NodeType.SOURCE: [NodeInfo(id="a")]}
-        with pytest.raises(ValueError, match=LinkedNodes.SOURCE_ERROR):
+        error_message = f"The {NodeType.SOURCE.value.title()} Node must be a single NodeInfo object"
+        with pytest.raises(ValueError, match=error_message):
             LinkedNodes._get_single(
-                linked_nodes, NodeType.SOURCE, LinkedNodes.SOURCE_ERROR
+                linked_nodes, NodeType.SOURCE
             )
 
 
@@ -189,10 +186,10 @@ class TestLinkedNodesGetList:
         refs = [NodeInfo(id="a"), NodeInfo(id="b")]
         linked_nodes = {NodeType.CHILD: refs}
         value_present = LinkedNodes._get_list(
-            linked_nodes, NodeType.CHILD, LinkedNodes.CHILDREN_ERROR
+            linked_nodes, NodeType.CHILD
         )
         value_missing = LinkedNodes._get_list(
-            linked_nodes, NodeType.SOURCE, LinkedNodes.SOURCE_ERROR
+            linked_nodes, NodeType.SOURCE
         )
         assert value_present == refs
         assert value_missing is None
@@ -204,9 +201,10 @@ class TestLinkedNodesGetList:
         Checks: exact exception type and message.
         """
         linked_nodes = {NodeType.CHILD: NodeInfo(id="a")}
-        with pytest.raises(ValueError, match=LinkedNodes.CHILDREN_ERROR):
+        error_message = f"The {NodeType.CHILD.value.title()} Node must be a single NodeInfo object"
+        with pytest.raises(ValueError, match=error_message):
             LinkedNodes._get_list(
-                linked_nodes, NodeType.CHILD, LinkedNodes.CHILDREN_ERROR
+                linked_nodes, NodeType.CHILD
             )
 
 

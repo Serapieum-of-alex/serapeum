@@ -1,4 +1,4 @@
-from typing import Any, Annotated, Sequence, ClassVar
+from typing import Any, Annotated, Sequence
 import uuid
 from abc import abstractmethod, ABC
 import textwrap
@@ -69,20 +69,6 @@ class NodeType(str, Enum):
 class LinkedNodes(SerializableModel):
     model_config = ConfigDict(frozen=True)
 
-    SOURCE_ERROR: ClassVar[str] = (
-        "The Source Node must be a single NodeInfo object"
-    )
-    PREVIOUS_ERROR: ClassVar[str] = (
-        "The Previous Node must be a single NodeInfo object"
-    )
-    NEXT_ERROR: ClassVar[str] = "The Next Node must be a single NodeInfo object"
-    PARENT_ERROR: ClassVar[str] = (
-        "The Parent Node must be a single NodeInfo object"
-    )
-    CHILDREN_ERROR: ClassVar[str] = (
-        "Child Nodes must be a list of NodeInfo objects."
-    )
-
     source: NodeInfo | None = None
     previous: NodeInfo | None = None
     next: NodeInfo | None = None
@@ -95,19 +81,19 @@ class LinkedNodes(SerializableModel):
     ) -> "LinkedNodes":
         linked = cls(
             source=cls._get_single(
-                linked_nodes_info, NodeType.SOURCE, cls.SOURCE_ERROR
+                linked_nodes_info, NodeType.SOURCE
             ),
             previous=cls._get_single(
-                linked_nodes_info, NodeType.PREVIOUS, cls.PREVIOUS_ERROR
+                linked_nodes_info, NodeType.PREVIOUS
             ),
             next=cls._get_single(
-                linked_nodes_info, NodeType.NEXT, cls.NEXT_ERROR
+                linked_nodes_info, NodeType.NEXT
             ),
             parent=cls._get_single(
-                linked_nodes_info, NodeType.PARENT, cls.PARENT_ERROR
+                linked_nodes_info, NodeType.PARENT
             ),
             children=cls._get_list(
-                linked_nodes_info, NodeType.CHILD, cls.CHILDREN_ERROR
+                linked_nodes_info, NodeType.CHILD
             ),
         )
         return linked
@@ -116,22 +102,20 @@ class LinkedNodes(SerializableModel):
     def _get_single(
         linked_nodes: dict[NodeType, NodeInfoType],
         node_type: NodeType,
-        error_message: str,
     ) -> NodeInfo | None:
         value = linked_nodes.get(node_type)
         if value is not None and not isinstance(value, NodeInfo):
-            raise ValueError(error_message)
+            raise ValueError(f"The {node_type.value.title()} Node must be a single NodeInfo object")
         return value  # type: ignore[return-value]
 
     @staticmethod
     def _get_list(
         linked_nodes: dict[NodeType, NodeInfoType],
         node_type: NodeType,
-        error_message: str,
     ) -> list[NodeInfo] | None:
         value = linked_nodes.get(node_type)
         if value is not None and not isinstance(value, list):
-            raise ValueError(error_message)
+            raise ValueError(f"The {node_type.value.title()} Node must be a single NodeInfo object")
         return value  # type: ignore[return-value]
 
     def as_dict(self) -> dict[NodeType, NodeInfoType | None]:

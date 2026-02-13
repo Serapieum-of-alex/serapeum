@@ -104,8 +104,7 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
         """
 
     def get_query_embedding(self, query: str) -> Embedding:
-        """
-        Embed the input query.
+        """Embed the input query.
 
         When embedding a query, depending on the model, a special instruction
         can be prepended to the raw query string. For example, "Represent the
@@ -179,8 +178,7 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
 
     @abstractmethod
     def _get_text_embedding(self, text: str) -> Embedding:
-        """
-        Embed the input text synchronously.
+        """Embed the input text synchronously.
 
         Subclasses should implement this method. Reference get_text_embedding's
         docstring for more information.
@@ -282,8 +280,7 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
         return embeddings
 
     def get_text_embedding(self, text: str) -> Embedding:
-        """
-        Embed the input text.
+        """Embed the input text.
 
         When embedding text, depending on the model, a special instruction
         can be prepended to the raw text string. For example, "Represent the

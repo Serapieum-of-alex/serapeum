@@ -135,7 +135,7 @@ class LinkedNodes(SerializableModel):
         return value  # type: ignore[return-value]
 
     def as_dict(self) -> dict[NodeRelationship, RelatedNodeType | None]:
-        return {
+        relationships = {
             NodeRelationship.SOURCE: self.source,
             NodeRelationship.PREVIOUS: self.previous,
             NodeRelationship.NEXT: self.next,
@@ -143,9 +143,10 @@ class LinkedNodes(SerializableModel):
             NodeRelationship.CHILD: self.children,
         }
 
-    def to_relationships(self) -> dict[NodeRelationship, RelatedNodeType]:
-        filtered = {key: value for key, value in self.as_dict().items() if value is not None}
-        return filtered
+        relationships = {
+            key: value for key, value in relationships.items() if value is not None
+        }
+        return relationships
 
     @property
     def source_id(self) -> str | None:

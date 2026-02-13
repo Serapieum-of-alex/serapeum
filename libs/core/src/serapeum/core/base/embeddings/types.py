@@ -288,7 +288,7 @@ class BaseNode(SerializableModel, ABC):
             raise ValueError("embedding not set.")
         return self.embedding
 
-    def as_related_node_info(self) -> NodeInfo:
+    def get_node_info(self) -> NodeInfo:
         """Get node as NodeInfo."""
         return NodeInfo(
             id=self.id,

@@ -146,4 +146,4 @@ def test_get_embedding(my_node):
 
 def test_as_related_node_info(my_node):
     n = my_node(id="test_node")
-    assert n.as_related_node_info().id == "test_node"
+    assert n.get_node_info().id == "test_node"

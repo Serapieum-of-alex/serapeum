@@ -91,23 +91,23 @@ class LinkedNodes(SerializableModel):
 
     @classmethod
     def from_relationships(
-        cls, relationships: dict[NodeRelationship, RelatedNodeType]
+        cls, linked_nodes_info: dict[NodeRelationship, RelatedNodeType]
     ) -> "LinkedNodes":
         linked = cls(
             source=cls._get_single(
-                relationships, NodeRelationship.SOURCE, cls.SOURCE_ERROR
+                linked_nodes_info, NodeRelationship.SOURCE, cls.SOURCE_ERROR
             ),
             previous=cls._get_single(
-                relationships, NodeRelationship.PREVIOUS, cls.PREVIOUS_ERROR
+                linked_nodes_info, NodeRelationship.PREVIOUS, cls.PREVIOUS_ERROR
             ),
             next=cls._get_single(
-                relationships, NodeRelationship.NEXT, cls.NEXT_ERROR
+                linked_nodes_info, NodeRelationship.NEXT, cls.NEXT_ERROR
             ),
             parent=cls._get_single(
-                relationships, NodeRelationship.PARENT, cls.PARENT_ERROR
+                linked_nodes_info, NodeRelationship.PARENT, cls.PARENT_ERROR
             ),
             children=cls._get_list(
-                relationships, NodeRelationship.CHILD, cls.CHILDREN_ERROR
+                linked_nodes_info, NodeRelationship.CHILD, cls.CHILDREN_ERROR
             ),
         )
         return linked

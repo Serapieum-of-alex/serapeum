@@ -59,15 +59,15 @@ def test_node_id(my_node):
 def test_linked_source_node(my_node):
     n1 = my_node()
     n2 = my_node(relationships={NodeRelationship.SOURCE: NodeReference(id=n1.id)})
-    assert n2.linked.source.hash == n1.hash
-    assert n1.linked.source is None
+    assert n2.linked_nodes.source.hash == n1.hash
+    assert n1.linked_nodes.source is None
 
     with pytest.raises(
         ValueError, match="Source object must be a single NodeReference object"
     ):
         my_node(
             relationships={NodeRelationship.SOURCE: [NodeReference(id=n1.id)]}
-        ).linked.source
+        ).linked_nodes.source
 
 
 def test_linked_prev_node(my_node):
@@ -75,43 +75,43 @@ def test_linked_prev_node(my_node):
     n2 = my_node(
         relationships={NodeRelationship.PREVIOUS: NodeReference(id=n1.id)}
     )
-    assert n2.linked.previous.hash == n1.hash
-    assert n1.linked.previous is None
+    assert n2.linked_nodes.previous.hash == n1.hash
+    assert n1.linked_nodes.previous is None
 
     with pytest.raises(
         ValueError, match="Previous object must be a single NodeReference object"
     ):
         my_node(
             relationships={NodeRelationship.PREVIOUS: [NodeReference(id=n1.id)]}
-        ).linked.previous
+        ).linked_nodes.previous
 
 
 def test_linked_next_node(my_node):
     n1 = my_node()
     n2 = my_node(relationships={NodeRelationship.NEXT: NodeReference(id=n1.id)})
-    assert n2.linked.next.hash == n1.hash
-    assert n1.linked.next is None
+    assert n2.linked_nodes.next.hash == n1.hash
+    assert n1.linked_nodes.next is None
 
     with pytest.raises(
         ValueError, match="Next object must be a single NodeReference object"
     ):
         my_node(
             relationships={NodeRelationship.NEXT: [NodeReference(id=n1.id)]}
-        ).linked.next
+        ).linked_nodes.next
 
 
 def test_linked_parent_node(my_node):
     n1 = my_node()
     n2 = my_node(relationships={NodeRelationship.PARENT: NodeReference(id=n1.id)})
-    assert n2.linked.parent.hash == n1.hash
-    assert n1.linked.parent is None
+    assert n2.linked_nodes.parent.hash == n1.hash
+    assert n1.linked_nodes.parent is None
 
     with pytest.raises(
         ValueError, match="Parent object must be a single NodeReference object"
     ):
         my_node(
             relationships={NodeRelationship.PARENT: [NodeReference(id=n1.id)]}
-        ).linked.parent
+        ).linked_nodes.parent
 
 
 def test_linked_child_node(my_node):
@@ -119,15 +119,15 @@ def test_linked_child_node(my_node):
     n2 = my_node(
         relationships={NodeRelationship.CHILD: [NodeReference(id=n1.id)]}
     )
-    assert n2.linked.children[0].hash == n1.hash
-    assert n1.linked.children is None
+    assert n2.linked_nodes.children[0].hash == n1.hash
+    assert n1.linked_nodes.children is None
 
     with pytest.raises(
         ValueError, match="Child objects must be a list of NodeReference objects"
     ):
         my_node(
             relationships={NodeRelationship.CHILD: NodeReference(id=n1.id)}
-        ).linked.children
+        ).linked_nodes.children
 
 
 def test___str__(my_node):

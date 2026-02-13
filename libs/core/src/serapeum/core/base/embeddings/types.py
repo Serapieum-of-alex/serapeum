@@ -222,13 +222,13 @@ class BaseNode(SerializableModel, ABC):
         )
 
     @property
-    def linked(self) -> LinkedNodes:
+    def linked_nodes(self) -> LinkedNodes:
         return self._get_linked()
 
     @property
     def ref_doc_id(self) -> str | None:  # pragma: no cover
         """Deprecated: Get ref doc id."""
-        source_node = self.linked.source
+        source_node = self.linked_nodes.source
         if source_node is None:
             return None
         return source_node.id

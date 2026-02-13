@@ -5,7 +5,7 @@ from serapeum.core.base.embeddings.types import (
     BaseNode,
     MetadataMode,
     NodeRelationship,
-    ObjectType,
+    NodeType,
     NodeReference,
 )
 
@@ -18,7 +18,7 @@ def my_node():
 
         @classmethod
         def get_type(cls):
-            return ObjectType.TEXT
+            return NodeType.TEXT
 
         def get_content(self, metadata_mode: MetadataMode = MetadataMode.ALL) -> str:
             return "Test content"

@@ -12,7 +12,7 @@ WRAP_WIDTH = 70
 DEFAULT_METADATA_TMPL = "{key}: {value}"
 
 
-class ObjectType(str, Enum):
+class NodeType(str, Enum):
     TEXT = auto()
     IMAGE = auto()
     INDEX = auto()
@@ -27,7 +27,7 @@ EnumNameSerializer = PlainSerializer(
 
 class NodeReference(SerializableModel):
     id: str
-    type: Annotated[ObjectType, EnumNameSerializer] | str | None = None
+    type: Annotated[NodeType, EnumNameSerializer] | str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
     hash: str | None = None
 

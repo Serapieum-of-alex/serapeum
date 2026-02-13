@@ -1,7 +1,7 @@
 """Base embeddings file."""
 
 import asyncio
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import Coroutine, List
 
 from serapeum.core.base.embeddings.base import (
@@ -13,7 +13,7 @@ from serapeum.core.base.llms.types import ImageType
 from serapeum.core.utils.base import get_tqdm_iterable
 
 
-class MultiModalEmbedding(BaseEmbedding):
+class MultiModalEmbedding(BaseEmbedding, ABC):
     """Base class for Multi Modal embeddings."""
 
     @abstractmethod

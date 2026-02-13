@@ -39,6 +39,25 @@ class NodeReference(SerializableModel):
 RelatedNodeType = NodeReference | list[NodeReference]
 
 
+class LinkedNodes(SerializableModel):
+    model_config = ConfigDict(frozen=True)
+
+    source: NodeReference | None = None
+    previous: NodeReference | None = None
+    next: NodeReference | None = None
+    parent: NodeReference | None = None
+    children: list[NodeReference] | None = None
+
+    def as_dict(self) -> dict["NodeRelationship", RelatedNodeType | None]:
+        return {
+            NodeRelationship.SOURCE: self.source,
+            NodeRelationship.PREVIOUS: self.previous,
+            NodeRelationship.NEXT: self.next,
+            NodeRelationship.PARENT: self.parent,
+            NodeRelationship.CHILD: self.children,
+        }
+
+
 class MetadataMode(str, Enum):
     ALL = "all"
     EMBED = "embed"
@@ -173,86 +192,41 @@ class BaseNode(SerializableModel, ABC):
                 raise ValueError(error_message)
         return relation
 
-    def nodes(self):
-        data = [
-            [
+    def _get_linked(self) -> LinkedNodes:
+        return LinkedNodes(
+            source=self._get_relationship(
                 NodeRelationship.SOURCE,
                 NodeReference,
-                "Source object must be a single NodeReference object",
-            ],
-            [
+                error_message="Source object must be a single NodeReference object",
+            ),
+            previous=self._get_relationship(
                 NodeRelationship.PREVIOUS,
                 NodeReference,
-                "Previous object must be a single NodeReference object",
-            ],
-            [
+                error_message="Previous object must be a single NodeReference object",
+            ),
+            next=self._get_relationship(
                 NodeRelationship.NEXT,
                 NodeReference,
-                "Next object must be a single NodeReference object",
-            ],
-            [
+                error_message="Next object must be a single NodeReference object",
+            ),
+            parent=self._get_relationship(
                 NodeRelationship.PARENT,
                 NodeReference,
-                "Parent object must be a single NodeReference object",
-            ],
-            [
+                error_message="Parent object must be a single NodeReference object",
+            ),
+            children=self._get_relationship(
                 NodeRelationship.CHILD,
                 list,
-                "Child objects must be a list of NodeReference objects.",
-            ],
-        ]
-        return [
-            self._get_relationship(data_i[0], data_i[1], error_message=data_i[2])
-            for data_i in data
-        ]
-
-    @property
-    def source_node(self) -> NodeReference | None:
-        """Source object node.
-
-        Extracted from the relationships field.
-        """
-        return self._get_relationship(
-            NodeRelationship.SOURCE,
-            NodeReference,
-            error_message="Source object must be a single NodeReference object",
+                error_message="Child objects must be a list of NodeReference objects.",
+            ),
         )
 
     @property
-    def prev_node(self) -> NodeReference | None:
-        """Prev node."""
-        return self._get_relationship(
-            NodeRelationship.PREVIOUS,
-            NodeReference,
-            error_message="Previous object must be a single NodeReference object",
-        )
+    def linked(self) -> LinkedNodes:
+        return self._get_linked()
 
-    @property
-    def next_node(self) -> NodeReference | None:
-        """Next node."""
-        return self._get_relationship(
-            NodeRelationship.NEXT,
-            NodeReference,
-            error_message="Next object must be a single NodeReference object",
-        )
 
-    @property
-    def parent_node(self) -> NodeReference | None:
-        """Parent node."""
-        return self._get_relationship(
-            NodeRelationship.PARENT,
-            NodeReference,
-            error_message="Parent object must be a single NodeReference object",
-        )
 
-    @property
-    def child_nodes(self) -> list[NodeReference] | None:
-        """Child nodes."""
-        return self._get_relationship(
-            NodeRelationship.CHILD,
-            list,
-            error_message="Child objects must be a list of NodeReference objects.",
-        )
 
     @property
     def ref_doc_id(self) -> str | None:  # pragma: no cover

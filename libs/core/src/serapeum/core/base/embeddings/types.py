@@ -222,22 +222,20 @@ class BaseNode(SerializableModel, ABC):
         if mode == MetadataMode.NONE:
             return ""
 
-        usable_metadata_keys = set(self.metadata.keys())
+        excluded = set()
         if mode == MetadataMode.LLM:
-            for key in self.excluded_llm_metadata_keys:
-                if key in usable_metadata_keys:
-                    usable_metadata_keys.remove(key)
+            excluded = set(self.excluded_llm_metadata_keys)
         elif mode == MetadataMode.EMBED:
-            for key in self.excluded_embed_metadata_keys:
-                if key in usable_metadata_keys:
-                    usable_metadata_keys.remove(key)
+            excluded = set(self.excluded_embed_metadata_keys)
 
+        filtered = (
+            self.metadata.items()
+            if not excluded
+            else ((key, value) for key, value in self.metadata.items() if key not in excluded)
+        )
         return self.metadata_separator.join(
-            [
-                self.metadata_template.format(key=key, value=str(value))
-                for key, value in self.metadata.items()
-                if key in usable_metadata_keys
-            ]
+            self.metadata_template.format(key=key, value=str(value))
+            for key, value in filtered
         )
 
     @abstractmethod

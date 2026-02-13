@@ -85,8 +85,7 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
 
     @abstractmethod
     def _get_query_embedding(self, query: str) -> Embedding:
-        """
-        Embed the input query synchronously.
+        """Embed the input query synchronously.
 
         Subclasses should implement this method. Reference get_query_embedding's
         docstring for more information.
@@ -94,8 +93,7 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
 
     @abstractmethod
     async def _aget_query_embedding(self, query: str) -> Embedding:
-        """
-        Embed the input query asynchronously.
+        """Embed the input query asynchronously.
 
         Subclasses should implement this method. Reference get_query_embedding's
         docstring for more information.

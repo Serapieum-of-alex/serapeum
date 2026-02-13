@@ -248,6 +248,9 @@ class BaseNode(SerializableModel, ABC):
     def hash(self) -> str:
         """Get hash of node."""
 
+    def source_id(self) -> str | None:
+        return self.linked_nodes.source_id
+
     @property
     def linked_nodes(self) -> LinkedNodes:
         cached = self._linked_nodes_cache
@@ -289,7 +292,7 @@ class BaseNode(SerializableModel, ABC):
         return self.embedding
 
     def get_node_info(self) -> NodeInfo:
-        """Get node as NodeInfo."""
+        """Get node info."""
         return NodeInfo(
             id=self.id,
             type=self.get_type(),

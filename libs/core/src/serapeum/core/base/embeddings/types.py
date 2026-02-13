@@ -179,7 +179,6 @@ class BaseNode(SerializableModel, ABC):
     metadata: dict[str, Any] = Field(
         default_factory=dict,
         description="A flat dictionary of metadata fields",
-        alias="extra_info",
     )
     excluded_embed_metadata_keys: list[str] = Field(
         default_factory=list,
@@ -206,7 +205,6 @@ class BaseNode(SerializableModel, ABC):
     metadata_separator: str = Field(
         default="\n",
         description="Separator between metadata fields when converting to string.",
-        alias="metadata_seperator",
     )
 
     @classmethod

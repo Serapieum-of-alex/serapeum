@@ -46,7 +46,7 @@ class MetadataMode(str, Enum):
     NONE = "none"
 
 
-class NodeRelationship(str, Enum):
+class NodeType(str, Enum):
     """
     Node relationships used in `BaseNode` class.
 
@@ -91,31 +91,31 @@ class LinkedNodes(SerializableModel):
 
     @classmethod
     def create(
-        cls, linked_nodes_info: dict[NodeRelationship, RelatedNodeType]
+        cls, linked_nodes_info: dict[NodeType, RelatedNodeType]
     ) -> "LinkedNodes":
         linked = cls(
             source=cls._get_single(
-                linked_nodes_info, NodeRelationship.SOURCE, cls.SOURCE_ERROR
+                linked_nodes_info, NodeType.SOURCE, cls.SOURCE_ERROR
             ),
             previous=cls._get_single(
-                linked_nodes_info, NodeRelationship.PREVIOUS, cls.PREVIOUS_ERROR
+                linked_nodes_info, NodeType.PREVIOUS, cls.PREVIOUS_ERROR
             ),
             next=cls._get_single(
-                linked_nodes_info, NodeRelationship.NEXT, cls.NEXT_ERROR
+                linked_nodes_info, NodeType.NEXT, cls.NEXT_ERROR
             ),
             parent=cls._get_single(
-                linked_nodes_info, NodeRelationship.PARENT, cls.PARENT_ERROR
+                linked_nodes_info, NodeType.PARENT, cls.PARENT_ERROR
             ),
             children=cls._get_list(
-                linked_nodes_info, NodeRelationship.CHILD, cls.CHILDREN_ERROR
+                linked_nodes_info, NodeType.CHILD, cls.CHILDREN_ERROR
             ),
         )
         return linked
 
     @staticmethod
     def _get_single(
-        relationships: dict[NodeRelationship, RelatedNodeType],
-        relationship: NodeRelationship,
+        relationships: dict[NodeType, RelatedNodeType],
+        relationship: NodeType,
         error_message: str,
     ) -> NodeReference | None:
         value = relationships.get(relationship)
@@ -125,8 +125,8 @@ class LinkedNodes(SerializableModel):
 
     @staticmethod
     def _get_list(
-        relationships: dict[NodeRelationship, RelatedNodeType],
-        relationship: NodeRelationship,
+        relationships: dict[NodeType, RelatedNodeType],
+        relationship: NodeType,
         error_message: str,
     ) -> list[NodeReference] | None:
         value = relationships.get(relationship)
@@ -134,13 +134,13 @@ class LinkedNodes(SerializableModel):
             raise ValueError(error_message)
         return value  # type: ignore[return-value]
 
-    def as_dict(self) -> dict[NodeRelationship, RelatedNodeType | None]:
+    def as_dict(self) -> dict[NodeType, RelatedNodeType | None]:
         relationships = {
-            NodeRelationship.SOURCE: self.source,
-            NodeRelationship.PREVIOUS: self.previous,
-            NodeRelationship.NEXT: self.next,
-            NodeRelationship.PARENT: self.parent,
-            NodeRelationship.CHILD: self.children,
+            NodeType.SOURCE: self.source,
+            NodeType.PREVIOUS: self.previous,
+            NodeType.NEXT: self.next,
+            NodeType.PARENT: self.parent,
+            NodeType.CHILD: self.children,
         }
 
         relationships = {
@@ -190,11 +190,11 @@ class BaseNode(SerializableModel, ABC):
         description="Metadata keys that are excluded from text for the LLM.",
     )
     relationships: dict[
-        Annotated[NodeRelationship, EnumNameSerializer],
+        Annotated[NodeType, EnumNameSerializer],
         RelatedNodeType,
     ] = Field(
         default_factory=dict,
-        description="A mapping of relationships to other node information.",
+        description="A mapping of relationships to other nodes.",
     )
     metadata_template: str = Field(
         default=DEFAULT_METADATA_TMPL,

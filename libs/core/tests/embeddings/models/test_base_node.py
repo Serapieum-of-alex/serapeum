@@ -4,7 +4,7 @@ import pytest
 from serapeum.core.base.embeddings.types import (
     BaseNode,
     MetadataMode,
-    NodeRelationship,
+    NodeType,
     NodeContentType,
     NodeReference,
 )
@@ -58,7 +58,7 @@ def test_node_id(my_node):
 
 def test_linked_source_node(my_node):
     n1 = my_node()
-    n2 = my_node(relationships={NodeRelationship.SOURCE: NodeReference(id=n1.id)})
+    n2 = my_node(relationships={NodeType.SOURCE: NodeReference(id=n1.id)})
     assert n2.linked_nodes.source.hash == n1.hash
     assert n1.linked_nodes.source is None
 
@@ -66,14 +66,14 @@ def test_linked_source_node(my_node):
         ValueError, match="The Source Node must be a single NodeReference object"
     ):
         my_node(
-            relationships={NodeRelationship.SOURCE: [NodeReference(id=n1.id)]}
+            relationships={NodeType.SOURCE: [NodeReference(id=n1.id)]}
         ).linked_nodes.source
 
 
 def test_linked_prev_node(my_node):
     n1 = my_node()
     n2 = my_node(
-        relationships={NodeRelationship.PREVIOUS: NodeReference(id=n1.id)}
+        relationships={NodeType.PREVIOUS: NodeReference(id=n1.id)}
     )
     assert n2.linked_nodes.previous.hash == n1.hash
     assert n1.linked_nodes.previous is None
@@ -82,13 +82,13 @@ def test_linked_prev_node(my_node):
         ValueError, match="The Previous Node must be a single NodeReference object"
     ):
         my_node(
-            relationships={NodeRelationship.PREVIOUS: [NodeReference(id=n1.id)]}
+            relationships={NodeType.PREVIOUS: [NodeReference(id=n1.id)]}
         ).linked_nodes.previous
 
 
 def test_linked_next_node(my_node):
     n1 = my_node()
-    n2 = my_node(relationships={NodeRelationship.NEXT: NodeReference(id=n1.id)})
+    n2 = my_node(relationships={NodeType.NEXT: NodeReference(id=n1.id)})
     assert n2.linked_nodes.next.hash == n1.hash
     assert n1.linked_nodes.next is None
 
@@ -96,13 +96,13 @@ def test_linked_next_node(my_node):
         ValueError, match="The Next Node must be a single NodeReference object"
     ):
         my_node(
-            relationships={NodeRelationship.NEXT: [NodeReference(id=n1.id)]}
+            relationships={NodeType.NEXT: [NodeReference(id=n1.id)]}
         ).linked_nodes.next
 
 
 def test_linked_parent_node(my_node):
     n1 = my_node()
-    n2 = my_node(relationships={NodeRelationship.PARENT: NodeReference(id=n1.id)})
+    n2 = my_node(relationships={NodeType.PARENT: NodeReference(id=n1.id)})
     assert n2.linked_nodes.parent.hash == n1.hash
     assert n1.linked_nodes.parent is None
 
@@ -110,14 +110,14 @@ def test_linked_parent_node(my_node):
         ValueError, match="The Parent Node must be a single NodeReference object"
     ):
         my_node(
-            relationships={NodeRelationship.PARENT: [NodeReference(id=n1.id)]}
+            relationships={NodeType.PARENT: [NodeReference(id=n1.id)]}
         ).linked_nodes.parent
 
 
 def test_linked_child_node(my_node):
     n1 = my_node()
     n2 = my_node(
-        relationships={NodeRelationship.CHILD: [NodeReference(id=n1.id)]}
+        relationships={NodeType.CHILD: [NodeReference(id=n1.id)]}
     )
     assert n2.linked_nodes.children[0].hash == n1.hash
     assert n1.linked_nodes.children is None
@@ -126,7 +126,7 @@ def test_linked_child_node(my_node):
         ValueError, match="Child Nodes must be a list of NodeReference objects"
     ):
         my_node(
-            relationships={NodeRelationship.CHILD: NodeReference(id=n1.id)}
+            relationships={NodeType.CHILD: NodeReference(id=n1.id)}
         ).linked_nodes.children
 
 

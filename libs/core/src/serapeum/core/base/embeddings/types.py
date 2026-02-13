@@ -13,11 +13,11 @@ DEFAULT_METADATA_TMPL = "{key}: {value}"
 
 
 class NodeContentType(str, Enum):
-    TEXT = auto()
-    IMAGE = auto()
-    INDEX = auto()
-    DOCUMENT = auto()
-    MULTIMODAL = auto()
+    TEXT = "text"
+    IMAGE = "image"
+    INDEX = "index"
+    DOCUMENT = "document"
+    MULTIMODAL = "multimodal"
 
 
 EnumNameSerializer = PlainSerializer(
@@ -59,11 +59,11 @@ class NodeType(str, Enum):
 
     """
 
-    SOURCE = auto()
-    PREVIOUS = auto()
-    NEXT = auto()
-    PARENT = auto()
-    CHILD = auto()
+    SOURCE = "source"
+    PREVIOUS = "previous"
+    NEXT = "next"
+    PARENT = "parent"
+    CHILD = "child"
 
 
 class LinkedNodes(SerializableModel):

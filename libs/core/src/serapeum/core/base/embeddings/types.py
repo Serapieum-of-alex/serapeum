@@ -90,7 +90,7 @@ class LinkedNodes(SerializableModel):
     children: list[NodeReference] | None = None
 
     @classmethod
-    def from_relationships(
+    def create(
         cls, linked_nodes_info: dict[NodeRelationship, RelatedNodeType]
     ) -> "LinkedNodes":
         linked = cls(

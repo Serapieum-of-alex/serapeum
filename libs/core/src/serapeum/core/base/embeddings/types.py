@@ -114,28 +114,28 @@ class LinkedNodes(SerializableModel):
 
     @staticmethod
     def _get_single(
-        relationships: dict[NodeType, RelatedNodeType],
-        relationship: NodeType,
+        linked_nodes: dict[NodeType, RelatedNodeType],
+        node_type: NodeType,
         error_message: str,
     ) -> NodeReference | None:
-        value = relationships.get(relationship)
+        value = linked_nodes.get(node_type)
         if value is not None and not isinstance(value, NodeReference):
             raise ValueError(error_message)
         return value  # type: ignore[return-value]
 
     @staticmethod
     def _get_list(
-        relationships: dict[NodeType, RelatedNodeType],
-        relationship: NodeType,
+        linked_nodes: dict[NodeType, RelatedNodeType],
+        node_type: NodeType,
         error_message: str,
     ) -> list[NodeReference] | None:
-        value = relationships.get(relationship)
+        value = linked_nodes.get(node_type)
         if value is not None and not isinstance(value, list):
             raise ValueError(error_message)
         return value  # type: ignore[return-value]
 
     def as_dict(self) -> dict[NodeType, RelatedNodeType | None]:
-        relationships = {
+        linked_nodes = {
             NodeType.SOURCE: self.source,
             NodeType.PREVIOUS: self.previous,
             NodeType.NEXT: self.next,
@@ -143,10 +143,10 @@ class LinkedNodes(SerializableModel):
             NodeType.CHILD: self.children,
         }
 
-        relationships = {
-            key: value for key, value in relationships.items() if value is not None
+        linked_nodes = {
+            key: value for key, value in linked_nodes.items() if value is not None
         }
-        return relationships
+        return linked_nodes
 
     @property
     def source_id(self) -> str | None:

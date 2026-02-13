@@ -144,10 +144,7 @@ class LinkedNodes(SerializableModel):
         }
 
     def to_relationships(self) -> dict[NodeRelationship, RelatedNodeType]:
-        relationships = {key: value for key, value in self.as_dict().items()}
-        filtered = {
-            key: value for key, value in relationships.items() if value is not None
-        }
+        filtered = {key: value for key, value in self.as_dict().items() if value is not None}
         return filtered
 
     @property

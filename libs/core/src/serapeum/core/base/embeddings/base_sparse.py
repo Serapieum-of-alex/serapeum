@@ -2,7 +2,7 @@
 
 import asyncio
 import math
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from collections import defaultdict
 from typing import Any, Callable, Coroutine, Dict, List, Optional
 
@@ -64,7 +64,7 @@ def mean_agg(embeddings: List[SparseEmbedding]) -> SparseEmbedding:
     return {idx: value / len(embeddings) for idx, value in sum_dict.items()}
 
 
-class BaseSparseEmbedding(BaseModel):
+class BaseSparseEmbedding(BaseModel, ABC):
     """Base class for embeddings."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -105,15 +105,12 @@ class BaseSparseEmbedding(BaseModel):
 
     def get_query_embedding(self, query: str) -> SparseEmbedding:
         """Embed the input query."""
-        # model_dict = self.model_dump()
-
         query_embedding = self._get_query_embedding(query)
 
         return query_embedding
 
     async def aget_query_embedding(self, query: str) -> SparseEmbedding:
         """Get query embedding."""
-        # model_dict = self.model_dump()
         query_embedding = await self._aget_query_embedding(query)
         return query_embedding
 
@@ -166,14 +163,12 @@ class BaseSparseEmbedding(BaseModel):
 
     def get_text_embedding(self, text: str) -> SparseEmbedding:
         """Embed the input text."""
-        # model_dict = self.model_dump()
         text_embedding = self._get_text_embedding(text)
 
         return text_embedding
 
     async def aget_text_embedding(self, text: str) -> SparseEmbedding:
         """Async get text embedding."""
-        # model_dict = self.model_dump()
         text_embedding = await self._aget_text_embedding(text)
 
         return text_embedding
@@ -208,8 +203,6 @@ class BaseSparseEmbedding(BaseModel):
     ) -> List[SparseEmbedding]:
         """Asynchronously get a list of text embeddings, with batching."""
         num_workers = self.num_workers
-
-        # model_dict = self.model_dump()
 
         cur_batch: List[str] = []
         callback_payloads: List[List[str]] = []

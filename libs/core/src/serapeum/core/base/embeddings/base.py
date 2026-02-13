@@ -63,9 +63,7 @@ def similarity(
 class BaseEmbedding(SerializableModel, CallMixin, ABC):
     """Base class for embeddings."""
 
-    model_config = ConfigDict(
-        protected_namespaces=("pydantic_model_",), arbitrary_types_allowed=True
-    )
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     model_name: str = Field(
         default="unknown", description="The name of the embedding model."
     )

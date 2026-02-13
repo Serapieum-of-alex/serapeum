@@ -48,7 +48,7 @@ class MetadataMode(str, Enum):
 
 class NodeType(str, Enum):
     """
-    Node relationships used in `BaseNode` class.
+    Node links used in `BaseNode` class.
 
     Attributes:
         SOURCE: The node is the source document.
@@ -189,12 +189,12 @@ class BaseNode(SerializableModel, ABC):
         default_factory=list,
         description="Metadata keys that are excluded from text for the LLM.",
     )
-    relationships: dict[
+    links: dict[
         Annotated[NodeType, EnumNameSerializer],
         RelatedNodeType,
     ] = Field(
         default_factory=dict,
-        description="A mapping of relationships to other nodes.",
+        description="A mapping of links to other nodes.",
     )
     metadata_template: str = Field(
         default=DEFAULT_METADATA_TMPL,

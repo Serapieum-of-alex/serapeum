@@ -6,7 +6,7 @@ from serapeum.core.base.embeddings.types import (
     MetadataMode,
     NodeRelationship,
     ObjectType,
-    RelatedNodeInfo,
+    NodeReference,
 )
 
 
@@ -58,15 +58,15 @@ def test_node_id(MyNode):
 
 def test_source_node(MyNode):
     n1 = MyNode()
-    n2 = MyNode(relationships={NodeRelationship.SOURCE: RelatedNodeInfo(id=n1.node_id)})
+    n2 = MyNode(relationships={NodeRelationship.SOURCE: NodeReference(id=n1.node_id)})
     assert n2.source_node.hash == n1.hash
     assert n1.source_node is None
 
     with pytest.raises(
-        ValueError, match="Source object must be a single RelatedNodeInfo object"
+        ValueError, match="Source object must be a single NodeReference object"
     ):
         n3 = MyNode(
-            relationships={NodeRelationship.SOURCE: [RelatedNodeInfo(id=n1.node_id)]}
+            relationships={NodeRelationship.SOURCE: [NodeReference(id=n1.node_id)]}
         )
         n3.source_node
 
@@ -74,46 +74,46 @@ def test_source_node(MyNode):
 def test_prev_node(MyNode):
     n1 = MyNode()
     n2 = MyNode(
-        relationships={NodeRelationship.PREVIOUS: RelatedNodeInfo(id=n1.node_id)}
+        relationships={NodeRelationship.PREVIOUS: NodeReference(id=n1.node_id)}
     )
     assert n2.prev_node.hash == n1.hash
     assert n1.prev_node is None
 
     with pytest.raises(
-        ValueError, match="Previous object must be a single RelatedNodeInfo object"
+        ValueError, match="Previous object must be a single NodeReference object"
     ):
         n3 = MyNode(
-            relationships={NodeRelationship.PREVIOUS: [RelatedNodeInfo(id=n1.node_id)]}
+            relationships={NodeRelationship.PREVIOUS: [NodeReference(id=n1.node_id)]}
         )
         n3.prev_node
 
 
 def test_next_node(MyNode):
     n1 = MyNode()
-    n2 = MyNode(relationships={NodeRelationship.NEXT: RelatedNodeInfo(id=n1.node_id)})
+    n2 = MyNode(relationships={NodeRelationship.NEXT: NodeReference(id=n1.node_id)})
     assert n2.next_node.hash == n1.hash
     assert n1.next_node is None
 
     with pytest.raises(
-        ValueError, match="Next object must be a single RelatedNodeInfo object"
+        ValueError, match="Next object must be a single NodeReference object"
     ):
         n3 = MyNode(
-            relationships={NodeRelationship.NEXT: [RelatedNodeInfo(id=n1.node_id)]}
+            relationships={NodeRelationship.NEXT: [NodeReference(id=n1.node_id)]}
         )
         n3.next_node
 
 
 def test_parent_node(MyNode):
     n1 = MyNode()
-    n2 = MyNode(relationships={NodeRelationship.PARENT: RelatedNodeInfo(id=n1.node_id)})
+    n2 = MyNode(relationships={NodeRelationship.PARENT: NodeReference(id=n1.node_id)})
     assert n2.parent_node.hash == n1.hash
     assert n1.parent_node is None
 
     with pytest.raises(
-        ValueError, match="Parent object must be a single RelatedNodeInfo object"
+        ValueError, match="Parent object must be a single NodeReference object"
     ):
         n3 = MyNode(
-            relationships={NodeRelationship.PARENT: [RelatedNodeInfo(id=n1.node_id)]}
+            relationships={NodeRelationship.PARENT: [NodeReference(id=n1.node_id)]}
         )
         n3.parent_node
 
@@ -121,16 +121,16 @@ def test_parent_node(MyNode):
 def test_child_node(MyNode):
     n1 = MyNode()
     n2 = MyNode(
-        relationships={NodeRelationship.CHILD: [RelatedNodeInfo(id=n1.node_id)]}
+        relationships={NodeRelationship.CHILD: [NodeReference(id=n1.node_id)]}
     )
     assert n2.child_nodes[0].hash == n1.hash
     assert n1.child_nodes is None
 
     with pytest.raises(
-        ValueError, match="Child objects must be a list of RelatedNodeInfo objects"
+        ValueError, match="Child objects must be a list of NodeReference objects"
     ):
         n3 = MyNode(
-            relationships={NodeRelationship.CHILD: RelatedNodeInfo(id=n1.node_id)}
+            relationships={NodeRelationship.CHILD: NodeReference(id=n1.node_id)}
         )
         n3.child_nodes
 

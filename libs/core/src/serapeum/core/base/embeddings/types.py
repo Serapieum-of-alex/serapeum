@@ -25,7 +25,7 @@ EnumNameSerializer = PlainSerializer(
 )
 
 
-class RelatedNodeInfo(SerializableModel):
+class NodeReference(SerializableModel):
     id: str
     type: Annotated[ObjectType, EnumNameSerializer] | str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -33,10 +33,10 @@ class RelatedNodeInfo(SerializableModel):
 
     @classmethod
     def class_name(cls) -> str:
-        return "RelatedNodeInfo"
+        return "NodeReference"
 
 
-RelatedNodeType = RelatedNodeInfo | list[RelatedNodeInfo]
+RelatedNodeType = NodeReference | list[NodeReference]
 
 
 class MetadataMode(str, Enum):
@@ -177,28 +177,28 @@ class BaseNode(SerializableModel, ABC):
         data = [
             [
                 NodeRelationship.SOURCE,
-                RelatedNodeInfo,
-                "Source object must be a single RelatedNodeInfo object",
+                NodeReference,
+                "Source object must be a single NodeReference object",
             ],
             [
                 NodeRelationship.PREVIOUS,
-                RelatedNodeInfo,
-                "Previous object must be a single RelatedNodeInfo object",
+                NodeReference,
+                "Previous object must be a single NodeReference object",
             ],
             [
                 NodeRelationship.NEXT,
-                RelatedNodeInfo,
-                "Next object must be a single RelatedNodeInfo object",
+                NodeReference,
+                "Next object must be a single NodeReference object",
             ],
             [
                 NodeRelationship.PARENT,
-                RelatedNodeInfo,
-                "Parent object must be a single RelatedNodeInfo object",
+                NodeReference,
+                "Parent object must be a single NodeReference object",
             ],
             [
                 NodeRelationship.CHILD,
                 list,
-                "Child objects must be a list of RelatedNodeInfo objects.",
+                "Child objects must be a list of NodeReference objects.",
             ],
         ]
         return [
@@ -207,51 +207,51 @@ class BaseNode(SerializableModel, ABC):
         ]
 
     @property
-    def source_node(self) -> RelatedNodeInfo | None:
+    def source_node(self) -> NodeReference | None:
         """Source object node.
 
         Extracted from the relationships field.
         """
         return self._get_relationship(
             NodeRelationship.SOURCE,
-            RelatedNodeInfo,
-            error_message="Source object must be a single RelatedNodeInfo object",
+            NodeReference,
+            error_message="Source object must be a single NodeReference object",
         )
 
     @property
-    def prev_node(self) -> RelatedNodeInfo | None:
+    def prev_node(self) -> NodeReference | None:
         """Prev node."""
         return self._get_relationship(
             NodeRelationship.PREVIOUS,
-            RelatedNodeInfo,
-            error_message="Previous object must be a single RelatedNodeInfo object",
+            NodeReference,
+            error_message="Previous object must be a single NodeReference object",
         )
 
     @property
-    def next_node(self) -> RelatedNodeInfo | None:
+    def next_node(self) -> NodeReference | None:
         """Next node."""
         return self._get_relationship(
             NodeRelationship.NEXT,
-            RelatedNodeInfo,
-            error_message="Next object must be a single RelatedNodeInfo object",
+            NodeReference,
+            error_message="Next object must be a single NodeReference object",
         )
 
     @property
-    def parent_node(self) -> RelatedNodeInfo | None:
+    def parent_node(self) -> NodeReference | None:
         """Parent node."""
         return self._get_relationship(
             NodeRelationship.PARENT,
-            RelatedNodeInfo,
-            error_message="Parent object must be a single RelatedNodeInfo object",
+            NodeReference,
+            error_message="Parent object must be a single NodeReference object",
         )
 
     @property
-    def child_nodes(self) -> list[RelatedNodeInfo] | None:
+    def child_nodes(self) -> list[NodeReference] | None:
         """Child nodes."""
         return self._get_relationship(
             NodeRelationship.CHILD,
             list,
-            error_message="Child objects must be a list of RelatedNodeInfo objects.",
+            error_message="Child objects must be a list of NodeReference objects.",
         )
 
     @property
@@ -282,9 +282,9 @@ class BaseNode(SerializableModel, ABC):
             raise ValueError("embedding not set.")
         return self.embedding
 
-    def as_related_node_info(self) -> RelatedNodeInfo:
-        """Get node as RelatedNodeInfo."""
-        return RelatedNodeInfo(
+    def as_related_node_info(self) -> NodeReference:
+        """Get node as NodeReference."""
+        return NodeReference(
             id=self.id,
             type=self.get_type(),
             metadata=self.metadata,

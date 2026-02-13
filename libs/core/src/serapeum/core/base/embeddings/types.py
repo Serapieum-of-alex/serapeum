@@ -1,4 +1,4 @@
-from typing import Any, Annotated, Sequence
+from typing import Any, Annotated, Sequence, ClassVar
 import uuid
 from abc import abstractmethod, ABC
 import textwrap
@@ -39,25 +39,6 @@ class NodeReference(SerializableModel):
 RelatedNodeType = NodeReference | list[NodeReference]
 
 
-class LinkedNodes(SerializableModel):
-    model_config = ConfigDict(frozen=True)
-
-    source: NodeReference | None = None
-    previous: NodeReference | None = None
-    next: NodeReference | None = None
-    parent: NodeReference | None = None
-    children: list[NodeReference] | None = None
-
-    def as_dict(self) -> dict["NodeRelationship", RelatedNodeType | None]:
-        return {
-            NodeRelationship.SOURCE: self.source,
-            NodeRelationship.PREVIOUS: self.previous,
-            NodeRelationship.NEXT: self.next,
-            NodeRelationship.PARENT: self.parent,
-            NodeRelationship.CHILD: self.children,
-        }
-
-
 class MetadataMode(str, Enum):
     ALL = "all"
     EMBED = "embed"
@@ -85,6 +66,98 @@ class NodeRelationship(str, Enum):
     CHILD = auto()
 
 
+class LinkedNodes(SerializableModel):
+    model_config = ConfigDict(frozen=True)
+
+    SOURCE_ERROR: ClassVar[str] = (
+        "The Source Node must be a single NodeReference object"
+    )
+    PREVIOUS_ERROR: ClassVar[str] = (
+        "The Previous Node must be a single NodeReference object"
+    )
+    NEXT_ERROR: ClassVar[str] = "The Next Node must be a single NodeReference object"
+    PARENT_ERROR: ClassVar[str] = (
+        "The Parent Node must be a single NodeReference object"
+    )
+    CHILDREN_ERROR: ClassVar[str] = (
+        "Child Nodes must be a list of NodeReference objects."
+    )
+
+    source: NodeReference | None = None
+    previous: NodeReference | None = None
+    next: NodeReference | None = None
+    parent: NodeReference | None = None
+    children: list[NodeReference] | None = None
+
+    @classmethod
+    def from_relationships(
+        cls, relationships: dict[NodeRelationship, RelatedNodeType]
+    ) -> "LinkedNodes":
+        linked = cls(
+            source=cls._get_single(
+                relationships, NodeRelationship.SOURCE, cls.SOURCE_ERROR
+            ),
+            previous=cls._get_single(
+                relationships, NodeRelationship.PREVIOUS, cls.PREVIOUS_ERROR
+            ),
+            next=cls._get_single(
+                relationships, NodeRelationship.NEXT, cls.NEXT_ERROR
+            ),
+            parent=cls._get_single(
+                relationships, NodeRelationship.PARENT, cls.PARENT_ERROR
+            ),
+            children=cls._get_list(
+                relationships, NodeRelationship.CHILD, cls.CHILDREN_ERROR
+            ),
+        )
+        return linked
+
+    @staticmethod
+    def _get_single(
+        relationships: dict[NodeRelationship, RelatedNodeType],
+        relationship: NodeRelationship,
+        error_message: str,
+    ) -> NodeReference | None:
+        value = relationships.get(relationship)
+        if value is not None and not isinstance(value, NodeReference):
+            raise ValueError(error_message)
+        return value  # type: ignore[return-value]
+
+    @staticmethod
+    def _get_list(
+        relationships: dict[NodeRelationship, RelatedNodeType],
+        relationship: NodeRelationship,
+        error_message: str,
+    ) -> list[NodeReference] | None:
+        value = relationships.get(relationship)
+        if value is not None and not isinstance(value, list):
+            raise ValueError(error_message)
+        return value  # type: ignore[return-value]
+
+    def as_dict(self) -> dict[NodeRelationship, RelatedNodeType | None]:
+        return {
+            NodeRelationship.SOURCE: self.source,
+            NodeRelationship.PREVIOUS: self.previous,
+            NodeRelationship.NEXT: self.next,
+            NodeRelationship.PARENT: self.parent,
+            NodeRelationship.CHILD: self.children,
+        }
+
+    def to_relationships(self) -> dict[NodeRelationship, RelatedNodeType]:
+        relationships = {key: value for key, value in self.as_dict().items()}
+        filtered = {
+            key: value for key, value in relationships.items() if value is not None
+        }
+        return filtered
+
+    @property
+    def source_id(self) -> str | None:
+        source_id = None
+        if self.source is not None:
+            source_id = self.source.id
+        return source_id
+
+
 class BaseNode(SerializableModel, ABC):
     """Base node Object.
 
@@ -95,7 +168,7 @@ class BaseNode(SerializableModel, ABC):
             - used by vector DBs for metadata filtering
 
     """
-    # hash is computed on local field, during the validation process
+    # hash is computed on a local field, during the validation process
     model_config = ConfigDict(populate_by_name=True, validate_assignment=True)
 
     id: str = Field(
@@ -179,59 +252,14 @@ class BaseNode(SerializableModel, ABC):
     def hash(self) -> str:
         """Get hash of node."""
 
-    def _get_relationship(
-        self,
-        relationship: NodeRelationship,
-        expected_type: type,
-        *,
-        error_message: str,
-    ) -> RelatedNodeType | None:
-        relation = self.relationships.get(relationship)
-        if relation is not None:
-            if not isinstance(relation, expected_type):
-                raise ValueError(error_message)
-        return relation
-
-    def _get_linked(self) -> LinkedNodes:
-        return LinkedNodes(
-            source=self._get_relationship(
-                NodeRelationship.SOURCE,
-                NodeReference,
-                error_message="Source object must be a single NodeReference object",
-            ),
-            previous=self._get_relationship(
-                NodeRelationship.PREVIOUS,
-                NodeReference,
-                error_message="Previous object must be a single NodeReference object",
-            ),
-            next=self._get_relationship(
-                NodeRelationship.NEXT,
-                NodeReference,
-                error_message="Next object must be a single NodeReference object",
-            ),
-            parent=self._get_relationship(
-                NodeRelationship.PARENT,
-                NodeReference,
-                error_message="Parent object must be a single NodeReference object",
-            ),
-            children=self._get_relationship(
-                NodeRelationship.CHILD,
-                list,
-                error_message="Child objects must be a list of NodeReference objects.",
-            ),
-        )
-
     @property
     def linked_nodes(self) -> LinkedNodes:
-        return self._get_linked()
+        return LinkedNodes.from_relationships(self.relationships)
 
     @property
     def ref_doc_id(self) -> str | None:  # pragma: no cover
         """Deprecated: Get ref doc id."""
-        source_node = self.linked_nodes.source
-        if source_node is None:
-            return None
-        return source_node.id
+        return self.linked_nodes.source_id
 
     def __str__(self) -> str:
         source_text_truncated = truncate_text(

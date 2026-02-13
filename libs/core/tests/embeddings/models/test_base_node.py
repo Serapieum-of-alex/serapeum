@@ -6,7 +6,7 @@ from serapeum.core.base.embeddings.types import (
     MetadataMode,
     NodeType,
     NodeContentType,
-    NodeReference,
+    NodeInfo,
 )
 
 
@@ -58,75 +58,75 @@ def test_node_id(my_node):
 
 def test_linked_source_node(my_node):
     n1 = my_node()
-    n2 = my_node(links={NodeType.SOURCE: NodeReference(id=n1.id)})
+    n2 = my_node(links={NodeType.SOURCE: NodeInfo(id=n1.id)})
     assert n2.linked_nodes.source.hash == n1.hash
     assert n1.linked_nodes.source is None
 
     with pytest.raises(
-        ValueError, match="The Source Node must be a single NodeReference object"
+        ValueError, match="The Source Node must be a single NodeInfo object"
     ):
         my_node(
-            links={NodeType.SOURCE: [NodeReference(id=n1.id)]}
+            links={NodeType.SOURCE: [NodeInfo(id=n1.id)]}
         ).linked_nodes.source
 
 
 def test_linked_prev_node(my_node):
     n1 = my_node()
     n2 = my_node(
-        links={NodeType.PREVIOUS: NodeReference(id=n1.id)}
+        links={NodeType.PREVIOUS: NodeInfo(id=n1.id)}
     )
     assert n2.linked_nodes.previous.hash == n1.hash
     assert n1.linked_nodes.previous is None
 
     with pytest.raises(
-        ValueError, match="The Previous Node must be a single NodeReference object"
+        ValueError, match="The Previous Node must be a single NodeInfo object"
     ):
         my_node(
-            links={NodeType.PREVIOUS: [NodeReference(id=n1.id)]}
+            links={NodeType.PREVIOUS: [NodeInfo(id=n1.id)]}
         ).linked_nodes.previous
 
 
 def test_linked_next_node(my_node):
     n1 = my_node()
-    n2 = my_node(links={NodeType.NEXT: NodeReference(id=n1.id)})
+    n2 = my_node(links={NodeType.NEXT: NodeInfo(id=n1.id)})
     assert n2.linked_nodes.next.hash == n1.hash
     assert n1.linked_nodes.next is None
 
     with pytest.raises(
-        ValueError, match="The Next Node must be a single NodeReference object"
+        ValueError, match="The Next Node must be a single NodeInfo object"
     ):
         my_node(
-            links={NodeType.NEXT: [NodeReference(id=n1.id)]}
+            links={NodeType.NEXT: [NodeInfo(id=n1.id)]}
         ).linked_nodes.next
 
 
 def test_linked_parent_node(my_node):
     n1 = my_node()
-    n2 = my_node(links={NodeType.PARENT: NodeReference(id=n1.id)})
+    n2 = my_node(links={NodeType.PARENT: NodeInfo(id=n1.id)})
     assert n2.linked_nodes.parent.hash == n1.hash
     assert n1.linked_nodes.parent is None
 
     with pytest.raises(
-        ValueError, match="The Parent Node must be a single NodeReference object"
+        ValueError, match="The Parent Node must be a single NodeInfo object"
     ):
         my_node(
-            links={NodeType.PARENT: [NodeReference(id=n1.id)]}
+            links={NodeType.PARENT: [NodeInfo(id=n1.id)]}
         ).linked_nodes.parent
 
 
 def test_linked_child_node(my_node):
     n1 = my_node()
     n2 = my_node(
-        links={NodeType.CHILD: [NodeReference(id=n1.id)]}
+        links={NodeType.CHILD: [NodeInfo(id=n1.id)]}
     )
     assert n2.linked_nodes.children[0].hash == n1.hash
     assert n1.linked_nodes.children is None
 
     with pytest.raises(
-        ValueError, match="Child Nodes must be a list of NodeReference objects"
+        ValueError, match="Child Nodes must be a list of NodeInfo objects"
     ):
         my_node(
-            links={NodeType.CHILD: NodeReference(id=n1.id)}
+            links={NodeType.CHILD: NodeInfo(id=n1.id)}
         ).linked_nodes.children
 
 

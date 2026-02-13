@@ -25,7 +25,7 @@ EnumNameSerializer = PlainSerializer(
 )
 
 
-class NodeReference(SerializableModel):
+class NodeInfo(SerializableModel):
     id: str
     type: Annotated[NodeContentType, EnumNameSerializer] | str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -33,10 +33,10 @@ class NodeReference(SerializableModel):
 
     @classmethod
     def class_name(cls) -> str:
-        return "NodeReference"
+        return "NodeInfo"
 
 
-RelatedNodeType = NodeReference | list[NodeReference]
+NodeInfoType = NodeInfo | list[NodeInfo]
 
 
 class MetadataMode(str, Enum):
@@ -70,28 +70,28 @@ class LinkedNodes(SerializableModel):
     model_config = ConfigDict(frozen=True)
 
     SOURCE_ERROR: ClassVar[str] = (
-        "The Source Node must be a single NodeReference object"
+        "The Source Node must be a single NodeInfo object"
     )
     PREVIOUS_ERROR: ClassVar[str] = (
-        "The Previous Node must be a single NodeReference object"
+        "The Previous Node must be a single NodeInfo object"
     )
-    NEXT_ERROR: ClassVar[str] = "The Next Node must be a single NodeReference object"
+    NEXT_ERROR: ClassVar[str] = "The Next Node must be a single NodeInfo object"
     PARENT_ERROR: ClassVar[str] = (
-        "The Parent Node must be a single NodeReference object"
+        "The Parent Node must be a single NodeInfo object"
     )
     CHILDREN_ERROR: ClassVar[str] = (
-        "Child Nodes must be a list of NodeReference objects."
+        "Child Nodes must be a list of NodeInfo objects."
     )
 
-    source: NodeReference | None = None
-    previous: NodeReference | None = None
-    next: NodeReference | None = None
-    parent: NodeReference | None = None
-    children: list[NodeReference] | None = None
+    source: NodeInfo | None = None
+    previous: NodeInfo | None = None
+    next: NodeInfo | None = None
+    parent: NodeInfo | None = None
+    children: list[NodeInfo] | None = None
 
     @classmethod
     def create(
-        cls, linked_nodes_info: dict[NodeType, RelatedNodeType]
+        cls, linked_nodes_info: dict[NodeType, NodeInfoType]
     ) -> "LinkedNodes":
         linked = cls(
             source=cls._get_single(
@@ -114,27 +114,27 @@ class LinkedNodes(SerializableModel):
 
     @staticmethod
     def _get_single(
-        linked_nodes: dict[NodeType, RelatedNodeType],
+        linked_nodes: dict[NodeType, NodeInfoType],
         node_type: NodeType,
         error_message: str,
-    ) -> NodeReference | None:
+    ) -> NodeInfo | None:
         value = linked_nodes.get(node_type)
-        if value is not None and not isinstance(value, NodeReference):
+        if value is not None and not isinstance(value, NodeInfo):
             raise ValueError(error_message)
         return value  # type: ignore[return-value]
 
     @staticmethod
     def _get_list(
-        linked_nodes: dict[NodeType, RelatedNodeType],
+        linked_nodes: dict[NodeType, NodeInfoType],
         node_type: NodeType,
         error_message: str,
-    ) -> list[NodeReference] | None:
+    ) -> list[NodeInfo] | None:
         value = linked_nodes.get(node_type)
         if value is not None and not isinstance(value, list):
             raise ValueError(error_message)
         return value  # type: ignore[return-value]
 
-    def as_dict(self) -> dict[NodeType, RelatedNodeType | None]:
+    def as_dict(self) -> dict[NodeType, NodeInfoType | None]:
         linked_nodes = {
             NodeType.SOURCE: self.source,
             NodeType.PREVIOUS: self.previous,
@@ -192,7 +192,7 @@ class BaseNode(SerializableModel, ABC):
     )
     links: dict[
         Annotated[NodeType, EnumNameSerializer],
-        RelatedNodeType,
+        NodeInfoType,
     ] = Field(
         default_factory=dict,
         description="A mapping of links to other nodes.",
@@ -288,9 +288,9 @@ class BaseNode(SerializableModel, ABC):
             raise ValueError("embedding not set.")
         return self.embedding
 
-    def as_related_node_info(self) -> NodeReference:
-        """Get node as NodeReference."""
-        return NodeReference(
+    def as_related_node_info(self) -> NodeInfo:
+        """Get node as NodeInfo."""
+        return NodeInfo(
             id=self.id,
             type=self.get_type(),
             metadata=self.metadata,

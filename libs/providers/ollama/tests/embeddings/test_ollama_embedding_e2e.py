@@ -10,27 +10,10 @@ Skip with: pytest tests/embeddings/ -m "not e2e"
 from __future__ import annotations
 
 import pytest
-from ollama import Client
 
 from serapeum.core.base.embeddings.base import BaseEmbedding
 from serapeum.ollama import OllamaEmbedding
-
-
-test_model = "llama3.1:latest"
-
-try:
-    client = Client()
-    models = client.list()
-    model_found = False
-    for model in models["models"]:
-        if model.model == test_model:
-            model_found = True
-            break
-    if not model_found:
-        client = None  # type: ignore
-except Exception:
-    client = None  # type: ignore
-
+from tests.conftest import client
 
 
 class TestBasicEmbedding:
@@ -41,14 +24,14 @@ class TestBasicEmbedding:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_basic_query(self) -> None:
+    def test_ollama_embedding_basic_query(self, model_name) -> None:
         """Test basic query embedding with live Ollama server.
 
         Inputs: Query string
         Expected: Valid embedding vector returned
         Checks: Type, length, values are floats
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         query = "What is artificial intelligence?"
         embedding = embedder.get_query_embedding(query)
@@ -65,14 +48,14 @@ class TestBasicEmbedding:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_basic_text(self) -> None:
+    def test_ollama_embedding_basic_text(self, model_name) -> None:
         """Test basic text embedding with live Ollama server.
 
         Inputs: Text string
         Expected: Valid embedding vector returned
         Checks: Type, length, values are floats, different from query
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         text = "Machine learning is a subset of artificial intelligence."
         embedding = embedder.get_text_embedding(text)
@@ -87,14 +70,14 @@ class TestBasicEmbedding:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_query_vs_text_different(self) -> None:
+    def test_ollama_embedding_query_vs_text_different(self, model_name) -> None:
         """Test that query and text embeddings are different for same input.
 
         Inputs: Same string as query and text
         Expected: Different embeddings when instructions differ
         Checks: Embeddings should differ (unless no instructions provided)
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         input_str = "What is the capital of France?"
 
@@ -116,14 +99,14 @@ class TestBatchEmbedding:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_batch_texts(self) -> None:
+    def test_ollama_embedding_batch_texts(self, model_name) -> None:
         """Test batch text embedding with live Ollama server.
 
         Inputs: Multiple text strings
         Expected: List of embeddings matching input count
         Checks: Count, types, dimensions match
         """
-        embedder = OllamaEmbedding(model_name=test_model, batch_size=10)
+        embedder = OllamaEmbedding(model_name=model_name, batch_size=10)
 
         texts = [
             "The quick brown fox jumps over the lazy dog.",
@@ -147,14 +130,14 @@ class TestBatchEmbedding:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_large_batch(self) -> None:
+    def test_ollama_embedding_large_batch(self, model_name) -> None:
         """Test large batch processing with live Ollama server.
 
         Inputs: 20 text strings
         Expected: All embeddings returned correctly
         Checks: Count matches, no errors
         """
-        embedder = OllamaEmbedding(model_name=test_model, batch_size=50)
+        embedder = OllamaEmbedding(model_name=model_name, batch_size=50)
 
         texts = [f"This is test sentence number {i}." for i in range(20)]
 
@@ -173,7 +156,7 @@ class TestInstructionEmbedding:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_with_query_instruction(self) -> None:
+    def test_ollama_embedding_with_query_instruction(self, model_name) -> None:
         """Test query embedding with instruction prefix.
 
         Inputs: Query with query_instruction set
@@ -181,7 +164,7 @@ class TestInstructionEmbedding:
         Checks: Valid embedding returned
         """
         embedder = OllamaEmbedding(
-            model_name=test_model,
+            model_name=model_name,
             query_instruction="Represent this sentence for searching relevant passages:"
         )
 
@@ -197,7 +180,7 @@ class TestInstructionEmbedding:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_with_text_instruction(self) -> None:
+    def test_ollama_embedding_with_text_instruction(self, model_name) -> None:
         """Test text embedding with instruction prefix.
 
         Inputs: Text with text_instruction set
@@ -205,7 +188,7 @@ class TestInstructionEmbedding:
         Checks: Valid embedding returned
         """
         embedder = OllamaEmbedding(
-            model_name=test_model,
+            model_name=model_name,
             text_instruction="Represent this document for retrieval:"
         )
 
@@ -221,7 +204,7 @@ class TestInstructionEmbedding:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_instructions_affect_output(self) -> None:
+    def test_ollama_embedding_instructions_affect_output(self, model_name) -> None:
         """Test that instructions actually change the embedding.
 
         Inputs: Same text with and without instruction
@@ -231,12 +214,12 @@ class TestInstructionEmbedding:
         text = "Artificial intelligence is transforming the world."
 
         # Without instruction
-        embedder1 = OllamaEmbedding(model_name=test_model)
+        embedder1 = OllamaEmbedding(model_name=model_name)
         embedding1 = embedder1.get_text_embedding(text)
 
         # With instruction
         embedder2 = OllamaEmbedding(
-            model_name=test_model,
+            model_name=model_name,
             text_instruction="Document:"
         )
         embedding2 = embedder2.get_text_embedding(text)
@@ -255,14 +238,14 @@ class TestAsyncEmbedding:
         reason="Ollama client is not available or test model is missing"
     )
     @pytest.mark.asyncio
-    async def test_ollama_embedding_async_query(self) -> None:
+    async def test_ollama_embedding_async_query(self, model_name) -> None:
         """Test async query embedding with live Ollama server.
 
         Inputs: Query string in async context
         Expected: Valid embedding vector returned
         Checks: Async execution works correctly
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         query = "How does machine learning work?"
         embedding = await embedder.aget_query_embedding(query)
@@ -278,14 +261,14 @@ class TestAsyncEmbedding:
         reason="Ollama client is not available or test model is missing"
     )
     @pytest.mark.asyncio
-    async def test_ollama_embedding_async_text(self) -> None:
+    async def test_ollama_embedding_async_text(self, model_name) -> None:
         """Test async text embedding with live Ollama server.
 
         Inputs: Text string in async context
         Expected: Valid embedding vector returned
         Checks: Async execution works correctly
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         text = "Deep learning uses neural networks with multiple layers."
         embedding = await embedder.aget_text_embedding(text)
@@ -301,14 +284,14 @@ class TestAsyncEmbedding:
         reason="Ollama client is not available or test model is missing"
     )
     @pytest.mark.asyncio
-    async def test_ollama_embedding_async_batch(self) -> None:
+    async def test_ollama_embedding_async_batch(self, model_name) -> None:
         """Test async batch embedding with live Ollama server.
 
         Inputs: Multiple texts in async context
         Expected: All embeddings returned correctly
         Checks: Async batch processing works
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         texts = [
             "First text about AI.",
@@ -332,7 +315,7 @@ class TestConfiguration:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_with_keep_alive(self) -> None:
+    def test_ollama_embedding_with_keep_alive(self, model_name) -> None:
         """Test embedding with custom keep_alive setting.
 
         Inputs: Query with keep_alive="10m"
@@ -340,7 +323,7 @@ class TestConfiguration:
         Checks: keep_alive parameter accepted
         """
         embedder = OllamaEmbedding(
-            model_name=test_model,
+            model_name=model_name,
             keep_alive="10m"
         )
 
@@ -356,7 +339,7 @@ class TestConfiguration:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_with_additional_kwargs(self) -> None:
+    def test_ollama_embedding_with_additional_kwargs(self, model_name) -> None:
         """Test embedding with additional Ollama kwargs.
 
         Inputs: Text with ollama_additional_kwargs
@@ -364,7 +347,7 @@ class TestConfiguration:
         Checks: Additional kwargs accepted by server
         """
         embedder = OllamaEmbedding(
-            model_name=test_model,
+            model_name=model_name,
             ollama_additional_kwargs={"temperature": 0.0}
         )
 
@@ -380,7 +363,7 @@ class TestConfiguration:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_custom_base_url(self) -> None:
+    def test_ollama_embedding_custom_base_url(self, model_name) -> None:
         """Test embedding with custom base URL.
 
         Inputs: Query with default localhost URL
@@ -388,7 +371,7 @@ class TestConfiguration:
         Checks: base_url parameter works
         """
         embedder = OllamaEmbedding(
-            model_name=test_model,
+            model_name=model_name,
             base_url="http://localhost:11434"
         )
 
@@ -407,16 +390,14 @@ class TestSemanticSimilarity:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_semantic_similarity(self) -> None:
+    def test_ollama_embedding_semantic_similarity(self, model_name) -> None:
         """Test that semantically similar texts have similar embeddings.
 
         Inputs: Two semantically similar texts
         Expected: Embeddings should be more similar than unrelated text
         Checks: Cosine similarity or distance metrics
         """
-        import math
-
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         text1 = "The cat sat on the mat."
         text2 = "A feline rested on the rug."
@@ -430,8 +411,8 @@ class TestSemanticSimilarity:
         def similarity(a, b):
             return sum(x * y for x, y in zip(a, b))
 
-        sim_1_2 = similarity(emb1, emb2)
-        sim_1_3 = similarity(emb1, emb3)
+        _ = similarity(emb1, emb2)
+        _ = similarity(emb1, emb3)
 
         # Similar texts should have higher similarity than unrelated
         # Note: This is a weak assertion as it depends on the model
@@ -443,14 +424,14 @@ class TestSemanticSimilarity:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_consistency(self) -> None:
+    def test_ollama_embedding_consistency(self, model_name) -> None:
         """Test that same text produces consistent embeddings.
 
         Inputs: Same text embedded twice
         Expected: Identical embeddings
         Checks: Deterministic behavior
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         text = "This text should produce consistent embeddings."
 
@@ -469,14 +450,14 @@ class TestEdgeCases:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_whitespace_string(self) -> None:
+    def test_ollama_embedding_whitespace_string(self, model_name) -> None:
         """Test embedding with whitespace-only string.
 
         Inputs: Single space string (empty after strip)
         Expected: ValueError raised for empty text after stripping
         Checks: Input validation prevents empty embeddings
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         # Should raise ValueError for whitespace-only input
         with pytest.raises(ValueError) as exc_info:
@@ -491,14 +472,14 @@ class TestEdgeCases:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_long_text(self) -> None:
+    def test_ollama_embedding_long_text(self, model_name) -> None:
         """Test embedding with very long text.
 
         Inputs: Text with 1000+ words
         Expected: Embedding generated successfully
         Checks: Model handles long inputs
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         long_text = " ".join(["This is a test sentence."] * 200)  # ~1000 words
 
@@ -513,14 +494,14 @@ class TestEdgeCases:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_special_characters(self) -> None:
+    def test_ollama_embedding_special_characters(self, model_name) -> None:
         """Test embedding with special characters and unicode.
 
         Inputs: Text with emojis, special chars, unicode
         Expected: Embedding generated successfully
         Checks: Model handles various character types
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         text = "Hello 👋 world! Special chars: @#$%^&* Unicode: 你好 العربية"
 
@@ -535,14 +516,14 @@ class TestEdgeCases:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_single_item_batch(self) -> None:
+    def test_ollama_embedding_single_item_batch(self, model_name) -> None:
         """Test batch processing with single item.
 
         Inputs: List with one text
         Expected: List with one embedding
         Checks: Single-item batch handled correctly
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         texts = ["Single text in a batch."]
 
@@ -561,14 +542,14 @@ class TestIntegrationWithBaseEmbedding:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_inherits_base_methods(self) -> None:
+    def test_ollama_embedding_inherits_base_methods(self, model_name) -> None:
         """Test that BaseEmbedding public methods work correctly.
 
         Inputs: Use public get_query_embedding and get_text_embedding
         Expected: Methods work through inheritance
         Checks: BaseEmbedding integration works end-to-end
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         # These are BaseEmbedding public methods
         query_emb = embedder.get_query_embedding("Test query")
@@ -585,14 +566,14 @@ class TestIntegrationWithBaseEmbedding:
         client is None,
         reason="Ollama client is not available or test model is missing"
     )
-    def test_ollama_embedding_class_type(self) -> None:
+    def test_ollama_embedding_class_type(self, model_name) -> None:
         """Test that OllamaEmbedding is instance of BaseEmbedding.
 
         Inputs: OllamaEmbedding instance
         Expected: Is instance of BaseEmbedding
         Checks: Type hierarchy correct
         """
-        embedder = OllamaEmbedding(model_name=test_model)
+        embedder = OllamaEmbedding(model_name=model_name)
 
         assert isinstance(embedder, OllamaEmbedding)
         assert isinstance(embedder, BaseEmbedding)

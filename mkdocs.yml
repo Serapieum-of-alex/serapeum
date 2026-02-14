@@ -139,6 +139,8 @@ nav:
                 - Data Flow: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow.md
                 - Components: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components.md
                 - Lifecycle: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state.md
+        - embeddings:
+            - reference/core/embeddings/module.md
         - tools:
             - Overview: reference/core/tools/tools.md
             - CallableTools: reference/core/tools/callable_tools.md

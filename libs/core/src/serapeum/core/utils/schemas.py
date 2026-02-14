@@ -333,9 +333,3 @@ class Schema:
             return [Schema._resolve_local_refs(v, defs) for v in obj]
         return obj
 
-
-class MarkdownParserException(Exception):
-    """Exception raised for errors encountered during output parsing."""
-
-    pass
-

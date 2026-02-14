@@ -13,7 +13,7 @@ import pytest
 
 from serapeum.core.base.embeddings.base import BaseEmbedding
 from serapeum.ollama import OllamaEmbedding
-from tests.conftest import client
+from ..conftest import client
 
 
 class TestBasicEmbedding:

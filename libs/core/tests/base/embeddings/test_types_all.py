@@ -413,8 +413,8 @@ class TestBaseNodeRefDocId:
             links={NodeType.SOURCE: NodeInfo(id="a")}
         )
         without_source = my_node_class()
-        value_with = with_source.source_id()
-        value_without = without_source.source_id()
+        value_with = with_source.source_id
+        value_without = without_source.source_id
         assert value_with == "a"
         assert value_without is None
 

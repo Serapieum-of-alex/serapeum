@@ -106,7 +106,7 @@ class LinkedNodes(SerializableModel):
         value = linked_nodes.get(node_type)
         if value is not None and not isinstance(value, NodeInfo):
             raise ValueError(f"The {node_type.value.title()} Node must be a single NodeInfo object")
-        return value  # type: ignore[return-value]
+        return value
 
     @staticmethod
     def _get_list(
@@ -116,7 +116,7 @@ class LinkedNodes(SerializableModel):
         value = linked_nodes.get(node_type)
         if value is not None and not isinstance(value, list):
             raise ValueError(f"The {node_type.value.title()} Node must be a single NodeInfo object")
-        return value  # type: ignore[return-value]
+        return value
 
     def as_dict(self) -> dict[NodeType, NodeInfoType | None]:
         linked_nodes = {
@@ -264,6 +264,7 @@ class BaseNode(SerializableModel, ABC):
     def hash(self) -> str:
         """Get hash of node."""
 
+    @property
     def source_id(self) -> str | None:
         return self.linked_nodes.source_id
 

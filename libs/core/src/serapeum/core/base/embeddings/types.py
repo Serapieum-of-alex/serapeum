@@ -446,7 +446,62 @@ class LinkedNodes(SerializableModel):
     ) -> "LinkedNodes":
         """Create LinkedNodes from a dict mapping NodeType to NodeInfo/list.
 
-        Pydantic validators automatically handle type checking for each field.
+        Factory method that converts a dictionary with NodeType keys into a
+        validated LinkedNodes instance. Pydantic validators automatically check
+        that single-node fields contain NodeInfo and children contains a list.
+
+        Args:
+            linked_nodes_info: Dictionary mapping NodeType enum values to either
+                NodeInfo (for single relationships) or list[NodeInfo] (for
+                children). Missing keys are treated as None.
+
+        Returns:
+            A new LinkedNodes instance with validated relationships.
+
+        Raises:
+            ValueError: If a single-node field (SOURCE, PREVIOUS, NEXT, PARENT)
+                receives a list, or if children receives a non-list value.
+
+        Examples:
+            - Creating from a dict with mixed relationships
+                ```python
+                >>> from serapeum.core.base.embeddings.types import LinkedNodes, NodeInfo, NodeType
+                >>> source = NodeInfo(id="doc-1")
+                >>> parent = NodeInfo(id="section-1")
+                >>> children = [NodeInfo(id="para-1"), NodeInfo(id="para-2")]
+                >>> links_dict = {
+                ...     NodeType.SOURCE: source,
+                ...     NodeType.PARENT: parent,
+                ...     NodeType.CHILD: children
+                ... }
+                >>> links = LinkedNodes.create(links_dict)
+                >>> links.source.id
+                'doc-1'
+
+                ```
+            - Creating with only some relationships
+                ```python
+                >>> prev = NodeInfo(id="chunk-1")
+                >>> next_node = NodeInfo(id="chunk-3")
+                >>> links = LinkedNodes.create({
+                ...     NodeType.PREVIOUS: prev,
+                ...     NodeType.NEXT: next_node
+                ... })
+                >>> links.previous.id
+                'chunk-1'
+
+                ```
+            - Empty dict creates all-None instance
+                ```python
+                >>> links = LinkedNodes.create({})
+                >>> links.source is None
+                True
+
+                ```
+
+        See Also:
+            LinkedNodes.as_dict: Inverse operation converting LinkedNodes to dict.
+            NodeType: Enum defining valid relationship types.
         """
         return cls(
             source=linked_nodes_info.get(NodeType.SOURCE),
@@ -457,6 +512,53 @@ class LinkedNodes(SerializableModel):
         )
 
     def as_dict(self) -> dict[NodeType, NodeInfoType | None]:
+        """Convert LinkedNodes to a dictionary mapping NodeType to NodeInfo.
+
+        Creates a dictionary representation with NodeType enum keys and NodeInfo
+        values. None values are excluded from the result to create a compact
+        representation containing only active relationships.
+
+        Returns:
+            Dictionary with NodeType keys and NodeInfo/list[NodeInfo] values.
+            Only non-None relationships are included.
+
+        Examples:
+            - Converting to dict with multiple relationships
+                ```python
+                >>> from serapeum.core.base.embeddings.types import LinkedNodes, NodeInfo, NodeType
+                >>> source = NodeInfo(id="doc-1")
+                >>> parent = NodeInfo(id="section-1")
+                >>> links = LinkedNodes(source=source, parent=parent)
+                >>> result = links.as_dict()
+                >>> result[NodeType.SOURCE].id
+                'doc-1'
+
+                ```
+            - None values are excluded
+                ```python
+                >>> links = LinkedNodes(source=NodeInfo(id="doc-1"))
+                >>> result = links.as_dict()
+                >>> NodeType.PREVIOUS in result
+                False
+
+                ```
+            - Round-trip with create method
+                ```python
+                >>> original = LinkedNodes(
+                ...     source=NodeInfo(id="src"),
+                ...     children=[NodeInfo(id="child-1")]
+                ... )
+                >>> as_dict = original.as_dict()
+                >>> restored = LinkedNodes.create(as_dict)
+                >>> restored.source.id
+                'src'
+
+                ```
+
+        See Also:
+            LinkedNodes.create: Factory method for creating from dict.
+            BaseNode.links: Uses this format for storing relationships.
+        """
         linked_nodes = {
             NodeType.SOURCE: self.source,
             NodeType.PREVIOUS: self.previous,

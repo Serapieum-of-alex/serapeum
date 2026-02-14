@@ -1,7 +1,7 @@
 from typing import Any, Sequence
 
 from serapeum.core.base.embeddings.base import BaseEmbedding
-from pydantic import Field, PrivateAttr
+from pydantic import Field, PrivateAttr, model_validator
 from serapeum.core.configs.defaults import DEFAULT_EMBED_BATCH_SIZE
 
 from ollama import Client, AsyncClient
@@ -10,7 +10,10 @@ from ollama import Client, AsyncClient
 class OllamaEmbedding(BaseEmbedding):
     """Class for Ollama embeddings."""
 
-    base_url: str = Field(description="Base url the model is hosted by Ollama")
+    base_url: str = Field(
+        default="http://localhost:11434",
+        description="Base url the model is hosted by Ollama"
+    )
     model_name: str = Field(description="The Ollama model to use.")
     embed_batch_size: int = Field(
         default=DEFAULT_EMBED_BATCH_SIZE,
@@ -31,36 +34,20 @@ class OllamaEmbedding(BaseEmbedding):
         default="5m",
         description="controls how long the model will stay loaded into memory following the request(default: 5m)",
     )
+    client_kwargs: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Additional kwargs for the Ollama client initialization."
+    )
 
     _client: Client = PrivateAttr()
     _async_client: AsyncClient = PrivateAttr()
 
-    def __init__(
-        self,
-        model_name: str,
-        base_url: str = "http://localhost:11434",
-        embed_batch_size: int = DEFAULT_EMBED_BATCH_SIZE,
-        ollama_additional_kwargs: dict[str, Any] | None = None,
-        query_instruction: str | None = None,
-        text_instruction: str | None = None,
-        client_kwargs: dict[str, Any] | None = None,
-        keep_alive: float | str | None = None,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            model_name=model_name,
-            base_url=base_url,
-            embed_batch_size=embed_batch_size,
-            ollama_additional_kwargs=ollama_additional_kwargs or {},
-            query_instruction=query_instruction,
-            text_instruction=text_instruction,
-            keep_alive=keep_alive,
-            **kwargs,
-        )
-
-        client_kwargs = client_kwargs or {}
-        self._client = Client(host=self.base_url, **client_kwargs)
-        self._async_client = AsyncClient(host=self.base_url, **client_kwargs)
+    @model_validator(mode='after')
+    def _initialize_clients(self) -> 'OllamaEmbedding':
+        """Initialize Ollama clients after model validation."""
+        self._client = Client(host=self.base_url, **self.client_kwargs)
+        self._async_client = AsyncClient(host=self.base_url, **self.client_kwargs)
+        return self
 
     @classmethod
     def class_name(cls) -> str:

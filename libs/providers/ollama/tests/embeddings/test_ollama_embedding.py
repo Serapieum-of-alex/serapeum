@@ -24,11 +24,6 @@ from serapeum.core.configs.defaults import DEFAULT_EMBED_BATCH_SIZE
 from serapeum.ollama.embedding import OllamaEmbedding
 
 
-# ============================================================================
-# Fixtures
-# ============================================================================
-
-
 @pytest.fixture
 def mock_embed_response() -> MagicMock:
     """Create a mock embedding response from Ollama API.
@@ -154,11 +149,6 @@ def embedder_factory():
             defaults.update(kwargs)
             return OllamaEmbedding(**defaults)
     return _create
-
-
-# ============================================================================
-# Initialization Tests
-# ============================================================================
 
 
 @pytest.mark.unit
@@ -536,11 +526,6 @@ class TestTextFormattingMethods:
         assert "Test @#$% text" in result
 
 
-# ============================================================================
-# Single Embedding Tests - Sync
-# ============================================================================
-
-
 @pytest.mark.unit
 @pytest.mark.mock
 class TestSingleEmbeddingSyncMethods:
@@ -638,11 +623,6 @@ class TestSingleEmbeddingSyncMethods:
         assert result == [0.1, 0.2, 0.3, 0.4, 0.5]
 
 
-# ============================================================================
-# Single Embedding Tests - Async
-# ============================================================================
-
-
 @pytest.mark.unit
 @pytest.mark.mock
 @pytest.mark.asyncio
@@ -737,11 +717,6 @@ class TestSingleEmbeddingAsyncMethods:
         call_args = mock_ollama_async_client.embed.call_args
         assert call_args[1]["input"] == "Text: AI is a field"
         assert result == [0.1, 0.2, 0.3, 0.4, 0.5]
-
-
-# ============================================================================
-# Batch Embedding Tests - Sync
-# ============================================================================
 
 
 @pytest.mark.unit
@@ -902,11 +877,6 @@ class TestBatchEmbeddingSyncMethods:
         assert result[2] == [0.0, 0.0, 1.0]
 
 
-# ============================================================================
-# Batch Embedding Tests - Async
-# ============================================================================
-
-
 @pytest.mark.unit
 @pytest.mark.mock
 @pytest.mark.asyncio
@@ -1007,11 +977,6 @@ class TestBatchEmbeddingAsyncMethods:
 
         embedder._async_client.embed.assert_called_once()
         assert len(result) == 3
-
-
-# ============================================================================
-# Error Handling Tests
-# ============================================================================
 
 
 @pytest.mark.unit
@@ -1151,11 +1116,6 @@ class TestErrorHandling:
             embedder.get_general_text_embedding("test")
 
 
-# ============================================================================
-# Client Initialization Tests
-# ============================================================================
-
-
 @pytest.mark.unit
 class TestClientInitialization:
     """Test suite for client initialization edge cases."""
@@ -1251,11 +1211,6 @@ class TestClientInitialization:
             assert hasattr(embedder, "_async_client")
 
 
-# ============================================================================
-# Keep-Alive Parameter Tests
-# ============================================================================
-
-
 @pytest.mark.unit
 class TestKeepAliveParameter:
     """Test suite for keep_alive parameter handling."""
@@ -1342,11 +1297,6 @@ class TestKeepAliveParameter:
         assert emb3.keep_alive is None
 
 
-# ============================================================================
-# Ollama Additional Kwargs Tests
-# ============================================================================
-
-
 @pytest.mark.unit
 class TestOllamaAdditionalKwargs:
     """Test suite for ollama_additional_kwargs parameter."""
@@ -1411,11 +1361,6 @@ class TestOllamaAdditionalKwargs:
 
         call_kwargs = embedder._client.embed.call_args[1]
         assert call_kwargs["options"] == {}
-
-
-# ============================================================================
-# Type and Return Value Tests
-# ============================================================================
 
 
 @pytest.mark.unit
@@ -1495,11 +1440,6 @@ class TestTypeAndReturnValues:
         assert isinstance(text_result, Sequence)
         assert all(isinstance(x, float) for x in query_result)
         assert all(isinstance(x, float) for x in text_result)
-
-
-# ============================================================================
-# Integration Tests
-# ============================================================================
 
 
 @pytest.mark.integration
@@ -1710,11 +1650,6 @@ class TestOllamaEmbeddingIntegration:
         assert len(result) == 3
 
 
-# ============================================================================
-# Property-Based Tests
-# ============================================================================
-
-
 @pytest.mark.unit
 @pytest.mark.mock
 class TestOllamaEmbeddingProperties:
@@ -1764,11 +1699,6 @@ class TestOllamaEmbeddingProperties:
         async_client1 = basic_embedder._async_client
         async_client2 = basic_embedder._async_client
         assert async_client1 is async_client2
-
-
-# ============================================================================
-# Edge Cases Tests
-# ============================================================================
 
 
 @pytest.mark.unit
@@ -1846,11 +1776,6 @@ class TestOllamaEmbeddingEdgeCases:
         assert len(emb1) == len(emb2)
 
 
-# ============================================================================
-# Formatting Scenario Matrix Tests
-# ============================================================================
-
-
 @pytest.mark.unit
 @pytest.mark.mock
 @pytest.mark.parametrize(
@@ -1919,11 +1844,6 @@ class TestFormattingScenarioMatrix:
         assert embedder._format_text(input_text) == expected_text
 
 
-# ============================================================================
-# Concurrent Access Tests
-# ============================================================================
-
-
 @pytest.mark.asyncio
 @pytest.mark.integration
 class TestConcurrentAccess:
@@ -1981,11 +1901,6 @@ class TestConcurrentAccess:
         # Verify both clients were used
         embedder._client.embed.assert_called_once()
         embedder._async_client.embed.assert_called_once()
-
-
-# ============================================================================
-# Performance Tests
-# ============================================================================
 
 
 @pytest.mark.performance
@@ -2052,11 +1967,6 @@ class TestPerformanceScenarios:
         result2 = embedder.get_general_text_embedding("text2")
 
         assert len(result1) == len(result2) == 5
-
-
-# ============================================================================
-# BaseEmbedding Integration Tests
-# ============================================================================
 
 
 @pytest.mark.unit

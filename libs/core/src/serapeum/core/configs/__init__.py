@@ -19,7 +19,6 @@ from serapeum.core.configs.defaults import (
     DEFAULT_CONTEXT_WINDOW,
     DEFAULT_NUM_OUTPUTS,
     DEFAULT_TEMPERATURE,
-    DEFAULT_EMBED_BATCH_SIZE,
 )
 
 __all__ = [
@@ -27,7 +26,6 @@ __all__ = [
     "DEFAULT_CONTEXT_WINDOW",
     "DEFAULT_NUM_OUTPUTS",
     "DEFAULT_TEMPERATURE",
-    "DEFAULT_EMBED_BATCH_SIZE",
 ]
 
 

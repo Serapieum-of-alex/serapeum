@@ -11,9 +11,7 @@ from pydantic import (
     Field,
     ConfigDict,
 )
-from serapeum.core.configs import (
-    DEFAULT_EMBED_BATCH_SIZE,
-)
+
 from serapeum.core.types import SerializableModel
 from serapeum.core.base.embeddings.types import (
     BaseNode,
@@ -23,6 +21,8 @@ from serapeum.core.base.embeddings.types import (
 from serapeum.core.utils.base import get_tqdm_iterable, run_jobs
 
 Embedding = list[float]
+
+DEFAULT_EMBED_BATCH_SIZE = 10
 
 
 class SimilarityMode(str, Enum):

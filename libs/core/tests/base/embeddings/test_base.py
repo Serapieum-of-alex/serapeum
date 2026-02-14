@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from serapeum.core.base.embeddings.base import SimilarityMode, mean_agg
-from serapeum.core.embeddings.mock_embed_model import MockEmbedding
+from serapeum.core.embeddings.types import MockEmbedding
 
 
 def mock_get_text_embedding(text: str) -> List[float]:

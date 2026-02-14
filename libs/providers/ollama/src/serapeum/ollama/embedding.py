@@ -1,8 +1,8 @@
+from __future__ import annotations
 from typing import Any, Sequence
 
 from serapeum.core.base.embeddings.base import BaseEmbedding
 from pydantic import Field, PrivateAttr, model_validator
-from serapeum.core.configs.defaults import DEFAULT_EMBED_BATCH_SIZE
 
 from ollama import Client, AsyncClient
 
@@ -15,12 +15,6 @@ class OllamaEmbedding(BaseEmbedding):
         description="Base url the model is hosted by Ollama"
     )
     model_name: str = Field(description="The Ollama model to use.")
-    embed_batch_size: int = Field(
-        default=DEFAULT_EMBED_BATCH_SIZE,
-        description="The batch size for embedding calls.",
-        gt=0,
-        le=2048,
-    )
     ollama_additional_kwargs: dict[str, Any] = Field(
         default_factory=dict, description="Additional kwargs for the Ollama API."
     )
@@ -43,7 +37,7 @@ class OllamaEmbedding(BaseEmbedding):
     _async_client: AsyncClient = PrivateAttr()
 
     @model_validator(mode='after')
-    def _initialize_clients(self) -> 'OllamaEmbedding':
+    def _initialize_clients(self) -> OllamaEmbedding:
         """Initialize Ollama clients after model validation."""
         self._client = Client(host=self.base_url, **self.client_kwargs)
         self._async_client = AsyncClient(host=self.base_url, **self.client_kwargs)

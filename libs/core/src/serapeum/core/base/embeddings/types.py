@@ -348,8 +348,41 @@ class LinkedNodes(SerializableModel):
     def validate_single_node(cls, v: Any) -> NodeInfo | None:
         """Validate that single-node fields contain NodeInfo objects.
 
-        Uses Pydantic's field_validator instead of manual validation.
-        Applies to: source, previous, next, parent fields.
+        Ensures that source, previous, next, and parent fields contain exactly
+        one NodeInfo instance (not a list). Called automatically by Pydantic
+        during model instantiation and validation.
+
+        Args:
+            v: Value to validate, expected to be NodeInfo or None.
+
+        Returns:
+            The validated NodeInfo instance or None.
+
+        Raises:
+            ValueError: If v is not None and not a NodeInfo instance.
+
+        Examples:
+            - Valid single node assignment
+                ```python
+                >>> from serapeum.core.base.embeddings.types import LinkedNodes, NodeInfo
+                >>> node = NodeInfo(id="valid")
+                >>> links = LinkedNodes(source=node)
+                >>> links.source.id
+                'valid'
+
+                ```
+            - Invalid list assignment to single-node field
+                ```python
+                >>> LinkedNodes(source=[NodeInfo(id="bad")])  # doctest: +SKIP
+                Traceback (most recent call last):
+                    ...
+                ValueError: Must be a NodeInfo object, not a list
+
+                ```
+
+        Note:
+            This validator applies to: source, previous, next, parent fields.
+            The children field has a separate validator for list validation.
         """
         if v is not None and not isinstance(v, NodeInfo):
             raise ValueError("Must be a NodeInfo object, not a list")
@@ -360,7 +393,48 @@ class LinkedNodes(SerializableModel):
     def validate_children_list(cls, v: Any) -> list[NodeInfo] | None:
         """Validate that children field contains a list of NodeInfo objects.
 
-        Uses Pydantic's field_validator instead of manual validation.
+        Ensures the children field is a list (not a single NodeInfo instance).
+        Called automatically by Pydantic during model instantiation and validation.
+
+        Args:
+            v: Value to validate, expected to be list[NodeInfo] or None.
+
+        Returns:
+            The validated list of NodeInfo instances or None.
+
+        Raises:
+            ValueError: If v is not None and not a list.
+
+        Examples:
+            - Valid children list
+                ```python
+                >>> from serapeum.core.base.embeddings.types import LinkedNodes, NodeInfo
+                >>> child1 = NodeInfo(id="child-1")
+                >>> child2 = NodeInfo(id="child-2")
+                >>> links = LinkedNodes(children=[child1, child2])
+                >>> len(links.children)
+                2
+
+                ```
+            - Invalid single NodeInfo for children
+                ```python
+                >>> LinkedNodes(children=NodeInfo(id="bad"))  # doctest: +SKIP
+                Traceback (most recent call last):
+                    ...
+                ValueError: Children must be a list of NodeInfo objects
+
+                ```
+            - Empty children list is valid
+                ```python
+                >>> links = LinkedNodes(children=[])
+                >>> links.children
+                []
+
+                ```
+
+        Note:
+            This validator is specific to the children field, which represents
+            one-to-many relationships.
         """
         if v is not None and not isinstance(v, list):
             raise ValueError("Children must be a list of NodeInfo objects")

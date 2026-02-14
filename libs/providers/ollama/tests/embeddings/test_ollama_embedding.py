@@ -19,8 +19,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from ollama import Client, AsyncClient
 from pydantic import ValidationError
 
-from serapeum.core.base.embeddings.base import BaseEmbedding
-from serapeum.core.configs.defaults import DEFAULT_EMBED_BATCH_SIZE
+from serapeum.core.base.embeddings.base import BaseEmbedding, DEFAULT_EMBED_BATCH_SIZE
 from serapeum.ollama.embedding import OllamaEmbedding
 
 

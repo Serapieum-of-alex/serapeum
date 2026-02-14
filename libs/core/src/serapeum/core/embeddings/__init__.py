@@ -9,7 +9,7 @@ from serapeum.core.base.embeddings.types import (
     CallMixin
 )
 from serapeum.core.base.embeddings.base import BaseEmbedding
-from serapeum.core.embeddings.mock_embed_model import MockEmbedding
+from serapeum.core.embeddings.types import MockEmbedding
 
 __all__ = [
     "NodeType",

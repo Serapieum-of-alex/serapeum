@@ -3,7 +3,7 @@ import uuid
 from abc import abstractmethod, ABC
 import textwrap
 from enum import Enum, auto
-from pydantic import ConfigDict, Field, PlainSerializer, PrivateAttr
+from pydantic import ConfigDict, Field, PlainSerializer, model_validator
 from serapeum.core.utils.base import truncate_text
 from serapeum.core.types import SerializableModel
 
@@ -152,8 +152,6 @@ class BaseNode(SerializableModel, ABC):
     """
     # hash is computed on a local field, during the validation process
     model_config = ConfigDict(populate_by_name=True, validate_assignment=True)
-    _linked_nodes_cache: LinkedNodes | None = PrivateAttr(default=None)
-    _linked_nodes_cache_relationships_id: int | None = PrivateAttr(default=None)
 
     id: str = Field(
         default_factory=lambda: str(uuid.uuid4()), description="Unique ID of the node."
@@ -192,6 +190,40 @@ class BaseNode(SerializableModel, ABC):
         default="\n",
         description="Separator between metadata fields when converting to string.",
     )
+
+    linked_nodes_cache: LinkedNodes | None = Field(
+        default=None,
+        exclude=True,
+        repr=False,
+        description="Cached LinkedNodes object, invalidated when links change.",
+    )
+
+    # Track the links dict id to detect changes
+    links_dict_id: int | None = Field(
+        default=None,
+        exclude=True,
+        repr=False,
+        description="ID of the links dict to detect when it's reassigned.",
+    )
+
+    @model_validator(mode='after')
+    def _invalidate_linked_nodes_cache_on_links_change(self) -> 'BaseNode':
+        """Invalidate the linked_nodes cache when links dict is reassigned.
+
+        This validator tracks the id of the links dict. When it changes
+        (i.e., links is reassigned), the cache is cleared.
+
+        Uses Pydantic v2's @model_validator with object.__setattr__ to avoid recursion.
+        """
+        current_links_id = id(self.links)
+
+        # Check if links dict was reassigned (different id)
+        if self.links_dict_id is None or self.links_dict_id != current_links_id:
+            # Links changed, clear cache and update tracked id
+            object.__setattr__(self, 'linked_nodes_cache', None)
+            object.__setattr__(self, 'links_dict_id', current_links_id)
+
+        return self
 
     @classmethod
     @abstractmethod
@@ -235,24 +267,52 @@ class BaseNode(SerializableModel, ABC):
     def source_id(self) -> str | None:
         return self.linked_nodes.source_id
 
+    def _clear_linked_nodes_cache(self) -> None:
+        """Manually clear the linked_nodes cache.
+
+        Call this method if you mutate the links dict in-place.
+        This is necessary because Pydantic's field validators only trigger
+        on field assignment, not on in-place mutations.
+
+        Example:
+            >>> node.links[NodeType.SOURCE] = NodeInfo(id="new")
+            >>> node._clear_linked_nodes_cache()  # Clear cache after in-place mutation
+            >>> linked = node.linked_nodes  # Will recompute from updated links
+        """
+        self.linked_nodes_cache = None
+
     @property
     def linked_nodes(self) -> LinkedNodes:
-        cached = self._linked_nodes_cache
-        relationships_id = id(self.links)
-        if (
-            cached is None
-            or self._linked_nodes_cache_relationships_id != relationships_id
-        ):
-            cached = LinkedNodes.create(self.links)
-            self._linked_nodes_cache = cached
-            self._linked_nodes_cache_relationships_id = relationships_id
-        return cached
+        """Get linked nodes from the links dictionary.
 
-    def __setattr__(self, name: str, value: Any) -> None:
-        if name == "links":
-            object.__setattr__(self, "_linked_nodes_cache", None)
-            object.__setattr__(self, "_linked_nodes_cache_relationships_id", None)
-        super().__setattr__(name, value)
+        This property validates and converts the links dictionary into a
+        LinkedNodes object. The result is cached and automatically invalidated
+        when the links field is reassigned through Pydantic's field validation.
+
+        Returns:
+            LinkedNodes: A validated and cached LinkedNodes object.
+
+        Note:
+            - Cache is automatically cleared when `links` is reassigned
+            - For in-place mutations (e.g., node.links[key] = value), you must
+              either reassign the entire dict OR call _clear_linked_nodes_cache()
+            - Uses Pydantic's @field_validator to manage cache invalidation
+
+        Example:
+            >>> # Automatic cache invalidation (reassignment)
+            >>> node.links = {NodeType.SOURCE: ref}  # Cache auto-cleared
+
+            >>> # Manual cache clear needed (in-place mutation)
+            >>> node.links[NodeType.SOURCE] = ref
+            >>> node._clear_linked_nodes_cache()
+
+            >>> # Or reassign to trigger validation
+            >>> node.links = node.links  # Cache auto-cleared
+        """
+        if self.linked_nodes_cache is None:
+            # Compute and cache the LinkedNodes
+            self.linked_nodes_cache = LinkedNodes.create(self.links)
+        return self.linked_nodes_cache
 
 
     def __str__(self) -> str:

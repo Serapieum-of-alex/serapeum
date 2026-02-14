@@ -72,6 +72,8 @@ markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
     "mock: marks tests as mock (deselect with '-m \"not mock\"')",
     "integration: marks tests as optional-package (deselect with '-m \"not optional_package\"')",
+    "unit: marks tests as unit test (deselect with '-m \"not unit\"')",
+    "performance: marks tests as performance test (deselect with '-m \"not performance\"')",
 ]
 
 [tool.uv.sources]

@@ -3005,7 +3005,6 @@ source = { editable = "libs/core" }
 dependencies = [
     { name = "filetype" },
     { name = "numpy" },
-    { name = "pyyaml" },
     { name = "requests" },
     { name = "tqdm" },
 ]
@@ -3028,7 +3027,6 @@ dev = [
 requires-dist = [
     { name = "filetype", specifier = ">=1.2.0" },
     { name = "numpy" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "tqdm", specifier = ">=4.67.1" },
 ]

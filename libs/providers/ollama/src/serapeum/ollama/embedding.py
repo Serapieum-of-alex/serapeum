@@ -19,10 +19,22 @@ class OllamaEmbedding(BaseEmbedding):
         default_factory=dict, description="Additional kwargs for the Ollama API."
     )
     query_instruction: str | None = Field(
-        default=None, description="Instruction to prepend to query text."
+        default=None,
+        description=(
+            "Instruction to prepend to search queries for asymmetric embedding. "
+            "Used by get_query_embedding() when embedding user questions/searches. "
+            "Example: 'search_query:' or 'Represent this query for retrieving relevant documents:'. "
+            "This helps the model optimize query embeddings to match against document embeddings."
+        ),
     )
     text_instruction: str | None = Field(
-        default=None, description="Instruction to prepend to text."
+        default=None,
+        description=(
+            "Instruction to prepend to documents/text for asymmetric embedding. "
+            "Used by get_text_embedding() when embedding documents to be searched. "
+            "Example: 'search_document:' or 'Represent this document for retrieval:'. "
+            "This helps the model create document embeddings optimized for retrieval."
+        ),
     )
     keep_alive: float | str | None = Field(
         default="5m",

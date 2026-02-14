@@ -78,10 +78,29 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
         description="The number of workers to use for async embedding calls.",
     )
 
-    embeddings_cache: Any | None = Field(
+    cache_store: Any | None = Field(
         default=None,
-        description="Cache for the embeddings: if None, the embeddings are not cached",
+        description=(
+            "Key-value store for caching embeddings. Must implement get(), aget(), "
+            "put(), and aput() methods with signature: get(key: str, collection: str) -> dict | None. "
+            "When provided, embeddings are cached using a key that combines the text and model configuration. "
+            "If None, embeddings are not cached and will be recomputed on each call."
+        ),
     )
+
+    def _get_cache_key(self, text: str) -> str:
+        """Generate a cache key that includes both text and model configuration.
+
+        This ensures different models or configurations don't share cached embeddings.
+        """
+        model_dict = self.to_dict()
+        model_dict.pop("api_key", None)
+        model_dict.pop("cache_store", None)  # Avoid circular reference
+
+        # Create a deterministic string representation
+        import json
+        model_str = json.dumps(model_dict, sort_keys=True)
+        return f"{text}::{model_str}"
 
     @abstractmethod
     def _get_query_embedding(self, query: str) -> Embedding:
@@ -108,21 +127,20 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
         other examples of predefined instructions can be found in
         embeddings/huggingface_utils.py.
         """
-        model_dict = self.to_dict()
-        model_dict.pop("api_key", None)
-
         query_embedding = None
-        if self.embeddings_cache:
-            cached = self.embeddings_cache.get(key=query, collection="embeddings")
+        if self.cache_store:
+            cache_key = self._get_cache_key(query)
+            cached = self.cache_store.get(key=cache_key, collection="embeddings")
             if cached:
                 cached_key = next(iter(cached.keys()))
                 query_embedding = cached[cached_key]
 
         if query_embedding is None:
             query_embedding = self._get_query_embedding(query)
-            if self.embeddings_cache:
-                self.embeddings_cache.put(
-                    key=query,
+            if self.cache_store:
+                cache_key = self._get_cache_key(query)
+                self.cache_store.put(
+                    key=cache_key,
                     val={str(uuid.uuid4()): query_embedding},
                     collection="embeddings",
                 )
@@ -131,21 +149,20 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
 
     async def aget_query_embedding(self, query: str) -> Embedding:
         """Get query embedding."""
-        model_dict = self.to_dict()
-        model_dict.pop("api_key", None)
-
         query_embedding = None
-        if self.embeddings_cache:
-            cached = await self.embeddings_cache.aget(key=query, collection="embeddings")
+        if self.cache_store:
+            cache_key = self._get_cache_key(query)
+            cached = await self.cache_store.aget(key=cache_key, collection="embeddings")
             if cached:
                 cached_key = next(iter(cached.keys()))
                 query_embedding = cached[cached_key]
 
         if query_embedding is None:
             query_embedding = await self._aget_query_embedding(query)
-            if self.embeddings_cache:
-                await self.embeddings_cache.aput(
-                    key=query,
+            if self.cache_store:
+                cache_key = self._get_cache_key(query)
+                await self.cache_store.aput(
+                    key=cache_key,
                     val={str(uuid.uuid4()): query_embedding},
                     collection="embeddings",
                 )
@@ -212,14 +229,15 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
 
         If not in cache, generate them.
         """
-        if self.embeddings_cache is None:
+        if self.cache_store is None:
             raise ValueError("embeddings_cache must be defined")
 
         embeddings: list[Embedding | None] = [None for i in range(len(texts))]
         # Tuples of (index, text) to be able to keep same order of embeddings
         non_cached_texts: list[tuple[int, str]] = []
         for i, txt in enumerate(texts):
-            cached_emb = self.embeddings_cache.get(key=txt, collection="embeddings")
+            cache_key = self._get_cache_key(txt)
+            cached_emb = self.cache_store.get(key=cache_key, collection="embeddings")
             if cached_emb is not None:
                 cached_key = next(iter(cached_emb.keys()))
                 embeddings[i] = cached_emb[cached_key]
@@ -233,8 +251,9 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
                 orig_i = non_cached_texts[j][0]
                 embeddings[orig_i] = text_embedding
 
-                self.embeddings_cache.put(
-                    key=texts[orig_i],
+                cache_key = self._get_cache_key(texts[orig_i])
+                self.cache_store.put(
+                    key=cache_key,
                     val={str(uuid.uuid4()): text_embedding},
                     collection="embeddings",
                 )
@@ -245,15 +264,16 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
 
         If not in cache, generate them.
         """
-        if self.embeddings_cache is None:
+        if self.cache_store is None:
             raise ValueError("embeddings_cache must be defined")
 
         embeddings: list[Embedding | None] = [None for i in range(len(texts))]
         # Tuples of (index, text) to be able to keep same order of embeddings
         non_cached_texts: list[tuple[int, str]] = []
         for i, txt in enumerate(texts):
-            cached_emb = await self.embeddings_cache.aget(
-                key=txt, collection="embeddings"
+            cache_key = self._get_cache_key(txt)
+            cached_emb = await self.cache_store.aget(
+                key=cache_key, collection="embeddings"
             )
             if cached_emb is not None:
                 cached_key = next(iter(cached_emb.keys()))
@@ -268,8 +288,9 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
             for j, text_embedding in enumerate(text_embeddings):
                 orig_i = non_cached_texts[j][0]
                 embeddings[orig_i] = text_embedding
-                await self.embeddings_cache.aput(
-                    key=texts[orig_i],
+                cache_key = self._get_cache_key(texts[orig_i])
+                await self.cache_store.aput(
+                    key=cache_key,
                     val={str(uuid.uuid4()): text_embedding},
                     collection="embeddings",
                 )
@@ -283,20 +304,19 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
         document for retrieval: ". If you're curious, other examples of
         predefined instructions can be found in embeddings/huggingface_utils.py.
         """
-        model_dict = self.to_dict()
-        model_dict.pop("api_key", None)
-
-        if not self.embeddings_cache:
+        if not self.cache_store:
             text_embedding = self._get_text_embedding(text)
-        elif self.embeddings_cache is not None:
-            cached_emb = self.embeddings_cache.get(key=text, collection="embeddings")
+        elif self.cache_store is not None:
+            cache_key = self._get_cache_key(text)
+            cached_emb = self.cache_store.get(key=cache_key, collection="embeddings")
             if cached_emb is not None:
                 cached_key = next(iter(cached_emb.keys()))
                 text_embedding = cached_emb[cached_key]
             else:
                 text_embedding = self._get_text_embedding(text)
-                self.embeddings_cache.put(
-                    key=text,
+                cache_key = self._get_cache_key(text)
+                self.cache_store.put(
+                    key=cache_key,
                     val={str(uuid.uuid4()): text_embedding},
                     collection="embeddings",
                 )
@@ -305,22 +325,21 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
 
     async def aget_text_embedding(self, text: str) -> Embedding:
         """Async get text embedding."""
-        model_dict = self.to_dict()
-        model_dict.pop("api_key", None)
-
-        if not self.embeddings_cache:
+        if not self.cache_store:
             text_embedding = await self._aget_text_embedding(text)
-        elif self.embeddings_cache is not None:
-            cached_emb = await self.embeddings_cache.aget(
-                key=text, collection="embeddings"
+        elif self.cache_store is not None:
+            cache_key = self._get_cache_key(text)
+            cached_emb = await self.cache_store.aget(
+                key=cache_key, collection="embeddings"
             )
             if cached_emb is not None:
                 cached_key = next(iter(cached_emb.keys()))
                 text_embedding = cached_emb[cached_key]
             else:
                 text_embedding = await self._aget_text_embedding(text)
-                await self.embeddings_cache.aput(
-                    key=text,
+                cache_key = self._get_cache_key(text)
+                await self.cache_store.aput(
+                    key=cache_key,
                     val={str(uuid.uuid4()): text_embedding},
                     collection="embeddings",
                 )
@@ -341,15 +360,13 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
             get_tqdm_iterable(texts, show_progress, "Generating embeddings")
         )
 
-        model_dict = self.to_dict()
-        model_dict.pop("api_key", None)
         for idx, text in queue_with_progress:
             cur_batch.append(text)
             if idx == len(texts) - 1 or len(cur_batch) == self.embed_batch_size:
                 # flush
-                if not self.embeddings_cache:
+                if not self.cache_store:
                     embeddings = self._get_text_embeddings(cur_batch)
-                elif self.embeddings_cache is not None:
+                elif self.cache_store is not None:
                     embeddings = self._get_text_embeddings_cached(cur_batch)
                 result_embeddings.extend(embeddings)
 
@@ -366,9 +383,6 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
         """Asynchronously get a list of text embeddings, with batching."""
         num_workers = self.num_workers
 
-        model_dict = self.to_dict()
-        model_dict.pop("api_key", None)
-
         cur_batch: list[str] = []
         embeddings_coroutines: list[Coroutine] = []
 
@@ -378,9 +392,9 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
             if idx == len(texts) - 1 or len(cur_batch) == self.embed_batch_size:
                 # flush
 
-                if not self.embeddings_cache:
+                if not self.cache_store:
                     embeddings_coroutines.append(self._aget_text_embeddings(cur_batch))
-                elif self.embeddings_cache is not None:
+                elif self.cache_store is not None:
                     embeddings_coroutines.append(
                         self._aget_text_embeddings_cached(cur_batch)
                     )

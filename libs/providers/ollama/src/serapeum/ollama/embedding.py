@@ -1,10 +1,10 @@
 from __future__ import annotations
 from typing import Any, Sequence
 
-from serapeum.core.base.embeddings.base import BaseEmbedding
 from pydantic import Field, PrivateAttr, model_validator
 
 from ollama import Client, AsyncClient
+from serapeum.core.embeddings import BaseEmbedding
 
 
 class OllamaEmbedding(BaseEmbedding):

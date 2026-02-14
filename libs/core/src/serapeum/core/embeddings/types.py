@@ -1,5 +1,6 @@
 """Mock embedding model for testing."""
 
+from __future__ import annotations
 from pydantic import Field, field_validator
 
 from serapeum.core.base.embeddings.base import BaseEmbedding, Embedding

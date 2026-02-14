@@ -52,7 +52,7 @@ See Also:
     serapeum.core.types.base.SerializableModel: Base class for serialization
     serapeum.core.utils.base.truncate_text: Text truncation utility
 """
-
+from __future__ import annotations
 from typing import Any, Annotated, Sequence
 import uuid
 from abc import abstractmethod, ABC

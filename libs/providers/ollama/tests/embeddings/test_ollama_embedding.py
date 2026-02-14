@@ -1,12 +1,19 @@
 """Comprehensive test suite for OllamaEmbedding class.
 
-This module provides extensive unit and integration tests for the OllamaEmbedding
-class, targeting ≥95% code coverage with proper mocking and validation.
+This module provides exhaustive unit, integration, and edge case tests for the
+OllamaEmbedding class, targeting ≥95% code coverage with focus on:
+- Core functionality and formatting
+- Error handling and exception scenarios
+- Client initialization and configuration
+- Concurrent operations and performance
+- Type validation and boundary testing
 """
 
 from __future__ import annotations
 
+import asyncio
 import pytest
+from typing import Sequence
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from ollama import Client, AsyncClient
@@ -15,6 +22,11 @@ from pydantic import ValidationError
 from serapeum.core.base.embeddings.base import BaseEmbedding
 from serapeum.core.configs.defaults import DEFAULT_EMBED_BATCH_SIZE
 from serapeum.ollama.embedding import OllamaEmbedding
+
+
+# ============================================================================
+# Fixtures
+# ============================================================================
 
 
 @pytest.fixture
@@ -76,6 +88,30 @@ def mock_ollama_async_client(mock_embed_response: MagicMock) -> AsyncMock:
 
 
 @pytest.fixture
+def mock_client_with_error() -> MagicMock:
+    """Create a mock client that raises exceptions.
+
+    Returns:
+        MagicMock that raises exception on embed call.
+    """
+    client = MagicMock(spec=Client)
+    client.embed.side_effect = ConnectionError("Failed to connect to Ollama server")
+    return client
+
+
+@pytest.fixture
+def mock_timeout_client() -> MagicMock:
+    """Create a mock client that times out.
+
+    Returns:
+        MagicMock that raises TimeoutError.
+    """
+    client = MagicMock(spec=Client)
+    client.embed.side_effect = TimeoutError("Request timed out")
+    return client
+
+
+@pytest.fixture
 def basic_embedder() -> OllamaEmbedding:
     """Create a basic OllamaEmbedding instance with default settings.
 
@@ -101,6 +137,28 @@ def configured_embedder() -> OllamaEmbedding:
         keep_alive="10m",
         ollama_additional_kwargs={"temperature": 0.0},
     )
+
+
+@pytest.fixture
+def embedder_factory():
+    """Factory fixture to create OllamaEmbedding instances.
+
+    Returns:
+        Callable that creates configured embedders.
+    """
+    def _create(**kwargs):
+        with patch("serapeum.ollama.embedding.Client"), patch(
+            "serapeum.ollama.embedding.AsyncClient"
+        ):
+            defaults = {"model_name": "test-model"}
+            defaults.update(kwargs)
+            return OllamaEmbedding(**defaults)
+    return _create
+
+
+# ============================================================================
+# Initialization Tests
+# ============================================================================
 
 
 @pytest.mark.unit
@@ -235,6 +293,11 @@ class TestOllamaEmbeddingInitialization:
         assert embedder_max.embed_batch_size == 2048
 
 
+# ============================================================================
+# Text Formatting Tests
+# ============================================================================
+
+
 @pytest.mark.unit
 @pytest.mark.mock
 class TestTextFormattingMethods:
@@ -361,6 +424,65 @@ class TestTextFormattingMethods:
         result = configured_embedder._format_text(multiline)
         assert result == "Text: Line 1\nLine 2\nLine 3"
 
+    def test_format_with_newlines_in_instruction(self, embedder_factory) -> None:
+        """Test formatting with newline characters in instruction.
+
+        Inputs: instruction="Query:\\n" with newlines
+        Expected: Newlines stripped due to strip() call in _format_query
+        Checks: strip() behavior on special characters
+        """
+        embedder = embedder_factory(query_instruction="Query:\n")
+        result = embedder._format_query("test")
+
+        # strip() removes trailing newline
+        assert result == "Query: test"
+
+    def test_format_with_unicode_instruction(self, embedder_factory) -> None:
+        """Test formatting with unicode characters in instruction.
+
+        Inputs: instruction with emoji "🔍 Query:"
+        Expected: Unicode preserved in output
+        Checks: Unicode support in instructions
+        """
+        embedder = embedder_factory(query_instruction="🔍 Query:")
+        result = embedder._format_query("search term")
+
+        assert "🔍 Query:" in result
+        assert "search term" in result
+
+    def test_format_with_very_long_instruction(self, embedder_factory) -> None:
+        """Test formatting with extremely long instruction string.
+
+        Inputs: instruction with 1000+ characters
+        Expected: Long instruction handled without errors
+        Checks: No length limitations on instructions
+        """
+        long_instruction = "Instruction: " + "A" * 1000
+        embedder = embedder_factory(query_instruction=long_instruction)
+
+        result = embedder._format_query("query")
+
+        assert long_instruction in result
+        assert result.endswith("query")
+
+    def test_format_with_special_characters(self, embedder_factory) -> None:
+        """Test formatting with special characters in text and instruction.
+
+        Inputs: Special chars like @#$% in both instruction and text
+        Expected: All special characters preserved
+        Checks: Special character handling
+        """
+        embedder = embedder_factory(text_instruction="[Doc@#$%]:")
+        result = embedder._format_text("Test @#$% text")
+
+        assert "[Doc@#$%]:" in result
+        assert "Test @#$% text" in result
+
+
+# ============================================================================
+# Single Embedding Tests - Sync
+# ============================================================================
+
 
 @pytest.mark.unit
 @pytest.mark.mock
@@ -459,6 +581,11 @@ class TestSingleEmbeddingSyncMethods:
         assert result == [0.1, 0.2, 0.3, 0.4, 0.5]
 
 
+# ============================================================================
+# Single Embedding Tests - Async
+# ============================================================================
+
+
 @pytest.mark.unit
 @pytest.mark.mock
 @pytest.mark.asyncio
@@ -553,6 +680,11 @@ class TestSingleEmbeddingAsyncMethods:
         call_args = mock_ollama_async_client.embed.call_args
         assert call_args[1]["input"] == "Text: AI is a field"
         assert result == [0.1, 0.2, 0.3, 0.4, 0.5]
+
+
+# ============================================================================
+# Batch Embedding Tests - Sync
+# ============================================================================
 
 
 @pytest.mark.unit
@@ -665,6 +797,58 @@ class TestBatchEmbeddingSyncMethods:
         )
         assert len(result) == 1
 
+    def test_batch_with_large_list(self, embedder_factory) -> None:
+        """Test batch processing with large input list.
+
+        Inputs: 100 texts to embed
+        Expected: All texts processed in single API call
+        Checks: Batch processing efficiency
+        """
+        embedder = embedder_factory()
+        texts = [f"text_{i}" for i in range(100)]
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2] for _ in range(100)]
+        embedder._client.embed.return_value = mock_response
+
+        result = embedder.get_general_text_embeddings(texts)
+
+        # Verify single API call with all texts
+        embedder._client.embed.assert_called_once()
+        call_kwargs = embedder._client.embed.call_args[1]
+        assert call_kwargs["input"] == texts
+        assert len(result) == 100
+
+    def test_batch_preserves_order(self, embedder_factory) -> None:
+        """Test that batch embeddings preserve input order.
+
+        Inputs: Texts ["a", "b", "c"]
+        Expected: Embeddings returned in same order
+        Checks: Order preservation in batch processing
+        """
+        embedder = embedder_factory()
+        texts = ["alpha", "beta", "gamma"]
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+        embedder._client.embed.return_value = mock_response
+
+        result = embedder.get_general_text_embeddings(texts)
+
+        assert len(result) == 3
+        assert result[0] == [1.0, 0.0, 0.0]
+        assert result[1] == [0.0, 1.0, 0.0]
+        assert result[2] == [0.0, 0.0, 1.0]
+
+
+# ============================================================================
+# Batch Embedding Tests - Async
+# ============================================================================
+
 
 @pytest.mark.unit
 @pytest.mark.mock
@@ -743,6 +927,522 @@ class TestBatchEmbeddingAsyncMethods:
 
         mock_ollama_async_client.embed.assert_called_once()
         assert result == []
+
+    async def test_async_batch_processing(self, embedder_factory) -> None:
+        """Test async batch embedding processing.
+
+        Inputs: Multiple texts in async context
+        Expected: All texts processed in single async call
+        Checks: Async batch processing works correctly
+        """
+        embedder = embedder_factory()
+        texts = ["text1", "text2", "text3"]
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [
+            [0.1, 0.2],
+            [0.3, 0.4],
+            [0.5, 0.6],
+        ]
+        embedder._async_client.embed = AsyncMock(return_value=mock_response)
+
+        result = await embedder.aget_general_text_embeddings(texts)
+
+        embedder._async_client.embed.assert_called_once()
+        assert len(result) == 3
+
+
+# ============================================================================
+# Error Handling Tests
+# ============================================================================
+
+
+@pytest.mark.unit
+class TestErrorHandling:
+    """Test suite for error handling and exception scenarios."""
+
+    def test_connection_error_in_sync_embedding(
+        self, embedder_factory, mock_client_with_error: MagicMock
+    ) -> None:
+        """Test handling of connection errors in synchronous embedding.
+
+        Inputs: Ollama server unavailable
+        Expected: ConnectionError propagated to caller
+        Checks: Error message preserved and exception type correct
+        """
+        embedder = embedder_factory()
+        embedder._client = mock_client_with_error
+
+        with pytest.raises(ConnectionError) as exc_info:
+            embedder.get_general_text_embedding("test text")
+
+        assert "Failed to connect" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_connection_error_in_async_embedding(
+        self, embedder_factory
+    ) -> None:
+        """Test handling of connection errors in async embedding.
+
+        Inputs: Ollama server unavailable for async call
+        Expected: ConnectionError propagated to caller
+        Checks: Async error handling works correctly
+        """
+        embedder = embedder_factory()
+        embedder._async_client.embed = AsyncMock(
+            side_effect=ConnectionError("Failed to connect to Ollama server")
+        )
+
+        with pytest.raises(ConnectionError) as exc_info:
+            await embedder.aget_general_text_embedding("test text")
+
+        assert "Failed to connect" in str(exc_info.value)
+
+    def test_timeout_error_handling(
+        self, embedder_factory, mock_timeout_client: MagicMock
+    ) -> None:
+        """Test handling of timeout errors.
+
+        Inputs: Request that exceeds timeout limit
+        Expected: TimeoutError raised with appropriate message
+        Checks: Timeout errors are not swallowed
+        """
+        embedder = embedder_factory()
+        embedder._client = mock_timeout_client
+
+        with pytest.raises(TimeoutError) as exc_info:
+            embedder.get_general_text_embedding("test text")
+
+        assert "timed out" in str(exc_info.value).lower()
+
+    def test_invalid_model_name_type(self) -> None:
+        """Test validation error with invalid model_name type.
+
+        Inputs: model_name=123 (integer instead of string)
+        Expected: ValidationError raised
+        Checks: Pydantic type validation enforced
+        """
+        with patch("serapeum.ollama.embedding.Client"), patch(
+            "serapeum.ollama.embedding.AsyncClient"
+        ):
+            with pytest.raises(ValidationError) as exc_info:
+                OllamaEmbedding(model_name=123)  # type: ignore
+
+            assert "model_name" in str(exc_info.value)
+
+    def test_invalid_base_url_type(self) -> None:
+        """Test validation error with invalid base_url type.
+
+        Inputs: base_url=12345 (integer instead of string)
+        Expected: ValidationError raised
+        Checks: URL validation enforced
+        """
+        with patch("serapeum.ollama.embedding.Client"), patch(
+            "serapeum.ollama.embedding.AsyncClient"
+        ):
+            with pytest.raises(ValidationError) as exc_info:
+                OllamaEmbedding(model_name="test", base_url=12345)  # type: ignore
+
+            assert "base_url" in str(exc_info.value)
+
+    def test_invalid_ollama_additional_kwargs_type(self) -> None:
+        """Test validation error with invalid ollama_additional_kwargs type.
+
+        Inputs: ollama_additional_kwargs="not a dict" (string instead of dict)
+        Expected: ValidationError raised
+        Checks: Dict type validation enforced
+        """
+        with patch("serapeum.ollama.embedding.Client"), patch(
+            "serapeum.ollama.embedding.AsyncClient"
+        ):
+            with pytest.raises(ValidationError) as exc_info:
+                OllamaEmbedding(
+                    model_name="test",
+                    ollama_additional_kwargs="not a dict"  # type: ignore
+                )
+
+            assert "ollama_additional_kwargs" in str(exc_info.value)
+
+    def test_malformed_response_from_api(self, embedder_factory) -> None:
+        """Test handling of malformed API responses.
+
+        Inputs: API returns response without embeddings attribute
+        Expected: AttributeError raised when accessing embeddings
+        Checks: Error handling for unexpected API response format
+        """
+        embedder = embedder_factory()
+        mock_response = MagicMock()
+        del mock_response.embeddings  # Remove embeddings attribute
+        embedder._client.embed.return_value = mock_response
+
+        with pytest.raises(AttributeError):
+            embedder.get_general_text_embedding("test")
+
+    def test_empty_embeddings_list_from_api(self, embedder_factory) -> None:
+        """Test handling when API returns empty embeddings list.
+
+        Inputs: API returns response with empty embeddings list
+        Expected: IndexError when trying to access first embedding
+        Checks: Proper handling of unexpected empty responses
+        """
+        embedder = embedder_factory()
+        mock_response = MagicMock()
+        mock_response.embeddings = []  # Empty list
+        embedder._client.embed.return_value = mock_response
+
+        with pytest.raises(IndexError):
+            embedder.get_general_text_embedding("test")
+
+
+# ============================================================================
+# Client Initialization Tests
+# ============================================================================
+
+
+@pytest.mark.unit
+class TestClientInitialization:
+    """Test suite for client initialization edge cases."""
+
+    def test_client_initialization_with_custom_headers(self) -> None:
+        """Test client initialization with custom HTTP headers.
+
+        Inputs: client_kwargs with Authorization header
+        Expected: Clients created with custom headers passed through
+        Checks: Header configuration propagated to clients
+        """
+        with patch("serapeum.ollama.embedding.Client") as mock_client, patch(
+            "serapeum.ollama.embedding.AsyncClient"
+        ) as mock_async:
+            custom_headers = {"Authorization": "Bearer secret-token"}
+            embedder = OllamaEmbedding(
+                model_name="test",
+                client_kwargs={"headers": custom_headers}
+            )
+
+            # Verify headers passed to both clients
+            mock_client.assert_called_once()
+            mock_async.assert_called_once()
+            assert mock_client.call_args[1]["headers"] == custom_headers
+            assert mock_async.call_args[1]["headers"] == custom_headers
+
+    def test_client_initialization_with_timeout(self) -> None:
+        """Test client initialization with custom timeout.
+
+        Inputs: client_kwargs with timeout=120
+        Expected: Timeout configuration passed to clients
+        Checks: Timeout settings propagated correctly
+        """
+        with patch("serapeum.ollama.embedding.Client") as mock_client, patch(
+            "serapeum.ollama.embedding.AsyncClient"
+        ) as mock_async:
+            embedder = OllamaEmbedding(
+                model_name="test",
+                client_kwargs={"timeout": 120}
+            )
+
+            mock_client.assert_called_once()
+            mock_async.assert_called_once()
+            assert mock_client.call_args[1]["timeout"] == 120
+            assert mock_async.call_args[1]["timeout"] == 120
+
+    def test_multiple_client_kwargs(self) -> None:
+        """Test client initialization with multiple kwargs.
+
+        Inputs: Multiple client configuration options
+        Expected: All kwargs passed to client constructors
+        Checks: Complex configuration handled correctly
+        """
+        with patch("serapeum.ollama.embedding.Client") as mock_client, patch(
+            "serapeum.ollama.embedding.AsyncClient"
+        ) as mock_async:
+            client_config = {
+                "timeout": 60,
+                "headers": {"User-Agent": "TestClient/1.0"},
+                "verify": False
+            }
+
+            embedder = OllamaEmbedding(
+                model_name="test",
+                base_url="https://custom:443",
+                client_kwargs=client_config
+            )
+
+            # Verify all kwargs passed
+            call_kwargs = mock_client.call_args[1]
+            assert call_kwargs["timeout"] == 60
+            assert call_kwargs["headers"]["User-Agent"] == "TestClient/1.0"
+            assert call_kwargs["verify"] is False
+
+    def test_client_created_on_initialization(self) -> None:
+        """Test that clients are created during model validation.
+
+        Inputs: OllamaEmbedding instantiation
+        Expected: Both sync and async clients initialized immediately
+        Checks: _initialize_clients validator executed
+        """
+        with patch("serapeum.ollama.embedding.Client") as mock_client, patch(
+            "serapeum.ollama.embedding.AsyncClient"
+        ) as mock_async:
+            embedder = OllamaEmbedding(model_name="test")
+
+            # Verify clients were created
+            assert mock_client.called
+            assert mock_async.called
+
+            # Verify clients are stored as private attributes
+            assert hasattr(embedder, "_client")
+            assert hasattr(embedder, "_async_client")
+
+
+# ============================================================================
+# Keep-Alive Parameter Tests
+# ============================================================================
+
+
+@pytest.mark.unit
+class TestKeepAliveParameter:
+    """Test suite for keep_alive parameter handling."""
+
+    def test_keep_alive_string_format(self, embedder_factory) -> None:
+        """Test keep_alive with string duration format.
+
+        Inputs: keep_alive="10m"
+        Expected: String passed through to API call
+        Checks: String format accepted and propagated
+        """
+        embedder = embedder_factory(keep_alive="10m")
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2, 0.3]]
+        embedder._client.embed.return_value = mock_response
+
+        embedder.get_general_text_embedding("test")
+
+        # Verify keep_alive passed to API
+        call_kwargs = embedder._client.embed.call_args[1]
+        assert call_kwargs["keep_alive"] == "10m"
+
+    def test_keep_alive_numeric_format(self, embedder_factory) -> None:
+        """Test keep_alive with numeric seconds format.
+
+        Inputs: keep_alive=600.0 (float seconds)
+        Expected: Float passed through to API call
+        Checks: Numeric format accepted
+        """
+        embedder = embedder_factory(keep_alive=600.0)
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2, 0.3]]
+        embedder._client.embed.return_value = mock_response
+
+        embedder.get_general_text_embedding("test")
+
+        call_kwargs = embedder._client.embed.call_args[1]
+        assert call_kwargs["keep_alive"] == 600.0
+
+    def test_keep_alive_none(self, embedder_factory) -> None:
+        """Test keep_alive when set to None.
+
+        Inputs: keep_alive=None
+        Expected: None passed to API (server uses default)
+        Checks: None value handled correctly
+        """
+        embedder = embedder_factory(keep_alive=None)
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2, 0.3]]
+        embedder._client.embed.return_value = mock_response
+
+        embedder.get_general_text_embedding("test")
+
+        call_kwargs = embedder._client.embed.call_args[1]
+        assert call_kwargs["keep_alive"] is None
+
+    def test_keep_alive_default_value(self, embedder_factory) -> None:
+        """Test default keep_alive value.
+
+        Inputs: No keep_alive specified
+        Expected: Default "5m" used
+        Checks: Default value from class definition
+        """
+        embedder = embedder_factory()
+        assert embedder.keep_alive == "5m"
+
+    def test_keep_alive_types(self) -> None:
+        """Test keep_alive accepts string and numeric types.
+
+        Inputs: keep_alive as string, int, float, None
+        Expected: All types accepted by Pydantic validation
+        Checks: Type flexibility for keep_alive parameter
+        """
+        # String format
+        emb1 = OllamaEmbedding(model_name="test", keep_alive="5m")
+        assert emb1.keep_alive == "5m"
+
+        # Numeric format
+        emb2 = OllamaEmbedding(model_name="test", keep_alive=300.0)
+        assert emb2.keep_alive == 300.0
+
+        # None
+        emb3 = OllamaEmbedding(model_name="test", keep_alive=None)
+        assert emb3.keep_alive is None
+
+
+# ============================================================================
+# Ollama Additional Kwargs Tests
+# ============================================================================
+
+
+@pytest.mark.unit
+class TestOllamaAdditionalKwargs:
+    """Test suite for ollama_additional_kwargs parameter."""
+
+    def test_additional_kwargs_passed_to_sync_call(self, embedder_factory) -> None:
+        """Test that additional kwargs are passed to sync embed call.
+
+        Inputs: ollama_additional_kwargs with temperature and num_ctx
+        Expected: Kwargs passed in options parameter
+        Checks: Configuration options propagated correctly
+        """
+        additional = {"temperature": 0.7, "num_ctx": 4096}
+        embedder = embedder_factory(ollama_additional_kwargs=additional)
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2]]
+        embedder._client.embed.return_value = mock_response
+
+        embedder.get_general_text_embedding("test")
+
+        call_kwargs = embedder._client.embed.call_args[1]
+        assert call_kwargs["options"] == additional
+
+    @pytest.mark.asyncio
+    async def test_additional_kwargs_passed_to_async_call(
+        self, embedder_factory
+    ) -> None:
+        """Test that additional kwargs are passed to async embed call.
+
+        Inputs: ollama_additional_kwargs in async context
+        Expected: Kwargs passed in options parameter to async client
+        Checks: Async calls receive configuration
+        """
+        additional = {"seed": 42, "top_k": 50}
+        embedder = embedder_factory(ollama_additional_kwargs=additional)
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2]]
+
+        # Create proper AsyncMock for async client
+        embedder._async_client.embed = AsyncMock(return_value=mock_response)
+
+        await embedder.aget_general_text_embedding("test")
+
+        call_kwargs = embedder._async_client.embed.call_args[1]
+        assert call_kwargs["options"] == additional
+
+    def test_empty_additional_kwargs(self, embedder_factory) -> None:
+        """Test behavior with empty additional kwargs dict.
+
+        Inputs: ollama_additional_kwargs={}
+        Expected: Empty dict passed to API (no errors)
+        Checks: Empty dict handled gracefully
+        """
+        embedder = embedder_factory(ollama_additional_kwargs={})
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1]]
+        embedder._client.embed.return_value = mock_response
+
+        embedder.get_general_text_embedding("test")
+
+        call_kwargs = embedder._client.embed.call_args[1]
+        assert call_kwargs["options"] == {}
+
+
+# ============================================================================
+# Type and Return Value Tests
+# ============================================================================
+
+
+@pytest.mark.unit
+class TestTypeAndReturnValues:
+    """Test suite for type checking and return value validation."""
+
+    def test_get_query_embedding_return_type(self, embedder_factory) -> None:
+        """Test _get_query_embedding returns correct type.
+
+        Inputs: Valid query string
+        Expected: Returns Sequence[float]
+        Checks: Return type matches Sequence[float] protocol
+        """
+        embedder = embedder_factory()
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2, 0.3]]
+        embedder._client.embed.return_value = mock_response
+
+        result = embedder._get_query_embedding("test")
+
+        assert isinstance(result, Sequence)
+        assert all(isinstance(x, float) for x in result)
+
+    def test_get_text_embedding_return_type(self, embedder_factory) -> None:
+        """Test _get_text_embedding returns correct type.
+
+        Inputs: Valid text string
+        Expected: Returns Sequence[float]
+        Checks: Return type consistency
+        """
+        embedder = embedder_factory()
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.4, 0.5, 0.6]]
+        embedder._client.embed.return_value = mock_response
+
+        result = embedder._get_text_embedding("test")
+
+        assert isinstance(result, Sequence)
+        assert all(isinstance(x, float) for x in result)
+
+    def test_get_text_embeddings_return_type(self, embedder_factory) -> None:
+        """Test _get_text_embeddings returns correct type.
+
+        Inputs: List of text strings
+        Expected: Returns Sequence[Sequence[float]]
+        Checks: Nested sequence type correctness
+        """
+        embedder = embedder_factory()
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2], [0.3, 0.4]]
+        embedder._client.embed.return_value = mock_response
+
+        result = embedder._get_text_embeddings(["text1", "text2"])
+
+        assert isinstance(result, Sequence)
+        for embedding in result:
+            assert isinstance(embedding, Sequence)
+            assert all(isinstance(x, float) for x in embedding)
+
+    @pytest.mark.asyncio
+    async def test_async_return_types(self, embedder_factory) -> None:
+        """Test async methods return correct types.
+
+        Inputs: Async embedding calls
+        Expected: Same return types as sync versions
+        Checks: Type consistency between sync and async
+        """
+        embedder = embedder_factory()
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2, 0.3]]
+        embedder._async_client.embed = AsyncMock(return_value=mock_response)
+
+        query_result = await embedder._aget_query_embedding("query")
+        text_result = await embedder._aget_text_embedding("text")
+
+        assert isinstance(query_result, Sequence)
+        assert isinstance(text_result, Sequence)
+        assert all(isinstance(x, float) for x in query_result)
+        assert all(isinstance(x, float) for x in text_result)
+
+
+# ============================================================================
+# Integration Tests
+# ============================================================================
 
 
 @pytest.mark.integration
@@ -871,6 +1571,92 @@ class TestOllamaEmbeddingIntegration:
         expected_formatted = [f"Text: {text}" for text in texts]
         assert call_args[1]["input"] == expected_formatted
 
+    def test_complete_query_embedding_workflow(self, embedder_factory) -> None:
+        """Test complete workflow from query to embedding with all features.
+
+        Inputs: Query with instruction, additional kwargs, custom keep_alive
+        Expected: Complete pipeline executes correctly
+        Checks: End-to-end integration of all features
+        """
+        embedder = embedder_factory(
+            query_instruction="Search:",
+            ollama_additional_kwargs={"temperature": 0.5},
+            keep_alive="15m"
+        )
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2, 0.3, 0.4, 0.5]]
+        embedder._client.embed.return_value = mock_response
+
+        result = embedder._get_query_embedding("What is AI?")
+
+        # Verify all parameters passed correctly
+        call_kwargs = embedder._client.embed.call_args[1]
+        assert call_kwargs["model"] == "test-model"
+        assert call_kwargs["input"] == "Search: What is AI?"
+        assert call_kwargs["options"] == {"temperature": 0.5}
+        assert call_kwargs["keep_alive"] == "15m"
+        assert result == [0.1, 0.2, 0.3, 0.4, 0.5]
+
+    @pytest.mark.asyncio
+    async def test_complete_async_workflow(self, embedder_factory) -> None:
+        """Test complete async workflow with all features.
+
+        Inputs: Async text embedding with full configuration
+        Expected: All features work in async context
+        Checks: Async integration completeness
+        """
+        embedder = embedder_factory(
+            text_instruction="Document:",
+            ollama_additional_kwargs={"num_ctx": 2048},
+            keep_alive=300
+        )
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.9, 0.8, 0.7]]
+        embedder._async_client.embed = AsyncMock(return_value=mock_response)
+
+        result = await embedder._aget_text_embedding("Sample document text")
+
+        # Verify complete async pipeline
+        call_kwargs = embedder._async_client.embed.call_args[1]
+        assert call_kwargs["model"] == "test-model"
+        assert call_kwargs["input"] == "Document: Sample document text"
+        assert call_kwargs["options"] == {"num_ctx": 2048}
+        assert call_kwargs["keep_alive"] == 300
+        assert result == [0.9, 0.8, 0.7]
+
+    def test_batch_workflow_with_formatting(self, embedder_factory) -> None:
+        """Test batch processing workflow with instruction formatting.
+
+        Inputs: Multiple texts with text_instruction
+        Expected: All texts formatted and embedded in batch
+        Checks: Batch + formatting integration
+        """
+        embedder = embedder_factory(text_instruction="Text:")
+        texts = ["first", "second", "third"]
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+        embedder._client.embed.return_value = mock_response
+
+        result = embedder._get_text_embeddings(texts)
+
+        # Verify formatting applied to all texts
+        call_kwargs = embedder._client.embed.call_args[1]
+        expected_formatted = ["Text: first", "Text: second", "Text: third"]
+        assert call_kwargs["input"] == expected_formatted
+        assert len(result) == 3
+
+
+# ============================================================================
+# Property-Based Tests
+# ============================================================================
+
 
 @pytest.mark.unit
 @pytest.mark.mock
@@ -921,6 +1707,11 @@ class TestOllamaEmbeddingProperties:
         async_client1 = basic_embedder._async_client
         async_client2 = basic_embedder._async_client
         assert async_client1 is async_client2
+
+
+# ============================================================================
+# Edge Cases Tests
+# ============================================================================
 
 
 @pytest.mark.unit
@@ -997,24 +1788,10 @@ class TestOllamaEmbeddingEdgeCases:
 
         assert len(emb1) == len(emb2)
 
-    def test_keep_alive_types(self) -> None:
-        """Test keep_alive accepts string and numeric types.
 
-        Inputs: keep_alive as string, int, float, None
-        Expected: All types accepted by Pydantic validation
-        Checks: Type flexibility for keep_alive parameter
-        """
-        # String format
-        emb1 = OllamaEmbedding(model_name="test", keep_alive="5m")
-        assert emb1.keep_alive == "5m"
-
-        # Numeric format
-        emb2 = OllamaEmbedding(model_name="test", keep_alive=300.0)
-        assert emb2.keep_alive == 300.0
-
-        # None
-        emb3 = OllamaEmbedding(model_name="test", keep_alive=None)
-        assert emb3.keep_alive is None
+# ============================================================================
+# Formatting Scenario Matrix Tests
+# ============================================================================
 
 
 @pytest.mark.unit
@@ -1088,34 +1865,149 @@ class TestFormattingScenarioMatrix:
         assert embedder._format_text(input_text) == expected_text
 
 
+# ============================================================================
+# Concurrent Access Tests
+# ============================================================================
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+class TestConcurrentAccess:
+    """Test suite for concurrent and parallel access scenarios."""
+
+    async def test_multiple_async_calls_concurrent(self, embedder_factory) -> None:
+        """Test multiple async embedding calls running concurrently.
+
+        Inputs: 10 concurrent async embedding requests
+        Expected: All complete successfully without interference
+        Checks: Thread safety and async handling
+        """
+        embedder = embedder_factory()
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2, 0.3]]
+        embedder._async_client.embed = AsyncMock(return_value=mock_response)
+
+        # Launch 10 concurrent requests
+        tasks = [
+            embedder._aget_query_embedding(f"query_{i}")
+            for i in range(10)
+        ]
+
+        results = await asyncio.gather(*tasks)
+
+        # Verify all completed
+        assert len(results) == 10
+        assert all(len(r) == 3 for r in results)
+
+    async def test_mixed_sync_async_access(self, embedder_factory) -> None:
+        """Test mixing sync and async calls (should work independently).
+
+        Inputs: Alternating sync and async calls
+        Expected: Both client types work independently
+        Checks: Separate client instances don't interfere
+        """
+        embedder = embedder_factory()
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.5, 0.5]]
+
+        embedder._client.embed.return_value = mock_response
+        embedder._async_client.embed = AsyncMock(return_value=mock_response)
+
+        # Sync call
+        sync_result = embedder._get_query_embedding("sync query")
+
+        # Async call
+        async_result = await embedder._aget_query_embedding("async query")
+
+        assert sync_result == [0.5, 0.5]
+        assert async_result == [0.5, 0.5]
+
+        # Verify both clients were used
+        embedder._client.embed.assert_called_once()
+        embedder._async_client.embed.assert_called_once()
+
+
+# ============================================================================
+# Performance Tests
+# ============================================================================
+
+
+@pytest.mark.performance
+class TestPerformanceScenarios:
+    """Test suite for performance-related scenarios."""
+
+    def test_large_batch_size_handling(self, embedder_factory) -> None:
+        """Test handling of maximum batch size (2048 texts).
+
+        Inputs: 2048 texts (maximum allowed)
+        Expected: Processed without errors
+        Checks: Maximum capacity handling
+        """
+        embedder = embedder_factory(embed_batch_size=2048)
+        texts = [f"text_{i}" for i in range(2048)]
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1] for _ in range(2048)]
+        embedder._client.embed.return_value = mock_response
+
+        result = embedder.get_general_text_embeddings(texts)
+
+        assert len(result) == 2048
+
+    def test_very_long_text_input(self, embedder_factory) -> None:
+        """Test embedding of very long text input.
+
+        Inputs: Text with 10000+ characters
+        Expected: Processed without truncation or errors
+        Checks: Large input handling
+        """
+        embedder = embedder_factory()
+        long_text = "A" * 10000  # 10K characters
+
+        mock_response = MagicMock()
+        mock_response.embeddings = [[0.1, 0.2]]
+        embedder._client.embed.return_value = mock_response
+
+        result = embedder.get_general_text_embedding(long_text)
+
+        # Verify full text passed to API
+        call_kwargs = embedder._client.embed.call_args[1]
+        assert len(call_kwargs["input"]) == 10000
+        assert isinstance(result, list)
+
+    def test_embedding_dimension_consistency_multiple(self, embedder_factory) -> None:
+        """Test that embedding dimensions are consistent across calls.
+
+        Inputs: Multiple embedding calls
+        Expected: All return same dimension size
+        Checks: Dimension consistency
+        """
+        embedder = embedder_factory()
+
+        mock_response_1 = MagicMock()
+        mock_response_1.embeddings = [[0.1, 0.2, 0.3, 0.4, 0.5]]
+
+        mock_response_2 = MagicMock()
+        mock_response_2.embeddings = [[0.6, 0.7, 0.8, 0.9, 1.0]]
+
+        embedder._client.embed.side_effect = [mock_response_1, mock_response_2]
+
+        result1 = embedder.get_general_text_embedding("text1")
+        result2 = embedder.get_general_text_embedding("text2")
+
+        assert len(result1) == len(result2) == 5
+
+
+# ============================================================================
+# BaseEmbedding Integration Tests
+# ============================================================================
+
+
 @pytest.mark.unit
-@pytest.mark.mock
-class TestCoverageCompletion:
-    """Additional tests to ensure ≥95% coverage of all code paths."""
-
-    def test_pydantic_model_config(self, basic_embedder: OllamaEmbedding) -> None:
-        """Test that Pydantic model configuration is correct.
-
-        Inputs: Access model fields
-        Expected: All fields properly defined
-        Checks: Pydantic integration working correctly
-        """
-        assert hasattr(basic_embedder, "model_name")
-        assert hasattr(basic_embedder, "base_url")
-        assert hasattr(basic_embedder, "embed_batch_size")
-        assert hasattr(basic_embedder, "ollama_additional_kwargs")
-
-    def test_private_attrs_initialized(self, basic_embedder: OllamaEmbedding) -> None:
-        """Test that private attributes are initialized.
-
-        Inputs: Access _client and _async_client
-        Expected: Both attributes exist and are not None
-        Checks: PrivateAttr initialization in __init__
-        """
-        assert hasattr(basic_embedder, "_client")
-        assert hasattr(basic_embedder, "_async_client")
-        assert basic_embedder._client is not None
-        assert basic_embedder._async_client is not None
+class TestBaseEmbeddingIntegration:
+    """Test suite for integration with BaseEmbedding parent class."""
 
     def test_inherits_from_base_embedding(self) -> None:
         """Test that OllamaEmbedding properly inherits from BaseEmbedding.
@@ -1125,6 +2017,66 @@ class TestCoverageCompletion:
         Checks: Inheritance chain correct
         """
         assert issubclass(OllamaEmbedding, BaseEmbedding)
+
+    def test_inherits_from_base_embedding_instance(self, embedder_factory) -> None:
+        """Test that OllamaEmbedding instance is BaseEmbedding.
+
+        Inputs: OllamaEmbedding instance
+        Expected: isinstance check passes for BaseEmbedding
+        Checks: Inheritance relationship
+        """
+        embedder = embedder_factory()
+        assert isinstance(embedder, BaseEmbedding)
+
+    def test_implements_required_abstract_methods(self, embedder_factory) -> None:
+        """Test that all required abstract methods are implemented.
+
+        Inputs: Check for method existence
+        Expected: All abstract methods from BaseEmbedding implemented
+        Checks: Abstract method implementation completeness
+        """
+        embedder = embedder_factory()
+
+        # Check sync methods
+        assert hasattr(embedder, "_get_query_embedding")
+        assert callable(getattr(embedder, "_get_query_embedding"))
+
+        assert hasattr(embedder, "_get_text_embedding")
+        assert callable(getattr(embedder, "_get_text_embedding"))
+
+        # Check async methods
+        assert hasattr(embedder, "_aget_query_embedding")
+        assert callable(getattr(embedder, "_aget_query_embedding"))
+
+        assert hasattr(embedder, "_aget_text_embedding")
+        assert callable(getattr(embedder, "_aget_text_embedding"))
+
+        # Check batch methods
+        assert hasattr(embedder, "_get_text_embeddings")
+        assert callable(getattr(embedder, "_get_text_embeddings"))
+
+        assert hasattr(embedder, "_aget_text_embeddings")
+        assert callable(getattr(embedder, "_aget_text_embeddings"))
+
+    def test_model_name_accessible(self, embedder_factory) -> None:
+        """Test that model_name from BaseEmbedding is accessible.
+
+        Inputs: Create embedder with specific model_name
+        Expected: model_name attribute accessible and correct
+        Checks: Parent class field inheritance
+        """
+        embedder = embedder_factory(model_name="custom-model-name")
+        assert embedder.model_name == "custom-model-name"
+
+    def test_embed_batch_size_from_base(self, embedder_factory) -> None:
+        """Test that embed_batch_size from BaseEmbedding works.
+
+        Inputs: Custom embed_batch_size
+        Expected: Value stored and accessible
+        Checks: Parent class configuration field
+        """
+        embedder = embedder_factory(embed_batch_size=100)
+        assert embedder.embed_batch_size == 100
 
     def test_field_defaults_match_specification(self) -> None:
         """Test that field defaults match class specification.
@@ -1158,6 +2110,30 @@ class TestCoverageCompletion:
         )
         assert embedder is not None
         assert embedder.num_workers == 4
+
+    def test_pydantic_model_config(self, basic_embedder: OllamaEmbedding) -> None:
+        """Test that Pydantic model configuration is correct.
+
+        Inputs: Access model fields
+        Expected: All fields properly defined
+        Checks: Pydantic integration working correctly
+        """
+        assert hasattr(basic_embedder, "model_name")
+        assert hasattr(basic_embedder, "base_url")
+        assert hasattr(basic_embedder, "embed_batch_size")
+        assert hasattr(basic_embedder, "ollama_additional_kwargs")
+
+    def test_private_attrs_initialized(self, basic_embedder: OllamaEmbedding) -> None:
+        """Test that private attributes are initialized.
+
+        Inputs: Access _client and _async_client
+        Expected: Both attributes exist and are not None
+        Checks: PrivateAttr initialization in __init__
+        """
+        assert hasattr(basic_embedder, "_client")
+        assert hasattr(basic_embedder, "_async_client")
+        assert basic_embedder._client is not None
+        assert basic_embedder._async_client is not None
 
     def test_client_kwargs_passed_to_clients(self) -> None:
         """Test client_kwargs are passed to Client and AsyncClient initialization.

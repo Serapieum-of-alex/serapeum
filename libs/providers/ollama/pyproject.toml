@@ -67,6 +67,7 @@ count = true
 
 [tool.pytest.ini_options]
 testpaths = "tests"
+pythonpath = ["tests"]
 norecursedirs = "docs"
 markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",

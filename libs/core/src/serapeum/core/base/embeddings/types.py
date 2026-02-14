@@ -574,6 +574,35 @@ class LinkedNodes(SerializableModel):
 
     @property
     def source_id(self) -> str | None:
+        """Get the ID of the source node if it exists.
+
+        Convenience property for accessing the source node's ID without
+        checking if source is None first.
+
+        Returns:
+            The source node's ID string, or None if no source is set.
+
+        Examples:
+            - Accessing source ID when source exists
+                ```python
+                >>> from serapeum.core.base.embeddings.types import LinkedNodes, NodeInfo
+                >>> source = NodeInfo(id="document-123")
+                >>> links = LinkedNodes(source=source)
+                >>> links.source_id
+                'document-123'
+
+                ```
+            - Accessing when source is None
+                ```python
+                >>> links = LinkedNodes()
+                >>> links.source_id is None
+                True
+
+                ```
+
+        See Also:
+            BaseNode.source_id: Uses this property for node source tracking.
+        """
         source_id = None
         if self.source is not None:
             source_id = self.source.id
@@ -581,14 +610,126 @@ class LinkedNodes(SerializableModel):
 
 
 class BaseNode(SerializableModel, ABC):
-    """Base node Object.
+    """Abstract base class for document nodes with metadata and relationship management.
+
+    BaseNode provides the foundational functionality for representing chunks of
+    documents with rich metadata, embeddings, and hierarchical relationships. It
+    supports selective metadata inclusion for different contexts (LLM vs embeddings),
+    automatic change detection via hashing, and efficient relationship caching.
+
+    Key features:
+    - Automatic UUID generation for node identification
+    - Metadata management with selective inclusion/exclusion for LLM and embedding contexts
+    - Relationship tracking (source, parent, children, previous, next)
+    - Embedding storage and retrieval
+    - Cached LinkedNodes computation with automatic invalidation
+    - Customizable metadata formatting and serialization
 
     Attributes:
-        metadata fields
-            - injected as part of the text shown to LLMs as context
-            - injected as part of the text for generating embeddings
-            - used by vector DBs for metadata filtering
+        id: Unique identifier for the node (auto-generated UUID if not provided).
+        embedding: Optional vector embedding for the node's content.
+        metadata: Flat dictionary of metadata fields used for context and filtering.
+        excluded_embed_metadata_keys: Metadata keys excluded from embedding context.
+        excluded_llm_metadata_keys: Metadata keys excluded from LLM context.
+        links: Dictionary mapping NodeType to NodeInfo for relationships.
+        metadata_template: Template string for formatting metadata (default: "{key}: {value}").
+        metadata_separator: Separator between metadata fields (default: newline).
 
+    Note:
+        This is an abstract base class. Subclasses must implement:
+        - get_type(): Return the node's content type identifier
+        - get_content(): Return the node's content with optional metadata
+        - set_content(): Update the node's content
+        - hash: Property returning the content hash for change detection
+
+    Examples:
+        - Creating a concrete node subclass
+            ```python
+            >>> from serapeum.core.base.embeddings.types import BaseNode, MetadataMode, NodeType, NodeInfo
+            >>> import hashlib
+            >>> from pydantic import Field
+            >>>
+            >>> class TextNode(BaseNode):
+            ...     text: str = Field(default="", description="Text content of the node")
+            ...
+            ...     @classmethod
+            ...     def get_type(cls) -> str:
+            ...         return "text"
+            ...
+            ...     def get_content(self, metadata_mode: MetadataMode = MetadataMode.ALL) -> str:
+            ...         metadata_str = self.get_metadata_str(mode=metadata_mode)
+            ...         return f"{metadata_str}\\n{self.text}" if metadata_str else self.text
+            ...
+            ...     def set_content(self, value: str) -> None:
+            ...         self.text = value
+            ...
+            ...     @property
+            ...     def hash(self) -> str:
+            ...         return hashlib.sha256(self.text.encode()).hexdigest()
+
+            ```
+            - Create a node with metadata
+            ```python
+            >>> node = TextNode(
+            ...     text="Hello world",
+            ...     metadata={"page": 1, "author": "Alice"}
+            ... )
+            >>> node.get_type()
+            'text'
+            >>> node.get_content(metadata_mode=MetadataMode.NONE)
+            'Hello world'
+
+            ```
+        - Using metadata exclusion for different contexts
+            ```python
+            >>> node = TextNode(
+            ...     text="Sensitive content",
+            ...     metadata={"public": "yes", "internal_id": "secret123"},
+            ...     excluded_llm_metadata_keys=["internal_id"]
+            ... )
+
+            ```
+            - For LLM context (excludes internal_id)
+            ```python
+            >>> content_for_llm = node.get_content(metadata_mode=MetadataMode.LLM)
+            >>> "internal_id" in content_for_llm
+            False
+            >>> "public" in content_for_llm
+            True
+
+            ```
+        - Setting up node relationships
+            ```python
+            >>> parent = NodeInfo(id="parent-doc", type="document")
+            >>> child = NodeInfo(id="child-chunk", type="text")
+            >>>
+            >>> node = TextNode(
+            ...     text="Child content",
+            ...     links={NodeType.PARENT: parent, NodeType.SOURCE: parent}
+            ... )
+            >>> node.linked_nodes.parent.id
+            'parent-doc'
+            >>> node.source_id
+            'parent-doc'
+
+            ```
+        - Working with embeddings
+            ```python
+            >>> node = TextNode(text="Sample text")
+            >>> node.embedding = [0.1, 0.2, 0.3, 0.4, 0.5]
+            >>> embedding_vec = node.get_embedding()
+            >>> len(embedding_vec)
+            5
+            >>> embedding_vec[0]
+            0.1
+
+            ```
+
+    See Also:
+        NodeInfo: Lightweight reference to a node.
+        LinkedNodes: Container for node relationships.
+        MetadataMode: Controls metadata inclusion in different contexts.
+        SerializableModel: Base class providing serialization capabilities.
     """
     # hash is computed on a local field, during the validation process
     model_config = ConfigDict(populate_by_name=True, validate_assignment=True)
@@ -715,10 +856,28 @@ class BaseNode(SerializableModel, ABC):
         This is necessary because Pydantic's field validators only trigger
         on field assignment, not on in-place mutations.
 
-        Example:
-            >>> node.links[NodeType.SOURCE] = NodeInfo(id="new")
-            >>> node._clear_linked_nodes_cache()  # Clear cache after in-place mutation
-            >>> linked = node.linked_nodes  # Will recompute from updated links
+        Examples:
+            >>> from serapeum.core.base.embeddings.types import BaseNode, NodeInfo, NodeType, MetadataMode
+            >>> import hashlib
+            >>> from pydantic import Field
+            >>> class TextNode(BaseNode):
+            ...     text: str = Field(default="")
+            ...     @classmethod
+            ...     def get_type(cls) -> str:
+            ...         return "text"
+            ...     def get_content(self, metadata_mode=MetadataMode.ALL) -> str:
+            ...         return self.text
+            ...     def set_content(self, value: str) -> None:
+            ...         self.text = value
+            ...     @property
+            ...     def hash(self) -> str:
+            ...         return hashlib.sha256(self.text.encode()).hexdigest()
+            >>> node = TextNode(text="Sample", links={})
+            >>> new_source = NodeInfo(id="updated-source", type="document")
+            >>> node.links[NodeType.SOURCE] = new_source
+            >>> node._clear_linked_nodes_cache()
+            >>> node.linked_nodes.source.id
+            'updated-source'
         """
         self.linked_nodes_cache = None
 
@@ -739,16 +898,43 @@ class BaseNode(SerializableModel, ABC):
               either reassign the entire dict OR call _clear_linked_nodes_cache()
             - Uses Pydantic's @field_validator to manage cache invalidation
 
-        Example:
-            >>> # Automatic cache invalidation (reassignment)
-            >>> node.links = {NodeType.SOURCE: ref}  # Cache auto-cleared
+        Examples:
+            >>> from serapeum.core.base.embeddings.types import BaseNode, NodeInfo, NodeType, MetadataMode
+            >>> import hashlib
+            >>> from pydantic import Field
+            >>> class TextNode(BaseNode):
+            ...     text: str = Field(default="")
+            ...     @classmethod
+            ...     def get_type(cls) -> str:
+            ...         return "text"
+            ...     def get_content(self, metadata_mode=MetadataMode.ALL) -> str:
+            ...         return self.text
+            ...     def set_content(self, value: str) -> None:
+            ...         self.text = value
+            ...     @property
+            ...     def hash(self) -> str:
+            ...         return hashlib.sha256(self.text.encode()).hexdigest()
+            >>> node = TextNode(text="Sample")
+            >>> source_ref = NodeInfo(id="doc-123", type="document")
+            >>> node.links = {NodeType.SOURCE: source_ref}
+            >>> node.linked_nodes.source.id
+            'doc-123'
 
             >>> # Manual cache clear needed (in-place mutation)
             >>> node.links[NodeType.SOURCE] = ref
             >>> node._clear_linked_nodes_cache()
+            >>> node.linked_nodes.previous.id
+            'prev-chunk'
 
-            >>> # Or reassign to trigger validation
-            >>> node.links = node.links  # Cache auto-cleared
+            >>> node = TextNode(text="Sample")
+            >>> parent = NodeInfo(id="parent-1", type="document")
+            >>> child1 = NodeInfo(id="child-1", type="text")
+            >>> child2 = NodeInfo(id="child-2", type="text")
+            >>> node.links = {NodeType.PARENT: parent, NodeType.CHILD: [child1, child2]}
+            >>> node.linked_nodes.parent.id
+            'parent-1'
+            >>> len(node.linked_nodes.children)
+            2
         """
         if self.linked_nodes_cache is None:
             # Compute and cache the LinkedNodes
@@ -766,11 +952,10 @@ class BaseNode(SerializableModel, ABC):
         return f"Node ID: {self.id}\n{source_text_wrapped}"
 
     def get_embedding(self) -> list[float]:
-        """
-        Get embedding.
+        """Get embedding.
 
-        Errors if embedding is None.
-
+        Raises:
+            ValueErrors if embedding is None.
         """
         if self.embedding is None:
             raise ValueError("embedding not set.")

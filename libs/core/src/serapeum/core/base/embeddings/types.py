@@ -920,8 +920,9 @@ class BaseNode(SerializableModel, ABC):
             >>> node.linked_nodes.source.id
             'doc-123'
 
-            >>> # Manual cache clear needed (in-place mutation)
-            >>> node.links[NodeType.SOURCE] = ref
+            >>> node = TextNode(text="Sample", links={})
+            >>> prev_ref = NodeInfo(id="prev-chunk", type="text")
+            >>> node.links[NodeType.PREVIOUS] = prev_ref
             >>> node._clear_linked_nodes_cache()
             >>> node.linked_nodes.previous.id
             'prev-chunk'
@@ -972,16 +973,167 @@ class BaseNode(SerializableModel, ABC):
 
 
 class CallMixin(ABC):
-    """Base class for transform components."""
+    """Base class for node transformation components.
+
+    CallMixin defines the interface for components that transform sequences of nodes,
+    such as embedders, parsers, or metadata enrichers. It provides both synchronous
+    and asynchronous calling interfaces.
+
+    The mixin uses callable syntax (`obj(nodes)`) for synchronous transforms and
+    `obj.acall(nodes)` for asynchronous transforms, enabling composable pipelines.
+
+    Attributes:
+        model_config: Pydantic configuration allowing arbitrary types in subclasses.
+
+    Examples:
+        >>> from serapeum.core.base.embeddings.types import CallMixin, BaseNode, MetadataMode
+        >>> from typing import Sequence, Any
+        >>> import hashlib
+        >>> from pydantic import Field
+        >>> class TextNode(BaseNode):
+        ...     text: str = Field(default="")
+        ...     @classmethod
+        ...     def get_type(cls) -> str:
+        ...         return "text"
+        ...     def get_content(self, metadata_mode=MetadataMode.ALL) -> str:
+        ...         return self.text
+        ...     def set_content(self, value: str) -> None:
+        ...         self.text = value
+        ...     @property
+        ...     def hash(self) -> str:
+        ...         return hashlib.sha256(self.text.encode()).hexdigest()
+        >>> class UppercaseTransform(CallMixin):
+        ...     def __call__(self, nodes: Sequence[BaseNode], **kwargs: Any) -> Sequence[BaseNode]:
+        ...         result = []
+        ...         for node in nodes:
+        ...             node.set_content(node.get_content().upper())
+        ...             result.append(node)
+        ...         return result
+        >>> transformer = UppercaseTransform()
+        >>> nodes = [TextNode(text="hello"), TextNode(text="world")]
+        >>> transformed = transformer(nodes)
+        >>> transformed[0].get_content()
+        'HELLO'
+        >>> transformed[1].get_content()
+        'WORLD'
+
+    See Also:
+        BaseEmbedding: Uses CallMixin to enable embedding nodes.
+        BaseNode: The node type that this mixin transforms.
+    """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @abstractmethod
     def __call__(self, nodes: Sequence[BaseNode], **kwargs: Any) -> Sequence[BaseNode]:
-        """Transform nodes."""
+        """Transform a sequence of nodes synchronously.
+
+        Subclasses must implement this method to define their transformation logic.
+        This method is called when the object is invoked directly: `obj(nodes)`.
+
+        Args:
+            nodes: Sequence of BaseNode instances to transform.
+            **kwargs: Additional keyword arguments specific to the transformation.
+
+        Returns:
+            Transformed sequence of BaseNode instances.
+
+        Examples:
+            >>> from serapeum.core.base.embeddings.types import CallMixin, BaseNode, MetadataMode
+            >>> import hashlib
+            >>> from pydantic import Field
+            >>> class TextNode(BaseNode):
+            ...     text: str = Field(default="")
+            ...     @classmethod
+            ...     def get_type(cls) -> str:
+            ...         return "text"
+            ...     def get_content(self, metadata_mode=MetadataMode.ALL) -> str:
+            ...         return self.text
+            ...     def set_content(self, value: str) -> None:
+            ...         self.text = value
+            ...     @property
+            ...     def hash(self) -> str:
+            ...         return hashlib.sha256(self.text.encode()).hexdigest()
+            >>> class MetadataAdder(CallMixin):
+            ...     def __call__(self, nodes, **kwargs):
+            ...         result = []
+            ...         for i, node in enumerate(nodes):
+            ...             node.metadata["index"] = i
+            ...             result.append(node)
+            ...         return result
+            >>> adder = MetadataAdder()
+            >>> nodes = [TextNode(text="first"), TextNode(text="second")]
+            >>> processed = adder(nodes)
+            >>> processed[0].metadata["index"]
+            0
+            >>> processed[1].metadata["index"]
+            1
+
+        Note:
+            Implementations should preserve node identity where possible and
+            avoid mutating input nodes unless explicitly documented.
+        """
 
     async def acall(
         self, nodes: Sequence[BaseNode], **kwargs: Any
     ) -> Sequence[BaseNode]:
-        """Async transform nodes."""
+        """Transform a sequence of nodes asynchronously.
+
+        Default implementation delegates to synchronous `__call__`. Subclasses
+        can override this for true async implementations (e.g., async API calls).
+
+        Args:
+            nodes: Sequence of BaseNode instances to transform.
+            **kwargs: Additional keyword arguments specific to the transformation.
+
+        Returns:
+            Transformed sequence of BaseNode instances.
+
+        Examples:
+            >>> import asyncio
+            >>> from serapeum.core.base.embeddings.types import CallMixin, BaseNode, MetadataMode
+            >>> import hashlib
+            >>> from pydantic import Field
+            >>> class TextNode(BaseNode):
+            ...     text: str = Field(default="")
+            ...     @classmethod
+            ...     def get_type(cls) -> str:
+            ...         return "text"
+            ...     def get_content(self, metadata_mode=MetadataMode.ALL) -> str:
+            ...         return self.text
+            ...     def set_content(self, value: str) -> None:
+            ...         self.text = value
+            ...     @property
+            ...     def hash(self) -> str:
+            ...         return hashlib.sha256(self.text.encode()).hexdigest()
+            >>> class AsyncTransform(CallMixin):
+            ...     def __call__(self, nodes, **kwargs):
+            ...         return nodes
+            ...     async def acall(self, nodes, **kwargs):
+            ...         await asyncio.sleep(0)
+            ...         for node in nodes:
+            ...             node.metadata["async_processed"] = True
+            ...         return nodes
+            >>> transform = AsyncTransform()
+            >>> nodes = [TextNode(text="test")]
+            >>> result = asyncio.run(transform.acall(nodes))
+            >>> result[0].metadata["async_processed"]
+            True
+
+            >>> class SyncOnlyTransform(CallMixin):
+            ...     def __call__(self, nodes, **kwargs):
+            ...         for node in nodes:
+            ...             node.metadata["processed"] = True
+            ...         return nodes
+            >>> sync_transform = SyncOnlyTransform()
+            >>> nodes = [TextNode(text="test")]
+            >>> result = asyncio.run(sync_transform.acall(nodes))
+            >>> result[0].metadata["processed"]
+            True
+
+        Note:
+            If no true async implementation is needed, the default delegation
+            to `__call__` is sufficient. Override only if the transformation
+            benefits from async/await (e.g., I/O operations).
+        """
         return self.__call__(nodes, **kwargs)

@@ -1,10 +1,7 @@
 """Utilities functions."""
 
-import os
 import asyncio
 from typing import Iterable, Any, Coroutine, TypeVar
-from pathlib import Path
-import platformdirs
 
 
 DEFAULT_NUM_WORKERS = 4
@@ -34,23 +31,6 @@ def get_tqdm_iterable(
         except ImportError:
             pass
     return _iterator
-
-
-def get_cache_dir() -> str:
-    """
-    Locate a platform-appropriate cache directory for serapeum,
-    and create it if it doesn't yet exist.
-    """
-    # User override
-    if "LLAMA_INDEX_CACHE_DIR" in os.environ:
-        path = Path(os.environ["LLAMA_INDEX_CACHE_DIR"])
-    else:
-        path = Path(platformdirs.user_cache_dir("serapeum"))
-
-    # Pass exist_ok and call makedirs directly, so we avoid TOCTOU issues
-    path.mkdir(parents=True, exist_ok=True)
-
-    return str(path)
 
 
 async def run_jobs(

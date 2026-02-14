@@ -3,7 +3,7 @@ import uuid
 from abc import abstractmethod, ABC
 import textwrap
 from enum import Enum, auto
-from pydantic import ConfigDict, Field, PlainSerializer, model_validator
+from pydantic import ConfigDict, Field, PlainSerializer, model_validator, field_validator
 from serapeum.core.utils.base import truncate_text
 from serapeum.core.types import SerializableModel
 
@@ -75,48 +75,44 @@ class LinkedNodes(SerializableModel):
     parent: NodeInfo | None = None
     children: list[NodeInfo] | None = None
 
+    @field_validator('source', 'previous', 'next', 'parent')
+    @classmethod
+    def validate_single_node(cls, v: Any) -> NodeInfo | None:
+        """Validate that single-node fields contain NodeInfo objects.
+
+        Uses Pydantic's field_validator instead of manual validation.
+        Applies to: source, previous, next, parent fields.
+        """
+        if v is not None and not isinstance(v, NodeInfo):
+            raise ValueError("Must be a NodeInfo object, not a list")
+        return v
+
+    @field_validator('children')
+    @classmethod
+    def validate_children_list(cls, v: Any) -> list[NodeInfo] | None:
+        """Validate that children field contains a list of NodeInfo objects.
+
+        Uses Pydantic's field_validator instead of manual validation.
+        """
+        if v is not None and not isinstance(v, list):
+            raise ValueError("Children must be a list of NodeInfo objects")
+        return v
+
     @classmethod
     def create(
         cls, linked_nodes_info: dict[NodeType, NodeInfoType]
     ) -> "LinkedNodes":
-        linked = cls(
-            source=cls._get_single(
-                linked_nodes_info, NodeType.SOURCE
-            ),
-            previous=cls._get_single(
-                linked_nodes_info, NodeType.PREVIOUS
-            ),
-            next=cls._get_single(
-                linked_nodes_info, NodeType.NEXT
-            ),
-            parent=cls._get_single(
-                linked_nodes_info, NodeType.PARENT
-            ),
-            children=cls._get_list(
-                linked_nodes_info, NodeType.CHILD
-            ),
+        """Create LinkedNodes from a dict mapping NodeType to NodeInfo/list.
+
+        Pydantic validators automatically handle type checking for each field.
+        """
+        return cls(
+            source=linked_nodes_info.get(NodeType.SOURCE),
+            previous=linked_nodes_info.get(NodeType.PREVIOUS),
+            next=linked_nodes_info.get(NodeType.NEXT),
+            parent=linked_nodes_info.get(NodeType.PARENT),
+            children=linked_nodes_info.get(NodeType.CHILD),
         )
-        return linked
-
-    @staticmethod
-    def _get_single(
-        linked_nodes: dict[NodeType, NodeInfoType],
-        node_type: NodeType,
-    ) -> NodeInfo | None:
-        value = linked_nodes.get(node_type)
-        if value is not None and not isinstance(value, NodeInfo):
-            raise ValueError(f"The {node_type.value.title()} Node must be a single NodeInfo object")
-        return value
-
-    @staticmethod
-    def _get_list(
-        linked_nodes: dict[NodeType, NodeInfoType],
-        node_type: NodeType,
-    ) -> list[NodeInfo] | None:
-        value = linked_nodes.get(node_type)
-        if value is not None and not isinstance(value, list):
-            raise ValueError(f"The {node_type.value.title()} Node must be a single NodeInfo object")
-        return value
 
     def as_dict(self) -> dict[NodeType, NodeInfoType | None]:
         linked_nodes = {

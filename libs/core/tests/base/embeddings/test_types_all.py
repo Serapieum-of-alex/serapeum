@@ -1,6 +1,7 @@
 import asyncio
 
 import pytest
+from pydantic import ValidationError
 
 from serapeum.core.base.embeddings.types import (
     BaseNode,
@@ -106,106 +107,33 @@ class TestLinkedNodesCreate:
         assert linked.children == [ref]
 
     @pytest.mark.parametrize(
-        "node_type, invalid_value",
+        "node_type, invalid_value, expected_field",
         [
-            (
-                    NodeType.SOURCE,
-                    [NodeInfo(id="a")],
-            ),
-            (
-                    NodeType.PREVIOUS,
-                    [NodeInfo(id="a")],
-            ),
-            (
-                    NodeType.NEXT,
-                    [NodeInfo(id="a")],
-            ),
-            (
-                    NodeType.PARENT,
-                    [NodeInfo(id="a")],
-            ),
-            (
-                    NodeType.CHILD,
-                    NodeInfo(id="a"),
-            ),
+            (NodeType.SOURCE, [NodeInfo(id="a")], "source"),
+            (NodeType.PREVIOUS, [NodeInfo(id="a")], "previous"),
+            (NodeType.NEXT, [NodeInfo(id="a")], "next"),
+            (NodeType.PARENT, [NodeInfo(id="a")], "parent"),
+            (NodeType.CHILD, NodeInfo(id="a"), "children"),
         ],
     )
-    def test_invalid_types_raise_value_error(
-        self, node_type, invalid_value
+    def test_invalid_types_raise_validation_error(
+        self, node_type, invalid_value, expected_field
     ):
         """
         Inputs: links with invalid value types for each key.
-        Expected result: ValueError with the specific error message.
-        Checks: exception type and exact message.
+        Expected result: Pydantic ValidationError.
+        Checks: exception type and field name.
+
+        Note: Uses Pydantic's field_validator which raises ValidationError
+        instead of ValueError for better error messages and type safety.
         """
         linked_nodes = {node_type: invalid_value}
-        error_message = f"The {node_type.value.title()} Node must be a single NodeInfo object"
-        with pytest.raises(ValueError, match=error_message):
+        with pytest.raises(ValidationError) as exc_info:
             LinkedNodes.create(linked_nodes)
 
-
-class TestLinkedNodesGetSingle:
-    def test_accepts_node_reference_or_none(self):
-        """
-        Inputs: valid NodeInfo or missing relationship key.
-        Expected result: returns NodeInfo for present key, None otherwise.
-        Checks: exact object identity for present key and None for missing.
-        """
-        ref = NodeInfo(id="a")
-        linked_nodes = {NodeType.SOURCE: ref}
-        value_present = LinkedNodes._get_single(
-            linked_nodes, NodeType.SOURCE
-        )
-        value_missing = LinkedNodes._get_single(
-            linked_nodes, NodeType.NEXT
-        )
-        assert value_present is ref
-        assert value_missing is None
-
-    def test_rejects_non_node_reference(self):
-        """
-        Inputs: invalid value (list) for a single node.
-        Expected result: ValueError with a source error message.
-        Checks: exact exception type and message.
-        """
-        linked_nodes = {NodeType.SOURCE: [NodeInfo(id="a")]}
-        error_message = f"The {NodeType.SOURCE.value.title()} Node must be a single NodeInfo object"
-        with pytest.raises(ValueError, match=error_message):
-            LinkedNodes._get_single(
-                linked_nodes, NodeType.SOURCE
-            )
-
-
-class TestLinkedNodesGetList:
-    def test_accepts_list_or_none(self):
-        """
-        Inputs: list of NodeInfo and missing relationship key.
-        Expected result: returns list for present key, None otherwise.
-        Checks: list equality and None for missing key.
-        """
-        refs = [NodeInfo(id="a"), NodeInfo(id="b")]
-        linked_nodes = {NodeType.CHILD: refs}
-        value_present = LinkedNodes._get_list(
-            linked_nodes, NodeType.CHILD
-        )
-        value_missing = LinkedNodes._get_list(
-            linked_nodes, NodeType.SOURCE
-        )
-        assert value_present == refs
-        assert value_missing is None
-
-    def test_rejects_non_list(self):
-        """
-        Inputs: invalid value (NodeInfo) for list relationship.
-        Expected result: ValueError with children error message.
-        Checks: exact exception type and message.
-        """
-        linked_nodes = {NodeType.CHILD: NodeInfo(id="a")}
-        error_message = f"The {NodeType.CHILD.value.title()} Node must be a single NodeInfo object"
-        with pytest.raises(ValueError, match=error_message):
-            LinkedNodes._get_list(
-                linked_nodes, NodeType.CHILD
-            )
+        # Verify the error is for the correct field
+        errors = exc_info.value.errors()
+        assert any(expected_field in str(err['loc']) for err in errors)
 
 
 class TestLinkedNodesAsDict:

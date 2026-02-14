@@ -32,6 +32,7 @@ class MockEmbedding(BaseEmbedding):
     Examples:
         - Creating a mock embedding model
             ```python
+            >>> from serapeum.core.embeddings import MockEmbedding
             >>> emb = MockEmbedding(embed_dim=3)
             >>> emb.model_name
             'mock-embedding'
@@ -101,6 +102,7 @@ class MockEmbedding(BaseEmbedding):
         Examples:
             - Getting the class name
                 ```python
+                >>> from serapeum.core.embeddings import MockEmbedding
                 >>> MockEmbedding.class_name()
                 'MockEmbedding'
 
@@ -120,6 +122,7 @@ class MockEmbedding(BaseEmbedding):
         Examples:
             - Generating a mock vector
                 ```python
+                >>> from serapeum.core.embeddings import MockEmbedding
                 >>> emb = MockEmbedding(embed_dim=5)
                 >>> emb._get_mocked_vector()
                 [0.5, 0.5, 0.5, 0.5, 0.5]
@@ -128,6 +131,7 @@ class MockEmbedding(BaseEmbedding):
 
             - Vector length matches embed_dim
                 ```python
+                >>> from serapeum.core.embeddings import MockEmbedding
                 >>> emb = MockEmbedding(embed_dim=3)
                 >>> len(emb._get_mocked_vector())
                 3
@@ -151,6 +155,7 @@ class MockEmbedding(BaseEmbedding):
         Examples:
             - Query embedding returns mock vector
                 ```python
+                >>> from serapeum.core.embeddings import MockEmbedding
                 >>> emb = MockEmbedding(embed_dim=3)
                 >>> emb._get_query_embedding("test query")
                 [0.5, 0.5, 0.5]
@@ -182,6 +187,7 @@ class MockEmbedding(BaseEmbedding):
         Examples:
             - Text embedding returns mock vector
                 ```python
+                >>> from serapeum.core.embeddings import MockEmbedding
                 >>> emb = MockEmbedding(embed_dim=4)
                 >>> emb._get_text_embedding("sample text")
                 [0.5, 0.5, 0.5, 0.5]
@@ -215,6 +221,7 @@ class MockEmbedding(BaseEmbedding):
             - Async query embedding
                 ```python
                 >>> import asyncio
+                >>> from serapeum.core.embeddings import MockEmbedding
                 >>> emb = MockEmbedding(embed_dim=3)
                 >>> asyncio.run(emb._aget_query_embedding("async query"))
                 [0.5, 0.5, 0.5]
@@ -240,6 +247,7 @@ class MockEmbedding(BaseEmbedding):
             - Async text embedding
                 ```python
                 >>> import asyncio
+                >>> from serapeum.core.embeddings import MockEmbedding
                 >>> emb = MockEmbedding(embed_dim=3)
                 >>> asyncio.run(emb._aget_text_embedding("async text"))
                 [0.5, 0.5, 0.5]

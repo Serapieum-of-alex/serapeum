@@ -67,7 +67,7 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
     model_name: str = Field(
         default="unknown", description="The name of the embedding model."
     )
-    embed_batch_size: int = Field(
+    batch_size: int = Field(
         default=DEFAULT_EMBED_BATCH_SIZE,
         description="The batch size for embedding calls.",
         gt=0,
@@ -362,7 +362,7 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
 
         for idx, text in queue_with_progress:
             cur_batch.append(text)
-            if idx == len(texts) - 1 or len(cur_batch) == self.embed_batch_size:
+            if idx == len(texts) - 1 or len(cur_batch) == self.batch_size:
                 # flush
                 if not self.cache_store:
                     embeddings = self._get_text_embeddings(cur_batch)
@@ -389,7 +389,7 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
         # for idx, text in queue_with_progress:
         for idx, text in enumerate(texts):
             cur_batch.append(text)
-            if idx == len(texts) - 1 or len(cur_batch) == self.embed_batch_size:
+            if idx == len(texts) - 1 or len(cur_batch) == self.batch_size:
                 # flush
 
                 if not self.cache_store:

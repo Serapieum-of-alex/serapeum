@@ -339,29 +339,33 @@ class TestTextFormattingMethods:
         result = configured_embedder._format_query("  What is AI?  ")
         assert result == "Query: What is AI?"
 
-    def test_format_query_empty_string(
+    def test_format_query_empty_string_with_instruction(
         self, configured_embedder: OllamaEmbedding
     ) -> None:
-        """Test query formatting with empty query string.
+        """Test query formatting with empty query string and instruction.
 
         Inputs: query="" with instruction="Query:"
-        Expected: Returns "Query:" (instruction only)
-        Checks: Empty query after stripping leaves only instruction
+        Expected: ValueError raised (no content to embed)
+        Checks: Empty query not allowed even with instruction
         """
-        result = configured_embedder._format_query("")
-        assert result == "Query:"
+        with pytest.raises(ValueError) as exc_info:
+            configured_embedder._format_query("")
 
-    def test_format_query_whitespace_only(
+        assert "empty or whitespace-only" in str(exc_info.value).lower()
+
+    def test_format_query_whitespace_only_with_instruction(
         self, configured_embedder: OllamaEmbedding
     ) -> None:
-        """Test query formatting with whitespace-only query.
+        """Test query formatting with whitespace-only query and instruction.
 
         Inputs: query="   " with instruction="Query:"
-        Expected: Returns "Query:" (whitespace stripped)
-        Checks: Whitespace-only input treated as empty
+        Expected: ValueError raised (no content after stripping)
+        Checks: Whitespace-only query not allowed even with instruction
         """
-        result = configured_embedder._format_query("   ")
-        assert result == "Query:"
+        with pytest.raises(ValueError) as exc_info:
+            configured_embedder._format_query("   ")
+
+        assert "empty or whitespace-only" in str(exc_info.value).lower()
 
     def test_format_text_without_instruction(
         self, basic_embedder: OllamaEmbedding
@@ -399,17 +403,19 @@ class TestTextFormattingMethods:
         result = configured_embedder._format_text("  AI is a field  ")
         assert result == "Text: AI is a field"
 
-    def test_format_text_empty_string(
+    def test_format_text_empty_string_with_instruction(
         self, configured_embedder: OllamaEmbedding
     ) -> None:
-        """Test text formatting with empty text string.
+        """Test text formatting with empty text string and instruction.
 
         Inputs: text="" with instruction="Text:"
-        Expected: Returns "Text:" (instruction only)
-        Checks: Empty text after stripping leaves only instruction
+        Expected: ValueError raised (no content to embed)
+        Checks: Empty text not allowed even with instruction
         """
-        result = configured_embedder._format_text("")
-        assert result == "Text:"
+        with pytest.raises(ValueError) as exc_info:
+            configured_embedder._format_text("")
+
+        assert "empty or whitespace-only" in str(exc_info.value).lower()
 
     def test_format_text_multiline(
         self, configured_embedder: OllamaEmbedding
@@ -423,6 +429,62 @@ class TestTextFormattingMethods:
         multiline = "Line 1\nLine 2\nLine 3"
         result = configured_embedder._format_text(multiline)
         assert result == "Text: Line 1\nLine 2\nLine 3"
+
+    def test_format_query_empty_string_raises_error(
+        self, basic_embedder: OllamaEmbedding
+    ) -> None:
+        """Test that formatting empty query raises ValueError.
+
+        Inputs: Empty string ""
+        Expected: ValueError raised
+        Checks: Input validation prevents empty queries
+        """
+        with pytest.raises(ValueError) as exc_info:
+            basic_embedder._format_query("")
+
+        assert "empty or whitespace-only" in str(exc_info.value).lower()
+
+    def test_format_query_whitespace_only_raises_error(
+        self, basic_embedder: OllamaEmbedding
+    ) -> None:
+        """Test that formatting whitespace-only query raises ValueError.
+
+        Inputs: Whitespace-only string "   "
+        Expected: ValueError raised
+        Checks: Input validation prevents whitespace-only queries
+        """
+        with pytest.raises(ValueError) as exc_info:
+            basic_embedder._format_query("   ")
+
+        assert "empty or whitespace-only" in str(exc_info.value).lower()
+
+    def test_format_text_empty_string_raises_error(
+        self, basic_embedder: OllamaEmbedding
+    ) -> None:
+        """Test that formatting empty text raises ValueError.
+
+        Inputs: Empty string ""
+        Expected: ValueError raised
+        Checks: Input validation prevents empty text
+        """
+        with pytest.raises(ValueError) as exc_info:
+            basic_embedder._format_text("")
+
+        assert "empty or whitespace-only" in str(exc_info.value).lower()
+
+    def test_format_text_whitespace_only_raises_error(
+        self, basic_embedder: OllamaEmbedding
+    ) -> None:
+        """Test that formatting whitespace-only text raises ValueError.
+
+        Inputs: Whitespace-only string "   "
+        Expected: ValueError raised
+        Checks: Input validation prevents whitespace-only text
+        """
+        with pytest.raises(ValueError) as exc_info:
+            basic_embedder._format_text("   ")
+
+        assert "empty or whitespace-only" in str(exc_info.value).lower()
 
     def test_format_with_newlines_in_instruction(self, embedder_factory) -> None:
         """Test formatting with newline characters in instruction.
@@ -1809,8 +1871,6 @@ class TestOllamaEmbeddingEdgeCases:
         ("Q:", "T:", "query", "text", "Q: query", "T: text"),
         # Instructions with extra whitespace
         ("  Q:  ", "  T:  ", "  query  ", "  text  ", "Q: query", "T: text"),
-        # Empty strings
-        ("Q:", "T:", "", "", "Q:", "T:"),
         # Unicode
         ("問:", "文:", "query", "text", "問: query", "文: text"),
         # Long instructions
@@ -1829,7 +1889,6 @@ class TestOllamaEmbeddingEdgeCases:
         "text_instruction_only",
         "both_instructions",
         "whitespace_handling",
-        "empty_strings",
         "unicode_instructions",
         "long_instructions",
     ],

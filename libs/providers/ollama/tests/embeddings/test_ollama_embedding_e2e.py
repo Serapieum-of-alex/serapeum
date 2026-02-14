@@ -477,18 +477,17 @@ class TestEdgeCases:
         """Test embedding with whitespace-only string.
 
         Inputs: Single space string (empty after strip)
-        Expected: Embedding generated for minimal input
-        Checks: Model handles minimal content
+        Expected: ValueError raised for empty text after stripping
+        Checks: Input validation prevents empty embeddings
         """
         embedder = OllamaEmbedding(model_name=test_model)
 
-        # Use single space instead of empty (model may not handle truly empty)
-        embedding = embedder.get_text_embedding(" ")
+        # Should raise ValueError for whitespace-only input
+        with pytest.raises(ValueError) as exc_info:
+            embedder.get_text_embedding(" ")
 
-        # Should return an embedding for whitespace
-        assert isinstance(embedding, list)
-        # Some models may return empty for whitespace, so just check type
-        assert isinstance(embedding, list)
+        assert "empty or whitespace-only" in str(exc_info.value).lower()
+        assert "stripping whitespace" in str(exc_info.value).lower()
 
 
     @pytest.mark.e2e

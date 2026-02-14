@@ -130,17 +130,49 @@ class OllamaEmbedding(BaseEmbedding):
         return result.embeddings[0]
 
     def _format_query(self, query: str) -> str:
-        """Format query with instruction if provided."""
+        """Format query with instruction if provided.
+
+        Args:
+            query: The query string to format.
+
+        Returns:
+            Formatted query string.
+
+        Raises:
+            ValueError: If query is empty or whitespace-only after stripping.
+        """
+        stripped_query = query.strip()
+
+        if not stripped_query:
+            raise ValueError(
+                "Cannot embed empty or whitespace-only query. "
+                "Query becomes empty after stripping whitespace."
+            )
+
         if self.query_instruction:
-            val = f"{self.query_instruction.strip()} {query.strip()}".strip()
-        else:
-            val = query.strip()
-        return val
+            return f"{self.query_instruction.strip()} {stripped_query}"
+        return stripped_query
 
     def _format_text(self, text: str) -> str:
-        """Format text with instruction if provided."""
+        """Format text with instruction if provided.
+
+        Args:
+            text: The text string to format.
+
+        Returns:
+            Formatted text string.
+
+        Raises:
+            ValueError: If text is empty or whitespace-only after stripping.
+        """
+        stripped_text = text.strip()
+
+        if not stripped_text:
+            raise ValueError(
+                "Cannot embed empty or whitespace-only text. "
+                "Text becomes empty after stripping whitespace."
+            )
+
         if self.text_instruction:
-            val = f"{self.text_instruction.strip()} {text.strip()}".strip()
-        else:
-            val = text.strip()
-        return val
+            return f"{self.text_instruction.strip()} {stripped_text}"
+        return stripped_text

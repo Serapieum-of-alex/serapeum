@@ -131,7 +131,7 @@ def configured_embedder() -> OllamaEmbedding:
     return OllamaEmbedding(
         model_name="test-model",
         base_url="http://custom:8080",
-        embed_batch_size=20,
+        batch_size=20,
         query_instruction="Query:",
         text_instruction="Text:",
         keep_alive="10m",
@@ -181,7 +181,7 @@ class TestOllamaEmbeddingInitialization:
         # Assert - Verify default values
         assert embedder.model_name == "test-model"
         assert embedder.base_url == "http://localhost:11434"
-        assert embedder.embed_batch_size == DEFAULT_EMBED_BATCH_SIZE
+        assert embedder.batch_size == DEFAULT_EMBED_BATCH_SIZE
         assert embedder.query_instruction is None
         assert embedder.text_instruction is None
         assert embedder.keep_alive == "5m"
@@ -205,7 +205,7 @@ class TestOllamaEmbeddingInitialization:
         embedder = OllamaEmbedding(
             model_name="custom-model",
             base_url="http://custom-host:9999",
-            embed_batch_size=50,
+            batch_size=50,
             ollama_additional_kwargs=custom_kwargs,
             query_instruction="Represent query:",
             text_instruction="Represent document:",
@@ -216,7 +216,7 @@ class TestOllamaEmbeddingInitialization:
         # Assert - Verify all custom values
         assert embedder.model_name == "custom-model"
         assert embedder.base_url == "http://custom-host:9999"
-        assert embedder.embed_batch_size == 50
+        assert embedder.batch_size == 50
         assert embedder.query_instruction == "Represent query:"
         assert embedder.text_instruction == "Represent document:"
         assert embedder.keep_alive == 120.0
@@ -249,53 +249,48 @@ class TestOllamaEmbeddingInitialization:
         assert OllamaEmbedding.class_name() == "OllamaEmbedding"
         assert basic_embedder.class_name() == "OllamaEmbedding"
 
-    def test_embed_batch_size_validation_too_small(self) -> None:
-        """Test validation error when embed_batch_size is 0 or negative.
+    def test_batch_size_validation_too_small(self) -> None:
+        """Test validation error when batch_size is 0 or negative.
 
-        Inputs: embed_batch_size=0 (violates gt=0 constraint)
+        Inputs: batch_size=0 (violates gt=0 constraint)
         Expected: ValidationError raised
         Checks: Pydantic validation enforces positive integer
         """
         with pytest.raises(ValidationError) as exc_info:
-            OllamaEmbedding(model_name="test-model", embed_batch_size=0)
+            OllamaEmbedding(model_name="test-model", batch_size=0)
 
-        assert "embed_batch_size" in str(exc_info.value)
+        assert "batch_size" in str(exc_info.value)
 
-    def test_embed_batch_size_validation_too_large(self) -> None:
-        """Test validation error when embed_batch_size exceeds maximum.
+    def test_batch_size_validation_too_large(self) -> None:
+        """Test validation error when batch_size exceeds maximum.
 
-        Inputs: embed_batch_size=2049 (violates le=2048 constraint)
+        Inputs: batch_size=2049 (violates le=2048 constraint)
         Expected: ValidationError raised
         Checks: Pydantic validation enforces maximum batch size
         """
         with pytest.raises(ValidationError) as exc_info:
-            OllamaEmbedding(model_name="test-model", embed_batch_size=2049)
+            OllamaEmbedding(model_name="test-model", batch_size=2049)
 
-        assert "embed_batch_size" in str(exc_info.value)
+        assert "batch_size" in str(exc_info.value)
 
-    def test_embed_batch_size_boundary_values(self) -> None:
-        """Test embed_batch_size at boundary values (1 and 2048).
+    def test_batch_size_boundary_values(self) -> None:
+        """Test batch_size at boundary values (1 and 2048).
 
-        Inputs: embed_batch_size=1 (minimum) and embed_batch_size=2048 (maximum)
+        Inputs: batch_size=1 (minimum) and batch_size=2048 (maximum)
         Expected: Both values accepted without error
         Checks: Boundary conditions are valid
         """
         # Minimum valid value
         embedder_min = OllamaEmbedding(
-            model_name="test-model", embed_batch_size=1
+            model_name="test-model", batch_size=1
         )
-        assert embedder_min.embed_batch_size == 1
+        assert embedder_min.batch_size == 1
 
         # Maximum valid value
         embedder_max = OllamaEmbedding(
-            model_name="test-model", embed_batch_size=2048
+            model_name="test-model", batch_size=2048
         )
-        assert embedder_max.embed_batch_size == 2048
-
-
-# ============================================================================
-# Text Formatting Tests
-# ============================================================================
+        assert embedder_max.batch_size == 2048
 
 
 @pytest.mark.unit
@@ -2004,7 +1999,7 @@ class TestPerformanceScenarios:
         Expected: Processed without errors
         Checks: Maximum capacity handling
         """
-        embedder = embedder_factory(embed_batch_size=2048)
+        embedder = embedder_factory(batch_size=2048)
         texts = [f"text_{i}" for i in range(2048)]
 
         mock_response = MagicMock()
@@ -2127,15 +2122,15 @@ class TestBaseEmbeddingIntegration:
         embedder = embedder_factory(model_name="custom-model-name")
         assert embedder.model_name == "custom-model-name"
 
-    def test_embed_batch_size_from_base(self, embedder_factory) -> None:
-        """Test that embed_batch_size from BaseEmbedding works.
+    def test_batch_size_from_base(self, embedder_factory) -> None:
+        """Test that batch_size from BaseEmbedding works.
 
-        Inputs: Custom embed_batch_size
+        Inputs: Custom batch_size
         Expected: Value stored and accessible
         Checks: Parent class configuration field
         """
-        embedder = embedder_factory(embed_batch_size=100)
-        assert embedder.embed_batch_size == 100
+        embedder = embedder_factory(batch_size=100)
+        assert embedder.batch_size == 100
 
     def test_field_defaults_match_specification(self) -> None:
         """Test that field defaults match class specification.
@@ -2147,7 +2142,7 @@ class TestBaseEmbeddingIntegration:
         embedder = OllamaEmbedding(model_name="test")
 
         assert embedder.base_url == "http://localhost:11434"
-        assert embedder.embed_batch_size == DEFAULT_EMBED_BATCH_SIZE
+        assert embedder.batch_size == DEFAULT_EMBED_BATCH_SIZE
         assert embedder.ollama_additional_kwargs == {}
         assert embedder.query_instruction is None
         assert embedder.text_instruction is None
@@ -2179,7 +2174,7 @@ class TestBaseEmbeddingIntegration:
         """
         assert hasattr(basic_embedder, "model_name")
         assert hasattr(basic_embedder, "base_url")
-        assert hasattr(basic_embedder, "embed_batch_size")
+        assert hasattr(basic_embedder, "batch_size")
         assert hasattr(basic_embedder, "ollama_additional_kwargs")
 
     def test_private_attrs_initialized(self, basic_embedder: OllamaEmbedding) -> None:

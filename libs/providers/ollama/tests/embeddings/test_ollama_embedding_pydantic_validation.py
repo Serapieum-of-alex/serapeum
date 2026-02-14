@@ -181,12 +181,12 @@ class TestModelValidatorBehavior:
             embedder = OllamaEmbedding(
                 model_name="test",
                 base_url="http://host:1234",
-                embed_batch_size=50,
+                batch_size=50,
             )
             
             assert embedder.model_name == "test"
             assert embedder.base_url == "http://host:1234"
-            assert embedder.embed_batch_size == 50
+            assert embedder.batch_size == 50
             assert embedder._client is not None
             assert embedder._async_client is not None
 
@@ -197,7 +197,7 @@ class TestModelValidatorBehavior:
             embedder = OllamaEmbedding(
                 model_name="test-model",
                 base_url="http://custom:8080",
-                embed_batch_size=100,
+                batch_size=100,
                 ollama_additional_kwargs={"temp": 0.5},
                 query_instruction="Query: ",
                 text_instruction="Text: ",
@@ -207,7 +207,7 @@ class TestModelValidatorBehavior:
             
             assert embedder.model_name == "test-model"
             assert embedder.base_url == "http://custom:8080"
-            assert embedder.embed_batch_size == 100
+            assert embedder.batch_size == 100
             assert embedder.ollama_additional_kwargs == {"temp": 0.5}
             assert embedder.query_instruction == "Query: "
             assert embedder.text_instruction == "Text: "
@@ -225,7 +225,7 @@ class TestPydanticSerialization:
             embedder = OllamaEmbedding(
                 model_name="test",
                 base_url="http://localhost:11434",
-                embed_batch_size=50,
+                batch_size=50,
             )
             
             data = embedder.model_dump()
@@ -233,7 +233,7 @@ class TestPydanticSerialization:
             assert isinstance(data, dict)
             assert data["model_name"] == "test"
             assert data["base_url"] == "http://localhost:11434"
-            assert data["embed_batch_size"] == 50
+            assert data["batch_size"] == 50
 
     def model_dump_includes_optional_fields_when_set(self) -> None:
         with patch("serapeum.ollama.embedding.Client"), patch(
@@ -268,7 +268,7 @@ class TestPydanticSerialization:
             original = OllamaEmbedding(
                 model_name="test",
                 base_url="http://custom:8080",
-                embed_batch_size=75,
+                batch_size=75,
             )
             
             data = original.model_dump()
@@ -277,7 +277,7 @@ class TestPydanticSerialization:
             
             assert recreated.model_name == original.model_name
             assert recreated.base_url == original.base_url
-            assert recreated.embed_batch_size == original.embed_batch_size
+            assert recreated.batch_size == original.batch_size
 
     def model_validate_reinitializes_private_attributes(self) -> None:
         with patch("serapeum.ollama.embedding.Client") as mock_client_cls, patch(
@@ -300,7 +300,7 @@ class TestPydanticSerialization:
         with patch("serapeum.ollama.embedding.Client"), patch(
             "serapeum.ollama.embedding.AsyncClient"
         ):
-            embedder = OllamaEmbedding(model_name="test", embed_batch_size=100)
+            embedder = OllamaEmbedding(model_name="test", batch_size=100)
             
             json_str = embedder.model_dump_json()
             
@@ -330,7 +330,7 @@ class TestPydanticSerialization:
             original = OllamaEmbedding(
                 model_name="llama2",
                 base_url="http://custom:9090",
-                embed_batch_size=200,
+                batch_size=200,
                 ollama_additional_kwargs={"temperature": 0.8},
                 query_instruction="Search: ",
                 text_instruction="Document: ",
@@ -342,7 +342,7 @@ class TestPydanticSerialization:
             
             assert recreated.model_name == original.model_name
             assert recreated.base_url == original.base_url
-            assert recreated.embed_batch_size == original.embed_batch_size
+            assert recreated.batch_size == original.batch_size
             assert recreated.ollama_additional_kwargs == original.ollama_additional_kwargs
             assert recreated.query_instruction == original.query_instruction
             assert recreated.text_instruction == original.text_instruction
@@ -352,56 +352,56 @@ class TestPydanticSerialization:
 class TestFieldValidation:
     """Test suite for Pydantic field-level validation."""
 
-    def embed_batch_size_rejects_zero(self) -> None:
+    def batch_size_rejects_zero(self) -> None:
         with patch("serapeum.ollama.embedding.Client"), patch(
             "serapeum.ollama.embedding.AsyncClient"
         ):
             with pytest.raises(ValidationError) as exc_info:
-                OllamaEmbedding(model_name="test", embed_batch_size=0)
+                OllamaEmbedding(model_name="test", batch_size=0)
             
-            assert "embed_batch_size" in str(exc_info.value)
+            assert "batch_size" in str(exc_info.value)
 
-    def embed_batch_size_rejects_negative_values(self) -> None:
+    def batch_size_rejects_negative_values(self) -> None:
         with patch("serapeum.ollama.embedding.Client"), patch(
             "serapeum.ollama.embedding.AsyncClient"
         ):
             with pytest.raises(ValidationError) as exc_info:
-                OllamaEmbedding(model_name="test", embed_batch_size=-10)
+                OllamaEmbedding(model_name="test", batch_size=-10)
             
-            assert "embed_batch_size" in str(exc_info.value)
+            assert "batch_size" in str(exc_info.value)
 
-    def embed_batch_size_rejects_values_over_2048(self) -> None:
+    def batch_size_rejects_values_over_2048(self) -> None:
         with patch("serapeum.ollama.embedding.Client"), patch(
             "serapeum.ollama.embedding.AsyncClient"
         ):
             with pytest.raises(ValidationError) as exc_info:
-                OllamaEmbedding(model_name="test", embed_batch_size=2049)
+                OllamaEmbedding(model_name="test", batch_size=2049)
             
-            assert "embed_batch_size" in str(exc_info.value)
+            assert "batch_size" in str(exc_info.value)
 
-    def embed_batch_size_accepts_boundary_value_1(self) -> None:
+    def batch_size_accepts_boundary_value_1(self) -> None:
         with patch("serapeum.ollama.embedding.Client"), patch(
             "serapeum.ollama.embedding.AsyncClient"
         ):
-            embedder = OllamaEmbedding(model_name="test", embed_batch_size=1)
+            embedder = OllamaEmbedding(model_name="test", batch_size=1)
             
-            assert embedder.embed_batch_size == 1
+            assert embedder.batch_size == 1
 
-    def embed_batch_size_accepts_boundary_value_2048(self) -> None:
+    def batch_size_accepts_boundary_value_2048(self) -> None:
         with patch("serapeum.ollama.embedding.Client"), patch(
             "serapeum.ollama.embedding.AsyncClient"
         ):
-            embedder = OllamaEmbedding(model_name="test", embed_batch_size=2048)
+            embedder = OllamaEmbedding(model_name="test", batch_size=2048)
             
-            assert embedder.embed_batch_size == 2048
+            assert embedder.batch_size == 2048
 
-    def embed_batch_size_accepts_valid_middle_values(self) -> None:
+    def batch_size_accepts_valid_middle_values(self) -> None:
         with patch("serapeum.ollama.embedding.Client"), patch(
             "serapeum.ollama.embedding.AsyncClient"
         ):
-            embedder = OllamaEmbedding(model_name="test", embed_batch_size=512)
+            embedder = OllamaEmbedding(model_name="test", batch_size=512)
             
-            assert embedder.embed_batch_size == 512
+            assert embedder.batch_size == 512
 
     def keep_alive_accepts_string_values(self) -> None:
         with patch("serapeum.ollama.embedding.Client"), patch(

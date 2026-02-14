@@ -16,10 +16,6 @@ from serapeum.core.base.embeddings.base import BaseEmbedding
 from serapeum.ollama import OllamaEmbedding
 
 
-# ============================================================================
-# Test Configuration
-# ============================================================================
-
 test_model = "llama3.1:latest"
 
 try:
@@ -127,7 +123,7 @@ class TestBatchEmbedding:
         Expected: List of embeddings matching input count
         Checks: Count, types, dimensions match
         """
-        embedder = OllamaEmbedding(model_name=test_model, embed_batch_size=10)
+        embedder = OllamaEmbedding(model_name=test_model, batch_size=10)
 
         texts = [
             "The quick brown fox jumps over the lazy dog.",
@@ -158,7 +154,7 @@ class TestBatchEmbedding:
         Expected: All embeddings returned correctly
         Checks: Count matches, no errors
         """
-        embedder = OllamaEmbedding(model_name=test_model, embed_batch_size=50)
+        embedder = OllamaEmbedding(model_name=test_model, batch_size=50)
 
         texts = [f"This is test sentence number {i}." for i in range(20)]
 

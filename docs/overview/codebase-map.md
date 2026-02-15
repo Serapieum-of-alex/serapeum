@@ -93,7 +93,7 @@ This page summarizes the main modules, key classes, and the public API surface o
   - `Ollama`: `FunctionCallingLLM` implementation for Ollama server (chat, completion, tool calling, structured outputs)
   - `OllamaEmbedding`: Local embedding generation using Ollama models
   - Full sync/async/streaming support for both LLM and embeddings
-  - See [Ollama Provider README](../../libs/providers/ollama/README.md) for detailed documentation
+  - See [Ollama Provider Documentation](../reference/providers/ollama/general.md) for detailed documentation
 
 ## Key Public Classes
 

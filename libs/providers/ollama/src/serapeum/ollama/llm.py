@@ -867,7 +867,9 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 >>> # Ensure `ollama serve` is running and the model is available locally.
                 >>> llm = Ollama(model="llama3.1", request_timeout=120)
                 >>> resp = llm.chat([Message(role=MessageRole.USER, content="hi")])  # doctest: +SKIP
-                >>> isinstance(resp.message.content, str)  # doctest: +SKIP
+                >>> print(resp)   # doctest: +SKIP
+                Hello! How are you today? Is there something I can help you with or would you like to chat?
+                >>> isinstance(resp.message.content, str)   # doctest: +SKIP
                 True
 
                 ```

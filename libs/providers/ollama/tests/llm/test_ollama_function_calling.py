@@ -13,7 +13,7 @@ from __future__ import annotations
 from typing import Sequence
 
 import pytest
-from .models import Album
+from ..models import Album
 from pydantic import BaseModel
 
 from serapeum.core.chat.types import AgentChatResponse

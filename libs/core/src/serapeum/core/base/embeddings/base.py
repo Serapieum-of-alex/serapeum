@@ -15,10 +15,11 @@ batching and progress tracking for large-scale embedding tasks.
 from __future__ import annotations
 import asyncio
 import uuid
+import json
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Callable, Coroutine, Sequence
-
+from tqdm.asyncio import tqdm_asyncio
 import numpy as np
 from pydantic import (
     Field,
@@ -57,7 +58,7 @@ class SimilarityMode(str, Enum):
     Examples:
         - Using the default cosine similarity
             ```python
-            >>> from serapeum.core.base.embeddings.base import SimilarityMode
+            >>> from serapeum.core.base.embeddings.base import SimilarityMode       # type: ignore
             >>> mode = SimilarityMode.DEFAULT
             >>> mode.value
             'cosine'
@@ -66,7 +67,7 @@ class SimilarityMode(str, Enum):
 
         - Comparing different similarity modes
             ```python
-            >>> from serapeum.core.base.embeddings.base import SimilarityMode
+            >>> from serapeum.core.base.embeddings.base import SimilarityMode   # type: ignore
             >>> SimilarityMode.DOT_PRODUCT.value
             'dot_product'
             >>> SimilarityMode.EUCLIDEAN.value
@@ -106,7 +107,7 @@ def mean_agg(embeddings: list[Embedding]) -> Embedding:
     Examples:
         - Averaging two simple 2D embeddings
             ```python
-            >>> from serapeum.core.base.embeddings.base import mean_agg
+            >>> from serapeum.core.base.embeddings.base import mean_agg     # type: ignore
             >>> emb1 = [1.0, 2.0]
             >>> emb2 = [3.0, 4.0]
             >>> result = mean_agg([emb1, emb2])
@@ -173,7 +174,7 @@ def similarity(
     Examples:
         - Computing cosine similarity (default mode)
             ```python
-            >>> from serapeum.core.base.embeddings.base import similarity
+            >>> from serapeum.core.base.embeddings.base import similarity   # type: ignore
             >>> emb1 = [1.0, 0.0, 0.0]
             >>> emb2 = [1.0, 0.0, 0.0]
             >>> float(similarity(emb1, emb2))
@@ -306,8 +307,6 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
         model_dict.pop("cache_store", None)  # Avoid circular reference
 
         # Create a deterministic string representation
-        import json
-
         model_str = json.dumps(model_dict, sort_keys=True)
         return f"{text}::{model_str}"
 
@@ -814,6 +813,7 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
                     embeddings = self._get_text_embeddings(cur_batch)
                 elif self.cache_store is not None:
                     embeddings = self._get_text_embeddings_cached(cur_batch)
+
                 result_embeddings.extend(embeddings)
 
                 cur_batch = []
@@ -881,8 +881,6 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
                 )
             elif show_progress:
                 try:
-                    from tqdm.asyncio import tqdm_asyncio
-
                     nested_embeddings = await tqdm_asyncio.gather(
                         *embeddings_coroutines,
                         total=len(embeddings_coroutines),
@@ -922,7 +920,7 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
         Examples:
             - Computing cosine similarity
                 ```python
-                >>> from serapeum.core.embeddings import BaseEmbedding
+                >>> from serapeum.core.embeddings import BaseEmbedding  # type: ignore
                 >>> emb1 = [1.0, 0.0]
                 >>> emb2 = [1.0, 0.0]
                 >>> float(BaseEmbedding.similarity(emb1, emb2))

@@ -28,9 +28,13 @@ from serapeum.core.tools import ToolOutput
 from serapeum.core.tools.callable_tool import CallableTool
 from serapeum.core.tools.types import BaseTool
 
-# ============================================================================
-# Test Models and Functions
-# ============================================================================
+# Check if serapeum.ollama is available for E2E tests
+try:
+    import serapeum.ollama  # noqa: F401
+
+    OLLAMA_AVAILABLE = True
+except ImportError:
+    OLLAMA_AVAILABLE = False
 
 
 class SimpleOutput(BaseModel):
@@ -135,11 +139,6 @@ class CallableClass:
         return {"message": message, "reversed": message[::-1], "upper": message.upper()}
 
 
-# ============================================================================
-# Mock LLM for Integration Tests
-# ============================================================================
-
-
 class MockLLM(MagicMock):
     """Mock LLM that returns predefined responses."""
 
@@ -205,11 +204,6 @@ class MockLLM(MagicMock):
         return self.predict_and_call(
             tools, user_msg, chat_history, verbose, allow_parallel_tool_calls, **kwargs
         )
-
-
-# ============================================================================
-# Unit Tests: Testing _create_tool() Method
-# ============================================================================
 
 
 class TestCreateToolMethod:
@@ -370,11 +364,6 @@ class TestCreateToolMethod:
             tools_llm._create_tool()
 
 
-# ============================================================================
-# Integration Tests: Pydantic Models with Mock LLM
-# ============================================================================
-
-
 class TestPydanticModelsIntegration:
     """Integration tests using Pydantic models with MockLLM.
 
@@ -472,11 +461,6 @@ class TestPydanticModelsIntegration:
         assert isinstance(results, list)
         assert len(results) == 2  # MockLLM returns 2 for parallel
         assert all(isinstance(r, SimpleOutput) for r in results)
-
-
-# ============================================================================
-# Integration Tests: Regular Functions with Mock LLM
-# ============================================================================
 
 
 class TestRegularFunctionsIntegration:
@@ -621,11 +605,6 @@ class TestRegularFunctionsIntegration:
         assert result["reversed"] == "olleh"
 
 
-# ============================================================================
-# Integration Tests: Mixed Usage Patterns
-# ============================================================================
-
-
 class TestMixedUsagePatterns:
     """Integration tests for various usage patterns and edge cases."""
 
@@ -700,11 +679,6 @@ class TestMixedUsagePatterns:
         )
 
         assert isinstance(result, dict)
-
-
-# ============================================================================
-# Integration Tests: Complex Argument Types
-# ============================================================================
 
 
 class TestComplexArgumentTypes:
@@ -1350,17 +1324,14 @@ class TestComplexArgumentTypes:
         assert result["above_threshold"] == 2
 
 
-# ============================================================================
-# E2E Tests: Real Ollama Integration
-# ============================================================================
-
-
+@pytest.mark.skipif(not OLLAMA_AVAILABLE, reason="serapeum-ollama not installed")
 class TestOllamaE2E:
     """End-to-end tests with real Ollama server.
 
     These tests require:
     - Ollama server running
     - llama3.1 model pulled
+    - serapeum-ollama package installed
 
     Skip if not available using pytest markers.
     """
@@ -1450,11 +1421,6 @@ class TestOllamaE2E:
         assert isinstance(result, dict)
         assert "text" in result
         assert "length" in result
-
-
-# ============================================================================
-# Edge Case Tests
-# ============================================================================
 
 
 class TestEdgeCases:

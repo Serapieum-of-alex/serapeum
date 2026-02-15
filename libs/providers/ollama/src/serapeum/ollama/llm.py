@@ -531,8 +531,9 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             **self.additional_kwargs,
         }
 
+    @staticmethod
     def _convert_to_ollama_messages(
-        self, messages: MessageList
+        messages: MessageList
     ) -> list[dict[str, Any]]:
         """Convert internal MessageList to the Ollama wire format.
 

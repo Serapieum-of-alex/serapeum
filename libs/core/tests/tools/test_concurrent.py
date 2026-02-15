@@ -10,43 +10,10 @@ from serapeum.core.tools.concurrent import (
     asyncio_run,
     batch_gather,
     chunks,
-    get_asyncio_module,
     run_async_tasks,
 )
 from serapeum.core.utils.base import run_jobs, DEFAULT_NUM_WORKERS
 
-
-class TestGetAsyncioModule:
-    """Tests for get_asyncio_module utility."""
-
-    def test_returns_asyncio_when_no_progress(self):
-        """Test get_asyncio_module with show_progress=False.
-
-        Inputs: show_progress=False.
-        Expectation: Function returns the standard asyncio module.
-        This checks the default branch without progress support.
-        """
-        mod = get_asyncio_module(show_progress=False)
-        assert mod is asyncio
-
-    def test_returns_tqdm_asyncio_when_progress_true_with_dummy(self, monkeypatch):
-        """Test get_asyncio_module with show_progress=True and dummy tqdm.asyncio.
-
-        Inputs: show_progress=True; inject a dummy tqdm.asyncio module.
-        Expectation: Function returns the dummy tqdm_asyncio object from the injected module.
-        This checks import and selection logic for the progress-enabled path.
-        """
-        dummy_module = types.ModuleType("tqdm.asyncio")
-
-        class DummyTqdmAsyncio:
-            pass
-
-        dummy_module.tqdm_asyncio = DummyTqdmAsyncio()
-
-        # Install module under the exact name used by import
-        monkeypatch.setitem(sys.modules, "tqdm.asyncio", dummy_module)
-        mod = get_asyncio_module(show_progress=True)
-        assert isinstance(mod, DummyTqdmAsyncio)
 
 
 class TestAsyncioRun:

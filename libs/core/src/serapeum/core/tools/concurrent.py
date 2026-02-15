@@ -4,74 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from itertools import zip_longest
-from typing import Any, Coroutine, Iterable, List, Optional, TypeVar
-
-
-def get_asyncio_module(show_progress: bool = False) -> Any:
-    """Return the asyncio-like module to use, optionally with progress support.
-
-    When ``show_progress`` is False, this simply returns Python's built-in
-    :mod:`asyncio` module. When ``show_progress`` is True, it attempts to import
-    ``tqdm.asyncio.tqdm_asyncio`` and returns that object so that progress-aware
-    gathering functions can be used.
-
-    This function is a small utility used by higher-level helpers in this
-    module to decide whether to execute tasks with a progress bar. See
-    ``run_async_tasks`` and ``run_jobs`` for typical usage.
-
-    Args:
-        show_progress (bool):
-            If True, return ``tqdm.asyncio.tqdm_asyncio`` (requires the
-            optional ``tqdm`` package). If False, return the standard
-            :mod:`asyncio` module.
-
-    Returns:
-        Any: Either the :mod:`asyncio` module (when ``show_progress`` is False)
-        or the ``tqdm.asyncio.tqdm_asyncio`` object (when True).
-
-    Raises:
-        ImportError: If ``show_progress`` is True and ``tqdm.asyncio`` cannot be
-            imported.
-
-    See Also:
-        - ``run_async_tasks``: Runs a list of coroutines with optional progress.
-        - ``run_jobs``: Concurrency-limited job runner with optional progress.
-
-    Examples:
-        - Return the standard asyncio module
-            ```python
-            >>> import asyncio as _asyncio
-            >>> from serapeum.core.tools.concurrent import get_asyncio_module
-            >>> mod = get_asyncio_module(False)
-            >>> mod is _asyncio
-            True
-
-            ```
-        - Return the progress-enabled object by injecting a dummy ``tqdm.asyncio``
-          for environments where ``tqdm`` may not be installed.
-            ```python
-            >>> import sys, types
-            >>> dummy = types.ModuleType("tqdm.asyncio")
-            >>> class DummyTqdmAsyncio:  # minimal stand-in
-            ...     pass
-            >>> dummy.tqdm_asyncio = DummyTqdmAsyncio()
-            >>> sys.modules["tqdm.asyncio"] = dummy
-            >>> from serapeum.core.tools.concurrent import get_asyncio_module
-            >>> mod = get_asyncio_module(True)
-            >>> isinstance(mod, DummyTqdmAsyncio)
-            True
-            >>> del sys.modules["tqdm.asyncio"]  # cleanup
-
-            ```
-    """
-    if show_progress:
-        from tqdm.asyncio import tqdm_asyncio
-
-        module = tqdm_asyncio
-    else:
-        module = asyncio
-
-    return module
+from typing import Any, Coroutine, Iterable
 
 
 def asyncio_run(coro: Coroutine) -> Any:

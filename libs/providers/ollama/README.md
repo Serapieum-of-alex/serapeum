@@ -407,7 +407,7 @@ from serapeum.ollama import OllamaEmbedding
 
 embed_model = OllamaEmbedding(
     model_name="nomic-embed-text",
-    embed_batch_size=32,  # Process 32 texts at a time
+    batch_size=32,  # Process 32 texts at a time
 )
 
 documents = [
@@ -419,7 +419,7 @@ documents = [
 ]
 
 # Batch embedding generation
-embeddings = embed_model.get_text_embeddings(documents)
+embeddings = embed_model.get_text_embedding_batch(documents)
 print(f"Generated {len(embeddings)} embeddings")
 print(f"Each embedding has {len(embeddings[0])} dimensions")
 
@@ -487,7 +487,7 @@ from serapeum.ollama import OllamaEmbedding
 embed_model = OllamaEmbedding(
     model_name="nomic-embed-text",
     base_url="http://localhost:11434",
-    embed_batch_size=16,
+    batch_size=16,
     keep_alive="10m",  # Keep model loaded for 10 minutes
     query_instruction="Represent this query for retrieving relevant documents: ",
     text_instruction="Represent this document for retrieval: ",
@@ -608,7 +608,7 @@ from serapeum.ollama import OllamaEmbedding
 embed_model = OllamaEmbedding(
     model_name="nomic-embed-text",         # Required: embedding model name
     base_url="http://localhost:11434",     # Ollama server URL
-    embed_batch_size=10,                   # Batch size (1-2048)
+    batch_size=10,                   # Batch size (1-2048)
     keep_alive="5m",                       # Model keep-alive duration
     query_instruction=None,                # Prefix for queries
     text_instruction=None,                 # Prefix for documents

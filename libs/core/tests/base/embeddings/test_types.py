@@ -133,7 +133,7 @@ class TestLinkedNodesCreate:
 
         # Verify the error is for the correct field
         errors = exc_info.value.errors()
-        assert any(expected_field in str(err['loc']) for err in errors)
+        assert any(expected_field in str(err["loc"]) for err in errors)
 
 
 class TestLinkedNodesAsDict:
@@ -337,9 +337,7 @@ class TestBaseNodeRefDocId:
         Expected result: ref_doc_id equals source id or None.
         Checks: correct id and None handling.
         """
-        with_source = my_node_class(
-            links={NodeType.SOURCE: NodeInfo(id="a")}
-        )
+        with_source = my_node_class(links={NodeType.SOURCE: NodeInfo(id="a")})
         without_source = my_node_class()
         value_with = with_source.source_id
         value_without = without_source.source_id

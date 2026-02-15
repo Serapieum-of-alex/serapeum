@@ -52,13 +52,20 @@ See Also:
     serapeum.core.types.base.SerializableModel: Base class for serialization
     serapeum.core.utils.base.truncate_text: Text truncation utility
 """
+
 from __future__ import annotations
 from typing import Any, Annotated, Sequence
 import uuid
 from abc import abstractmethod, ABC
 import textwrap
 from enum import Enum
-from pydantic import ConfigDict, Field, PlainSerializer, model_validator, field_validator
+from pydantic import (
+    ConfigDict,
+    Field,
+    PlainSerializer,
+    model_validator,
+    field_validator,
+)
 from serapeum.core.utils.base import truncate_text
 from serapeum.core.types import SerializableModel
 
@@ -114,11 +121,13 @@ class NodeContentType(str, Enum):
         NodeInfo: Uses this enum to specify node content type.
         BaseNode.get_type: Abstract method returning content type string.
     """
+
     TEXT = "text"
     IMAGE = "image"
     INDEX = "index"
     DOCUMENT = "document"
     MULTIMODAL = "multimodal"
+
 
 # Pydantic serializer that converts enum instances to their string values
 EnumNameSerializer = PlainSerializer(
@@ -177,6 +186,7 @@ class NodeInfo(SerializableModel):
         LinkedNodes: Container for node relationships using NodeInfo.
         SerializableModel: Base class providing serialization methods.
     """
+
     id: str
     type: Annotated[NodeContentType, EnumNameSerializer] | str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -249,6 +259,7 @@ class MetadataMode(str, Enum):
         BaseNode.excluded_embed_metadata_keys: Metadata excluded for EMBED mode.
         BaseNode.excluded_llm_metadata_keys: Metadata excluded for LLM mode.
     """
+
     ALL = "all"
     EMBED = "embed"
     LLM = "llm"
@@ -335,6 +346,7 @@ class LinkedNodes(SerializableModel):
         NodeInfo: References stored in relationship fields.
         BaseNode.linked_nodes: Property that creates LinkedNodes from links dict.
     """
+
     model_config = ConfigDict(frozen=True)
 
     source: NodeInfo | None = None
@@ -343,7 +355,7 @@ class LinkedNodes(SerializableModel):
     parent: NodeInfo | None = None
     children: list[NodeInfo] | None = None
 
-    @field_validator('source', 'previous', 'next', 'parent')
+    @field_validator("source", "previous", "next", "parent")
     @classmethod
     def validate_single_node(cls, v: Any) -> NodeInfo | None:
         """Validate that single-node fields contain NodeInfo objects.
@@ -388,7 +400,7 @@ class LinkedNodes(SerializableModel):
             raise ValueError("Must be a NodeInfo object, not a list")
         return v
 
-    @field_validator('children')
+    @field_validator("children")
     @classmethod
     def validate_children_list(cls, v: Any) -> list[NodeInfo] | None:
         """Validate that children field contains a list of NodeInfo objects.
@@ -441,9 +453,7 @@ class LinkedNodes(SerializableModel):
         return v
 
     @classmethod
-    def create(
-        cls, linked_nodes_info: dict[NodeType, NodeInfoType]
-    ) -> "LinkedNodes":
+    def create(cls, linked_nodes_info: dict[NodeType, NodeInfoType]) -> "LinkedNodes":
         """Create LinkedNodes from a dict mapping NodeType to NodeInfo/list.
 
         Factory method that converts a dictionary with NodeType keys into a
@@ -610,7 +620,7 @@ class LinkedNodes(SerializableModel):
 
 
 class BaseNode(SerializableModel, ABC):
-    """Abstract base class for document nodes with metadata and relationship management.
+    r"""Abstract base class for document nodes with metadata and relationship management.
 
     BaseNode provides the foundational functionality for representing chunks of
     documents with rich metadata, embeddings, and hierarchical relationships. It
@@ -731,6 +741,7 @@ class BaseNode(SerializableModel, ABC):
         MetadataMode: Controls metadata inclusion in different contexts.
         SerializableModel: Base class providing serialization capabilities.
     """
+
     # hash is computed on a local field, during the validation process
     model_config = ConfigDict(populate_by_name=True, validate_assignment=True)
 
@@ -787,8 +798,8 @@ class BaseNode(SerializableModel, ABC):
         description="ID of the links dict to detect when it's reassigned.",
     )
 
-    @model_validator(mode='after')
-    def _invalidate_linked_nodes_cache_on_links_change(self) -> 'BaseNode':
+    @model_validator(mode="after")
+    def _invalidate_linked_nodes_cache_on_links_change(self) -> "BaseNode":
         """Invalidate the linked_nodes cache when links dict is reassigned.
 
         This validator tracks the id of the links dict. When it changes
@@ -801,8 +812,8 @@ class BaseNode(SerializableModel, ABC):
         # Check if links dict was reassigned (different id)
         if self.links_dict_id is None or self.links_dict_id != current_links_id:
             # Links changed, clear cache and update tracked id
-            object.__setattr__(self, 'linked_nodes_cache', None)
-            object.__setattr__(self, 'links_dict_id', current_links_id)
+            object.__setattr__(self, "linked_nodes_cache", None)
+            object.__setattr__(self, "links_dict_id", current_links_id)
 
         return self
 
@@ -829,7 +840,11 @@ class BaseNode(SerializableModel, ABC):
         filtered = (
             self.metadata.items()
             if not excluded
-            else ((key, value) for key, value in self.metadata.items() if key not in excluded)
+            else (
+                (key, value)
+                for key, value in self.metadata.items()
+                if key not in excluded
+            )
         )
         return self.metadata_separator.join(
             self.metadata_template.format(key=key, value=str(value))
@@ -942,8 +957,8 @@ class BaseNode(SerializableModel, ABC):
             self.linked_nodes_cache = LinkedNodes.create(self.links)
         return self.linked_nodes_cache
 
-
     def __str__(self) -> str:
+        """str"""
         source_text_truncated = truncate_text(
             self.get_content().strip(), TRUNCATE_LENGTH
         )

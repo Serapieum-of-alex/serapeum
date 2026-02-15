@@ -71,8 +71,12 @@ class MockEmbedding(BaseEmbedding):
         BaseEmbedding: Abstract base class that MockEmbedding implements.
     """
 
-    embed_dim: int = Field(..., gt=0, description="Embedding dimension (must be positive)")
-    model_name: str = Field(default="mock-embedding", description="Model name identifier")
+    embed_dim: int = Field(
+        ..., gt=0, description="Embedding dimension (must be positive)"
+    )
+    model_name: str = Field(
+        default="mock-embedding", description="Model name identifier"
+    )
 
     @field_validator("embed_dim")
     @classmethod

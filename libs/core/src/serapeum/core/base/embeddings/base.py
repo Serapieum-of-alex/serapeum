@@ -11,6 +11,7 @@ into high-dimensional vector spaces. It includes:
 The module supports both synchronous and asynchronous operations, with optional
 batching and progress tracking for large-scale embedding tasks.
 """
+
 from __future__ import annotations
 import asyncio
 import uuid
@@ -306,6 +307,7 @@ class BaseEmbedding(SerializableModel, CallMixin, ABC):
 
         # Create a deterministic string representation
         import json
+
         model_str = json.dumps(model_dict, sort_keys=True)
         return f"{text}::{model_str}"
 

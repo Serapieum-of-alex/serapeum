@@ -332,4 +332,3 @@ class Schema:
         elif isinstance(obj, list):
             return [Schema._resolve_local_refs(v, defs) for v in obj]
         return obj
-

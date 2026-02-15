@@ -453,9 +453,10 @@ Use async operations for better performance:
 import asyncio
 from serapeum.ollama import OllamaEmbedding
 
-async def embed_documents():
-    embed_model = OllamaEmbedding(model_name="nomic-embed-text")
+embed_model = OllamaEmbedding(model_name="nomic-embed-text")
 
+async def embed_documents():
+    
     # Async single embedding
     embedding = await embed_model.aget_text_embedding("Hello, world!")
     print(f"Embedding generated: {len(embedding)} dimensions")
@@ -466,13 +467,13 @@ async def embed_documents():
         "Document 2 about ML",
         "Document 3 about NLP",
     ]
-    embeddings = await embed_model.aget_text_embeddings(documents)
-    print(f"Generated {len(embeddings)} embeddings asynchronously")
+    text_embed = await embed_model.aget_text_embedding_batch(documents)
+    print(f"Generated {len(text_embed)} embeddings asynchronously")
 
     # Async query embedding
-    query_emb = await embed_model.aget_query_embedding("What is AI?")
+    query_embed = await embed_model.aget_query_embedding("What is AI?")
 
-    return embeddings
+    return text_embed, query_embed
 
 asyncio.run(embed_documents())
 ```

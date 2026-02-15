@@ -227,7 +227,9 @@ class ToolExecutor:
         if self.config.verbose:
             self._log_execution_start(tool, arguments)
 
-        async_tool = tool.to_async_tool() if not isinstance(tool, AsyncBaseTool) else tool
+        async_tool = (
+            tool.to_async_tool() if not isinstance(tool, AsyncBaseTool) else tool
+        )
 
         try:
             output = await self._invoke_tool_async(async_tool, arguments)

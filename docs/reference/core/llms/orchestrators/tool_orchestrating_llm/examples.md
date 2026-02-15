@@ -24,7 +24,7 @@ The most straightforward way to use `ToolOrchestratingLLM`:
 from typing import List
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Define your output schema
 class Song(BaseModel):
@@ -65,7 +65,7 @@ Provide a fully configured function-calling LLM:
 from typing import List
 from pydantic import BaseModel, Field
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Task(BaseModel):
     id: str = Field(description="Task identifier")
@@ -98,7 +98,7 @@ Set a default function-calling LLM for the entire application:
 from pydantic import BaseModel
 from serapeum.core.configs.configs import Configs
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Set global LLM
 Configs.llm = Ollama(model="llama3.1", request_timeout=80)
@@ -126,7 +126,7 @@ Control which tool the LLM should use:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Response(BaseModel):
     answer: str
@@ -157,7 +157,7 @@ Simple string prompts are automatically wrapped in `PromptTemplate`:
 from typing import List
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Recipe(BaseModel):
     name: str
@@ -184,7 +184,7 @@ Use `PromptTemplate` for more control:
 from pydantic import BaseModel
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Analysis(BaseModel):
     sentiment: str
@@ -216,7 +216,7 @@ from pydantic import BaseModel
 from serapeum.core.base.llms.models import Message, MessageRole
 from serapeum.core.prompts import ChatPromptTemplate
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class CodeReview(BaseModel):
     issues: list[str]
@@ -259,7 +259,7 @@ Standard blocking execution:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Summary(BaseModel):
     main_points: list[str]
@@ -287,7 +287,7 @@ Non-blocking async execution:
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Classification(BaseModel):
     category: str
@@ -321,7 +321,7 @@ import asyncio
 from typing import List
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class EntityExtraction(BaseModel):
     entities: List[str]
@@ -357,7 +357,7 @@ Stream progressive updates:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Article(BaseModel):
     title: str
@@ -387,7 +387,7 @@ Async version of streaming:
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Report(BaseModel):
     title: str
@@ -418,7 +418,7 @@ Forward parameters directly to the LLM:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Story(BaseModel):
     title: str
@@ -455,7 +455,7 @@ By default, only one tool call is expected:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Product(BaseModel):
     name: str
@@ -484,7 +484,7 @@ Enable parallel tool calls to receive multiple objects:
 from typing import List
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Item(BaseModel):
     name: str
@@ -514,7 +514,7 @@ Stream multiple objects as they're generated:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Question(BaseModel):
     question: str
@@ -551,7 +551,7 @@ Change the prompt at runtime:
 from pydantic import BaseModel
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Response(BaseModel):
     answer: str
@@ -582,7 +582,7 @@ Create once, use many times:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Sentiment(BaseModel):
     sentiment: str  # positive, negative, neutral
@@ -618,7 +618,7 @@ Use deeply nested Pydantic models:
 from typing import List
 from pydantic import BaseModel, Field
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Author(BaseModel):
     name: str
@@ -660,7 +660,7 @@ Enable detailed logging:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Data(BaseModel):
     result: str
@@ -685,7 +685,7 @@ Control tool selection:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Output(BaseModel):
     data: str
@@ -715,7 +715,7 @@ Pass regular Python functions directly as `output_cls`:
 
 ```python
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 def calculate_statistics(numbers: list[float], operation: str) -> dict[str, float]:
     """Calculate statistics on a list of numbers.
@@ -767,7 +767,7 @@ Wrap regular Python classes in functions and use with ToolOrchestratingLLM:
 
 ```python
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class EmailValidator:
     """Regular Python class for email validation."""

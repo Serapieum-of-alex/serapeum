@@ -17,7 +17,7 @@ The `Ollama` class is a production-ready LLM integration that provides:
 
 ```python
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Initialize Ollama
 llm = Ollama(
@@ -37,7 +37,7 @@ print(response.message.content)  # "Pong!"
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.llms import TextCompletionLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class DummyModel(BaseModel):
@@ -64,7 +64,7 @@ result = text_llm(value="input")
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):

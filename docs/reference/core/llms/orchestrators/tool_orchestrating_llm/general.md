@@ -15,7 +15,7 @@ The `ToolOrchestratingLLM` is a function-calling orchestrator that:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Define the output schema
 class MockAlbum(BaseModel):

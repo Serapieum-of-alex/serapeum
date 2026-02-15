@@ -1,8 +1,26 @@
 """Test data models for Ollama integration tests."""
 
+import os
 from typing import List
 
+import ollama as ollama_sdk
 from pydantic import BaseModel, Field
+
+test_model = os.environ.get("OLLAMA_TEST_MODEL", "llama3.1:latest")
+try:
+    client = ollama_sdk.Client()        # type: ignore
+    models = client.list()
+
+    model_found = False
+    for model in models["models"]:
+        if model["model"] == test_model:
+            model_found = True
+            break
+
+    if not model_found:
+        client = None
+except Exception:
+    client = None
 
 
 class Song(BaseModel):

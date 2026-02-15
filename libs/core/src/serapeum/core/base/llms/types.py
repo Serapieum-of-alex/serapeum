@@ -26,6 +26,8 @@ from typing_extensions import Self
 
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 
+ImageType = str | BytesIO
+
 
 class MessageRole(str, Enum):
     """Message role."""

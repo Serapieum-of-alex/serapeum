@@ -2,7 +2,7 @@
 
 import pytest
 
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 @pytest.fixture

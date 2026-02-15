@@ -1,81 +1,16 @@
-"""Async utils."""
+"""Concurrent execution utilities for running async tasks with batching and progress tracking.
+
+This module provides helpers for executing coroutines with various concurrency
+patterns, including simple gathering, batched execution, and optional progress
+bar integration using tqdm. It handles event loop management and provides safe
+fallbacks for different async execution contexts.
+"""
 
 from __future__ import annotations
 
 import asyncio
 from itertools import zip_longest
-from typing import Any, Coroutine, Iterable, List, Optional, TypeVar
-
-DEFAULT_NUM_WORKERS = 4
-
-T = TypeVar("T")
-
-
-def get_asyncio_module(show_progress: bool = False) -> Any:
-    """Return the asyncio-like module to use, optionally with progress support.
-
-    When ``show_progress`` is False, this simply returns Python's built-in
-    :mod:`asyncio` module. When ``show_progress`` is True, it attempts to import
-    ``tqdm.asyncio.tqdm_asyncio`` and returns that object so that progress-aware
-    gathering functions can be used.
-
-    This function is a small utility used by higher-level helpers in this
-    module to decide whether to execute tasks with a progress bar. See
-    ``run_async_tasks`` and ``run_jobs`` for typical usage.
-
-    Args:
-        show_progress (bool):
-            If True, return ``tqdm.asyncio.tqdm_asyncio`` (requires the
-            optional ``tqdm`` package). If False, return the standard
-            :mod:`asyncio` module.
-
-    Returns:
-        Any: Either the :mod:`asyncio` module (when ``show_progress`` is False)
-        or the ``tqdm.asyncio.tqdm_asyncio`` object (when True).
-
-    Raises:
-        ImportError: If ``show_progress`` is True and ``tqdm.asyncio`` cannot be
-            imported.
-
-    See Also:
-        - ``run_async_tasks``: Runs a list of coroutines with optional progress.
-        - ``run_jobs``: Concurrency-limited job runner with optional progress.
-
-    Examples:
-        - Return the standard asyncio module
-            ```python
-            >>> import asyncio as _asyncio
-            >>> from serapeum.core.tools.concurrent import get_asyncio_module
-            >>> mod = get_asyncio_module(False)
-            >>> mod is _asyncio
-            True
-
-            ```
-        - Return the progress-enabled object by injecting a dummy ``tqdm.asyncio``
-          for environments where ``tqdm`` may not be installed.
-            ```python
-            >>> import sys, types
-            >>> dummy = types.ModuleType("tqdm.asyncio")
-            >>> class DummyTqdmAsyncio:  # minimal stand-in
-            ...     pass
-            >>> dummy.tqdm_asyncio = DummyTqdmAsyncio()
-            >>> sys.modules["tqdm.asyncio"] = dummy
-            >>> from serapeum.core.tools.concurrent import get_asyncio_module
-            >>> mod = get_asyncio_module(True)
-            >>> isinstance(mod, DummyTqdmAsyncio)
-            True
-            >>> del sys.modules["tqdm.asyncio"]  # cleanup
-
-            ```
-    """
-    if show_progress:
-        from tqdm.asyncio import tqdm_asyncio
-
-        module = tqdm_asyncio
-    else:
-        module = asyncio
-
-    return module
+from typing import Any, Coroutine, Iterable
 
 
 def asyncio_run(coro: Coroutine) -> Any:
@@ -92,21 +27,15 @@ def asyncio_run(coro: Coroutine) -> Any:
     providing async entrypoints).
 
     Args:
-        coro (Coroutine):
-            The coroutine object to run to completion.
+        coro: The coroutine object to run to completion.
 
     Returns:
-        Any: The value returned by the awaited coroutine.
+        The value returned by the awaited coroutine.
 
     Raises:
         RuntimeError: If called from within an already running event loop
-            (nested asyncio), a ``RuntimeError`` is raised with a message
-            explaining how to proceed.
+            (nested asyncio). The error message explains how to proceed.
 
-    See Also:
-        - ``run_async_tasks``: Convenience to run multiple coroutines and
-          collect their results.
-        - ``batch_gather``: Async helper to gather coroutines in batches.
 
     Examples:
         - Run a coroutine when no loop is running
@@ -134,6 +63,10 @@ def asyncio_run(coro: Coroutine) -> Any:
             'nested'
 
             ```
+
+    See Also:
+        run_async_tasks: Convenience to run multiple coroutines and collect results.
+        batch_gather: Async helper to gather coroutines in batches.
     """
     try:
         # Check if there's an existing event loop
@@ -154,10 +87,10 @@ def asyncio_run(coro: Coroutine) -> Any:
 
 
 def run_async_tasks(
-    tasks: List[Coroutine],
+    tasks: list[Coroutine],
     show_progress: bool = False,
     progress_bar_desc: str = "Running async tasks",
-) -> List[Any]:
+) -> list[Any]:
     """Run a list of coroutines to completion and collect their results.
 
     This convenience wrapper optionally displays a progress bar via
@@ -167,25 +100,19 @@ def run_async_tasks(
     ``asyncio.gather`` execution using ``asyncio_run``.
 
     Args:
-        tasks (List[Coroutine]):
-            The coroutines to run.
-        show_progress (bool):
-            If True, attempt to use ``tqdm.asyncio.tqdm.gather`` with a progress
-            bar. If unavailable or incompatible, a silent fallback is applied.
-        progress_bar_desc (str):
-            Optional label shown by the progress bar.
+        tasks: The coroutines to run.
+        show_progress: If True, attempt to use ``tqdm.asyncio.tqdm.gather``
+            with a progress bar. If unavailable or incompatible, a silent
+            fallback is applied. Defaults to False.
+        progress_bar_desc: Optional label shown by the progress bar.
+            Defaults to "Running async tasks".
 
     Returns:
-        List[Any]: Results of the completed coroutines in the same order as the
-        input list.
+        Results of the completed coroutines in the same order as the input list.
 
     Raises:
         Exception: Any exception raised by the provided coroutines will
             propagate from ``asyncio.gather``.
-
-    See Also:
-        - ``asyncio_run``: Helper that safely runs a coroutine from sync code.
-        - ``run_jobs``: Concurrency-limited variant suitable for many jobs.
 
     Examples:
         - Run tasks without a progress bar
@@ -212,8 +139,12 @@ def run_async_tasks(
             [1, 2, 3]
 
             ```
+
+    See Also:
+        asyncio_run: Helper that safely runs a coroutine from sync code.
+        batch_gather: Batched variant that controls peak concurrency.
     """
-    tasks_to_execute: List[Any] = tasks
+    tasks_to_execute: list[Any] = tasks
     if show_progress:
         try:
             import nest_asyncio
@@ -224,10 +155,10 @@ def run_async_tasks(
             nest_asyncio.apply()
             loop = asyncio.get_event_loop()
 
-            async def _tqdm_gather() -> List[Any]:
+            async def _tqdm_gather() -> list[Any]:
                 return await tqdm.gather(*tasks_to_execute, desc=progress_bar_desc)
 
-            tqdm_outputs: List[Any] = loop.run_until_complete(_tqdm_gather())
+            tqdm_outputs: list[Any] = loop.run_until_complete(_tqdm_gather())
             return tqdm_outputs
         # run the operation w/o tqdm on hitting a fatal
         # may occur in some environments where tqdm.asyncio
@@ -235,10 +166,10 @@ def run_async_tasks(
         except Exception:
             pass
 
-    async def _gather() -> List[Any]:
+    async def _gather() -> list[Any]:
         return await asyncio.gather(*tasks_to_execute)
 
-    outputs: List[Any] = asyncio_run(_gather())
+    outputs: list[Any] = asyncio_run(_gather())
     return outputs
 
 
@@ -250,15 +181,12 @@ def chunks(iterable: Iterable, size: int) -> Iterable:
     of ``size``, the final tuple is right-padded with ``None`` values.
 
     Args:
-        iterable (Iterable): The input sequence or iterable to group.
-        size (int): The group size.
+        iterable: The input sequence or iterable to group.
+        size: The group size.
 
     Returns:
-        Iterable: An iterator yielding tuples, each of length ``size``. The last
-        tuple may contain trailing ``None`` values as padding.
-
-    See Also:
-        - ``batch_gather``: Consumes chunked coroutines to gather in batches.
+        An iterator yielding tuples, each of length ``size``. The last tuple
+        may contain trailing ``None`` values as padding.
 
     Examples:
         - Exact multiple of the size
@@ -280,14 +208,17 @@ def chunks(iterable: Iterable, size: int) -> Iterable:
             []
 
             ```
+
+    See Also:
+        batch_gather: Consumes chunked coroutines to gather in batches.
     """
     args = [iter(iterable)] * size
     return zip_longest(*args, fillvalue=None)
 
 
 async def batch_gather(
-    tasks: List[Coroutine], batch_size: int = 10, verbose: bool = False
-) -> List[Any]:
+    tasks: list[Coroutine], batch_size: int = 10, verbose: bool = False
+) -> list[Any]:
     """Gather coroutines in sequential batches to control concurrency.
 
     This helper splits ``tasks`` into chunks of size ``batch_size`` using
@@ -296,25 +227,18 @@ async def batch_gather(
     printed after each batch.
 
     Args:
-        tasks (List[Coroutine]):
-            The coroutines to run.
-        batch_size (int):
-            Number of tasks to await per batch. Must be a positive integer for
-            meaningful batching.
-        verbose (bool):
-            If True, prints progress after each batch completes.
+        tasks: The coroutines to run.
+        batch_size: Number of tasks to await per batch. Must be a positive
+            integer for meaningful batching. Defaults to 10.
+        verbose: If True, prints progress after each batch completes.
+            Defaults to False.
 
     Returns:
-        List[Any]: The concatenated results from all batches in task order.
+        The concatenated results from all batches in task order.
 
     Raises:
         Exception: Any exception raised by the provided coroutines will
             propagate from ``asyncio.gather``.
-
-    See Also:
-        - ``chunks``: Iterator that groups an iterable into fixed-size tuples.
-        - ``run_async_tasks``: Run all tasks at once (no batching).
-        - ``run_jobs``: Limit concurrency using a semaphore.
 
     Examples:
         - Batch execution to limit peak concurrency
@@ -332,16 +256,23 @@ async def batch_gather(
         - Verbose progress messages (output suppressed in this example)
             ```python
             >>> import asyncio
+            >>> from serapeum.core.tools.concurrent import batch_gather
             >>> async def g(x):
             ...     await asyncio.sleep(0)
             ...     return x
             >>> tasks = [g(i) for i in range(4)]
             >>> asyncio.run(batch_gather(tasks, batch_size=2, verbose=True))
+            Completed 2 out of 4 tasks
+            Completed 4 out of 4 tasks
             [0, 1, 2, 3]
 
             ```
+
+    See Also:
+        chunks: Iterator that groups an iterable into fixed-size tuples.
+        run_async_tasks: Run all tasks at once (no batching).
     """
-    output: List[Any] = []
+    output: list[Any] = []
     for task_chunk in chunks(tasks, batch_size):
         task_chunk = (task for task in task_chunk if task is not None)
         output_chunk = await asyncio.gather(*task_chunk)
@@ -349,95 +280,3 @@ async def batch_gather(
         if verbose:
             print(f"Completed {len(output)} out of {len(tasks)} tasks")
     return output
-
-
-async def run_jobs(
-    jobs: List[Coroutine[Any, Any, T]],
-    show_progress: bool = False,
-    workers: int = DEFAULT_NUM_WORKERS,
-    desc: Optional[str] = None,
-) -> List[T]:
-    """Run a collection of coroutines with limited concurrency.
-
-    Each job is wrapped by a semaphore-guarded worker to ensure that at most
-    ``workers`` jobs run concurrently. Results are collected in the same order
-    as the input jobs via :func:`asyncio.gather` (or ``tqdm.asyncio`` when
-    ``show_progress`` is True).
-
-    Args:
-        jobs (List[Coroutine[Any, Any, T]]):
-            The coroutines to run.
-        show_progress (bool):
-            If True, attempts to use ``tqdm.asyncio.tqdm_asyncio.gather`` to
-            display a progress bar for the overall job collection.
-        workers (int):
-            Maximum number of concurrently running jobs. Typical values range
-            from 1 (fully serial) to a small multiple of CPU cores or a limit
-            suited to the workload and I/O boundness. Defaults to
-            ``DEFAULT_NUM_WORKERS``.
-        desc (Optional[str]):
-            Optional text description for the progress bar (only used when
-            ``show_progress`` is True).
-
-    Returns:
-        List[T]: The results of the jobs in input order.
-
-    Raises:
-        ImportError: If ``show_progress`` is True and ``tqdm.asyncio`` cannot be
-            imported.
-        Exception: Any exception raised by an individual job will propagate from
-            the gather call.
-
-    See Also:
-        - ``run_async_tasks``: Synchronous helper to run a list of coroutines.
-        - ``batch_gather``: Run coroutines in sequential batches.
-
-    Examples:
-        - Limit concurrency without a progress bar
-            ```python
-            >>> import asyncio
-            >>> from serapeum.core.tools.concurrent import run_jobs
-            >>> async def job(x):
-            ...     await asyncio.sleep(0)
-            ...     return x + 1
-            >>> jobs = [job(i) for i in range(4)]
-            >>> asyncio.run(run_jobs(jobs, show_progress=False, workers=2))
-            [1, 2, 3, 4]
-
-            ```
-        - Use a dummy ``tqdm.asyncio`` to demonstrate progress-enabled path
-            ```python
-            >>> import sys, types, asyncio
-            >>> dummy_module = types.ModuleType("tqdm.asyncio")
-            >>> class DummyTqdmAsyncio:
-            ...     @staticmethod
-            ...     async def gather(*aws, desc=None):
-            ...         return await asyncio.gather(*aws)
-            >>> dummy_module.tqdm_asyncio = DummyTqdmAsyncio
-            >>> sys.modules["tqdm.asyncio"] = dummy_module
-            >>> async def job2(x):
-            ...     await asyncio.sleep(0)
-            ...     return x
-            >>> asyncio.run(run_jobs([job2(i) for i in range(3)], show_progress=True, workers=2, desc="demo"))
-            [0, 1, 2]
-            >>> del sys.modules["tqdm.asyncio"]  # cleanup
-
-            ```
-    """
-    # his semaphore is used to limit the number of concurrent tasks that can run simultaneously.
-    semaphore = asyncio.Semaphore(workers)
-
-    async def worker(job: Coroutine) -> Any:
-        async with semaphore:
-            return await job
-
-    pool_jobs = [worker(job) for job in jobs]
-
-    if show_progress:
-        from tqdm.asyncio import tqdm_asyncio
-
-        results = await tqdm_asyncio.gather(*pool_jobs, desc=desc)
-    else:
-        results = await asyncio.gather(*pool_jobs)
-
-    return results

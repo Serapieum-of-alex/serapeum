@@ -8,7 +8,7 @@ from serapeum.core.configs.configs import Configs
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.prompts import ChatPromptTemplate
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class DummyModel(BaseModel):

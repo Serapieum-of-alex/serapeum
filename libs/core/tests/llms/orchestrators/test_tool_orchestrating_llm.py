@@ -81,7 +81,7 @@ class TestToolOrchestratingLLM:
         """Test Function program."""
         prompt_template_str = """This is a test album with {topic}"""
         llm = MockLLM()
-        # from serapeum.llms.ollama import Ollama
+        # from serapeum.ollama import Ollama
         # llm = Ollama(model="llama3.1:latest", request_timeout=80)
         tools_llm = ToolOrchestratingLLM(
             output_cls=MockAlbum,

@@ -8,6 +8,7 @@ keeps startup costs low. The __dir__ implementation mirrors __all__ so
 introspection and IDE autocompletion show the intended public surface even
 though Configs is loaded on first access.
 """
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
 

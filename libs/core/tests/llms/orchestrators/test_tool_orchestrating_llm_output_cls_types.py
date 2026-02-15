@@ -1371,7 +1371,7 @@ class TestOllamaE2E:
 
         Expected: Should generate valid SimpleOutput from LLM.
         """
-        from serapeum.llms.ollama import Ollama
+        from serapeum.ollama import Ollama
 
         llm = Ollama(model="llama3.1", request_timeout=80)
 
@@ -1393,7 +1393,7 @@ class TestOllamaE2E:
 
         Expected: Should generate valid dict output from function via LLM.
         """
-        from serapeum.llms.ollama import Ollama
+        from serapeum.ollama import Ollama
 
         def extract_info(name: str, age: int, city: str) -> dict:
             """Extract person information."""
@@ -1426,7 +1426,7 @@ class TestOllamaE2E:
 
         Expected: Should execute async function via LLM successfully.
         """
-        from serapeum.llms.ollama import Ollama
+        from serapeum.ollama import Ollama
 
         async def async_processor(text: str, multiplier: int) -> dict:
             """Process text asynchronously."""

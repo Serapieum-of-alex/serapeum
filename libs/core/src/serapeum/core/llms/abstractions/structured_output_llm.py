@@ -13,6 +13,7 @@ from serapeum.core.base.llms.types import (
     MessageRole,
     Metadata,
 )
+
 from serapeum.core.llms.abstractions.mixins import ChatToCompletionMixin
 from serapeum.core.llms.base import LLM
 from serapeum.core.prompts.base import ChatPromptTemplate

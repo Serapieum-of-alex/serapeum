@@ -8,6 +8,7 @@ authors = [
     {name = "Mostafa Farrag", email = "moah.farrag@gmail.com"}
 ]
 keywords = ["llm", "generativeai", "chatbot", "rag", "natural language processing"]
+
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -20,6 +21,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
 ]
+
 requires-python = ">=3.11,<4.0"
 dependencies = [
     "ollama>=0.5.4",
@@ -36,13 +38,16 @@ dev = [
     "pytest-asyncio>=1.2.0",
     "nest-asyncio>=1.6.0",
     "nbval>=0.11.0",
+    "mypy>=1.13.0",
+    "pytest-xdist>=3.8.0",
+    "pytest-benchmark"
 ]
 
 [project.urls]
 homepage = "https://github.com/Serapieum-of-alex/serapeum"
 repository = "https://github.com/Serapieum-of-alex/serapeum"
-documentation = "https://serapeum.readthedocs.io/"
-Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
+documentation = "https://serapieum-of-alex.github.io"
+Changelog = "https://serapieum-of-alex.github.io/serapeum/latest/change-log"
 
 
 [tool.hatch.build.targets.wheel]
@@ -67,10 +72,15 @@ markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
     "mock: marks tests as mock (deselect with '-m \"not mock\"')",
     "integration: marks tests as optional-package (deselect with '-m \"not optional_package\"')",
+    "unit: marks tests as unit test (deselect with '-m \"not unit\"')",
+    "performance: marks tests as performance test (deselect with '-m \"not performance\"')",
 ]
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }
+
+#[tool.uv]
+#managed = false
 
 [build-system]
 requires = ["hatchling"]

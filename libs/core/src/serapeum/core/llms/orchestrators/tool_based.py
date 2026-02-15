@@ -67,7 +67,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     - Basic construction with a real LLM (Ollama). No network calls occur during initialization.
         ```python
         >>> from pydantic import BaseModel
-        >>> from serapeum.llms.ollama.base import Ollama
+        >>> from serapeum.ollama import Ollama
         >>> from serapeum.core.llms import ToolOrchestratingLLM
         >>>
         >>> class Output(BaseModel):
@@ -128,7 +128,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         - Instantiate with a Pydantic model (recommended). No network calls occur during initialization.
             ```python
             >>> from pydantic import BaseModel
-            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> from serapeum.core.llms import ToolOrchestratingLLM
             >>> class Output(BaseModel):
             ...     value: int
@@ -144,7 +144,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
         - Instantiate with a regular function (alternative approach).
             ```python
-            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> from serapeum.core.llms import ToolOrchestratingLLM
             >>> def calculate_sum(a: int, b: int) -> dict:
             ...     '''Calculate the sum of two numbers.'''
@@ -259,7 +259,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         Examples:
         - Accept a model that supports function calling (Ollama).
             ```python
-            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> out = ToolOrchestratingLLM._validate_llm(Ollama(model='llama3.1'))
             >>> out.metadata.model_name
             'llama3.1'
@@ -288,7 +288,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         - Inspect the configured output class.
             ```python
             >>> from pydantic import BaseModel
-            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> class Out(BaseModel):
             ...     x: int
             >>> tools_llm = ToolOrchestratingLLM(Out, 'prompt', Ollama(model='llama3.1'))
@@ -311,7 +311,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ```python
             >>> from pydantic import BaseModel
             >>> from serapeum.core.prompts.base import PromptTemplate
-            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> tools_llm = ToolOrchestratingLLM(
             ...     output_cls=type('M', (BaseModel,), {}),
             ...     prompt='Hi',
@@ -336,7 +336,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ```python
             >>> from pydantic import BaseModel
             >>> from serapeum.core.prompts.base import PromptTemplate
-            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> tools_llm = ToolOrchestratingLLM(
             ...     output_cls=type('M', (BaseModel,), {}),
             ...     prompt='Hi',
@@ -384,7 +384,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         - Run a single structured prediction with a real LLM (Ollama).
             ```python
             >>> from pydantic import BaseModel
-            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> class Person(BaseModel):
             ...     name: str
             ...     age: int
@@ -402,7 +402,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         - Enable parallel tool-calls to receive multiple objects when the model chooses to call the tool more than once.
             ```python
             >>> from pydantic import BaseModel
-            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> class Item(BaseModel):
             ...     name: str
             >>> tools_llm = ToolOrchestratingLLM(
@@ -466,7 +466,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ```python
             >>> import asyncio
             >>> from pydantic import BaseModel
-            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> class Out(BaseModel):
             ...     value: int
             >>> tools_llm = ToolOrchestratingLLM(
@@ -528,7 +528,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         - Iterate over streaming results with a real LLM (Ollama). Requires an Ollama server and a pulled model.
             ```python
             >>> from pydantic import BaseModel
-            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> class Number(BaseModel):
             ...     n: int
             >>> tools_llm = ToolOrchestratingLLM(
@@ -622,7 +622,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ```python
             >>> import asyncio
             >>> from pydantic import BaseModel
-            >>> from serapeum.llms.ollama.base import Ollama
+            >>> from serapeum.ollama import Ollama
             >>> class Number(BaseModel):
             ...     n: int
             >>> tools_llm = ToolOrchestratingLLM(

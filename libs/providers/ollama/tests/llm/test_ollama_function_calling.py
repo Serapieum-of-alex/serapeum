@@ -13,14 +13,14 @@ from __future__ import annotations
 from typing import Sequence
 
 import pytest
-from models import Album
+from ..models import Album
 from pydantic import BaseModel
 
 from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.tools import ToolOutput
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 def make_agent_response_from_models(models: Sequence[BaseModel]) -> AgentChatResponse:

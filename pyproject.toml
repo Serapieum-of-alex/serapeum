@@ -20,6 +20,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
 ]
+
 requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core",
@@ -37,6 +38,8 @@ dev = [
     "nest-asyncio>=1.6.0",
     "nbval>=0.11.0",
     "mypy>=1.13.0",
+    "pytest-xdist>=3.8.0",
+    "pytest-benchmark"
 ]
 
 docs = [
@@ -81,7 +84,10 @@ profile = "black"
 line_length = 88
 
 [tool.pytest.ini_options]
-
+testpaths = [
+    "libs/core/tests",
+    "libs/providers/ollama/tests",
+]
 norecursedirs = ["docs"]
 markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
@@ -119,7 +125,7 @@ strict = true
 
 
 [[tool.mypy.overrides]]
-module = "serapeum.llms.ollama.*"
+module = "serapeum.ollama.*"
 strict = true
 
 

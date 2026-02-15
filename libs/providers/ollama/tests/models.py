@@ -23,7 +23,6 @@ except Exception:
     client = None
 
 
-
 class Song(BaseModel):
     """A song data model used in tests."""
 

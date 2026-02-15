@@ -46,7 +46,6 @@ response_with_tool_dict["message"]["tool_calls"] = [
 response_for_tool_call = ChatResponse(**response_with_tool_dict)
 
 
-
 class Song(BaseModel):
     """A song with name and artist."""
 

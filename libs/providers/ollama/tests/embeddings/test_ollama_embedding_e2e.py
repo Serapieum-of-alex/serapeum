@@ -21,8 +21,7 @@ class TestBasicEmbedding:
 
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_basic_query(self, model_name) -> None:
         """Test basic query embedding with live Ollama server.
@@ -42,11 +41,9 @@ class TestBasicEmbedding:
         # Embeddings should have reasonable magnitude
         assert all(-100 < x < 100 for x in embedding)
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_basic_text(self, model_name) -> None:
         """Test basic text embedding with live Ollama server.
@@ -64,11 +61,9 @@ class TestBasicEmbedding:
         assert len(embedding) > 0
         assert all(isinstance(x, float) for x in embedding)
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_query_vs_text_different(self, model_name) -> None:
         """Test that query and text embeddings are different for same input.
@@ -90,14 +85,12 @@ class TestBasicEmbedding:
         assert isinstance(text_embedding, list)
 
 
-
 class TestBatchEmbedding:
     """Batch E2E Tests."""
 
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_batch_texts(self, model_name) -> None:
         """Test batch text embedding with live Ollama server.
@@ -124,11 +117,9 @@ class TestBatchEmbedding:
         dimensions = [len(emb) for emb in embeddings]
         assert len(set(dimensions)) == 1
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_large_batch(self, model_name) -> None:
         """Test large batch processing with live Ollama server.
@@ -150,11 +141,9 @@ class TestBatchEmbedding:
 class TestInstructionEmbedding:
     """Instruction E2E Tests."""
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_with_query_instruction(self, model_name) -> None:
         """Test query embedding with instruction prefix.
@@ -165,7 +154,7 @@ class TestInstructionEmbedding:
         """
         embedder = OllamaEmbedding(
             model_name=model_name,
-            query_instruction="Represent this sentence for searching relevant passages:"
+            query_instruction="Represent this sentence for searching relevant passages:",
         )
 
         query = "What is deep learning?"
@@ -174,11 +163,9 @@ class TestInstructionEmbedding:
         assert isinstance(embedding, list)
         assert len(embedding) > 0
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_with_text_instruction(self, model_name) -> None:
         """Test text embedding with instruction prefix.
@@ -189,7 +176,7 @@ class TestInstructionEmbedding:
         """
         embedder = OllamaEmbedding(
             model_name=model_name,
-            text_instruction="Represent this document for retrieval:"
+            text_instruction="Represent this document for retrieval:",
         )
 
         text = "Neural networks are computing systems inspired by biological neural networks."
@@ -198,11 +185,9 @@ class TestInstructionEmbedding:
         assert isinstance(embedding, list)
         assert len(embedding) > 0
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_instructions_affect_output(self, model_name) -> None:
         """Test that instructions actually change the embedding.
@@ -218,10 +203,7 @@ class TestInstructionEmbedding:
         embedding1 = embedder1.get_text_embedding(text)
 
         # With instruction
-        embedder2 = OllamaEmbedding(
-            model_name=model_name,
-            text_instruction="Document:"
-        )
+        embedder2 = OllamaEmbedding(model_name=model_name, text_instruction="Document:")
         embedding2 = embedder2.get_text_embedding(text)
 
         # Embeddings should differ
@@ -234,8 +216,7 @@ class TestAsyncEmbedding:
 
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     @pytest.mark.asyncio
     async def test_ollama_embedding_async_query(self, model_name) -> None:
@@ -254,11 +235,9 @@ class TestAsyncEmbedding:
         assert len(embedding) > 0
         assert all(isinstance(x, float) for x in embedding)
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     @pytest.mark.asyncio
     async def test_ollama_embedding_async_text(self, model_name) -> None:
@@ -277,11 +256,9 @@ class TestAsyncEmbedding:
         assert len(embedding) > 0
         assert all(isinstance(x, float) for x in embedding)
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     @pytest.mark.asyncio
     async def test_ollama_embedding_async_batch(self, model_name) -> None:
@@ -306,14 +283,12 @@ class TestAsyncEmbedding:
         assert all(len(emb) > 0 for emb in embeddings)
 
 
-
 class TestConfiguration:
     """Configuration E2E Tests."""
 
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_with_keep_alive(self, model_name) -> None:
         """Test embedding with custom keep_alive setting.
@@ -322,10 +297,7 @@ class TestConfiguration:
         Expected: Embedding generated successfully
         Checks: keep_alive parameter accepted
         """
-        embedder = OllamaEmbedding(
-            model_name=model_name,
-            keep_alive="10m"
-        )
+        embedder = OllamaEmbedding(model_name=model_name, keep_alive="10m")
 
         query = "Test query with keep alive"
         embedding = embedder.get_query_embedding(query)
@@ -333,11 +305,9 @@ class TestConfiguration:
         assert isinstance(embedding, list)
         assert len(embedding) > 0
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_with_additional_kwargs(self, model_name) -> None:
         """Test embedding with additional Ollama kwargs.
@@ -347,8 +317,7 @@ class TestConfiguration:
         Checks: Additional kwargs accepted by server
         """
         embedder = OllamaEmbedding(
-            model_name=model_name,
-            ollama_additional_kwargs={"temperature": 0.0}
+            model_name=model_name, ollama_additional_kwargs={"temperature": 0.0}
         )
 
         text = "Test text with additional kwargs"
@@ -357,11 +326,9 @@ class TestConfiguration:
         assert isinstance(embedding, list)
         assert len(embedding) > 0
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_custom_base_url(self, model_name) -> None:
         """Test embedding with custom base URL.
@@ -371,8 +338,7 @@ class TestConfiguration:
         Checks: base_url parameter works
         """
         embedder = OllamaEmbedding(
-            model_name=model_name,
-            base_url="http://localhost:11434"
+            model_name=model_name, base_url="http://localhost:11434"
         )
 
         query = "Test with custom base URL"
@@ -387,8 +353,7 @@ class TestSemanticSimilarity:
 
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_semantic_similarity(self, model_name) -> None:
         """Test that semantically similar texts have similar embeddings.
@@ -418,11 +383,9 @@ class TestSemanticSimilarity:
         # Note: This is a weak assertion as it depends on the model
         assert len(emb1) == len(emb2) == len(emb3)
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_consistency(self, model_name) -> None:
         """Test that same text produces consistent embeddings.
@@ -447,8 +410,7 @@ class TestEdgeCases:
 
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_whitespace_string(self, model_name) -> None:
         """Test embedding with whitespace-only string.
@@ -466,11 +428,9 @@ class TestEdgeCases:
         assert "empty or whitespace-only" in str(exc_info.value).lower()
         assert "stripping whitespace" in str(exc_info.value).lower()
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_long_text(self, model_name) -> None:
         """Test embedding with very long text.
@@ -488,11 +448,9 @@ class TestEdgeCases:
         assert isinstance(embedding, list)
         assert len(embedding) > 0
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_special_characters(self, model_name) -> None:
         """Test embedding with special characters and unicode.
@@ -510,11 +468,9 @@ class TestEdgeCases:
         assert isinstance(embedding, list)
         assert len(embedding) > 0
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_single_item_batch(self, model_name) -> None:
         """Test batch processing with single item.
@@ -539,8 +495,7 @@ class TestIntegrationWithBaseEmbedding:
 
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_inherits_base_methods(self, model_name) -> None:
         """Test that BaseEmbedding public methods work correctly.
@@ -560,11 +515,9 @@ class TestIntegrationWithBaseEmbedding:
         assert len(query_emb) > 0
         assert len(text_emb) > 0
 
-
     @pytest.mark.e2e
     @pytest.mark.skipif(
-        client is None,
-        reason="Ollama client is not available or test model is missing"
+        client is None, reason="Ollama client is not available or test model is missing"
     )
     def test_ollama_embedding_class_type(self, model_name) -> None:
         """Test that OllamaEmbedding is instance of BaseEmbedding.
@@ -578,4 +531,3 @@ class TestIntegrationWithBaseEmbedding:
         assert isinstance(embedder, OllamaEmbedding)
         assert isinstance(embedder, BaseEmbedding)
         assert embedder.class_name() == "OllamaEmbedding"
-

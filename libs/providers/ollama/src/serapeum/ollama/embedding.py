@@ -12,7 +12,7 @@ class OllamaEmbedding(BaseEmbedding):
 
     base_url: str = Field(
         default="http://localhost:11434",
-        description="Base url the model is hosted by Ollama"
+        description="Base url the model is hosted by Ollama",
     )
     model_name: str = Field(description="The Ollama model to use.")
     ollama_additional_kwargs: dict[str, Any] = Field(
@@ -42,13 +42,13 @@ class OllamaEmbedding(BaseEmbedding):
     )
     client_kwargs: dict[str, Any] = Field(
         default_factory=dict,
-        description="Additional kwargs for the Ollama client initialization."
+        description="Additional kwargs for the Ollama client initialization.",
     )
 
     _client: Client = PrivateAttr()
     _async_client: AsyncClient = PrivateAttr()
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def _initialize_clients(self) -> OllamaEmbedding:
         """Initialize Ollama clients after model validation."""
         self._client = Client(host=self.base_url, **self.client_kwargs)

@@ -3,12 +3,12 @@
 import os
 from typing import List
 
-from ollama import Client
+import ollama as ollama_sdk
 from pydantic import BaseModel, Field
 
 test_model = os.environ.get("OLLAMA_TEST_MODEL", "llama3.1:latest")
 try:
-    client = Client()
+    client = ollama_sdk.Client()        # type: ignore
     models = client.list()
 
     model_found = False

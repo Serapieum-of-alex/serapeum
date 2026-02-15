@@ -1,4 +1,10 @@
-"""Async utils."""
+"""Concurrent execution utilities for running async tasks with batching and progress tracking.
+
+This module provides helpers for executing coroutines with various concurrency
+patterns, including simple gathering, batched execution, and optional progress
+bar integration using tqdm. It handles event loop management and provides safe
+fallbacks for different async execution contexts.
+"""
 
 from __future__ import annotations
 
@@ -21,21 +27,15 @@ def asyncio_run(coro: Coroutine) -> Any:
     providing async entrypoints).
 
     Args:
-        coro (Coroutine):
-            The coroutine object to run to completion.
+        coro: The coroutine object to run to completion.
 
     Returns:
-        Any: The value returned by the awaited coroutine.
+        The value returned by the awaited coroutine.
 
     Raises:
         RuntimeError: If called from within an already running event loop
-            (nested asyncio), a ``RuntimeError`` is raised with a message
-            explaining how to proceed.
+            (nested asyncio). The error message explains how to proceed.
 
-    See Also:
-        - ``run_async_tasks``: Convenience to run multiple coroutines and
-          collect their results.
-        - ``batch_gather``: Async helper to gather coroutines in batches.
 
     Examples:
         - Run a coroutine when no loop is running
@@ -63,6 +63,10 @@ def asyncio_run(coro: Coroutine) -> Any:
             'nested'
 
             ```
+
+    See Also:
+        run_async_tasks: Convenience to run multiple coroutines and collect results.
+        batch_gather: Async helper to gather coroutines in batches.
     """
     try:
         # Check if there's an existing event loop
@@ -83,10 +87,10 @@ def asyncio_run(coro: Coroutine) -> Any:
 
 
 def run_async_tasks(
-    tasks: List[Coroutine],
+    tasks: list[Coroutine],
     show_progress: bool = False,
     progress_bar_desc: str = "Running async tasks",
-) -> List[Any]:
+) -> list[Any]:
     """Run a list of coroutines to completion and collect their results.
 
     This convenience wrapper optionally displays a progress bar via
@@ -96,25 +100,19 @@ def run_async_tasks(
     ``asyncio.gather`` execution using ``asyncio_run``.
 
     Args:
-        tasks (List[Coroutine]):
-            The coroutines to run.
-        show_progress (bool):
-            If True, attempt to use ``tqdm.asyncio.tqdm.gather`` with a progress
-            bar. If unavailable or incompatible, a silent fallback is applied.
-        progress_bar_desc (str):
-            Optional label shown by the progress bar.
+        tasks: The coroutines to run.
+        show_progress: If True, attempt to use ``tqdm.asyncio.tqdm.gather``
+            with a progress bar. If unavailable or incompatible, a silent
+            fallback is applied. Defaults to False.
+        progress_bar_desc: Optional label shown by the progress bar.
+            Defaults to "Running async tasks".
 
     Returns:
-        List[Any]: Results of the completed coroutines in the same order as the
-        input list.
+        Results of the completed coroutines in the same order as the input list.
 
     Raises:
         Exception: Any exception raised by the provided coroutines will
             propagate from ``asyncio.gather``.
-
-    See Also:
-        - ``asyncio_run``: Helper that safely runs a coroutine from sync code.
-        - ``run_jobs``: Concurrency-limited variant suitable for many jobs.
 
     Examples:
         - Run tasks without a progress bar
@@ -141,8 +139,12 @@ def run_async_tasks(
             [1, 2, 3]
 
             ```
+
+    See Also:
+        asyncio_run: Helper that safely runs a coroutine from sync code.
+        batch_gather: Batched variant that controls peak concurrency.
     """
-    tasks_to_execute: List[Any] = tasks
+    tasks_to_execute: list[Any] = tasks
     if show_progress:
         try:
             import nest_asyncio
@@ -153,10 +155,10 @@ def run_async_tasks(
             nest_asyncio.apply()
             loop = asyncio.get_event_loop()
 
-            async def _tqdm_gather() -> List[Any]:
+            async def _tqdm_gather() -> list[Any]:
                 return await tqdm.gather(*tasks_to_execute, desc=progress_bar_desc)
 
-            tqdm_outputs: List[Any] = loop.run_until_complete(_tqdm_gather())
+            tqdm_outputs: list[Any] = loop.run_until_complete(_tqdm_gather())
             return tqdm_outputs
         # run the operation w/o tqdm on hitting a fatal
         # may occur in some environments where tqdm.asyncio
@@ -164,10 +166,10 @@ def run_async_tasks(
         except Exception:
             pass
 
-    async def _gather() -> List[Any]:
+    async def _gather() -> list[Any]:
         return await asyncio.gather(*tasks_to_execute)
 
-    outputs: List[Any] = asyncio_run(_gather())
+    outputs: list[Any] = asyncio_run(_gather())
     return outputs
 
 
@@ -179,15 +181,12 @@ def chunks(iterable: Iterable, size: int) -> Iterable:
     of ``size``, the final tuple is right-padded with ``None`` values.
 
     Args:
-        iterable (Iterable): The input sequence or iterable to group.
-        size (int): The group size.
+        iterable: The input sequence or iterable to group.
+        size: The group size.
 
     Returns:
-        Iterable: An iterator yielding tuples, each of length ``size``. The last
-        tuple may contain trailing ``None`` values as padding.
-
-    See Also:
-        - ``batch_gather``: Consumes chunked coroutines to gather in batches.
+        An iterator yielding tuples, each of length ``size``. The last tuple
+        may contain trailing ``None`` values as padding.
 
     Examples:
         - Exact multiple of the size
@@ -209,14 +208,17 @@ def chunks(iterable: Iterable, size: int) -> Iterable:
             []
 
             ```
+
+    See Also:
+        batch_gather: Consumes chunked coroutines to gather in batches.
     """
     args = [iter(iterable)] * size
     return zip_longest(*args, fillvalue=None)
 
 
 async def batch_gather(
-    tasks: List[Coroutine], batch_size: int = 10, verbose: bool = False
-) -> List[Any]:
+    tasks: list[Coroutine], batch_size: int = 10, verbose: bool = False
+) -> list[Any]:
     """Gather coroutines in sequential batches to control concurrency.
 
     This helper splits ``tasks`` into chunks of size ``batch_size`` using
@@ -225,25 +227,18 @@ async def batch_gather(
     printed after each batch.
 
     Args:
-        tasks (List[Coroutine]):
-            The coroutines to run.
-        batch_size (int):
-            Number of tasks to await per batch. Must be a positive integer for
-            meaningful batching.
-        verbose (bool):
-            If True, prints progress after each batch completes.
+        tasks: The coroutines to run.
+        batch_size: Number of tasks to await per batch. Must be a positive
+            integer for meaningful batching. Defaults to 10.
+        verbose: If True, prints progress after each batch completes.
+            Defaults to False.
 
     Returns:
-        List[Any]: The concatenated results from all batches in task order.
+        The concatenated results from all batches in task order.
 
     Raises:
         Exception: Any exception raised by the provided coroutines will
             propagate from ``asyncio.gather``.
-
-    See Also:
-        - ``chunks``: Iterator that groups an iterable into fixed-size tuples.
-        - ``run_async_tasks``: Run all tasks at once (no batching).
-        - ``run_jobs``: Limit concurrency using a semaphore.
 
     Examples:
         - Batch execution to limit peak concurrency
@@ -261,16 +256,23 @@ async def batch_gather(
         - Verbose progress messages (output suppressed in this example)
             ```python
             >>> import asyncio
+            >>> from serapeum.core.tools.concurrent import batch_gather
             >>> async def g(x):
             ...     await asyncio.sleep(0)
             ...     return x
             >>> tasks = [g(i) for i in range(4)]
             >>> asyncio.run(batch_gather(tasks, batch_size=2, verbose=True))
+            Completed 2 out of 4 tasks
+            Completed 4 out of 4 tasks
             [0, 1, 2, 3]
 
             ```
+
+    See Also:
+        chunks: Iterator that groups an iterable into fixed-size tuples.
+        run_async_tasks: Run all tasks at once (no batching).
     """
-    output: List[Any] = []
+    output: list[Any] = []
     for task_chunk in chunks(tasks, batch_size):
         task_chunk = (task for task in task_chunk if task is not None)
         output_chunk = await asyncio.gather(*task_chunk)

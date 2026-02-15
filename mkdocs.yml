@@ -153,7 +153,7 @@ nav:
           - Data Flow: reference/providers/ollama/ollama_dataflow.md
           - Components: reference/providers/ollama/ollama_components.md
           - Lifecycle: reference/providers/ollama/ollama_state.md
-          - API-Reference: reference/provider/ollama/api_reference.md
+          - API-Reference: reference/providers/ollama/api_reference.md
       - Add New Providers:
           - Instructions: reference/providers/add_new_providers.md
   - About:

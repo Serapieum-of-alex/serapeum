@@ -533,7 +533,7 @@ class TestSingleEmbeddingSyncMethods:
         mock_ollama_client: MagicMock,
         mock_embed_response: MagicMock,
     ) -> None:
-        """Test get_general_text_embedding makes correct API call.
+        """Test _embed_raw makes correct API call.
 
         Inputs: text="test query"
         Expected: Calls client.embed with correct parameters, returns first embedding
@@ -541,7 +541,7 @@ class TestSingleEmbeddingSyncMethods:
         """
         basic_embedder._client = mock_ollama_client
 
-        result = basic_embedder.get_general_text_embedding("test query")
+        result = basic_embedder._embed_raw("test query")
 
         # Assert - Verify API call
         mock_ollama_client.embed.assert_called_once_with(
@@ -557,7 +557,7 @@ class TestSingleEmbeddingSyncMethods:
     def test_get_general_text_embedding_with_additional_kwargs(
         self, configured_embedder: OllamaEmbedding, mock_ollama_client: MagicMock
     ) -> None:
-        """Test get_general_text_embedding passes additional kwargs to API.
+        """Test _embed_raw passes additional kwargs to API.
 
         Inputs: text with ollama_additional_kwargs set
         Expected: kwargs passed to options parameter
@@ -565,7 +565,7 @@ class TestSingleEmbeddingSyncMethods:
         """
         configured_embedder._client = mock_ollama_client
 
-        configured_embedder.get_general_text_embedding("test")
+        configured_embedder._embed_raw("test")
 
         mock_ollama_client.embed.assert_called_once_with(
             model="test-model",
@@ -583,7 +583,7 @@ class TestSingleEmbeddingSyncMethods:
         """Test _get_query_embedding applies formatting before embedding.
 
         Inputs: query="What is AI?" with query_instruction="Query:"
-        Expected: Formatted query passed to get_general_text_embedding
+        Expected: Formatted query passed to _embed_raw
         Checks: _format_query called and result used for embedding
         """
         configured_embedder._client = mock_ollama_client
@@ -605,7 +605,7 @@ class TestSingleEmbeddingSyncMethods:
         """Test _get_text_embedding applies formatting before embedding.
 
         Inputs: text="AI is a field" with text_instruction="Text:"
-        Expected: Formatted text passed to get_general_text_embedding
+        Expected: Formatted text passed to _embed_raw
         Checks: _format_text called and result used for embedding
         """
         configured_embedder._client = mock_ollama_client
@@ -631,7 +631,7 @@ class TestSingleEmbeddingAsyncMethods:
         mock_ollama_async_client: AsyncMock,
         mock_embed_response: MagicMock,
     ) -> None:
-        """Test async get_general_text_embedding makes correct API call.
+        """Test async _embed_raw makes correct API call.
 
         Inputs: prompt="test query"
         Expected: Calls async client.embed, returns first embedding
@@ -639,7 +639,7 @@ class TestSingleEmbeddingAsyncMethods:
         """
         basic_embedder._async_client = mock_ollama_async_client
 
-        result = await basic_embedder.aget_general_text_embedding("test query")
+        result = await basic_embedder._a_embed_raw("test query")
 
         # Assert - Verify async API call
         mock_ollama_async_client.embed.assert_called_once_with(
@@ -665,7 +665,7 @@ class TestSingleEmbeddingAsyncMethods:
         """
         configured_embedder._async_client = mock_ollama_async_client
 
-        await configured_embedder.aget_general_text_embedding("test")
+        await configured_embedder._a_embed_raw("test")
 
         mock_ollama_async_client.embed.assert_called_once_with(
             model="test-model",
@@ -726,7 +726,7 @@ class TestBatchEmbeddingSyncMethods:
         mock_ollama_client: MagicMock,
         mock_batch_embed_response: MagicMock,
     ) -> None:
-        """Test get_general_text_embeddings with multiple texts.
+        """Test _embed_batch_raw with multiple texts.
 
         Inputs: texts=["text1", "text2", "text3"]
         Expected: Single API call with all texts, returns all embeddings
@@ -736,7 +736,7 @@ class TestBatchEmbeddingSyncMethods:
         mock_ollama_client.embed.return_value = mock_batch_embed_response
 
         texts = ["text1", "text2", "text3"]
-        result = basic_embedder.get_general_text_embeddings(texts)
+        result = basic_embedder._embed_batch_raw(texts)
 
         # Assert - Verify batch API call
         mock_ollama_client.embed.assert_called_once_with(
@@ -839,7 +839,7 @@ class TestBatchEmbeddingSyncMethods:
         mock_response.embeddings = [[0.1, 0.2] for _ in range(100)]
         embedder._client.embed.return_value = mock_response
 
-        result = embedder.get_general_text_embeddings(texts)
+        result = embedder._embed_batch_raw(texts)
 
         # Verify single API call with all texts
         embedder._client.embed.assert_called_once()
@@ -865,7 +865,7 @@ class TestBatchEmbeddingSyncMethods:
         ]
         embedder._client.embed.return_value = mock_response
 
-        result = embedder.get_general_text_embeddings(texts)
+        result = embedder._embed_batch_raw(texts)
 
         assert len(result) == 3
         assert result[0] == [1.0, 0.0, 0.0]
@@ -885,7 +885,7 @@ class TestBatchEmbeddingAsyncMethods:
         mock_ollama_async_client: AsyncMock,
         mock_batch_embed_response: MagicMock,
     ) -> None:
-        """Test async get_general_text_embeddings with multiple texts.
+        """Test async _embed_batch_raw with multiple texts.
 
         Inputs: texts=["text1", "text2", "text3"]
         Expected: Single async API call, returns all embeddings
@@ -895,7 +895,7 @@ class TestBatchEmbeddingAsyncMethods:
         mock_ollama_async_client.embed.return_value = mock_batch_embed_response
 
         texts = ["text1", "text2", "text3"]
-        result = await basic_embedder.aget_general_text_embeddings(texts)
+        result = await basic_embedder._a_embed_batch_raw(texts)
 
         # Assert - Verify async batch call
         mock_ollama_async_client.embed.assert_called_once_with(
@@ -969,7 +969,7 @@ class TestBatchEmbeddingAsyncMethods:
         ]
         embedder._async_client.embed = AsyncMock(return_value=mock_response)
 
-        result = await embedder.aget_general_text_embeddings(texts)
+        result = await embedder._a_embed_batch_raw(texts)
 
         embedder._async_client.embed.assert_called_once()
         assert len(result) == 3
@@ -992,7 +992,7 @@ class TestErrorHandling:
         embedder._client = mock_client_with_error
 
         with pytest.raises(ConnectionError) as exc_info:
-            embedder.get_general_text_embedding("test text")
+            embedder._embed_raw("test text")
 
         assert "Failed to connect" in str(exc_info.value)
 
@@ -1010,7 +1010,7 @@ class TestErrorHandling:
         )
 
         with pytest.raises(ConnectionError) as exc_info:
-            await embedder.aget_general_text_embedding("test text")
+            await embedder._a_embed_raw("test text")
 
         assert "Failed to connect" in str(exc_info.value)
 
@@ -1027,7 +1027,7 @@ class TestErrorHandling:
         embedder._client = mock_timeout_client
 
         with pytest.raises(TimeoutError) as exc_info:
-            embedder.get_general_text_embedding("test text")
+            embedder._embed_raw("test text")
 
         assert "timed out" in str(exc_info.value).lower()
 
@@ -1095,7 +1095,7 @@ class TestErrorHandling:
         embedder._client.embed.return_value = mock_response
 
         with pytest.raises(AttributeError):
-            embedder.get_general_text_embedding("test")
+            embedder._embed_raw("test")
 
     def test_empty_embeddings_list_from_api(self, embedder_factory) -> None:
         """Test handling when API returns empty embeddings list.
@@ -1110,7 +1110,7 @@ class TestErrorHandling:
         embedder._client.embed.return_value = mock_response
 
         with pytest.raises(IndexError):
-            embedder.get_general_text_embedding("test")
+            embedder._embed_raw("test")
 
 
 @pytest.mark.unit
@@ -1226,7 +1226,7 @@ class TestKeepAliveParameter:
         mock_response.embeddings = [[0.1, 0.2, 0.3]]
         embedder._client.embed.return_value = mock_response
 
-        embedder.get_general_text_embedding("test")
+        embedder._embed_raw("test")
 
         # Verify keep_alive passed to API
         call_kwargs = embedder._client.embed.call_args[1]
@@ -1244,7 +1244,7 @@ class TestKeepAliveParameter:
         mock_response.embeddings = [[0.1, 0.2, 0.3]]
         embedder._client.embed.return_value = mock_response
 
-        embedder.get_general_text_embedding("test")
+        embedder._embed_raw("test")
 
         call_kwargs = embedder._client.embed.call_args[1]
         assert call_kwargs["keep_alive"] == 600.0
@@ -1261,7 +1261,7 @@ class TestKeepAliveParameter:
         mock_response.embeddings = [[0.1, 0.2, 0.3]]
         embedder._client.embed.return_value = mock_response
 
-        embedder.get_general_text_embedding("test")
+        embedder._embed_raw("test")
 
         call_kwargs = embedder._client.embed.call_args[1]
         assert call_kwargs["keep_alive"] is None
@@ -1314,7 +1314,7 @@ class TestOllamaAdditionalKwargs:
         mock_response.embeddings = [[0.1, 0.2]]
         embedder._client.embed.return_value = mock_response
 
-        embedder.get_general_text_embedding("test")
+        embedder._embed_raw("test")
 
         call_kwargs = embedder._client.embed.call_args[1]
         assert call_kwargs["options"] == additional
@@ -1338,7 +1338,7 @@ class TestOllamaAdditionalKwargs:
         # Create proper AsyncMock for async client
         embedder._async_client.embed = AsyncMock(return_value=mock_response)
 
-        await embedder.aget_general_text_embedding("test")
+        await embedder._a_embed_raw("test")
 
         call_kwargs = embedder._async_client.embed.call_args[1]
         assert call_kwargs["options"] == additional
@@ -1356,7 +1356,7 @@ class TestOllamaAdditionalKwargs:
         mock_response.embeddings = [[0.1]]
         embedder._client.embed.return_value = mock_response
 
-        embedder.get_general_text_embedding("test")
+        embedder._embed_raw("test")
 
         call_kwargs = embedder._client.embed.call_args[1]
         assert call_kwargs["options"] == {}
@@ -1773,8 +1773,8 @@ class TestOllamaEmbeddingEdgeCases:
 
         mock_ollama_client.embed.side_effect = [response1, response2]
 
-        emb1 = basic_embedder.get_general_text_embedding("text1")
-        emb2 = basic_embedder.get_general_text_embedding("text2")
+        emb1 = basic_embedder._embed_raw("text1")
+        emb2 = basic_embedder._embed_raw("text2")
 
         assert len(emb1) == len(emb2)
 
@@ -1921,7 +1921,7 @@ class TestPerformanceScenarios:
         mock_response.embeddings = [[0.1] for _ in range(2048)]
         embedder._client.embed.return_value = mock_response
 
-        result = embedder.get_general_text_embeddings(texts)
+        result = embedder._embed_batch_raw(texts)
 
         assert len(result) == 2048
 
@@ -1939,7 +1939,7 @@ class TestPerformanceScenarios:
         mock_response.embeddings = [[0.1, 0.2]]
         embedder._client.embed.return_value = mock_response
 
-        result = embedder.get_general_text_embedding(long_text)
+        result = embedder._embed_raw(long_text)
 
         # Verify full text passed to API
         call_kwargs = embedder._client.embed.call_args[1]
@@ -1963,8 +1963,8 @@ class TestPerformanceScenarios:
 
         embedder._client.embed.side_effect = [mock_response_1, mock_response_2]
 
-        result1 = embedder.get_general_text_embedding("text1")
-        result2 = embedder.get_general_text_embedding("text2")
+        result1 = embedder._embed_raw("text1")
+        result2 = embedder._embed_raw("text2")
 
         assert len(result1) == len(result2) == 5
 

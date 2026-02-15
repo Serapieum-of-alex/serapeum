@@ -242,7 +242,7 @@ class OllamaEmbedding(BaseEmbedding):
             _format_query: Formats query with instruction prefix.
         """
         formatted_query = self._format_query(query)
-        return await self.aget_general_text_embedding(formatted_query)
+        return await self._a_embed_raw(formatted_query)
 
     def _get_text_embedding(self, text: str) -> Sequence[float]:
         """Generate an embedding vector for a document or text passage.
@@ -279,7 +279,7 @@ class OllamaEmbedding(BaseEmbedding):
             _format_text: Formats text with instruction prefix.
         """
         formatted_text = self._format_text(text)
-        return self.get_general_text_embedding(formatted_text)
+        return self._embed_raw(formatted_text)
 
     async def _aget_text_embedding(self, text: str) -> Sequence[float]:
         """Asynchronously generate an embedding vector for a document or text passage.
@@ -314,7 +314,7 @@ class OllamaEmbedding(BaseEmbedding):
             _format_text: Formats text with instruction prefix.
         """
         formatted_text = self._format_text(text)
-        return await self.aget_general_text_embedding(formatted_text)
+        return await self._a_embed_raw(formatted_text)
 
     def _get_text_embeddings(self, texts: list[str]) -> Sequence[Sequence[float]]:
         """Generate embedding vectors for multiple documents or text passages.
@@ -349,7 +349,7 @@ class OllamaEmbedding(BaseEmbedding):
             _get_text_embedding: Single text version.
         """
         formatted_texts = [self._format_text(text) for text in texts]
-        return self.get_general_text_embeddings(formatted_texts)
+        return self._embed_batch_raw(formatted_texts)
 
     async def _aget_text_embeddings(
         self, texts: list[str]
@@ -387,9 +387,9 @@ class OllamaEmbedding(BaseEmbedding):
             _aget_text_embedding: Single text async version.
         """
         formatted_texts = [self._format_text(text) for text in texts]
-        return await self.aget_general_text_embeddings(formatted_texts)
+        return await self._a_embed_batch_raw(formatted_texts)
 
-    def get_general_text_embeddings(
+    def _embed_batch_raw(
         self, texts: list[str]
     ) -> Sequence[Sequence[float]]:
         """Generate raw embeddings for multiple texts using the Ollama API.
@@ -404,21 +404,9 @@ class OllamaEmbedding(BaseEmbedding):
         Returns:
             A sequence of embedding vectors from the Ollama model.
 
-        Examples:
-            - Direct API call for batch embedding
-                ```python
-                >>> from serapeum.ollama import OllamaEmbedding
-                >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
-                >>> texts = ["text 1", "text 2"]  # doctest: +SKIP
-                >>> embeddings = embedder.get_general_text_embeddings(texts)  # doctest: +SKIP
-                >>> len(embeddings) == 2  # doctest: +SKIP
-                True
-
-                ```
-
         See Also:
-            aget_general_text_embeddings: Async version of this method.
-            get_general_text_embedding: Single text version.
+            _a_embed_batch_raw: Async version of this method.
+            _embed_raw: Single text version.
         """
         result = self._client.embed(
             model=self.model_name,
@@ -428,12 +416,12 @@ class OllamaEmbedding(BaseEmbedding):
         )
         return result.embeddings
 
-    async def aget_general_text_embeddings(
+    async def _a_embed_batch_raw(
         self, texts: list[str]
     ) -> Sequence[Sequence[float]]:
         """Asynchronously generate raw embeddings for multiple texts using the Ollama API.
 
-        Async low-level method that directly calls the Ollama embed API without any
+        Async low-level private method that directly calls the Ollama embed API without any
         text formatting or instruction prefixes. Used internally by higher-level
         async methods after text formatting is applied.
 
@@ -443,23 +431,9 @@ class OllamaEmbedding(BaseEmbedding):
         Returns:
             A sequence of embedding vectors from the Ollama model.
 
-        Examples:
-            - Async direct API call for batch embedding
-                ```python
-                >>> import asyncio
-                >>> from serapeum.ollama import OllamaEmbedding
-                >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
-                >>> async def get_embeddings():  # doctest: +SKIP
-                ...     texts = ["text 1", "text 2", "text 3"]
-                ...     vecs = await embedder.aget_general_text_embeddings(texts)
-                ...     return len(vecs)
-                >>> # asyncio.run(get_embeddings())  # Returns 3
-
-                ```
-
         See Also:
-            get_general_text_embeddings: Synchronous version of this method.
-            aget_general_text_embedding: Single text async version.
+            _embed_batch_raw: Synchronous version of this method.
+            _a_embed_raw: Single text async version.
         """
         result = await self._async_client.embed(
             model=self.model_name,
@@ -469,77 +443,53 @@ class OllamaEmbedding(BaseEmbedding):
         )
         return result.embeddings
 
-    def get_general_text_embedding(self, texts: str) -> Sequence[float]:
+    def _embed_raw(self, text: str) -> Sequence[float]:
         """Generate a raw embedding for a single text using the Ollama API.
 
-        Low-level method that directly calls the Ollama embed API without any
+        Low-level private method that directly calls the Ollama embed API without any
         text formatting or instruction prefixes. Used internally by higher-level
         methods after text formatting is applied. Returns the first embedding
         from the API response.
 
         Args:
-            texts: The text string to embed (should already be formatted).
+            text: The text string to embed (should already be formatted).
 
         Returns:
             An embedding vector from the Ollama model.
 
-        Examples:
-            - Direct API call for single text embedding
-                ```python
-                >>> from serapeum.ollama import OllamaEmbedding
-                >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
-                >>> embedding = embedder.get_general_text_embedding("sample text")  # doctest: +SKIP
-                >>> len(embedding) > 0  # doctest: +SKIP
-                True
-
-                ```
-
         See Also:
-            aget_general_text_embedding: Async version of this method.
-            get_general_text_embeddings: Batch version.
+            _a_embed_raw: Async version of this method.
+            _embed_batch_raw: Batch version.
         """
         result = self._client.embed(
             model=self.model_name,
-            input=texts,
+            input=text,
             options=self.ollama_additional_kwargs,
             keep_alive=self.keep_alive,
         )
         return result.embeddings[0]
 
-    async def aget_general_text_embedding(self, prompt: str) -> Sequence[float]:
+    async def _a_embed_raw(self, text: str) -> Sequence[float]:
         """Asynchronously generate a raw embedding for a single text using the Ollama API.
 
-        Async low-level method that directly calls the Ollama embed API without any
+        Async low-level private method that directly calls the Ollama embed API without any
         text formatting or instruction prefixes. Used internally by higher-level
         async methods after text formatting is applied. Returns the first embedding
         from the API response.
 
         Args:
-            prompt: The text string to embed (should already be formatted).
+            text: The text string to embed (should already be formatted).
 
         Returns:
             An embedding vector from the Ollama model.
 
-        Examples:
-            - Async direct API call for single text embedding
-                ```python
-                >>> import asyncio
-                >>> from serapeum.ollama import OllamaEmbedding
-                >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
-                >>> async def get_embedding():  # doctest: +SKIP
-                ...     vec = await embedder.aget_general_text_embedding("sample text")
-                ...     return len(vec) > 0
-                >>> # asyncio.run(get_embedding())  # Returns True
-
-                ```
-
         See Also:
-            get_general_text_embedding: Synchronous version of this method.
-            aget_general_text_embeddings: Batch async version.
+            _embed_raw: Synchronous version of this method.
+            _a_embed_batch_raw: Batch async version.
         """
         result = await self._async_client.embed(
             model=self.model_name,
-            input=prompt,
+            input=text,
             options=self.ollama_additional_kwargs,
             keep_alive=self.keep_alive,
         )

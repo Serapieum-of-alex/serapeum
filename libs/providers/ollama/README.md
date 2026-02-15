@@ -175,32 +175,6 @@ print(f"Generated {len(embeddings)} embeddings")
 
 ## Integration with Serapeum
 
-### Using with VectorStoreIndex
-
-The most common use case is to integrate Ollama embeddings with Serapeum's vector store:
-
-```python
-from serapeum.core import VectorStoreIndex, SimpleDirectoryReader, Settings
-from serapeum.ollama import OllamaEmbedding
-
-# Set the embedding model globally
-Settings.embed_model = OllamaEmbedding(
-    model_name="nomic-embed-text",
-    base_url="http://localhost:11434",
-)
-
-# Load documents
-documents = SimpleDirectoryReader("data").load_data()
-
-# Create index with Ollama embeddings
-index = VectorStoreIndex.from_documents(documents)
-
-# Query the index
-query_engine = index.as_query_engine()
-response = query_engine.query("What is the main topic?")
-print(response)
-```
-
 ### Using with Custom LLM
 
 You can combine Ollama embeddings with other LLMs (including Ollama LLMs):
@@ -225,6 +199,7 @@ Configs.embed_model = OllamaEmbedding(
 The `OllamaEmbedding` class supports several configuration options:
 
 ```python
+from serapeum.ollama import OllamaEmbedding
 embed_model = OllamaEmbedding(
     model_name="nomic-embed-text",  # Required: Ollama model name
     base_url="http://localhost:11434",  # Optional: Ollama server URL (default: http://localhost:11434)

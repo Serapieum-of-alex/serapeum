@@ -63,7 +63,7 @@ This page summarizes the main modules, key classes, and the public API surface o
 - serapeum.core.base.llms.types.Message / MessageList / ChatResponse / CompletionResponse / Metadata
 - serapeum.core.prompts.base.PromptTemplate / ChatPromptTemplate
 - serapeum.core.models.base.SerializableModel
-- serapeum.ollama.base.Ollama
+- serapeum.ollama.Ollama
 
 ## Representative Public Methods
 

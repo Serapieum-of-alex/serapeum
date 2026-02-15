@@ -66,6 +66,7 @@ def get_additional_kwargs(
     Examples:
         - Keep only non-excluded keys
             ```python
+            >>> from serapeum.ollama.llm import get_additional_kwargs  # type: ignore
             >>> get_additional_kwargs({"a": 1, "b": 2, "keep": 3}, ("a", "b"))
             {'keep': 3}
 
@@ -183,6 +184,8 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             >>> #   ollama pull llama3.1
             >>> llm = Ollama(model="llama3.1", request_timeout=120)  # doctest: +SKIP
             >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'pong'.")])  # doctest: +SKIP
+            >>> response # doctest: +SKIP
+            ChatResponse(raw={'model': 'llama3.1', 'created_at': '2026-02-15T20:16:34.1386099Z', 'done': True, 'done_reason': 'stop', 'total_duration': 1133539400, 'load_duration': 481943100, 'prompt_eval_count': 18, 'prompt_eval_duration': 349949700, 'eval_count': 7, 'eval_duration': 81735000, 'message': Message(role='assistant', content='{ "ok": true }', thinking=None, images=None, tool_name=None, tool_calls=None), 'logprobs': None, 'usage': {'prompt_tokens': 18, 'completion_tokens': 7, 'total_tokens': 25}}, likelihood_score=None, additional_kwargs={}, delta=None, message=Message(role=<MessageRole.ASSISTANT: 'assistant'>, additional_kwargs={'tool_calls': None}, chunks=[TextChunk(content='{ "ok": true }', path=None, url=None, type='text')]))
             >>> print(response)  # doctest: +SKIP
             assistant: Pong!
 
@@ -190,11 +193,11 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         - Enabling JSON mode for structured outputs with a real server
             ```python
             >>> from serapeum.core.llms import Message, MessageRole
-            >>> from serapeum.ollama import Ollama      # type: ignore[attr-defined]
+            >>> from serapeum.ollama import Ollama          # type: ignore[attr-defined]
             >>> # When json_mode=True, this adapter sets format="json" under the hood.
             >>> llm = Ollama(model="llama3.1", json_mode=True, request_timeout=120)  # doctest: +SKIP
             >>> response = llm.chat([Message(role=MessageRole.USER, content='Return {"ok": true} as JSON')])  # doctest: +SKIP
-            >>> print(response)  # doctest: +SKIP
+            >>> print(response)         # doctest: +SKIP
             assistant: {"ok":true}
 
             ```

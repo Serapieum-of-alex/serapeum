@@ -2,7 +2,7 @@
 
 This module provides the OllamaEmbedding class for generating embeddings using
 Ollama models. It supports both symmetric and asymmetric embedding patterns,
-allowing different instructions for queries vs documents to optimize retrieval
+allowing different instructions for queries vs. documents to optimize retrieval
 performance. All operations support both synchronous and asynchronous execution.
 """
 
@@ -20,7 +20,7 @@ class OllamaEmbedding(BaseEmbedding):
 
     This class provides a complete embedding interface using Ollama models, supporting
     both symmetric and asymmetric embedding patterns. Asymmetric embeddings allow
-    different instructions for queries vs documents, which can significantly improve
+    different instructions for queries vs. documents, which can significantly improve
     retrieval accuracy by optimizing each embedding type for its specific role.
 
     The class manages both synchronous and asynchronous Ollama clients, automatically
@@ -32,7 +32,7 @@ class OllamaEmbedding(BaseEmbedding):
         model_name: Name of the Ollama model to use for embeddings (e.g., "nomic-embed-text").
         ollama_additional_kwargs: Additional options passed to Ollama's embed API.
         query_instruction: Optional instruction prepended to search queries for asymmetric
-            embedding. Example: "search_query:" or "Represent this query for retrieval:".
+            embedding. Example: "search_query:" or "Represent this query for retrieval."
         text_instruction: Optional instruction prepended to documents for asymmetric
             embedding. Example: "search_document:" or "Represent this document:".
         keep_alive: Duration to keep model loaded in memory after requests. Can be a
@@ -42,7 +42,7 @@ class OllamaEmbedding(BaseEmbedding):
     Examples:
         - Basic embedding with default settings
             ```python
-            >>> from serapeum.ollama import OllamaEmbedding
+            >>> from serapeum.ollama import OllamaEmbedding         # type: ignore
             >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
             >>> embedding = embedder.get_text_embedding("Hello world")  # doctest: +SKIP
             >>> len(embedding) > 0  # doctest: +SKIP
@@ -51,33 +51,51 @@ class OllamaEmbedding(BaseEmbedding):
             ```
         - Asymmetric embeddings for retrieval
             ```python
-            >>> from serapeum.ollama import OllamaEmbedding
+            >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
             >>> embedder = OllamaEmbedding(  # doctest: +SKIP
             ...     model_name="nomic-embed-text",
             ...     query_instruction="search_query:",
             ...     text_instruction="search_document:"
             ... )
-            >>> # Query embedding optimized for search
+
+            ```
+            -  Query embedding optimized for search
+            ```python
             >>> query_emb = embedder.get_query_embedding("What is Python?")  # doctest: +SKIP
-            >>> # Document embedding optimized for retrieval
+            [0.011942148,
+             0.023432752,
+             -0.14708464,
+             0.0131236715,
+             ...
+             -0.01889455,
+             -0.00888129]
+
+            ```
+            - Document embedding optimized for retrieval
+            ```python
             >>> doc_emb = embedder.get_text_embedding("Python is a programming language")  # doctest: +SKIP
+            [0.011555489,
+             0.02302966,
+             -0.104428634,
+             -0.04198733,
+             -0.047405742]
 
             ```
         - Batch processing with async
             ```python
             >>> import asyncio
-            >>> from serapeum.ollama import OllamaEmbedding
+            >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
             >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
             >>> async def embed_batch():  # doctest: +SKIP
             ...     texts = ["First doc", "Second doc", "Third doc"]
-            ...     embeddings = await embedder.aget_text_embeddings(texts)
+            ...     embeddings = await embedder._aget_text_embeddings(texts)
             ...     return len(embeddings)
-            >>> # asyncio.run(embed_batch())  # Returns 3
+            >>> asyncio.run(embed_batch())  # Returns 3 # doctest : +SKIP
 
             ```
         - Custom Ollama server configuration
             ```python
-            >>> from serapeum.ollama import OllamaEmbedding
+            >>> from serapeum.ollama import OllamaEmbedding         # type: ignore
             >>> embedder = OllamaEmbedding(  # doctest: +SKIP
             ...     model_name="llama2",
             ...     base_url="http://custom-server:11434",
@@ -127,8 +145,8 @@ class OllamaEmbedding(BaseEmbedding):
         description="Additional kwargs for the Ollama client initialization.",
     )
 
-    _client: ollama_sdk.Client = PrivateAttr()
-    _async_client: ollama_sdk.AsyncClient = PrivateAttr()
+    _client: ollama_sdk.Client = PrivateAttr()      # type: ignore
+    _async_client: ollama_sdk.AsyncClient = PrivateAttr()       # type: ignore
 
     @model_validator(mode="after")
     def _initialize_clients(self) -> OllamaEmbedding:
@@ -144,14 +162,14 @@ class OllamaEmbedding(BaseEmbedding):
         Examples:
             - Clients are initialized automatically on instantiation
                 ```python
-                >>> from serapeum.ollama import OllamaEmbedding
+                >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
                 >>> # Both _client and _async_client are now initialized
 
                 ```
         """
-        self._client = ollama_sdk.Client(host=self.base_url, **self.client_kwargs)
-        self._async_client = ollama_sdk.AsyncClient(host=self.base_url, **self.client_kwargs)
+        self._client = ollama_sdk.Client(host=self.base_url, **self.client_kwargs)      # type: ignore
+        self._async_client = ollama_sdk.AsyncClient(host=self.base_url, **self.client_kwargs)       # type: ignore
         return self
 
     @classmethod
@@ -164,7 +182,7 @@ class OllamaEmbedding(BaseEmbedding):
         Examples:
             - Get the class name identifier
                 ```python
-                >>> from serapeum.ollama import OllamaEmbedding
+                >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> OllamaEmbedding.class_name()
                 'OllamaEmbedding'
 
@@ -191,7 +209,7 @@ class OllamaEmbedding(BaseEmbedding):
         Examples:
             - Embed a search query
                 ```python
-                >>> from serapeum.ollama import OllamaEmbedding
+                >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(  # doctest: +SKIP
                 ...     model_name="nomic-embed-text",
                 ...     query_instruction="search_query:"
@@ -207,7 +225,7 @@ class OllamaEmbedding(BaseEmbedding):
             _format_query: Formats query with instruction prefix.
         """
         formatted_query = self._format_query(query)
-        return self.get_general_text_embedding(formatted_query)
+        return self._embed_raw(formatted_query)
 
     async def _aget_query_embedding(self, query: str) -> Sequence[float]:
         """Asynchronously generate an embedding vector for a search query.
@@ -228,7 +246,7 @@ class OllamaEmbedding(BaseEmbedding):
             - Async query embedding
                 ```python
                 >>> import asyncio
-                >>> from serapeum.ollama import OllamaEmbedding
+                >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
                 >>> async def embed_query():  # doctest: +SKIP
                 ...     vec = await embedder.aget_query_embedding("neural networks")
@@ -263,7 +281,7 @@ class OllamaEmbedding(BaseEmbedding):
         Examples:
             - Embed a document
                 ```python
-                >>> from serapeum.ollama import OllamaEmbedding
+                >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(  # doctest: +SKIP
                 ...     model_name="nomic-embed-text",
                 ...     text_instruction="search_document:"
@@ -300,7 +318,7 @@ class OllamaEmbedding(BaseEmbedding):
             - Async document embedding
                 ```python
                 >>> import asyncio
-                >>> from serapeum.ollama import OllamaEmbedding
+                >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
                 >>> async def embed_doc():  # doctest: +SKIP
                 ...     vec = await embedder.aget_text_embedding("Machine learning basics")
@@ -335,7 +353,7 @@ class OllamaEmbedding(BaseEmbedding):
         Examples:
             - Batch embed multiple documents
                 ```python
-                >>> from serapeum.ollama import OllamaEmbedding
+                >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
                 >>> docs = ["First document", "Second document", "Third document"]  # doctest: +SKIP
                 >>> embeddings = embedder.get_text_embeddings(docs)  # doctest: +SKIP
@@ -372,7 +390,7 @@ class OllamaEmbedding(BaseEmbedding):
             - Async batch embedding
                 ```python
                 >>> import asyncio
-                >>> from serapeum.ollama import OllamaEmbedding
+                >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
                 >>> async def batch_embed():  # doctest: +SKIP
                 ...     docs = ["Doc 1", "Doc 2", "Doc 3"]
@@ -394,7 +412,7 @@ class OllamaEmbedding(BaseEmbedding):
     ) -> Sequence[Sequence[float]]:
         """Generate raw embeddings for multiple texts using the Ollama API.
 
-        Low-level method that directly calls the Ollama embed API without any
+        Low-level private method that directly calls the Ollama embed API without any
         text formatting or instruction prefixes. Used internally by higher-level
         methods after text formatting is applied.
 

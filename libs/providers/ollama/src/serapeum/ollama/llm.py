@@ -357,6 +357,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         Examples:
             - Retrieve the class identifier
                 ```python
+                >>> from serapeum.ollama import Ollama      # type: ignore[attr-defined]
                 >>> Ollama.class_name()
                 'Ollama_llm'
 
@@ -490,10 +491,10 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 >>> import asyncio
                 >>> from serapeum.ollama import Ollama      # type: ignore
                 >>> llm = Ollama(model="llama3.1")
-                >>> async def check_client():  # doctest: +SKIP
+                >>> async def check_client():    # doctest: +SKIP
                 ...     client = llm.async_client
                 ...     return hasattr(client, "chat")
-                >>> # asyncio.run(check_client())  # Returns True
+                >>> asyncio.run(check_client())  # Returns True
 
                 ```
 

@@ -106,7 +106,7 @@ async def run_jobs(
 
             ```
     """
-    # his semaphore is used to limit the number of concurrent tasks that can run simultaneously.
+    # This semaphore is used to limit the number of concurrent tasks that can run simultaneously.
     semaphore = asyncio.Semaphore(workers)
 
     async def worker(job: Coroutine) -> Any:

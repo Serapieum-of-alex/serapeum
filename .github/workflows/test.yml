@@ -28,9 +28,13 @@ jobs:
           install-groups: dev
           verify-lock: true
 
-      - name: tests
+      - name: Test Core Package
         run: |
-          uv run pytest -sv -m "not e2e" --cov=src/serapeum --cov-report=xml
+          uv run pytest libs/core/tests/ -sv -m "not e2e" --cov=libs/core/src --cov-report=xml --cov-append
+
+      - name: Test Ollama Package
+        run: |
+          uv run pytest libs/providers/ollama/tests/ -sv -m "not e2e" --cov=libs/providers/ollama/src --cov-report=xml --cov-append
 
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3

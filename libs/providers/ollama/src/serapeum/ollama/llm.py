@@ -494,7 +494,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 >>> async def check_client():    # doctest: +SKIP
                 ...     client = llm.async_client
                 ...     return hasattr(client, "chat")
-                >>> asyncio.run(check_client())  # Returns True
+                >>> asyncio.run(check_client())  # Returns True # doctest: +SKIP
 
                 ```
 
@@ -1007,8 +1007,12 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 >>> #   1) Start the server: `ollama serve`
                 >>> #   2) Pull a model:    `ollama pull llama3.1`
                 >>> llm = Ollama(model="llama3.1", request_timeout=180)
-                >>> chunks = list(llm.stream_chat([Message(role=MessageRole.USER, content="Say hello succinctly")]))  # doctest: +SKIP
-                >>> isinstance(chunks[-1].message.content, str) and len(chunks) >= 1  # doctest: +SKIP
+                >>> chunks = list(llm.stream_chat([Message(role=MessageRole.USER, content="Say hello succinctly")])) # doctest: +SKIP
+                >>> chunks  # doctest: +SKIP
+                [ChatResponse(raw={'model': 'llama3.1', 'created_at': '2026-02-15T20:33:53.7035231Z', 'done': False, 'done_reason': None, 'total_duration': None, 'load_duration': None, 'prompt_eval_count': None, 'prompt_eval_duration': None, 'eval_count': None, 'eval_duration': None, 'message': Message(role='assistant', content='Hello', thinking=None, images=None, tool_name=None, tool_calls=None), 'logprobs': None}, likelihood_score=None, additional_kwargs={}, delta='Hello', message=Message(role=<MessageRole.ASSISTANT: 'assistant'>, additional_kwargs={'tool_calls': []}, chunks=[TextChunk(content='Hello', path=None, url=None, type='text')])),
+                 ChatResponse(raw={'model': 'llama3.1', 'created_at': '2026-02-15T20:33:53.7201343Z', 'done': False, 'done_reason': None, 'total_duration': None, 'load_duration': None, 'prompt_eval_count': None, 'prompt_eval_duration': None, 'eval_count': None, 'eval_duration': None, 'message': Message(role='assistant', content='!', thinking=None, images=None, tool_name=None, tool_calls=None), 'logprobs': None}, likelihood_score=None, additional_kwargs={}, delta='!', message=Message(role=<MessageRole.ASSISTANT: 'assistant'>, additional_kwargs={'tool_calls': []}, chunks=[TextChunk(content='Hello!', path=None, url=None, type='text')])),
+                 ChatResponse(raw={'model': 'llama3.1', 'created_at': '2026-02-15T20:33:53.7350848Z', 'done': True, 'done_reason': 'stop', 'total_duration': 2473382300, 'load_duration': 2159171600, 'prompt_eval_count': 14, 'prompt_eval_duration': 278611400, 'eval_count': 3, 'eval_duration': 29859300, 'message': Message(role='assistant', content='', thinking=None, images=None, tool_name=None, tool_calls=None), 'logprobs': None, 'usage': {'prompt_tokens': 14, 'completion_tokens': 3, 'total_tokens': 17}}, likelihood_score=None, additional_kwargs={}, delta='', message=Message(role=<MessageRole.ASSISTANT: 'assistant'>, additional_kwargs={'tool_calls': []}, chunks=[TextChunk(content='Hello!', path=None, url=None, type='text')]))]
+                >>> isinstance(chunks[-1].message.content, str) and len(chunks) >= 1    # doctest: +SKIP
                 True
 
                 ```
@@ -1066,15 +1070,15 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 >>> import asyncio
                 >>> from serapeum.core.llms import Message, MessageRole
                 >>> from serapeum.ollama import Ollama      # type: ignore
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)
-                >>> async def stream_example():  # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", request_timeout=120) # doctest: +SKIP
+                >>> async def stream_example():
                 ...     chunks = []
                 ...     async for chunk in await llm.astream_chat([
                 ...         Message(role=MessageRole.USER, content="Count to 3")
                 ...     ]):
                 ...         chunks.append(chunk.delta)
                 ...     return len(chunks) > 0
-                >>> # asyncio.run(stream_example())  # Returns True
+                >>> asyncio.run(stream_example())  # Returns True   # doctest: +SKIP
 
                 ```
 
@@ -1138,13 +1142,13 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 >>> import asyncio
                 >>> from serapeum.core.llms import Message, MessageRole
                 >>> from serapeum.ollama import Ollama      # type: ignore
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)
-                >>> async def chat_example():  # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", request_timeout=120) # doctest: +SKIP
+                >>> async def chat_example():   # doctest: +SKIP
                 ...     response = await llm.achat([
                 ...         Message(role=MessageRole.USER, content="Say hello")
                 ...     ])
                 ...     return isinstance(response.message.content, str)
-                >>> # asyncio.run(chat_example())  # Returns True
+                >>> asyncio.run(chat_example())  # Returns True     # doctest: +SKIP
 
                 ```
 
@@ -1219,14 +1223,15 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 >>> class Person(BaseModel):
                 ...     name: str = Field(description="Person's full name")
                 ...     age: int = Field(description="Person's age in years")
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)
-                >>> prompt = PromptTemplate("Extract person info: {text}")
-                >>> result = llm.structured_predict(  # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
+                >>> prompt = PromptTemplate("Extract person info: {text}")  # doctest: +SKIP
+                >>> result = llm.structured_predict(    # doctest: +SKIP
                 ...     Person,
                 ...     prompt,
                 ...     text="John Doe is 30 years old"
                 ... )
-                >>> # result.name == "John Doe" and result.age == 30
+                >>> result  # doctest: +SKIP
+                Person(name='John Doe', age=30)
 
                 ```
 
@@ -1283,8 +1288,8 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 >>> class City(BaseModel):
                 ...     name: str
                 ...     country: str
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)
-                >>> async def extract_city():  # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", request_timeout=120)  # doctest: +SKIP
+                >>> async def extract_city():       # doctest: +SKIP
                 ...     prompt = PromptTemplate("Extract city: {text}")
                 ...     result = await llm.astructured_predict(
                 ...         City,
@@ -1292,7 +1297,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 ...         text="Paris is in France"
                 ...     )
                 ...     return result.name == "Paris"
-                >>> # asyncio.run(extract_city())  # Returns True
+                >>> asyncio.run(extract_city())  # Returns True     # doctest: +SKIP
 
                 ```
 
@@ -1346,9 +1351,9 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 >>> class Summary(BaseModel):
                 ...     title: str
                 ...     points: list[str]
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)
+                >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
                 >>> prompt = PromptTemplate("Summarize: {text}")
-                >>> for obj in llm.stream_structured_predict(  # doctest: +SKIP
+                >>> for obj in llm.stream_structured_predict(   # doctest: +SKIP
                 ...     Summary,
                 ...     prompt,
                 ...     text="Long article text..."
@@ -1435,8 +1440,8 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 >>> class Analysis(BaseModel):
                 ...     sentiment: str
                 ...     keywords: list[str]
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)
-                >>> async def stream_analysis():  # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
+                >>> async def stream_analysis():
                 ...     prompt = PromptTemplate("Analyze: {text}")
                 ...     async for obj in await llm.astream_structured_predict(
                 ...         Analysis,
@@ -1445,7 +1450,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 ...     ):
                 ...         # obj is progressively more complete
                 ...         print(f"Sentiment: {obj.sentiment if hasattr(obj, 'sentiment') else 'pending'}")
-                >>> # asyncio.run(stream_analysis())
+                >>> asyncio.run(stream_analysis())      # doctest: +SKIP
 
                 ```
 

@@ -6,7 +6,7 @@ import asyncio
 import inspect
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Generator
 
-from ollama import AsyncClient, Client  # type: ignore[attr-defined]
+import ollama as ollama_sdk  # type: ignore[attr-defined]
 from pydantic import BaseModel, Field, PrivateAttr
 
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
@@ -231,8 +231,8 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         description="controls how long the model will stay loaded into memory following the request(default: 5m)",
     )
 
-    _client: Client | None = PrivateAttr()
-    _async_client: AsyncClient | None = PrivateAttr()
+    _client: ollama_sdk.Client | None = PrivateAttr()
+    _async_client: ollama_sdk.AsyncClient | None = PrivateAttr()
 
     def __init__(
         self,
@@ -244,8 +244,8 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         prompt_key: str = "prompt",
         json_mode: bool = False,
         additional_kwargs: dict[str, Any] | None = None,
-        client: Client | None = None,
-        async_client: AsyncClient | None = None,
+        client: ollama_sdk.Client | None = None,
+        async_client: ollama_sdk.AsyncClient | None = None,
         is_function_calling_model: bool = True,
         keep_alive: float | str | None = None,
         **kwargs: Any,
@@ -316,7 +316,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         )
 
     @property
-    def client(self) -> Client:
+    def client(self) -> ollama_sdk.Client:
         """Synchronous Ollama client lazily bound to ``base_url``.
 
         Returns:
@@ -336,10 +336,10 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 ```
         """
         if self._client is None:
-            self._client = Client(host=self.base_url, timeout=self.request_timeout)
+            self._client = ollama_sdk.Client(host=self.base_url, timeout=self.request_timeout)
         return self._client
 
-    def _ensure_async_client(self) -> AsyncClient:
+    def _ensure_async_client(self) -> ollama_sdk.AsyncClient:
         """Return a per-event-loop AsyncClient, recreating when loop changes or closes.
 
         This avoids ``Event loop is closed`` errors when test runners (e.g.,
@@ -368,7 +368,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         cached_loop = getattr(self, "_async_client_loop", None)
         if self._async_client is None:
             # No client yet: create and bind to current loop (may be None)
-            self._async_client = AsyncClient(
+            self._async_client = ollama_sdk.AsyncClient(
                 host=self.base_url, timeout=self.request_timeout
             )
             self._async_client_loop = current_loop
@@ -382,13 +382,13 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 and hasattr(current_loop, "is_closed")
                 and current_loop.is_closed()
             ):
-                self._async_client = AsyncClient(
+                self._async_client = ollama_sdk.AsyncClient(
                     host=self.base_url, timeout=self.request_timeout
                 )
                 self._async_client_loop = current_loop
             # Or if the cached loop has been closed since creation
             elif hasattr(cached_loop, "is_closed") and cached_loop.is_closed():
-                self._async_client = AsyncClient(
+                self._async_client = ollama_sdk.AsyncClient(
                     host=self.base_url, timeout=self.request_timeout
                 )
                 self._async_client_loop = current_loop
@@ -399,7 +399,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         return self._async_client
 
     @property
-    def async_client(self) -> AsyncClient:
+    def async_client(self) -> ollama_sdk.AsyncClient:
         """Async Ollama client bound to the current asyncio event loop.
 
         Returns:

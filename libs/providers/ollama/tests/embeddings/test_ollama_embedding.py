@@ -143,8 +143,8 @@ def embedder_factory():
 
     def _create(**kwargs):
         with (
-            patch("serapeum.ollama.embedding.Client"),
-            patch("serapeum.ollama.embedding.AsyncClient"),
+            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
+            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
         ):
             defaults = {"model_name": "test-model"}
             defaults.update(kwargs)
@@ -1039,8 +1039,8 @@ class TestErrorHandling:
         Checks: Pydantic type validation enforced
         """
         with (
-            patch("serapeum.ollama.embedding.Client"),
-            patch("serapeum.ollama.embedding.AsyncClient"),
+            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
+            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
         ):
             with pytest.raises(ValidationError) as exc_info:
                 OllamaEmbedding(model_name=123)  # type: ignore
@@ -1055,8 +1055,8 @@ class TestErrorHandling:
         Checks: URL validation enforced
         """
         with (
-            patch("serapeum.ollama.embedding.Client"),
-            patch("serapeum.ollama.embedding.AsyncClient"),
+            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
+            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
         ):
             with pytest.raises(ValidationError) as exc_info:
                 OllamaEmbedding(model_name="test", base_url=12345)  # type: ignore
@@ -1071,8 +1071,8 @@ class TestErrorHandling:
         Checks: Dict type validation enforced
         """
         with (
-            patch("serapeum.ollama.embedding.Client"),
-            patch("serapeum.ollama.embedding.AsyncClient"),
+            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
+            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
         ):
             with pytest.raises(ValidationError) as exc_info:
                 OllamaEmbedding(
@@ -1125,8 +1125,8 @@ class TestClientInitialization:
         Checks: Header configuration propagated to clients
         """
         with (
-            patch("serapeum.ollama.embedding.Client") as mock_client,
-            patch("serapeum.ollama.embedding.AsyncClient") as mock_async,
+            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client,
+            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient") as mock_async,
         ):
             custom_headers = {"Authorization": "Bearer secret-token"}
             OllamaEmbedding(
@@ -1147,8 +1147,8 @@ class TestClientInitialization:
         Checks: Timeout settings propagated correctly
         """
         with (
-            patch("serapeum.ollama.embedding.Client") as mock_client,
-            patch("serapeum.ollama.embedding.AsyncClient") as mock_async,
+            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client,
+            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient") as mock_async,
         ):
             OllamaEmbedding(
                 model_name="test", client_kwargs={"timeout": 120}
@@ -1167,8 +1167,8 @@ class TestClientInitialization:
         Checks: Complex configuration handled correctly
         """
         with (
-            patch("serapeum.ollama.embedding.Client") as mock_client,
-            patch("serapeum.ollama.embedding.AsyncClient"),
+            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client,
+            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
         ):
             client_config = {
                 "timeout": 60,
@@ -1196,8 +1196,8 @@ class TestClientInitialization:
         Checks: _initialize_clients validator executed
         """
         with (
-            patch("serapeum.ollama.embedding.Client") as mock_client,
-            patch("serapeum.ollama.embedding.AsyncClient") as mock_async,
+            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client,
+            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient") as mock_async,
         ):
             embedder = OllamaEmbedding(model_name="test")
 

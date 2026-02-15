@@ -3,7 +3,7 @@ from typing import Any, Sequence
 
 from pydantic import Field, PrivateAttr, model_validator
 
-from ollama import Client, AsyncClient
+import ollama as ollama_sdk
 from serapeum.core.embeddings import BaseEmbedding
 
 
@@ -45,14 +45,16 @@ class OllamaEmbedding(BaseEmbedding):
         description="Additional kwargs for the Ollama client initialization.",
     )
 
-    _client: Client = PrivateAttr()
-    _async_client: AsyncClient = PrivateAttr()
+    _client: ollama_sdk.Client = PrivateAttr()
+    _async_client: ollama_sdk.AsyncClient = PrivateAttr()
 
     @model_validator(mode="after")
     def _initialize_clients(self) -> OllamaEmbedding:
         """Initialize Ollama clients after model validation."""
         self._client = Client(host=self.base_url, **self.client_kwargs)
         self._async_client = AsyncClient(host=self.base_url, **self.client_kwargs)
+        self._client = ollama_sdk.Client(host=self.base_url, **self.client_kwargs)
+        self._async_client = ollama_sdk.AsyncClient(host=self.base_url, **self.client_kwargs)
         return self
 
     @classmethod

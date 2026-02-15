@@ -496,8 +496,8 @@ embed_model = OllamaEmbedding(
 )
 
 # Instructions are automatically prepended
-documents = ["AI is transforming healthcare."]
-doc_embeddings = embed_model.get_text_embeddings(documents)
+documents = "AI is transforming healthcare."
+doc_embeddings = embed_model.get_text_embedding(documents)
 
 query = "How is AI used in medicine?"
 query_embedding = embed_model.get_query_embedding(query)

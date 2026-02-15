@@ -16,7 +16,7 @@ import pytest
 from typing import Sequence
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from ollama import Client, AsyncClient
+import ollama as ollama_sdk
 from pydantic import ValidationError
 
 from serapeum.core.base.embeddings.base import BaseEmbedding, DEFAULT_EMBED_BATCH_SIZE
@@ -61,7 +61,7 @@ def mock_ollama_client(mock_embed_response: MagicMock) -> MagicMock:
     Returns:
         MagicMock configured as Ollama Client with embed method.
     """
-    client = MagicMock(spec=Client)
+    client = MagicMock(spec=ollama_sdk.Client)  # type: ignore
     client.embed.return_value = mock_embed_response
     return client
 
@@ -76,7 +76,7 @@ def mock_ollama_async_client(mock_embed_response: MagicMock) -> AsyncMock:
     Returns:
         AsyncMock configured as Ollama AsyncClient with embed method.
     """
-    client = AsyncMock(spec=AsyncClient)
+    client = AsyncMock(spec=ollama_sdk.AsyncClient)     # type: ignore
     client.embed.return_value = mock_embed_response
     return client
 
@@ -88,7 +88,7 @@ def mock_client_with_error() -> MagicMock:
     Returns:
         MagicMock that raises exception on embed call.
     """
-    client = MagicMock(spec=Client)
+    client = MagicMock(spec=ollama_sdk.Client)      # type: ignore
     client.embed.side_effect = ConnectionError("Failed to connect to Ollama server")
     return client
 
@@ -100,7 +100,7 @@ def mock_timeout_client() -> MagicMock:
     Returns:
         MagicMock that raises TimeoutError.
     """
-    client = MagicMock(spec=Client)
+    client = MagicMock(spec=ollama_sdk.Client)      # type: ignore
     client.embed.side_effect = TimeoutError("Request timed out")
     return client
 

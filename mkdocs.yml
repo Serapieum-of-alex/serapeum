@@ -11,7 +11,7 @@ theme:
   features:
     - navigation.instant
     - navigation.tracking
-    - navigation.expand
+    # - navigation.expand  # Disabled: keep sections collapsed by default
     - navigation.indexes
     - navigation.footer
     - navigation.sections
@@ -115,6 +115,7 @@ nav:
     - Provider Integrations:
         - Overview: overview/providers.md
         - Ollama: overview/providers/ollama.md
+        - Adding New Providers: overview/providers/adding-new-providers.md
   - Architecture:
     - Diagrams: architecture/diagrams.md
   - Reference:

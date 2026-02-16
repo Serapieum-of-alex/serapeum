@@ -180,253 +180,44 @@ All provider packages depend on `serapeum-core`, which will be installed automat
 
 ## Adding New Providers
 
-To add a new provider integration (e.g., OpenAI, Anthropic), follow the standardized provider architecture pattern.
+Want to integrate a new LLM provider (OpenAI, Anthropic, Cohere, etc.) into Serapeum?
 
-### Directory Structure
+We've created a comprehensive guide that walks you through every step of implementing a new provider integration, from directory structure to testing and documentation.
 
-Create a provider package following this structure:
+**[📖 Read the Complete Provider Implementation Guide →](providers/adding-new-providers.md)**
 
-```
-libs/providers/{provider-name}/
-├── src/
-│   └── serapeum/
-│       └── {provider_name}/
-│           ├── __init__.py
-│           ├── llm.py           # Chat/completion implementation
-│           ├── embeddings.py    # Embeddings (if available)
-│           └── shared/          # Shared utilities
-│               ├── client.py    # HTTP client, config
-│               └── errors.py    # Provider-specific errors
-├── tests/
-│   ├── test_llm.py
-│   ├── test_embeddings.py
-│   └── conftest.py
-├── pyproject.toml
-└── README.md
-```
+### What You'll Learn
 
-### Implementation Steps
+- **Directory Structure**: How to organize your provider package
+- **LLM Implementation**: Step-by-step guide to implementing the LLM class
+- **Embeddings**: How to add embedding support (if applicable)
+- **Testing**: Writing comprehensive tests with proper markers
+- **Documentation**: Creating user-facing documentation
+- **Best Practices**: Common pitfalls and how to avoid them
 
-**1. Create Package Structure**
+### Quick Overview
 
-```bash
-mkdir -p libs/providers/{provider}/src/serapeum/{provider_name}
-mkdir -p libs/providers/{provider}/tests
-```
+All providers follow the same pattern:
 
-**2. Implement LLM Class**
-
-Inherit from `FunctionCallingLLM`:
-
-```python
-from serapeum.core.llms import FunctionCallingLLM
-from serapeum.core.base.llms.types import ChatResponse, CompletionResponse
-
-class ProviderLLM(FunctionCallingLLM):
-    """Provider LLM implementation."""
-
-    def __init__(
-        self,
-        model: str,
-        api_key: str | None = None,
-        **kwargs
-    ):
-        self.model = model
-        self.api_key = api_key
-        super().__init__(**kwargs)
-
-    def _complete(self, prompt: str, **kwargs) -> CompletionResponse:
-        """Implement completion endpoint."""
-        # Call provider API
-        # Return CompletionResponse
-        pass
-
-    def _chat(self, messages, **kwargs) -> ChatResponse:
-        """Implement chat endpoint."""
-        # Call provider API
-        # Return ChatResponse
-        pass
-
-    def _stream_complete(self, prompt: str, **kwargs):
-        """Implement streaming completion."""
-        # Yield CompletionResponse chunks
-        pass
-
-    def _stream_chat(self, messages, **kwargs):
-        """Implement streaming chat."""
-        # Yield ChatResponse chunks
-        pass
-
-    # Implement async methods: _achat, _acomplete, _astream_chat, _astream_complete
-```
-
-**3. Implement Embeddings** (if applicable)
-
-Inherit from `BaseEmbedding`:
-
-```python
-from serapeum.core.base.embeddings import BaseEmbedding
-
-class ProviderEmbedding(BaseEmbedding):
-    """Provider embedding implementation."""
-
-    def __init__(
-        self,
-        model_name: str,
-        api_key: str | None = None,
-        **kwargs
-    ):
-        self.model_name = model_name
-        self.api_key = api_key
-        super().__init__(**kwargs)
-
-    def _get_text_embedding(self, text: str) -> list[float]:
-        """Generate embedding for text."""
-        # Call provider embedding API
-        pass
-
-    def _get_query_embedding(self, query: str) -> list[float]:
-        """Generate embedding for query."""
-        # Call provider embedding API
-        pass
-
-    # Implement async methods: _aget_text_embedding, _aget_query_embedding
-```
-
-**4. Add to Workspace**
-
-Update root `pyproject.toml`:
-
-```toml
-[tool.uv.workspace]
-members = ["libs/core", "libs/providers/*"]
-
-[tool.uv.sources]
-serapeum-{provider} = { workspace = true }
-```
-
-**5. Create Package Configuration**
-
-Create `libs/providers/{provider}/pyproject.toml`:
-
-```toml
-[project]
-name = "serapeum-{provider}"
-version = "0.1.0"
-description = "{Provider} integration for Serapeum"
-readme = "README.md"
-license = {text = "GNU General Public License v3"}
-authors = [
-    {name = "Your Name", email = "your.email@example.com"}
-]
-keywords = ["llm", "ai", "{provider}"]
-requires-python = ">=3.11,<4.0"
-dependencies = [
-    "serapeum-core",
-    "{provider-sdk}>=1.0.0"  # e.g., "openai>=1.0.0"
-]
-
-[tool.uv.sources]
-serapeum-core = { workspace = true }
-
-[dependency-groups]
-dev = [
-    "pytest>=8.4.2",
-    "pytest-cov>=7.0.0",
-    "pytest-asyncio>=1.2.0",
-]
-
-[tool.pytest.ini_options]
-testpaths = "tests"
-markers = [
-    "e2e: end-to-end tests requiring provider service",
-    "unit: unit tests",
-    "integration: integration tests",
-]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-```
-
-**6. Write Tests**
-
-Create comprehensive tests with appropriate markers:
-
-```python
-# tests/test_llm.py
-import pytest
-from serapeum.{provider_name} import ProviderLLM
-
-@pytest.mark.unit
-def test_initialization():
-    llm = ProviderLLM(model="model-name", api_key="test-key")
-    assert llm.model == "model-name"
-
-@pytest.mark.e2e
-def test_chat():
-    llm = ProviderLLM(model="model-name")
-    response = llm.chat([{"role": "user", "content": "Hello"}])
-    assert response.message.content
-```
-
-**7. Add Documentation**
-
-Create:
-- `README.md` with installation, configuration, and examples
-- `docs/overview/providers/{provider}.md` with comprehensive guide
-- API reference documentation
-
-**8. Export Public API**
-
-In `src/serapeum/{provider_name}/__init__.py`:
-
-```python
-"""Serapeum {Provider} integration."""
-
-from serapeum.{provider_name}.llm import ProviderLLM
-from serapeum.{provider_name}.embeddings import ProviderEmbedding
-
-__all__ = [
-    "ProviderLLM",
-    "ProviderEmbedding",
-]
-```
-
-### Why Provider-Based Organization?
-
-**Benefits:**
-
-- **Shared Infrastructure**: All provider features share client, auth, error handling
-- **Single Installation**: Users install one package per provider (`pip install serapeum-{provider}`)
-- **Co-located Code**: Related features are maintained together
-- **Isolated Dependencies**: Provider SDKs don't conflict
-- **Industry Standard**: Matches LangChain and other frameworks
-
-**Example:**
-```python
-# Users install only what they need
-pip install serapeum-ollama  # For local inference
-
-# Clean imports
-from serapeum.ollama import Ollama
-```
+1. **Inherit from Core Classes**: `FunctionCallingLLM` for LLMs, `BaseEmbedding` for embeddings
+2. **Implement Required Methods**: Chat, completion, streaming (sync & async)
+3. **Add to Workspace**: Configure in `pyproject.toml`
+4. **Write Tests**: Unit tests and e2e tests with markers
+5. **Document**: README, usage examples, and docs page
 
 ### Reference Implementation
 
-See the **[Ollama provider](../../libs/providers/ollama/)** for a complete reference implementation showing:
+The **[Ollama provider](../../libs/providers/ollama/)** serves as a complete reference showing:
 
-- LLM implementation with streaming and async
+- Full LLM implementation with streaming and async support
 - Embedding implementation with batching
 - Shared client and error handling
 - Comprehensive test suite
 - Complete documentation
 
----
+### Development Checklist
 
-## Provider Development Checklist
-
-When implementing a new provider, ensure:
+Use this checklist when implementing a new provider:
 
 - [ ] Inherits from `FunctionCallingLLM` for LLM
 - [ ] Implements `BaseEmbedding` for embeddings (if applicable)
@@ -439,6 +230,8 @@ When implementing a new provider, ensure:
 - [ ] Added to workspace in root `pyproject.toml`
 - [ ] Added to provider comparison table above
 - [ ] Follows code style and type annotations
+
+**[Get Started: Read the Full Implementation Guide →](providers/adding-new-providers.md)**
 
 ---
 

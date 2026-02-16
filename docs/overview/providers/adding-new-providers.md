@@ -69,7 +69,7 @@ Create `libs/providers/{provider}/src/serapeum/{provider_name}/llm.py`:
 
 from typing import Any, Iterator, AsyncIterator
 from serapeum.core.llms import FunctionCallingLLM
-from serapeum.core.base.llms.types import (
+from serapeum.core.llms import (
     ChatResponse,
     CompletionResponse,
     Message,
@@ -295,7 +295,7 @@ Create `libs/providers/{provider}/src/serapeum/{provider_name}/embeddings.py`:
 """Embedding implementation for {Provider}."""
 
 from typing import Any
-from serapeum.core.base.embeddings import BaseEmbedding
+from serapeum.core.embeddings import BaseEmbedding
 
 class ProviderEmbedding(BaseEmbedding):
     """Embedding implementation for {Provider}."""
@@ -573,7 +573,7 @@ Create `libs/providers/{provider}/tests/test_llm.py`:
 
 import pytest
 from serapeum.{provider_name} import ProviderLLM
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 @pytest.mark.unit
 def test_initialization():
@@ -715,7 +715,7 @@ pip install serapeum-{provider}
 
 ```python
 from serapeum.{provider_name} import ProviderLLM
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 # Initialize LLM
 llm = ProviderLLM(

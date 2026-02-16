@@ -61,6 +61,7 @@ from serapeum.core.llms import (
     Image,
     ThinkingBlock,
     ToolCallBlock,
+    ChatToCompletionMixin,
 )
 from pydantic import (
     Field,
@@ -134,7 +135,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
         ] + [tool_calls[0]]
 
 
-class OpenAIResponses(FunctionCallingLLM):
+class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
     """
     OpenAI Responses LLM.
 
@@ -440,20 +441,6 @@ class OpenAIResponses(FunctionCallingLLM):
     ) -> ChatResponseGen:
         return self._stream_chat(messages, **kwargs)
 
-    def complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
-        complete_fn = chat_to_completion_decorator(self._chat)
-
-        return complete_fn(prompt, **kwargs)
-
-    def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseGen:
-        stream_complete_fn = stream_chat_to_completion_decorator(self._stream_chat)
-
-        return stream_complete_fn(prompt, **kwargs)
-
     @staticmethod
     def _parse_response_output(output: List[ResponseOutputItem]) -> ChatResponse:
         message = Message(role=MessageRole.ASSISTANT, blocks=[])
@@ -745,20 +732,6 @@ class OpenAIResponses(FunctionCallingLLM):
         **kwargs: Any,
     ) -> ChatResponseAsyncGen:
         return await self._astream_chat(messages, **kwargs)
-
-    async def acomplete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
-        acomplete_fn = achat_to_completion_decorator(self._achat)
-
-        return await acomplete_fn(prompt, **kwargs)
-
-    async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseAsyncGen:
-        astream_complete_fn = astream_chat_to_completion_decorator(self._astream_chat)
-
-        return await astream_complete_fn(prompt, **kwargs)
 
     @llm_retry_decorator
     async def _achat(

@@ -1,4 +1,4 @@
-from serapeum.llms.azure_openai.base import (
+from serapeum.azure_openai.base import (
     AzureOpenAI,
     SyncAzureOpenAI,
     AsyncAzureOpenAI,

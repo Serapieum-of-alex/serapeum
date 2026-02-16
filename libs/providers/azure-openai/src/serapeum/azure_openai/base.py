@@ -1,18 +1,18 @@
 from typing import Any, Callable, Dict, Optional, Sequence
 
 import httpx
-from serapeum.core.base.llms.models import Message
+from serapeum.core.llms import Message
 from pydantic import Field, PrivateAttr, model_validator
 
 from serapeum.core.base.llms.utils import get_from_param_or_env
 from serapeum.core.output_parsers import BaseParser
 from serapeum.core.base.models import PydanticProgramMode
-from serapeum.llms.azure_openai.utils import (
+from serapeum.azure_openai.utils import (
     refresh_openai_azuread_token,
     resolve_from_aliases,
 )
-from serapeum.llms.openai import OpenAI
-from serapeum.llms.openai.utils import DEFAULT_OPENAI_API_BASE
+from serapeum.openai import OpenAI
+from serapeum.openai.utils import DEFAULT_OPENAI_API_BASE
 from openai import AsyncAzureOpenAI
 from openai import AzureOpenAI as SyncAzureOpenAI
 from openai.lib.azure import AzureADTokenProvider

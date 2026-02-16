@@ -16,7 +16,7 @@ The `Ollama` class is a production-ready LLM integration that provides:
 ### Basic Chat
 
 ```python
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 from serapeum.ollama import Ollama
 
 # Initialize Ollama
@@ -247,16 +247,7 @@ def client(self) -> Client:
     return self._client
 ```
 
-### 2. **Decorator Pattern**
-Completion API wraps chat API for code reuse:
-```python
-@chat_to_completion_decorator
-def complete(self, prompt: str, **kwargs) -> CompletionResponse:
-    # Decorator handles conversion
-    pass
-```
-
-### 3. **Template Method Pattern**
+### 2. **Template Method Pattern**
 FunctionCallingLLM defines workflow, Ollama implements specifics:
 ```python
 def chat_with_tools(self, messages, tools, **kwargs):
@@ -266,7 +257,7 @@ def chat_with_tools(self, messages, tools, **kwargs):
     return validated
 ```
 
-### 4. **Adapter Pattern**
+### 3. **Adapter Pattern**
 Ollama adapts between internal types and Ollama server format:
 - `Message` → Ollama message dict
 - `BaseTool` → Ollama tool schema
@@ -374,7 +365,7 @@ ollama serve
 ### Python Requirements
 ```bash
 # Install serapeum-ollama
-uv pip install serapeum-ollama
+pip install serapeum-ollama
 
 # Or install from source
 uv pip install -e libs/providers/serapeum-ollama
@@ -385,9 +376,13 @@ uv pip install -e libs/providers/serapeum-ollama
 ### Pattern 1: Reusable Instance
 ```python
 # Create once
+from serapeum.ollama import Ollama
+from serapeum.core.llms import Message, MessageRole
 llm = Ollama(model="llama3.1", request_timeout=180)
 
 # Reuse many times
+messages1 = [Message(role=MessageRole.USER, content="Hi!")]
+messages2 = [Message(role=MessageRole.USER, content="How are you?")]
 response1 = llm.chat(messages1)
 response2 = llm.chat(messages2)
 ```
@@ -395,7 +390,6 @@ response2 = llm.chat(messages2)
 ### Pattern 2: Streaming for Long Responses
 ```python
 llm = Ollama(model="llama3.1", request_timeout=180)
-
 for chunk in llm.stream_chat(messages):
     print(chunk.message.content, end="", flush=True)
 ```

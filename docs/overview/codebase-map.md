@@ -88,12 +88,15 @@ This page summarizes the main modules, key classes, and the public API surface o
 
 ### Provider Integrations
 
-- **serapeum.ollama**
-  - Complete Ollama integration package
-  - `Ollama`: `FunctionCallingLLM` implementation for Ollama server (chat, completion, tool calling, structured outputs)
-  - `OllamaEmbedding`: Local embedding generation using Ollama models
-  - Full sync/async/streaming support for both LLM and embeddings
-  - See [Ollama Provider Documentation](../reference/providers/ollama/general.md) for detailed documentation
+Serapeum supports multiple LLM providers through dedicated integration packages. Each provider package contains all features that provider offers (LLM, embeddings, etc.).
+
+**Available Providers:**
+
+- **serapeum.ollama** - Complete Ollama integration with chat, completion, tool calling, structured outputs, and embeddings
+- **serapeum.openai** - OpenAI API integration (in development)
+- **serapeum.azure-openai** - Azure OpenAI Service integration (in development)
+
+For detailed information about providers, installation, configuration, and usage examples, see the **[Provider Integrations Guide](providers.md)**.
 
 ## Key Public Classes
 
@@ -134,6 +137,8 @@ This page summarizes the main modules, key classes, and the public API surface o
 ### Provider Implementations
 - `serapeum.ollama.Ollama` - Ollama LLM implementation
 - `serapeum.ollama.OllamaEmbedding` - Ollama embeddings implementation
+
+See the [Provider Integrations Guide](providers.md) for complete documentation on all providers.
 
 ## Representative Public Methods
 
@@ -272,23 +277,3 @@ classDiagram
   LLM ..> ChatResponse : returns
   LLM ..> CompletionResponse : returns
 ```
-
-## Adding New Providers
-
-To add a new provider (e.g., for OpenAI, Anthropic, etc.):
-
-1. Create a new package in `libs/providers/{provider}/`
-2. Implement `FunctionCallingLLM` for chat/completion models
-3. Implement `BaseEmbedding` for embedding models (if applicable)
-4. Follow the provider-based organization pattern (all features in one package)
-5. Add comprehensive examples and documentation
-
-See the [Ollama provider](../../libs/providers/ollama/) as a reference implementation.
-
----
-
-**Notes:**
-- The diagram abstracts many modules for clarity; see source files for full method signatures and additional classes
-- `Ollama` and `OllamaEmbedding` are concrete implementations; additional providers follow the same pattern
-- All async methods use the `a` prefix convention (e.g., `achat`, `astream_chat`)
-- Streaming methods return generators (sync) or async generators (async)

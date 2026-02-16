@@ -112,6 +112,9 @@ nav:
   - Home: index.md
   - Overview:
     - Codebase Map: overview/codebase-map.md
+    - Provider Integrations:
+        - Overview: overview/providers.md
+        - Ollama: overview/providers/ollama.md
   - Architecture:
     - Diagrams: architecture/diagrams.md
   - Reference:

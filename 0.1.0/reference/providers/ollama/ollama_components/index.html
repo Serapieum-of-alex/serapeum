@@ -1,0 +1,2062 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="LLM package" name="description"/>
+<link href="https://serapieum-of-alex.github.io/Serapeum/0.1.0/reference/providers/ollama/ollama_components/" rel="canonical"/>
+<link href="../ollama_dataflow/" rel="prev"/>
+<link href="../ollama_state/" rel="next"/>
+<link href="../../../../assets/images/favicon.png" rel="icon"/>
+<meta content="mkdocs-1.6.1, mkdocs-material-9.7.1" name="generator"/>
+<title>Components - Serapeum</title>
+<link href="../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
+<link href="../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
+<style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+<link href="../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
+<script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+<meta name="panzoom-theme" content="material">
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#component-boundaries-and-interactions">
+          Skip to content
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<div data-md-color-scheme="default" data-md-component="outdated" hidden="">
+</div>
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+<nav aria-label="Header" class="md-header__inner md-grid">
+<a aria-label="Serapeum" class="md-header__button md-logo" data-md-component="logo" href="../../../.." title="Serapeum">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            Serapeum
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              Components
+            
+          </span>
+</div>
+</div>
+</div>
+<form class="md-header__option" data-md-component="palette">
+<input aria-label="Switch to light mode" class="md-option" data-md-color-accent="indigo" data-md-color-media="(prefers-color-scheme)" data-md-color-primary="indigo" data-md-color-scheme="default" id="__palette_0" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_1" hidden="" title="Switch to light mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"></path></svg>
+</label>
+<input aria-label="Switch to dark mode" class="md-option" data-md-color-accent="purple" data-md-color-media="(prefers-color-scheme: light)" data-md-color-primary="teal" data-md-color-scheme="default" id="__palette_1" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_2" hidden="" title="Switch to dark mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"></path></svg>
+</label>
+<input aria-label="Switch to system preference" class="md-option" data-md-color-accent="lime" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-primary="black" data-md-color-scheme="slate" id="__palette_2" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_0" hidden="" title="Switch to system preference">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"></path></svg>
+</label>
+</form>
+<script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+<label class="md-header__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+</label>
+<div class="md-search" data-md-component="search" role="dialog">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="Search" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="Search" required="" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+</label>
+<nav aria-label="Search" class="md-search__options">
+<button aria-label="Clear" class="md-search__icon md-icon" tabindex="-1" title="Clear" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+</button>
+</nav>
+<div class="md-search__suggest" data-md-component="search-suggest"></div>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="" tabindex="0">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
+            Initializing search
+          </div>
+<ol class="md-search-result__list" role="presentation"></ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md-header__source">
+<a class="md-source" data-md-component="source" href="https://github.com/Serapieum-of-alex/Serapeum" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+</div>
+<div class="md-source__repository">
+    Serapieum-of-alex/Serapeum
+  </div>
+</a>
+</div>
+</nav>
+<nav aria-label="Tabs" class="md-tabs" data-md-component="tabs">
+<div class="md-grid">
+<ul class="md-tabs__list">
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../../..">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../../../overview/core-package/">
+          
+  
+  
+    
+  
+  Overview
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../../core/llms/llm-classes-comparison/">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+</li>
+<li class="md-tabs__item md-tabs__item--active">
+<a class="md-tabs__link" href="../general/">
+          
+  
+  
+    
+  
+  Providers
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../../../developer-guide/installation/">
+          
+  
+  
+    
+  
+  Developer Guide
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../../../change-log/">
+          
+  
+  
+    
+  
+  About
+
+        </a>
+</li>
+</ul>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary md-nav--lifted" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="Serapeum" class="md-nav__button md-logo" data-md-component="logo" href="../../../.." title="Serapeum">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
+</a>
+    Serapeum
+  </label>
+<div class="md-nav__source">
+<a class="md-source" data-md-component="source" href="https://github.com/Serapieum-of-alex/Serapeum" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+</div>
+<div class="md-source__repository">
+    Serapieum-of-alex/Serapeum
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../..">
+<span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_2_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_2">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Overview
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../overview/core-package/">
+<span class="md-ellipsis">
+    
+  
+    Core package
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_2_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    Provider Integrations
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_2_2_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_2_2">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Provider Integrations
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../overview/providers/">
+<span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../overview/providers/ollama/">
+<span class="md-ellipsis">
+    
+  
+    Ollama
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../overview/providers/adding-new-providers/">
+<span class="md-ellipsis">
+    
+  
+    Adding New Providers
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_3">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_3_1">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Core
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_1" id="__nav_3_1_1_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    llms
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_1_label" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="__nav_3_1_1">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    llms
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/llm-classes-comparison/">
+<span class="md-ellipsis">
+    
+  
+    LLM Classes Comparison
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_1_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_1_2" id="__nav_3_1_1_2_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    orchestrators
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_1_2_label" class="md-nav" data-md-level="4">
+<label class="md-nav__title" for="__nav_3_1_1_2">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    orchestrators
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_1_2_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_1_2_1" id="__nav_3_1_1_2_1_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    Text Completion LLM
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_1_2_1_label" class="md-nav" data-md-level="5">
+<label class="md-nav__title" for="__nav_3_1_1_2_1">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Text Completion LLM
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/general/">
+<span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/examples/">
+<span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/text_completion_llm_sequence/">
+<span class="md-ellipsis">
+    
+  
+    Execution Flow
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/text_completion_llm_class/">
+<span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/text_completion_llm_dataflow/">
+<span class="md-ellipsis">
+    
+  
+    Data Flow
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/text_completion_llm_components/">
+<span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/text_completion_llm/text_completion_llm_state/">
+<span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_1_2_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_1_2_2" id="__nav_3_1_1_2_2_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    Tool Orchestrating LLM
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_1_2_2_label" class="md-nav" data-md-level="5">
+<label class="md-nav__title" for="__nav_3_1_1_2_2">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Tool Orchestrating LLM
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/general/">
+<span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/examples/">
+<span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence/">
+<span class="md-ellipsis">
+    
+  
+    Execution Flow
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class/">
+<span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow/">
+<span class="md-ellipsis">
+    
+  
+    Data Flow
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components/">
+<span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state/">
+<span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_2" id="__nav_3_1_2_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    embeddings
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_2_label" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="__nav_3_1_2">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    embeddings
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/embeddings/module/">
+<span class="md-ellipsis">
+    
+  
+    Core Embeddings
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_3" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_3" id="__nav_3_1_3_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    tools
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_3_label" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="__nav_3_1_3">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    tools
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/tools/tools/">
+<span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../core/tools/callable_tools/">
+<span class="md-ellipsis">
+    
+  
+    CallableTools
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_4" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+<span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="true" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_4">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Providers
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_4_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="">
+<span class="md-ellipsis">
+    
+  
+    Ollama
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="true" aria-labelledby="__nav_4_1_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_4_1">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Ollama
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../general/">
+<span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../examples/">
+<span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../ollama_sequence/">
+<span class="md-ellipsis">
+    
+  
+    Execution Flow
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../ollama_class/">
+<span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../ollama_dataflow/">
+<span class="md-ellipsis">
+    
+  
+    Data Flow
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
+<span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+</a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-interaction-patterns">
+<span class="md-ellipsis">
+      
+        Component Interaction Patterns
+      
+    </span>
+</a>
+<nav aria-label="Component Interaction Patterns" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-initialization-pattern">
+<span class="md-ellipsis">
+      
+        1. Initialization Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-client-lazy-initialization-pattern">
+<span class="md-ellipsis">
+      
+        2. Client Lazy Initialization Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-chat-request-pattern">
+<span class="md-ellipsis">
+      
+        3. Chat Request Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-completion-via-decorator-pattern">
+<span class="md-ellipsis">
+      
+        4. Completion via Decorator Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#5-streaming-pattern">
+<span class="md-ellipsis">
+      
+        5. Streaming Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#6-tool-calling-pattern">
+<span class="md-ellipsis">
+      
+        6. Tool Calling Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#7-textcompletionllm-integration-pattern">
+<span class="md-ellipsis">
+      
+        7. TextCompletionLLM Integration Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#8-toolorchestratingllm-integration-pattern">
+<span class="md-ellipsis">
+      
+        8. ToolOrchestratingLLM Integration Pattern
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-state-management">
+<span class="md-ellipsis">
+      
+        Component State Management
+      
+    </span>
+</a>
+<nav aria-label="Component State Management" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#ollama-instance-state">
+<span class="md-ellipsis">
+      
+        Ollama Instance State
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#request-state-per-call">
+<span class="md-ellipsis">
+      
+        Request State (Per Call)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#streaming-state-per-stream">
+<span class="md-ellipsis">
+      
+        Streaming State (Per Stream)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-boundaries">
+<span class="md-ellipsis">
+      
+        Error Boundaries
+      
+    </span>
+</a>
+<nav aria-label="Error Boundaries" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-configuration-errors-initialization">
+<span class="md-ellipsis">
+      
+        1. Configuration Errors (Initialization)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-client-creation-errors-first-use">
+<span class="md-ellipsis">
+      
+        2. Client Creation Errors (First Use)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-request-errors-during-call">
+<span class="md-ellipsis">
+      
+        3. Request Errors (During Call)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-parsing-errors-response-processing">
+<span class="md-ellipsis">
+      
+        4. Parsing Errors (Response Processing)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#5-tool-validation-errors">
+<span class="md-ellipsis">
+      
+        5. Tool Validation Errors
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-dependencies">
+<span class="md-ellipsis">
+      
+        Component Dependencies
+      
+    </span>
+</a>
+<nav aria-label="Component Dependencies" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#ollama-depends-on">
+<span class="md-ellipsis">
+      
+        Ollama Depends On:
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#ollama-is-used-by">
+<span class="md-ellipsis">
+      
+        Ollama Is Used By:
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#external-dependencies">
+<span class="md-ellipsis">
+      
+        External Dependencies:
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../ollama_state/">
+<span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../api_reference/">
+<span class="md-ellipsis">
+    
+  
+    API-Reference
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--section md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_4_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
+<span class="md-ellipsis">
+    
+  
+    Add New Providers
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_4_2_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_4_2">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Add New Providers
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../add_new_providers/">
+<span class="md-ellipsis">
+    
+  
+    Instructions
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_5" type="checkbox"/>
+<label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_5_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_5">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../developer-guide/installation/">
+<span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../developer-guide/contributing/">
+<span class="md-ellipsis">
+    
+  
+    contributing
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../developer-guide/taskfile/">
+<span class="md-ellipsis">
+    
+  
+    Taskfile
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_6" type="checkbox"/>
+<label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_6_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_6">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    About
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../change-log/">
+<span class="md-ellipsis">
+    
+  
+    Change-log
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../contributing.md">
+<span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../LICENSE/">
+<span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-interaction-patterns">
+<span class="md-ellipsis">
+      
+        Component Interaction Patterns
+      
+    </span>
+</a>
+<nav aria-label="Component Interaction Patterns" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-initialization-pattern">
+<span class="md-ellipsis">
+      
+        1. Initialization Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-client-lazy-initialization-pattern">
+<span class="md-ellipsis">
+      
+        2. Client Lazy Initialization Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-chat-request-pattern">
+<span class="md-ellipsis">
+      
+        3. Chat Request Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-completion-via-decorator-pattern">
+<span class="md-ellipsis">
+      
+        4. Completion via Decorator Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#5-streaming-pattern">
+<span class="md-ellipsis">
+      
+        5. Streaming Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#6-tool-calling-pattern">
+<span class="md-ellipsis">
+      
+        6. Tool Calling Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#7-textcompletionllm-integration-pattern">
+<span class="md-ellipsis">
+      
+        7. TextCompletionLLM Integration Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#8-toolorchestratingllm-integration-pattern">
+<span class="md-ellipsis">
+      
+        8. ToolOrchestratingLLM Integration Pattern
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-state-management">
+<span class="md-ellipsis">
+      
+        Component State Management
+      
+    </span>
+</a>
+<nav aria-label="Component State Management" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#ollama-instance-state">
+<span class="md-ellipsis">
+      
+        Ollama Instance State
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#request-state-per-call">
+<span class="md-ellipsis">
+      
+        Request State (Per Call)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#streaming-state-per-stream">
+<span class="md-ellipsis">
+      
+        Streaming State (Per Stream)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-boundaries">
+<span class="md-ellipsis">
+      
+        Error Boundaries
+      
+    </span>
+</a>
+<nav aria-label="Error Boundaries" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-configuration-errors-initialization">
+<span class="md-ellipsis">
+      
+        1. Configuration Errors (Initialization)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-client-creation-errors-first-use">
+<span class="md-ellipsis">
+      
+        2. Client Creation Errors (First Use)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-request-errors-during-call">
+<span class="md-ellipsis">
+      
+        3. Request Errors (During Call)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-parsing-errors-response-processing">
+<span class="md-ellipsis">
+      
+        4. Parsing Errors (Response Processing)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#5-tool-validation-errors">
+<span class="md-ellipsis">
+      
+        5. Tool Validation Errors
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-dependencies">
+<span class="md-ellipsis">
+      
+        Component Dependencies
+      
+    </span>
+</a>
+<nav aria-label="Component Dependencies" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#ollama-depends-on">
+<span class="md-ellipsis">
+      
+        Ollama Depends On:
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#ollama-is-used-by">
+<span class="md-ellipsis">
+      
+        Ollama Is Used By:
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#external-dependencies">
+<span class="md-ellipsis">
+      
+        External Dependencies:
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/providers/ollama/ollama_components.md" rel="edit" title="Edit this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+</a>
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/providers/ollama/ollama_components.md" title="View source of this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
+</a>
+<h1 id="component-boundaries-and-interactions"><a class="toclink" href="#component-boundaries-and-interactions">Component Boundaries and Interactions</a><a class="headerlink" href="#component-boundaries-and-interactions" title="Permanent link">#</a></h1>
+<p>This diagram shows how components interact during the complete lifecycle of the Ollama LLM.</p>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>graph TB
+    subgraph User Space
+        UC[User Code]
+        PM[Pydantic Models: DummyModel, Album]
+    end
+
+    subgraph Ollama Core
+        OL[Ollama Instance]
+
+        subgraph Configuration
+            CFG[Configuration Fields]
+            MD[Metadata]
+        end
+
+        subgraph Client Management
+            CL[Client Property]
+            ACL[AsyncClient Property]
+            LINIT[Lazy Initialization]
+        end
+
+        subgraph Request Building
+            BCRQ[_chat Request Builder]
+            BCRQ_MSG[Message Converter]
+            BCRQ_OPT[Options Builder]
+            BCRQ_TOOL[Tool Converter]
+        end
+
+        subgraph Response Parsing
+            PRSP[_chat_from_response]
+            PRSP_MSG[Message Parser]
+            PRSP_TOOL[Tool Calls Parser]
+            PRSP_META[Metadata Extractor]
+        end
+
+        subgraph Stream Handling
+            STRM[_chat_stream_from_response]
+            ACC[Accumulator]
+        end
+
+        subgraph Tool Handling
+            PREP[_prepare_chat_with_tools]
+            VAL[_validate_chat_with_tools_response]
+            FORCE[force_single_tool_call]
+        end
+
+        subgraph Decorators
+            C2C[chat_to_completion_decorator]
+            SC2C[stream_chat_to_completion]
+            AC2C[achat_to_completion]
+        end
+    end
+
+    subgraph External Client Layer
+        CLI[ollama.Client]
+        ACLI[ollama.AsyncClient]
+
+        subgraph Client Operations
+            CHAT_OP[chat method]
+            GEN_OP[generate method]
+        end
+    end
+
+    subgraph Ollama Server
+        SRV[Ollama Server Process]
+
+        subgraph API Endpoints
+            EP_CHAT["/api/chat"]
+            EP_GEN["/api/generate"]
+        end
+
+        subgraph Model Runtime
+            MDL[Loaded Model: llama3.1]
+            CTX[Context Window]
+            INF[Inference Engine]
+        end
+    end
+
+    subgraph Orchestrator Layer
+        TCL[TextCompletionLLM]
+        TOL[ToolOrchestratingLLM]
+
+        subgraph Orchestrator Components
+            PRS[PydanticParser]
+            PTMP[PromptTemplate]
+            CTOOL[CallableTool]
+        end
+    end
+
+    subgraph Response Models
+        CRESP[ChatResponse]
+        CORESP[CompletionResponse]
+        MSG[Message]
+    end
+
+    %% Initialization Flow
+    UC --&gt;|1. Initialize| OL
+    OL --&gt;|Store config| CFG
+    OL --&gt;|Create| MD
+    MD --&gt;|is_chat_model=True| OL
+    MD --&gt;|is_function_calling_model=True| OL
+
+    %% Client lazy init
+    OL --&gt;|On first use| LINIT
+    LINIT --&gt;|Create if None| CL
+    LINIT --&gt;|Create if None| ACL
+    CL -.-&gt;|Wraps| CLI
+    ACL -.-&gt;|Wraps| ACLI
+
+    %% Chat Flow
+    UC --&gt;|2a. chat(messages)| OL
+    OL --&gt;|Check tools| PREP
+    PREP --&gt;|Convert tools| BCRQ_TOOL
+    BCRQ_TOOL --&gt;|Merge| BCRQ
+
+    OL --&gt;|Build request| BCRQ
+    BCRQ --&gt;|Convert messages| BCRQ_MSG
+    BCRQ_MSG --&gt;|Add options| BCRQ_OPT
+    BCRQ_OPT --&gt;|Final payload| CL
+
+    CL --&gt;|chat(**request)| CLI
+    CLI --&gt;|HTTP POST| EP_CHAT
+    EP_CHAT --&gt;|Route to| MDL
+    MDL --&gt;|Use| CTX
+    MDL --&gt;|Run| INF
+    INF --&gt;|Generate| EP_CHAT
+    EP_CHAT --&gt;|Response dict| CLI
+    CLI --&gt;|Return| CL
+
+    CL --&gt;|Raw response| PRSP
+    PRSP --&gt;|Extract message| PRSP_MSG
+    PRSP --&gt;|Extract tool_calls| PRSP_TOOL
+    PRSP --&gt;|Extract metadata| PRSP_META
+    PRSP_META --&gt;|Create| CRESP
+    CRESP --&gt;|Contains| MSG
+    CRESP --&gt;|Return| UC
+
+    %% Complete Flow (via decorator)
+    UC --&gt;|2b. complete(prompt)| C2C
+    C2C --&gt;|Wrap to Message| OL
+    OL --&gt;|Delegate chat| CL
+    CL --&gt;|ChatResponse| C2C
+    C2C --&gt;|Extract text| CORESP
+    CORESP --&gt;|Return| UC
+
+    %% Stream Flow
+    UC --&gt;|2c. stream_chat(messages)| OL
+    OL --&gt;|stream=True| CLI
+    CLI --&gt;|Streaming POST| EP_CHAT
+    EP_CHAT -.-&gt;|Chunk 1| CLI
+    CLI -.-&gt;|Chunk 1| STRM
+    STRM -.-&gt;|Accumulate| ACC
+    ACC -.-&gt;|Yield| CRESP
+    CRESP -.-&gt;|Yield| UC
+    EP_CHAT -.-&gt;|Chunk N| CLI
+    CLI -.-&gt;|Chunk N| STRM
+
+    %% Tool calling flow
+    UC --&gt;|2d. chat_with_tools(messages, tools)| OL
+    OL --&gt;|Prepare| PREP
+    PREP --&gt;|Convert to schema| BCRQ_TOOL
+    OL --&gt;|Call chat| CLI
+    CLI --&gt;|Response with tool_calls| PRSP
+    PRSP --&gt;|Parse| PRSP_TOOL
+    PRSP_TOOL --&gt;|Return to| VAL
+    VAL --&gt;|Check parallel| FORCE
+    FORCE --&gt;|Trim if needed| CRESP
+    CRESP --&gt;|Return| UC
+
+    %% TextCompletionLLM Integration
+    UC --&gt;|3a. TextCompletionLLM(llm=Ollama)| TCL
+    TCL --&gt;|Store| OL
+    TCL --&gt;|Use| PTMP
+    TCL --&gt;|Use| PRS
+    UC --&gt;|Call| TCL
+    TCL --&gt;|Format prompt| PTMP
+    PTMP --&gt;|Messages| OL
+    OL --&gt;|chat| CRESP
+    CRESP --&gt;|message.content| PRS
+    PRS --&gt;|Parse JSON| PM
+    PM --&gt;|Return| UC
+
+    %% ToolOrchestratingLLM Integration
+    UC --&gt;|3b. ToolOrchestratingLLM(llm=Ollama)| TOL
+    TOL --&gt;|Store| OL
+    TOL --&gt;|Create tool from| PM
+    PM --&gt;|Schema| CTOOL
+    TOL --&gt;|Use| PTMP
+    UC --&gt;|Call| TOL
+    TOL --&gt;|Format prompt| PTMP
+    PTMP --&gt;|Messages| OL
+    TOL --&gt;|Pass tools| CTOOL
+    CTOOL --&gt;|Convert| OL
+    OL --&gt;|chat_with_tools| CRESP
+    CRESP --&gt;|tool_calls| TOL
+    TOL --&gt;|Execute tool| CTOOL
+    CTOOL --&gt;|Create| PM
+    PM --&gt;|Return| UC
+
+    %% Styling
+    classDef userClass fill:#e1f5ff,stroke:#01579b
+    classDef ollamaClass fill:#e0f2f1,stroke:#004d40
+    classDef configClass fill:#fff9c4,stroke:#f57f17
+    classDef clientClass fill:#f3e5f5,stroke:#4a148c
+    classDef parserClass fill:#e8f5e9,stroke:#1b5e20
+    classDef serverClass fill:#efebe9,stroke:#3e2723
+    classDef orchestratorClass fill:#fce4ec,stroke:#880e4f
+    classDef responseClass fill:#fff3e0,stroke:#e65100
+
+    class UC,PM userClass
+    class OL ollamaClass
+    class CFG,MD,BCRQ,BCRQ_MSG,BCRQ_OPT,BCRQ_TOOL,PRSP,PRSP_MSG,PRSP_TOOL,PRSP_META configClass
+    class CL,ACL,LINIT,CLI,ACLI,CHAT_OP,GEN_OP clientClass
+    class PREP,VAL,FORCE parserClass
+    class SRV,EP_CHAT,EP_GEN,MDL,CTX,INF serverClass
+    class TCL,TOL,PRS,PTMP,CTOOL orchestratorClass
+    class CRESP,CORESP,MSG responseClass</code></pre>
+</div>
+<h2 id="component-interaction-patterns"><a class="toclink" href="#component-interaction-patterns">Component Interaction Patterns</a><a class="headerlink" href="#component-interaction-patterns" title="Permanent link">#</a></h2>
+<h3 id="1-initialization-pattern"><a class="toclink" href="#1-initialization-pattern">1. Initialization Pattern</a><a class="headerlink" href="#1-initialization-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>User Code
+<a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a>  └─→ Ollama.__init__
+<a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>      ├─→ Store: model, base_url, temperature, request_timeout, json_mode, additional_kwargs
+<a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a>      ├─→ Create Metadata: is_chat_model=True, is_function_calling_model=True
+<a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a>      └─→ Set _client=None, _async_client=None (lazy init)
+</code></pre></div>
+<h3 id="2-client-lazy-initialization-pattern"><a class="toclink" href="#2-client-lazy-initialization-pattern">2. Client Lazy Initialization Pattern</a><a class="headerlink" href="#2-client-lazy-initialization-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>User → Ollama.chat
+<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>  └─→ Access self.client property
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>      └─→ Check if self._client is None
+<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>          ├─→ If None: Create Client(host=base_url, timeout=request_timeout)
+<a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>          └─→ Return self._client
+</code></pre></div>
+<h3 id="3-chat-request-pattern"><a class="toclink" href="#3-chat-request-pattern">3. Chat Request Pattern</a><a class="headerlink" href="#3-chat-request-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>User → Ollama.chat(messages, **kwargs)
+<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>  ├─→ _prepare_chat_with_tools (if tools present)
+<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>  │   └─→ For each tool:
+<a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>  │       ├─→ Extract tool.metadata
+<a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>  │       ├─→ Get fn_schema from metadata
+<a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a>  │       └─→ Build Ollama tool dict
+<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>  ├─→ _chat(messages, stream=False, **kwargs)
+<a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a>  │   ├─→ Build request dict:
+<a href="#__codelineno-2-9" id="__codelineno-2-9" name="__codelineno-2-9"></a>  │   │   ├─→ model: self.model
+<a href="#__codelineno-2-10" id="__codelineno-2-10" name="__codelineno-2-10"></a>  │   │   ├─→ messages: [msg.dict() for msg in messages]
+<a href="#__codelineno-2-11" id="__codelineno-2-11" name="__codelineno-2-11"></a>  │   │   ├─→ options: {temperature, ...}
+<a href="#__codelineno-2-12" id="__codelineno-2-12" name="__codelineno-2-12"></a>  │   │   ├─→ format: "json" if json_mode
+<a href="#__codelineno-2-13" id="__codelineno-2-13" name="__codelineno-2-13"></a>  │   │   └─→ tools: converted tool dicts
+<a href="#__codelineno-2-14" id="__codelineno-2-14" name="__codelineno-2-14"></a>  │   ├─→ Ensure client initialized
+<a href="#__codelineno-2-15" id="__codelineno-2-15" name="__codelineno-2-15"></a>  │   ├─→ client.chat(**request)
+<a href="#__codelineno-2-16" id="__codelineno-2-16" name="__codelineno-2-16"></a>  │   └─→ _chat_from_response(raw_response)
+<a href="#__codelineno-2-17" id="__codelineno-2-17" name="__codelineno-2-17"></a>  │       ├─→ Extract message dict
+<a href="#__codelineno-2-18" id="__codelineno-2-18" name="__codelineno-2-18"></a>  │       ├─→ Parse role, content, tool_calls
+<a href="#__codelineno-2-19" id="__codelineno-2-19" name="__codelineno-2-19"></a>  │       ├─→ Create Message object
+<a href="#__codelineno-2-20" id="__codelineno-2-20" name="__codelineno-2-20"></a>  │       ├─→ Extract metadata: model, times, tokens
+<a href="#__codelineno-2-21" id="__codelineno-2-21" name="__codelineno-2-21"></a>  │       └─→ Create ChatResponse
+<a href="#__codelineno-2-22" id="__codelineno-2-22" name="__codelineno-2-22"></a>  └─→ Return ChatResponse
+</code></pre></div>
+<h3 id="4-completion-via-decorator-pattern"><a class="toclink" href="#4-completion-via-decorator-pattern">4. Completion via Decorator Pattern</a><a class="headerlink" href="#4-completion-via-decorator-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a>User → Ollama.complete(prompt, **kwargs)
+<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a>  └─→ @chat_to_completion_decorator wrapper
+<a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>      ├─→ Convert prompt to Message(role=USER, content=prompt)
+<a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a>      ├─→ Call self.chat([message], **kwargs)
+<a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a>      ├─→ Receive ChatResponse
+<a href="#__codelineno-3-6" id="__codelineno-3-6" name="__codelineno-3-6"></a>      ├─→ Extract text = response.message.content
+<a href="#__codelineno-3-7" id="__codelineno-3-7" name="__codelineno-3-7"></a>      └─→ Return CompletionResponse(text=text, raw=response.raw, ...)
+</code></pre></div>
+<h3 id="5-streaming-pattern"><a class="toclink" href="#5-streaming-pattern">5. Streaming Pattern</a><a class="headerlink" href="#5-streaming-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>User → Ollama.stream_chat(messages, **kwargs)
+<a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a>  └─→ _chat(messages, stream=True, **kwargs)
+<a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>      ├─→ Build request with stream=True
+<a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a>      ├─→ client.chat(**request) returns iterator
+<a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a>      └─→ For each chunk:
+<a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a>          ├─→ _chat_stream_from_response(chunk)
+<a href="#__codelineno-4-7" id="__codelineno-4-7" name="__codelineno-4-7"></a>          │   ├─→ Extract delta content
+<a href="#__codelineno-4-8" id="__codelineno-4-8" name="__codelineno-4-8"></a>          │   ├─→ Accumulate tool_calls
+<a href="#__codelineno-4-9" id="__codelineno-4-9" name="__codelineno-4-9"></a>          │   └─→ Create ChatResponse with delta
+<a href="#__codelineno-4-10" id="__codelineno-4-10" name="__codelineno-4-10"></a>          └─→ Yield ChatResponse
+</code></pre></div>
+<h3 id="6-tool-calling-pattern"><a class="toclink" href="#6-tool-calling-pattern">6. Tool Calling Pattern</a><a class="headerlink" href="#6-tool-calling-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>User → Ollama.chat_with_tools(messages, tools, **kwargs)
+<a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a>  ├─→ _prepare_chat_with_tools(messages, tools, **kwargs)
+<a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>  │   └─→ For each tool in tools:
+<a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a>  │       ├─→ Get tool.metadata.fn_schema
+<a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a>  │       └─→ Build: {"type": "function", "function": {"name": ..., "parameters": schema}}
+<a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a>  ├─→ Merge tools into kwargs
+<a href="#__codelineno-5-7" id="__codelineno-5-7" name="__codelineno-5-7"></a>  ├─→ Call self.chat(messages, **kwargs)
+<a href="#__codelineno-5-8" id="__codelineno-5-8" name="__codelineno-5-8"></a>  ├─→ Receive ChatResponse with tool_calls
+<a href="#__codelineno-5-9" id="__codelineno-5-9" name="__codelineno-5-9"></a>  ├─→ _validate_chat_with_tools_response(response, tools, **kwargs)
+<a href="#__codelineno-5-10" id="__codelineno-5-10" name="__codelineno-5-10"></a>  │   └─→ If not allow_parallel_tool_calls:
+<a href="#__codelineno-5-11" id="__codelineno-5-11" name="__codelineno-5-11"></a>  │       └─→ force_single_tool_call(response)
+<a href="#__codelineno-5-12" id="__codelineno-5-12" name="__codelineno-5-12"></a>  └─→ Return ChatResponse
+</code></pre></div>
+<h3 id="7-textcompletionllm-integration-pattern"><a class="toclink" href="#7-textcompletionllm-integration-pattern">7. TextCompletionLLM Integration Pattern</a><a class="headerlink" href="#7-textcompletionllm-integration-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a>User → TextCompletionLLM(output_parser=parser, prompt=prompt, llm=Ollama(...))
+<a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a>  └─→ TextCompletionLLM stores Ollama instance
+<a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a>
+<a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a>User → text_llm(key="value")
+<a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a>  ├─→ Check llm.metadata.is_chat_model → True
+<a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a>  ├─→ Format prompt with variables → List[Message]
+<a href="#__codelineno-6-7" id="__codelineno-6-7" name="__codelineno-6-7"></a>  ├─→ Ollama.chat(messages) → ChatResponse
+<a href="#__codelineno-6-8" id="__codelineno-6-8" name="__codelineno-6-8"></a>  ├─→ Extract response.message.content
+<a href="#__codelineno-6-9" id="__codelineno-6-9" name="__codelineno-6-9"></a>  ├─→ PydanticParser.parse(content) → DummyModel
+<a href="#__codelineno-6-10" id="__codelineno-6-10" name="__codelineno-6-10"></a>  └─→ Return DummyModel instance
+</code></pre></div>
+<h3 id="8-toolorchestratingllm-integration-pattern"><a class="toclink" href="#8-toolorchestratingllm-integration-pattern">8. ToolOrchestratingLLM Integration Pattern</a><a class="headerlink" href="#8-toolorchestratingllm-integration-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a>User → ToolOrchestratingLLM(output_cls=Album, prompt=prompt, llm=Ollama(...))
+<a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a>  ├─→ Convert Album Pydantic model to CallableTool
+<a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a>  └─→ Store Ollama instance
+<a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a>
+<a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a>User → tools_llm(topic="rock")
+<a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a>  ├─→ Format prompt with topic → List[Message]
+<a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a>  ├─→ CallableTool.metadata.fn_schema → Album JSON schema
+<a href="#__codelineno-7-8" id="__codelineno-7-8" name="__codelineno-7-8"></a>  ├─→ Ollama.chat_with_tools(messages, tools=[album_tool])
+<a href="#__codelineno-7-9" id="__codelineno-7-9" name="__codelineno-7-9"></a>  │   ├─→ _prepare_chat_with_tools converts tool to Ollama format
+<a href="#__codelineno-7-10" id="__codelineno-7-10" name="__codelineno-7-10"></a>  │   ├─→ Server returns tool_calls with arguments
+<a href="#__codelineno-7-11" id="__codelineno-7-11" name="__codelineno-7-11"></a>  │   └─→ Return ChatResponse with tool_calls
+<a href="#__codelineno-7-12" id="__codelineno-7-12" name="__codelineno-7-12"></a>  ├─→ Extract tool_calls from response
+<a href="#__codelineno-7-13" id="__codelineno-7-13" name="__codelineno-7-13"></a>  ├─→ For each tool_call:
+<a href="#__codelineno-7-14" id="__codelineno-7-14" name="__codelineno-7-14"></a>  │   ├─→ Get function name and arguments
+<a href="#__codelineno-7-15" id="__codelineno-7-15" name="__codelineno-7-15"></a>  │   ├─→ Execute CallableTool.call(**arguments)
+<a href="#__codelineno-7-16" id="__codelineno-7-16" name="__codelineno-7-16"></a>  │   └─→ Creates Album instance from arguments
+<a href="#__codelineno-7-17" id="__codelineno-7-17" name="__codelineno-7-17"></a>  └─→ Return Album instance (or list if parallel)
+</code></pre></div>
+<h2 id="component-state-management"><a class="toclink" href="#component-state-management">Component State Management</a><a class="headerlink" href="#component-state-management" title="Permanent link">#</a></h2>
+<h3 id="ollama-instance-state"><a class="toclink" href="#ollama-instance-state">Ollama Instance State</a><a class="headerlink" href="#ollama-instance-state" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a>Initialization:
+<a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a>  - model: str (immutable after init)
+<a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a>  - base_url: str (immutable after init)
+<a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a>  - request_timeout: float (immutable after init)
+<a href="#__codelineno-8-5" id="__codelineno-8-5" name="__codelineno-8-5"></a>  - temperature: float (immutable after init)
+<a href="#__codelineno-8-6" id="__codelineno-8-6" name="__codelineno-8-6"></a>  - json_mode: bool (immutable after init)
+<a href="#__codelineno-8-7" id="__codelineno-8-7" name="__codelineno-8-7"></a>  - additional_kwargs: dict (immutable after init)
+<a href="#__codelineno-8-8" id="__codelineno-8-8" name="__codelineno-8-8"></a>  - _client: Optional[Client] (mutable, lazy-initialized)
+<a href="#__codelineno-8-9" id="__codelineno-8-9" name="__codelineno-8-9"></a>  - _async_client: Optional[AsyncClient] (mutable, lazy-initialized)
+<a href="#__codelineno-8-10" id="__codelineno-8-10" name="__codelineno-8-10"></a>
+<a href="#__codelineno-8-11" id="__codelineno-8-11" name="__codelineno-8-11"></a>Runtime:
+<a href="#__codelineno-8-12" id="__codelineno-8-12" name="__codelineno-8-12"></a>  - _client: None → Client instance (on first use)
+<a href="#__codelineno-8-13" id="__codelineno-8-13" name="__codelineno-8-13"></a>  - _async_client: None → AsyncClient instance (on first async use)
+</code></pre></div>
+<h3 id="request-state-per-call"><a class="toclink" href="#request-state-per-call">Request State (Per Call)</a><a class="headerlink" href="#request-state-per-call" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-9-1" id="__codelineno-9-1" name="__codelineno-9-1"></a>Input:
+<a href="#__codelineno-9-2" id="__codelineno-9-2" name="__codelineno-9-2"></a>  - messages: List[Message]
+<a href="#__codelineno-9-3" id="__codelineno-9-3" name="__codelineno-9-3"></a>  - tools: Optional[List[BaseTool]]
+<a href="#__codelineno-9-4" id="__codelineno-9-4" name="__codelineno-9-4"></a>  - stream: bool
+<a href="#__codelineno-9-5" id="__codelineno-9-5" name="__codelineno-9-5"></a>  - **kwargs: Additional options
+<a href="#__codelineno-9-6" id="__codelineno-9-6" name="__codelineno-9-6"></a>
+<a href="#__codelineno-9-7" id="__codelineno-9-7" name="__codelineno-9-7"></a>Processing:
+<a href="#__codelineno-9-8" id="__codelineno-9-8" name="__codelineno-9-8"></a>  - request_dict: Built from inputs
+<a href="#__codelineno-9-9" id="__codelineno-9-9" name="__codelineno-9-9"></a>  - raw_response: dict from server
+<a href="#__codelineno-9-10" id="__codelineno-9-10" name="__codelineno-9-10"></a>  - parsed_response: ChatResponse/CompletionResponse
+<a href="#__codelineno-9-11" id="__codelineno-9-11" name="__codelineno-9-11"></a>
+<a href="#__codelineno-9-12" id="__codelineno-9-12" name="__codelineno-9-12"></a>Output:
+<a href="#__codelineno-9-13" id="__codelineno-9-13" name="__codelineno-9-13"></a>  - ChatResponse or CompletionResponse
+</code></pre></div>
+<h3 id="streaming-state-per-stream"><a class="toclink" href="#streaming-state-per-stream">Streaming State (Per Stream)</a><a class="headerlink" href="#streaming-state-per-stream" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a>Initialization:
+<a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a>  - iterator: From client.chat(stream=True)
+<a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a>
+<a href="#__codelineno-10-4" id="__codelineno-10-4" name="__codelineno-10-4"></a>Per Chunk:
+<a href="#__codelineno-10-5" id="__codelineno-10-5" name="__codelineno-10-5"></a>  - chunk_dict: Raw chunk from server
+<a href="#__codelineno-10-6" id="__codelineno-10-6" name="__codelineno-10-6"></a>  - accumulated_content: Growing string
+<a href="#__codelineno-10-7" id="__codelineno-10-7" name="__codelineno-10-7"></a>  - accumulated_tool_calls: Growing list
+<a href="#__codelineno-10-8" id="__codelineno-10-8" name="__codelineno-10-8"></a>  - delta: New content in this chunk
+<a href="#__codelineno-10-9" id="__codelineno-10-9" name="__codelineno-10-9"></a>
+<a href="#__codelineno-10-10" id="__codelineno-10-10" name="__codelineno-10-10"></a>Output:
+<a href="#__codelineno-10-11" id="__codelineno-10-11" name="__codelineno-10-11"></a>  - Generator yielding ChatResponse objects
+</code></pre></div>
+<h2 id="error-boundaries"><a class="toclink" href="#error-boundaries">Error Boundaries</a><a class="headerlink" href="#error-boundaries" title="Permanent link">#</a></h2>
+<h3 id="1-configuration-errors-initialization"><a class="toclink" href="#1-configuration-errors-initialization">1. Configuration Errors (Initialization)</a><a class="headerlink" href="#1-configuration-errors-initialization" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-11-1" id="__codelineno-11-1" name="__codelineno-11-1"></a>Ollama.__init__
+<a href="#__codelineno-11-2" id="__codelineno-11-2" name="__codelineno-11-2"></a>  └─→ Validate inputs
+<a href="#__codelineno-11-3" id="__codelineno-11-3" name="__codelineno-11-3"></a>      ├─→ model: must be non-empty string
+<a href="#__codelineno-11-4" id="__codelineno-11-4" name="__codelineno-11-4"></a>      ├─→ base_url: must be valid URL
+<a href="#__codelineno-11-5" id="__codelineno-11-5" name="__codelineno-11-5"></a>      ├─→ temperature: must be in [0.0, 1.0]
+<a href="#__codelineno-11-6" id="__codelineno-11-6" name="__codelineno-11-6"></a>      └─→ request_timeout: must be positive
+</code></pre></div>
+<h3 id="2-client-creation-errors-first-use"><a class="toclink" href="#2-client-creation-errors-first-use">2. Client Creation Errors (First Use)</a><a class="headerlink" href="#2-client-creation-errors-first-use" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-12-1" id="__codelineno-12-1" name="__codelineno-12-1"></a>client property
+<a href="#__codelineno-12-2" id="__codelineno-12-2" name="__codelineno-12-2"></a>  └─→ Create Client(host, timeout)
+<a href="#__codelineno-12-3" id="__codelineno-12-3" name="__codelineno-12-3"></a>      └─→ Catch: ValueError, ConnectionError
+</code></pre></div>
+<h3 id="3-request-errors-during-call"><a class="toclink" href="#3-request-errors-during-call">3. Request Errors (During Call)</a><a class="headerlink" href="#3-request-errors-during-call" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-13-1" id="__codelineno-13-1" name="__codelineno-13-1"></a>client.chat(**request)
+<a href="#__codelineno-13-2" id="__codelineno-13-2" name="__codelineno-13-2"></a>  └─→ Catch: TimeoutError, ConnectionError, HTTPError
+<a href="#__codelineno-13-3" id="__codelineno-13-3" name="__codelineno-13-3"></a>      └─→ Wrap and re-raise with context
+</code></pre></div>
+<h3 id="4-parsing-errors-response-processing"><a class="toclink" href="#4-parsing-errors-response-processing">4. Parsing Errors (Response Processing)</a><a class="headerlink" href="#4-parsing-errors-response-processing" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-14-1" id="__codelineno-14-1" name="__codelineno-14-1"></a>_chat_from_response(raw_response)
+<a href="#__codelineno-14-2" id="__codelineno-14-2" name="__codelineno-14-2"></a>  └─→ Extract required fields
+<a href="#__codelineno-14-3" id="__codelineno-14-3" name="__codelineno-14-3"></a>      └─→ Catch: KeyError, TypeError
+<a href="#__codelineno-14-4" id="__codelineno-14-4" name="__codelineno-14-4"></a>          └─→ Log warning and return default
+</code></pre></div>
+<h3 id="5-tool-validation-errors"><a class="toclink" href="#5-tool-validation-errors">5. Tool Validation Errors</a><a class="headerlink" href="#5-tool-validation-errors" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-15-1" id="__codelineno-15-1" name="__codelineno-15-1"></a>_prepare_chat_with_tools(messages, tools)
+<a href="#__codelineno-15-2" id="__codelineno-15-2" name="__codelineno-15-2"></a>  └─→ For each tool:
+<a href="#__codelineno-15-3" id="__codelineno-15-3" name="__codelineno-15-3"></a>      └─→ Validate metadata.fn_schema exists
+<a href="#__codelineno-15-4" id="__codelineno-15-4" name="__codelineno-15-4"></a>          └─→ Raise ValueError if missing
+</code></pre></div>
+<h2 id="component-dependencies"><a class="toclink" href="#component-dependencies">Component Dependencies</a><a class="headerlink" href="#component-dependencies" title="Permanent link">#</a></h2>
+<h3 id="ollama-depends-on"><a class="toclink" href="#ollama-depends-on">Ollama Depends On:</a><a class="headerlink" href="#ollama-depends-on" title="Permanent link">#</a></h3>
+<ul>
+<li><code>ollama.Client</code> and <code>ollama.AsyncClient</code> (external package)</li>
+<li><code>serapeum.core.base.llms.types</code> (Message, ChatResponse, CompletionResponse, Metadata)</li>
+<li><code>serapeum.core.llms.function_calling.FunctionCallingLLM</code> (base class)</li>
+<li><code>serapeum.core.base.llms.utils</code> (decorators)</li>
+<li><code>pydantic</code> (for configuration)</li>
+</ul>
+<h3 id="ollama-is-used-by"><a class="toclink" href="#ollama-is-used-by">Ollama Is Used By:</a><a class="headerlink" href="#ollama-is-used-by" title="Permanent link">#</a></h3>
+<ul>
+<li><code>TextCompletionLLM</code> (as the LLM engine)</li>
+<li><code>ToolOrchestratingLLM</code> (as the function-calling LLM)</li>
+<li>Direct user code (standalone usage)</li>
+</ul>
+<h3 id="external-dependencies"><a class="toclink" href="#external-dependencies">External Dependencies:</a><a class="headerlink" href="#external-dependencies" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Ollama Server</strong>: Must be running and accessible at base_url</li>
+<li><strong>Model</strong>: Must be pulled and available on the server</li>
+</ul>
+</article>
+</div>
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+</div>
+<button class="md-top md-icon" data-md-component="top" hidden="" type="button">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+</main>
+<footer class="md-footer">
+<nav aria-label="Footer" class="md-footer__inner md-grid">
+<a aria-label="Previous: Data Flow" class="md-footer__link md-footer__link--prev" href="../ollama_dataflow/">
+<div class="md-footer__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+</div>
+<div class="md-footer__title">
+<span class="md-footer__direction">
+                Previous
+              </span>
+<div class="md-ellipsis">
+                Data Flow
+              </div>
+</div>
+</a>
+<a aria-label="Next: Lifecycle" class="md-footer__link md-footer__link--next" href="../ollama_state/">
+<div class="md-footer__title">
+<span class="md-footer__direction">
+                Next
+              </span>
+<div class="md-ellipsis">
+                Lifecycle
+              </div>
+</div>
+<div class="md-footer__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+</div>
+</a>
+</nav>
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+      Material for MkDocs
+    </a>
+</div>
+<div class="md-social">
+<a class="md-social__link" href="https://github.com/Serapieum-of-alex/Serapeum" rel="noopener" target="_blank" title="github.com">
+<svg viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+</a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+<script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+<script src="../../../../assets/javascripts/panzoom.min.js"></script>
+<script src="../../../../assets/javascripts/zoompan.js"></script>
+</body>
+</html>

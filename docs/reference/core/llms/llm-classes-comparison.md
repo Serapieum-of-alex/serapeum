@@ -10,7 +10,7 @@ Serapeum provides four distinct LLM classes organized across two architectural l
 ┌─────────────────────────────────────────────────────────────┐
 │  Orchestration Layer (High-level workflows)                 │
 ├─────────────────────────────────────────────────────────────┤
-│  ToolOrchestratingLLM       │  TextCompletionLLM             │
+│  ToolOrchestratingLLM       │  TextCompletionLLM            │
 │  (uses function calling)    │  (uses text parsing)          │
 │  - Converts models to tools │  - Binds prompt+parser+LLM    │
 │  - Executes tool calls      │  - Parses raw text output     │
@@ -22,7 +22,7 @@ Serapeum provides four distinct LLM classes organized across two architectural l
 ┌─────────────────────────────────────────────────────────────┐
 │  LLM Layer (Core abstractions)                              │
 ├─────────────────────────────────────────────────────────────┤
-│  FunctionCallingLLM         │  StructuredOutputLLM                 │
+│  FunctionCallingLLM         │  StructuredOutputLLM          │
 │  (base for providers)       │  (wrapper for structured IO)  │
 │  - Tool calling interface   │  - Forces Pydantic outputs    │
 │  - Provider implementations │  - Wraps any LLM              │
@@ -382,4 +382,4 @@ Do you just want to wrap an existing LLM to enforce a format?
 
 - [Callable Tools Guide](../tools/callable_tools.md)
 - [Provider Integration Guide](../../../architecture/integration-guide.md)
-- [Architecture Overview](../../../overview/codebase-map.md)
+- [Architecture Overview](../../../overview/core-package.md)

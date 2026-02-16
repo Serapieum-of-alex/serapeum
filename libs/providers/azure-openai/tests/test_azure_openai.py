@@ -4,8 +4,8 @@ from openai import AsyncAzureOpenAI
 from typing import Any, Generator, AsyncGenerator
 from unittest.mock import MagicMock, AsyncMock, patch
 import httpx
-from serapeum.llms.azure_openai import AzureOpenAI
-from serapeum.core.base.llms.models import Message
+from serapeum.azure_openai import AzureOpenAI
+from serapeum.core.llms import Message
 from openai.types.chat.chat_completion import (
     ChatCompletion,
     ChatCompletionMessage,

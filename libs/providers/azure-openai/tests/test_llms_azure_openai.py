@@ -1,5 +1,5 @@
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.llms.azure_openai import AzureOpenAI
+from serapeum.azure_openai import AzureOpenAI
 
 
 def test_text_inference_embedding_class():

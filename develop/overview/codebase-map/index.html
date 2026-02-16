@@ -142,17 +142,6 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../architecture/diagrams.md">
-          
-  
-  
-    
-  
-  Architecture
-
-        </a>
-</li>
-<li class="md-tabs__item">
 <a class="md-tabs__link" href="../../reference/core/llms/llm-classes-comparison/">
           
   
@@ -606,10 +595,99 @@
 </nav>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#class-dependency-graph">
+<a class="md-nav__link" href="#architecture-api-overview">
 <span class="md-ellipsis">
       
-        Class &amp; Dependency Graph
+        Architecture &amp; API Overview
+      
+    </span>
+</a>
+<nav aria-label="Architecture &amp; API Overview" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#layered-architecture">
+<span class="md-ellipsis">
+      
+        Layered Architecture
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#core-public-api">
+<span class="md-ellipsis">
+      
+        Core Public API
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#provider-implementation">
+<span class="md-ellipsis">
+      
+        Provider Implementation
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-interaction-flow">
+<span class="md-ellipsis">
+      
+        Component Interaction Flow
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#data-type-hierarchy">
+<span class="md-ellipsis">
+      
+        Data Type Hierarchy
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#understanding-the-diagrams">
+<span class="md-ellipsis">
+      
+        Understanding the Diagrams
+      
+    </span>
+</a>
+<nav aria-label="Understanding the Diagrams" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#how-to-read-these-diagrams">
+<span class="md-ellipsis">
+      
+        How to Read These Diagrams
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#common-patterns">
+<span class="md-ellipsis">
+      
+        Common Patterns
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#adding-new-components">
+<span class="md-ellipsis">
+      
+        Adding New Components
       
     </span>
 </a>
@@ -688,7 +766,7 @@
 <span class="md-ellipsis">
     
   
-    Architecture
+    Reference
   
 
     
@@ -700,52 +778,14 @@
 <span class="md-nav__icon md-icon"></span>
             
   
-    Architecture
-  
-
-          </label>
-<ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../architecture/diagrams.md">
-<span class="md-ellipsis">
-    
-  
-    Diagrams
-  
-
-    
-  </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_4" type="checkbox"/>
-<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
-<span class="md-ellipsis">
-    
-  
-    Reference
-  
-
-    
-  </span>
-<span class="md-nav__icon md-icon"></span>
-</label>
-<nav aria-expanded="false" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
-<label class="md-nav__title" for="__nav_4">
-<span class="md-nav__icon md-icon"></span>
-            
-  
     Reference
   
 
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_4_1" type="checkbox"/>
-<label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -756,8 +796,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_4_1_label" class="md-nav" data-md-level="2">
-<label class="md-nav__title" for="__nav_4_1">
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_3_1">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -767,8 +807,8 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_4_1_1" type="checkbox"/>
-<label class="md-nav__link" for="__nav_4_1_1" id="__nav_4_1_1_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_1" id="__nav_3_1_1_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -779,8 +819,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_4_1_1_label" class="md-nav" data-md-level="3">
-<label class="md-nav__title" for="__nav_4_1_1">
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_1_label" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="__nav_3_1_1">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -802,8 +842,8 @@
 </a>
 </li>
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_4_1_1_2" type="checkbox"/>
-<label class="md-nav__link" for="__nav_4_1_1_2" id="__nav_4_1_1_2_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_1_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_1_2" id="__nav_3_1_1_2_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -814,8 +854,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_4_1_1_2_label" class="md-nav" data-md-level="4">
-<label class="md-nav__title" for="__nav_4_1_1_2">
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_1_2_label" class="md-nav" data-md-level="4">
+<label class="md-nav__title" for="__nav_3_1_1_2">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -825,8 +865,8 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_4_1_1_2_1" type="checkbox"/>
-<label class="md-nav__link" for="__nav_4_1_1_2_1" id="__nav_4_1_1_2_1_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_1_2_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_1_2_1" id="__nav_3_1_1_2_1_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -837,8 +877,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_4_1_1_2_1_label" class="md-nav" data-md-level="5">
-<label class="md-nav__title" for="__nav_4_1_1_2_1">
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_1_2_1_label" class="md-nav" data-md-level="5">
+<label class="md-nav__title" for="__nav_3_1_1_2_1">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -935,8 +975,8 @@
 </nav>
 </li>
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_4_1_1_2_2" type="checkbox"/>
-<label class="md-nav__link" for="__nav_4_1_1_2_2" id="__nav_4_1_1_2_2_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_1_2_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_1_2_2" id="__nav_3_1_1_2_2_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -947,8 +987,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_4_1_1_2_2_label" class="md-nav" data-md-level="5">
-<label class="md-nav__title" for="__nav_4_1_1_2_2">
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_1_2_2_label" class="md-nav" data-md-level="5">
+<label class="md-nav__title" for="__nav_3_1_1_2_2">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -1051,8 +1091,8 @@
 </nav>
 </li>
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_4_1_2" type="checkbox"/>
-<label class="md-nav__link" for="__nav_4_1_2" id="__nav_4_1_2_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_2" id="__nav_3_1_2_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -1063,8 +1103,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_4_1_2_label" class="md-nav" data-md-level="3">
-<label class="md-nav__title" for="__nav_4_1_2">
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_2_label" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="__nav_3_1_2">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -1089,8 +1129,8 @@
 </nav>
 </li>
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_4_1_3" type="checkbox"/>
-<label class="md-nav__link" for="__nav_4_1_3" id="__nav_4_1_3_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_3" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_3" id="__nav_3_1_3_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -1101,8 +1141,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_4_1_3_label" class="md-nav" data-md-level="3">
-<label class="md-nav__title" for="__nav_4_1_3">
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_3_label" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="__nav_3_1_3">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -1145,8 +1185,8 @@
 </nav>
 </li>
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_5" type="checkbox"/>
-<label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_4" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -1157,8 +1197,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_label" class="md-nav" data-md-level="1">
-<label class="md-nav__title" for="__nav_5">
+<nav aria-expanded="false" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_4">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -1168,8 +1208,8 @@
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_5_1" type="checkbox"/>
-<label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_4_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -1180,8 +1220,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_1_label" class="md-nav" data-md-level="2">
-<label class="md-nav__title" for="__nav_5_1">
+<nav aria-expanded="false" aria-labelledby="__nav_4_1_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_4_1">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -1290,8 +1330,8 @@
 </nav>
 </li>
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_5_2" type="checkbox"/>
-<label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_4_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -1302,8 +1342,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_5_2_label" class="md-nav" data-md-level="2">
-<label class="md-nav__title" for="__nav_5_2">
+<nav aria-expanded="false" aria-labelledby="__nav_4_2_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_4_2">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -1331,8 +1371,8 @@
 </nav>
 </li>
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_6" type="checkbox"/>
-<label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_5" type="checkbox"/>
+<label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -1343,8 +1383,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_6_label" class="md-nav" data-md-level="1">
-<label class="md-nav__title" for="__nav_6">
+<nav aria-expanded="false" aria-labelledby="__nav_5_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_5">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -1393,8 +1433,8 @@
 </nav>
 </li>
 <li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_7" type="checkbox"/>
-<label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+<input class="md-nav__toggle md-toggle" id="__nav_6" type="checkbox"/>
+<label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
 <span class="md-ellipsis">
     
   
@@ -1405,8 +1445,8 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="false" aria-labelledby="__nav_7_label" class="md-nav" data-md-level="1">
-<label class="md-nav__title" for="__nav_7">
+<nav aria-expanded="false" aria-labelledby="__nav_6_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_6">
 <span class="md-nav__icon md-icon"></span>
             
   
@@ -1786,10 +1826,99 @@
 </nav>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#class-dependency-graph">
+<a class="md-nav__link" href="#architecture-api-overview">
 <span class="md-ellipsis">
       
-        Class &amp; Dependency Graph
+        Architecture &amp; API Overview
+      
+    </span>
+</a>
+<nav aria-label="Architecture &amp; API Overview" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#layered-architecture">
+<span class="md-ellipsis">
+      
+        Layered Architecture
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#core-public-api">
+<span class="md-ellipsis">
+      
+        Core Public API
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#provider-implementation">
+<span class="md-ellipsis">
+      
+        Provider Implementation
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-interaction-flow">
+<span class="md-ellipsis">
+      
+        Component Interaction Flow
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#data-type-hierarchy">
+<span class="md-ellipsis">
+      
+        Data Type Hierarchy
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#understanding-the-diagrams">
+<span class="md-ellipsis">
+      
+        Understanding the Diagrams
+      
+    </span>
+</a>
+<nav aria-label="Understanding the Diagrams" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#how-to-read-these-diagrams">
+<span class="md-ellipsis">
+      
+        How to Read These Diagrams
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#common-patterns">
+<span class="md-ellipsis">
+      
+        Common Patterns
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#adding-new-components">
+<span class="md-ellipsis">
+      
+        Adding New Components
       
     </span>
 </a>
@@ -2048,8 +2177,105 @@
 <a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a>  → Use for similarity search, RAG, etc.
 </code></pre></div>
 <p>See the <a href="../architecture/">Architecture</a> section for diagrams and deeper internals, and the API Reference for exhaustive signatures.</p>
-<h2 id="class-dependency-graph"><a class="toclink" href="#class-dependency-graph">Class &amp; Dependency Graph</a><a class="headerlink" href="#class-dependency-graph" title="Permanent link">#</a></h2>
-<p>Below is a high-level Mermaid class/dependency diagram showing the main modules and their primary classes, plus key relationships between them.</p>
+<h2 id="architecture-api-overview"><a class="toclink" href="#architecture-api-overview">Architecture &amp; API Overview</a><a class="headerlink" href="#architecture-api-overview" title="Permanent link">#</a></h2>
+<p>This section provides visual diagrams of the Serapeum architecture and public API.</p>
+<h3 id="layered-architecture"><a class="toclink" href="#layered-architecture">Layered Architecture</a><a class="headerlink" href="#layered-architecture" title="Permanent link">#</a></h3>
+<p>The framework follows a layered architecture from base abstractions to high-level orchestration:</p>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>graph TB
+    subgraph "User Code Layer"
+        U1[Your Application Code]
+    end
+
+    subgraph "Orchestration Layer"
+        O1[ToolOrchestratingLLM&lt;br/&gt;Multi-step tool workflows]
+        O2[TextCompletionLLM&lt;br/&gt;Text completion utilities]
+    end
+
+    subgraph "LLM Abstraction Layer"
+        L1[LLM&lt;br/&gt;predict, structured_predict]
+        L2[FunctionCallingLLM&lt;br/&gt;chat_with_tools, predict_and_call]
+        L3[StructuredOutputLLM&lt;br/&gt;Force structured outputs]
+    end
+
+    subgraph "Base Protocol Layer"
+        B1[BaseLLM&lt;br/&gt;chat, complete, stream_chat]
+        B2[BaseEmbedding&lt;br/&gt;get_text_embedding]
+    end
+
+    subgraph "Provider Layer"
+        P1[Ollama&lt;br/&gt;Local inference]
+        P2[OpenAI&lt;br/&gt;coming soon]
+        P3[Azure OpenAI&lt;br/&gt;coming soon]
+        E1[OllamaEmbedding&lt;br/&gt;Local embeddings]
+    end
+
+    subgraph "Supporting Components"
+        S1[PromptTemplate&lt;br/&gt;String templates]
+        S2[CallableTool&lt;br/&gt;Function tools]
+        S3[Message &amp; MessageList&lt;br/&gt;Data models]
+    end
+
+    U1 --&gt; O1
+    U1 --&gt; O2
+    U1 --&gt; L1
+    U1 --&gt; L2
+    U1 --&gt; S1
+    U1 --&gt; S2
+
+    O1 --&gt; L2
+    O1 --&gt; S1
+    O1 --&gt; S2
+
+    L1 --&gt; B1
+    L2 --&gt; B1
+    L3 --&gt; L1
+
+    P1 -.implements.-&gt; L2
+    P2 -.implements.-&gt; L2
+    P3 -.implements.-&gt; L2
+    E1 -.implements.-&gt; B2
+
+    L1 --&gt; S3
+    L2 --&gt; S3
+
+    style U1 fill:#e1f5ff
+    style O1 fill:#fff4e1
+    style O2 fill:#fff4e1
+    style L1 fill:#e8f5e9
+    style L2 fill:#e8f5e9
+    style L3 fill:#e8f5e9
+    style B1 fill:#f3e5f5
+    style B2 fill:#f3e5f5
+    style P1 fill:#ffe5e5
+    style P2 fill:#ffe5e5
+    style P3 fill:#ffe5e5
+    style E1 fill:#ffe5e5</code></pre>
+</div>
+<h3 id="core-public-api"><a class="toclink" href="#core-public-api">Core Public API</a><a class="headerlink" href="#core-public-api" title="Permanent link">#</a></h3>
+<p>Key classes and their primary methods:</p>
 <div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
 <div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
 Hold "Ctrl" to enable pan &amp; zoom
@@ -2074,42 +2300,362 @@ Hold "Ctrl" to enable pan &amp; zoom
 </button>
 </nav>
 <pre class="mermaid"><code>classDiagram
-  class SerializableModel { &lt;&lt;base&gt;&gt; }
-  class BaseLLM { &lt;&lt;abstract&gt;&gt; }
-  class BaseEmbedding { &lt;&lt;abstract&gt;&gt; }
-  class LLM { }
-  class FunctionCallingLLM { }
-  class StructuredOutputLLM { }
-  class ToolOrchestratingLLM { }
-  class BaseTool { }
-  class AsyncBaseTool { }
-  class CallableTool { }
-  class PromptTemplate { }
-  class ChatPromptTemplate { }
-  class Message { }
-  class MessageList { }
-  class ChatResponse { }
-  class CompletionResponse { }
-  class Ollama { }
-  class OllamaEmbedding { }
+    class BaseLLM {
+        &lt;&lt;abstract&gt;&gt;
+        +chat(messages) ChatResponse
+        +complete(prompt) CompletionResponse
+        +stream_chat(messages) Generator
+        +stream_complete(prompt) Generator
+        +achat(messages) ChatResponse
+        +acomplete(prompt) CompletionResponse
+        +astream_chat(messages) AsyncGen
+        +astream_complete(prompt) AsyncGen
+    }
 
-  SerializableModel &lt;|-- BaseLLM
-  SerializableModel &lt;|-- BaseEmbedding
-  BaseLLM &lt;|-- LLM
-  LLM &lt;|-- FunctionCallingLLM
-  LLM &lt;|-- StructuredOutputLLM
-  FunctionCallingLLM &lt;|-- Ollama
-  BaseEmbedding &lt;|-- OllamaEmbedding
-  ToolOrchestratingLLM ..&gt; FunctionCallingLLM : uses
-  ToolOrchestratingLLM ..&gt; PromptTemplate : composes
-  ToolOrchestratingLLM ..&gt; ChatPromptTemplate : composes
-  AsyncBaseTool &lt;|-- CallableTool
-  BaseTool &lt;|-- AsyncBaseTool
-  ToolOrchestratingLLM ..&gt; BaseTool : orchestrates
-  LLM ..&gt; MessageList : formats
-  LLM ..&gt; ChatResponse : returns
-  LLM ..&gt; CompletionResponse : returns</code></pre>
+    class LLM {
+        +predict(prompt, **kwargs) str
+        +stream(prompt, **kwargs) Generator
+        +apredict(prompt, **kwargs) str
+        +astream(prompt, **kwargs) AsyncGen
+        +structured_predict(output_cls, prompt, **kwargs) BaseModel
+        +stream_structured_predict(...) Generator
+        +astructured_predict(...) BaseModel
+        +astream_structured_predict(...) AsyncGen
+    }
+
+    class FunctionCallingLLM {
+        +chat_with_tools(tools, user_msg, chat_history) ChatResponse
+        +predict_and_call(tools, user_msg, chat_history) AgentChatResponse
+        +get_tool_calls_from_response(response) List~ToolCallArguments~
+        +stream_chat_with_tools(tools, ...) Generator
+        +astream_chat_with_tools(tools, ...) AsyncGen
+    }
+
+    class ToolOrchestratingLLM {
+        -llm: FunctionCallingLLM
+        -tools: List~BaseTool~
+        -prompt: PromptTemplate
+        +__call__(**prompt_args) Any
+        +acall(**prompt_args) Any
+        +stream_call(**prompt_args) Generator
+        +astream_call(**prompt_args) AsyncGen
+    }
+
+    class CallableTool {
+        &lt;&lt;interface&gt;&gt;
+        +from_function(func) CallableTool$
+        +from_model(model_cls, fn) CallableTool$
+        +call(input, **kwargs) ToolOutput
+        +acall(input, **kwargs) ToolOutput
+    }
+
+    class BaseEmbedding {
+        &lt;&lt;abstract&gt;&gt;
+        +get_text_embedding(text) List~float~
+        +get_query_embedding(query) List~float~
+        +get_text_embeddings(texts) List~List~float~~
+        +aget_text_embedding(text) List~float~
+        +aget_query_embedding(query) List~float~
+        +aget_text_embeddings(texts) List~List~float~~
+    }
+
+    class PromptTemplate {
+        +__init__(template, **kwargs)
+        +format(**kwargs) str
+        +format_messages(**kwargs) MessageList
+    }
+
+    class Message {
+        +role: MessageRole
+        +content: str | List
+        +metadata: Dict
+    }
+
+    class MessageList {
+        +messages: List~Message~
+        +from_list(messages) MessageList$
+        +to_list() List
+    }
+
+    BaseLLM &lt;|-- LLM
+    LLM &lt;|-- FunctionCallingLLM
+    ToolOrchestratingLLM --&gt; FunctionCallingLLM : uses
+    ToolOrchestratingLLM --&gt; CallableTool : orchestrates
+    ToolOrchestratingLLM --&gt; PromptTemplate : composes
+    LLM --&gt; MessageList : uses
+    LLM --&gt; Message : uses</code></pre>
 </div>
+<h3 id="provider-implementation"><a class="toclink" href="#provider-implementation">Provider Implementation</a><a class="headerlink" href="#provider-implementation" title="Permanent link">#</a></h3>
+<p>How providers implement the core abstractions:</p>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>classDiagram
+    class FunctionCallingLLM {
+        &lt;&lt;abstract&gt;&gt;
+        +_chat(messages) ChatResponse*
+        +_complete(prompt) CompletionResponse*
+        +_stream_chat(messages) Generator*
+        +_stream_complete(prompt) Generator*
+    }
+
+    class BaseEmbedding {
+        &lt;&lt;abstract&gt;&gt;
+        +_get_text_embedding(text) List~float~*
+        +_get_query_embedding(query) List~float~*
+    }
+
+    class Ollama {
+        +model: str
+        +base_url: str
+        +temperature: float
+        +_chat(messages) ChatResponse
+        +_complete(prompt) CompletionResponse
+        +_stream_chat(messages) Generator
+        +_achat(messages) ChatResponse
+    }
+
+    class OllamaEmbedding {
+        +model_name: str
+        +batch_size: int
+        +_get_text_embedding(text) List~float~
+        +_get_text_embeddings(texts) List~List~float~~
+        +_aget_text_embedding(text) List~float~
+    }
+
+    class OpenAI {
+        &lt;&lt;coming soon&gt;&gt;
+        +model: str
+        +api_key: str
+    }
+
+    class AzureOpenAI {
+        &lt;&lt;coming soon&gt;&gt;
+        +deployment_name: str
+        +endpoint: str
+    }
+
+    FunctionCallingLLM &lt;|-- Ollama
+    FunctionCallingLLM &lt;|-- OpenAI
+    FunctionCallingLLM &lt;|-- AzureOpenAI
+    BaseEmbedding &lt;|-- OllamaEmbedding
+
+    note for Ollama "Full local inference\nNo API costs\nPrivacy-focused"
+    note for OpenAI "Cloud-based\nGPT-4, GPT-3.5\nPay-as-you-go"</code></pre>
+</div>
+<h3 id="component-interaction-flow"><a class="toclink" href="#component-interaction-flow">Component Interaction Flow</a><a class="headerlink" href="#component-interaction-flow" title="Permanent link">#</a></h3>
+<p>How components interact in a typical workflow:</p>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>sequenceDiagram
+    participant User as User Code
+    participant Orch as ToolOrchestratingLLM
+    participant Prompt as PromptTemplate
+    participant LLM as FunctionCallingLLM&lt;br/&gt;(e.g., Ollama)
+    participant Tool as CallableTool
+    participant Parser as OutputParser
+
+    User-&gt;&gt;Orch: orchestrator(query="What's 5+3?")
+    Orch-&gt;&gt;Prompt: format(query="What's 5+3?")
+    Prompt--&gt;&gt;Orch: formatted messages
+    Orch-&gt;&gt;LLM: chat_with_tools(messages, tools)
+    LLM--&gt;&gt;Orch: ChatResponse (tool call)
+    Orch-&gt;&gt;Orch: get_tool_calls_from_response()
+    Orch-&gt;&gt;Tool: call(operation="add", a=5, b=3)
+    Tool--&gt;&gt;Orch: ToolOutput(result=8)
+    Orch-&gt;&gt;LLM: chat(messages + tool results)
+    LLM--&gt;&gt;Orch: ChatResponse (final answer)
+    alt structured output
+        Orch-&gt;&gt;Parser: parse(response, output_cls)
+        Parser--&gt;&gt;Orch: Pydantic model
+    end
+    Orch--&gt;&gt;User: result
+
+    Note over User,Parser: All steps support sync, async, and streaming</code></pre>
+</div>
+<h3 id="data-type-hierarchy"><a class="toclink" href="#data-type-hierarchy">Data Type Hierarchy</a><a class="headerlink" href="#data-type-hierarchy" title="Permanent link">#</a></h3>
+<p>Core data models used across the API:</p>
+<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
+<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
+Hold "Ctrl" to enable pan &amp; zoom
+</div>
+<nav class="panzoom-nav panzoom-top-nav">
+<button class="panzoom-info panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+</svg>
+</button><button class="panzoom-reset panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+</svg>
+</button><button class="panzoom-max panzoom-button">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+</svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+</svg>
+</button>
+</nav>
+<pre class="mermaid"><code>classDiagram
+    class SerializableModel {
+        &lt;&lt;base&gt;&gt;
+        +to_dict() Dict
+        +to_json() str
+        +from_dict(data) Self$
+    }
+
+    class Message {
+        +role: MessageRole
+        +content: str | List~ContentBlock~
+        +metadata: Dict
+        +additional_kwargs: Dict
+    }
+
+    class MessageList {
+        +messages: List~Message~
+        +from_list(messages) MessageList$
+        +to_list() List~Dict~
+        +append(message) None
+    }
+
+    class ChatResponse {
+        +message: Message
+        +raw: Any
+        +delta: str
+        +metadata: Metadata
+    }
+
+    class CompletionResponse {
+        +text: str
+        +raw: Any
+        +delta: str
+        +metadata: Metadata
+    }
+
+    class AgentChatResponse {
+        +response: str
+        +sources: List~ToolOutput~
+        +source_nodes: List
+        +metadata: Dict
+    }
+
+    class ToolOutput {
+        +content: str
+        +tool_name: str
+        +raw_input: Dict
+        +raw_output: Any
+        +is_error: bool
+    }
+
+    class ToolCallArguments {
+        +tool_name: str
+        +tool_kwargs: Dict
+        +tool_id: str
+    }
+
+    SerializableModel &lt;|-- Message
+    SerializableModel &lt;|-- MessageList
+    SerializableModel &lt;|-- ChatResponse
+    SerializableModel &lt;|-- CompletionResponse
+    SerializableModel &lt;|-- AgentChatResponse
+    SerializableModel &lt;|-- ToolOutput
+
+    MessageList --&gt; Message : contains
+    ChatResponse --&gt; Message : contains
+    AgentChatResponse --&gt; ToolOutput : contains</code></pre>
+</div>
+<hr/>
+<h2 id="understanding-the-diagrams"><a class="toclink" href="#understanding-the-diagrams">Understanding the Diagrams</a><a class="headerlink" href="#understanding-the-diagrams" title="Permanent link">#</a></h2>
+<h3 id="how-to-read-these-diagrams"><a class="toclink" href="#how-to-read-these-diagrams">How to Read These Diagrams</a><a class="headerlink" href="#how-to-read-these-diagrams" title="Permanent link">#</a></h3>
+<p><strong>Layered Architecture Diagram:</strong>
+- Shows the flow from your application code down to providers
+- Each layer builds on the layer below it
+- Colors indicate different architectural layers
+- Dotted lines mean "implements" (providers implementing abstractions)</p>
+<p><strong>Core Public API Diagram:</strong>
+- Shows the main classes you'll use in your code
+- Methods are listed showing signatures and return types
+- <code>$</code> symbol indicates static/class methods
+- <code>~Type~</code> notation shows generic type parameters</p>
+<p><strong>Provider Implementation Diagram:</strong>
+- Shows how to extend Serapeum with new providers
+- Abstract methods marked with <code>*</code> must be implemented
+- Notes provide quick provider characteristics</p>
+<p><strong>Component Interaction Flow:</strong>
+- Shows the sequence of calls in a typical workflow
+- Read top-to-bottom to follow the execution flow
+- <code>alt</code> blocks show conditional paths</p>
+<p><strong>Data Type Hierarchy:</strong>
+- Shows the relationships between data models
+- All models inherit from <code>SerializableModel</code>
+- Arrows show containment relationships</p>
+<h3 id="common-patterns"><a class="toclink" href="#common-patterns">Common Patterns</a><a class="headerlink" href="#common-patterns" title="Permanent link">#</a></h3>
+<p><strong>Sync/Async/Streaming:</strong>
+- Every LLM method has 4 variants:
+  - <code>method()</code> - Synchronous
+  - <code>amethod()</code> - Asynchronous
+  - <code>stream_method()</code> - Synchronous streaming
+  - <code>astream_method()</code> - Asynchronous streaming</p>
+<p><strong>Tool Integration:</strong>
+- Tools created via <code>CallableTool.from_function()</code> or <code>from_model()</code>
+- Orchestrators automatically handle tool calling
+- All tool operations return <code>ToolOutput</code></p>
+<p><strong>Structured Outputs:</strong>
+- Use <code>structured_predict()</code> with Pydantic models
+- Works with both streaming and non-streaming
+- Automatic validation and parsing</p>
+<hr/>
+<h2 id="adding-new-components"><a class="toclink" href="#adding-new-components">Adding New Components</a><a class="headerlink" href="#adding-new-components" title="Permanent link">#</a></h2>
+<p>When extending Serapeum:</p>
+<ol>
+<li><strong>New Provider</strong>: Implement <code>FunctionCallingLLM</code> and optionally <code>BaseEmbedding</code></li>
+<li><strong>New Tool</strong>: Create via <code>CallableTool.from_function()</code> or extend <code>BaseTool</code></li>
+<li><strong>New Orchestrator</strong>: Compose existing <code>FunctionCallingLLM</code> + <code>PromptTemplate</code> + tools</li>
+<li><strong>New Parser</strong>: Implement <code>BaseOutputParser</code> protocol</li>
+</ol>
 </article>
 </div>
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>

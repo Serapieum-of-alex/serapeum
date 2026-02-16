@@ -215,7 +215,7 @@ serapeum/
 
     Get started with detailed installation instructions for different environments
 
--   :material-map: **[Codebase Map](overview/codebase-map.md)**
+-   :material-map: **[Codebase Map](overview/core-package.md)**
 
     ---
 

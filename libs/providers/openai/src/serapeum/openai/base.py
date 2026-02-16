@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 import re
 from json.decoder import JSONDecodeError
@@ -6,7 +8,6 @@ from typing import (
     TypeVar,
     Any,
     AsyncGenerator,
-    Awaitable,
     Callable,
     Generator,
     Literal,
@@ -32,6 +33,7 @@ from serapeum.core.llms import (
     MessageRole,
     ToolCallBlock,
     TextChunk,
+    ChatToCompletionMixin
 )
 from pydantic import (
     Field,
@@ -120,7 +122,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
         ] + [tool_calls[0]]
 
 
-class OpenAI(FunctionCallingLLM):
+class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
     """
     OpenAI LLM.
 
@@ -391,25 +393,37 @@ class OpenAI(FunctionCallingLLM):
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
+        """Completion endpoint - routes to appropriate implementation based on model type.
+
+        Note: When using chat completions, the ChatToCompletionMixin provides this method
+        by calling self.chat() internally. For non-chat models, we use the native completion API.
+        """
         if self.modalities and "audio" in self.modalities:
             raise ValueError(
                 "Audio is not supported for completion. Use chat/achat instead."
             )
 
         if self._use_chat_completions(kwargs):
-            complete_fn = chat_to_completion_decorator(self._chat)
+            # Let the mixin handle chat→completion conversion
+            result = super().complete(prompt, formatted, **kwargs)
         else:
-            complete_fn = self._complete
-        return complete_fn(prompt, **kwargs)
+            result = self._complete(prompt, **kwargs)
+        return result
 
     def stream_complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponseGen:
+        """Streaming completion endpoint - routes to appropriate implementation based on model type.
+
+        Note: When using chat completions, the ChatToCompletionMixin provides this method
+        by calling self.stream_chat() internally. For non-chat models, we use the native completion API.
+        """
         if self._use_chat_completions(kwargs):
-            stream_complete_fn = stream_chat_to_completion_decorator(self._stream_chat)
+            # Let the mixin handle chat→completion conversion
+            result = super().stream_complete(prompt, formatted, **kwargs)
         else:
-            stream_complete_fn = self._stream_complete
-        return stream_complete_fn(prompt, **kwargs)
+            result = self._stream_complete(prompt, **kwargs)
+        return result
 
     def _use_chat_completions(self, kwargs: dict[str, Any]) -> bool:
         if "use_chat_completions" in kwargs:
@@ -704,27 +718,37 @@ class OpenAI(FunctionCallingLLM):
     async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
+        """Async completion endpoint - routes to appropriate implementation based on model type.
+
+        Note: When using chat completions, the ChatToCompletionMixin provides this method
+        by calling self.achat() internally. For non-chat models, we use the native completion API.
+        """
         if self.modalities and "audio" in self.modalities:
             raise ValueError(
                 "Audio is not supported for completion. Use chat/achat instead."
             )
 
         if self._use_chat_completions(kwargs):
-            acomplete_fn = achat_to_completion_decorator(self._achat)
+            # Let the mixin handle chat→completion conversion
+            result = await super().acomplete(prompt, formatted, **kwargs)
         else:
-            acomplete_fn = self._acomplete
-        return await acomplete_fn(prompt, **kwargs)
+            result = await self._acomplete(prompt, **kwargs)
+        return result
 
     async def astream_complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponseAsyncGen:
+        """Async streaming completion endpoint - routes to appropriate implementation based on model type.
+
+        Note: When using chat completions, the ChatToCompletionMixin provides this method
+        by calling self.astream_chat() internally. For non-chat models, we use the native completion API.
+        """
         if self._use_chat_completions(kwargs):
-            astream_complete_fn = astream_chat_to_completion_decorator(
-                self._astream_chat
-            )
+            # Let the mixin handle chat→completion conversion
+            result = await super().astream_complete(prompt, formatted, **kwargs)
         else:
-            astream_complete_fn = self._astream_complete
-        return await astream_complete_fn(prompt, **kwargs)
+            result = await self._astream_complete(prompt, **kwargs)
+        return result
 
     @llm_retry_decorator
     async def _achat(

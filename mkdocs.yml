@@ -111,7 +111,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Overview:
-    - Core package: overview/codebase-map.md
+    - Core package: overview/core-package.md
     - Provider Integrations:
         - Overview: overview/providers.md
         - Ollama: overview/providers/ollama.md

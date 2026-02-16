@@ -752,7 +752,7 @@ llm = Ollama(
 
 - [Ollama Official Documentation](https://github.com/ollama/ollama)
 - [Ollama Model Library](https://ollama.com/library)
-- [Serapeum Core Documentation](../codebase-map.md)
+- [Serapeum Core Documentation](../core-package.md)
 - [API Reference](../../reference/providers/ollama/api_reference.md)
 
 ---

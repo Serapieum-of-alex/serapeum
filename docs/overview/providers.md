@@ -262,7 +262,7 @@ For general framework questions, see the [Contributing Guide](../contributing.md
 
     Detailed API documentation for core abstractions
 
--   :material-map: **[Codebase Map](codebase-map.md)**
+-   :material-map: **[Codebase Map](core-package.md)**
 
     ---
 

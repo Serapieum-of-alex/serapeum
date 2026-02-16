@@ -242,7 +242,7 @@ serapeum/
 - **GitHub Repository**: [Serapieum-of-alex/Serapeum](https://github.com/Serapieum-of-alex/Serapeum)
 - **Issue Tracker**: [Report bugs or request features](https://github.com/Serapieum-of-alex/Serapeum/issues)
 - **Changelog**: [View release history](change-log.md)
-- **Contributing**: [Contribution guidelines](contributing.md)
+- **Contributing**: [Contribution guidelines](developer-guide/contributing.md)
 - **License**: [GNU General Public License v3](LICENSE.md)
 
 ---

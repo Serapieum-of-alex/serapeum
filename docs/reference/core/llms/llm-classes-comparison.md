@@ -382,4 +382,4 @@ Do you just want to wrap an existing LLM to enforce a format?
 
 - [Callable Tools Guide](../tools/callable_tools.md)
 - [Provider Integration Guide](../../../architecture/integration-guide.md)
-- [Architecture Overview](../../../overview/codebase-map.md)
+- [Architecture Overview](../../../overview/core-package.md)

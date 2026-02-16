@@ -12,7 +12,7 @@ Before implementing a new provider, you should:
 
 - Understand the provider's API and SDK
 - Have API credentials or access to the provider's service
-- Be familiar with Serapeum's core abstractions ([read the codebase map](../codebase-map.md))
+- Be familiar with Serapeum's core abstractions ([read the codebase map](../core-package.md))
 - Review the [Ollama provider](../../libs/providers/ollama/) as a reference implementation
 
 ---

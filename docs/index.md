@@ -55,17 +55,14 @@ Serapeum provides clean, composable abstractions for working with Large Language
 Install the core package and a provider:
 
 ```bash
-# Install uv (if not already installed)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
 # Install serapeum-core and ollama provider
-uv pip install serapeum-core serapeum-ollama
+pip install serapeum-core serapeum-ollama
 ```
 
 Create your first LLM application:
 
 ```python
-from serapeum.providers.ollama import Ollama
+from serapeum.ollama import Ollama
 from serapeum.core.tools import CallableTool
 
 # Create a simple tool
@@ -249,9 +246,3 @@ serapeum/
 - **License**: [GNU General Public License v3](LICENSE.md)
 
 ---
-
-## Credits
-
-Developed and maintained by **Mostafa Farrag** and contributors.
-
-Built with :material-heart: using modern Python tools: [uv](https://github.com/astral-sh/uv), [Pydantic](https://docs.pydantic.dev/), [MkDocs Material](https://squidfunk.github.io/mkdocs-material/).

@@ -15,6 +15,7 @@ from typing import (
     Sequence,
     Type,
     runtime_checkable,
+    Awaitable,
 )
 
 import httpx

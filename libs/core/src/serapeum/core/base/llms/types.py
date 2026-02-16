@@ -195,10 +195,11 @@ class Audio(Chunk):
 
 ChunkType = Annotated[TextChunk | Image | Audio, Field(discriminator="type")]
 
+
 class DocumentBlock(BaseModel):
     """A representation of a document to directly pass to the LLM."""
 
-    block_type: Literal["document"] = "document"
+    type: Literal["document"] = "document"
     data: bytes | IOBase | None = None
     path: FilePath | str | None = None
     url: str | None = None
@@ -293,7 +294,7 @@ class DocumentBlock(BaseModel):
 
 
 class ToolCallBlock(BaseModel):
-    block_type: Literal["tool_call"] = "tool_call"
+    type: Literal["tool_call"] = "tool_call"
     tool_call_id: str | None = Field(
         default=None, description="ID of the tool call, if provided"
     )
@@ -307,7 +308,7 @@ class ToolCallBlock(BaseModel):
 class ThinkingBlock(BaseModel):
     """A representation of the content streamed from reasoning/thinking processes by LLMs"""
 
-    block_type: Literal["thinking"] = "thinking"
+    type: Literal["thinking"] = "thinking"
     content: str | None = Field(
         description="Content of the reasoning/thinking process, if available",
         default=None,
@@ -326,6 +327,7 @@ ChunkType = Annotated[
     TextChunk | Image | Audio | DocumentBlock | ToolCallBlock | ThinkingBlock,
     Field(discriminator="type")
 ]
+
 
 class Message(BaseModel):
     """Message."""

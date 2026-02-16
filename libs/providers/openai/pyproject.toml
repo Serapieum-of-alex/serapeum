@@ -1,69 +1,88 @@
 [project]
-name = "serapeum-llms-openai"
+name = "serapeum-openai"
 version = "0.1.0"
-description = "serapeum llms openai integration"
+description = "serapeum openai integration"
 authors = [
     {name = "Mostafa Farrag", email = "moah.farrag@gmail.com"}
 ]
 readme = "README.md"
 license = {text = "GNU General Public License v3"}
+keywords = ["llm", "generativeai", "chatbot", "rag", "natural language processing"]
 
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+]
 
 requires-python = ">=3.11,<4.0"
 dependencies = [
+    "serapeum-core>=0.1.0",
     "openai>=1.108.1,<3",
     "tiktoken>=0.12.0",
-    "serapeum-core",
     "tenacity>=9.1.4"
 ]
 
 
 [dependency-groups]
 dev = [
-    "ipython>=8.10.0",
-    "jupyter>=1.0.0,<2",
-    "mypy>=0.991",
-    "pre-commit>=3.2.0",
-    "pylint>=2.15.10",
-    "pytest>=7.2.1",
-    "pytest-asyncio>=0.21.0",
-    "pytest-mock>=3.11.1",
-    "ruff>=0.11.11",
-    "types-Deprecated>=0.1.0",
-    "types-PyYAML>=6.0.12.12,<7",
-    "types-protobuf>=4.24.0.4,<5",
-    "types-redis>=4.5.5.0",
-    "types-requests>=2.28.11.8",
-    "types-setuptools>=67.1.0.0",
-    "black[jupyter]<=23.9.1,>=23.7.0",
-    "codespell[toml]>=v2.2.6",
-    "diff-cover>=9.2.0",
-    "pytest-cov>=6.1.1",
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+    "pre-commit>=4.3.0",
+    "pre-commit-hooks>=6.0.0",
+    "pytest-asyncio>=1.2.0",
+    "nest-asyncio>=1.6.0",
+    "nbval>=0.11.0",
+    "mypy>=1.13.0",
+    "pytest-xdist>=3.8.0",
+    "pytest-benchmark"
 ]
+
+[project.urls]
+homepage = "https://github.com/Serapieum-of-alex/serapeum"
+repository = "https://github.com/Serapieum-of-alex/serapeum"
+documentation = "https://serapieum-of-alex.github.io"
+Changelog = "https://serapieum-of-alex.github.io/serapeum/latest/change-log"
 
 
 [tool.hatch.build.targets.sdist]
 include = ["src/serapeum/"]
-exclude = ["**/BUILD"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/serapeum"]
 include = ["src/serapeum/"]
-exclude = ["**/BUILD"]
 
-[tool.mypy]
-disallow_untyped_defs = true
-exclude = ["_static", "build", "examples", "notebooks", "venv"]
-ignore_missing_imports = true
-python_version = "3.12"
+[tool.flake8]
+ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
+max-line-length = 120
+count = true
 
-[tool.ruff.lint.flake8-pytest-style]
-fixture-parentheses = true
+[tool.pytest.ini_options]
+testpaths = "tests"
+norecursedirs = "docs"
+markers = [
+    "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
+    "mock: marks tests as mock (deselect with '-m \"not mock\"')",
+    "integration: marks tests as optional-package (deselect with '-m \"not optional_package\"')",
+    "unit: marks tests as unit test (deselect with '-m \"not unit\"')",
+    "performance: marks tests as performance test (deselect with '-m \"not performance\"')",
+]
 
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }
 
+#[tool.uv]
+#managed = false
 
 [build-system]
 requires = ["hatchling"]

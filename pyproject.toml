@@ -25,8 +25,8 @@ requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core",
     "serapeum-ollama",
-    "serapeum-llms-openai",
-    "serapeum-llms-azure-openai"
+    "serapeum-openai",
+    "serapeum-azure-openai"
 ]
 
 
@@ -135,15 +135,13 @@ strict = true
 members = [
     "libs/core",
     "libs/providers/*",
-    "serapeum-integrations/llms/serapeum-llms-openai",
-    "serapeum-integrations/llms/serapeum-llms-azure-openai",
 ]
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }
 serapeum-ollama = { workspace = true }
-serapeum-llms-openai = { workspace = true }
-serapeum-llms-azure-openai = { workspace = true }
+serapeum-openai = { workspace = true }
+serapeum-azure-openai = { workspace = true }
 
 #[tool.uv]
 #managed = false

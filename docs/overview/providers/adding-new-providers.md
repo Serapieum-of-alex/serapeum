@@ -815,7 +815,7 @@ When implementing a new provider, ensure:
 
 ## Reference Implementation
 
-See the **[Ollama provider](../../../libs/providers/ollama/)** for a complete reference implementation showing:
+See the **[Ollama provider](https://github.com/Serapieum-of-alex/Serapeum/tree/main/libs/providers/ollama)** for a complete reference implementation showing:
 
 - LLM implementation with streaming and async
 - Embedding implementation with batching
@@ -891,7 +891,7 @@ Use configuration parameters instead of hardcoding URLs, timeouts, etc.
 
 For help implementing a new provider:
 
-- Review the [Ollama provider](../../../libs/providers/ollama/) implementation
+- Review the [Ollama provider](https://github.com/Serapieum-of-alex/Serapeum/tree/main/libs/providers/ollama) implementation
 - Check the [API Reference](../../reference/core/llms/llm-classes-comparison.md)
 - Open an issue on [GitHub](https://github.com/Serapieum-of-alex/Serapeum/issues)
 

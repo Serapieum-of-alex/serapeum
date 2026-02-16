@@ -1,12 +1,18 @@
 """Helper adapters to bridge chat and completion interfaces for LLM backends."""
-
+from __future__ import annotations
 import os
 
-from typing import Sequence
+from typing import Sequence, Callable, Any, Awaitable
 
 from serapeum.core.llms import (
     MessageRole,
-    Message
+    Message,
+    ChatResponse,
+    CompletionResponse,
+    CompletionResponseGen,
+    ChatResponseGen,
+    CompletionResponseAsyncGen,
+    ChatResponseAsyncGen
 )
 
 __all__ = [
@@ -54,3 +60,65 @@ def messages_to_prompt(messages: Sequence[Message]) -> str:
 
     string_messages.append(f"{MessageRole.ASSISTANT.value}: ")
     return "\n".join(string_messages)
+
+
+def completion_to_chat_decorator(
+    func: Callable[..., CompletionResponse],
+) -> Callable[..., ChatResponse]:
+    """Convert a completion function to a chat function."""
+
+    def wrapper(messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+        # normalize input
+        prompt = messages_to_prompt(messages)
+        completion_response = func(prompt, **kwargs)
+        # normalize output
+        return completion_response.to_chat_response()
+
+    return wrapper
+
+
+def stream_completion_to_chat_decorator(
+    func: Callable[..., CompletionResponseGen],
+) -> Callable[..., ChatResponseGen]:
+    """Convert a completion function to a chat function."""
+
+    def wrapper(messages: Sequence[Message], **kwargs: Any) -> ChatResponseGen:
+        # normalize input
+        prompt = messages_to_prompt(messages)
+        completion_response = func(prompt, **kwargs)
+        # normalize output
+        return CompletionResponse.stream_to_chat_response(completion_response)
+
+    return wrapper
+
+
+def acompletion_to_chat_decorator(
+    func: Callable[..., Awaitable[CompletionResponse]],
+) -> Callable[..., Awaitable[ChatResponse]]:
+    """Convert a completion function to a chat function."""
+
+    async def wrapper(messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+        # normalize input
+        prompt = messages_to_prompt(messages)
+        completion_response = await func(prompt, **kwargs)
+        # normalize output
+        return completion_response.to_chat_response()
+
+    return wrapper
+
+
+def astream_completion_to_chat_decorator(
+    func: Callable[..., Awaitable[CompletionResponseAsyncGen]],
+) -> Callable[..., Awaitable[ChatResponseAsyncGen]]:
+    """Convert a completion function to a chat function."""
+
+    async def wrapper(
+            messages: Sequence[Message], **kwargs: Any
+    ) -> ChatResponseAsyncGen:
+        # normalize input
+        prompt = messages_to_prompt(messages)
+        completion_response = await func(prompt, **kwargs)
+        # normalize output
+        return CompletionResponse.astream_to_chat_response(completion_response)
+
+    return wrapper

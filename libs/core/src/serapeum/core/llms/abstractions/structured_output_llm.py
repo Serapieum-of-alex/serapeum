@@ -1,5 +1,5 @@
 """Structured output wrapper and helpers around the core LLM API."""
-
+from __future__ import annotations
 from typing import Any, Sequence, Type
 
 from pydantic import BaseModel, Field, SerializeAsAny

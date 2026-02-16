@@ -14,17 +14,17 @@ from openai.types.chat.chat_completion_token_logprob import ChatCompletionTokenL
 from openai.types.completion_choice import Logprobs
 
 from serapeum.core.base.llms.types import (
-    ChatMessage,
+    Message,
     ChatResponse,
-    ImageBlock,
+    Image,
     LogProb,
     MessageRole,
     TextChunk,
     ToolCallBlock,
 )
-from serapeum.core.bridge.pydantic import BaseModel
-from serapeum.llms.openai import OpenAI
-from serapeum.llms.openai.utils import (
+from pydantic import BaseModel
+from serapeum.openai import OpenAI
+from serapeum.openai.utils import (
     from_openai_completion_logprobs,
     from_openai_message_dicts,
     from_openai_messages,
@@ -43,10 +43,10 @@ from serapeum.llms.openai.utils import (
 
 
 @pytest.fixture()
-def chat_messages_with_function_calling() -> List[ChatMessage]:
+def chat_messages_with_function_calling() -> List[Message]:
     return [
-        ChatMessage(role=MessageRole.USER, content="test question with functions"),
-        ChatMessage(
+        Message(role=MessageRole.USER, content="test question with functions"),
+        Message(
             role=MessageRole.ASSISTANT,
             content=None,
             additional_kwargs={
@@ -56,7 +56,7 @@ def chat_messages_with_function_calling() -> List[ChatMessage]:
                 },
             },
         ),
-        ChatMessage(
+        Message(
             role=MessageRole.TOOL,
             content='{"temperature": "22", "unit": "celsius", "description": "Sunny"}',
             additional_kwargs={
@@ -115,9 +115,9 @@ def azure_openai_message_dicts_with_function_calling() -> List[ChatCompletionMes
 
 
 @pytest.fixture()
-def azure_chat_messages_with_function_calling() -> List[ChatMessage]:
+def azure_chat_messages_with_function_calling() -> List[Message]:
     return [
-        ChatMessage(
+        Message(
             role=MessageRole.ASSISTANT,
             blocks=[
                 ToolCallBlock(
@@ -145,8 +145,8 @@ def azure_chat_messages_with_function_calling() -> List[ChatMessage]:
 
 def test_to_openai_message_dicts_basic_enum() -> None:
     chat_messages = [
-        ChatMessage(role=MessageRole.USER, content="test question"),
-        ChatMessage(role=MessageRole.ASSISTANT, content="test answer"),
+        Message(role=MessageRole.USER, content="test question"),
+        Message(role=MessageRole.ASSISTANT, content="test answer"),
     ]
     openai_messages = to_openai_message_dicts(
         chat_messages,
@@ -159,8 +159,8 @@ def test_to_openai_message_dicts_basic_enum() -> None:
 
 def test_to_openai_message_dicts_basic_string() -> None:
     chat_messages = [
-        ChatMessage(role="user", content="test question"),
-        ChatMessage(role="assistant", content="test answer"),
+        Message(role="user", content="test question"),
+        Message(role="assistant", content="test answer"),
     ]
     openai_messages = to_openai_message_dicts(
         chat_messages,
@@ -175,8 +175,8 @@ def test_to_openai_message_dicts_empty_content() -> None:
     """If neither `tool_calls` nor `function_call` is set, content must not be set to None,
     see: https://platform.openai.com/docs/api-reference/chat/create"""
     chat_messages = [
-        ChatMessage(role="user", content="test question"),
-        ChatMessage(role="assistant", content=""),
+        Message(role="user", content="test question"),
+        Message(role="assistant", content=""),
     ]
     openai_messages = to_openai_message_dicts(
         chat_messages,
@@ -188,7 +188,7 @@ def test_to_openai_message_dicts_empty_content() -> None:
 
 
 def test_to_openai_message_dicts_function_calling(
-    chat_messages_with_function_calling: List[ChatMessage],
+    chat_messages_with_function_calling: List[Message],
     openai_message_dicts_with_function_calling: List[ChatCompletionMessageParam],
 ) -> None:
     message_dicts = to_openai_message_dicts(
@@ -199,7 +199,7 @@ def test_to_openai_message_dicts_function_calling(
 
 def test_from_openai_message_dicts_function_calling(
     openai_message_dicts_with_function_calling: List[ChatCompletionMessageParam],
-    chat_messages_with_function_calling: List[ChatMessage],
+    chat_messages_with_function_calling: List[Message],
 ) -> None:
     chat_messages = from_openai_message_dicts(
         openai_message_dicts_with_function_calling
@@ -219,7 +219,7 @@ def test_from_openai_message_dicts_function_calling(
 
 def test_from_openai_messages_function_calling_azure(
     azure_openai_message_dicts_with_function_calling: List[ChatCompletionMessage],
-    azure_chat_messages_with_function_calling: List[ChatMessage],
+    azure_chat_messages_with_function_calling: List[Message],
 ) -> None:
     chat_messages = from_openai_messages(
         azure_openai_message_dicts_with_function_calling,
@@ -264,11 +264,11 @@ def test_to_openai_message_with_pydantic_description() -> None:
 
 
 def test_to_openai_message_dicts_with_content_blocks() -> None:
-    chat_message = ChatMessage(
+    chat_message = Message(
         role=MessageRole.USER,
         blocks=[
             TextChunk(text="test question"),
-            ImageBlock(url="https://example.com/image.jpg"),
+            Image(url="https://example.com/image.jpg"),
         ],
     )
 
@@ -287,20 +287,20 @@ def test_to_openai_message_dicts_with_content_blocks() -> None:
         ],
     }
 
-    chat_message = ChatMessage(
+    chat_message = Message(
         role=MessageRole.USER,
         blocks=[
             TextChunk(text="test question"),
-            ImageBlock(url="https://example.com/image.jpg"),
+            Image(url="https://example.com/image.jpg"),
         ],
     )
 
     # other messages do not support blocks
-    chat_message = ChatMessage(
+    chat_message = Message(
         role=MessageRole.ASSISTANT,
         blocks=[
             TextChunk(text="test question"),
-            ImageBlock(url="https://example.com/image.jpg"),
+            Image(url="https://example.com/image.jpg"),
         ],
     )
 
@@ -312,11 +312,11 @@ def test_to_openai_message_dicts_with_content_blocks() -> None:
 
 
 def test_to_openai_message_dicts_with_content_blocks_with_detail() -> None:
-    chat_message = ChatMessage(
+    chat_message = Message(
         role=MessageRole.USER,
         blocks=[
             TextChunk(text="test question"),
-            ImageBlock(url="https://example.com/image.jpg", detail="high"),
+            Image(url="https://example.com/image.jpg", detail="high"),
         ],
     )
 
@@ -359,7 +359,7 @@ def test_from_openai_completion_logprobs_none_top_logprobs() -> None:
 
 def _build_chat_response(arguments: str) -> ChatResponse:
     return ChatResponse(
-        message=ChatMessage(
+        message=Message(
             role=MessageRole.ASSISTANT,
             content=None,
             additional_kwargs={

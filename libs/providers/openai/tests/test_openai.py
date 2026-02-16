@@ -3,9 +3,9 @@ from typing import Any, AsyncGenerator, Generator, Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from serapeum.core.base.llms.types import ChatMessage
-from serapeum.llms.openai import OpenAI
-from serapeum.llms.openai.utils import O1_MODELS
+from serapeum.core.llms import Message
+from serapeum.openai import OpenAI
+from serapeum.openai.utils import O1_MODELS
 
 import openai
 from openai.types.chat.chat_completion import (
@@ -300,7 +300,7 @@ def test_completion_model_basic(MockSyncOpenAI: MagicMock) -> None:
 
         llm = OpenAI(model="text-davinci-003")
         prompt = "test prompt"
-        message = ChatMessage(role="user", content="test message")
+        message = Message(role="user", content="test message")
 
         response = llm.complete(prompt)
         assert response.text == "\n\nThis is indeed a test"
@@ -319,7 +319,7 @@ def test_chat_model_basic(MockSyncOpenAI: MagicMock) -> None:
 
         llm = OpenAI(model="gpt-3.5-turbo")
         prompt = "test prompt"
-        message = ChatMessage(role="user", content="test message")
+        message = Message(role="user", content="test message")
 
         response = llm.complete(prompt)
         assert response.text == "\n\nThis is a test!"
@@ -337,7 +337,7 @@ def test_completion_model_streaming(MockSyncOpenAI: MagicMock) -> None:
 
         llm = OpenAI(model="text-davinci-003")
         prompt = "test prompt"
-        message = ChatMessage(role="user", content="test message")
+        message = Message(role="user", content="test message")
 
         response_gen = llm.stream_complete(prompt)
         responses = list(response_gen)
@@ -359,7 +359,7 @@ def test_chat_model_streaming(MockSyncOpenAI: MagicMock) -> None:
 
         llm = OpenAI(model="gpt-3.5-turbo")
         prompt = "test prompt"
-        message = ChatMessage(role="user", content="test message")
+        message = Message(role="user", content="test message")
 
         response_gen = llm.stream_complete(prompt)
         responses = list(response_gen)
@@ -384,7 +384,7 @@ async def test_completion_model_async(MockAsyncOpenAI: MagicMock) -> None:
 
     llm = OpenAI(model="text-davinci-003")
     prompt = "test prompt"
-    message = ChatMessage(role="user", content="test message")
+    message = Message(role="user", content="test message")
 
     response = await llm.acomplete(prompt)
     assert response.text == "\n\nThis is indeed a test"
@@ -403,7 +403,7 @@ async def test_completion_model_async_streaming(MockAsyncOpenAI: MagicMock) -> N
 
     llm = OpenAI(model="text-davinci-003")
     prompt = "test prompt"
-    message = ChatMessage(role="user", content="test message")
+    message = Message(role="user", content="test message")
 
     response_gen = await llm.astream_complete(prompt)
     responses = [item async for item in response_gen]
@@ -451,7 +451,7 @@ def test_ensure_chat_message_is_serializable(MockSyncOpenAI: MagicMock) -> None:
         mock_instance.chat.completions.create.return_value = mock_chat_completion_v1()
 
         llm = OpenAI(model="gpt-3.5-turbo")
-        message = ChatMessage(role="user", content="test message")
+        message = Message(role="user", content="test message")
 
         response = llm.chat([message])
         response.message.additional_kwargs["test"] = ChatCompletionChunk(
@@ -481,7 +481,7 @@ def test_ensure_chat_message_is_serializable(MockSyncOpenAI: MagicMock) -> None:
 def test_structured_chat_simple(MockSyncOpenAI: MagicMock):
     """Simple test for structured output using as_structured_llm."""
     from pydantic import BaseModel, Field
-    from serapeum.core.base.llms.types import ChatMessage
+    from serapeum.core.base.llms.types import Message
 
     class Person(BaseModel):
         name: str = Field(description="The person's name")
@@ -503,7 +503,7 @@ def test_structured_chat_simple(MockSyncOpenAI: MagicMock):
     llm = OpenAI(model="gpt-4o", api_key="test-key")
     structured_llm = llm.as_structured_llm(Person)
     messages = [
-        ChatMessage(role="user", content="Create a person named Alice who is 25")
+        Message(role="user", content="Create a person named Alice who is 25")
     ]
 
     result = structured_llm.chat(messages)
@@ -539,7 +539,7 @@ def test_prepare_schema_sanitizes_json_schema_name() -> None:
 async def test_structured_chat_simple_async(MockAsyncOpenAI: MagicMock):
     """Simple async test for structured output using as_structured_llm."""
     from pydantic import BaseModel, Field
-    from serapeum.core.base.llms.types import ChatMessage
+    from serapeum.core.base.llms.types import Message
 
     class Person(BaseModel):
         name: str = Field(description="The person's name")
@@ -563,7 +563,7 @@ async def test_structured_chat_simple_async(MockAsyncOpenAI: MagicMock):
     # Instantiate OpenAI class
     llm = OpenAI(model="gpt-4o", api_key="test-key")
     structured_llm = llm.as_structured_llm(Person)
-    messages = [ChatMessage(role="user", content="Create a person named Bob who is 30")]
+    messages = [Message(role="user", content="Create a person named Bob who is 30")]
     result = await structured_llm.achat(messages)
 
     # Verify the result has the expected structure

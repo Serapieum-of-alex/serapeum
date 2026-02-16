@@ -1,9 +1,9 @@
 import os
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.tools import FunctionTool
+from serapeum.core.tools import CallableTool
 import pytest
-from serapeum.llms.openai import OpenAI
-from serapeum.llms.openai.utils import resolve_tool_choice
+from serapeum.openai import OpenAI
+from serapeum.openai.utils import resolve_tool_choice
 from serapeum.core.base.llms.types import ToolCallBlock
 
 
@@ -18,8 +18,8 @@ def search(query: str) -> str:
 
 
 # Shared tool for all tests
-search_tool = FunctionTool.from_defaults(
-    fn=search, name="search_tool", description="A tool for searching information"
+search_tool = CallableTool.from_function(
+    func=search, name="search_tool", description="A tool for searching information"
 )
 
 

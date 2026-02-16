@@ -49,20 +49,11 @@ from typing import (
     TypeVar
 )
 
-from serapeum.core.base.llms.utils import (
-    achat_to_completion_decorator,
-    astream_chat_to_completion_decorator,
-    chat_to_completion_decorator,
-    stream_chat_to_completion_decorator,
-)
-from serapeum.core.base.llms.models import (
+from serapeum.core.llms import (
     Message,
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
-    CompletionResponse,
-    CompletionResponseAsyncGen,
-    CompletionResponseGen,
     Metadata,
     MessageRole,
     ContentBlock,
@@ -80,12 +71,12 @@ from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
 )
 
-from serapeum.core.llms.function_calling import FunctionCallingLLM
-from serapeum.core.tools.models import ToolCallArguments
+from serapeum.core.llms import FunctionCallingLLM
+from serapeum.core.tools import ToolCallArguments
 from serapeum.core.utils.schemas import parse_partial_json
 from serapeum.core.prompts import PromptTemplate
-from serapeum.core.structured_tools.utils import FlexibleModel
-from serapeum.llms.openai.utils import (
+from serapeum.core.llms import FlexibleModel
+from serapeum.openai.utils import (
     O1_MODELS,
     create_retry_decorator,
     is_function_calling_model,
@@ -97,7 +88,7 @@ from serapeum.llms.openai.utils import (
 
 
 if TYPE_CHECKING:
-    from serapeum.core.tools.models import BaseTool
+    from serapeum.core.tools import BaseTool
 
 Model = TypeVar("Model", bound=BaseModel)
 

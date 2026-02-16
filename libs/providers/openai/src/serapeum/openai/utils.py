@@ -21,7 +21,7 @@ from tenacity import (
 from tenacity.stop import stop_base
 
 from serapeum.core.base.llms.utils import get_from_param_or_env
-from serapeum.core.base.llms.models import (
+from serapeum.core.llms import (
     Message,
     Image,
     LogProb,

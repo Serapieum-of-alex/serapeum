@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 from pathlib import Path
 from typing import List
 from serapeum.core.base.llms.types import (
-    ChatMessage,
+    Message,
     MessageRole,
     TextChunk,
     DocumentBlock,
@@ -15,9 +15,9 @@ from serapeum.core.base.llms.types import (
     ToolCallBlock,
 )
 
-from serapeum.llms.openai.responses import OpenAIResponses, ResponseFunctionToolCall
-from serapeum.llms.openai.utils import to_openai_message_dicts, O1_MODELS
-from serapeum.core.tools import FunctionTool
+from serapeum.openai.responses import OpenAIResponses, ResponseFunctionToolCall
+from serapeum.openai.utils import to_openai_message_dicts, O1_MODELS
+from serapeum.core.tools import CallableTool
 from serapeum.core.prompts import PromptTemplate
 from openai.types.responses.response_reasoning_item import Content, Summary
 from openai.types.responses import (
@@ -350,7 +350,7 @@ def test_prepare_chat_with_tools(default_responses_llm):
         """Add two numbers."""
         return a + b
 
-    tool = FunctionTool.from_defaults(fn=add)
+    tool = CallableTool.from_defaults(fn=add)
 
     result = default_responses_llm._prepare_chat_with_tools(
         tools=[tool],
@@ -384,7 +384,7 @@ def test_prepare_chat_with_tools_tool_required():
         """Search for information about a query."""
         return f"Results for {query}"
 
-    search_tool = FunctionTool.from_defaults(
+    search_tool = CallableTool.from_defaults(
         fn=search, name="search_tool", description="A tool for searching information"
     )
 
@@ -411,7 +411,7 @@ def test_prepare_chat_with_tools_tool_not_required():
         """Search for information about a query."""
         return f"Results for {query}"
 
-    search_tool = FunctionTool.from_defaults(
+    search_tool = CallableTool.from_defaults(
         fn=search, name="search_tool", description="A tool for searching information"
     )
 
@@ -438,7 +438,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
         """Search for information about a query."""
         return f"Results for {query}"
 
-    search_tool = FunctionTool.from_defaults(
+    search_tool = CallableTool.from_defaults(
         fn=search, name="search_tool", description="A tool for searching information"
     )
 
@@ -456,7 +456,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
 def test_chat_with_api():
     """Test the chat method with real API call."""
     llm = OpenAIResponses(model="gpt-4o-mini")
-    messages = [ChatMessage(role=MessageRole.USER, content="Say hello")]
+    messages = [Message(role=MessageRole.USER, content="Say hello")]
 
     response = llm.chat(messages)
     assert response.message.role == MessageRole.ASSISTANT
@@ -477,7 +477,7 @@ def test_complete_with_api():
 def test_stream_chat_with_api():
     """Test the stream_chat method with real API call."""
     llm = OpenAIResponses(model="gpt-4o-mini")
-    messages = [ChatMessage(role=MessageRole.USER, content="Count to 3")]
+    messages = [Message(role=MessageRole.USER, content="Count to 3")]
 
     response_gen = llm.stream_chat(messages)
     responses = list(response_gen)
@@ -505,7 +505,7 @@ def test_stream_complete_with_api():
 async def test_achat_with_api():
     """Test the async chat method with real API call."""
     llm = OpenAIResponses(model="gpt-4o-mini")
-    messages = [ChatMessage(role=MessageRole.USER, content="Say hello")]
+    messages = [Message(role=MessageRole.USER, content="Say hello")]
 
     response = await llm.achat(messages)
     assert response.message.role == MessageRole.ASSISTANT
@@ -528,7 +528,7 @@ async def test_acomplete_with_api():
 async def test_astream_chat_with_api():
     """Test the async streaming chat method with real API call."""
     llm = OpenAIResponses(model="gpt-4o-mini")
-    messages = [ChatMessage(role=MessageRole.USER, content="Count to 3")]
+    messages = [Message(role=MessageRole.USER, content="Count to 3")]
 
     response_gen = await llm.astream_chat(messages)
     responses = [resp async for resp in response_gen]
@@ -579,7 +579,7 @@ def test_chat_with_built_in_tools():
     llm = OpenAIResponses(model="gpt-4o-mini", built_in_tools=[{"type": "web_search"}])
 
     messages = [
-        ChatMessage(
+        Message(
             role=MessageRole.USER, content="What is the current time in New York City?"
         )
     ]
@@ -605,7 +605,7 @@ def test_document_upload(tmp_path: Path, pdf_url: str) -> None:
     pdf_path = tmp_path / "test.pdf"
     pdf_content = httpx.get(pdf_url).content
     pdf_path.write_bytes(pdf_content)
-    msg = ChatMessage(
+    msg = Message(
         role=MessageRole.USER,
         blocks=[
             DocumentBlock(path=pdf_path),
@@ -621,7 +621,7 @@ def search(query: str) -> str:
     return f"Results for {query}"
 
 
-search_tool = FunctionTool.from_defaults(fn=search)
+search_tool = CallableTool.from_function(func=search)
 
 
 @pytest.mark.skipif(SKIP_OPENAI_TESTS, reason="OpenAI API key not available")
@@ -646,9 +646,9 @@ def test_tool_required():
 
 def test_messages_to_openai_responses_messages():
     messages = [
-        ChatMessage(role=MessageRole.SYSTEM, content="You are a helpful assistant."),
-        ChatMessage(role=MessageRole.USER, content="What is the capital of France?"),
-        ChatMessage(
+        Message(role=MessageRole.SYSTEM, content="You are a helpful assistant."),
+        Message(role=MessageRole.USER, content="What is the capital of France?"),
+        Message(
             role=MessageRole.ASSISTANT,
             blocks=[
                 ToolCallBlock(
@@ -658,9 +658,9 @@ def test_messages_to_openai_responses_messages():
                 )
             ],
         ),
-        ChatMessage(role=MessageRole.ASSISTANT, content="Paris"),
-        ChatMessage(role=MessageRole.USER, content="What is the capital of Germany?"),
-        ChatMessage(
+        Message(role=MessageRole.ASSISTANT, content="Paris"),
+        Message(role=MessageRole.USER, content="What is the capital of Germany?"),
+        Message(
             role=MessageRole.ASSISTANT,
             blocks=[
                 ToolCallBlock(
@@ -670,7 +670,7 @@ def test_messages_to_openai_responses_messages():
                 )
             ],
         ),
-        ChatMessage(
+        Message(
             role=MessageRole.ASSISTANT,
             blocks=[
                 ThinkingBlock(

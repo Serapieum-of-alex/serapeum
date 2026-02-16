@@ -24,17 +24,8 @@ from typing import (
 import httpx
 import tiktoken
 
-from serapeum.core.base.llms.utils import (
-    achat_to_completion_decorator,
-    acompletion_to_chat_decorator,
-    astream_chat_to_completion_decorator,
-    astream_completion_to_chat_decorator,
-    chat_to_completion_decorator,
-    completion_to_chat_decorator,
-    stream_chat_to_completion_decorator,
-    stream_completion_to_chat_decorator,
-)
-from serapeum.core.base.llms.models import (
+
+from serapeum.core.llms import (
     Message,
     ChatResponse,
     ChatResponseAsyncGen,
@@ -57,14 +48,14 @@ from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
 )
 
-from serapeum.core.llms.function_calling import FunctionCallingLLM
+from serapeum.core.llms import FunctionCallingLLM
 from serapeum.core.tools import ToolCallArguments
 from serapeum.core.utils.schemas import parse_partial_json
 from serapeum.core.prompts import PromptTemplate
-from serapeum.core.structured_tools.utils import FlexibleModel
+from serapeum.core.llms import FlexibleModel
 from serapeum.core.output_parsers import BaseParser
 from serapeum.core.base.models import PydanticProgramMode
-from serapeum.llms.openai.utils import (
+from serapeum.openai.utils import (
     O1_MODELS,
     create_retry_decorator,
     from_openai_completion_logprobs,
@@ -89,7 +80,7 @@ from openai.types.chat.chat_completion_chunk import (
 )
 
 if TYPE_CHECKING:
-    from serapeum.core.tools.models import BaseTool
+    from serapeum.core.tools import BaseTool
 
 Model = TypeVar("Model", bound=BaseModel)
 DEFAULT_OPENAI_MODEL = "gpt-3.5-turbo"

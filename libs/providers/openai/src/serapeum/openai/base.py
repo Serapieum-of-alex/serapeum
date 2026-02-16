@@ -517,7 +517,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         return ChatResponse(
             message=message,
             raw=response,
-            logprobs=logprobs,
+            likelihood_score=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 
@@ -620,7 +620,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         return CompletionResponse(
             text=text,
             raw=response,
-            logprobs=logprobs,
+            likelihood_score=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 
@@ -792,7 +792,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         return ChatResponse(
             message=message,
             raw=response,
-            logprobs=logprobs,
+            likelihood_score=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 
@@ -906,7 +906,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         return CompletionResponse(
             text=text,
             raw=response,
-            logprobs=logprobs,
+            likelihood_score=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 

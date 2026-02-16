@@ -63,6 +63,22 @@ Create your first LLM application:
 
 ```python
 from serapeum.ollama import Ollama
+from serapeum.core.llms import Message, MessageRole
+
+# Initialize LLM
+llm = Ollama(model="llama3.1")
+
+# Simple chat
+messages = [
+    Message(role=MessageRole.USER, content="What is Python?")
+]
+response = llm.chat(messages)
+print(response.message.content)
+```
+
+Use tools with your LLM:
+
+```python
 from serapeum.core.tools import CallableTool
 
 # Create a simple tool
@@ -72,21 +88,20 @@ def get_weather(city: str) -> str:
 
 weather_tool = CallableTool.from_function(get_weather)
 
-# Initialize LLM with tools
-llm = Ollama(
-    model="llama3.1",
-    tools=[weather_tool]
-)
-
 # Chat with tool calling
-response = llm.chat("What's the weather in San Francisco?")
-print(response.content)
+response = llm.chat_with_tools(
+    tools=[weather_tool],
+    user_msg="What's the weather in San Francisco?"
+)
+print(response.message.additional_kwargs["tool_calls"])
+[ToolCall(function=Function(name='get_weather', arguments={'city': 'San Francisco'}))]
 ```
 
 Get structured outputs:
 
 ```python
 from pydantic import BaseModel
+from serapeum.core.prompts import PromptTemplate
 
 class CityInfo(BaseModel):
     name: str
@@ -94,10 +109,18 @@ class CityInfo(BaseModel):
     population: int
     famous_for: list[str]
 
+# Create a prompt template
+prompt = PromptTemplate(
+    "Provide information about {city} in JSON format. "
+    "Include: name, country, population, and famous_for (list of attractions)."
+)
+
 # Force structured output
-result = llm.structured_predict(
-    "Tell me about Paris",
-    output_schema=CityInfo
+llm_json = Ollama(model="llama3.1", json_mode=True)
+result = llm_json.structured_predict(
+    output_cls=CityInfo,
+    prompt=prompt,
+    city="Paris"
 )
 print(result.name)  # "Paris"
 print(result.famous_for)  # ["Eiffel Tower", "Louvre Museum", ...]

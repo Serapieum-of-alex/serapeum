@@ -370,7 +370,7 @@ def test_chat_model_streaming(MockSyncOpenAI: MagicMock) -> None:
         )
         chat_response_gen = llm.stream_chat([message])
         chat_responses = list(chat_response_gen)
-        assert chat_responses[-1].message.blocks[-1].text == "\n\n2"
+        assert chat_responses[-1].message.chunks[-1].content == "\n\n2"
         assert chat_responses[-1].message.role == "assistant"
 
 
@@ -467,7 +467,7 @@ def test_ensure_chat_message_is_serializable(MockSyncOpenAI: MagicMock) -> None:
                 )
             ],
         )
-        data = response.message.dict()
+        data = response.message.model_dump()
         assert isinstance(data, dict)
         assert isinstance(data["additional_kwargs"], dict)
         assert isinstance(data["additional_kwargs"]["test"]["choices"], list)

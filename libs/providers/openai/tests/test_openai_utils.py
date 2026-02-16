@@ -121,7 +121,7 @@ def azure_chat_messages_with_function_calling() -> List[Message]:
             role=MessageRole.ASSISTANT,
             blocks=[
                 ToolCallBlock(
-                    block_type="tool_call",
+                    type="tool_call",
                     tool_call_id="0123",
                     tool_name="search_hotels",
                     tool_kwargs='{\n  "location": "San Diego",\n  "max_price": 300,\n  "features": "beachfront,free breakfast"\n}',
@@ -238,7 +238,7 @@ def test_to_openai_tool_with_provided_description() -> None:
         "function": {
             "name": "TestOutput",
             "description": "Provided description",
-            "parameters": TestOutput.schema(),
+            "parameters": TestOutput.model_json_schema(),
         },
     }
 
@@ -258,7 +258,7 @@ def test_to_openai_message_with_pydantic_description() -> None:
         "function": {
             "name": "TestOutput",
             "description": "Pydantic description.",
-            "parameters": TestOutput.schema(),
+            "parameters": TestOutput.model_json_schema(),
         },
     }
 
@@ -267,7 +267,7 @@ def test_to_openai_message_dicts_with_content_blocks() -> None:
     chat_message = Message(
         role=MessageRole.USER,
         blocks=[
-            TextChunk(text="test question"),
+            TextChunk(content="test question"),
             Image(url="https://example.com/image.jpg"),
         ],
     )
@@ -290,7 +290,7 @@ def test_to_openai_message_dicts_with_content_blocks() -> None:
     chat_message = Message(
         role=MessageRole.USER,
         blocks=[
-            TextChunk(text="test question"),
+            TextChunk(content="test question"),
             Image(url="https://example.com/image.jpg"),
         ],
     )
@@ -299,7 +299,7 @@ def test_to_openai_message_dicts_with_content_blocks() -> None:
     chat_message = Message(
         role=MessageRole.ASSISTANT,
         blocks=[
-            TextChunk(text="test question"),
+            TextChunk(content="test question"),
             Image(url="https://example.com/image.jpg"),
         ],
     )
@@ -315,7 +315,7 @@ def test_to_openai_message_dicts_with_content_blocks_with_detail() -> None:
     chat_message = Message(
         role=MessageRole.USER,
         blocks=[
-            TextChunk(text="test question"),
+            TextChunk(content="test question"),
             Image(url="https://example.com/image.jpg", detail="high"),
         ],
     )

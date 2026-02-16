@@ -152,9 +152,9 @@ def test_parse_response_output():
         chat_response = llm._parse_response_output(output)
 
     assert chat_response.message.role == MessageRole.ASSISTANT
-    assert len(chat_response.message.blocks) == 1
-    assert isinstance(chat_response.message.blocks[0], TextChunk)
-    assert chat_response.message.blocks[0].text == "Hello world"
+    assert len(chat_response.message.chunks) == 1
+    assert isinstance(chat_response.message.chunks[0], TextChunk)
+    assert chat_response.message.chunks[0].content == "Hello world"
 
 
 def test_process_response_event():
@@ -184,7 +184,7 @@ def test_process_response_event():
     )
 
     updated_blocks, _, _, _, _, delta = result
-    assert updated_blocks == [TextChunk(text="Hello")]
+    assert updated_blocks == [TextChunk(content="Hello")]
     assert delta == "Hello"
 
     event = ResponseOutputItemDoneEvent(
@@ -215,7 +215,7 @@ def test_process_response_event():
     updated_blocks, _, _, _, _, _ = result
     assert updated_blocks == [
         ThinkingBlock(
-            block_type="thinking",
+            type="thinking",
             content="hello world\nthis is a test",
             num_tokens=None,
             additional_information={
@@ -322,7 +322,7 @@ def test_get_tool_calls_from_response():
     """Test extracting tool calls from a chat response."""
     # Create a mock chat response with tool calls
     chat_response = MagicMock()
-    chat_response.message.blocks = [
+    chat_response.message.chunks = [
         ToolCallBlock(
             tool_call_id="123",
             tool_name="test_function",
@@ -350,7 +350,7 @@ def test_prepare_chat_with_tools(default_responses_llm):
         """Add two numbers."""
         return a + b
 
-    tool = CallableTool.from_defaults(fn=add)
+    tool = CallableTool.from_function(func=add)
 
     result = default_responses_llm._prepare_chat_with_tools(
         tools=[tool],
@@ -384,8 +384,8 @@ def test_prepare_chat_with_tools_tool_required():
         """Search for information about a query."""
         return f"Results for {query}"
 
-    search_tool = CallableTool.from_defaults(
-        fn=search, name="search_tool", description="A tool for searching information"
+    search_tool = CallableTool.from_function(
+        func=search, name="search_tool", description="A tool for searching information"
     )
 
     # Test with tool_required=True
@@ -411,8 +411,8 @@ def test_prepare_chat_with_tools_tool_not_required():
         """Search for information about a query."""
         return f"Results for {query}"
 
-    search_tool = CallableTool.from_defaults(
-        fn=search, name="search_tool", description="A tool for searching information"
+    search_tool = CallableTool.from_function(
+        func=search, name="search_tool", description="A tool for searching information"
     )
 
     # Test with tool_required=False (default)
@@ -438,8 +438,8 @@ def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
         """Search for information about a query."""
         return f"Results for {query}"
 
-    search_tool = CallableTool.from_defaults(
-        fn=search, name="search_tool", description="A tool for searching information"
+    search_tool = CallableTool.from_function(
+        func=search, name="search_tool", description="A tool for searching information"
     )
 
     # Test that explicit tool_choice overrides tool_required
@@ -460,7 +460,7 @@ def test_chat_with_api():
 
     response = llm.chat(messages)
     assert response.message.role == MessageRole.ASSISTANT
-    assert len(response.message.blocks) > 0
+    assert len(response.message.chunks) > 0
 
 
 @pytest.mark.skipif(SKIP_OPENAI_TESTS, reason="OpenAI API key not available")
@@ -509,7 +509,7 @@ async def test_achat_with_api():
 
     response = await llm.achat(messages)
     assert response.message.role == MessageRole.ASSISTANT
-    assert len(response.message.blocks) > 0
+    assert len(response.message.chunks) > 0
 
 
 @pytest.mark.skipif(SKIP_OPENAI_TESTS, reason="OpenAI API key not available")
@@ -588,7 +588,7 @@ def test_chat_with_built_in_tools():
 
     # We can't assert exactly what will be returned, but we can check structure
     assert response.message.role == MessageRole.ASSISTANT
-    assert len(response.message.blocks) > 0
+    assert len(response.message.chunks) > 0
 
     # Should contain built-in tool calls in the response
     assert "built_in_tool_calls" in response.additional_kwargs
@@ -607,9 +607,9 @@ def test_document_upload(tmp_path: Path, pdf_url: str) -> None:
     pdf_path.write_bytes(pdf_content)
     msg = Message(
         role=MessageRole.USER,
-        blocks=[
+        chunks=[
             DocumentBlock(path=pdf_path),
-            TextChunk(text="What does the document contain?"),
+            TextChunk(content="What does the document contain?"),
         ],
     )
     messages = [msg]
@@ -636,7 +636,7 @@ def test_tool_required():
         len(
             [
                 block
-                for block in response.message.blocks
+                for block in response.message.chunks
                 if isinstance(block, ToolCallBlock)
             ]
         )
@@ -650,7 +650,7 @@ def test_messages_to_openai_responses_messages():
         Message(role=MessageRole.USER, content="What is the capital of France?"),
         Message(
             role=MessageRole.ASSISTANT,
-            blocks=[
+            chunks=[
                 ToolCallBlock(
                     tool_call_id="1",
                     tool_name="get_capital_city_by_state",
@@ -662,7 +662,7 @@ def test_messages_to_openai_responses_messages():
         Message(role=MessageRole.USER, content="What is the capital of Germany?"),
         Message(
             role=MessageRole.ASSISTANT,
-            blocks=[
+            chunks=[
                 ToolCallBlock(
                     tool_call_id="2",
                     tool_name="get_capital_city_by_state",
@@ -672,12 +672,12 @@ def test_messages_to_openai_responses_messages():
         ),
         Message(
             role=MessageRole.ASSISTANT,
-            blocks=[
+            chunks=[
                 ThinkingBlock(
                     content="The user is asking a simple question related to the capital of Germany, I should answer it concisely",
                     additional_information={"id": "123456789"},
                 ),
-                TextChunk(text="Berlin"),
+                TextChunk(content="Berlin"),
             ],
         ),
     ]
@@ -706,13 +706,13 @@ def test_messages_to_openai_responses_messages():
 
     assert openai_messages[6]["type"] == "reasoning"
     assert (
-        openai_messages[6]["id"] == messages[6].blocks[0].additional_information["id"]
+        openai_messages[6]["id"] == messages[6].chunks[0].additional_information["id"]
     )
-    assert openai_messages[6]["summary"][0]["text"] == messages[6].blocks[0].content
+    assert openai_messages[6]["summary"][0]["text"] == messages[6].chunks[0].content
 
     assert openai_messages[7]["role"] == "assistant"
     assert len(openai_messages[7]["content"]) == 1
-    assert openai_messages[7]["content"][0]["text"] == messages[6].blocks[1].text
+    assert openai_messages[7]["content"][0]["text"] == messages[6].chunks[1].content
 
 
 @pytest.fixture()
@@ -786,41 +786,41 @@ def test__parse_response_output(response_output: List[ResponseOutputItem]):
         len(
             [
                 block
-                for block in result.message.blocks
+                for block in result.message.chunks
                 if isinstance(block, ThinkingBlock)
             ]
         )
         == 4
     )
     assert (
-        len([block for block in result.message.blocks if isinstance(block, TextChunk)])
+        len([block for block in result.message.chunks if isinstance(block, TextChunk)])
         == 1
     )
     assert (
         len(
             [
                 block
-                for block in result.message.blocks
+                for block in result.message.chunks
                 if isinstance(block, ToolCallBlock)
             ]
         )
         == 1
     )
     tool_call = [
-        block for block in result.message.blocks if isinstance(block, ToolCallBlock)
+        block for block in result.message.chunks if isinstance(block, ToolCallBlock)
     ][0]
     assert tool_call.tool_call_id == "1"
     assert tool_call.tool_name == "test"
     assert tool_call.tool_kwargs == "{'hello': 'world'}"
     assert [
-        block for block in result.message.blocks if isinstance(block, ThinkingBlock)
+        block for block in result.message.chunks if isinstance(block, ThinkingBlock)
     ][0].content == "hello world\nthis is a test"
     assert [
-        block for block in result.message.blocks if isinstance(block, ThinkingBlock)
+        block for block in result.message.chunks if isinstance(block, ThinkingBlock)
     ][1].content == "another test"
     assert [
-        block for block in result.message.blocks if isinstance(block, ThinkingBlock)
+        block for block in result.message.chunks if isinstance(block, ThinkingBlock)
     ][2].content == "another test\nhello"
     assert [
-        block for block in result.message.blocks if isinstance(block, ThinkingBlock)
+        block for block in result.message.chunks if isinstance(block, ThinkingBlock)
     ][3].content == "hello\nworld"

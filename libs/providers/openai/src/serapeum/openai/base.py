@@ -76,6 +76,12 @@ from openai.types.chat.chat_completion_chunk import (
     ChoiceDelta,
     ChoiceDeltaToolCall,
 )
+from serapeum.core.base.llms.utils import (
+    completion_to_chat_decorator,
+    stream_completion_to_chat_decorator,
+    acompletion_to_chat_decorator,
+    astream_completion_to_chat_decorator
+)
 
 if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool

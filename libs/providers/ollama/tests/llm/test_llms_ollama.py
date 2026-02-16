@@ -4,7 +4,8 @@ from copy import deepcopy
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
-import ollama as ollama_sdk
+from ollama import ChatResponse
+from ollama import Message as OllamaMessage
 from pydantic import BaseModel
 
 from serapeum.core.llms import BaseLLM, Message
@@ -32,17 +33,17 @@ response_dict = {
         tool_calls=None,
     ),
 }
-normal_response = ollama_sdk.ChatResponse(**response_dict)
+normal_response = ChatResponse(**response_dict)
 response_with_tool_dict = deepcopy(response_dict)
 response_with_tool_dict["message"]["tool_calls"] = [
-    ollama_sdk.OllamaMessage.ToolCall(
-        function=ollama_sdk.OllamaMessage.ToolCall.Function(
+    OllamaMessage.ToolCall(
+        function=OllamaMessage.ToolCall.Function(
             name="generate_song", arguments={"artist": "The Beatles", "name": "Hello!"}
         )
     )
 ]
 
-response_for_tool_call = ollama_sdk.ChatResponse(**response_with_tool_dict)
+response_for_tool_call = ChatResponse(**response_with_tool_dict)
 
 
 class Song(BaseModel):

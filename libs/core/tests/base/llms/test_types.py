@@ -5,8 +5,8 @@ from io import BytesIO
 from pathlib import Path
 from unittest import mock
 from unittest.mock import patch
+from urllib.request import urlopen
 
-import httpx
 import pytest
 from pydantic import AnyUrl, BaseModel
 
@@ -49,7 +49,7 @@ def pdf_url() -> str:
 @pytest.fixture()
 def mock_pdf_bytes(pdf_url) -> bytes:
     """Returns a byte string representing a very simple, minimal PDF file."""
-    return httpx.get(pdf_url).content
+    return urlopen(pdf_url).read()
 
 
 @pytest.fixture()

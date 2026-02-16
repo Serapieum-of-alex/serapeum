@@ -3005,6 +3005,7 @@ source = { editable = "libs/core" }
 dependencies = [
     { name = "filetype" },
     { name = "numpy" },
+    { name = "pydantic" },
     { name = "requests" },
     { name = "tqdm" },
 ]
@@ -3026,7 +3027,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "filetype", specifier = ">=1.2.0" },
-    { name = "numpy" },
+    { name = "numpy", specifier = ">2.0.0" },
+    { name = "pydantic", specifier = ">=2.12.5" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "tqdm", specifier = ">=4.67.1" },
 ]

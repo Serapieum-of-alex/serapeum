@@ -22,10 +22,11 @@ classifiers = [
 ]
 requires-python = ">=3.11,<4.0"
 dependencies = [
-    "numpy",
+    "numpy>2.0.0",
     "filetype>=1.2.0",
     "requests>=2.32.5",
     "tqdm>=4.67.1",
+    "pydantic>=2.12.5"
 ]
 
 
@@ -47,12 +48,16 @@ dev = [
 [project.urls]
 homepage = "https://github.com/Serapieum-of-alex/serapeum"
 repository = "https://github.com/Serapieum-of-alex/serapeum"
-documentation = "https://serapeum.readthedocs.io/"
-Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
+documentation = "https://serapieum-of-alex.github.io/serapeum/"
+Changelog = "https://github.com/Serapieum-of-alex/serapeum/docs/change-log.md"
 
 
 [tool.hatch.build.targets.wheel]
+include =  ["src/serapeum"]
 packages = ["src/serapeum"]
+
+[tool.hatch.build.targets.sdist]
+include =  ["src/serapeum"]
 
 [tool.flake8]
 ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
@@ -66,6 +71,7 @@ markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
     "mock: marks tests as mock (deselect with '-m \"not mock\"')",
     "integration: marks tests as optional-package (deselect with '-m \"not optional_package\"')",
+    "unit: marks tests as unit test (deselect with '-m \"not unit\"')",
 ]
 
 #[tool.uv]

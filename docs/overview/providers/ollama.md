@@ -103,7 +103,7 @@ You should see the models you've downloaded.
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 # Initialize the LLM
 llm = Ollama(model="llama3.1", temperature=0.7)
@@ -124,7 +124,7 @@ print(response.message.content)
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole, MessageList
+from serapeum.core.llms import Message, MessageRole, MessageList
 
 llm = Ollama(
     model="llama3.1",
@@ -192,7 +192,7 @@ Stream responses token-by-token for real-time feedback:
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 llm = Ollama(model="llama3.1")
 messages = [Message(role=MessageRole.USER, content="Write a haiku about coding.")]
@@ -212,7 +212,7 @@ full_response = chunk.message.content
 ```python
 import asyncio
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 async def stream_example():
     llm = Ollama(model="llama3.1")
@@ -357,7 +357,7 @@ print(result)  # Uses weather_tool automatically
 You can also use tools directly with the base LLM:
 
 ```python
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 messages = [Message(role=MessageRole.USER, content="What's 25 + 17?")]
 response = llm.chat_with_tools(
@@ -508,7 +508,7 @@ Combine LLM and embeddings for Retrieval-Augmented Generation:
 
 ```python
 from serapeum.ollama import Ollama, OllamaEmbedding
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 import numpy as np
 
 # Initialize both components
@@ -653,7 +653,7 @@ Full async support for concurrent operations:
 ```python
 import asyncio
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 async def main():
     llm = Ollama(model="llama3.1")

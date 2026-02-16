@@ -17,7 +17,11 @@ from serapeum.core.llms import (
 
 __all__ = [
     "get_from_param_or_env",
-    "messages_to_prompt"
+    "messages_to_prompt",
+    "completion_to_chat_decorator",
+    "stream_completion_to_chat_decorator",
+    "acompletion_to_chat_decorator",
+    "astream_completion_to_chat_decorator"
 ]
 
 

@@ -8,16 +8,11 @@ from typing import (
     AsyncGenerator,
     Awaitable,
     Callable,
-    Dict,
     Generator,
-    List,
     Literal,
-    Optional,
     Protocol,
     Sequence,
     Type,
-    Union,
-    cast,
     runtime_checkable,
 )
 
@@ -109,7 +104,7 @@ def llm_retry_decorator(f: Callable[..., Any]) -> Callable[..., Any]:
 class Tokenizer(Protocol):
     """Tokenizers support an encode function that returns a list of ints."""
 
-    def encode(self, text: str) -> List[int]:  # fmt: skip
+    def encode(self, text: str) -> list[int]:  # fmt: skip
         ...
 
 
@@ -175,12 +170,12 @@ class OpenAI(FunctionCallingLLM):
         ge=0.0,
         le=2.0,
     )
-    max_tokens: Optional[int] = Field(
+    max_tokens: int | None = Field(
         description="The maximum number of tokens to generate.",
         default=None,
         gt=0,
     )
-    logprobs: Optional[bool] = Field(
+    logprobs: bool | None = Field(
         description="Whether to return logprobs per token.",
         default=None,
     )
@@ -190,7 +185,7 @@ class OpenAI(FunctionCallingLLM):
         ge=0,
         le=20,
     )
-    additional_kwargs: Dict[str, Any] = Field(
+    additional_kwargs: dict[str, Any] = Field(
         default_factory=dict, description="Additional kwargs for the OpenAI API."
     )
     max_retries: int = Field(
@@ -203,7 +198,7 @@ class OpenAI(FunctionCallingLLM):
         description="The timeout, in seconds, for API requests.",
         ge=0,
     )
-    default_headers: Optional[Dict[str, str]] = Field(
+    default_headers: dict[str, str] | None = Field(
         default=None, description="The default headers for API requests."
     )
     reuse_client: bool = Field(
@@ -214,66 +209,62 @@ class OpenAI(FunctionCallingLLM):
         ),
     )
 
-    api_key: Optional[str] = Field(default=None, description="The OpenAI API key.")
-    api_base: Optional[str] = Field(
+    api_key: str | None = Field(default=None, description="The OpenAI API key.")
+    api_base: str | None = Field(
         default=None, description="The base URL for OpenAI API."
     )
-    api_version: Optional[str] = Field(
+    api_version: str | None = Field(
         default=None, description="The API version for OpenAI API."
     )
     strict: bool = Field(
         default=False,
         description="Whether to use strict mode for invoking tools/using schemas.",
     )
-    reasoning_effort: Optional[
-        Literal["none", "minimal", "low", "medium", "high", "xhigh"]
-    ] = Field(
+    reasoning_effort: Literal["none", "minimal", "low", "medium", "high", "xhigh"] | None = Field(
         default=None,
         description="The effort to use for reasoning models.",
     )
-    modalities: Optional[List[str]] = Field(
+    modalities: list[str] | None = Field(
         default=None,
         description="The output modalities to use for the model.",
     )
-    audio_config: Optional[Dict[str, Any]] = Field(
+    audio_config: dict[str, Any] | None = Field(
         default=None,
         description="The audio configuration to use for the model.",
     )
 
-    _client: Optional[SyncOpenAI] = PrivateAttr()
-    _aclient: Optional[AsyncOpenAI] = PrivateAttr()
-    _http_client: Optional[httpx.Client] = PrivateAttr()
-    _async_http_client: Optional[httpx.AsyncClient] = PrivateAttr()
+    _client: SyncOpenAI | None = PrivateAttr()
+    _aclient: AsyncOpenAI | None = PrivateAttr()
+    _http_client: httpx.Client | None = PrivateAttr()
+    _async_http_client: httpx.AsyncClient | None = PrivateAttr()
 
     def __init__(
         self,
         model: str = DEFAULT_OPENAI_MODEL,
         temperature: float = DEFAULT_TEMPERATURE,
-        max_tokens: Optional[int] = None,
-        additional_kwargs: Optional[Dict[str, Any]] = None,
+        max_tokens: int | None = None,
+        additional_kwargs: dict[str, Any] | None = None,
         max_retries: int = 3,
         timeout: float = 60.0,
         reuse_client: bool = True,
-        api_key: Optional[str] = None,
-        api_base: Optional[str] = None,
-        api_version: Optional[str] = None,
-        default_headers: Optional[Dict[str, str]] = None,
-        http_client: Optional[httpx.Client] = None,
-        async_http_client: Optional[httpx.AsyncClient] = None,
-        openai_client: Optional[SyncOpenAI] = None,
-        async_openai_client: Optional[AsyncOpenAI] = None,
+        api_key: str | None = None,
+        api_base: str | None = None,
+        api_version: str | None = None,
+        default_headers: dict[str, str] | None = None,
+        http_client: httpx.Client | None = None,
+        async_http_client: httpx.AsyncClient | None = None,
+        openai_client: SyncOpenAI | None = None,
+        async_openai_client: AsyncOpenAI | None = None,
         # base class
-        system_prompt: Optional[str] = None,
-        messages_to_prompt: Optional[Callable[[Sequence[Message]], str]] = None,
-        completion_to_prompt: Optional[Callable[[str], str]] = None,
+        system_prompt: str | None = None,
+        messages_to_prompt: Callable[[Sequence[Message]], str] | None = None,
+        completion_to_prompt: Callable[[str | None], str] = None,
         pydantic_program_mode: PydanticProgramMode = PydanticProgramMode.DEFAULT,
-        output_parser: Optional[BaseParser] = None,
+        output_parser: BaseParser | None = None,
         strict: bool = False,
-        reasoning_effort: Optional[
-            Literal["none", "minimal", "low", "medium", "high", "xhigh"]
-        ] = None,
-        modalities: Optional[List[str]] = None,
-        audio_config: Optional[Dict[str, Any]] = None,
+        reasoning_effort: Literal["none", "minimal", "low", "medium", "high", "xhigh"] | None = None,
+        modalities: list[str] | None = None,
+        audio_config: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         # TODO: Support deprecated max_new_tokens
@@ -356,7 +347,7 @@ class OpenAI(FunctionCallingLLM):
         return "openai_llm"
 
     @property
-    def _tokenizer(self) -> Optional[Tokenizer]:
+    def _tokenizer(self) -> Tokenizer | None:
         """
         Get a tokenizer for this model, or None if a tokenizing method is unknown.
 
@@ -420,12 +411,12 @@ class OpenAI(FunctionCallingLLM):
             stream_complete_fn = self._stream_complete
         return stream_complete_fn(prompt, **kwargs)
 
-    def _use_chat_completions(self, kwargs: Dict[str, Any]) -> bool:
+    def _use_chat_completions(self, kwargs: dict[str, Any]) -> bool:
         if "use_chat_completions" in kwargs:
             return kwargs["use_chat_completions"]
         return self.metadata.is_chat_model
 
-    def _get_credential_kwargs(self, is_async: bool = False) -> Dict[str, Any]:
+    def _get_credential_kwargs(self, is_async: bool = False) -> dict[str, Any]:
         return {
             "api_key": self.api_key,
             "base_url": self.api_base,
@@ -435,7 +426,7 @@ class OpenAI(FunctionCallingLLM):
             "http_client": self._async_http_client if is_async else self._http_client,
         }
 
-    def _get_model_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
+    def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         base_kwargs = {"model": self.model, "temperature": self.temperature, **kwargs}
         if self.max_tokens is not None:
             # If max_tokens is None, don't include in the payload:
@@ -524,7 +515,7 @@ class OpenAI(FunctionCallingLLM):
 
         def gen() -> ChatResponseGen:
             content = ""
-            tool_calls: List[ChoiceDeltaToolCall] = []
+            tool_calls: list[ChoiceDeltaToolCall] = []
 
             is_function = False
             for response in client.chat.completions.create(
@@ -640,7 +631,7 @@ class OpenAI(FunctionCallingLLM):
 
         return gen()
 
-    def _update_max_tokens(self, all_kwargs: Dict[str, Any], prompt: str) -> None:
+    def _update_max_tokens(self, all_kwargs: dict[str, Any], prompt: str) -> None:
         """Infer max_tokens for the payload, if possible."""
         if self.max_tokens is not None or self._tokenizer is None:
             return
@@ -789,7 +780,7 @@ class OpenAI(FunctionCallingLLM):
 
         async def gen() -> ChatResponseAsyncGen:
             content = ""
-            tool_calls: List[ChoiceDeltaToolCall] = []
+            tool_calls: list[ChoiceDeltaToolCall] = []
 
             is_function = False
             first_chat_chunk = True
@@ -921,15 +912,15 @@ class OpenAI(FunctionCallingLLM):
     def _prepare_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[List[Message]] = None,
+        user_msg: str | Message | None = None,
+        chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
         tool_required: bool = False,
-        tool_choice: Optional[Union[str, dict]] = None,
-        strict: Optional[bool] = None,
+        tool_choice: str | dict | None = None,
+        strict: bool | None = None,
         **kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Predict and call the tool."""
         tool_specs = [
             tool.metadata.to_openai_tool(skip_length_check=True) for tool in tools
@@ -981,7 +972,7 @@ class OpenAI(FunctionCallingLLM):
         response: "ChatResponse",
         error_on_no_tool_call: bool = True,
         **kwargs: Any,
-    ) -> List[ToolCallArguments]:
+    ) -> list[ToolCallArguments]:
         """Predict and call the tool."""
         tool_calls = [
             block
@@ -1051,8 +1042,8 @@ class OpenAI(FunctionCallingLLM):
 
     @staticmethod
     def _prepare_schema(
-        llm_kwargs: Optional[Dict[str, Any]], output_cls: Type[Model]
-    ) -> Dict[str, Any]:
+        llm_kwargs: dict[str, Any] | None, output_cls: Type[Model]
+    ) -> dict[str, Any]:
         from openai.resources.chat.completions.completions import (
             _type_to_response_format,
         )
@@ -1080,7 +1071,7 @@ class OpenAI(FunctionCallingLLM):
         self,
         output_cls: Type[Model],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
     ) -> Model:
         """Structured predict."""
@@ -1105,7 +1096,7 @@ class OpenAI(FunctionCallingLLM):
         self,
         output_cls: Type[Model],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
     ) -> Model:
         """Structured predict."""
@@ -1130,13 +1121,13 @@ class OpenAI(FunctionCallingLLM):
         self,
         output_cls: Type[Model],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
     ) -> Generator[
-        Union[Model, List[Model], "FlexibleModel", List["FlexibleModel"]], None, None
+        Model | list[Model] | FlexibleModel | list[FlexibleModel] | None, None
     ]:
         if self._should_use_structure_outputs():
-            from serapeum.core.structured_tools.utils import process_streaming_content_incremental
+            from serapeum.core.llms.orchestrators.utils import process_streaming_content_incremental
 
             messages = self._extend_messages(prompt.format_messages(**prompt_args))
             llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
@@ -1162,19 +1153,19 @@ class OpenAI(FunctionCallingLLM):
         self,
         output_cls: Type[Model],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
     ) -> AsyncGenerator[
-        Union[Model, List[Model], "FlexibleModel", List["FlexibleModel"]], None
+        Model, list[Model] | FlexibleModel | list[FlexibleModel] | None
     ]:
         if self._should_use_structure_outputs():
 
             async def gen(
                 llm_kwargs=llm_kwargs,
             ) -> AsyncGenerator[
-                Union[Model, List[Model], FlexibleModel, List[FlexibleModel]], None
+                Model, list[Model] | FlexibleModel | list[FlexibleModel] | None
             ]:
-                from serapeum.core.structured_tools.utils import process_streaming_content_incremental
+                from serapeum.core.llms.orchestrators.utils import process_streaming_content_incremental
 
                 messages = self._extend_messages(prompt.format_messages(**prompt_args))
                 llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
@@ -1200,9 +1191,9 @@ class OpenAI(FunctionCallingLLM):
         self,
         output_cls: Type[Model],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
-    ) -> Generator[Union[Model, FlexibleModel], None, None]:
+    ) -> Generator[Model | FlexibleModel | None, None]:
         """Stream structured predict."""
         llm_kwargs = llm_kwargs or {}
 
@@ -1214,9 +1205,9 @@ class OpenAI(FunctionCallingLLM):
         self,
         output_cls: Type[Model],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
-    ) -> AsyncGenerator[Union[Model, FlexibleModel], None]:
+    ) -> AsyncGenerator[Model | FlexibleModel, None]:
         """Stream structured predict."""
         llm_kwargs = llm_kwargs or {}
         return await super().astream_structured_predict(

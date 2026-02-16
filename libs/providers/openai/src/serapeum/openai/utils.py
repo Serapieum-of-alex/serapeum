@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Callable, Sequence, Tuple, Type
 
 import openai
 from deprecated import deprecated
@@ -39,7 +39,7 @@ DEFAULT_OPENAI_API_TYPE = "open_ai"
 DEFAULT_OPENAI_API_BASE = "https://api.openai.com/v1"
 DEFAULT_OPENAI_API_VERSION = ""
 
-O1_MODELS: Dict[str, int] = {
+O1_MODELS: dict[str, int] = {
     "o1": 200000,
     "o1-2024-12-17": 200000,
     "o1-pro": 200000,
@@ -85,7 +85,7 @@ O1_MODELS_WITHOUT_FUNCTION_CALLING = {
     "o1-mini-2024-09-12",
 }
 
-GPT4_MODELS: Dict[str, int] = {
+GPT4_MODELS: dict[str, int] = {
     # stable model names:
     #   resolves to gpt-4-0314 before 2023-06-27,
     #   resolves to gpt-4-0613 after
@@ -133,7 +133,7 @@ GPT4_MODELS: Dict[str, int] = {
     "gpt-5-chat-latest": 128000,
 }
 
-AZURE_TURBO_MODELS: Dict[str, int] = {
+AZURE_TURBO_MODELS: dict[str, int] = {
     "gpt-4o": 128000,
     "gpt-4o-mini": 128000,
     "gpt-35-turbo-16k": 16384,
@@ -147,7 +147,7 @@ AZURE_TURBO_MODELS: Dict[str, int] = {
     "gpt-35-turbo-16k-0613": 16384,
 }
 
-TURBO_MODELS: Dict[str, int] = {
+TURBO_MODELS: dict[str, int] = {
     # stable model names:
     #   resolves to gpt-3.5-turbo-0125 as of 2024-04-29.
     "gpt-3.5-turbo": 16384,
@@ -166,14 +166,14 @@ TURBO_MODELS: Dict[str, int] = {
     "gpt-3.5-turbo-0301": 4096,
 }
 
-GPT3_5_MODELS: Dict[str, int] = {
+GPT3_5_MODELS: dict[str, int] = {
     "text-davinci-003": 4097,
     "text-davinci-002": 4097,
     # instruct models
     "gpt-3.5-turbo-instruct": 4096,
 }
 
-GPT3_MODELS: Dict[str, int] = {
+GPT3_MODELS: dict[str, int] = {
     "text-ada-001": 2049,
     "text-babbage-001": 2040,
     "text-curie-001": 2049,
@@ -247,13 +247,13 @@ https://platform.openai.com/account/api-keys
 
 logger = logging.getLogger(__name__)
 
-OpenAIToolCall = Union[ChatCompletionMessageToolCall, ChoiceDeltaToolCall]
+OpenAIToolCall = ChatCompletionMessageToolCall | ChoiceDeltaToolCall
 
 
 def create_retry_decorator(
     max_retries: int,
     random_exponential: bool = False,
-    stop_after_delay_seconds: Optional[float] = None,
+    stop_after_delay_seconds: float | None = None,
     min_seconds: float = 4,
     max_seconds: float = 60,
 ) -> Callable[[Any], Any]:
@@ -349,7 +349,7 @@ def is_function_calling_model(model: str) -> bool:
 def to_openai_message_dict(
     message: Message,
     drop_none: bool = False,
-    model: Optional[str] = None,
+    model:  str | None = None,
 ) -> ChatCompletionMessageParam:
     """Convert a Message to an OpenAI message dict."""
     content = []
@@ -526,8 +526,8 @@ def to_openai_message_dict(
 def to_openai_responses_message_dict(
     message: Message,
     drop_none: bool = False,
-    model: Optional[str] = None,
-) -> Union[str, Dict[str, Any], List[Dict[str, Any]]]:
+    model:  str | None = None,
+) -> str | dict[str, Any] | list[dict[str, Any]]:
     """Convert a Message to an OpenAI message dict."""
     content = []
     content_txt = ""
@@ -690,9 +690,9 @@ def to_openai_responses_message_dict(
 def to_openai_message_dicts(
     messages: Sequence[Message],
     drop_none: bool = False,
-    model: Optional[str] = None,
+    model:  str | None = None,
     is_responses_api: bool = False,
-) -> Union[List[ChatCompletionMessageParam], str]:
+) -> list[ChatCompletionMessageParam] | str:
     """Convert generic messages to OpenAI message dicts."""
     if is_responses_api:
         final_message_dicts = []
@@ -730,19 +730,19 @@ def to_openai_message_dicts(
 
 
 def from_openai_message(
-    openai_message: ChatCompletionMessage, modalities: List[str]
+    openai_message: ChatCompletionMessage, modalities: list[str]
 ) -> Message:
     """Convert openai message dict to generic message."""
     role = openai_message.role
     # NOTE: Azure OpenAI returns function calling messages without a content key
     if "text" in modalities and openai_message.content:
-        blocks: List[ContentBlock] = [TextChunk(content=openai_message.content or "")]
+        blocks: list[ContentBlock] = [TextChunk(content=openai_message.content or "")]
     else:
-        blocks: List[ContentBlock] = []
+        blocks: list[ContentBlock] = []
 
-    additional_kwargs: Dict[str, Any] = {}
+    additional_kwargs: dict[str, Any] = {}
     if openai_message.tool_calls:
-        tool_calls: List[ChatCompletionMessageToolCall] = openai_message.tool_calls
+        tool_calls: list[ChatCompletionMessageToolCall] = openai_message.tool_calls
         for tool_call in tool_calls:
             if tool_call.function:
                 blocks.append(
@@ -765,7 +765,7 @@ def from_openai_message(
 
 def from_openai_token_logprob(
     openai_token_logprob: ChatCompletionTokenLogprob,
-) -> List[LogProb]:
+) -> list[LogProb]:
     """Convert a single openai token logprob to generic list of logprobs."""
     result = []
     if openai_token_logprob.top_logprobs:
@@ -782,7 +782,7 @@ def from_openai_token_logprob(
 
 def from_openai_token_logprobs(
     openai_token_logprobs: Sequence[ChatCompletionTokenLogprob],
-) -> List[List[LogProb]]:
+) -> list[list[LogProb]]:
     """Convert openai token logprobs to generic list of LogProb."""
     result = []
     for token_logprob in openai_token_logprobs:
@@ -792,8 +792,8 @@ def from_openai_token_logprobs(
 
 
 def from_openai_completion_logprob(
-    openai_completion_logprob: Dict[str, float],
-) -> List[LogProb]:
+    openai_completion_logprob: dict[str, float],
+) -> list[LogProb]:
     """Convert openai completion logprobs to generic list of LogProb."""
     return [
         LogProb(token=t, logprob=v, bytes=[])
@@ -803,7 +803,7 @@ def from_openai_completion_logprob(
 
 def from_openai_completion_logprobs(
     openai_completion_logprobs: Logprobs,
-) -> List[List[LogProb]]:
+) -> list[list[LogProb]]:
     """Convert openai completion logprobs to generic list of LogProb."""
     result = []
     if openai_completion_logprobs.top_logprobs:
@@ -815,8 +815,8 @@ def from_openai_completion_logprobs(
 
 
 def from_openai_messages(
-    openai_messages: Sequence[ChatCompletionMessage], modalities: List[str]
-) -> List[Message]:
+    openai_messages: Sequence[ChatCompletionMessage], modalities: list[str]
+) -> list[Message]:
     """Convert openai message dicts to generic messages."""
     return [from_openai_message(message, modalities) for message in openai_messages]
 
@@ -861,13 +861,13 @@ def from_openai_message_dict(message_dict: dict) -> Message:
     )
 
 
-def from_openai_message_dicts(message_dicts: Sequence[dict]) -> List[Message]:
+def from_openai_message_dicts(message_dicts: Sequence[dict]) -> list[Message]:
     """Convert openai message dicts to generic messages."""
     return [from_openai_message_dict(message_dict) for message_dict in message_dicts]
 
 
 @deprecated("Deprecated in favor of `to_openai_tool`, which should be used instead.")
-def to_openai_function(pydantic_class: Type[BaseModel]) -> Dict[str, Any]:
+def to_openai_function(pydantic_class: Type[BaseModel]) -> dict[str, Any]:
     """
     Deprecated in favor of `to_openai_tool`.
 
@@ -877,8 +877,8 @@ def to_openai_function(pydantic_class: Type[BaseModel]) -> Dict[str, Any]:
 
 
 def to_openai_tool(
-    pydantic_class: Type[BaseModel], description: Optional[str] = None
-) -> Dict[str, Any]:
+    pydantic_class: Type[BaseModel], description:  str | None = None
+) -> dict[str, Any]:
     """Convert pydantic class to OpenAI tool."""
     schema = pydantic_class.model_json_schema()
     schema_description = schema.get("description", None) or description
@@ -891,10 +891,10 @@ def to_openai_tool(
 
 
 def resolve_openai_credentials(
-    api_key: Optional[str] = None,
-    api_base: Optional[str] = None,
-    api_version: Optional[str] = None,
-) -> Tuple[Optional[str], str, str]:
+    api_key:  str | None = None,
+    api_base:  str | None = None,
+    api_version:  str | None = None,
+) -> Tuple[ str | None, str, str]:
     """
     "Resolve OpenAI credentials.
 
@@ -919,7 +919,7 @@ def resolve_openai_credentials(
     return final_api_key, str(final_api_base), final_api_version
 
 
-def validate_openai_api_key(api_key: Optional[str] = None) -> None:
+def validate_openai_api_key(api_key:  str | None = None) -> None:
     openai_api_key = api_key or os.environ.get("OPENAI_API_KEY", "")
 
     if not openai_api_key:
@@ -927,8 +927,8 @@ def validate_openai_api_key(api_key: Optional[str] = None) -> None:
 
 
 def resolve_tool_choice(
-    tool_choice: Optional[Union[str, dict]], tool_required: bool = False
-) -> Union[str, dict]:
+    tool_choice: str | dict | None, tool_required: bool = False
+) -> str | dict:
     """
     Resolve tool choice.
 
@@ -945,19 +945,19 @@ def resolve_tool_choice(
 
 
 def update_tool_calls(
-    tool_calls: List[ChoiceDeltaToolCall],
-    tool_calls_delta: Optional[List[ChoiceDeltaToolCall]],
-) -> List[ChoiceDeltaToolCall]:
+    tool_calls: list[ChoiceDeltaToolCall],
+    tool_calls_delta: list[ChoiceDeltaToolCall] | None,
+) -> list[ChoiceDeltaToolCall]:
     """
     Use the tool_calls_delta objects received from openai stream chunks
     to update the running tool_calls object.
 
     Args:
-        tool_calls (List[ChoiceDeltaToolCall]): the list of tool calls
+        tool_calls (list[ChoiceDeltaToolCall]): the list of tool calls
         tool_calls_delta (ChoiceDeltaToolCall): the delta to update tool_calls
 
     Returns:
-        List[ChoiceDeltaToolCall]: the updated tool calls
+        list[ChoiceDeltaToolCall]: the updated tool calls
     """
     # openai provides chunks consisting of tool_call deltas one tool at a time
     if tool_calls_delta is None or len(tool_calls_delta) == 0:

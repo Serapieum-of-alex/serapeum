@@ -4,102 +4,231 @@ This page summarizes the main modules, key classes, and the public API surface o
 
 ## Packages and Modules
 
-- serapeum.core.base.llms.base
-  - Base interface for all LLM backends (`BaseLLM`): sync/async chat and completion, streaming endpoints, and message conversion helpers.
-- serapeum.core.base.llms.models
-  - Core data models: `Message`, `MessageList`, `ChatResponse`, `CompletionResponse`, `Metadata`, `MessageRole`, and multimodal chunks (`TextChunk`, `Image`, `Audio`).
-- serapeum.core.base.llms.utils
-  - Adapters/decorators to adapt chat endpoints to completion-style calls (`chat_to_completion_decorator`, `achat_to_completion_decorator`).
-- serapeum.core.llm.base
-  - High-level LLM orchestration (`LLM`) built on `BaseLLM`: prompt/message formatting, structured prediction to Pydantic models, and sync/async streaming utilities.
-- serapeum.core.llm.function_calling
-  - Tool-calling specialization (`FunctionCallingLLM`): chat with tools, tool call extraction/validation, predict-and-call helpers (sync/async, streaming).
-- serapeum.core.llm.structured_llm
-  - Wrapper LLM (`StructuredLLM`) that forces structured outputs (`BaseModel`) from another `LLM` while keeping chat/completion interfaces.
-- serapeum.core.chat.models
-  - `AgentChatResponse`: aggregates model/tool outputs and provides sync/async streaming generators and tool output parsing.
-- serapeum.core.prompts.base
-  - Prompt abstractions: `PromptTemplate` (string prompts) and `ChatPromptTemplate` (message-based prompts) with variable/function mappings.
-- serapeum.core.prompts.models
-  - Prompt-related data models and types used by templates and LLMs.
-- serapeum.core.prompts.utils
-  - Utilities for working with prompts and templates.
-- serapeum.core.tools.models
-  - Tool system: `ToolMetadata`, JSON schema utilities, `BaseTool`, `AsyncBaseTool`, `ToolOutput`, `ToolCallArguments`, and adapters (e.g., `adapt_to_async_tool`).
-- serapeum.core.tools.callable_tool
-  - `CallableTool`: create tools from Python callables or Pydantic models; handles sync/async bridging and output parsing.
-- serapeum.core.tools.utils
-  - General-purpose helpers for the tool subsystem.
-- serapeum.core.structured_tools.tools_llm
-  - `ToolOrchestratingLLM`: composes prompts, an LLM, and a toolset to drive structured tool-calling conversations (sync/async, streaming).
-- serapeum.core.structured_tools.text_completion_llm
-  - Utilities/classes for orchestrating text-completion style LLMs in the structured tools pipeline.
-- serapeum.core.structured_tools.utils
-  - Support utilities for the structured tools orchestration layer.
-- serapeum.core.output_parsers.models
-  - Parsers and base models for converting raw LLM output into typed structures.
-- serapeum.core.output_parsers.utils
-  - Helper functions for robust output parsing and error handling.
-- serapeum.core.configs.configs / serapeum.core.configs.defaults
-  - Configuration objects and defaults used across the package.
-- serapeum.core.utils.base / serapeum.core.utils.async_utils
-  - Common utilities (sync/async helpers, base helpers) shared across modules.
-- serapeum.core.models.base
-  - `SerializableModel` (JSON/pickle serialization helpers) and `StructuredLLMMode` enum.
-- serapeum.llms.ollama.base
-  - `Ollama`: concrete `FunctionCallingLLM` implementation for the Ollama server; supports chat/completion, tool calling, and structured prediction (sync/async/streaming).
-- serapeum.datasource
-  - Convenience helpers for integrating external data sources (if used by your application code).
+### Core Framework (`serapeum.core`)
+
+#### Base Abstractions
+
+- **serapeum.core.base.llms**
+  - `BaseLLM`: Foundation protocol for all LLM backends with sync/async chat and completion, streaming endpoints, and message conversion helpers
+  - Core data models: `Message`, `MessageList`, `ChatResponse`, `CompletionResponse`, `Metadata`, `MessageRole`
+  - Multimodal support: `TextChunk`, `Image`, `Audio`
+  - Utilities for adapting chat endpoints to completion-style calls
+
+- **serapeum.core.base.embeddings**
+  - `BaseEmbedding`: Foundation protocol for embedding models
+  - Core embedding types: `NodeType`, `BaseNode`, `LinkedNodes`, `NodeInfo`, `MetadataMode`
+  - Utilities for working with document nodes and embeddings
+
+#### LLM Layer
+
+- **serapeum.core.llms**
+  - `LLM`: High-level LLM orchestration built on `BaseLLM` with prompt/message formatting and structured prediction to Pydantic models
+  - `FunctionCallingLLM`: Tool-calling specialization with chat with tools, tool call extraction/validation, and predict-and-call helpers
+  - `StructuredOutputLLM`: Wrapper that forces structured outputs (`BaseModel`) from any LLM while keeping chat/completion interfaces
+  - `ChatToCompletionMixin`: Adapter for using chat models in completion mode
+  - Sync/async/streaming support across all abstractions
+
+- **serapeum.core.llms.orchestrators**
+  - `ToolOrchestratingLLM`: Composes prompts, an LLM, and a toolset to drive structured tool-calling conversations
+  - `TextCompletionLLM`: Text-completion style orchestration utilities
+  - `StreamingObjectProcessor`: Handles streaming structured outputs
+  - Support for sync/async operations with streaming
+
+#### Embeddings Layer
+
+- **serapeum.core.embeddings**
+  - `MockEmbedding`: Testing/development embedding implementation
+  - Embedding utilities and helpers
+  - Integration with node types for document processing
+
+#### Tools System
+
+- **serapeum.core.tools**
+  - `BaseTool` / `AsyncBaseTool`: Core tool protocols
+  - `CallableTool`: Create tools from Python functions or Pydantic models with automatic schema generation
+  - `ToolMetadata`: Tool metadata and JSON schema utilities
+  - `ToolOutput` / `ToolCallArguments`: Tool execution types
+  - Automatic sync/async bridging and output parsing
+
+#### Prompts
+
+- **serapeum.core.prompts**
+  - `PromptTemplate`: String-based prompts with variable/function mappings
+  - `ChatPromptTemplate`: Message-based prompts for chat interfaces
+  - Prompt-related utilities and type definitions
+
+#### Output Parsing
+
+- **serapeum.core.output_parsers**
+  - `PydanticParser`: Parse LLM outputs into Pydantic models
+  - Output parser protocols and base classes
+  - Error handling and retry mechanisms for robust parsing
+
+#### Chat Support
+
+- **serapeum.core.chat**
+  - `AgentChatResponse`: Aggregates model/tool outputs with sync/async streaming
+  - Utilities for managing conversation state
+  - Tool output parsing and aggregation
+
+#### Configuration & Types
+
+- **serapeum.core.configs**
+  - `Configs`: Global configuration object
+  - Default values and settings used across the framework
+
+- **serapeum.core.types**
+  - `SerializableModel`: Base model with JSON/pickle serialization helpers
+  - `Model`: Pydantic model base
+  - `StructuredLLMMode`: Enum for structured output modes
+
+- **serapeum.core.utils**
+  - Common utilities: sync/async helpers, base utilities
+  - Shared functionality across modules
+
+### Provider Integrations
+
+- **serapeum.ollama**
+  - Complete Ollama integration package
+  - `Ollama`: `FunctionCallingLLM` implementation for Ollama server (chat, completion, tool calling, structured outputs)
+  - `OllamaEmbedding`: Local embedding generation using Ollama models
+  - Full sync/async/streaming support for both LLM and embeddings
+  - See [Ollama Provider Documentation](../reference/providers/ollama/general.md) for detailed documentation
 
 ## Key Public Classes
 
-- serapeum.core.base.llms.base.BaseLLM
-- serapeum.core.llm.base.LLM
-- serapeum.core.llm.function_calling.FunctionCallingLLM
-- serapeum.core.llm.structured_llm.StructuredLLM
-- serapeum.core.structured_tools.tools_llm.ToolOrchestratingLLM
-- serapeum.core.tools.callable_tool.CallableTool
-- serapeum.core.tools.models.BaseTool / AsyncBaseTool
-- serapeum.core.base.llms.models.Message / MessageList / ChatResponse / CompletionResponse / Metadata
-- serapeum.core.prompts.base.PromptTemplate / ChatPromptTemplate
-- serapeum.core.models.base.SerializableModel
-- serapeum.llms.ollama.base.Ollama
+### LLM Abstractions
+- `serapeum.core.base.llms.BaseLLM` - Base LLM protocol
+- `serapeum.core.llms.LLM` - High-level LLM orchestration
+- `serapeum.core.llms.FunctionCallingLLM` - Tool-calling LLM specialization
+- `serapeum.core.llms.StructuredOutputLLM` - Structured output wrapper
+
+### Orchestration
+- `serapeum.core.llms.orchestrators.ToolOrchestratingLLM` - Tool-calling orchestrator
+- `serapeum.core.llms.orchestrators.TextCompletionLLM` - Text completion orchestrator
+
+### Tools
+- `serapeum.core.tools.CallableTool` - Function/model-based tools
+- `serapeum.core.tools.BaseTool` - Base tool protocol
+- `serapeum.core.tools.AsyncBaseTool` - Async tool protocol
+
+### Data Types
+- `serapeum.core.base.llms.types.Message` - Individual messages
+- `serapeum.core.base.llms.types.MessageList` - Message sequences
+- `serapeum.core.base.llms.types.ChatResponse` - Chat responses
+- `serapeum.core.base.llms.types.CompletionResponse` - Completion responses
+- `serapeum.core.base.llms.types.Metadata` - LLM metadata
+
+### Prompts
+- `serapeum.core.prompts.PromptTemplate` - String templates
+- `serapeum.core.prompts.ChatPromptTemplate` - Chat templates
+
+### Base Models
+- `serapeum.core.types.SerializableModel` - Serialization base
+- `serapeum.core.types.Model` - Pydantic model base
+
+### Embeddings
+- `serapeum.core.base.embeddings.BaseEmbedding` - Base embedding protocol
+- `serapeum.core.embeddings.MockEmbedding` - Mock implementation
+
+### Provider Implementations
+- `serapeum.ollama.Ollama` - Ollama LLM implementation
+- `serapeum.ollama.OllamaEmbedding` - Ollama embeddings implementation
 
 ## Representative Public Methods
 
-- BaseLLM
-  - chat(messages, **kwargs) → ChatResponse
-  - complete(prompt, formatted=False, **kwargs) → CompletionResponse
-  - stream_chat(...), stream_complete(...)
-  - achat(...), acomplete(...), astream_chat(...), astream_complete(...)
-- LLM
-  - predict(prompt: BasePromptTemplate, ...) → CompletionResponse
-  - stream(...), apredict(...), astream(...)
-  - structured_predict(output_cls, prompt, llm_kwargs=None, **prompt_args)
-  - astructured_predict(...), stream_structured_predict(...), astream_structured_predict(...)
-- FunctionCallingLLM
-  - chat_with_tools(tools, user_msg=None, chat_history=None, ...)
-  - predict_and_call(tools, user_msg=None, chat_history=None, ...)
-  - get_tool_calls_from_response(response, ...)
-  - stream_chat_with_tools(...), astream_chat_with_tools(...)
-- CallableTool
-  - from_function(func, ...), from_model(output_cls)
-  - call(...), acall(...)
-- ToolOrchestratingLLM
-  - __call__(..., llm_kwargs=None, ...), acall(...)
-  - stream_call(...), astream_call(...)
-- Ollama
-  - chat/achat/stream_chat/astream_chat, complete/acomplete/stream_complete/astream_complete
-  - structured_predict/astr.../stream_str.../astream_str...
+### BaseLLM
+- `chat(messages, **kwargs) → ChatResponse`
+- `complete(prompt, formatted=False, **kwargs) → CompletionResponse`
+- `stream_chat(...) → ChatResponseGen`
+- `stream_complete(...) → CompletionResponseGen`
+- `achat(...) → ChatResponse` (async)
+- `acomplete(...) → CompletionResponse` (async)
+- `astream_chat(...) → ChatResponseAsyncGen` (async)
+- `astream_complete(...) → CompletionResponseAsyncGen` (async)
+
+### LLM
+- `predict(prompt: PromptTemplate, **kwargs) → str`
+- `stream(prompt, **kwargs) → CompletionResponseGen`
+- `apredict(...) → str` (async)
+- `astream(...) → CompletionResponseAsyncGen` (async)
+- `structured_predict(output_cls: type[BaseModel], prompt, **kwargs) → BaseModel`
+- `stream_structured_predict(...) → Generator[BaseModel, None, None]`
+- `astructured_predict(...) → BaseModel` (async)
+- `astream_structured_predict(...) → AsyncGenerator[BaseModel, None]` (async)
+
+### FunctionCallingLLM
+- `chat_with_tools(tools, user_msg=None, chat_history=None, **kwargs) → ChatResponse`
+- `predict_and_call(tools, user_msg=None, chat_history=None, **kwargs) → AgentChatResponse`
+- `get_tool_calls_from_response(response, error_on_no_tool_call=True) → list[ToolCallArguments]`
+- `stream_chat_with_tools(...) → ChatResponseGen`
+- `astream_chat_with_tools(...) → ChatResponseAsyncGen` (async)
+
+### CallableTool
+- `from_function(func, name=None, description=None, **kwargs) → CallableTool` (class method)
+- `from_model(model_cls, fn, name=None, description=None, **kwargs) → CallableTool` (class method)
+- `call(input, **kwargs) → ToolOutput`
+- `acall(input, **kwargs) → ToolOutput` (async)
+
+### ToolOrchestratingLLM
+- `__call__(**prompt_args, llm_kwargs=None) → BaseModel | Any`
+- `acall(**prompt_args, llm_kwargs=None) → BaseModel | Any` (async)
+- `stream_call(**prompt_args, llm_kwargs=None) → Generator`
+- `astream_call(**prompt_args, llm_kwargs=None) → AsyncGenerator` (async)
+
+### BaseEmbedding
+- `get_text_embedding(text: str) → list[float]`
+- `get_query_embedding(query: str) → list[float]`
+- `get_text_embeddings(texts: list[str]) → list[list[float]]`
+- `aget_text_embedding(text: str) → list[float]` (async)
+- `aget_query_embedding(query: str) → list[float]` (async)
+- `aget_text_embeddings(texts: list[str]) → list[list[float]]` (async)
 
 ## Data Flow (High Level)
 
-- User input/messages -> Prompt building (`PromptTemplate` / `ChatPromptTemplate`) -> LLM (`LLM` or concrete impl like `Ollama`)
-- Optional structured path: `LLM.structured_predict(...)` -> Pydantic `BaseModel` outputs
-- Tool-calling path: `FunctionCallingLLM` predicts tool calls -> `BaseTool`/`CallableTool` executed -> `ToolOutput` aggregated -> `AgentChatResponse`
-- Outputs -> `ChatResponse` / `CompletionResponse` (optionally converted/parsed to domain models)
+### Basic LLM Flow
+```
+User input/messages
+  → Prompt building (PromptTemplate / ChatPromptTemplate)
+  → LLM (LLM or concrete provider like Ollama)
+  → ChatResponse / CompletionResponse
+```
 
-See the Architecture section for diagrams and deeper internals, and the API Reference for exhaustive signatures.
+### Structured Output Flow
+```
+User input
+  → PromptTemplate
+  → LLM.structured_predict(output_cls=MyModel, ...)
+  → Pydantic BaseModel instance
+```
+
+### Tool-Calling Flow
+```
+User message
+  → FunctionCallingLLM.predict_and_call(tools=[...])
+  → LLM predicts tool calls
+  → Tools executed (BaseTool/CallableTool)
+  → ToolOutput aggregated
+  → AgentChatResponse
+```
+
+### Orchestrated Tool Flow
+```
+User input
+  → ToolOrchestratingLLM(llm=..., tools=[...], prompt=...)
+  → Automatic tool selection and execution
+  → Structured output (if output_cls specified)
+```
+
+### Embedding Flow
+```
+Documents/queries
+  → BaseEmbedding.get_text_embeddings(texts)
+  → Vector embeddings (list[list[float]])
+  → Use for similarity search, RAG, etc.
+```
+
+See the [Architecture](../architecture/) section for diagrams and deeper internals, and the API Reference for exhaustive signatures.
 
 ## Class & Dependency Graph
 
@@ -109,9 +238,10 @@ Below is a high-level Mermaid class/dependency diagram showing the main modules 
 classDiagram
   class SerializableModel { <<base>> }
   class BaseLLM { <<abstract>> }
+  class BaseEmbedding { <<abstract>> }
   class LLM { }
   class FunctionCallingLLM { }
-  class StructuredLLM { }
+  class StructuredOutputLLM { }
   class ToolOrchestratingLLM { }
   class BaseTool { }
   class AsyncBaseTool { }
@@ -123,12 +253,15 @@ classDiagram
   class ChatResponse { }
   class CompletionResponse { }
   class Ollama { }
+  class OllamaEmbedding { }
 
   SerializableModel <|-- BaseLLM
+  SerializableModel <|-- BaseEmbedding
   BaseLLM <|-- LLM
   LLM <|-- FunctionCallingLLM
-  LLM <|-- StructuredLLM
+  LLM <|-- StructuredOutputLLM
   FunctionCallingLLM <|-- Ollama
+  BaseEmbedding <|-- OllamaEmbedding
   ToolOrchestratingLLM ..> FunctionCallingLLM : uses
   ToolOrchestratingLLM ..> PromptTemplate : composes
   ToolOrchestratingLLM ..> ChatPromptTemplate : composes
@@ -140,6 +273,22 @@ classDiagram
   LLM ..> CompletionResponse : returns
 ```
 
-Notes:
-- The diagram abstracts many modules for clarity; see source files for full method signatures and additional classes.
-- `Ollama` is one concrete backend; additional backends would subclass `FunctionCallingLLM` or `LLM`.
+## Adding New Providers
+
+To add a new provider (e.g., for OpenAI, Anthropic, etc.):
+
+1. Create a new package in `libs/providers/{provider}/`
+2. Implement `FunctionCallingLLM` for chat/completion models
+3. Implement `BaseEmbedding` for embedding models (if applicable)
+4. Follow the provider-based organization pattern (all features in one package)
+5. Add comprehensive examples and documentation
+
+See the [Ollama provider](../../libs/providers/ollama/) as a reference implementation.
+
+---
+
+**Notes:**
+- The diagram abstracts many modules for clarity; see source files for full method signatures and additional classes
+- `Ollama` and `OllamaEmbedding` are concrete implementations; additional providers follow the same pattern
+- All async methods use the `a` prefix convention (e.g., `achat`, `astream_chat`)
+- Streaming methods return generators (sync) or async generators (async)

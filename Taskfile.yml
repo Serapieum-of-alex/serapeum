@@ -1,0 +1,58 @@
+version: "3"
+
+vars:
+  # Optional override, e.g. `task install:all PYTHON=C:\path\to\python.exe`
+  PYTHON: ""
+  DIST_DIR: "dist"
+  CORE_LIB_DIR: "libs/core"
+  PLUGIN_OLLAMA_DIR: "libs/providers/ollama"
+
+tasks:
+  build:core:
+    desc: Build wheel for serapeum (root project).
+    cmds:
+      - uv build --wheel -o "{{.DIST_DIR}}" .
+
+  build:core-lib:
+    desc: Build wheel for serapeum-core.
+    cmds:
+      - uv build --wheel -o "{{.DIST_DIR}}" "{{.CORE_LIB_DIR}}"
+
+  build:plugin:ollama:
+    desc: Build wheel for serapeum-ollama plugin.
+    cmds:
+      - uv build --wheel -o "{{.DIST_DIR}}" "{{.PLUGIN_OLLAMA_DIR}}"
+
+  build:all:
+    desc: Build wheels for core and libs.
+    deps:
+      - build:core-lib
+      - build:core
+      - build:plugin:ollama
+
+  install:core:
+    desc: Install serapeum wheel (non-editable) into the target env.
+    cmds:
+      - cmd: uv pip install {{if .PYTHON}}-p "{{.PYTHON}}" {{end}}--find-links "{{.DIST_DIR}}" serapeum-core
+
+  install:plugin:ollama:
+    desc: Install serapeum-ollama wheel (non-editable) into the target env.
+    cmds:
+      - cmd: uv pip install {{if .PYTHON}}-p "{{.PYTHON}}" {{end}}--find-links "{{.DIST_DIR}}" serapeum-ollama
+
+  install:all:
+    desc: Build and install all wheels (non-editable).
+    deps:
+      - build:all
+    cmds:
+      - cmd: uv pip install {{if .PYTHON}}-p "{{.PYTHON}}" {{end}}--find-links "{{.DIST_DIR}}" serapeum-core serapeum-ollama serapeum
+
+  uninstall:all:
+    desc: Uninstall serapeum and libs from the target env.
+    cmds:
+      - cmd: uv pip uninstall {{if .PYTHON}}-p "{{.PYTHON}}" {{end}}serapeum serapeum-core serapeum-ollama
+
+  clean:dist:
+    desc: Remove built wheels.
+    cmds:
+      - cmd: python -c "import shutil; shutil.rmtree('{{.DIST_DIR}}', ignore_errors=True)"

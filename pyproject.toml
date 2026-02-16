@@ -20,6 +20,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
 ]
+
 requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core",
@@ -39,6 +40,8 @@ dev = [
     "nest-asyncio>=1.6.0",
     "nbval>=0.11.0",
     "mypy>=1.13.0",
+    "pytest-xdist>=3.8.0",
+    "pytest-benchmark"
 ]
 
 docs = [
@@ -67,7 +70,7 @@ Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/serapeum"]
+packages = ["libs/core/src/serapeum"]
 
 [tool.flake8]
 ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
@@ -83,7 +86,10 @@ profile = "black"
 line_length = 88
 
 [tool.pytest.ini_options]
-
+testpaths = [
+    "libs/core/tests",
+    "libs/providers/ollama/tests",
+]
 norecursedirs = ["docs"]
 markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
@@ -112,26 +118,23 @@ module = "serapeum.core.base.*"
 strict = true
 
 [[tool.mypy.overrides]]
-module = "serapeum.core.llm.*"
+module = "serapeum.core.llms.*"
 strict = true
 
 [[tool.mypy.overrides]]
 module = "serapeum.core.tools.*"
 strict = true
 
-[[tool.mypy.overrides]]
-module = "serapeum.core.structured_tools.*"
-strict = true
 
 [[tool.mypy.overrides]]
-module = "serapeum.llms.ollama.*"
+module = "serapeum.ollama.*"
 strict = true
 
 
 [tool.uv.workspace]
 members = [
-    "serapeum-core",
-    "serapeum-integrations/llms/serapeum-ollama",
+    "libs/core",
+    "libs/providers/*",
     "serapeum-integrations/llms/serapeum-llms-openai",
     "serapeum-integrations/llms/serapeum-llms-azure-openai",
 ]

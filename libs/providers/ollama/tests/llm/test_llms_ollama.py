@@ -1,5 +1,5 @@
 """Tests for Ollama LLM integration and related functionality."""
-
+from __future__ import annotations
 from copy import deepcopy
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 

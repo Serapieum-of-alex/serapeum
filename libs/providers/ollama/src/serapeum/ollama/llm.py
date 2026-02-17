@@ -1368,14 +1368,14 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 messages = prompt.format_messages(**prompt_args)
                 response_gen = self.stream_chat(messages, **llm_kwargs)
 
+                processor = StreamingObjectProcessor(
+                    output_cls=output_cls,
+                    flexible_mode=True,
+                    allow_parallel_tool_calls=False,
+                )
                 cur_objects = None
                 for response in response_gen:
                     try:
-                        processor = StreamingObjectProcessor(
-                            output_cls=output_cls,
-                            flexible_mode=True,
-                            allow_parallel_tool_calls=False,
-                        )
                         objects = processor.process(response, cur_objects)
 
                         cur_objects = (
@@ -1459,14 +1459,14 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 messages = prompt.format_messages(**prompt_args)
                 response_gen = await self.astream_chat(messages, **llm_kwargs)
 
+                processor = StreamingObjectProcessor(
+                    output_cls=output_cls,
+                    flexible_mode=True,
+                    allow_parallel_tool_calls=False,
+                )
                 cur_objects = None
                 async for response in response_gen:
                     try:
-                        processor = StreamingObjectProcessor(
-                            output_cls=output_cls,
-                            flexible_mode=True,
-                            allow_parallel_tool_calls=False,
-                        )
                         objects = processor.process(response, cur_objects)
 
                         cur_objects = (

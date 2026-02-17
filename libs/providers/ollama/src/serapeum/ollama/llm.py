@@ -46,6 +46,8 @@ if TYPE_CHECKING:
     from serapeum.core.tools.types import BaseTool
 
 DEFAULT_REQUEST_TIMEOUT = 60.0
+DEFAULT_BASE_URL = "http://localhost:11434"
+OLLAMA_CLOUD_BASE_URL = "https://api.ollama.com"
 
 
 def get_additional_kwargs(
@@ -211,8 +213,16 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     base_url: str = Field(
-        default="http://localhost:11434",
+        default=DEFAULT_BASE_URL,
         description="Base url the model is hosted under.",
+    )
+    api_key: str | None = Field(
+        default=None,
+        description=(
+            "API key for authenticated Ollama endpoints (e.g. Ollama Cloud). "
+            "When set and base_url is the local default, base_url is automatically "
+            "switched to the Ollama Cloud endpoint."
+        ),
     )
     model: str = Field(description="The Ollama model to use.")
     temperature: float = Field(
@@ -320,6 +330,47 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
 
         return instance
 
+    @model_validator(mode="after")
+    def _resolve_base_url(self) -> "Ollama":
+        """Switch base_url to the Ollama Cloud endpoint when an api_key is provided.
+
+        If the user supplies an ``api_key`` but leaves ``base_url`` at the local
+        default, it is almost certainly a mistake to hit ``localhost``.  This
+        validator detects that situation and silently redirects to
+        ``OLLAMA_CLOUD_BASE_URL``.  An explicit non-default ``base_url`` is
+        always respected so custom remote deployments are not affected.
+
+        Returns:
+            Ollama: The same instance with ``base_url`` updated when appropriate.
+
+        Examples:
+            - Cloud URL auto-resolved from api_key
+                ```python
+                >>> from serapeum.ollama import Ollama  # type: ignore[attr-defined]
+                >>> llm = Ollama(model="m", api_key="secret")
+                >>> llm.base_url
+                'https://api.ollama.com'
+
+                ```
+            - Explicit base_url is never overridden
+                ```python
+                >>> llm = Ollama(model="m", api_key="secret", base_url="http://my-host:11434")
+                >>> llm.base_url
+                'http://my-host:11434'
+
+                ```
+            - Local usage unchanged without api_key
+                ```python
+                >>> llm = Ollama(model="m")
+                >>> llm.base_url
+                'http://localhost:11434'
+
+                ```
+        """
+        if self.api_key and self.base_url == DEFAULT_BASE_URL:
+            self.base_url = OLLAMA_CLOUD_BASE_URL
+        return self
+
     @classmethod
     def class_name(cls) -> str:
         """Return the registered class name for this provider adapter.
@@ -383,7 +434,10 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 ```
         """
         if self._client is None:
-            self._client = ollama_sdk.Client(host=self.base_url, timeout=self.request_timeout)      # type: ignore
+            kwargs = {"host": self.base_url, "timeout": self.request_timeout}
+            if self.api_key:
+                kwargs["headers"] = {"Authorization": f"Bearer {self.api_key}"}
+            self._client = ollama_sdk.Client(**kwargs)      # type: ignore
         return self._client
 
     def _ensure_async_client(self) -> ollama_sdk.AsyncClient:   # type: ignore
@@ -413,12 +467,14 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         except RuntimeError:
             current_loop = None  # No running loop available in this context
 
+        client_kwargs: dict[str, Any] = {"host": self.base_url, "timeout": self.request_timeout}
+        if self.api_key:
+            client_kwargs["headers"] = {"Authorization": f"Bearer {self.api_key}"}
+
         cached_loop = getattr(self, "_async_client_loop", None)
         if self._async_client is None:
             # No client yet: create and bind to current loop (may be None)
-            self._async_client = ollama_sdk.AsyncClient(        # type: ignore
-                host=self.base_url, timeout=self.request_timeout
-            )
+            self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
             self._async_client_loop = current_loop
         else:
             # If no loop recorded yet (e.g., injected client), bind without recreation
@@ -430,15 +486,11 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 and hasattr(current_loop, "is_closed")
                 and current_loop.is_closed()
             ):
-                self._async_client = ollama_sdk.AsyncClient(        # type: ignore
-                    host=self.base_url, timeout=self.request_timeout
-                )
+                self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
                 self._async_client_loop = current_loop
             # Or if the cached loop has been closed since creation
             elif hasattr(cached_loop, "is_closed") and cached_loop.is_closed():
-                self._async_client = ollama_sdk.AsyncClient(        # type: ignore
-                    host=self.base_url, timeout=self.request_timeout
-                )
+                self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
                 self._async_client_loop = current_loop
             else:
                 # Reuse existing client even if loop identity differs but both are open

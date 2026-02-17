@@ -20,7 +20,7 @@ import inspect
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Generator
 
 import ollama as ollama_sdk  # type: ignore[attr-defined]
-from pydantic import BaseModel, Field, PrivateAttr
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llms import (
@@ -208,6 +208,8 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         - structured_predict: Parse pydantic models from model output.
     """
 
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     base_url: str = Field(
         default="http://localhost:11434",
         description="Base url the model is hosted under.",
@@ -248,52 +250,31 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         description="controls how long the model will stay loaded into memory following the request(default: 5m)",
     )
 
-    _client: ollama_sdk.Client | None = PrivateAttr()       # type: ignore
-    _async_client: ollama_sdk.AsyncClient | None = PrivateAttr()        # type: ignore
+    _client: ollama_sdk.Client | None = PrivateAttr(default=None)       # type: ignore
+    _async_client: ollama_sdk.AsyncClient | None = PrivateAttr(default=None)        # type: ignore
+    # Track the event loop associated with the async client to avoid
+    # reusing a client bound to a closed event loop across tests/runs
+    _async_client_loop: asyncio.AbstractEventLoop | None = PrivateAttr(default=None)
 
-    def __init__(
-        self,
-        model: str,
-        base_url: str = "http://localhost:11434",
-        temperature: float = 0.75,
-        context_window: int = DEFAULT_CONTEXT_WINDOW,
-        request_timeout: float = DEFAULT_REQUEST_TIMEOUT,
-        prompt_key: str = "prompt",
-        json_mode: bool = False,
-        additional_kwargs: dict[str, Any] | None = None,
-        client: ollama_sdk.Client | None = None,                # type: ignore
-        async_client: ollama_sdk.AsyncClient | None = None,     # type: ignore
-        is_function_calling_model: bool = True,
-        keep_alive: float | str | None = None,
-        **kwargs: Any,
-    ) -> None:
-        """Initialize the Ollama LLM adapter with configuration and optional clients.
+    @model_validator(mode="wrap")
+    @classmethod
+    def _inject_clients(cls, data: Any, handler: Any) -> "Ollama":
+        """Extract SDK client objects before Pydantic validates fields, then inject them.
 
-        Creates an Ollama LLM instance with the specified model and connection
-        parameters. Clients can be pre-constructed and passed in, or they will
-        be created lazily on first use. The instance inherits from FunctionCallingLLM
-        and ChatToCompletionMixin to provide complete chat and structured output support.
+        ``client`` and ``async_client`` are external SDK objects that cannot be
+        declared as regular Pydantic fields. This validator pops them from the
+        raw input dict so Pydantic never sees them, lets the normal validation
+        pipeline run via ``handler``, and then writes the objects into the
+        appropriate private attributes on the resulting instance.
 
         Args:
-            model: Identifier of the Ollama model (e.g., "llama3.1", "mistral").
-            base_url: URL where the Ollama server is hosted. Defaults to "http://localhost:11434".
-            temperature: Sampling temperature between 0.0 (deterministic) and 1.0 (random).
-                Defaults to 0.75.
-            context_window: Maximum context tokens the model can process. Defaults to
-                DEFAULT_CONTEXT_WINDOW.
-            request_timeout: Timeout in seconds for API requests. Defaults to 60.0.
-            prompt_key: Key used for prompt formatting in API calls. Defaults to "prompt".
-            json_mode: Whether to request JSON-formatted responses via the format parameter.
-                Defaults to False.
-            additional_kwargs: Extra provider-specific options passed to Ollama under "options".
-                Defaults to empty dict.
-            client: Pre-constructed synchronous Ollama client. If None, created lazily.
-            async_client: Pre-constructed asynchronous Ollama client. If None, created per event loop.
-            is_function_calling_model: Whether this model supports tool/function calling.
-                Defaults to True.
-            keep_alive: Duration to keep model loaded in memory (e.g., "5m", "1h", or float seconds).
-                Defaults to "5m".
-            **kwargs: Reserved for future extensions and base class compatibility.
+            data: Raw constructor input — typically a ``dict`` of keyword arguments.
+            handler: Pydantic's next validation step; calling it produces the
+                validated ``Ollama`` instance.
+
+        Returns:
+            Ollama: Fully validated instance with ``_client`` and ``_async_client``
+            set (or left as ``None`` for lazy initialisation).
 
         Examples:
             - Initialize with minimal configuration
@@ -310,7 +291,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 ...     model="mistral",
                 ...     base_url="http://custom-server:11434",
                 ...     request_timeout=120.0,
-                ...     temperature=0.5
+                ...     temperature=0.5,
                 ... )
                 >>> llm.temperature
                 0.5
@@ -324,28 +305,20 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
 
                 ```
         """
-        if additional_kwargs is None:
-            additional_kwargs = {}
+        client = None
+        async_client = None
+        if isinstance(data, dict):
+            client = data.pop("client", None)
+            async_client = data.pop("async_client", None)
 
-        super().__init__(
-            model=model,
-            base_url=base_url,
-            temperature=temperature,
-            context_window=context_window,
-            request_timeout=request_timeout,
-            prompt_key=prompt_key,
-            json_mode=json_mode,
-            additional_kwargs=additional_kwargs,
-            is_function_calling_model=is_function_calling_model,
-            keep_alive=keep_alive,
-            **kwargs,
-        )
+        instance = handler(data)
 
-        self._client = client
-        self._async_client = async_client
-        # Track the event loop associated with the async client to avoid
-        # reusing a client bound to a closed event loop across tests/runs
-        self._async_client_loop: asyncio.AbstractEventLoop | None = None
+        if client is not None:
+            instance._client = client
+        if async_client is not None:
+            instance._async_client = async_client
+
+        return instance
 
     @classmethod
     def class_name(cls) -> str:

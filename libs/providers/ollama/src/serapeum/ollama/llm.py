@@ -821,6 +821,48 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
 
         return tool_selections
 
+    @staticmethod
+    def _build_chat_response(raw: Any) -> ChatResponse:
+        """Build a ``ChatResponse`` from a raw (non-streaming) Ollama API response.
+
+        Converts the SDK response object to a plain dict, extracts tool calls and
+        token usage, then constructs a typed ``ChatResponse``.
+
+        Args:
+            raw: The response object returned by ``ollama.Client.chat`` or
+                ``ollama.AsyncClient.chat`` with ``stream=False``.
+
+        Returns:
+            ChatResponse: Typed response with message content, role, tool calls,
+            and token usage populated in ``raw["usage"]`` when available.
+
+        Examples:
+            - Build a response from a minimal raw dict
+                ```python
+                >>> from serapeum.ollama import Ollama  # type: ignore
+                >>> raw = {"message": {"role": "assistant", "content": "Hi"}}
+                >>> resp = Ollama._build_chat_response(raw)
+                >>> resp.message.content
+                'Hi'
+                >>> resp.message.additional_kwargs["tool_calls"]
+                []
+
+                ```
+        """
+        raw = dict(raw)
+        tool_calls = raw["message"].get("tool_calls") or []
+        token_counts = Ollama._get_response_token_counts(raw)
+        if token_counts:
+            raw["usage"] = token_counts
+        return ChatResponse(
+            message=Message(
+                content=raw["message"]["content"],
+                role=raw["message"]["role"],
+                additional_kwargs={"tool_calls": tool_calls},
+            ),
+            raw=raw,
+        )
+
     def chat(self, messages: MessageList, **kwargs: Any) -> ChatResponse:
         """Send a chat request to Ollama and return the assistant message.
 
@@ -862,21 +904,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             keep_alive=self.keep_alive,
         )
 
-        response = dict(response)
-
-        tool_calls = response["message"].get("tool_calls", [])
-        token_counts = self._get_response_token_counts(response)
-        if token_counts:
-            response["usage"] = token_counts
-
-        return ChatResponse(
-            message=Message(
-                content=response["message"]["content"],
-                role=response["message"]["role"],
-                additional_kwargs={"tool_calls": tool_calls},
-            ),
-            raw=response,
-        )
+        return self._build_chat_response(response)
 
     @staticmethod
     def _parse_tool_call_response(
@@ -1144,21 +1172,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             keep_alive=self.keep_alive,
         )
 
-        response = dict(response)
-
-        tool_calls = response["message"].get("tool_calls", [])
-        token_counts = self._get_response_token_counts(response)
-        if token_counts:
-            response["usage"] = token_counts
-
-        return ChatResponse(
-            message=Message(
-                content=response["message"]["content"],
-                role=response["message"]["role"],
-                additional_kwargs={"tool_calls": tool_calls},
-            ),
-            raw=response,
-        )
+        return self._build_chat_response(response)
 
     def structured_predict(
         self,

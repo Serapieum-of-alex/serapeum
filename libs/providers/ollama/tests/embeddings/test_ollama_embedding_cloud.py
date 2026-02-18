@@ -150,7 +150,7 @@ class TestClientAuthHeader:
         Expected: No Authorization header on the sync httpx client.
         Checks: Absence of spurious auth header for local usage.
         """
-        embedder = OllamaEmbedding(model_name="nomic-embed-text")
+        embedder = OllamaEmbedding(model_name="nomic-embed-text", api_key="anything")
         headers = dict(embedder._client._client.headers)
         assert "authorization" in headers
 

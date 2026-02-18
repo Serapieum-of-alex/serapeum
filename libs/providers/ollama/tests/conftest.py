@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import pytest
 from pydantic import BaseModel, Field
-
+from .models import is_ci
 
 class Song(BaseModel):
     """A song data model used in tests."""
@@ -45,12 +45,18 @@ def cloud_model() -> str:
 
 
 @pytest.fixture
-def llm_model(local_model: str):
+def llm_model(local_model: str, ollama_api_key: str):
     from serapeum.ollama import Ollama as serapeum_ollama
+    if is_ci:
+        api_key = ollama_api_key
+    else:
+        api_key = None
+
     return serapeum_ollama(
         model=local_model,
         request_timeout=180,
         temperature=0.0,  # Use temperature=0 for deterministic test results
+        api_key=api_key
     )
 
 @pytest.fixture

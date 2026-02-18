@@ -33,19 +33,27 @@ def local_model() -> str:
     """Model name."""
     return "llama3.1"
 
-
-@pytest.fixture
-def embedding_model_cloud() -> str:
-    return "nomic-embed-text"
-
-
 @pytest.fixture
 def cloud_model() -> str:
     return "qwen3-next:80b"
 
 
 @pytest.fixture
-def llm_model(local_model: str, ollama_api_key: str):
+def model_name(local_model: str, cloud_model: str) -> str:
+    if is_ci:
+        name = cloud_model
+    else:
+        name = local_model
+    return name
+
+@pytest.fixture
+def embedding_model_cloud() -> str:
+    return "nomic-embed-text"
+
+
+
+@pytest.fixture
+def llm_model(model_name: str, ollama_api_key: str):
     from serapeum.ollama import Ollama as serapeum_ollama
     if is_ci:
         api_key = ollama_api_key
@@ -53,7 +61,7 @@ def llm_model(local_model: str, ollama_api_key: str):
         api_key = None
 
     return serapeum_ollama(
-        model=local_model,
+        model=model_name,
         request_timeout=180,
         temperature=0.0,  # Use temperature=0 for deterministic test results
         api_key=api_key

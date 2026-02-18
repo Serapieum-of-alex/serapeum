@@ -19,20 +19,20 @@ import pytest
 
 from serapeum.ollama import OllamaEmbedding
 from serapeum.ollama.llm import DEFAULT_BASE_URL, OLLAMA_CLOUD_BASE_URL
-from ..models import api_key
 
 # ollama cloud does not have any embedding models, so do not run the e2e tests
 cloud_client = None
 
+
 @pytest.fixture
-def cloud_embedder(embedding_model_cloud: str) -> OllamaEmbedding:
+def cloud_embedder(embedding_model_cloud: str, ollama_api_key: str) -> OllamaEmbedding:
     """Return an OllamaEmbedding instance configured for the cloud backend.
 
     Uses the api_key and cloud_embedding_model from the shared test models module.
     """
     return OllamaEmbedding(
         model_name=embedding_model_cloud,
-        api_key=api_key,
+        api_key=ollama_api_key,
     )
 
 

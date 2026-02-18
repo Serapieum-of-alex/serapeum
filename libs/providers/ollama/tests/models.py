@@ -1,11 +1,8 @@
 """Test data models for Ollama integration tests."""
 from __future__ import annotations
 import os
-from typing import List
 
 import ollama as ollama_sdk
-
-from pydantic import BaseModel, Field
 
 
 # created clients in this test file are used in the pytest.mark.skipif decorator and can not be made as fixtures
@@ -34,4 +31,7 @@ except Exception:
     cloud_client = None
 
 
+# In CI use the cloud client so local-gated tests run against the cloud backend.
+# Locally fall back to the local Ollama server.
+client = cloud_client if (is_ci and cloud_client is not None) else _local_client
 

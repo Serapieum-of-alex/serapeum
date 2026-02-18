@@ -2,6 +2,21 @@
 from __future__ import annotations
 import os
 import pytest
+from pydantic import BaseModel, Field
+
+
+class Song(BaseModel):
+    """A song data model used in tests."""
+
+    title: str = Field(description="The title of the song")
+
+
+class Album(BaseModel):
+    """Album model used as the program output."""
+
+    name: str = Field(description="The name/title of the album")
+    artist: str = Field(description="The name of the artist or band")
+    songs: list[Song] = Field(description="List of songs in the album")
 
 
 @pytest.fixture
@@ -53,3 +68,8 @@ def cloud_llm(cloud_model: str, ollama_api_key: str):
         request_timeout=120,
         temperature=0.0,
     )
+
+
+@pytest.fixture
+def album() -> type[Album]:
+    return Album

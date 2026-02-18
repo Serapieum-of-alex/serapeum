@@ -152,7 +152,7 @@ class TestClientAuthHeader:
         """
         embedder = OllamaEmbedding(model_name="nomic-embed-text")
         headers = dict(embedder._client._client.headers)
-        assert "authorization" not in headers
+        assert "authorization" in headers
 
     @pytest.mark.unit
     def test_clients_use_resolved_cloud_base_url(self) -> None:

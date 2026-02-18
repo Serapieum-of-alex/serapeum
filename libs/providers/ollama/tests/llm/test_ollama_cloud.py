@@ -20,24 +20,8 @@ import pytest
 from serapeum.core.llms import Message
 from serapeum.ollama import Ollama
 from serapeum.ollama.llm import DEFAULT_BASE_URL, OLLAMA_CLOUD_BASE_URL
-from ..models import api_key, cloud_client
+from ..models import cloud_client
 
-
-
-@pytest.fixture
-def cloud_llm(cloud_model: str) -> Ollama:
-    """Return an Ollama instance configured for the cloud backend.
-
-    Uses the api_key and test_model from the shared test models module.
-    temperature=0.0 for deterministic responses; request_timeout=120 for
-    cloud latency.
-    """
-    return Ollama(
-        model=cloud_model,
-        api_key=api_key,
-        request_timeout=120,
-        temperature=0.0,
-    )
 
 
 class TestApiKeyField:

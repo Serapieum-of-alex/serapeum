@@ -10,14 +10,15 @@ import ollama as ollama_sdk
 # currently there are no embedding models in ollama cloud
 
 api_key: str = os.environ.get("OLLAMA_API_KEY")
+is_ci: bool = os.environ.get("CI", "").lower() == "true"
 
 
 # Local client (used by existing tests)
 try:
-    client = ollama_sdk.Client()        # type: ignore
-    client.list()
+    _local_client = ollama_sdk.Client()     # type: ignore
+    _local_client.list()
 except Exception:
-    client = None
+    _local_client = None
 
 
 # Cloud client (used by cloud tests)

@@ -33,6 +33,7 @@ class OllamaClientMixin(BaseModel):
     )
     api_key: str | None = Field(
         default=None,
+        exclude=True,
         description=(
             "API key for authenticated Ollama endpoints (e.g. Ollama Cloud). "
             "When set and base_url is the local default, base_url is automatically "

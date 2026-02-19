@@ -99,6 +99,7 @@ def test_ollama_complete(mock_ollama_client, model_name) -> None:
     assert str(response).strip() != ""
 
 
+@pytest.mark.e2e
 @pytest.mark.skipif(
     client is None, reason="Ollama client is not available or test model is missing"
 )

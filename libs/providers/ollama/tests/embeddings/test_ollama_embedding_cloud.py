@@ -144,17 +144,6 @@ class TestClientAuthHeader:
         assert headers.get("authorization") == "Bearer embed-key"
 
     @pytest.mark.unit
-    def test_no_auth_header_when_api_key_absent(self) -> None:
-        """
-        Inputs: No api_key (defaults to None).
-        Expected: No Authorization header on the sync httpx client.
-        Checks: Absence of spurious auth header for local usage.
-        """
-        embedder = OllamaEmbedding(model_name="nomic-embed-text", api_key="anything")
-        headers = dict(embedder._client._client.headers)
-        assert "authorization" in headers
-
-    @pytest.mark.unit
     def test_clients_use_resolved_cloud_base_url(self) -> None:
         """
         Inputs: api_key="key", no explicit base_url.

@@ -20,8 +20,14 @@ class Album(BaseModel):
 
 
 @pytest.fixture
-def ollama_api_key() -> str:
-    """Model name."""
+def ollama_api_key() -> str | None:
+    """Return the Ollama API key, or None when running locally without one set."""
+    return os.environ.get("OLLAMA_API_KEY")
+
+
+@pytest.fixture
+def ollama_api_key_required() -> str:
+    """Return the Ollama API key, raising if not set. Use this for cloud/e2e fixtures only."""
     api_key = os.environ.get("OLLAMA_API_KEY")
     if api_key is None:
         raise ValueError("OLLAMA_API_KEY environment variable is not set")
@@ -32,6 +38,7 @@ def ollama_api_key() -> str:
 def local_model() -> str:
     """Model name."""
     return "llama3.1"
+
 
 @pytest.fixture
 def cloud_model() -> str:
@@ -46,10 +53,10 @@ def model_name(local_model: str, cloud_model: str) -> str:
         name = local_model
     return name
 
+
 @pytest.fixture
 def embedding_model_cloud() -> str:
     return "nomic-embed-text"
-
 
 
 @pytest.fixture
@@ -68,7 +75,7 @@ def llm_model(model_name: str, ollama_api_key: str):
     )
 
 @pytest.fixture
-def cloud_llm(cloud_model: str, ollama_api_key: str):
+def cloud_llm(cloud_model: str, ollama_api_key_required: str):
     """Return an Ollama instance configured for the cloud backend.
 
     Uses the api_key and test_model from the shared test models module.
@@ -78,7 +85,7 @@ def cloud_llm(cloud_model: str, ollama_api_key: str):
     from serapeum.ollama import Ollama
     return Ollama(
         model=cloud_model,
-        api_key=ollama_api_key,
+        api_key=ollama_api_key_required,
         request_timeout=120,
         temperature=0.0,
     )

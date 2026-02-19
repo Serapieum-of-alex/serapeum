@@ -9,9 +9,8 @@ performance. All operations support both synchronous and asynchronous execution.
 from __future__ import annotations
 from typing import Any, Sequence
 
-from pydantic import Field, model_validator
+from pydantic import Field
 
-import ollama as ollama_sdk
 from serapeum.core.embeddings import BaseEmbedding
 from serapeum.ollama.client import OllamaClientMixin
 
@@ -165,37 +164,17 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
     )
 
     def _build_client_kwargs(self) -> dict:
-        """Extend base client kwargs with any extra client_kwargs for the embedding client."""
-        return {**super()._build_client_kwargs(), **self.client_kwargs}
+        """Extend base client kwargs with any extra client_kwargs for the embedding client.
 
-    @model_validator(mode="after")
-    def _initialize_clients(self) -> "OllamaEmbedding":
-        """Initialize Ollama synchronous and asynchronous clients after model validation.
-
-        This validator runs automatically after all fields are validated during
-        instance creation. It creates both sync and async Ollama clients configured
-        with the specified base_url, any additional client kwargs, and an
-        Authorization header when an api_key is provided. Skips creation when a
-        client was already injected via the constructor.
-
-        Returns:
-            The OllamaEmbedding instance with initialized clients.
-
-        Examples:
-            - Clients are initialized automatically on instantiation
-                ```python
-                >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
-                >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
-                >>> # Both _client and _async_client are now initialized
-
-                ```
+        Headers are merged rather than replaced so that an Authorization header
+        from ``api_key`` is preserved alongside any custom headers in ``client_kwargs``.
+        Custom headers in ``client_kwargs`` take precedence in case of key conflicts.
         """
-        client_kwargs = self._build_client_kwargs()
-        if self._client is None:
-            self._client = ollama_sdk.Client(**client_kwargs)       # type: ignore
-        if self._async_client is None:
-            self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
-        return self
+        base = super()._build_client_kwargs()
+        extra = dict(self.client_kwargs)
+        if "headers" in extra and "headers" in base:
+            extra["headers"] = {**base.pop("headers"), **extra["headers"]}
+        return {**base, **extra}
 
     @classmethod
     def class_name(cls) -> str:
@@ -451,7 +430,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
             _a_embed_batch_raw: Async version of this method.
             _embed_raw: Single text version.
         """
-        result = self._client.embed(
+        result = self.client.embed(
             model=self.model_name,
             input=texts,
             options=self.ollama_additional_kwargs,
@@ -478,7 +457,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
             _embed_batch_raw: Synchronous version of this method.
             _a_embed_raw: Single text async version.
         """
-        result = await self._async_client.embed(
+        result = await self.async_client.embed(
             model=self.model_name,
             input=texts,
             options=self.ollama_additional_kwargs,
@@ -504,7 +483,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
             _a_embed_raw: Async version of this method.
             _embed_batch_raw: Batch version.
         """
-        result = self._client.embed(
+        result = self.client.embed(
             model=self.model_name,
             input=text,
             options=self.ollama_additional_kwargs,
@@ -530,7 +509,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
             _embed_raw: Synchronous version of this method.
             _a_embed_batch_raw: Batch async version.
         """
-        result = await self._async_client.embed(
+        result = await self.async_client.embed(
             model=self.model_name,
             input=text,
             options=self.ollama_additional_kwargs,

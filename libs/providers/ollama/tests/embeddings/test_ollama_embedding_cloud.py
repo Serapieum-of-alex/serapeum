@@ -119,7 +119,7 @@ class TestResolveBaseUrl:
 
 
 class TestClientAuthHeader:
-    """Tests that _initialize_clients injects the correct Authorization header."""
+    """Tests that the client properties inject the correct Authorization header."""
 
     @pytest.mark.unit
     def test_auth_header_injected_when_api_key_set(self) -> None:
@@ -129,7 +129,7 @@ class TestClientAuthHeader:
         Checks: Header is present and has exact expected value.
         """
         embedder = OllamaEmbedding(model_name="nomic-embed-text", api_key="embed-key")
-        headers = dict(embedder._client._client.headers)
+        headers = dict(embedder.client._client.headers)
         assert headers.get("authorization") == "Bearer embed-key"
 
     @pytest.mark.unit
@@ -140,7 +140,7 @@ class TestClientAuthHeader:
         Checks: Both sync and async clients receive the header.
         """
         embedder = OllamaEmbedding(model_name="nomic-embed-text", api_key="embed-key")
-        headers = dict(embedder._async_client._client.headers)
+        headers = dict(embedder.async_client._client.headers)
         assert headers.get("authorization") == "Bearer embed-key"
 
     @pytest.mark.unit
@@ -148,13 +148,13 @@ class TestClientAuthHeader:
         """
         Inputs: api_key="key", no explicit base_url.
         Expected: The sync client's base_url matches OLLAMA_CLOUD_BASE_URL.
-        Checks: _resolve_base_url runs before _initialize_clients so the
+        Checks: _resolve_base_url runs before client creation so the
                 client is pointed at the cloud host, not localhost.
         """
         embedder = OllamaEmbedding(model_name="nomic-embed-text", api_key="key")
         assert embedder.base_url == OLLAMA_CLOUD_BASE_URL
         # Verify client base_url via the underlying httpx base_url
-        assert OLLAMA_CLOUD_BASE_URL in str(embedder._client._client.base_url)
+        assert OLLAMA_CLOUD_BASE_URL in str(embedder.client._client.base_url)
 
 
 class TestCloudTextEmbedding:

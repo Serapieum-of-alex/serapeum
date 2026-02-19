@@ -156,6 +156,19 @@ class TestAsyncClientAuthHeader:
         headers = dict(llm.async_client._client.headers)
         assert headers.get("authorization") == "Bearer async-key"
 
+    @pytest.mark.unit
+    @pytest.mark.asyncio
+    async def test_async_no_auth_header_when_api_key_absent(self) -> None:
+        """
+        Inputs: No api_key.
+        Expected: _build_client_kwargs does not include a headers entry.
+        Checks: Our code does not inject Authorization when api_key is absent.
+        Note: We test _build_client_kwargs directly because the underlying ollama SDK
+        reads OLLAMA_API_KEY from the environment independently of our code.
+        """
+        llm = Ollama(model="m")
+        assert "headers" not in llm._build_client_kwargs()
+
 
 class TestCloudChat:
     """End-to-end tests for chat methods against the Ollama Cloud backend."""

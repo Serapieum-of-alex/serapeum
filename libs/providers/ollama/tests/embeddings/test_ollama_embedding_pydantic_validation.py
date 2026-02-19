@@ -15,124 +15,89 @@ class TestPydanticInstantiation:
     """Test suite for Pydantic-style instantiation patterns."""
 
     def test_dict_fields_reject_none_values(self) -> None:
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            with pytest.raises(ValidationError) as exc_info:
-                OllamaEmbedding(model_name="test", client_kwargs=None)
+        with pytest.raises(ValidationError) as exc_info:
+            OllamaEmbedding(model_name="test", client_kwargs=None)
 
-            assert "client_kwargs" in str(exc_info.value)
-            assert "dict" in str(exc_info.value).lower()
+        assert "client_kwargs" in str(exc_info.value)
+        assert "dict" in str(exc_info.value).lower()
 
     def test_dict_fields_reject_none_for_ollama_additional_kwargs(self) -> None:
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            with pytest.raises(ValidationError) as exc_info:
-                OllamaEmbedding(model_name="test", ollama_additional_kwargs=None)
+        with pytest.raises(ValidationError) as exc_info:
+            OllamaEmbedding(model_name="test", ollama_additional_kwargs=None)
 
-            assert "ollama_additional_kwargs" in str(exc_info.value)
+        assert "ollama_additional_kwargs" in str(exc_info.value)
 
     def test_multiple_dict_fields_reject_none_simultaneously(self) -> None:
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            with pytest.raises(ValidationError) as exc_info:
-                OllamaEmbedding(
-                    model_name="test",
-                    client_kwargs=None,
-                    ollama_additional_kwargs=None,
-                )
+        with pytest.raises(ValidationError) as exc_info:
+            OllamaEmbedding(
+                model_name="test",
+                client_kwargs=None,
+                ollama_additional_kwargs=None,
+            )
 
-            errors = str(exc_info.value)
-            assert "client_kwargs" in errors
-            assert "ollama_additional_kwargs" in errors
+        errors = str(exc_info.value)
+        assert "client_kwargs" in errors
+        assert "ollama_additional_kwargs" in errors
 
     def test_dict_fields_accept_empty_dicts(self) -> None:
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            embedder = OllamaEmbedding(
-                model_name="test",
-                client_kwargs={},
-                ollama_additional_kwargs={},
-            )
+        embedder = OllamaEmbedding(
+            model_name="test",
+            client_kwargs={},
+            ollama_additional_kwargs={},
+        )
 
-            assert embedder.client_kwargs == {}
-            assert embedder.ollama_additional_kwargs == {}
+        assert embedder.client_kwargs == {}
+        assert embedder.ollama_additional_kwargs == {}
 
     def test_dict_fields_use_default_factory_when_not_provided(self) -> None:
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            embedder = OllamaEmbedding(model_name="test")
+        embedder = OllamaEmbedding(model_name="test")
 
-            assert embedder.client_kwargs == {}
-            assert embedder.ollama_additional_kwargs == {}
-            assert isinstance(embedder.client_kwargs, dict)
-            assert isinstance(embedder.ollama_additional_kwargs, dict)
+        assert embedder.client_kwargs == {}
+        assert embedder.ollama_additional_kwargs == {}
+        assert isinstance(embedder.client_kwargs, dict)
+        assert isinstance(embedder.ollama_additional_kwargs, dict)
 
     def test_dict_fields_accept_populated_dicts(self) -> None:
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            client_kwargs = {"timeout": 30, "headers": {"Auth": "token"}}
-            ollama_kwargs = {"temperature": 0.7, "top_p": 0.9}
+        client_kwargs = {"timeout": 30, "headers": {"Auth": "token"}}
+        ollama_kwargs = {"temperature": 0.7, "top_p": 0.9}
 
-            embedder = OllamaEmbedding(
-                model_name="test",
-                client_kwargs=client_kwargs,
-                ollama_additional_kwargs=ollama_kwargs,
-            )
+        embedder = OllamaEmbedding(
+            model_name="test",
+            client_kwargs=client_kwargs,
+            ollama_additional_kwargs=ollama_kwargs,
+        )
 
-            assert embedder.client_kwargs == client_kwargs
-            assert embedder.ollama_additional_kwargs == ollama_kwargs
+        assert embedder.client_kwargs == client_kwargs
+        assert embedder.ollama_additional_kwargs == ollama_kwargs
 
     def test_base_url_uses_default_when_not_provided(self) -> None:
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            embedder = OllamaEmbedding(model_name="test")
+        embedder = OllamaEmbedding(model_name="test")
 
-            assert embedder.base_url == "http://localhost:11434"
+        assert embedder.base_url == "http://localhost:11434"
 
     def test_base_url_accepts_custom_value(self) -> None:
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            custom_url = "http://custom-host:8080"
-            embedder = OllamaEmbedding(model_name="test", base_url=custom_url)
+        custom_url = "http://custom-host:8080"
+        embedder = OllamaEmbedding(model_name="test", base_url=custom_url)
 
-            assert embedder.base_url == custom_url
+        assert embedder.base_url == custom_url
 
     def test_model_name_is_required_field(self) -> None:
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            with pytest.raises(ValidationError) as exc_info:
-                OllamaEmbedding()
+        with pytest.raises(ValidationError) as exc_info:
+            OllamaEmbedding()
 
-            assert "model_name" in str(exc_info.value)
+        assert "model_name" in str(exc_info.value)
 
 
 class TestModelValidatorBehavior:
-    """Test suite for @model_validator initialization logic."""
+    """Test suite for client initialization logic (lazy via properties)."""
 
     def test_model_validator_initializes_sync_client(self) -> None:
         with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client_cls,
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
+            patch("serapeum.ollama.client.ollama_sdk.Client") as mock_client_cls,
+            patch("serapeum.ollama.client.ollama_sdk.AsyncClient"),
         ):
             embedder = OllamaEmbedding(model_name="test")
+            _ = embedder.client  # trigger lazy init
 
             assert hasattr(embedder, "_client")
             assert embedder._client is not None
@@ -140,10 +105,11 @@ class TestModelValidatorBehavior:
 
     def test_model_validator_initializes_async_client(self) -> None:
         with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient") as mock_async_cls,
+            patch("serapeum.ollama.client.ollama_sdk.Client"),
+            patch("serapeum.ollama.client.ollama_sdk.AsyncClient") as mock_async_cls,
         ):
             embedder = OllamaEmbedding(model_name="test")
+            _ = embedder.async_client  # trigger lazy init
 
             assert hasattr(embedder, "_async_client")
             assert embedder._async_client is not None
@@ -151,22 +117,26 @@ class TestModelValidatorBehavior:
 
     def test_model_validator_passes_base_url_to_clients(self) -> None:
         with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client_cls,
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient") as mock_async_cls,
+            patch("serapeum.ollama.client.ollama_sdk.Client") as mock_client_cls,
+            patch("serapeum.ollama.client.ollama_sdk.AsyncClient") as mock_async_cls,
         ):
             custom_url = "http://custom:9999"
-            OllamaEmbedding(model_name="test", base_url=custom_url)
+            embedder = OllamaEmbedding(model_name="test", base_url=custom_url)
+            _ = embedder.client
+            _ = embedder.async_client
 
             mock_client_cls.assert_called_once_with(host=custom_url)
             mock_async_cls.assert_called_once_with(host=custom_url)
 
     def test_model_validator_passes_client_kwargs_to_clients(self) -> None:
         with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client_cls,
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient") as mock_async_cls,
+            patch("serapeum.ollama.client.ollama_sdk.Client") as mock_client_cls,
+            patch("serapeum.ollama.client.ollama_sdk.AsyncClient") as mock_async_cls,
         ):
             kwargs = {"timeout": 60, "headers": {"X-Custom": "value"}}
-            OllamaEmbedding(model_name="test", client_kwargs=kwargs)
+            embedder = OllamaEmbedding(model_name="test", client_kwargs=kwargs)
+            _ = embedder.client
+            _ = embedder.async_client
 
             mock_client_cls.assert_called_once_with(
                 host="http://localhost:11434", timeout=60, headers={"X-Custom": "value"}
@@ -177,24 +147,28 @@ class TestModelValidatorBehavior:
 
     def test_model_validator_handles_empty_client_kwargs(self) -> None:
         with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client_cls,
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient") as mock_async_cls,
+            patch("serapeum.ollama.client.ollama_sdk.Client") as mock_client_cls,
+            patch("serapeum.ollama.client.ollama_sdk.AsyncClient") as mock_async_cls,
         ):
-            OllamaEmbedding(model_name="test", client_kwargs={})
+            embedder = OllamaEmbedding(model_name="test", client_kwargs={})
+            _ = embedder.client
+            _ = embedder.async_client
 
             mock_client_cls.assert_called_once_with(host="http://localhost:11434")
             mock_async_cls.assert_called_once_with(host="http://localhost:11434")
 
     def test_model_validator_runs_after_field_validation(self) -> None:
         with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
+            patch("serapeum.ollama.client.ollama_sdk.Client"),
+            patch("serapeum.ollama.client.ollama_sdk.AsyncClient"),
         ):
             embedder = OllamaEmbedding(
                 model_name="test",
                 base_url="https://host:1234",
                 batch_size=50,
             )
+            _ = embedder.client
+            _ = embedder.async_client
 
             assert embedder.model_name == "test"
             assert embedder.base_url == "https://host:1234"

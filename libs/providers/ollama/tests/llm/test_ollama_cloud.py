@@ -129,17 +129,6 @@ class TestSyncClientAuthHeader:
         assert headers.get("authorization") == "Bearer test-key"
 
     @pytest.mark.unit
-    def test_no_auth_header_when_api_key_absent(self) -> None:
-        """
-        Inputs: No api_key (defaults to None).
-        Expected: No Authorization header on the httpx client.
-        Checks: Absence of spurious auth header for local usage.
-        """
-        llm = Ollama(model="m", api_key="anything")
-        headers = dict(llm.client._client.headers)
-        assert "authorization" in headers
-
-    @pytest.mark.unit
     def test_client_reused_on_second_access(self) -> None:
         """
         Inputs: llm.client accessed twice.

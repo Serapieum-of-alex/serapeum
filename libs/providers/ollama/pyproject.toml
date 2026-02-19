@@ -76,8 +76,8 @@ markers = [
     "performance: marks tests as performance test (deselect with '-m \"not performance\"')",
 ]
 
-#[tool.uv.sources]
-#serapeum-core = { workspace = true }
+[tool.uv.sources]
+serapeum-core = { workspace = true }
 
 #[tool.uv]
 #managed = false

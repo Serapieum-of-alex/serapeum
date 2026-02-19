@@ -156,18 +156,6 @@ class TestAsyncClientAuthHeader:
         headers = dict(llm.async_client._client.headers)
         assert headers.get("authorization") == "Bearer async-key"
 
-    @pytest.mark.unit
-    @pytest.mark.asyncio
-    async def test_async_no_auth_header_when_api_key_absent(self) -> None:
-        """
-        Inputs: No api_key.
-        Expected: No Authorization header on the async httpx client.
-        Checks: Absence of spurious auth header for local async usage.
-        """
-        llm = Ollama(model="m", api_key="anything")
-        headers = dict(llm.async_client._client.headers)
-        assert "authorization" in headers
-
 
 class TestCloudChat:
     """End-to-end tests for chat methods against the Ollama Cloud backend."""

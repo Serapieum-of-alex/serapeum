@@ -105,10 +105,32 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
             ... )
 
             ```
+        - Listing available models on the server
+            ```python
+            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+            >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
+            >>> models = embedder.list_models()  # doctest: +SKIP
+            >>> print(models)                    # doctest: +SKIP
+            ['nomic-embed-text:latest', 'mxbai-embed-large:latest']
+
+            ```
+        - Async listing of available models
+            ```python
+            >>> import asyncio
+            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+            >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
+            >>> async def show_models():                 # doctest: +SKIP
+            ...     return await embedder.alist_models()
+            >>> asyncio.run(show_models())               # doctest: +SKIP
+            ['nomic-embed-text:latest', 'mxbai-embed-large:latest']
+
+            ```
 
     See Also:
         BaseEmbedding: Abstract base class defining the embedding interface.
         serapeum.core.embeddings: Core embedding abstractions and utilities.
+        list_models: List all models available on the Ollama server.
+        alist_models: Async variant of list_models.
     """
 
     model_name: str = Field(description="The Ollama model to use.")

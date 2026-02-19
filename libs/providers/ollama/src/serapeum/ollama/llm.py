@@ -176,6 +176,9 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         **kwargs (Any):
             Reserved for future extensions and compatibility with the base class.
 
+    Attributes:
+
+
     Examples:
         - Basic chat using a real Ollama server (requires a running server and a pulled model)
             ```python
@@ -202,11 +205,33 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             assistant: {"ok":true}
 
             ```
+        - Listing available models on the server
+            ```python
+            >>> from serapeum.ollama import Ollama  # type: ignore[attr-defined]
+            >>> llm = Ollama(model="llama3.1")
+            >>> models = llm.list_models()  # doctest: +SKIP
+            >>> print(models)               # doctest: +SKIP
+            ['llama3.1:latest', 'mistral:latest']
+
+            ```
+        - Async listing of available models
+            ```python
+            >>> import asyncio
+            >>> from serapeum.ollama import Ollama  # type: ignore[attr-defined]
+            >>> llm = Ollama(model="llama3.1")
+            >>> async def show_models():            # doctest: +SKIP
+            ...     return await llm.alist_models()
+            >>> asyncio.run(show_models())          # doctest: +SKIP
+            ['llama3.1:latest', 'mistral:latest']
+
+            ```
 
     See Also:
         - chat: Synchronous chat API.
         - stream_chat: Streaming chat API yielding deltas.
         - structured_predict: Parse pydantic models from model output.
+        - list_models: List all models available on the Ollama server.
+        - alist_models: Async variant of list_models.
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

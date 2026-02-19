@@ -593,7 +593,7 @@ Using `ToolOrchestratingLLM` with parallel tools:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -626,7 +626,7 @@ Stream tool execution results:
 ```python
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -660,7 +660,7 @@ Non-blocking chat:
 ```python
 import asyncio
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 async def async_chat_example():
@@ -681,7 +681,7 @@ Non-blocking completion:
 
 ```python
 import asyncio
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 async def async_complete_example():
@@ -701,7 +701,7 @@ Non-blocking streaming:
 ```python
 import asyncio
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 async def async_stream_example():
@@ -723,7 +723,7 @@ Process multiple requests concurrently:
 ```python
 import asyncio
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 async def process_multiple():
@@ -755,7 +755,7 @@ Async tool orchestration:
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -788,7 +788,7 @@ Async streaming tool execution:
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -824,14 +824,16 @@ asyncio.run(async_stream_tool_example())
 Create once, use many times:
 
 ```python
-from serapeum.llms.ollama import Ollama
-
+from serapeum.ollama import Ollama
+from serapeum.core.llms import Message, MessageRole
 # ✓ Good: Create once
 llm = Ollama(model="llama3.1", request_timeout=180)
 
 # Reuse for multiple calls
-response1 = llm.chat(messages1)
-response2 = llm.chat(messages2)
+message_1 = Message(role=MessageRole.USER, content="hi")
+message_2 = Message(role=MessageRole.USER, content="How are you?")
+response1 = llm.chat([message_1])
+response2 = llm.chat([message_2])
 
 # ✗ Bad: Don't recreate for each call
 def process(messages):
@@ -844,7 +846,7 @@ def process(messages):
 Set timeout based on expected response time:
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Short timeout for simple queries
 quick_llm = Ollama(model="llama3.1", request_timeout=30)
@@ -859,7 +861,7 @@ Always handle potential errors:
 
 ```python
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
 
@@ -878,7 +880,7 @@ except Exception as e:
 Enable when expecting JSON:
 
 ```python
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Enable JSON mode
 llm = Ollama(
@@ -896,7 +898,7 @@ Use metadata for monitoring:
 
 ```python
 from serapeum.core.base.llms.types import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 llm = Ollama(model="llama3.1", request_timeout=180)
 

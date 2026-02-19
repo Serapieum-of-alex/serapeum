@@ -9,111 +9,191 @@ performance. All operations support both synchronous and asynchronous execution.
 from __future__ import annotations
 from typing import Any, Sequence
 
-from pydantic import Field, PrivateAttr, model_validator
+from pydantic import Field
 
-import ollama as ollama_sdk
 from serapeum.core.embeddings import BaseEmbedding
+from serapeum.ollama.client import OllamaClientMixin
 
 
-class OllamaEmbedding(BaseEmbedding):
+class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
     """Ollama-based embedding model for generating text and query vector representations.
 
-    This class provides a complete embedding interface using Ollama models, supporting
-    both symmetric and asymmetric embedding patterns. Asymmetric embeddings allow
-    different instructions for queries vs. documents, which can significantly improve
-    retrieval accuracy by optimizing each embedding type for its specific role.
+    Wraps the Ollama SDK embed API to produce dense float vectors from text. Inherits
+    connection management from ``OllamaClientMixin``, which supplies ``base_url``,
+    ``api_key``, and lazily-created sync/async SDK clients.
 
-    The class manages both synchronous and asynchronous Ollama clients, automatically
-    handling connection pooling and model lifecycle. All embedding operations support
-    batching for efficient processing of multiple texts.
+    **Local vs Ollama Cloud**
 
-    Attributes:
-        base_url: Base URL where Ollama is hosted. Defaults to "http://localhost:11434".
-        model_name: Name of the Ollama model to use for embeddings (e.g., "nomic-embed-text").
-        ollama_additional_kwargs: Additional options passed to Ollama's embed API.
-        query_instruction: Optional instruction prepended to search queries for asymmetric
-            embedding. Example: "search_query:" or "Represent this query for retrieval."
-        text_instruction: Optional instruction prepended to documents for asymmetric
-            embedding. Example: "search_document:" or "Represent this document:".
-        keep_alive: Duration to keep model loaded in memory after requests. Can be a
-            duration string (e.g., "5m", "1h") or float (seconds). Defaults to "5m".
-        client_kwargs: Additional kwargs for Ollama client initialization.
+    Without ``api_key`` the class talks to a local Ollama server at
+    ``http://localhost:11434``. **To switch to Ollama Cloud, set** ``api_key``
+    **— that is the only change required.** When ``api_key`` is provided and
+    ``base_url`` is still the local default, ``base_url`` is automatically
+    switched to ``https://api.ollama.com``; no manual URL update is needed.
+    An explicit non-default ``base_url`` is always preserved so custom remote
+    deployments are unaffected. ``api_key`` is excluded from ``model_dump()``
+    and ``model_dump_json()`` to prevent accidental credential leakage.
+
+    **Lazy client initialisation**
+
+    The underlying ``ollama.Client`` and ``ollama.AsyncClient`` instances are created
+    on first access of the ``client`` / ``async_client`` properties, not at
+    construction time. Pass pre-built SDK clients via the ``client=`` and
+    ``async_client=`` constructor kwargs to inject mock objects in tests — they are
+    intercepted before Pydantic validation and stored in private attributes.
+
+    **Asymmetric embeddings**
+
+    Set ``query_instruction`` and ``text_instruction`` to apply different prefixes when
+    embedding queries versus documents, which can significantly improve retrieval
+    accuracy for models that support asymmetric representations (e.g., nomic-embed-text,
+    mxbai-embed-large).
+
+    Args:
+        model_name: The Ollama model to use for embeddings (e.g., ``"nomic-embed-text"``).
+        base_url: Base URL where the Ollama server is hosted. Defaults to
+            ``"http://localhost:11434"``. Automatically switched to
+            ``https://api.ollama.com`` when ``api_key`` is provided.
+        api_key: The single switch between local and cloud. When ``None``
+            (default), requests go to the local Ollama server. When set,
+            requests are routed to Ollama Cloud and ``base_url`` is
+            automatically updated. **Excluded from** ``model_dump()`` /
+            ``model_dump_json()`` — use environment variables or a secrets
+            manager rather than persisting the serialised model.
+        ollama_additional_kwargs: Extra options forwarded to the Ollama ``embed`` API
+            (e.g., ``{"mirostat": 1}``). Defaults to ``{}``.
+        query_instruction: Instruction prefix prepended to search queries before
+            embedding (e.g., ``"search_query:"``). Helps models distinguish query
+            embeddings from document embeddings for asymmetric retrieval.
+        text_instruction: Instruction prefix prepended to documents before embedding
+            (e.g., ``"search_document:"``). Paired with ``query_instruction`` for
+            asymmetric embedding patterns.
+        keep_alive: How long to keep the model loaded in memory after a request.
+            Accepts a duration string (e.g., ``"5m"``, ``"1h"``) or a float in
+            seconds. Defaults to ``"5m"``.
+        client_kwargs: Additional keyword arguments forwarded to the Ollama client
+            constructor (merged with the base kwargs built from ``base_url`` and
+            ``api_key``). Custom headers take precedence over the ``Authorization``
+            header generated from ``api_key``.
+        client: Pre-built ``ollama.Client`` injected for testing. Intercepted before
+            Pydantic validation; the ``client`` property returns this object on first
+            access without creating a new one.
+        async_client: Pre-built ``ollama.AsyncClient`` injected for testing. Works
+            the same way as the ``client`` parameter.
 
     Examples:
-        - Basic embedding with default settings
+        - Basic text embedding against a local Ollama server
             ```python
-            >>> from serapeum.ollama import OllamaEmbedding         # type: ignore
-            >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
+            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+            >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
             >>> embedding = embedder.get_text_embedding("Hello world")  # doctest: +SKIP
             >>> len(embedding) > 0  # doctest: +SKIP
             True
 
             ```
-        - Asymmetric embeddings for retrieval
+        - Connect to Ollama Cloud with an API key (base_url auto-switches)
             ```python
-            >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
+            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+            >>> from serapeum.ollama.client import OLLAMA_CLOUD_BASE_URL
+            >>> embedder = OllamaEmbedding(
+            ...     model_name="nomic-embed-text",
+            ...     api_key="sk-my-ollama-key",
+            ... )
+            >>> embedder.base_url == OLLAMA_CLOUD_BASE_URL
+            True
+
+            ```
+        - Verify api_key is excluded from serialisation
+            ```python
+            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+            >>> embedder = OllamaEmbedding(
+            ...     model_name="nomic-embed-text",
+            ...     api_key="sk-secret",
+            ... )
+            >>> "api_key" in embedder.model_dump()
+            False
+
+            ```
+        - Inject a mock client to test embedding logic without a running server
+            ```python
+            >>> from unittest.mock import MagicMock
+            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+            >>> mock_client = MagicMock()
+            >>> mock_client.embed.return_value.embeddings = [[0.1, 0.2, 0.3]]
+            >>> embedder = OllamaEmbedding(
+            ...     model_name="nomic-embed-text",
+            ...     client=mock_client,
+            ... )
+            >>> embedder.get_text_embedding("test")
+            [0.1, 0.2, 0.3]
+
+            ```
+        - Asymmetric embeddings for retrieval (query vs. document)
+            ```python
+            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
             >>> embedder = OllamaEmbedding(  # doctest: +SKIP
             ...     model_name="nomic-embed-text",
             ...     query_instruction="search_query:",
-            ...     text_instruction="search_document:"
+            ...     text_instruction="search_document:",
             ... )
+            >>> query_vec = embedder.get_query_embedding("What is Python?")    # doctest: +SKIP
+            >>> doc_vec = embedder.get_text_embedding("Python is a language")  # doctest: +SKIP
+            >>> len(query_vec) == len(doc_vec)  # doctest: +SKIP
+            True
 
             ```
-            -  Query embedding optimized for search
+        - Batch embed multiple documents in one call
             ```python
-            >>> query_emb = embedder.get_query_embedding("What is Python?")  # doctest: +SKIP
-            [0.011942148,
-             0.023432752,
-             -0.14708464,
-             0.0131236715,
-             ...
-             -0.01889455,
-             -0.00888129]
+            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+            >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
+            >>> docs = ["First document", "Second document", "Third document"]
+            >>> embeddings = embedder.get_text_embedding_batch(docs)  # doctest: +SKIP
+            >>> len(embeddings) == 3  # doctest: +SKIP
+            True
 
             ```
-            - Document embedding optimized for retrieval
-            ```python
-            >>> doc_emb = embedder.get_text_embedding("Python is a programming language")  # doctest: +SKIP
-            [0.011555489,
-             0.02302966,
-             -0.104428634,
-             -0.04198733,
-             -0.047405742]
-
-            ```
-        - Batch processing with async
+        - Async batch embedding
             ```python
             >>> import asyncio
-            >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
+            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
             >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
             >>> async def embed_batch():  # doctest: +SKIP
-            ...     texts = ["First doc", "Second doc", "Third doc"]
-            ...     embeddings = await embedder._aget_text_embeddings(texts)
-            ...     return len(embeddings)
-            >>> asyncio.run(embed_batch())  # Returns 3 # doctest : +SKIP
+            ...     docs = ["Doc 1", "Doc 2", "Doc 3"]
+            ...     vecs = await embedder.aget_text_embedding_batch(docs)
+            ...     return len(vecs)
+            >>> asyncio.run(embed_batch())  # doctest: +SKIP
+            3
 
             ```
-        - Custom Ollama server configuration
+        - List available models on the connected server
             ```python
-            >>> from serapeum.ollama import OllamaEmbedding         # type: ignore
-            >>> embedder = OllamaEmbedding(  # doctest: +SKIP
-            ...     model_name="llama2",
-            ...     base_url="http://custom-server:11434",
-            ...     keep_alive="10m",
-            ...     ollama_additional_kwargs={"temperature": 0.0}
-            ... )
+            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+            >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
+            >>> models = embedder.list_models()   # doctest: +SKIP
+            >>> isinstance(models, list)          # doctest: +SKIP
+            True
+
+            ```
+        - Async model listing
+            ```python
+            >>> import asyncio
+            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+            >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
+            >>> async def show_models():                # doctest: +SKIP
+            ...     return await embedder.alist_models()
+            >>> asyncio.run(show_models())              # doctest: +SKIP
+            ['nomic-embed-text:latest', 'mxbai-embed-large:latest']
 
             ```
 
     See Also:
-        BaseEmbedding: Abstract base class defining the embedding interface.
-        serapeum.core.embeddings: Core embedding abstractions and utilities.
+        Ollama: Chat / completion LLM from the same Ollama provider.
+        OllamaClientMixin: Shared connection mixin (base_url, api_key, lazy clients).
+        get_text_embedding: Embed a single document string.
+        get_query_embedding: Embed a query string with optional instruction prefix.
+        list_models: List all models available on the connected Ollama server.
+        alist_models: Async variant of ``list_models``.
     """
 
-    base_url: str = Field(
-        default="http://localhost:11434",
-        description="Base url the model is hosted by Ollama",
-    )
     model_name: str = Field(description="The Ollama model to use.")
     ollama_additional_kwargs: dict[str, Any] = Field(
         default_factory=dict, description="Additional kwargs for the Ollama API."
@@ -145,32 +225,18 @@ class OllamaEmbedding(BaseEmbedding):
         description="Additional kwargs for the Ollama client initialization.",
     )
 
-    _client: ollama_sdk.Client = PrivateAttr()      # type: ignore
-    _async_client: ollama_sdk.AsyncClient = PrivateAttr()       # type: ignore
+    def _build_client_kwargs(self) -> dict:
+        """Extend base client kwargs with any extra client_kwargs for the embedding client.
 
-    @model_validator(mode="after")
-    def _initialize_clients(self) -> OllamaEmbedding:
-        """Initialize Ollama synchronous and asynchronous clients after model validation.
-
-        This validator runs automatically after all fields are validated during
-        instance creation. It creates both sync and async Ollama clients configured
-        with the specified base_url and any additional client kwargs.
-
-        Returns:
-            The OllamaEmbedding instance with initialized clients.
-
-        Examples:
-            - Clients are initialized automatically on instantiation
-                ```python
-                >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
-                >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
-                >>> # Both _client and _async_client are now initialized
-
-                ```
+        Headers are merged rather than replaced so that an Authorization header
+        from ``api_key`` is preserved alongside any custom headers in ``client_kwargs``.
+        Custom headers in ``client_kwargs`` take precedence in case of key conflicts.
         """
-        self._client = ollama_sdk.Client(host=self.base_url, **self.client_kwargs)      # type: ignore
-        self._async_client = ollama_sdk.AsyncClient(host=self.base_url, **self.client_kwargs)       # type: ignore
-        return self
+        base = super()._build_client_kwargs()
+        extra = dict(self.client_kwargs)
+        if "headers" in extra and "headers" in base:
+            extra["headers"] = {**base.pop("headers"), **extra["headers"]}
+        return {**base, **extra}
 
     @classmethod
     def class_name(cls) -> str:
@@ -426,7 +492,7 @@ class OllamaEmbedding(BaseEmbedding):
             _a_embed_batch_raw: Async version of this method.
             _embed_raw: Single text version.
         """
-        result = self._client.embed(
+        result = self.client.embed(
             model=self.model_name,
             input=texts,
             options=self.ollama_additional_kwargs,
@@ -453,7 +519,7 @@ class OllamaEmbedding(BaseEmbedding):
             _embed_batch_raw: Synchronous version of this method.
             _a_embed_raw: Single text async version.
         """
-        result = await self._async_client.embed(
+        result = await self.async_client.embed(
             model=self.model_name,
             input=texts,
             options=self.ollama_additional_kwargs,
@@ -479,7 +545,7 @@ class OllamaEmbedding(BaseEmbedding):
             _a_embed_raw: Async version of this method.
             _embed_batch_raw: Batch version.
         """
-        result = self._client.embed(
+        result = self.client.embed(
             model=self.model_name,
             input=text,
             options=self.ollama_additional_kwargs,
@@ -505,7 +571,7 @@ class OllamaEmbedding(BaseEmbedding):
             _embed_raw: Synchronous version of this method.
             _a_embed_batch_raw: Batch async version.
         """
-        result = await self._async_client.embed(
+        result = await self.async_client.embed(
             model=self.model_name,
             input=text,
             options=self.ollama_additional_kwargs,

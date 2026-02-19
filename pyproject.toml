@@ -139,8 +139,6 @@ members = [
 serapeum-core = { workspace = true }
 serapeum-ollama = { workspace = true }
 
-#[tool.uv]
-#managed = false
 
 [build-system]
 requires = ["hatchling"]

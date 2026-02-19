@@ -33,6 +33,8 @@ jobs:
           uv run pytest libs/core/tests/ -sv -m "not e2e" --cov=libs/core/src --cov-report=xml --cov-append
 
       - name: Test Ollama Package
+        env:
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         run: |
           uv run pytest libs/providers/ollama/tests/ -sv -m "not e2e" --cov=libs/providers/ollama/src --cov-report=xml --cov-append
 

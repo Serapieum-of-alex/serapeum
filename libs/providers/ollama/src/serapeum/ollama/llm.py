@@ -20,7 +20,7 @@ import inspect
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Generator
 
 import ollama as ollama_sdk  # type: ignore[attr-defined]
-from pydantic import BaseModel, Field, PrivateAttr
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llms import (
@@ -41,6 +41,7 @@ from serapeum.core.llms.orchestrators import StreamingObjectProcessor
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ArgumentCoercer, ToolCallArguments
 from serapeum.core.types import StructuredLLMMode
+from serapeum.ollama.client import OllamaClientMixin
 
 if TYPE_CHECKING:
     from serapeum.core.tools.types import BaseTool
@@ -130,88 +131,200 @@ def force_single_tool_call(response: ChatResponse) -> None:
         response.message.additional_kwargs["tool_calls"] = [tool_calls[0]]
 
 
-class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
-    """Ollama.
+class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
+    """Ollama LLM adapter for chat, streaming, structured output, and tool calling.
 
-    This class integrates with the local/remote Ollama server to provide chat,
-    streaming, and structured output capabilities. It supports tool/function
-    calling and JSON mode formatting when the model allows it.
+    Integrates with a local or remote Ollama server to expose synchronous and
+    asynchronous chat, streaming, and structured-output interfaces. The adapter
+    implements the ``FunctionCallingLLM`` protocol so it can be composed with
+    tool-orchestrating layers from ``serapeum.core``.
 
-    Visit https://ollama.com/ to install Ollama and run ``ollama serve`` to
-    start the server.
+    **Local vs Ollama Cloud**
+
+    Without ``api_key`` the class talks to a local Ollama server at
+    ``http://localhost:11434``. **To switch to Ollama Cloud, set** ``api_key``
+    **— that is the only change required.** When ``api_key`` is provided and
+    ``base_url`` is still the local default, ``base_url`` is automatically
+    switched to ``https://api.ollama.com``; no manual URL update is needed.
+    An explicit non-default ``base_url`` is always preserved so custom remote
+    deployments are unaffected. The ``api_key`` value is intentionally
+    **excluded from** ``model_dump()`` and ``model_dump_json()`` so it is
+    never accidentally serialised to disk or logs.
+
+    **Lazy client initialisation**
+
+    The underlying ``ollama.Client`` and ``ollama.AsyncClient`` instances are
+    created on the first ``client`` / ``async_client`` property access, not at
+    construction time. For testing you can bypass the network by injecting
+    pre-built clients via the constructor::
+
+        Ollama(model="m", client=my_mock_client, async_client=my_async_mock)
 
     Args:
-        model (str):
-            Identifier of the Ollama model to use (e.g., ``"llama3.1:latest"``).
-        base_url (str):
-            Base URL where the Ollama server is hosted. Defaults to
-            ``"http://localhost:11434"``.
-        temperature (float):
-            Sampling temperature in the range [0.0, 1.0]. Higher values increase
-            randomness. Defaults to 0.75.
-        context_window (int):
-            Maximum context tokens for the model. Defaults to the project
-            ``DEFAULT_CONTEXT_WINDOW``.
-        request_timeout (float):
-            Timeout (seconds) for API calls. Defaults to 60.0.
-        prompt_key (str):
-            Key used for prompt formatting when applicable. Defaults to ``"prompt"``.
-        json_mode (bool):
-            Whether to request JSON-formatted responses when supported. Defaults to ``False``.
-        additional_kwargs (dict[str, Any]):
-            Extra provider-specific options forwarded under ``options``.
-        client (Client | None):
-            Pre-constructed synchronous Ollama client. When omitted, the client
-            is created lazily from ``base_url`` and ``request_timeout``.
-        async_client (AsyncClient | None):
-            Pre-constructed asynchronous Ollama client. If omitted, a client is
-            created per event loop.
-        is_function_calling_model (bool):
-            Flag indicating whether the selected model supports tool/function
-            calling. Defaults to ``True``.
-        keep_alive (float | str | None):
-            Controls how long the model stays loaded following the request
-            (e.g., ``"5m"``). When ``None``, provider defaults apply.
-        **kwargs (Any):
-            Reserved for future extensions and compatibility with the base class.
+        model: Ollama model identifier, e.g. ``"llama3.1"`` or
+            ``"qwen3-next:80b"``.
+        base_url: URL of the Ollama server. Defaults to
+            ``"http://localhost:11434"``. Automatically switched to
+            ``"https://api.ollama.com"`` when ``api_key`` is provided and
+            this value is still the local default.
+        api_key: The single switch between local and cloud. When ``None``
+            (default), requests go to the local Ollama server. When set,
+            requests are routed to Ollama Cloud and ``base_url`` is
+            automatically updated. **Not serialised by** ``model_dump()``.
+        temperature: Sampling temperature in ``[0.0, 1.0]``. Higher values
+            increase creativity; lower values produce more deterministic
+            output. Defaults to ``0.75``.
+        context_window: Maximum number of tokens in the context window.
+            Defaults to ``DEFAULT_CONTEXT_WINDOW``.
+        request_timeout: HTTP request timeout in seconds. Defaults to
+            ``60.0``.
+        prompt_key: Key used when formatting prompt templates. Defaults to
+            ``"prompt"``.
+        json_mode: When ``True``, sends ``format="json"`` to Ollama so the
+            model is constrained to emit valid JSON. Defaults to ``False``.
+        additional_kwargs: Extra provider options forwarded to the Ollama
+            ``options`` field (e.g. ``{"mirostat": 2}``).
+        is_function_calling_model: Whether the chosen model supports tool /
+            function calling. Defaults to ``True``.
+        keep_alive: How long the model stays loaded in memory after a
+            request — a duration string (``"5m"``, ``"1h"``) or float
+            seconds. Defaults to ``"5m"``.
+        client: Pre-built synchronous ``ollama.Client`` for dependency
+            injection or testing. When ``None``, the client is created
+            lazily on first access.
+        async_client: Pre-built asynchronous ``ollama.AsyncClient`` for
+            dependency injection or testing. When ``None``, a client is
+            created per event loop on first access.
 
     Examples:
-        - Basic chat using a real Ollama server (requires a running server and a pulled model)
+        - Basic chat via Ollama Cloud
             ```python
+            >>> import os
             >>> from serapeum.core.llms import Message, MessageRole
-            >>> from serapeum.ollama import Ollama      # type: ignore[attr-defined]
-            >>> # Ensure `ollama serve` is running locally and the model is pulled, e.g.:
-            >>> #   ollama pull llama3.1
-            >>> llm = Ollama(model="llama3.1", request_timeout=120)  # doctest: +SKIP
-            >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'pong'.")])  # doctest: +SKIP
-            >>> response # doctest: +SKIP
-            ChatResponse(raw={'model': 'llama3.1', 'created_at': '2026-02-15T20:16:34.1386099Z', 'done': True, 'done_reason': 'stop', 'total_duration': 1133539400, 'load_duration': 481943100, 'prompt_eval_count': 18, 'prompt_eval_duration': 349949700, 'eval_count': 7, 'eval_duration': 81735000, 'message': Message(role='assistant', content='{ "ok": true }', thinking=None, images=None, tool_name=None, tool_calls=None), 'logprobs': None, 'usage': {'prompt_tokens': 18, 'completion_tokens': 7, 'total_tokens': 25}}, likelihood_score=None, additional_kwargs={}, delta=None, message=Message(role=<MessageRole.ASSISTANT: 'assistant'>, additional_kwargs={'tool_calls': None}, chunks=[TextChunk(content='{ "ok": true }', path=None, url=None, type='text')]))
-            >>> print(response)  # doctest: +SKIP
-            assistant: Pong!
+            >>> from serapeum.ollama import Ollama  # type: ignore
+            >>> llm = Ollama(
+            ...     model="qwen3-next:80b",
+            ...     api_key=os.environ.get("OLLAMA_API_KEY"),
+            ...     temperature=0.0,
+            ...     request_timeout=120,
+            ... )
+            >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'hello'.")])
+            >>> print(response) # doctest: +SKIP
+            assistant:
+
+            hello
 
             ```
-        - Enabling JSON mode for structured outputs with a real server
+        - Supplying api_key automatically switches base_url to Ollama Cloud
             ```python
+            >>> import os
+            >>> from serapeum.ollama import Ollama  # type: ignore
+            >>> from serapeum.ollama.client import OLLAMA_CLOUD_BASE_URL
+            >>> llm = Ollama(model="qwen3-next:80b", api_key=os.environ.get("OLLAMA_API_KEY"))
+            >>> llm.base_url == OLLAMA_CLOUD_BASE_URL
+            True
+
+            ```
+        - api_key is excluded from model_dump() — it is never serialised
+            ```python
+            >>> import os
+            >>> from serapeum.ollama import Ollama  # type: ignore
+            >>> llm = Ollama(model="qwen3-next:80b", api_key=os.environ.get("OLLAMA_API_KEY"))
+            >>> "api_key" in llm.model_dump()
+            False
+
+            ```
+        - Inject a mock client for unit tests (no network required)
+            ```python
+            >>> from unittest.mock import MagicMock
+            >>> from serapeum.ollama import Ollama  # type: ignore
+            >>> mock = MagicMock()
+            >>> llm = Ollama(model="m", client=mock)
+            >>> llm.client is mock
+            True
+
+            ```
+        - Stream chat deltas via Ollama Cloud
+            ```python
+            >>> import os
             >>> from serapeum.core.llms import Message, MessageRole
-            >>> from serapeum.ollama import Ollama          # type: ignore[attr-defined]
-            >>> # When json_mode=True, this adapter sets format="json" under the hood.
-            >>> llm = Ollama(model="llama3.1", json_mode=True, request_timeout=120)  # doctest: +SKIP
-            >>> response = llm.chat([Message(role=MessageRole.USER, content='Return {"ok": true} as JSON')])  # doctest: +SKIP
-            >>> print(response)         # doctest: +SKIP
-            assistant: {"ok":true}
+            >>> from serapeum.ollama import Ollama  # type: ignore
+            >>> llm = Ollama(
+            ...     model="qwen3-next:80b",
+            ...     api_key=os.environ.get("OLLAMA_API_KEY"),
+            ...     temperature=0.0,
+            ...     request_timeout=120,
+            ... )
+            >>> chunks = list(llm.stream_chat([
+            ...     Message(role=MessageRole.USER, content="Say 'hello'.")
+            ... ]))
+            >>> chunks
+            [ChatResponse(raw={'model': 'qwen3-next:80b', ... chunks=[TextChunk(content='', path=None, url=None, type='text')])),
+            ChatResponse(raw={'model': 'qwen3-next:80b', ...  chunks=[TextChunk(content='', path=None, url=None, type='text')])),
+            ChatResponse(raw={'model': 'qwen3-next:80b', ... chunks=[TextChunk(content='', path=None, url=None, type='text')])),
+            ChatResponse(raw={'model': 'qwen3-next:80b', ... chunks=[TextChunk(content='', path=None, url=None, type='text')])),
+            ...
+
+            ```
+        - Structured output parsed into a Pydantic model
+            ```python
+            >>> import os
+            >>> from pydantic import BaseModel
+            >>> from serapeum.core.prompts import PromptTemplate
+            >>> from serapeum.ollama import Ollama  # type: ignore
+            >>> class Capital(BaseModel):
+            ...     city: str
+            ...     country: str
+            >>> llm = Ollama(
+            ...     model="qwen3-next:80b",
+            ...     api_key=os.environ.get("OLLAMA_API_KEY"),
+            ...     temperature=0.0,
+            ...     request_timeout=120,
+            ... )
+            >>> prompt = PromptTemplate("Extract city and country from: {text}")
+            >>> result = llm.structured_predict(
+            ...     Capital, prompt, text="Paris is the capital of France."
+            ... )
+            >>> isinstance(result, Capital)
+            True
+
+            ```
+        - List all models available on the Ollama Cloud server
+            ```python
+            >>> import os
+            >>> from serapeum.ollama import Ollama  # type: ignore
+            >>> llm = Ollama(model="qwen3-next:80b", api_key=os.environ.get("OLLAMA_API_KEY"))
+            >>> models = llm.list_models()
+            >>> isinstance(models, list)
+            True
+
+            ```
+        - Async model listing via Ollama Cloud
+            ```python
+            >>> import asyncio, os
+            >>> from serapeum.ollama import Ollama  # type: ignore
+            >>> llm = Ollama(model="qwen3-next:80b", api_key=os.environ.get("OLLAMA_API_KEY"))
+            >>> async def get_models():
+            ...     return await llm.alist_models()
+            >>> isinstance(asyncio.run(get_models()), list)
+            True
 
             ```
 
     See Also:
-        - chat: Synchronous chat API.
-        - stream_chat: Streaming chat API yielding deltas.
-        - structured_predict: Parse pydantic models from model output.
+        OllamaEmbedding: Companion class for generating embeddings with Ollama.
+        OllamaClientMixin: Shared connection logic, URL resolution, and client injection.
+        chat: Synchronous chat completion.
+        stream_chat: Streaming chat yielding incremental deltas.
+        achat: Asynchronous chat completion.
+        astream_chat: Asynchronous streaming chat.
+        structured_predict: Structured output via JSON schema and Pydantic validation.
+        list_models: List all models available on the Ollama server.
+        alist_models: Async variant of list_models.
     """
 
-    base_url: str = Field(
-        default="http://localhost:11434",
-        description="Base url the model is hosted under.",
-    )
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     model: str = Field(description="The Ollama model to use.")
     temperature: float = Field(
         default=0.75,
@@ -248,104 +361,13 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         description="controls how long the model will stay loaded into memory following the request(default: 5m)",
     )
 
-    _client: ollama_sdk.Client | None = PrivateAttr()       # type: ignore
-    _async_client: ollama_sdk.AsyncClient | None = PrivateAttr()        # type: ignore
+    # Track the event loop associated with the async client to avoid
+    # reusing a client bound to a closed event loop across tests/runs
+    _async_client_loop: asyncio.AbstractEventLoop | None = PrivateAttr(default=None)
 
-    def __init__(
-        self,
-        model: str,
-        base_url: str = "http://localhost:11434",
-        temperature: float = 0.75,
-        context_window: int = DEFAULT_CONTEXT_WINDOW,
-        request_timeout: float = DEFAULT_REQUEST_TIMEOUT,
-        prompt_key: str = "prompt",
-        json_mode: bool = False,
-        additional_kwargs: dict[str, Any] | None = None,
-        client: ollama_sdk.Client | None = None,                # type: ignore
-        async_client: ollama_sdk.AsyncClient | None = None,     # type: ignore
-        is_function_calling_model: bool = True,
-        keep_alive: float | str | None = None,
-        **kwargs: Any,
-    ) -> None:
-        """Initialize the Ollama LLM adapter with configuration and optional clients.
-
-        Creates an Ollama LLM instance with the specified model and connection
-        parameters. Clients can be pre-constructed and passed in, or they will
-        be created lazily on first use. The instance inherits from FunctionCallingLLM
-        and ChatToCompletionMixin to provide complete chat and structured output support.
-
-        Args:
-            model: Identifier of the Ollama model (e.g., "llama3.1", "mistral").
-            base_url: URL where the Ollama server is hosted. Defaults to "http://localhost:11434".
-            temperature: Sampling temperature between 0.0 (deterministic) and 1.0 (random).
-                Defaults to 0.75.
-            context_window: Maximum context tokens the model can process. Defaults to
-                DEFAULT_CONTEXT_WINDOW.
-            request_timeout: Timeout in seconds for API requests. Defaults to 60.0.
-            prompt_key: Key used for prompt formatting in API calls. Defaults to "prompt".
-            json_mode: Whether to request JSON-formatted responses via the format parameter.
-                Defaults to False.
-            additional_kwargs: Extra provider-specific options passed to Ollama under "options".
-                Defaults to empty dict.
-            client: Pre-constructed synchronous Ollama client. If None, created lazily.
-            async_client: Pre-constructed asynchronous Ollama client. If None, created per event loop.
-            is_function_calling_model: Whether this model supports tool/function calling.
-                Defaults to True.
-            keep_alive: Duration to keep model loaded in memory (e.g., "5m", "1h", or float seconds).
-                Defaults to "5m".
-            **kwargs: Reserved for future extensions and base class compatibility.
-
-        Examples:
-            - Initialize with minimal configuration
-                ```python
-                >>> from serapeum.ollama import Ollama  # type: ignore[attr-defined]
-                >>> llm = Ollama(model="llama3.1")
-                >>> llm.model
-                'llama3.1'
-
-                ```
-            - Initialize with custom server and timeout
-                ```python
-                >>> llm = Ollama(
-                ...     model="mistral",
-                ...     base_url="http://custom-server:11434",
-                ...     request_timeout=120.0,
-                ...     temperature=0.5
-                ... )
-                >>> llm.temperature
-                0.5
-
-                ```
-            - Enable JSON mode for structured outputs
-                ```python
-                >>> llm = Ollama(model="llama3.1", json_mode=True)
-                >>> llm.json_mode
-                True
-
-                ```
-        """
-        if additional_kwargs is None:
-            additional_kwargs = {}
-
-        super().__init__(
-            model=model,
-            base_url=base_url,
-            temperature=temperature,
-            context_window=context_window,
-            request_timeout=request_timeout,
-            prompt_key=prompt_key,
-            json_mode=json_mode,
-            additional_kwargs=additional_kwargs,
-            is_function_calling_model=is_function_calling_model,
-            keep_alive=keep_alive,
-            **kwargs,
-        )
-
-        self._client = client
-        self._async_client = async_client
-        # Track the event loop associated with the async client to avoid
-        # reusing a client bound to a closed event loop across tests/runs
-        self._async_client_loop: asyncio.AbstractEventLoop | None = None
+    def _build_client_kwargs(self) -> dict[str, Any]:
+        """Extend base client kwargs with the request timeout for the LLM client."""
+        return {**super()._build_client_kwargs(), "timeout": self.request_timeout}
 
     @classmethod
     def class_name(cls) -> str:
@@ -359,11 +381,11 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 ```python
                 >>> from serapeum.ollama import Ollama      # type: ignore[attr-defined]
                 >>> Ollama.class_name()
-                'Ollama_llm'
+                'Ollama'
 
                 ```
         """
-        return "Ollama_llm"
+        return "Ollama"
 
     @property
     def metadata(self) -> Metadata:
@@ -410,7 +432,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 ```
         """
         if self._client is None:
-            self._client = ollama_sdk.Client(host=self.base_url, timeout=self.request_timeout)      # type: ignore
+            self._client = ollama_sdk.Client(**self._build_client_kwargs())      # type: ignore
         return self._client
 
     def _ensure_async_client(self) -> ollama_sdk.AsyncClient:   # type: ignore
@@ -440,12 +462,12 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         except RuntimeError:
             current_loop = None  # No running loop available in this context
 
+        client_kwargs = self._build_client_kwargs()
+
         cached_loop = getattr(self, "_async_client_loop", None)
         if self._async_client is None:
             # No client yet: create and bind to current loop (may be None)
-            self._async_client = ollama_sdk.AsyncClient(        # type: ignore
-                host=self.base_url, timeout=self.request_timeout
-            )
+            self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
             self._async_client_loop = current_loop
         else:
             # If no loop recorded yet (e.g., injected client), bind without recreation
@@ -457,15 +479,11 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 and hasattr(current_loop, "is_closed")
                 and current_loop.is_closed()
             ):
-                self._async_client = ollama_sdk.AsyncClient(        # type: ignore
-                    host=self.base_url, timeout=self.request_timeout
-                )
+                self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
                 self._async_client_loop = current_loop
             # Or if the cached loop has been closed since creation
             elif hasattr(cached_loop, "is_closed") and cached_loop.is_closed():
-                self._async_client = ollama_sdk.AsyncClient(        # type: ignore
-                    host=self.base_url, timeout=self.request_timeout
-                )
+                self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
                 self._async_client_loop = current_loop
             else:
                 # Reuse existing client even if loop identity differs but both are open
@@ -705,7 +723,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         if isinstance(user_msg, str):
             user_msg = Message(role=MessageRole.USER, content=user_msg)
 
-        messages = chat_history or []
+        messages = list(chat_history or [])
         if user_msg:
             messages.append(user_msg)
 
@@ -766,7 +784,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
 
     def get_tool_calls_from_response(
         self,
-        response: "ChatResponse",
+        response: ChatResponse,
         error_on_no_tool_call: bool = True,
     ) -> list[ToolCallArguments]:
         """Extract tool call selections from a chat response.
@@ -848,7 +866,49 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
 
         return tool_selections
 
-    def chat(self, messages: MessageList, **kwargs: Any) -> ChatResponse:
+    @staticmethod
+    def _build_chat_response(raw: Any) -> ChatResponse:
+        """Build a ``ChatResponse`` from a raw (non-streaming) Ollama API response.
+
+        Converts the SDK response object to a plain dict, extracts tool calls and
+        token usage, then constructs a typed ``ChatResponse``.
+
+        Args:
+            raw: The response object returned by ``ollama.Client.chat`` or
+                ``ollama.AsyncClient.chat`` with ``stream=False``.
+
+        Returns:
+            ChatResponse: Typed response with message content, role, tool calls,
+            and token usage populated in ``raw["usage"]`` when available.
+
+        Examples:
+            - Build a response from a minimal raw dict
+                ```python
+                >>> from serapeum.ollama import Ollama  # type: ignore
+                >>> raw = {"message": {"role": "assistant", "content": "Hi"}}
+                >>> resp = Ollama._build_chat_response(raw)
+                >>> resp.message.content
+                'Hi'
+                >>> resp.message.additional_kwargs["tool_calls"]
+                []
+
+                ```
+        """
+        raw = dict(raw)
+        tool_calls = raw["message"].get("tool_calls") or []
+        token_counts = Ollama._get_response_token_counts(raw)
+        if token_counts:
+            raw["usage"] = token_counts
+        return ChatResponse(
+            message=Message(
+                content=raw["message"]["content"],
+                role=raw["message"]["role"],
+                additional_kwargs={"tool_calls": tool_calls},
+            ),
+            raw=raw,
+        )
+
+    def chat(self, messages: MessageList | list[Message], **kwargs: Any) -> ChatResponse:
         """Send a chat request to Ollama and return the assistant message.
 
         Args:
@@ -889,21 +949,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             keep_alive=self.keep_alive,
         )
 
-        response = dict(response)
-
-        tool_calls = response["message"].get("tool_calls", [])
-        token_counts = self._get_response_token_counts(response)
-        if token_counts:
-            response["usage"] = token_counts
-
-        return ChatResponse(
-            message=Message(
-                content=response["message"]["content"],
-                role=response["message"]["role"],
-                additional_kwargs={"tool_calls": tool_calls},
-            ),
-            raw=response,
-        )
+        return self._build_chat_response(response)
 
     @staticmethod
     def _parse_tool_call_response(
@@ -989,7 +1035,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             raw=r,
         )
 
-    def stream_chat(self, messages: MessageList, **kwargs: Any) -> ChatResponseGen:
+    def stream_chat(self, messages: MessageList | list[Message], **kwargs: Any) -> ChatResponseGen:
         """Stream assistant deltas for a chat request.
 
         Args:
@@ -1046,7 +1092,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         return gen()
 
     async def astream_chat(
-        self, messages: MessageList, **kwargs: Any
+        self, messages: MessageList | list[Message], **kwargs: Any
     ) -> ChatResponseAsyncGen:
         """Asynchronously stream assistant deltas for a chat request.
 
@@ -1119,7 +1165,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
 
         return gen()
 
-    async def achat(self, messages: MessageList, **kwargs: Any) -> ChatResponse:
+    async def achat(self, messages: MessageList | list[Message], **kwargs: Any) -> ChatResponse:
         """Asynchronously send a chat request and return the complete assistant message.
 
         Async variant of the chat method that sends messages to Ollama and waits
@@ -1171,21 +1217,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             keep_alive=self.keep_alive,
         )
 
-        response = dict(response)
-
-        tool_calls = response["message"].get("tool_calls", [])
-        token_counts = self._get_response_token_counts(response)
-        if token_counts:
-            response["usage"] = token_counts
-
-        return ChatResponse(
-            message=Message(
-                content=response["message"]["content"],
-                role=response["message"]["role"],
-                additional_kwargs={"tool_calls": tool_calls},
-            ),
-            raw=response,
-        )
+        return self._build_chat_response(response)
 
     def structured_predict(
         self,
@@ -1217,13 +1249,14 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         Examples:
             - Extract structured data from unstructured text
                 ```python
+                >>> from examples.core.structured_outputs.structured_outputs import api_key                >>> import os
                 >>> from pydantic import BaseModel, Field
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> from serapeum.ollama import Ollama      # type: ignore
                 >>> class Person(BaseModel):
                 ...     name: str = Field(description="Person's full name")
                 ...     age: int = Field(description="Person's age in years")
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", api_key=os.environ['OLLAMA_API_KEY'], request_timeout=120)     # doctest: +SKIP
                 >>> prompt = PromptTemplate("Extract person info: {text}")  # doctest: +SKIP
                 >>> result = llm.structured_predict(    # doctest: +SKIP
                 ...     Person,
@@ -1381,14 +1414,14 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 messages = prompt.format_messages(**prompt_args)
                 response_gen = self.stream_chat(messages, **llm_kwargs)
 
+                processor = StreamingObjectProcessor(
+                    output_cls=output_cls,
+                    flexible_mode=True,
+                    allow_parallel_tool_calls=False,
+                )
                 cur_objects = None
                 for response in response_gen:
                     try:
-                        processor = StreamingObjectProcessor(
-                            output_cls=output_cls,
-                            flexible_mode=True,
-                            allow_parallel_tool_calls=False,
-                        )
                         objects = processor.process(response, cur_objects)
 
                         cur_objects = (
@@ -1472,14 +1505,14 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 messages = prompt.format_messages(**prompt_args)
                 response_gen = await self.astream_chat(messages, **llm_kwargs)
 
+                processor = StreamingObjectProcessor(
+                    output_cls=output_cls,
+                    flexible_mode=True,
+                    allow_parallel_tool_calls=False,
+                )
                 cur_objects = None
                 async for response in response_gen:
                     try:
-                        processor = StreamingObjectProcessor(
-                            output_cls=output_cls,
-                            flexible_mode=True,
-                            allow_parallel_tool_calls=False,
-                        )
                         objects = processor.process(response, cur_objects)
 
                         cur_objects = (

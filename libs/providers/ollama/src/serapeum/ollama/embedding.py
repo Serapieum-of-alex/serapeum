@@ -9,14 +9,14 @@ performance. All operations support both synchronous and asynchronous execution.
 from __future__ import annotations
 from typing import Any, Sequence
 
-from pydantic import Field, PrivateAttr, model_validator
+from pydantic import Field, model_validator
 
 import ollama as ollama_sdk
 from serapeum.core.embeddings import BaseEmbedding
-from serapeum.ollama.llm import DEFAULT_BASE_URL, OLLAMA_CLOUD_BASE_URL
+from serapeum.ollama.client import OllamaClientMixin
 
 
-class OllamaEmbedding(BaseEmbedding):
+class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
     """Ollama-based embedding model for generating text and query vector representations.
 
     This class provides a complete embedding interface using Ollama models, supporting
@@ -111,18 +111,6 @@ class OllamaEmbedding(BaseEmbedding):
         serapeum.core.embeddings: Core embedding abstractions and utilities.
     """
 
-    base_url: str = Field(
-        default=DEFAULT_BASE_URL,
-        description="Base url the model is hosted by Ollama",
-    )
-    api_key: str | None = Field(
-        default=None,
-        description=(
-            "API key for authenticated Ollama endpoints (e.g. Ollama Cloud). "
-            "When set and base_url is the local default, base_url is automatically "
-            "switched to the Ollama Cloud endpoint."
-        ),
-    )
     model_name: str = Field(description="The Ollama model to use.")
     ollama_additional_kwargs: dict[str, Any] = Field(
         default_factory=dict, description="Additional kwargs for the Ollama API."
@@ -154,44 +142,9 @@ class OllamaEmbedding(BaseEmbedding):
         description="Additional kwargs for the Ollama client initialization.",
     )
 
-    _client: ollama_sdk.Client = PrivateAttr()      # type: ignore
-    _async_client: ollama_sdk.AsyncClient = PrivateAttr()       # type: ignore
-
-    @model_validator(mode="after")
-    def _resolve_base_url(self) -> "OllamaEmbedding":
-        """Switch base_url to the Ollama Cloud endpoint when an api_key is provided.
-
-        If the user supplies an ``api_key`` but leaves ``base_url`` at the local
-        default, it is automatically redirected to ``OLLAMA_CLOUD_BASE_URL``.
-        An explicit non-default ``base_url`` is always respected.
-
-        Returns:
-            The OllamaEmbedding instance with ``base_url`` updated when appropriate.
-
-        Examples:
-            - Cloud URL auto-resolved from api_key
-                ```python
-                >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
-                >>> embedder = OllamaEmbedding(model_name="nomic-embed-text", api_key="secret")  # doctest: +SKIP
-                >>> embedder.base_url  # doctest: +SKIP
-                'https://api.ollama.com'
-
-                ```
-            - Explicit base_url is never overridden
-                ```python
-                >>> embedder = OllamaEmbedding(  # doctest: +SKIP
-                ...     model_name="nomic-embed-text",
-                ...     api_key="secret",
-                ...     base_url="http://my-host:11434",
-                ... )
-                >>> embedder.base_url  # doctest: +SKIP
-                'http://my-host:11434'
-
-                ```
-        """
-        if self.api_key and self.base_url == DEFAULT_BASE_URL:
-            self.base_url = OLLAMA_CLOUD_BASE_URL
-        return self
+    def _build_client_kwargs(self) -> dict:
+        """Extend base client kwargs with any extra client_kwargs for the embedding client."""
+        return {**super()._build_client_kwargs(), **self.client_kwargs}
 
     @model_validator(mode="after")
     def _initialize_clients(self) -> "OllamaEmbedding":
@@ -200,7 +153,8 @@ class OllamaEmbedding(BaseEmbedding):
         This validator runs automatically after all fields are validated during
         instance creation. It creates both sync and async Ollama clients configured
         with the specified base_url, any additional client kwargs, and an
-        Authorization header when an api_key is provided.
+        Authorization header when an api_key is provided. Skips creation when a
+        client was already injected via the constructor.
 
         Returns:
             The OllamaEmbedding instance with initialized clients.
@@ -214,11 +168,11 @@ class OllamaEmbedding(BaseEmbedding):
 
                 ```
         """
-        client_kwargs = {"host": self.base_url, **self.client_kwargs}
-        if self.api_key:
-            client_kwargs["headers"] = {"Authorization": f"Bearer {self.api_key}"}
-        self._client = ollama_sdk.Client(**client_kwargs)       # type: ignore
-        self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
+        client_kwargs = self._build_client_kwargs()
+        if self._client is None:
+            self._client = ollama_sdk.Client(**client_kwargs)       # type: ignore
+        if self._async_client is None:
+            self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
         return self
 
     @classmethod

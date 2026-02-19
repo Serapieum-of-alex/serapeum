@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 
 from serapeum.ollama import OllamaEmbedding
-from serapeum.ollama.llm import DEFAULT_BASE_URL, OLLAMA_CLOUD_BASE_URL
+from serapeum.ollama.client import DEFAULT_BASE_URL, OLLAMA_CLOUD_BASE_URL
 
 # ollama cloud does not have any embedding models, so do not run the e2e tests
 cloud_client = None

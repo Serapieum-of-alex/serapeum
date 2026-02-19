@@ -20,7 +20,7 @@ import inspect
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Generator
 
 import ollama as ollama_sdk  # type: ignore[attr-defined]
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llms import (
@@ -41,13 +41,12 @@ from serapeum.core.llms.orchestrators import StreamingObjectProcessor
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ArgumentCoercer, ToolCallArguments
 from serapeum.core.types import StructuredLLMMode
+from serapeum.ollama.client import OllamaClientMixin
 
 if TYPE_CHECKING:
     from serapeum.core.tools.types import BaseTool
 
 DEFAULT_REQUEST_TIMEOUT = 60.0
-DEFAULT_BASE_URL = "http://localhost:11434"
-OLLAMA_CLOUD_BASE_URL = "https://api.ollama.com"
 
 
 def get_additional_kwargs(
@@ -132,7 +131,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
         response.message.additional_kwargs["tool_calls"] = [tool_calls[0]]
 
 
-class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
+class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
     """Ollama.
 
     This class integrates with the local/remote Ollama server to provide chat,
@@ -212,18 +211,6 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    base_url: str = Field(
-        default=DEFAULT_BASE_URL,
-        description="Base url the model is hosted under.",
-    )
-    api_key: str | None = Field(
-        default=None,
-        description=(
-            "API key for authenticated Ollama endpoints (e.g. Ollama Cloud). "
-            "When set and base_url is the local default, base_url is automatically "
-            "switched to the Ollama Cloud endpoint."
-        ),
-    )
     model: str = Field(description="The Ollama model to use.")
     temperature: float = Field(
         default=0.75,
@@ -260,116 +247,13 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         description="controls how long the model will stay loaded into memory following the request(default: 5m)",
     )
 
-    _client: ollama_sdk.Client | None = PrivateAttr(default=None)       # type: ignore
-    _async_client: ollama_sdk.AsyncClient | None = PrivateAttr(default=None)        # type: ignore
     # Track the event loop associated with the async client to avoid
     # reusing a client bound to a closed event loop across tests/runs
     _async_client_loop: asyncio.AbstractEventLoop | None = PrivateAttr(default=None)
 
-    @model_validator(mode="wrap")
-    @classmethod
-    def _inject_clients(cls, data: Any, handler: Any) -> "Ollama":
-        """Extract SDK client objects before Pydantic validates fields, then inject them.
-
-        ``client`` and ``async_client`` are external SDK objects that cannot be
-        declared as regular Pydantic fields. This validator pops them from the
-        raw input dict so Pydantic never sees them, lets the normal validation
-        pipeline run via ``handler``, and then writes the objects into the
-        appropriate private attributes on the resulting instance.
-
-        Args:
-            data: Raw constructor input — typically a ``dict`` of keyword arguments.
-            handler: Pydantic's next validation step; calling it produces the
-                validated ``Ollama`` instance.
-
-        Returns:
-            Ollama: Fully validated instance with ``_client`` and ``_async_client``
-            set (or left as ``None`` for lazy initialisation).
-
-        Examples:
-            - Initialize with minimal configuration
-                ```python
-                >>> from serapeum.ollama import Ollama  # type: ignore[attr-defined]
-                >>> llm = Ollama(model="llama3.1")
-                >>> llm.model
-                'llama3.1'
-
-                ```
-            - Initialize with custom server and timeout
-                ```python
-                >>> llm = Ollama(
-                ...     model="mistral",
-                ...     base_url="http://custom-server:11434",
-                ...     request_timeout=120.0,
-                ...     temperature=0.5,
-                ... )
-                >>> llm.temperature
-                0.5
-
-                ```
-            - Enable JSON mode for structured outputs
-                ```python
-                >>> llm = Ollama(model="llama3.1", json_mode=True)
-                >>> llm.json_mode
-                True
-
-                ```
-        """
-        client = None
-        async_client = None
-        if isinstance(data, dict):
-            client = data.pop("client", None)
-            async_client = data.pop("async_client", None)
-
-        instance = handler(data)
-
-        if client is not None:
-            instance._client = client
-        if async_client is not None:
-            instance._async_client = async_client
-
-        return instance
-
-    @model_validator(mode="after")
-    def _resolve_base_url(self) -> "Ollama":
-        """Switch base_url to the Ollama Cloud endpoint when an api_key is provided.
-
-        If the user supplies an ``api_key`` but leaves ``base_url`` at the local
-        default, it is almost certainly a mistake to hit ``localhost``.  This
-        validator detects that situation and silently redirects to
-        ``OLLAMA_CLOUD_BASE_URL``.  An explicit non-default ``base_url`` is
-        always respected so custom remote deployments are not affected.
-
-        Returns:
-            Ollama: The same instance with ``base_url`` updated when appropriate.
-
-        Examples:
-            - Cloud URL auto-resolved from api_key
-                ```python
-                >>> from serapeum.ollama import Ollama  # type: ignore[attr-defined]
-                >>> llm = Ollama(model="m", api_key="secret")
-                >>> llm.base_url
-                'https://api.ollama.com'
-
-                ```
-            - Explicit base_url is never overridden
-                ```python
-                >>> llm = Ollama(model="m", api_key="secret", base_url="http://my-host:11434")
-                >>> llm.base_url
-                'http://my-host:11434'
-
-                ```
-            - Local usage unchanged without api_key
-                ```python
-                >>> llm = Ollama(model="m")
-                >>> llm.base_url
-                'http://localhost:11434'
-
-                ```
-        """
-        if self.api_key and self.base_url == DEFAULT_BASE_URL:
-            self.base_url = OLLAMA_CLOUD_BASE_URL
-        return self
+    def _build_client_kwargs(self) -> dict[str, Any]:
+        """Extend base client kwargs with the request timeout for the LLM client."""
+        return {**super()._build_client_kwargs(), "timeout": self.request_timeout}
 
     @classmethod
     def class_name(cls) -> str:
@@ -387,7 +271,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
 
                 ```
         """
-        return "Ollama_llm"
+        return "Ollama"
 
     @property
     def metadata(self) -> Metadata:
@@ -434,10 +318,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
                 ```
         """
         if self._client is None:
-            kwargs = {"host": self.base_url, "timeout": self.request_timeout}
-            if self.api_key:
-                kwargs["headers"] = {"Authorization": f"Bearer {self.api_key}"}
-            self._client = ollama_sdk.Client(**kwargs)      # type: ignore
+            self._client = ollama_sdk.Client(**self._build_client_kwargs())      # type: ignore
         return self._client
 
     def _ensure_async_client(self) -> ollama_sdk.AsyncClient:   # type: ignore
@@ -467,9 +348,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         except RuntimeError:
             current_loop = None  # No running loop available in this context
 
-        client_kwargs: dict[str, Any] = {"host": self.base_url, "timeout": self.request_timeout}
-        if self.api_key:
-            client_kwargs["headers"] = {"Authorization": f"Bearer {self.api_key}"}
+        client_kwargs = self._build_client_kwargs()
 
         cached_loop = getattr(self, "_async_client_loop", None)
         if self._async_client is None:
@@ -791,7 +670,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
 
     def get_tool_calls_from_response(
         self,
-        response: "ChatResponse",
+        response: ChatResponse,
         error_on_no_tool_call: bool = True,
     ) -> list[ToolCallArguments]:
         """Extract tool call selections from a chat response.
@@ -915,7 +794,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             raw=raw,
         )
 
-    def chat(self, messages: MessageList, **kwargs: Any) -> ChatResponse:
+    def chat(self, messages: MessageList | list[Message], **kwargs: Any) -> ChatResponse:
         """Send a chat request to Ollama and return the assistant message.
 
         Args:
@@ -1042,7 +921,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
             raw=r,
         )
 
-    def stream_chat(self, messages: MessageList, **kwargs: Any) -> ChatResponseGen:
+    def stream_chat(self, messages: MessageList | list[Message], **kwargs: Any) -> ChatResponseGen:
         """Stream assistant deltas for a chat request.
 
         Args:
@@ -1099,7 +978,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
         return gen()
 
     async def astream_chat(
-        self, messages: MessageList, **kwargs: Any
+        self, messages: MessageList | list[Message], **kwargs: Any
     ) -> ChatResponseAsyncGen:
         """Asynchronously stream assistant deltas for a chat request.
 
@@ -1172,7 +1051,7 @@ class Ollama(ChatToCompletionMixin, FunctionCallingLLM):
 
         return gen()
 
-    async def achat(self, messages: MessageList, **kwargs: Any) -> ChatResponse:
+    async def achat(self, messages: MessageList | list[Message], **kwargs: Any) -> ChatResponse:
         """Asynchronously send a chat request and return the complete assistant message.
 
         Async variant of the chat method that sends messages to Ollama and waits

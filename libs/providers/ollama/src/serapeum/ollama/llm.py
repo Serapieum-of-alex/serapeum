@@ -197,35 +197,44 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             created per event loop on first access.
 
     Examples:
-        - Basic chat with a local Ollama server
+        - Basic chat via Ollama Cloud
             ```python
+            >>> import os
             >>> from serapeum.core.llms import Message, MessageRole
-            >>> from serapeum.ollama import Ollama      # type: ignore
-            >>> llm = Ollama(model="llama3.1", request_timeout=120)  # doctest: +SKIP
-            >>> response = llm.chat([  # doctest: +SKIP
-            ...     Message(role=MessageRole.USER, content="Say hello.")
-            ... ])
-            >>> print(response)  # doctest: +SKIP
-            'Hello! How are you today? Is there something I can help you with or would you like to chat?'
+            >>> from serapeum.ollama import Ollama  # type: ignore
+            >>> llm = Ollama(
+            ...     model="qwen3-next:80b",
+            ...     api_key=os.environ.get("OLLAMA_API_KEY"),
+            ...     temperature=0.0,
+            ...     request_timeout=120,
+            ... )
+            >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'hello'.")])
+            >>> print(response) # doctest: +SKIP
+            assistant:
+
+            hello
 
             ```
-        - Connecting to Ollama Cloud — base_url switches automatically
+        - Supplying api_key automatically switches base_url to Ollama Cloud
             ```python
+            >>> import os
             >>> from serapeum.ollama import Ollama  # type: ignore
-            >>> llm = Ollama(model="llama3.1", api_key="ok-...")  # doctest: +SKIP
-            >>> llm.base_url  # doctest: +SKIP
-            'https://api.ollama.com'
+            >>> from serapeum.ollama.client import OLLAMA_CLOUD_BASE_URL
+            >>> llm = Ollama(model="qwen3-next:80b", api_key=os.environ.get("OLLAMA_API_KEY"))
+            >>> llm.base_url == OLLAMA_CLOUD_BASE_URL
+            True
 
             ```
-        - Confirming that api_key is excluded from serialisation
+        - api_key is excluded from model_dump() — it is never serialised
             ```python
+            >>> import os
             >>> from serapeum.ollama import Ollama  # type: ignore
-            >>> llm = Ollama(model="llama3.1", api_key="secret")
+            >>> llm = Ollama(model="qwen3-next:80b", api_key=os.environ.get("OLLAMA_API_KEY"))
             >>> "api_key" in llm.model_dump()
             False
 
             ```
-        - Injecting a mock client for unit tests (no network required)
+        - Inject a mock client for unit tests (no network required)
             ```python
             >>> from unittest.mock import MagicMock
             >>> from serapeum.ollama import Ollama  # type: ignore
@@ -235,53 +244,70 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             True
 
             ```
-        - Streaming chat deltas
+        - Stream chat deltas via Ollama Cloud
             ```python
+            >>> import os
             >>> from serapeum.core.llms import Message, MessageRole
             >>> from serapeum.ollama import Ollama  # type: ignore
-            >>> llm = Ollama(model="llama3.1", request_timeout=120)  # doctest: +SKIP
-            >>> chunks = list(llm.stream_chat([  # doctest: +SKIP
-            ...     Message(role=MessageRole.USER, content="Count to 3.")
+            >>> llm = Ollama(
+            ...     model="qwen3-next:80b",
+            ...     api_key=os.environ.get("OLLAMA_API_KEY"),
+            ...     temperature=0.0,
+            ...     request_timeout=120,
+            ... )
+            >>> chunks = list(llm.stream_chat([
+            ...     Message(role=MessageRole.USER, content="Say 'hello'.")
             ... ]))
-            >>> all(c.delta is not None for c in chunks)  # doctest: +SKIP
-            True
+            >>> chunks
+            [ChatResponse(raw={'model': 'qwen3-next:80b', ... chunks=[TextChunk(content='', path=None, url=None, type='text')])),
+            ChatResponse(raw={'model': 'qwen3-next:80b', ...  chunks=[TextChunk(content='', path=None, url=None, type='text')])),
+            ChatResponse(raw={'model': 'qwen3-next:80b', ... chunks=[TextChunk(content='', path=None, url=None, type='text')])),
+            ChatResponse(raw={'model': 'qwen3-next:80b', ... chunks=[TextChunk(content='', path=None, url=None, type='text')])),
+            ...
 
             ```
         - Structured output parsed into a Pydantic model
             ```python
+            >>> import os
             >>> from pydantic import BaseModel
             >>> from serapeum.core.prompts import PromptTemplate
             >>> from serapeum.ollama import Ollama  # type: ignore
             >>> class Capital(BaseModel):
             ...     city: str
             ...     country: str
-            >>> llm = Ollama(model="llama3.1", request_timeout=120)  # doctest: +SKIP
-            >>> prompt = PromptTemplate("Extract: {text}")  # doctest: +SKIP
-            >>> result = llm.structured_predict(  # doctest: +SKIP
+            >>> llm = Ollama(
+            ...     model="qwen3-next:80b",
+            ...     api_key=os.environ.get("OLLAMA_API_KEY"),
+            ...     temperature=0.0,
+            ...     request_timeout=120,
+            ... )
+            >>> prompt = PromptTemplate("Extract city and country from: {text}")
+            >>> result = llm.structured_predict(
             ...     Capital, prompt, text="Paris is the capital of France."
             ... )
-            >>> result  # doctest: +SKIP
-            Capital(city='Paris', country='France')
-
-            ```
-        - Listing all models available on the server
-            ```python
-            >>> from serapeum.ollama import Ollama  # type: ignore
-            >>> llm = Ollama(model="llama3.1")
-            >>> models = llm.list_models()  # doctest: +SKIP
-            >>> isinstance(models, list)    # doctest: +SKIP
+            >>> isinstance(result, Capital)
             True
 
             ```
-        - Async listing of available models
+        - List all models available on the Ollama Cloud server
             ```python
-            >>> import asyncio
+            >>> import os
             >>> from serapeum.ollama import Ollama  # type: ignore
-            >>> llm = Ollama(model="llama3.1")
-            >>> async def get_models():          # doctest: +SKIP
+            >>> llm = Ollama(model="qwen3-next:80b", api_key=os.environ.get("OLLAMA_API_KEY"))
+            >>> models = llm.list_models()
+            >>> isinstance(models, list)
+            True
+
+            ```
+        - Async model listing via Ollama Cloud
+            ```python
+            >>> import asyncio, os
+            >>> from serapeum.ollama import Ollama  # type: ignore
+            >>> llm = Ollama(model="qwen3-next:80b", api_key=os.environ.get("OLLAMA_API_KEY"))
+            >>> async def get_models():
             ...     return await llm.alist_models()
-            >>> asyncio.run(get_models())        # doctest: +SKIP
-            ['llama3.1:latest', 'mistral:latest']
+            >>> isinstance(asyncio.run(get_models()), list)
+            True
 
             ```
 
@@ -1223,13 +1249,14 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         Examples:
             - Extract structured data from unstructured text
                 ```python
+                >>> from examples.core.structured_outputs.structured_outputs import api_key                >>> import os
                 >>> from pydantic import BaseModel, Field
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> from serapeum.ollama import Ollama      # type: ignore
                 >>> class Person(BaseModel):
                 ...     name: str = Field(description="Person's full name")
                 ...     age: int = Field(description="Person's age in years")
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", api_key=os.environ['OLLAMA_API_KEY'], request_timeout=120)     # doctest: +SKIP
                 >>> prompt = PromptTemplate("Extract person info: {text}")  # doctest: +SKIP
                 >>> result = llm.structured_predict(    # doctest: +SKIP
                 ...     Person,

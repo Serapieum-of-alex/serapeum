@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -4275,7 +4275,7 @@
 <p>Using <code>ToolOrchestratingLLM</code> with parallel tools:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 <a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolOrchestratingLLM</span>
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>
 <a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>
 <a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">Album</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -4304,7 +4304,7 @@
 <p>Stream tool execution results:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 <a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolOrchestratingLLM</span>
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>
 <a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>
 <a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">Album</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -4332,7 +4332,7 @@
 <p>Non-blocking chat:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.base.llms.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
-<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>
 <a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>
 <a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">async_chat_example</span><span class="p">():</span>
@@ -4349,7 +4349,7 @@
 <h3 id="2-async-completion"><a class="toclink" href="#2-async-completion">2. Async Completion</a><a class="headerlink" href="#2-async-completion" title="Permanent link">#</a></h3>
 <p>Non-blocking completion:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
 <a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>
 <a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">async_complete_example</span><span class="p">():</span>
@@ -4365,7 +4365,7 @@
 <p>Non-blocking streaming:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.base.llms.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>
 <a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>
 <a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">async_stream_example</span><span class="p">():</span>
@@ -4383,7 +4383,7 @@
 <p>Process multiple requests concurrently:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.base.llms.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
-<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>
 <a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>
 <a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">process_multiple</span><span class="p">():</span>
@@ -4411,7 +4411,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 <a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolOrchestratingLLM</span>
-<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>
 <a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>
 <a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">Album</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -4440,7 +4440,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 <a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolOrchestratingLLM</span>
-<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>
 <a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>
 <a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">Album</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -4470,23 +4470,25 @@
 <h2 id="best-practices"><a class="toclink" href="#best-practices">Best Practices</a><a class="headerlink" href="#best-practices" title="Permanent link">#</a></h2>
 <h3 id="1-reuse-llm-instances"><a class="toclink" href="#1-reuse-llm-instances">1. Reuse LLM Instances</a><a class="headerlink" href="#1-reuse-llm-instances" title="Permanent link">#</a></h3>
 <p>Create once, use many times:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
 <a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="c1"># ✓ Good: Create once</span>
 <a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.1&quot;</span><span class="p">,</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
 <a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>
 <a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="c1"># Reuse for multiple calls</span>
-<a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="n">response1</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages1</span><span class="p">)</span>
-<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="n">response2</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages2</span><span class="p">)</span>
-<a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>
-<a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a><span class="c1"># ✗ Bad: Don&#39;t recreate for each call</span>
-<a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
-<a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a>    <span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.1&quot;</span><span class="p">)</span>  <span class="c1"># Inefficient</span>
-<a id="__codelineno-31-13" name="__codelineno-31-13" href="#__codelineno-31-13"></a>    <span class="k">return</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+<a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="n">message_1</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;hi&quot;</span><span class="p">)</span>
+<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="n">message_2</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;How are you?&quot;</span><span class="p">)</span>
+<a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a><span class="n">response1</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">([</span><span class="n">message_1</span><span class="p">])</span>
+<a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a><span class="n">response2</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">([</span><span class="n">message_2</span><span class="p">])</span>
+<a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a>
+<a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a><span class="c1"># ✗ Bad: Don&#39;t recreate for each call</span>
+<a id="__codelineno-31-13" name="__codelineno-31-13" href="#__codelineno-31-13"></a><span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+<a id="__codelineno-31-14" name="__codelineno-31-14" href="#__codelineno-31-14"></a>    <span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.1&quot;</span><span class="p">)</span>  <span class="c1"># Inefficient</span>
+<a id="__codelineno-31-15" name="__codelineno-31-15" href="#__codelineno-31-15"></a>    <span class="k">return</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="2-use-appropriate-timeout"><a class="toclink" href="#2-use-appropriate-timeout">2. Use Appropriate Timeout</a><a class="headerlink" href="#2-use-appropriate-timeout" title="Permanent link">#</a></h3>
 <p>Set timeout based on expected response time:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>
 <a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="c1"># Short timeout for simple queries</span>
 <a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="n">quick_llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.1&quot;</span><span class="p">,</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
@@ -4497,7 +4499,7 @@
 <h3 id="3-handle-errors-gracefully"><a class="toclink" href="#3-handle-errors-gracefully">3. Handle Errors Gracefully</a><a class="headerlink" href="#3-handle-errors-gracefully" title="Permanent link">#</a></h3>
 <p>Always handle potential errors:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.base.llms.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
-<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>
 <a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.1&quot;</span><span class="p">,</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
 <a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>
@@ -4512,7 +4514,7 @@
 </code></pre></div>
 <h3 id="4-use-json-mode-for-structured-outputs"><a class="toclink" href="#4-use-json-mode-for-structured-outputs">4. Use JSON Mode for Structured Outputs</a><a class="headerlink" href="#4-use-json-mode-for-structured-outputs" title="Permanent link">#</a></h3>
 <p>Enable when expecting JSON:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>
 <a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="c1"># Enable JSON mode</span>
 <a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
@@ -4526,7 +4528,7 @@
 <h3 id="5-monitor-response-metadata"><a class="toclink" href="#5-monitor-response-metadata">5. Monitor Response Metadata</a><a class="headerlink" href="#5-monitor-response-metadata" title="Permanent link">#</a></h3>
 <p>Use metadata for monitoring:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.base.llms.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
-<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llms.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>
 <a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.1&quot;</span><span class="p">,</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
 <a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>

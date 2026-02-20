@@ -11,16 +11,25 @@ on:
           - serapeum-ollama
           - serapeum-core
       increment:
-        description: 'Version increment type'
-        required: true
+        description: |
+          Version increment type used by commitizen for semantic versioning.
+          - patch: Bug fixes (1.0.0 -> 1.0.1)
+          - minor: New features (1.0.1 -> 1.1.0)
+          - major: Breaking changes (1.1.0 -> 2.0.0)
+        required: false
         type: choice
         options:
           - patch
           - minor
           - major
-        default: patch
+        default: 'patch'
       prerelease-type:
-        description: 'Prerelease type (none for a stable release)'
+        description: |
+          Prerelease type appended to the version (used with commitizen --prerelease flag).
+          - none: Standard release (1.0.0)
+          - alpha: Alpha release (1.0.0-alpha.1)
+          - beta: Beta release (1.0.0-beta.1)
+          - rc: Release candidate (1.0.0-rc.1)
         required: false
         type: choice
         options:
@@ -28,11 +37,14 @@ on:
           - alpha
           - beta
           - rc
-        default: none
+        default: 'none'
       draft:
-        description: 'Create as draft release'
-        type: boolean
-        default: false
+        description: |
+          Create as draft release (passed to softprops/action-gh-release).
+          - 'true': Release will be created as draft (not published)
+          - 'false': Release will be published immediately
+        required: false
+        default: 'false'
       release-branch:
         description: 'Branch to create the release from'
         required: false

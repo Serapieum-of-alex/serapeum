@@ -63,12 +63,29 @@ docs = [
 [project.urls]
 homepage = "https://github.com/Serapieum-of-alex/serapeum"
 repository = "https://github.com/Serapieum-of-alex/serapeum"
-documentation = "https://serapeum.readthedocs.io/"
-Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
+documentation = "https://serapieum-of-alex.github.io"
+Changelog = "https://serapieum-of-alex.github.io/serapeum/latest/change-log"
 
 
 [tool.hatch.build.targets.wheel]
 packages = ["libs/core/src/serapeum"]
+
+
+[tool.commitizen]
+name = "cz_customize"
+version_provider = "pep621"
+tag_format = "$version"
+changelog_file = "docs/change-log.md"
+changelog_incremental = true
+changelog_merge_prerelease = true
+
+[tool.commitizen.customize]
+message_template = "{{change_type}}:{% if show_message %} {{message}}{% endif %}"
+example = "feature: this feature enables customize through config file"
+schema = "<type>: <body>"
+schema_pattern = "(feat|fix|refactor|perf|build|ci|chore)(\\(.+\\))?: (.+)"
+changelog_pattern = "^(feat|fix|refactor|perf|build|ci|chore)(\\(.+\\))?(!)?:"
+change_type_order = ["BREAKING CHANGE", "feat", "fix", "refactor", "perf", "build", "ci", "chore"]
 
 [tool.flake8]
 ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
@@ -134,6 +151,9 @@ members = [
     "libs/core",
     "libs/providers/*",
 ]
+
+#[tool.uv]
+#managed = false
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }

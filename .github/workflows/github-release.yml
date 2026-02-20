@@ -1,39 +1,62 @@
-name: gitHub-release
-
-permissions:
-    contents: write
+name: Release Package
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - '*'
+    inputs:
+      package:
+        description: 'Package to release'
+        required: true
+        type: choice
+        options:
+          - serapeum-ollama
+          - serapeum-core
+      increment:
+        description: 'Version increment type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      prerelease-type:
+        description: 'Prerelease type (none for a stable release)'
+        required: false
+        type: choice
+        options:
+          - none
+          - alpha
+          - beta
+          - rc
+        default: none
+      draft:
+        description: 'Create as draft release'
+        type: boolean
+        default: false
 
 jobs:
-  create-release:
+  release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup GitHub CLI
+      - name: Resolve package path
         run: |
-          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-          && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-          && sudo apt update \
-          && sudo apt install gh -y
-
-      - name: Extract tag name
-        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
+          case "${{ inputs.package }}" in
+            serapeum-ollama) echo "PACKAGE_PATH=libs/providers/ollama" >> $GITHUB_ENV ;;
+            serapeum-core)   echo "PACKAGE_PATH=libs/core"             >> $GITHUB_ENV ;;
+          esac
 
       - name: Create GitHub Release
-        id: create_release
-        run: |
-          gh release create $TAG_NAME --title "$TAG_NAME"  --notes-from-tag
-        env:
-          GH_TOKEN: ${{ secrets.CREATE_RELEASE }}
+        uses: Serapieum-of-alex/github-actions/actions/release/github@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          release-branch: main
+          increment: ${{ inputs.increment }}
+          prerelease-type: ${{ inputs.prerelease-type }}
+          draft: ${{ inputs.draft }}
+          package-manager: uv
+          python-version: '3.12'
+          install-groups: 'groups: docs dev'
+          config-file: ${{ env.PACKAGE_PATH }}/pyproject.toml

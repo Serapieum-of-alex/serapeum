@@ -24,14 +24,6 @@ on:
         options:
           - serapeum-ollama
           - serapeum-core
-      repository:
-        description: 'Target PyPI registry'
-        required: true
-        type: choice
-        default: testpypi
-        options:
-          - testpypi
-          - pypi
 
 jobs:
   publish:
@@ -59,21 +51,6 @@ jobs:
           fi
           echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV
           echo "Publishing package: $PACKAGE"
-
-      - name: Resolve PyPI repository URL
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            REPO="${{ github.event.inputs.repository }}"
-          else
-            REPO="pypi"
-          fi
-
-          if [ "$REPO" = "testpypi" ]; then
-            echo "PYPI_REPO_URL=https://test.pypi.org/legacy/" >> $GITHUB_ENV
-          else
-            echo "PYPI_REPO_URL=" >> $GITHUB_ENV
-          fi
-          echo "Publishing to: ${REPO}"
 
       - name: Build and publish to PyPI
         uses: Serapieum-of-alex/github-actions/actions/release/pypi@main

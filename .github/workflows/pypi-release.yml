@@ -1,6 +1,10 @@
-# Publishes a single workspace package to PyPI when its GitHub release is created.
-# The release tag must follow the convention: {package-name}-{version}
-# e.g. serapeum-ollama-0.2.0, serapeum-core-0.1.0
+# Publishes a single workspace package to PyPI.
+#
+# Triggers:
+#   release:           Automatic on GitHub release creation.
+#                      Tag must follow: {package-name}-{version}
+#                      e.g. serapeum-ollama-0.2.0, serapeum-core-0.1.0
+#   workflow_dispatch: Manual — choose the package and target registry.
 
 name: pypi-release
 
@@ -10,7 +14,24 @@ permissions:
 on:
   release:
     types: [created]
+
   workflow_dispatch:
+    inputs:
+      package:
+        description: 'Workspace package to publish'
+        required: true
+        type: choice
+        options:
+          - serapeum-ollama
+          - serapeum-core
+      repository:
+        description: 'Target PyPI registry'
+        required: true
+        type: choice
+        default: testpypi
+        options:
+          - testpypi
+          - pypi
 
 jobs:
   publish:
@@ -19,17 +40,37 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Resolve package name from release tag
+      - name: Resolve package name
         run: |
-          # Tag format: serapeum-ollama-0.2.0 → package: serapeum-ollama
-          TAG="${{ github.event.release.tag_name }}"
-          PACKAGE=$(echo "$TAG" | sed 's/-[0-9].*//')
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PACKAGE="${{ github.event.inputs.package }}"
+          else
+            # Tag format: serapeum-ollama-0.2.0 → serapeum-ollama
+            TAG="${{ github.event.release.tag_name }}"
+            PACKAGE=$(echo "$TAG" | sed 's/-[0-9].*//')
+          fi
           echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV
-          echo "Publishing package: $PACKAGE  (tag: $TAG)"
+          echo "Publishing package: $PACKAGE"
+
+      - name: Resolve PyPI repository URL
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            REPO="${{ github.event.inputs.repository }}"
+          else
+            REPO="pypi"
+          fi
+
+          if [ "$REPO" = "testpypi" ]; then
+            echo "PYPI_REPO_URL=https://test.pypi.org/legacy/" >> $GITHUB_ENV
+          else
+            echo "PYPI_REPO_URL=" >> $GITHUB_ENV
+          fi
+          echo "Publishing to: ${REPO}"
 
       - name: Build and publish to PyPI
         uses: Serapieum-of-alex/github-actions/actions/release/pypi@main
         with:
+          package: ${{ env.PACKAGE }}
           pypi-username: __token__
           pypi-password: ${{ secrets.PYPI_TEST_PUBLISH }}
           python-version: '3.12'

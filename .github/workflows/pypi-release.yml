@@ -1,41 +1,65 @@
-# This workflows will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+# Publishes a single workspace package to PyPI.
+#
+# Triggers:
+#   workflow_run:      Automatic when github-release.yml completes successfully.
+#                      Resolves the package from the most recently pushed tag.
+#   workflow_dispatch: Manual — choose the package and target registry.
 
 name: pypi-release
 
 permissions:
-    contents: read
+  contents: read
 
 on:
-    workflow_dispatch:
-    release:
-        types: [created]
+  workflow_run:
+    workflows: ['github-release']
+    types: [completed]
+
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Workspace package to publish'
+        required: true
+        type: choice
+        options:
+          - serapeum-ollama
+          - serapeum-core
 
 jobs:
-    publish:
-        runs-on: ubuntu-latest
+  publish:
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
 
-        steps:
-            - uses: actions/checkout@v3
-            - name: Set up Python
-              uses: actions/setup-python@v4
-              with:
-                  python-version: "3.x"
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
-            - name: Set up Python
-              uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
-              with:
-                  python-version: ${{ matrix.python-version }}
-                  install-groups: dev
-                  verify-lock: true
+      - name: Resolve package name
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PACKAGE="${{ github.event.inputs.package }}"
+          else
+            # Find the most recently created package-prefixed tag with semantic version
+            git fetch --tags
+            TAG=$(git tag --sort=-creatordate | grep -E '^serapeum-(ollama|core)-[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+            echo "Detected tag: $TAG"
+            # Tag format: serapeum-ollama-0.2.0 → serapeum-ollama
+            PACKAGE=$(echo "$TAG" | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+$//')
+          fi
+          echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV
+          echo "Publishing package: $PACKAGE"
 
-            - name: Build package
-              run: uv build
-
-            - name: Build and publish
-              env:
-                  TWINE_USERNAME: ${{ secrets.PYPI_USERS }}
-                  TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-              run: |
-                  pip install twine
-                  twine upload dist/*
+      - name: Build and publish to PyPI
+        uses: Serapieum-of-alex/github-actions/actions/release/pypi@main
+        with:
+          package: ${{ env.PACKAGE }}
+          pypi-username: __token__
+          pypi-password: ${{ secrets.PYPI_TEST_PUBLISH }}
+          python-version: '3.12'
+          package-manager: 'uv'
+          install-groups: 'dev'
+          verify-lock: 'true'
+          pypi-repository-url: 'https://test.pypi.org/legacy/'

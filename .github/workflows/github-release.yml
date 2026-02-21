@@ -1,4 +1,4 @@
-name: Release Package
+name: github-release
 
 on:
   workflow_dispatch:
@@ -45,6 +45,12 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.release-branch }}
+
       - name: Check actor is a repository admin
         run: |
           PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission')
@@ -67,7 +73,6 @@ jobs:
         uses: Serapieum-of-alex/github-actions/actions/release/github@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          release-branch: ${{ inputs.release-branch }}
           increment: ${{ inputs.increment }}
           prerelease-type: ${{ inputs.prerelease-type }}
           draft: ${{ inputs.draft }}

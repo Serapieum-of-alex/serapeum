@@ -63,11 +63,16 @@ jobs:
             serapeum-core)   echo "PACKAGE_PATH=libs/core"             >> $GITHUB_ENV ;;
           esac
 
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.release-branch }}
+
       - name: Create GitHub Release
-        uses: Serapieum-of-alex/github-actions/actions/release/github@github-release/v1
+        uses: Serapieum-of-alex/github-actions/actions/release/github@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          release-branch: ${{ inputs.release-branch }}
           increment: ${{ inputs.increment }}
           prerelease-type: ${{ inputs.prerelease-type }}
           draft: ${{ inputs.draft }}

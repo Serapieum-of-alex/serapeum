@@ -62,4 +62,4 @@ jobs:
           package-manager: 'uv'
           install-groups: 'dev'
           verify-lock: 'true'
-          pypi-repository-url: 'https://test.pypi.org/legacy/
+          pypi-repository-url: 'https://test.pypi.org/legacy/'

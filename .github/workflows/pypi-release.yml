@@ -39,8 +39,7 @@ jobs:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref }}
 
       - name: Pull latest changes
-        if: github.event_name == 'workflow_run'
-        run: git pull origin ${{ github.event.workflow_run.head_branch }}
+        run: git pull
 
       - name: Resolve package name
         run: |

@@ -53,7 +53,7 @@ jobs:
           echo "Publishing package: $PACKAGE"
 
       - name: Build and publish to PyPI
-        uses: Serapieum-of-alex/github-actions/actions/release/pypi@main
+        uses: Serapieum-of-alex/github-actions/actions/release/pypi@pypi-release/v1
         with:
           package: ${{ env.PACKAGE }}
           pypi-username: __token__
@@ -62,4 +62,4 @@ jobs:
           package-manager: 'uv'
           install-groups: 'dev'
           verify-lock: 'true'
-#           pypi-repository-url: 'https://test.pypi.org/legacy/'
+          # pypi-repository-url: 'https://test.pypi.org/legacy/'

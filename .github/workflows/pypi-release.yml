@@ -50,12 +50,12 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PACKAGE="${{ github.event.inputs.package }}"
           else
-            # Find the most recently created package-prefixed tag
+            # Find the most recently created package-prefixed tag with semantic version
             git fetch --tags
-            TAG=$(git tag --sort=-creatordate | grep -E '^serapeum-(ollama|core)-[0-9]' | head -1)
+            TAG=$(git tag --sort=-creatordate | grep -E '^serapeum-(ollama|core)-[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
             echo "Detected tag: $TAG"
             # Tag format: serapeum-ollama-0.2.0 → serapeum-ollama
-            PACKAGE=$(echo "$TAG" | sed 's/-[0-9].*//')
+            PACKAGE=$(echo "$TAG" | sed 's/-[0-9]\+\.[0-9]\+\.[0-9]\+$//')
           fi
           echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV
           echo "Publishing package: $PACKAGE"

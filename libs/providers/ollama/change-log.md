@@ -1,3 +1,5 @@
+## serapeum-ollama-0.3.0 (2026-02-21)
+
 ## serapeum-ollama-0.2.0 (2026-02-21)
 
 

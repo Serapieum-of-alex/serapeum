@@ -45,6 +45,12 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.release-branch }}
+
       - name: Check actor is a repository admin
         run: |
           PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission')
@@ -62,12 +68,6 @@ jobs:
             serapeum-ollama) echo "PACKAGE_PATH=libs/providers/ollama" >> $GITHUB_ENV ;;
             serapeum-core)   echo "PACKAGE_PATH=libs/core"             >> $GITHUB_ENV ;;
           esac
-
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-          ref: ${{ inputs.release-branch }}
 
       - name: Create GitHub Release
         uses: Serapieum-of-alex/github-actions/actions/release/github@main

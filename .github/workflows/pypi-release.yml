@@ -57,9 +57,9 @@ jobs:
         with:
           package: ${{ env.PACKAGE }}
           pypi-username: __token__
-          pypi-password: ${{ secrets.PYPI_TEST_PUBLISH }}
+          pypi-password: ${{ secrets.PYPI_PUBLISH }}
           python-version: '3.12'
           package-manager: 'uv'
           install-groups: 'dev'
           verify-lock: 'true'
-          pypi-repository-url: 'https://test.pypi.org/legacy/'
+#           pypi-repository-url: 'https://test.pypi.org/legacy/'

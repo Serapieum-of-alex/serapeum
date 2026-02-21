@@ -1,41 +1,39 @@
-# This workflows will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+# Publishes a single workspace package to PyPI when its GitHub release is created.
+# The release tag must follow the convention: {package-name}-{version}
+# e.g. serapeum-ollama-0.2.0, serapeum-core-0.1.0
 
 name: pypi-release
 
 permissions:
-    contents: read
+  contents: read
 
 on:
-    workflow_dispatch:
-    release:
-        types: [created]
+  release:
+    types: [created]
+  workflow_dispatch:
 
 jobs:
-    publish:
-        runs-on: ubuntu-latest
+  publish:
+    runs-on: ubuntu-latest
 
-        steps:
-            - uses: actions/checkout@v3
-            - name: Set up Python
-              uses: actions/setup-python@v4
-              with:
-                  python-version: "3.x"
+    steps:
+      - uses: actions/checkout@v5
 
-            - name: Set up Python
-              uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
-              with:
-                  python-version: ${{ matrix.python-version }}
-                  install-groups: dev
-                  verify-lock: true
+      - name: Resolve package name from release tag
+        run: |
+          # Tag format: serapeum-ollama-0.2.0 → package: serapeum-ollama
+          TAG="${{ github.event.release.tag_name }}"
+          PACKAGE=$(echo "$TAG" | sed 's/-[0-9].*//')
+          echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV
+          echo "Publishing package: $PACKAGE  (tag: $TAG)"
 
-            - name: Build package
-              run: uv build
-
-            - name: Build and publish
-              env:
-                  TWINE_USERNAME: ${{ secrets.PYPI_USERS }}
-                  TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-              run: |
-                  pip install twine
-                  twine upload dist/*
+      - name: Build and publish to PyPI
+        uses: Serapieum-of-alex/github-actions/actions/release/pypi@main
+        with:
+          pypi-username: __token__
+          pypi-password: ${{ secrets.PYPI_TEST_PUBLISH }}
+          python-version: '3.12'
+          package-manager: 'uv'
+          install-groups: 'dev'
+          verify-lock: 'true'
+          pypi-repository-url: 'https://test.pypi.org/legacy/

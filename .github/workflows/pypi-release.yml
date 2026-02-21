@@ -1,9 +1,8 @@
 # Publishes a single workspace package to PyPI.
 #
 # Triggers:
-#   release:           Automatic on GitHub release creation.
-#                      Tag must follow: {package-name}-{version}
-#                      e.g. serapeum-ollama-0.2.0, serapeum-core-0.1.0
+#   workflow_run:      Automatic when github-release.yml completes successfully.
+#                      Resolves the package from the most recently pushed tag.
 #   workflow_dispatch: Manual — choose the package and target registry.
 
 name: pypi-release
@@ -12,8 +11,9 @@ permissions:
   contents: read
 
 on:
-  release:
-    types: [created]
+  workflow_run:
+    workflows: ['github-release']
+    types: [completed]
 
   workflow_dispatch:
     inputs:
@@ -36,17 +36,25 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Resolve package name
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PACKAGE="${{ github.event.inputs.package }}"
           else
+            # Find the most recently created package-prefixed tag
+            git fetch --tags
+            TAG=$(git tag --sort=-creatordate | grep -E '^serapeum-(ollama|core)-[0-9]' | head -1)
+            echo "Detected tag: $TAG"
             # Tag format: serapeum-ollama-0.2.0 → serapeum-ollama
-            TAG="${{ github.event.release.tag_name }}"
             PACKAGE=$(echo "$TAG" | sed 's/-[0-9].*//')
           fi
           echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV

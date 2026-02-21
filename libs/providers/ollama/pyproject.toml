@@ -62,7 +62,7 @@ allow-direct-references = true
 
 [tool.commitizen]
 name = "cz_customize"
-version_provider = "pep621"
+version_files = ["libs/providers/ollama/pyproject.toml:^version"]
 tag_format = "serapeum-ollama-$version"
 changelog_file = "change-log.md"
 changelog_incremental = true

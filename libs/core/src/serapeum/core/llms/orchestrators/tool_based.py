@@ -38,13 +38,13 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     produce structured data. It handles prompt formatting, invoking the LLM
     (sync/async), optional streaming, and parsing the tool outputs.
 
-    The class automatically detects the type of ``output_cls`` and uses the
+    The class automatically detects the type of ``output_tool`` and uses the
     appropriate factory method:
     - Pydantic models → ``CallableTool.from_model()``
     - Regular functions → ``CallableTool.from_function()``
 
     Attributes:
-        _output_cls (Union[Type[Model], Callable]): Either a Pydantic model class
+        _output_tool (Union[Type[Model], Callable]): Either a Pydantic model class
             or a callable function defining the expected output structure.
         _llm (FunctionCallingLLM): The language model with function-calling
             support. Must advertise support via ``llm.metadata.is_function_calling_model``.
@@ -74,7 +74,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         ...     value: int
         >>> llm = Ollama(model='llama3.1')
         >>> tools_llm = ToolOrchestratingLLM(
-        ...     output_cls=Output,
+        ...     output_tool=Output,
         ...     prompt='You are a helpful assistant.',
         ...     llm=llm,
         ... )
@@ -87,7 +87,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     def __init__(
         self,
         *,
-        output_cls: Union[Type[Model], Callable[..., Any]],
+        output_tool: Union[Type[Model], Callable[..., Any]],
         prompt: Union[BasePromptTemplate, str],
         llm: Optional[FunctionCallingLLM] = None,
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
@@ -97,7 +97,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         """Initialize the ToolOrchestratingLLM instance.
 
         Args:
-            output_cls (Union[Type[Model], Callable[..., Any]]): Either a Pydantic
+            output_tool (Union[Type[Model], Callable[..., Any]]): Either a Pydantic
                 model class or a callable function defining the expected output.
                 Despite the name, this accepts plain callables (not only classes).
                 If a Pydantic model is provided, it will be converted into a tool via
@@ -119,7 +119,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         Raises:
             AssertionError: If no LLM is provided and ``Configs.llm`` is not set.
             ValueError: If the provided LLM does not support function calling.
-            TypeError: If output_cls is neither a Pydantic model nor a callable.
+            TypeError: If output_tool is neither a Pydantic model nor a callable.
 
         See Also:
             - Configs: Global configuration for default LLM settings
@@ -135,11 +135,11 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> class Output(BaseModel):
             ...     value: int
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=Output,
+            ...     output_tool=Output,
             ...     prompt='Prompt here',
             ...     llm=Ollama(model='llama3.1'),
             ... )
-            >>> tools_llm.output_cls is Output
+            >>> tools_llm.output_tool is Output
             True
 
             ```
@@ -152,16 +152,16 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ...     '''Calculate the sum of two numbers.'''
             ...     return {'result': a + b}
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=calculate_sum,
+            ...     output_tool=calculate_sum,
             ...     prompt='Calculate the sum of {x} and {y}',
             ...     llm=Ollama(model='llama3.1'),
             ... )
-            >>> callable(tools_llm.output_cls)
+            >>> callable(tools_llm.output_tool)
             True
 
             ```
         """
-        self._output_cls = self._validate_output_cls(output_cls)
+        self._output_tool = self._validate_output_tool(output_tool)
         self._llm = self._validate_llm(llm)
         self._prompt = self._validate_prompt(prompt)
         self._verbose = verbose
@@ -169,19 +169,19 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         self._tool_choice = tool_choice
 
     @staticmethod
-    def _validate_output_cls(
-        output_cls: Union[Type[Model], Callable[..., Any]],
+    def _validate_output_tool(
+        output_tool: Union[Type[Model], Callable[..., Any]],
     ) -> Union[Type[Model], Callable[..., Any]]:
-        """Validate that output_cls is a Pydantic model class or a callable.
+        """Validate that output_tool is a Pydantic model class or a callable.
 
         Args:
-            output_cls (Union[Type[Model], Callable[..., Any]]): The value to validate.
+            output_tool (Union[Type[Model], Callable[..., Any]]): The value to validate.
 
         Returns:
-            Union[Type[Model], Callable[..., Any]]: The validated output_cls unchanged.
+            Union[Type[Model], Callable[..., Any]]: The validated output_tool unchanged.
 
         Raises:
-            TypeError: If output_cls is neither a Pydantic BaseModel subclass nor a callable.
+            TypeError: If output_tool is neither a Pydantic BaseModel subclass nor a callable.
 
         Examples:
         - Accept a Pydantic model class.
@@ -190,7 +190,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.core.llms import ToolOrchestratingLLM
             >>> class Out(BaseModel):
             ...     x: int
-            >>> ToolOrchestratingLLM._validate_output_cls(Out) is Out
+            >>> ToolOrchestratingLLM._validate_output_tool(Out) is Out
             True
 
             ```
@@ -199,54 +199,54 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.core.llms import ToolOrchestratingLLM
             >>> def fn(x: int) -> dict:
             ...     return {"x": x}
-            >>> ToolOrchestratingLLM._validate_output_cls(fn) is fn
+            >>> ToolOrchestratingLLM._validate_output_tool(fn) is fn
             True
 
             ```
         - Reject non-callable, non-model values.
             ```python
             >>> from serapeum.core.llms import ToolOrchestratingLLM
-            >>> ToolOrchestratingLLM._validate_output_cls(42)
+            >>> ToolOrchestratingLLM._validate_output_tool(42)
             Traceback (most recent call last):
             ...
-            TypeError: output_cls must be either a Pydantic BaseModel subclass or a callable function. Got <class 'int'>
+            TypeError: output_tool must be either a Pydantic BaseModel subclass or a callable function. Got <class 'int'>
 
             ```
         """
         if not (
-            (isinstance(output_cls, type) and issubclass(output_cls, BaseModel))
-            or callable(output_cls)
+            (isinstance(output_tool, type) and issubclass(output_tool, BaseModel))
+            or callable(output_tool)
         ):
             raise TypeError(
-                "output_cls must be either a Pydantic BaseModel subclass or a callable function. "
-                f"Got {type(output_cls)}"
+                "output_tool must be either a Pydantic BaseModel subclass or a callable function. "
+                f"Got {type(output_tool)}"
             )
-        return output_cls
+        return output_tool
 
     def _create_tool(self) -> CallableTool:
-        """Create a CallableTool from the output_cls.
+        """Create a CallableTool from the output_tool.
 
-        Automatically detects whether output_cls is a Pydantic model or a callable
+        Automatically detects whether output_tool is a Pydantic model or a callable
         function and uses the appropriate factory method.
 
         Returns:
-            CallableTool: Tool instance created from output_cls.
+            CallableTool: Tool instance created from output_tool.
 
         Raises:
-            TypeError: If output_cls is neither a Pydantic model nor a callable.
+            TypeError: If output_tool is neither a Pydantic model nor a callable.
         """
         # Check if it's a Pydantic model (class that inherits from BaseModel)
-        if isinstance(self._output_cls, type) and issubclass(
-            self._output_cls, BaseModel
+        if isinstance(self._output_tool, type) and issubclass(
+            self._output_tool, BaseModel
         ):
-            return CallableTool.from_model(self._output_cls)
+            return CallableTool.from_model(self._output_tool)
         # Check if it's a callable (function, method, or callable class)
-        elif callable(self._output_cls):
-            return CallableTool.from_function(self._output_cls)
+        elif callable(self._output_tool):
+            return CallableTool.from_function(self._output_tool)
         else:
             raise TypeError(
-                f"output_cls must be either a Pydantic BaseModel subclass or a callable function. "
-                f"Got {type(self._output_cls)}"
+                f"output_tool must be either a Pydantic BaseModel subclass or a callable function. "
+                f"Got {type(self._output_tool)}"
             )
 
     @staticmethod
@@ -335,7 +335,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         return llm
 
     @property
-    def output_cls(self) -> Union[Type[BaseModel], Callable[..., Any]]:
+    def output_tool(self) -> Union[Type[BaseModel], Callable[..., Any]]:
         """Get the output class or callable used to define the expected structure.
 
         Returns:
@@ -349,8 +349,8 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.ollama import Ollama
             >>> class Out(BaseModel):
             ...     x: int
-            >>> tools_llm = ToolOrchestratingLLM(output_cls=Out, prompt='prompt', llm=Ollama(model='llama3.1'))
-            >>> tools_llm.output_cls is Out
+            >>> tools_llm = ToolOrchestratingLLM(output_tool=Out, prompt='prompt', llm=Ollama(model='llama3.1'))
+            >>> tools_llm.output_tool is Out
             True
 
             ```
@@ -359,13 +359,13 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.ollama import Ollama
             >>> def fn(x: int) -> dict:
             ...     return {"x": x}
-            >>> tools_llm = ToolOrchestratingLLM(output_cls=fn, prompt='prompt', llm=Ollama(model='llama3.1'))
-            >>> tools_llm.output_cls is fn
+            >>> tools_llm = ToolOrchestratingLLM(output_tool=fn, prompt='prompt', llm=Ollama(model='llama3.1'))
+            >>> tools_llm.output_tool is fn
             True
 
             ```
         """
-        return self._output_cls
+        return self._output_tool
 
     @property
     def prompt(self) -> BasePromptTemplate:
@@ -381,7 +381,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.core.prompts.base import PromptTemplate
             >>> from serapeum.ollama import Ollama
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=type('M', (BaseModel,), {}),
+            ...     output_tool=type('M', (BaseModel,), {}),
             ...     prompt='Hi',
             ...     llm=Ollama(model='llama3.1'),
             ... )
@@ -406,7 +406,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.core.prompts.base import PromptTemplate
             >>> from serapeum.ollama import Ollama
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=type('M', (BaseModel,), {}),
+            ...     output_tool=type('M', (BaseModel,), {}),
             ...     prompt='Hi',
             ...     llm=Ollama(model='llama3.1'),
             ... )
@@ -457,7 +457,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ...     name: str
             ...     age: int
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=Person,
+            ...     output_tool=Person,
             ...     prompt="Extract the person's name and age from the following text: {text}",
             ...     llm=Ollama(model='llama3.1', request_timeout=80),
             ... ) # doctest: +SKIP
@@ -474,7 +474,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> class Item(BaseModel):
             ...     name: str
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=Item,
+            ...     output_tool=Item,
             ...     prompt='List three fruit names as separate tool calls.',
             ...     llm=Ollama(model='llama3.1', request_timeout=80),
             ...     allow_parallel_tool_calls=True,
@@ -600,7 +600,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> class Number(BaseModel):
             ...     n: int
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=Number,
+            ...     output_tool=Number,
             ...     prompt='Stream the numbers 1, 2, and 3 as separate tool calls.',
             ...     llm=Ollama(model='llama3.1', request_timeout=80),
             ... )
@@ -640,7 +640,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         for partial_resp in chat_response_gen:
             try:
                 processor = StreamingObjectProcessor(
-                    output_cls=self._output_cls,
+                    output_cls=self._output_tool,
                     flexible_mode=True,
                     allow_parallel_tool_calls=self._allow_parallel_tool_calls,
                     llm=self._llm,
@@ -694,7 +694,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> class Number(BaseModel):
             ...     n: int
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=Number,
+            ...     output_tool=Number,
             ...     prompt='Stream the numbers 1, 2, and 3 as separate tool calls.',
             ...     llm=Ollama(model='llama3.1', request_timeout=80),
             ... )
@@ -736,7 +736,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             async for partial_resp in chat_response_gen:
                 try:
                     processor = StreamingObjectProcessor(
-                        output_cls=self._output_cls,
+                        output_cls=self._output_tool,
                         flexible_mode=True,
                         allow_parallel_tool_calls=self._allow_parallel_tool_calls,
                         llm=self._llm,

@@ -354,7 +354,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         return output_parser, output_cls
 
     @property
-    def output_cls(self) -> Type[BaseModel]:
+    def output_tool(self) -> Type[BaseModel]:
         """Return the Pydantic model produced by this program.
 
         Returns:

@@ -831,7 +831,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> empty = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=""))
                 >>> try:
                 ...     _ = llm.get_tool_calls_from_response(empty, error_on_no_tool_call=True)
-                ... except ValueError as e:
+                ... except ToolCallError as e:
                 ...     msg = str(e)
                 >>> 'Expected at least one tool call' in msg
                 True
@@ -842,8 +842,9 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         if not tool_calls or len(tool_calls) < 1:
             if error_on_no_tool_call:
                 raise ToolCallError(
-                    f"Expected at least one tool call, but The llm response contained "
-                    f" {len(tool_calls) if tool_calls else 0} tool calls."
+                    f"Expected at least one tool call, but the LLM response contained "
+                    f"{len(tool_calls) if tool_calls else 0} tool calls.",
+                    tool_name=None,
                 )
 
             else:

@@ -6,12 +6,8 @@ from typing import (
     Any,
     AsyncGenerator,
     Callable,
-    Dict,
     Generator,
-    List,
-    Optional,
     Type,
-    Union,
 )
 
 from pydantic import BaseModel
@@ -87,10 +83,10 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     def __init__(
         self,
         *,
-        output_tool: Union[Type[Model], Callable[..., Any]],
-        prompt: Union[BasePromptTemplate, str],
-        llm: Optional[FunctionCallingLLM] = None,
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        output_tool: Type[Model] | Callable[..., Any],
+        prompt: BasePromptTemplate | str,
+        llm: FunctionCallingLLM | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
         allow_parallel_tool_calls: bool = False,
         verbose: bool = False,
     ) -> None:
@@ -170,8 +166,8 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
     @staticmethod
     def _validate_output_tool(
-        output_tool: Union[Type[Model], Callable[..., Any]],
-    ) -> Union[Type[Model], Callable[..., Any]]:
+        output_tool: Type[Model] | Callable[..., Any],
+    ) -> Type[Model] | Callable[..., Any]:
         """Validate that output_tool is a Pydantic model class or a callable.
 
         Args:
@@ -250,7 +246,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             )
 
     @staticmethod
-    def _validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
+    def _validate_prompt(prompt: BasePromptTemplate | str) -> BasePromptTemplate:
         """Validate and normalize a prompt input.
 
         If a plain string is provided, it is wrapped in a ``PromptTemplate``.
@@ -335,7 +331,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         return llm
 
     @property
-    def output_tool(self) -> Union[Type[BaseModel], Callable[..., Any]]:
+    def output_tool(self) -> Type[BaseModel] | Callable[..., Any]:
         """Get the output class or callable used to define the expected structure.
 
         Returns:
@@ -421,9 +417,9 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     def __call__(
         self,
         *args: Any,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None= None,
         **kwargs: Any,
-    ) -> Union[BaseModel, List[BaseModel]]:
+    ) -> BaseModel | list[BaseModel]:
         """Execute the program to generate structured output.
 
         Formats the prompt with provided kwargs, invokes the LLM with the function
@@ -505,9 +501,9 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     async def acall(
         self,
         *args: Any,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         **kwargs: Any,
-    ) -> Union[BaseModel, List[BaseModel]]:
+    ) -> BaseModel | list[BaseModel]:
         """Asynchronously execute the program to generate structured output.
 
         Async version of ``__call__``. Formats the prompt with provided kwargs,
@@ -563,8 +559,8 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         )
 
     def stream_call(
-        self, *args: Any, llm_kwargs: Optional[Dict[str, Any]] = None, **kwargs: Any
-    ) -> Generator[Union[Model, List[Model]], None, None]:
+        self, *args: Any, llm_kwargs: dict[str, Any] | None = None, **kwargs: Any
+    ) -> Generator[Model | list[Model], None, None]:
         """Stream structured output generation with incremental updates.
 
         Returns a generator that yields progressively refined structured objects as
@@ -653,8 +649,8 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
                 continue
 
     async def astream_call(
-        self, *args: Any, llm_kwargs: Optional[Dict[str, Any]] = None, **kwargs: Any
-    ) -> AsyncGenerator[Union[Model, List[Model]], None]:
+        self, *args: Any, llm_kwargs: dict[str, Any] | None = None, **kwargs: Any
+    ) -> AsyncGenerator[Model | list[Model], None]:
         """Asynchronously stream structured output generation with incremental updates.
 
         Async counterpart to ``stream_call``. Yields progressively refined structured
@@ -735,7 +731,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             llm=self._llm,
         )
 
-        async def gen() -> AsyncGenerator[Union[Model, List[Model]], None]:
+        async def gen() -> AsyncGenerator[Model | list[Model], None]:
             cur_objects = None
             async for partial_resp in chat_response_gen:
                 try:

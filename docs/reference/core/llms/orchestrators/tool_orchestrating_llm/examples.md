@@ -625,6 +625,7 @@ for review in reviews:
 Use deeply nested Pydantic models:
 
 ```python
+import os
 from typing import List
 from pydantic import BaseModel, Field
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -646,7 +647,7 @@ class Article(BaseModel):
     tags: List[str]
     comments: List[Comment]
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Article,

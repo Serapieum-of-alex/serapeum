@@ -38,11 +38,15 @@ class Album(BaseModel):
     songs: List[Song]
 
 # Initialize the LLM with function calling support
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(
+  model="qwen3.5:397b", 
+  api_key=os.environ.get("OLLAMA_API_KEY"), 
+  request_timeout=80
+)
 
 # Create ToolOrchestratingLLM with string prompt
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Album,
+    output_tool=Album,
     prompt="Create an album about {topic} with {num_songs} songs.",
     llm=llm,
 )
@@ -84,7 +88,7 @@ llm = Ollama(
 )
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Task,
+    output_tool=Task,
     prompt="Break down this project into tasks: {project}",
     llm=llm,
 )
@@ -114,7 +118,7 @@ class Entity(BaseModel):
 
 # No need to pass llm parameter
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Entity,
+    output_tool=Entity,
     prompt="Extract entity from: {text}",
     # llm=None uses Configs.llm by default
 )
@@ -141,7 +145,7 @@ llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), req
 
 # Force the LLM to use the tool
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Response,
+    output_tool=Response,
     prompt="Answer: {question}",
     llm=llm,
     tool_choice="auto",  # or "required" to force tool use
@@ -174,7 +178,7 @@ class Recipe(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Recipe,
+    output_tool=Recipe,
     prompt="Create a {cuisine} recipe for {dish}",  # String prompt
     llm=llm,
 )
@@ -206,7 +210,7 @@ prompt_template = PromptTemplate(
 )
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Analysis,
+    output_tool=Analysis,
     prompt=prompt_template,
     llm=llm,
 )
@@ -247,7 +251,7 @@ messages = [
 prompt = ChatPromptTemplate(message_templates=messages)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=CodeReview,
+    output_tool=CodeReview,
     prompt=prompt,
     llm=llm,
 )
@@ -276,7 +280,7 @@ class Summary(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Summary,
+    output_tool=Summary,
     prompt="Summarize: {text}",
     llm=llm,
 )
@@ -309,7 +313,7 @@ class Classification(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Classification,
+    output_tool=Classification,
     prompt="Classify: {item}",
     llm=llm,
 )
@@ -343,7 +347,7 @@ class EntityExtraction(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=EntityExtraction,
+    output_tool=EntityExtraction,
     prompt="Extract entities from: {text}",
     llm=llm,
 )
@@ -381,7 +385,7 @@ class Article(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Article,
+    output_tool=Article,
     prompt="Write an article about {topic}",
     llm=llm,
 )
@@ -412,7 +416,7 @@ class Report(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Report,
+    output_tool=Report,
     prompt="Generate report on {subject}",
     llm=llm,
 )
@@ -444,7 +448,7 @@ class Story(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Story,
+    output_tool=Story,
     prompt="Write a {genre} story",
     llm=llm,
 )
@@ -482,7 +486,7 @@ class Product(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Product,
+    output_tool=Product,
     prompt="Extract product info: {text}",
     llm=llm,
     allow_parallel_tool_calls=False,  # Default
@@ -511,7 +515,7 @@ class Item(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Item,
+    output_tool=Item,
     prompt="Extract all items from this list: {text}",
     llm=llm,
     allow_parallel_tool_calls=True,  # Enable parallel calls
@@ -542,7 +546,7 @@ class Question(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Question,
+    output_tool=Question,
     prompt="Generate 5 questions about {topic}",
     llm=llm,
     allow_parallel_tool_calls=True,
@@ -580,7 +584,7 @@ class Response(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Response,
+    output_tool=Response,
     prompt="Answer briefly: {question}",
     llm=llm,
 )
@@ -614,7 +618,7 @@ llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), req
 
 # Create reusable instance
 sentiment_analyzer = ToolOrchestratingLLM(
-    output_cls=Sentiment,
+    output_tool=Sentiment,
     prompt="Analyze sentiment of: {text}",
     llm=llm,
 )
@@ -661,7 +665,7 @@ class Article(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Article,
+    output_tool=Article,
     prompt="Create a blog article about {topic} with comments",
     llm=llm,
 )
@@ -691,7 +695,7 @@ class Data(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Data,
+    output_tool=Data,
     prompt="Process: {input}",
     llm=llm,
     verbose=True,  # Enable verbose logging
@@ -718,7 +722,7 @@ llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), req
 
 # Force the LLM to always use the tool
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Output,
+    output_tool=Output,
     prompt="Generate output for: {input}",
     llm=llm,
     tool_choice="required",  # Force tool use
@@ -731,11 +735,11 @@ result = tools_llm(input="test")
 
 ## Using Regular Functions with ToolOrchestratingLLM
 
-`ToolOrchestratingLLM` now supports both Pydantic models and regular Python functions as `output_cls`. When you pass a function, the system automatically detects it and creates the appropriate tool.
+`ToolOrchestratingLLM` now supports both Pydantic models and regular Python functions as `output_tool`. When you pass a function, the system automatically detects it and creates the appropriate tool.
 
 ### 1. Using Regular Functions
 
-Pass regular Python functions directly as `output_cls`:
+Pass regular Python functions directly as `output_tool`:
 
 ```python
 import os
@@ -773,7 +777,7 @@ def calculate_statistics(numbers: list[float], operation: str) -> dict[str, floa
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=calculate_statistics,  # Pass function directly!
+    output_tool=calculate_statistics,  # Pass function directly!
     prompt="Calculate the mean of these numbers: {text}",
     llm=llm,
 )
@@ -831,7 +835,7 @@ def validate_email(email: str, check_mx: bool = False) -> dict:
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=validate_email,  # Pass function that uses the class
+    output_tool=validate_email,  # Pass function that uses the class
     prompt="Validate this email: {email_text}",
     llm=llm,
 )
@@ -887,7 +891,7 @@ def create_product(name: str, price: float, category: str, in_stock: bool = True
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=create_product,  # Pass factory function
+    output_tool=create_product,  # Pass factory function
     prompt="Create a product entry for: {product_info}",
     llm=llm,
 )
@@ -941,7 +945,7 @@ async def main():
     llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
     tools_llm = ToolOrchestratingLLM(
-        output_cls=fetch_user_data,  # Pass async function
+        output_tool=fetch_user_data,  # Pass async function
         prompt="Fetch data for user ID {user_id_text} with their posts",
         llm=llm,
     )
@@ -977,7 +981,7 @@ convert_temp = lambda celsius: {
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=convert_temp,  # Pass lambda function
+    output_tool=convert_temp,  # Pass lambda function
     prompt="Convert {temperature} degrees Celsius",
     llm=llm,
 )
@@ -1024,7 +1028,7 @@ def analyze_text(text: str, language: str = "en") -> dict:
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=analyze_text,  # Pass function with complex return
+    output_tool=analyze_text,  # Pass function with complex return
     prompt="Analyze this text: {text_input}",
     llm=llm,
 )
@@ -1038,7 +1042,7 @@ print(f"Average word length: {result['avg_word_length']:.2f}")
 
 ### Important Notes
 
-**Advantages of using functions as output_cls:**
+**Advantages of using functions as output_tool:**
 1. Works with existing Python functions - no need to convert to Pydantic
 2. Full access to all `ToolOrchestratingLLM` features (streaming, async, etc.)
 3. Automatic tool creation and orchestration
@@ -1081,7 +1085,7 @@ class Data(BaseModel):
 
 try:
     tools_llm = ToolOrchestratingLLM(
-        output_cls=Data,
+        output_tool=Data,
         prompt="Process: {input}",
         llm=None,  # No LLM provided
     )
@@ -1108,7 +1112,7 @@ class StrictData(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=StrictData,
+    output_tool=StrictData,
     prompt="Extract numbers from: {text}",
     llm=llm,
 )
@@ -1140,7 +1144,7 @@ class Result(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Result,
+    output_tool=Result,
     prompt="Process: {input}",
     llm=llm,
 )
@@ -1180,7 +1184,7 @@ class Output(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Output,
+    output_tool=Output,
     prompt="Generate output",
     llm=llm,
     tool_choice="required",  # Force tool use to prevent this
@@ -1225,7 +1229,7 @@ class WellDefinedModel(BaseModel):
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=WellDefinedModel,
+    output_tool=WellDefinedModel,
     prompt="Extract information from: {text}",
     llm=llm,
 )
@@ -1268,7 +1272,7 @@ class Classification(BaseModel):
 # Create once
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 classifier = ToolOrchestratingLLM(
-    output_cls=Classification,
+    output_tool=Classification,
     prompt="Classify: {text}",
     llm=llm,
 )
@@ -1297,7 +1301,7 @@ llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), req
 
 # Good: Enable parallel for extracting multiple items
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Item,
+    output_tool=Item,
     prompt="Extract ALL items from: {text}",
     llm=llm,
     allow_parallel_tool_calls=True,  # Enable for lists

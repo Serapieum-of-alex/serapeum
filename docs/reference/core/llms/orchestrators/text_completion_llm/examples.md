@@ -2,6 +2,14 @@
 
 This guide provides comprehensive examples covering all possible ways to use `TextCompletionLLM`.
 
+!!! note "Model compatibility"
+    Despite the name, `TextCompletionLLM` works with **both** chat/instruct models and raw
+    text-completion models. Internally it routes to `llm.chat()` when
+    `llm.metadata.is_chat_model` is `True`, and to `llm.complete()` otherwise.
+
+    **Streaming is not supported** by this class. If you need incremental results via
+    `stream_call()` or `astream_call()`, use [`ToolOrchestratingLLM`](../tool_orchestrating_llm/examples.md) instead.
+
 ## Table of Contents
 
 1. [Basic Usage](#basic-usage)
@@ -20,6 +28,7 @@ This guide provides comprehensive examples covering all possible ways to use `Te
 The most straightforward way to use `TextCompletionLLM`:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.llms import TextCompletionLLM
@@ -32,7 +41,11 @@ class Greeting(BaseModel):
     language: str
 
 # Initialize the LLM
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="ministral-3:14b", 
+    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    request_timeout=180
+)
 
 # Create output parser
 output_parser = PydanticParser(output_cls=Greeting)
@@ -59,6 +72,7 @@ print(result.language)  # "Dutch"
 Provide a fully configured `PydanticParser`:
 
 ```python
+import os
 from pydantic import BaseModel, Field
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.llms import TextCompletionLLM
@@ -70,7 +84,7 @@ class Product(BaseModel):
     price: float = Field(description="Product price in USD")
     in_stock: bool = Field(description="Availability status")
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 output_parser = PydanticParser(output_cls=Product)
 
 text_llm = TextCompletionLLM(
@@ -88,6 +102,7 @@ result = text_llm(text="iPhone 15 costs $999 and is available")
 Let `TextCompletionLLM` create the parser for you:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
@@ -96,7 +111,7 @@ class Person(BaseModel):
     name: str
     age: int
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 # Parser is created automatically from output_cls
 text_llm = TextCompletionLLM(
@@ -115,13 +130,14 @@ result = text_llm(bio="John Smith is 30 years old")
 Set a default LLM for the entire application:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.configs.configs import Configs
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
 
 # Set global LLM
-Configs.llm = Ollama(model="llama3.1", request_timeout=180)
+Configs.llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 class Task(BaseModel):
     id: str
@@ -147,6 +163,7 @@ result = text_llm(description="Fix critical bug in authentication")
 Simple string prompts are automatically wrapped in `PromptTemplate`:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
@@ -155,7 +172,7 @@ class Summary(BaseModel):
     summary: str
     word_count: int
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Summary,
@@ -174,6 +191,7 @@ result = text_llm(
 Use `PromptTemplate` for more control:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.llms import TextCompletionLLM
@@ -183,7 +201,7 @@ class Sentiment(BaseModel):
     sentiment: str
     confidence: float
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 # Create explicit PromptTemplate
 prompt_template = PromptTemplate(
@@ -205,6 +223,7 @@ result = text_llm(review="This product is amazing!")
 Use structured message templates for chat models:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import Message, MessageRole
 from serapeum.core.prompts import ChatPromptTemplate
@@ -216,7 +235,7 @@ class Translation(BaseModel):
     source_language: str
     target_language: str
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 # Create message templates
 messages = [
@@ -249,6 +268,7 @@ result = text_llm(target_lang="French", text="Hello, world!")
 Standard blocking execution:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
@@ -257,7 +277,7 @@ class Answer(BaseModel):
     answer: str
     reasoning: str
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Answer,
@@ -275,6 +295,7 @@ print(result.answer)  # "Paris"
 Non-blocking async execution:
 
 ```python
+import os
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
@@ -284,7 +305,7 @@ class Analysis(BaseModel):
     result: str
     confidence: float
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Analysis,
@@ -306,6 +327,7 @@ result = asyncio.run(analyze_data("Sample data"))
 Process multiple inputs efficiently:
 
 ```python
+import os
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
@@ -315,7 +337,7 @@ class Category(BaseModel):
     category: str
     subcategory: str
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Category,
@@ -339,6 +361,7 @@ for item, cat in zip(items, categories):
 Forward parameters directly to the LLM:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
@@ -347,7 +370,7 @@ class Story(BaseModel):
     title: str
     content: str
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Story,
@@ -376,6 +399,7 @@ result = text_llm(
 Change the prompt at runtime:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.llms import TextCompletionLLM
@@ -384,7 +408,7 @@ from serapeum.ollama import Ollama
 class Response(BaseModel):
     response: str
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Response,
@@ -407,6 +431,7 @@ result2 = text_llm(input="test")
 Create once, use many times:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
@@ -415,7 +440,7 @@ class Entity(BaseModel):
     name: str
     type: str
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 # Create reusable instance
 entity_extractor = TextCompletionLLM(
@@ -441,6 +466,7 @@ for text in texts:
 Use deeply nested Pydantic models:
 
 ```python
+import os
 from pydantic import BaseModel, Field
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
@@ -460,7 +486,7 @@ class Person(BaseModel):
     address: Address
     contact: Contact
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Person,
@@ -486,6 +512,7 @@ print(result.contact.email)     # "john@example.com"
 Handle optional fields and union types:
 
 ```python
+import os
 from typing import Optional, Union
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
@@ -498,7 +525,7 @@ class Event(BaseModel):
     attendees: Optional[int] = None
     type: Union[str, None] = "general"
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Event,
@@ -518,6 +545,7 @@ print(result.location)   # None (optional field)
 Extract lists of items:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
@@ -528,7 +556,7 @@ class Recipe(BaseModel):
     steps: list[str]
     prep_time: int  # in minutes
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Recipe,
@@ -558,6 +586,7 @@ print(f"Steps: {len(result.steps)}")
 Catch and handle Pydantic validation errors:
 
 ```python
+import os
 from pydantic import BaseModel, ValidationError
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
@@ -566,7 +595,7 @@ class StrictModel(BaseModel):
     count: int  # Must be integer
     ratio: float  # Must be float
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=StrictModel,
@@ -615,6 +644,7 @@ except AssertionError as e:
 Handle cases where parser returns wrong type:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.output_parsers import BaseParser
 from serapeum.core.llms import TextCompletionLLM
@@ -633,7 +663,7 @@ class FaultyParser(BaseParser):
     def parse(self, output: str):
         return WrongModel(other=output)  # Wrong type!
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_parser=FaultyParser(),
@@ -654,6 +684,7 @@ except ValueError as e:
 Implement retry logic for robustness:
 
 ```python
+import os
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
@@ -662,7 +693,7 @@ from serapeum.ollama import Ollama
 class Result(BaseModel):
     data: str
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Result,
@@ -698,6 +729,7 @@ result = asyncio.run(call_with_retry(text_llm, input="test"))
 Always define clear Pydantic models with validation:
 
 ```python
+import os
 from pydantic import BaseModel, Field, field_validator
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
@@ -713,7 +745,7 @@ class ValidatedData(BaseModel):
             raise ValueError('Invalid email format')
         return v.lower()
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=ValidatedData,
@@ -727,6 +759,7 @@ text_llm = TextCompletionLLM(
 Provide clear instructions for JSON output:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
@@ -734,7 +767,7 @@ from serapeum.ollama import Ollama
 class Output(BaseModel):
     result: str
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 # Good: Clear instructions
 text_llm = TextCompletionLLM(
@@ -756,6 +789,7 @@ text_llm = TextCompletionLLM(
 Create instances once and reuse them:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
@@ -765,7 +799,7 @@ class Classification(BaseModel):
     confidence: float
 
 # Create once
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 classifier = TextCompletionLLM(
     output_cls=Classification,
     prompt="Classify: {text}",

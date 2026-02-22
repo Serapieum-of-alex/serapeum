@@ -312,19 +312,18 @@ class TestCreateToolMethod:
 
     @pytest.mark.unit
     def test_create_tool_with_invalid_type_raises_error(self):
-        """Test _create_tool() with invalid type (not model or callable).
+        """Test initialization with invalid type (not model or callable).
 
-        Expected: Should raise TypeError with descriptive message.
+        Expected: Should raise TypeError at init time with descriptive message.
         """
         llm = MockLLM()
-        tools_llm = ToolOrchestratingLLM(
-            output_cls="invalid_string",  # type: ignore
-            prompt="Test prompt",
-            llm=llm,
-        )
 
         with pytest.raises(TypeError) as exc_info:
-            tools_llm._create_tool()
+            ToolOrchestratingLLM(
+                output_cls="invalid_string",  # type: ignore
+                prompt="Test prompt",
+                llm=llm,
+            )
 
         assert (
             "must be either a Pydantic BaseModel subclass or a callable function"
@@ -333,35 +332,33 @@ class TestCreateToolMethod:
 
     @pytest.mark.unit
     def test_create_tool_with_none_raises_error(self):
-        """Test _create_tool() with None.
+        """Test initialization with None.
 
-        Expected: Should raise TypeError.
+        Expected: Should raise TypeError at init time.
         """
         llm = MockLLM()
-        tools_llm = ToolOrchestratingLLM(
-            output_cls=None,  # type: ignore
-            prompt="Test prompt",
-            llm=llm,
-        )
 
         with pytest.raises(TypeError):
-            tools_llm._create_tool()
+            ToolOrchestratingLLM(
+                output_cls=None,  # type: ignore
+                prompt="Test prompt",
+                llm=llm,
+            )
 
     @pytest.mark.unit
     def test_create_tool_with_integer_raises_error(self):
-        """Test _create_tool() with integer.
+        """Test initialization with integer.
 
-        Expected: Should raise TypeError.
+        Expected: Should raise TypeError at init time.
         """
         llm = MockLLM()
-        tools_llm = ToolOrchestratingLLM(
-            output_cls=42,  # type: ignore
-            prompt="Test prompt",
-            llm=llm,
-        )
 
         with pytest.raises(TypeError):
-            tools_llm._create_tool()
+            ToolOrchestratingLLM(
+                output_cls=42,  # type: ignore
+                prompt="Test prompt",
+                llm=llm,
+            )
 
 
 class TestPydanticModelsIntegration:

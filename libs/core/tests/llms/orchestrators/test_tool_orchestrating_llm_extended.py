@@ -290,7 +290,7 @@ class TestToolOrchestratingLLMProperties:
         Check: identity equality
         """
         tools_llm = ToolOrchestratingLLM(
-            Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
+            output_cls=Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
         )
         assert tools_llm.output_cls is Album
 
@@ -302,7 +302,7 @@ class TestToolOrchestratingLLMProperties:
         Check: identity equality
         """
         tools_llm = ToolOrchestratingLLM(
-            Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
+            output_cls=Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
         )
         new_prompt = PromptTemplate("New {var}")
         tools_llm.prompt = new_prompt
@@ -321,7 +321,7 @@ class TestToolOrchestratingLLMCall:
         """
         llm = NonFunctionCallingMockLLM()
         llm._extend_messages = MagicMock(side_effect=lambda msgs: msgs)  # track call
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album with {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(output_cls=Album, prompt="Album with {topic}", llm=llm)
         result = tools_llm(topic="rock")
         assert isinstance(result, Album)
         assert result == SAMPLE_ALBUM
@@ -336,7 +336,7 @@ class TestToolOrchestratingLLMCall:
         """
         llm = NonFunctionCallingMockLLM()
         tools_llm = ToolOrchestratingLLM(
-            Album,
+            output_cls=Album,
             prompt="Album with {topic}",
             llm=llm,
             allow_parallel_tool_calls=True,
@@ -359,7 +359,7 @@ class TestToolOrchestratingLLMAsyncCall:
         Check: isinstance and equality
         """
         llm = NonFunctionCallingMockLLM()
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album with {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(output_cls=Album, prompt="Album with {topic}", llm=llm)
         result = await tools_llm.acall(topic="pop")
         assert isinstance(result, Album)
         assert result == SAMPLE_ALBUM
@@ -416,7 +416,7 @@ class TestToolOrchestratingLLMStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(output_cls=Album, prompt="Album {topic}", llm=llm)
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:
@@ -486,7 +486,7 @@ class TestToolOrchestratingLLMAStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(output_cls=Album, prompt="Album {topic}", llm=llm)
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:

@@ -86,6 +86,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
     def __init__(
         self,
+        *,
         output_cls: Union[Type[Model], Callable[..., Any]],
         prompt: Union[BasePromptTemplate, str],
         llm: Optional[FunctionCallingLLM] = None,
@@ -134,9 +135,9 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> class Output(BaseModel):
             ...     value: int
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     Output,
-            ...     'Prompt here',
-            ...     Ollama(model='llama3.1'),
+            ...     output_cls=Output,
+            ...     prompt='Prompt here',
+            ...     llm=Ollama(model='llama3.1'),
             ... )
             >>> tools_llm.output_cls is Output
             True
@@ -151,9 +152,9 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ...     '''Calculate the sum of two numbers.'''
             ...     return {'result': a + b}
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     calculate_sum,
-            ...     'Calculate the sum of {x} and {y}',
-            ...     Ollama(model='llama3.1'),
+            ...     output_cls=calculate_sum,
+            ...     prompt='Calculate the sum of {x} and {y}',
+            ...     llm=Ollama(model='llama3.1'),
             ... )
             >>> callable(tools_llm.output_cls)
             True
@@ -208,7 +209,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> ToolOrchestratingLLM._validate_output_cls(42)
             Traceback (most recent call last):
             ...
-            TypeError: output_cls must be a Pydantic BaseModel subclass or a callable. Got <class 'int'>
+            TypeError: output_cls must be either a Pydantic BaseModel subclass or a callable function. Got <class 'int'>
 
             ```
         """

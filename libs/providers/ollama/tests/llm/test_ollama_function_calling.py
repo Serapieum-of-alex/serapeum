@@ -89,7 +89,7 @@ class TestToolOrchestratingLLMCall:
         Check: isinstance and equality
         """
         tools_llm = ToolOrchestratingLLM(
-            album,
+            output_cls=album,
             prompt="Create an Album about {topic} music. Include the album name, artist name, and two songs with their titles.",
             llm=llm_model,
         )
@@ -105,7 +105,7 @@ class TestToolOrchestratingLLMCall:
         Check: types and order
         """
         tools_llm = ToolOrchestratingLLM(
-            album,
+            output_cls=album,
             prompt="Album with {topic}",
             llm=llm_model,
             allow_parallel_tool_calls=True,
@@ -129,7 +129,7 @@ class TestToolOrchestratingLLMAsyncCall:
         Check: isinstance and equality
         """
         tools_llm = ToolOrchestratingLLM(
-            album, prompt="Album with {topic}", llm=llm_model
+            output_cls=album, prompt="Album with {topic}", llm=llm_model
         )
         result = await tools_llm.acall(topic="pop")
         assert isinstance(result, album)

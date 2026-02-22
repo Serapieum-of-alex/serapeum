@@ -487,6 +487,9 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         messages = self.prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
+        if self._tool_choice is not None:
+            llm_kwargs.setdefault("tool_choice", self._tool_choice)
+
         agent_response: AgentChatResponse = self._llm.predict_and_call(
             [tool],
             chat_history=messages,
@@ -546,6 +549,9 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         """
         llm_kwargs = llm_kwargs or {}
         tool = self._create_tool()
+
+        if self._tool_choice is not None:
+            llm_kwargs.setdefault("tool_choice", self._tool_choice)
 
         agent_response = await self._llm.apredict_and_call(
             [tool],
@@ -620,6 +626,9 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
         llm_kwargs = llm_kwargs or {}
         tool = self._create_tool()
+
+        if self._tool_choice is not None:
+            llm_kwargs.setdefault("tool_choice", self._tool_choice)
 
         messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
@@ -714,6 +723,11 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             raise ValueError("stream_call is only supported for LLMs.")
 
         tool = self._create_tool()
+        llm_kwargs = llm_kwargs or {}
+
+        if self._tool_choice is not None:
+            llm_kwargs.setdefault("tool_choice", self._tool_choice)
+
         messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
@@ -722,7 +736,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             chat_history=messages,
             verbose=self._verbose,
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
-            **(llm_kwargs or {}),
+            **llm_kwargs,
         )
         processor = StreamingObjectProcessor(
             output_cls=self._output_tool,

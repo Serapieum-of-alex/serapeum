@@ -423,6 +423,7 @@ asyncio.run(stream_report("Market analysis"))
 Forward parameters directly to the LLM:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -432,7 +433,7 @@ class Story(BaseModel):
     plot: str
     characters: list[str]
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Story,

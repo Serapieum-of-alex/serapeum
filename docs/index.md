@@ -62,11 +62,12 @@ pip install serapeum-core serapeum-ollama
 Create your first LLM application:
 
 ```python
+import os
 from serapeum.ollama import Ollama
 from serapeum.core.llms import Message, MessageRole
 
 # Initialize LLM
-llm = Ollama(model="llama3.1")
+llm = Ollama(model="gpt-oss:20b", api_key=os.environ.get("OLLAMA_API_KEY"))
 
 # Simple chat
 messages = [
@@ -79,7 +80,12 @@ print(response.message.content)
 Use tools with your LLM:
 
 ```python
+import os
 from serapeum.core.tools import CallableTool
+from serapeum.ollama import Ollama
+
+# Initialize LLM
+llm = Ollama(model="gpt-oss:20b", api_key=os.environ.get("OLLAMA_API_KEY"))
 
 # Create a simple tool
 def get_weather(city: str) -> str:
@@ -94,14 +100,17 @@ response = llm.chat_with_tools(
     user_msg="What's the weather in San Francisco?"
 )
 print(response.message.additional_kwargs["tool_calls"])
-[ToolCall(function=Function(name='get_weather', arguments={'city': 'San Francisco'}))]
+# [ToolCall(function=Function(name='get_weather', arguments={'city': 'San Francisco'}))]
 ```
 
 Get structured outputs:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.prompts import PromptTemplate
+from serapeum.ollama import Ollama
+
 
 class CityInfo(BaseModel):
     name: str
@@ -116,7 +125,7 @@ prompt = PromptTemplate(
 )
 
 # Force structured output
-llm_json = Ollama(model="llama3.1", json_mode=True)
+llm_json = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"), json_mode=True)
 result = llm_json.structured_predict(
     output_cls=CityInfo,
     prompt=prompt,

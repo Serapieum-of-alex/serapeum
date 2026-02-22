@@ -147,8 +147,11 @@ stateDiagram-v2
 
 ### 1. Initialization → Configured
 ```python
+import os
+from serapeum.ollama import Ollama
 llm = Ollama(
     model="llama3.1",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     base_url="http://localhost:11434",
     request_timeout=180
 )
@@ -162,6 +165,7 @@ llm = Ollama(
 
 ### 2. Configured → ClientInitialized (Lazy)
 ```python
+from serapeum.core.llms import Message, MessageRole
 # First call triggers client creation
 response = llm.chat([Message(role=MessageRole.USER, content="Hello")])
 
@@ -434,19 +438,23 @@ Safe to have:
 
 ### 1. Initialization
 ```python
+import os
+from serapeum.ollama import Ollama
 # ✓ Good: Initialize once, reuse
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 # ✗ Bad: Create new instance per call
 def get_response(prompt):
-    llm = Ollama(model="llama3.1")  # Inefficient
+    llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"))  # Inefficient
     return llm.complete(prompt)
 ```
 
 ### 2. Client Reuse
 ```python
+import os
+from serapeum.ollama import Ollama
 # ✓ Good: Client automatically reused
-llm = Ollama(model="llama3.1")
+llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"))
 response1 = llm.chat(messages1)  # Creates client
 response2 = llm.chat(messages2)  # Reuses client
 
@@ -456,8 +464,10 @@ llm._client = None  # Don't do this
 
 ### 3. Configuration
 ```python
+import os
+from serapeum.ollama import Ollama
 # ✓ Good: Set configuration at init
-llm = Ollama(model="llama3.1", temperature=0.8, json_mode=True)
+llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"), temperature=0.8, json_mode=True)
 
 # ✗ Bad: Don't modify config after init
 llm.temperature = 0.5  # Config is immutable
@@ -465,8 +475,10 @@ llm.temperature = 0.5  # Config is immutable
 
 ### 4. Error Handling
 ```python
+import os
+from serapeum.ollama import Ollama
 # ✓ Good: Instance remains usable after error
-llm = Ollama(model="llama3.1")
+llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"))
 try:
     response = llm.chat(messages)
 except TimeoutError:

@@ -1,0 +1,60 @@
+## serapeum-ollama-0.2.0 (2026-02-22)
+
+
+- fix(ci): pypi-release (#28)
+- ci:finalize release to pypi.org (#27)
+- ci(release): wire pypi-release to trigger on github-release completion (#24)
+- ci(release): wire pypi-release to trigger on github-release completion
+  
+  - Rename github-release workflow (required for workflow_run reference)                                                                                                            
+  - Replace release: event with workflow_run trigger on github-release                                                                                                   
+  - Add workflow_dispatch inputs for manual publish (package + registry)
+  - Resolve package name from most recent serapeum-{pkg}-* tag on auto runs
+  - Delegate build and publish to composite pypi action
+  - Move checkout step from composite action into caller workflow
+  - Add update_changelog_on_bump = true to core and ollama commitizen configs
+- ref: #25
+- fix(deps): remove httpx dependency and resolve build issues (#19)
+- fix(deps): remove httpx dependency and resolve build issues
+-   - Replace httpx with stdlib urllib.request in tests
+  - Add pydantic and numpy version constraints
+  - Skip E2E tests when serapeum-ollama unavailable
+  - Fix sdist packaging configuration
+- feat(embeddings): add embedding support with Ollama provider implementation (#11)
+- feat(embeddings): add embedding support with Ollama provider implementation
+                                                                                                                                                                                                                              
+  - Add BaseEmbedding abstraction in serapeum-core with sync/async interfaces                                                                                                                                                 
+  - Implement OllamaEmbedding with support for query, text, and batch operations                                                                                                                                              
+  - Add embedding data models (BaseNode, TextNode, ImageNode, LinkedNodes, NodeInfo)                                                                                                                                          
+  - Refactor provider structure to move ollama from serapeum.llms.ollama to serapeum.ollama                                                                                                                                   
+  - Add comprehensive test suite (unit, e2e, pydantic validation) with 3200+ test lines
+  - Add pytest-xdist and pytest-benchmark for parallel testing and benchmarking
+  - Update documentation and READMEs for embedding functionality
+- refactor!: restructure core and providers packages and APIs (#17)
+- refactor!: restructure core and providers packages and APIs
+- - move core into `libs/core` and providers into `libs/providers/ollama`
+- rename multiple modules/types (models→types, prompts/utils→format, tools utils)
+- merge structured_tools into llms and rename StructuredLLM to StructuredOutputLLM
+- update build config, CI, docs, and tests for new layout
+- BREAKING CHANGE: public import paths and several module/class names were renamed or relocated; update imports to the new libs-based structure.
+- fix: improve schema guidance and tool call handling (#8)
+- fix: improve schema guidance and tool call handling
+- - Move schema helpers into core.utils.schemas and reuse in parsers
+- Generate concise required-field descriptions in tool metadata
+- Guard empty tool_calls in Ollama and adjust tests/models
+- feat(core): implement initial core architecture and foundational LLM utility features (#3)
+- **feat(core): implement initial core architecture and foundational LLM utility features**
+- - Design and implement core modules for LLM orchestration, function conversion, prompt validation, and tool execution
+- Introduce key classes: FunctionConverter, SyncAsyncConverter, ToolExecutor, ToolCallArguments, Docstring, Schema, ArgumentCoercer, StreamingObjectProcessor, MessageList, and FlexibleModel
+- Establish foundational LLM abstractions: BaseLLM, FunctionCallingLLM, ToolOrchestratingLLM, TextCompletionLLM, and related parser classes
+- Provide robust support for synchronous/asynchronous function handling, tool calling, argument coercion, and schema validation
+- Integrate comprehensive unit and integration tests for all major components and workflows
+- Add extensive documentation, architecture diagrams, and usage examples for core modules and LLM integration
+- Configure project metadata, dependencies (`numpy`, `filetype`, `requests`), and development workflows for Python 3.11/3.12 compatibility
+- Set up modern packaging, namespace structure, and CI/CD with uv and mkdocs for documentation
+- ---
+- **Package Insights:**
+- The `serapeum-core` package is designed as a utility library for LLM-based applications, supporting generative AI, chatbots, RAG, and NLP workflows.
+- It provides a modular, extensible foundation for building, orchestrating, and testing LLM-driven tools and pipelines.
+- The architecture is production-ready, with robust testing, documentation, and modern Python packaging best practices.
+- ref: #5

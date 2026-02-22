@@ -637,16 +637,15 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         )
 
         cur_objects = None
+        processor = StreamingObjectProcessor(
+            output_cls=self._output_tool,
+            flexible_mode=True,
+            allow_parallel_tool_calls=self._allow_parallel_tool_calls,
+            llm=self._llm,
+        )
         for partial_resp in chat_response_gen:
             try:
-                processor = StreamingObjectProcessor(
-                    output_cls=self._output_tool,
-                    flexible_mode=True,
-                    allow_parallel_tool_calls=self._allow_parallel_tool_calls,
-                    llm=self._llm,
-                )
                 objects = processor.process(partial_resp, cur_objects)
-
                 cur_objects = objects if isinstance(objects, list) else [objects]
                 yield objects
             except Exception as e:
@@ -719,7 +718,6 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             raise ValueError("stream_call is only supported for LLMs.")
 
         tool = self._create_tool()
-
         messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
@@ -730,19 +728,18 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
             **(llm_kwargs or {}),
         )
+        processor = StreamingObjectProcessor(
+            output_cls=self._output_tool,
+            flexible_mode=True,
+            allow_parallel_tool_calls=self._allow_parallel_tool_calls,
+            llm=self._llm,
+        )
 
         async def gen() -> AsyncGenerator[Union[Model, List[Model]], None]:
             cur_objects = None
             async for partial_resp in chat_response_gen:
                 try:
-                    processor = StreamingObjectProcessor(
-                        output_cls=self._output_tool,
-                        flexible_mode=True,
-                        allow_parallel_tool_calls=self._allow_parallel_tool_calls,
-                        llm=self._llm,
-                    )
                     objects = processor.process(partial_resp, cur_objects)
-
                     cur_objects = objects if isinstance(objects, list) else [objects]
                     yield objects
                 except Exception as e:

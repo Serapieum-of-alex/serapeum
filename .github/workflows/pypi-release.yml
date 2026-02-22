@@ -42,18 +42,20 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PACKAGE="${{ github.event.inputs.package }}"
           else
-            # Find the most recently created package-prefixed tag with semantic version
-            git fetch --tags
-            TAG=$(git tag --sort=-creatordate | grep -E '^serapeum-(ollama|core)-[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
-            echo "Detected tag: $TAG"
-            # Tag format: serapeum-ollama-0.2.0 → serapeum-ollama
-            PACKAGE=$(echo "$TAG" | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+$//')
+            PACKAGE=$(git tag --sort=-creatordate | grep -E '^serapeum-(ollama|core)-[0-9]+\.[0-9]+\.[0-9]+$' | head -1 | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+$//')
           fi
           echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV
           echo "Publishing package: $PACKAGE"
 
+      - name: Checkout latest release tag for package
+        run: |
+          git fetch --tags --force
+          TAG=$(git tag --sort=-creatordate | grep -E "^${{ env.PACKAGE }}-[0-9]+\.[0-9]+\.[0-9]+$" | head -1)
+          echo "Checking out tag: $TAG"
+          git checkout "$TAG"
+
       - name: Build and publish to PyPI
-        uses: Serapieum-of-alex/github-actions/actions/release/pypi@main
+        uses: Serapieum-of-alex/github-actions/actions/release/pypi@pypi-release/v1
         with:
           package: ${{ env.PACKAGE }}
           pypi-username: __token__
@@ -61,5 +63,5 @@ jobs:
           python-version: '3.12'
           package-manager: 'uv'
           install-groups: 'dev'
-          verify-lock: 'true'
-#           pypi-repository-url: 'https://test.pypi.org/legacy/'
+          verify-lock: 'false'
+          # pypi-repository-url: 'https://test.pypi.org/legacy/'

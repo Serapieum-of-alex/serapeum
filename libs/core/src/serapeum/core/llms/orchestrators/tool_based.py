@@ -98,6 +98,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         Args:
             output_cls (Union[Type[Model], Callable[..., Any]]): Either a Pydantic
                 model class or a callable function defining the expected output.
+                Despite the name, this accepts plain callables (not only classes).
                 If a Pydantic model is provided, it will be converted into a tool via
                 ``CallableTool.from_model()``. If a callable function is provided,
                 it will be converted via ``CallableTool.from_function()``.
@@ -159,12 +160,67 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
             ```
         """
-        self._output_cls = output_cls
+        self._output_cls = self._validate_output_cls(output_cls)
         self._llm = self._validate_llm(llm)
         self._prompt = self._validate_prompt(prompt)
         self._verbose = verbose
         self._allow_parallel_tool_calls = allow_parallel_tool_calls
         self._tool_choice = tool_choice
+
+    @staticmethod
+    def _validate_output_cls(
+        output_cls: Union[Type[Model], Callable[..., Any]],
+    ) -> Union[Type[Model], Callable[..., Any]]:
+        """Validate that output_cls is a Pydantic model class or a callable.
+
+        Args:
+            output_cls (Union[Type[Model], Callable[..., Any]]): The value to validate.
+
+        Returns:
+            Union[Type[Model], Callable[..., Any]]: The validated output_cls unchanged.
+
+        Raises:
+            TypeError: If output_cls is neither a Pydantic BaseModel subclass nor a callable.
+
+        Examples:
+        - Accept a Pydantic model class.
+            ```python
+            >>> from pydantic import BaseModel
+            >>> from serapeum.core.llms import ToolOrchestratingLLM
+            >>> class Out(BaseModel):
+            ...     x: int
+            >>> ToolOrchestratingLLM._validate_output_cls(Out) is Out
+            True
+
+            ```
+        - Accept a plain callable.
+            ```python
+            >>> from serapeum.core.llms import ToolOrchestratingLLM
+            >>> def fn(x: int) -> dict:
+            ...     return {"x": x}
+            >>> ToolOrchestratingLLM._validate_output_cls(fn) is fn
+            True
+
+            ```
+        - Reject non-callable, non-model values.
+            ```python
+            >>> from serapeum.core.llms import ToolOrchestratingLLM
+            >>> ToolOrchestratingLLM._validate_output_cls(42)
+            Traceback (most recent call last):
+            ...
+            TypeError: output_cls must be a Pydantic BaseModel subclass or a callable. Got <class 'int'>
+
+            ```
+        """
+        if not (
+            (isinstance(output_cls, type) and issubclass(output_cls, BaseModel))
+            or callable(output_cls)
+        ):
+            raise TypeError(
+                "output_cls must be either a Pydantic BaseModel subclass or a callable function. "
+                f"Got {type(output_cls)}"
+            )
+        return output_cls
 
     def _create_tool(self) -> CallableTool:
         """Create a CallableTool from the output_cls.
@@ -278,21 +334,32 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         return llm
 
     @property
-    def output_cls(self) -> Type[BaseModel]:
-        """Get the output Pydantic model class.
+    def output_cls(self) -> Union[Type[BaseModel], Callable[..., Any]]:
+        """Get the output class or callable used to define the expected structure.
 
         Returns:
-            Type[BaseModel]: The Pydantic model class used for structured output.
+            Union[Type[BaseModel], Callable[..., Any]]: The Pydantic model class or
+            callable function passed at construction time.
 
         Examples:
-        - Inspect the configured output class.
+        - Inspect the configured output class (Pydantic model).
             ```python
             >>> from pydantic import BaseModel
             >>> from serapeum.ollama import Ollama
             >>> class Out(BaseModel):
             ...     x: int
-            >>> tools_llm = ToolOrchestratingLLM(Out, 'prompt', Ollama(model='llama3.1'))
+            >>> tools_llm = ToolOrchestratingLLM(output_cls=Out, prompt='prompt', llm=Ollama(model='llama3.1'))
             >>> tools_llm.output_cls is Out
+            True
+
+            ```
+        - Inspect the configured output class (callable function).
+            ```python
+            >>> from serapeum.ollama import Ollama
+            >>> def fn(x: int) -> dict:
+            ...     return {"x": x}
+            >>> tools_llm = ToolOrchestratingLLM(output_cls=fn, prompt='prompt', llm=Ollama(model='llama3.1'))
+            >>> tools_llm.output_cls is fn
             True
 
             ```
@@ -369,8 +436,8 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
                 These should match variables in the prompt.
 
         Returns:
-            BaseModel: A single Pydantic model instance when parallel calls are
-            disabled, or a list of Pydantic models when enabled.
+            Union[BaseModel, List[BaseModel]]: A single Pydantic model instance when
+            ``allow_parallel_tool_calls`` is False, or a list of instances when True.
 
         Raises:
             ValueError: If the underlying LLM raises an error due to invalid
@@ -454,8 +521,8 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
                 These should match variables in the prompt.
 
         Returns:
-            BaseModel: A single Pydantic model instance when parallel calls are
-            disabled, or a list of Pydantic models when enabled.
+            Union[BaseModel, List[BaseModel]]: A single Pydantic model instance when
+            ``allow_parallel_tool_calls`` is False, or a list of instances when True.
 
         See Also:
             - __call__: Synchronous version of this method

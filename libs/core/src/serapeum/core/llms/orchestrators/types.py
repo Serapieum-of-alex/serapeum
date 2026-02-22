@@ -12,6 +12,7 @@ class BasePydanticLLM(ABC, Generic[Model]):
     """A base class for LLM-powered function that return a pydantic model."""
 
     @property
+    @abstractmethod
     def output_tool(self) -> Type[Model]:
         pass
 

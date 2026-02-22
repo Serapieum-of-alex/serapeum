@@ -2,6 +2,49 @@
 
 This guide provides comprehensive examples covering all possible ways to use the `Ollama` LLM class based on real test cases from the codebase.
 
+## Prerequisites: Ollama Cloud API Key
+
+The examples in this guide use the [Ollama Cloud](https://ollama.com/cloud) inference API, which requires an API key.
+
+**Steps to create your API key:**
+
+1. Create an account at [ollama.com](https://ollama.com) (or sign in if you already have one)
+2. Navigate to [ollama.com/settings/keys](https://ollama.com/settings/keys)
+3. Click **Generate** to create a new API key
+4. Copy the key immediately — it will not be shown again
+
+**Set the environment variable:**
+
+```bash
+export OLLAMA_API_KEY=your_api_key_here
+```
+
+Or add it to your `.env` file:
+
+```
+OLLAMA_API_KEY=your_api_key_here
+```
+
+**Loading the `.env` file in Python:**
+
+Install [`python-dotenv`](https://pypi.org/project/python-dotenv/):
+
+```bash
+pip install python-dotenv
+```
+
+Then load it at the top of your script:
+
+```python notest
+from dotenv import load_dotenv
+
+load_dotenv()  # loads variables from .env into os.environ
+```
+
+All examples below read the key via `os.environ.get("OLLAMA_API_KEY")`.
+
+---
+
 ## Table of Contents
 
 1. [Basic Usage](#basic-usage)
@@ -74,7 +117,7 @@ import os
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3.5:397b", 
+    model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY")
 )
 ```
@@ -149,8 +192,8 @@ from serapeum.core.llms import Message, MessageRole
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -172,8 +215,8 @@ from serapeum.core.llms import Message, MessageRole
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -198,8 +241,8 @@ from serapeum.core.llms import Message, MessageRole
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -225,8 +268,8 @@ from serapeum.core.llms import Message, MessageRole, Image
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3-vl:235b-instruct",     # Vision model 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3-vl:235b-instruct",     # Vision model
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -260,8 +303,8 @@ import os
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -279,8 +322,8 @@ import os
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -326,8 +369,8 @@ from serapeum.core.llms import Message, MessageRole
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -348,8 +391,8 @@ import os
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -370,8 +413,8 @@ from serapeum.core.llms import Message, MessageRole
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -415,8 +458,8 @@ def create_album(title: str, artist: str, songs: list[str]) -> Album:
 
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -456,8 +499,8 @@ class Album(BaseModel):
 
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -498,8 +541,8 @@ class Album(BaseModel):
 
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -540,8 +583,8 @@ class Album(BaseModel):
 
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -586,8 +629,8 @@ class Album(BaseModel):
 
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -627,8 +670,8 @@ class DummyModel(BaseModel):
 
 # Initialize Ollama
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -666,8 +709,8 @@ class Album(BaseModel):
 
 # Initialize Ollama
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -703,8 +746,8 @@ class Album(BaseModel):
 
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -741,8 +784,8 @@ class Album(BaseModel):
 
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -775,8 +818,8 @@ from serapeum.ollama import Ollama
 
 async def async_chat_example():
     llm = Ollama(
-        model="qwen3.5:397b", 
-        api_key=os.environ.get("OLLAMA_API_KEY"), 
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
         request_timeout=180
     )
 
@@ -801,8 +844,8 @@ from serapeum.ollama import Ollama
 
 async def async_complete_example():
     llm = Ollama(
-        model="qwen3.5:397b", 
-        api_key=os.environ.get("OLLAMA_API_KEY"), 
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
         request_timeout=180
     )
 
@@ -826,8 +869,8 @@ from serapeum.ollama import Ollama
 
 async def async_stream_example():
     llm = Ollama(
-        model="qwen3.5:397b", 
-        api_key=os.environ.get("OLLAMA_API_KEY"), 
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
         request_timeout=180
     )
 
@@ -853,8 +896,8 @@ from serapeum.ollama import Ollama
 
 async def process_multiple():
     llm = Ollama(
-        model="qwen3.5:397b", 
-        api_key=os.environ.get("OLLAMA_API_KEY"), 
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
         request_timeout=180
     )
 
@@ -896,8 +939,8 @@ class Album(BaseModel):
 
 async def async_tool_example():
     llm = Ollama(
-        model="qwen3.5:397b", 
-        api_key=os.environ.get("OLLAMA_API_KEY"), 
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
         request_timeout=180
     )
 
@@ -934,8 +977,8 @@ class Album(BaseModel):
 
 async def async_stream_tool_example():
     llm = Ollama(
-        model="qwen3.5:397b", 
-        api_key=os.environ.get("OLLAMA_API_KEY"), 
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
         request_timeout=180
     )
 
@@ -968,8 +1011,8 @@ from serapeum.ollama import Ollama
 from serapeum.core.llms import Message, MessageRole
 # ✓ Good: Create once
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -982,7 +1025,7 @@ response2 = llm.chat([message_2])
 # ✗ Bad: Don't recreate for each call
 def process(messages):
     llm = Ollama(
-        model="qwen3.5:397b", 
+        model="qwen3.5:397b",
         api_key=os.environ.get("OLLAMA_API_KEY")
     )  # Inefficient
     return llm.chat(messages)
@@ -998,15 +1041,15 @@ from serapeum.ollama import Ollama
 
 # Short timeout for simple queries
 quick_llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=30
 )
 
 # Longer timeout for complex queries
 complex_llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=300
 )
 ```
@@ -1021,8 +1064,8 @@ from serapeum.core.llms import Message, MessageRole
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 
@@ -1065,8 +1108,8 @@ from serapeum.core.llms import Message, MessageRole
 from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 

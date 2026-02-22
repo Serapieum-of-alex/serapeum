@@ -3,14 +3,57 @@
 This guide provides comprehensive examples covering all possible ways to use `ToolOrchestratingLLM`.
 
 ## Table of Contents
+1. [Prerequisites: Ollama Cloud API Key](#prerequisites-ollama-cloud-api-key)
+2. [Basic Usage](#basic-usage)
+3. [Initialization Patterns](#initialization-patterns)
+4. [Prompt Formats](#prompt-formats)
+5. [Execution Modes](#execution-modes)
+6. [Parallel Tool Calls](#parallel-tool-calls)
+7. [Advanced Usage](#advanced-usage)
+8[Error Handling](#error-handling)
 
-1. [Basic Usage](#basic-usage)
-2. [Initialization Patterns](#initialization-patterns)
-3. [Prompt Formats](#prompt-formats)
-4. [Execution Modes](#execution-modes)
-5. [Parallel Tool Calls](#parallel-tool-calls)
-6. [Advanced Usage](#advanced-usage)
-7. [Error Handling](#error-handling)
+---
+
+## Prerequisites: Ollama Cloud API Key
+
+The examples in this guide use the [Ollama Cloud](https://ollama.com/cloud) inference API, which requires an API key.
+
+**Steps to create your API key:**
+
+1. Create an account at [ollama.com](https://ollama.com) (or sign in if you already have one)
+2. Navigate to [ollama.com/settings/keys](https://ollama.com/settings/keys)
+3. Click **Generate** to create a new API key
+4. Copy the key immediately — it will not be shown again
+
+**Set the environment variable:**
+
+```bash
+export OLLAMA_API_KEY=your_api_key_here
+```
+
+Or add it to your `.env` file:
+
+```
+OLLAMA_API_KEY=your_api_key_here
+```
+
+**Loading the `.env` file in Python:**
+
+Install [`python-dotenv`](https://pypi.org/project/python-dotenv/):
+
+```bash
+pip install python-dotenv
+```
+
+Then load it at the top of your script:
+
+```python notest
+from dotenv import load_dotenv
+
+load_dotenv()  # loads variables from .env into os.environ
+```
+
+All examples below read the key via `os.environ.get("OLLAMA_API_KEY")`.
 
 ---
 
@@ -39,8 +82,8 @@ class Album(BaseModel):
 
 # Initialize the LLM with function calling support
 llm = Ollama(
-  model="qwen3.5:397b", 
-  api_key=os.environ.get("OLLAMA_API_KEY"), 
+  model="qwen3.5:397b",
+  api_key=os.environ.get("OLLAMA_API_KEY"),
   request_timeout=80
 )
 
@@ -582,8 +625,8 @@ class Response(BaseModel):
     reasoning: str
 
 llm = Ollama(
-  model="qwen3-vl:235b-instruct", 
-  api_key=os.environ.get("OLLAMA_API_KEY"), 
+  model="qwen3-vl:235b-instruct",
+  api_key=os.environ.get("OLLAMA_API_KEY"),
   request_timeout=80
 )
 
@@ -707,9 +750,9 @@ tools_llm = ToolOrchestratingLLM(
 
 text = """
 The Great Sphinx of Giza, standing on the western bank of the Nile, is one of the most iconic monuments of ancient  
-Egypt. Carved from a single mass of limestone, this colossal statue features the body of a lion and the head of a 
-human, believed by many scholars to represent Pharaoh Khafre. Dating back to around 2500 BCE, the Sphinx has endured 
-millennia of erosion, sand burial, and restoration, yet it continues to captivate visitors and researchers alike 
+Egypt. Carved from a single mass of limestone, this colossal statue features the body of a lion and the head of a
+human, believed by many scholars to represent Pharaoh Khafre. Dating back to around 2500 BCE, the Sphinx has endured
+millennia of erosion, sand burial, and restoration, yet it continues to captivate visitors and researchers alike
 with its mysterious origins and enigmatic smile.
 """
 

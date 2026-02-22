@@ -312,8 +312,10 @@ from serapeum.core.tools import CallableTool
 from serapeum.core.llms.orchestrators import ToolOrchestratingLLM
 from serapeum.core.prompts import PromptTemplate
 
+
 # Define tools using Pydantic models
 class WeatherInput(BaseModel):
+    """WeatherInput data(location, unit)"""
     location: str = Field(description="City name, e.g., 'San Francisco'")
     unit: str = Field(description="Temperature unit: 'celsius' or 'fahrenheit'", default="celsius")
 
@@ -322,6 +324,7 @@ def get_weather(location: str, unit: str = "celsius") -> str:
     return f"The weather in {location} is 72°{unit[0].upper()} and sunny."
 
 class CalculatorInput(BaseModel):
+    """CalculatorInput data(operation, a, b)"""
     operation: str = Field(description="Math operation: add, subtract, multiply, divide")
     a: float = Field(description="First number")
     b: float = Field(description="Second number")
@@ -337,27 +340,21 @@ def calculate(operation: str, a: float, b: float) -> float:
     return ops.get(operation, 0)
 
 # Create tools
-weather_tool = CallableTool.from_model(
+weather_input = CallableTool.from_model(
     WeatherInput,
-    get_weather,
-    name="get_weather",
-    description="Get current weather for a location"
 )
-
+get_weather_tool = CallableTool.from_function(get_weather)
 calculator_tool = CallableTool.from_model(
     CalculatorInput,
-    calculate,
-    name="calculate",
-    description="Perform basic arithmetic operations"
 )
-
+calculate_tool = CallableTool.from_function(calculate)
 # Create orchestrator with tools
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=120, json_mode=True)
 
 orchestrator = ToolOrchestratingLLM(
     llm=llm,
     prompt=PromptTemplate("Answer the user's question: {query}"),
-    tools=[weather_tool, calculator_tool],
+    tools=[weather_input, calculator_tool],
 )
 
 # Use tools via natural language

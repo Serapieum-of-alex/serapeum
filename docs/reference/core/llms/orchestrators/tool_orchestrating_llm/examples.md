@@ -986,8 +986,9 @@ print(f"Kelvin: {result['kelvin']}")
 Use functions that return complex data structures:
 
 ```python
+import os
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 def analyze_text(text: str, language: str = "en") -> dict:
     """Analyze text and return basic metrics.
@@ -1007,7 +1008,7 @@ def analyze_text(text: str, language: str = "en") -> dict:
         "avg_word_length": sum(len(w) for w in words) / len(words) if words else 0
     }
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=analyze_text,  # Pass function with complex return
@@ -1054,9 +1055,10 @@ print(f"Average word length: {result['avg_word_length']:.2f}")
 Catch initialization errors:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Data(BaseModel):
     value: str
@@ -1081,15 +1083,16 @@ except ValueError as e:
 Handle runtime errors:
 
 ```python
+import os
 from pydantic import BaseModel, ValidationError
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class StrictData(BaseModel):
     number: int  # Must be integer
     ratio: float  # Must be float
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=StrictData,
@@ -1152,14 +1155,15 @@ result = asyncio.run(call_with_retry(tools_llm, input="test"))
 Handle cases where LLM doesn't generate tool calls:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Output(BaseModel):
     result: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Output,
@@ -1184,9 +1188,10 @@ except ValueError as e:
 Always define clear Pydantic models with descriptions:
 
 ```python
+import os
 from pydantic import BaseModel, Field
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class WellDefinedModel(BaseModel):
     """A well-documented model for structured output."""
@@ -1203,7 +1208,7 @@ class WellDefinedModel(BaseModel):
         default_factory=list
     )
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=WellDefinedModel,
@@ -1217,17 +1222,18 @@ tools_llm = ToolOrchestratingLLM(
 Ensure your LLM supports function calling:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
 # Good: Models that support function calling
 good_models = [
-    "llama3.1",
+    "qwen3.5:397b",
     "llama3.2",
     "mistral",
     # Check Ollama docs for function calling support
 ]
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 # llm.metadata.is_function_calling_model should be True
 ```
 
@@ -1263,15 +1269,16 @@ for text in texts:
 When extracting multiple items, use parallel tool calls:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Item(BaseModel):
     name: str
     type: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Good: Enable parallel for extracting multiple items
 tools_llm = ToolOrchestratingLLM(

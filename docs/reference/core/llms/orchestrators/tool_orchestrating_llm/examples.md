@@ -694,6 +694,7 @@ result = tools_llm(input="test data")
 Control tool selection:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -701,7 +702,7 @@ from serapeum.ollama import Ollama
 class Output(BaseModel):
     data: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Force the LLM to always use the tool
 tools_llm = ToolOrchestratingLLM(
@@ -725,6 +726,7 @@ result = tools_llm(input="test")
 Pass regular Python functions directly as `output_cls`:
 
 ```python
+import os
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
 
@@ -756,7 +758,7 @@ def calculate_statistics(numbers: list[float], operation: str) -> dict[str, floa
     }
 
 # Use function directly with ToolOrchestratingLLM
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=calculate_statistics,  # Pass function directly!
@@ -777,6 +779,7 @@ print(f"Count: {result['count']}")
 Wrap regular Python classes in functions and use with ToolOrchestratingLLM:
 
 ```python
+import os
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
 
@@ -813,7 +816,7 @@ def validate_email(email: str, check_mx: bool = False) -> dict:
     return validator.to_dict()
 
 # Use function with ToolOrchestratingLLM
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=validate_email,  # Pass function that uses the class
@@ -832,9 +835,10 @@ print(f"Valid: {result['is_valid']}")
 Use factory functions that return dataclass instances:
 
 ```python
+import os
 from dataclasses import dataclass
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 @dataclass
 class Product:
@@ -868,7 +872,7 @@ def create_product(name: str, price: float, category: str, in_stock: bool = True
     return product.to_dict()
 
 # Use factory function with ToolOrchestratingLLM
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=create_product,  # Pass factory function
@@ -888,9 +892,10 @@ print(f"Category: {result['category']}")
 Use async functions directly with ToolOrchestratingLLM:
 
 ```python
+import os
 import asyncio
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 async def fetch_user_data(user_id: int, include_posts: bool = False) -> dict:
     """Asynchronously fetch user data.
@@ -921,7 +926,7 @@ async def fetch_user_data(user_id: int, include_posts: bool = False) -> dict:
 
 # Use async function with ToolOrchestratingLLM
 async def main():
-    llm = Ollama(model="llama3.1", request_timeout=80)
+    llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
     tools_llm = ToolOrchestratingLLM(
         output_cls=fetch_user_data,  # Pass async function

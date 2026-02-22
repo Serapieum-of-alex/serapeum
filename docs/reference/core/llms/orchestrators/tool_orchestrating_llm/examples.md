@@ -393,7 +393,7 @@ tools_llm = ToolOrchestratingLLM(
 # Stream results as they arrive
 for partial_article in tools_llm.stream_call(topic="AI"):
     print(f"Current title: {partial_article.title}")
-    print(f"Sections so far: {len(partial_article.sections)}")
+    print(f"Sections so far: {partial_article.sections}")
     # Display progressive updates in UI
 ```
 
@@ -424,8 +424,8 @@ tools_llm = ToolOrchestratingLLM(
 async def stream_report(subject: str):
     stream = await tools_llm.astream_call(subject=subject)
     async for partial_report in stream:
-        print(f"Findings: {len(partial_report.findings)}")
-        print(f"Recommendations: {len(partial_report.recommendations)}")
+        print(f"Findings: {partial_report.findings}")
+        print(f"Recommendations: {partial_report.recommendations}")
 
 asyncio.run(stream_report("Market analysis"))
 ```
@@ -581,11 +581,15 @@ class Response(BaseModel):
     answer: str
     reasoning: str
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(
+  model="qwen3-vl:235b-instruct", 
+  api_key=os.environ.get("OLLAMA_API_KEY"), 
+  request_timeout=80
+)
 
 tools_llm = ToolOrchestratingLLM(
     output_tool=Response,
-    prompt="Answer briefly: {question}",
+    prompt="Answer the following question briefly: {question}",
     llm=llm,
 )
 
@@ -593,7 +597,7 @@ tools_llm = ToolOrchestratingLLM(
 result1 = tools_llm(question="What is AI?")
 
 # Update prompt dynamically
-tools_llm.prompt = PromptTemplate("Answer in detail: {question}")
+tools_llm.prompt = PromptTemplate("Answer the following question in detail: {question}")
 
 # Use with new prompt
 result2 = tools_llm(question="What is AI?")
@@ -701,8 +705,16 @@ tools_llm = ToolOrchestratingLLM(
     verbose=True,  # Enable verbose logging
 )
 
+text = """
+The Great Sphinx of Giza, standing on the western bank of the Nile, is one of the most iconic monuments of ancient  
+Egypt. Carved from a single mass of limestone, this colossal statue features the body of a lion and the head of a 
+human, believed by many scholars to represent Pharaoh Khafre. Dating back to around 2500 BCE, the Sphinx has endured 
+millennia of erosion, sand burial, and restoration, yet it continues to captivate visitors and researchers alike 
+with its mysterious origins and enigmatic smile.
+"""
+
 # Will log detailed information about tool calls
-result = tools_llm(input="test data")
+result = tools_llm(input=text)
 ```
 
 ### 5. Custom Tool Choice
@@ -978,7 +990,7 @@ convert_temp = lambda celsius: {
     "kelvin": celsius + 273.15
 }
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="deepseek-v3.1:671b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_tool=convert_temp,  # Pass lambda function
@@ -1103,6 +1115,7 @@ Handle runtime errors:
 import os
 from pydantic import BaseModel, ValidationError
 from serapeum.core.llms import ToolOrchestratingLLM
+from serapeum.core.tools import ToolCallError
 from serapeum.ollama import Ollama
 
 class StrictData(BaseModel):
@@ -1119,7 +1132,7 @@ tools_llm = ToolOrchestratingLLM(
 
 try:
     result = tools_llm(text="Some text with invalid data")
-except ValidationError as e:
+except ToolCallError as e:
     print(f"Validation failed: {e}")
     # LLM generated invalid tool arguments
 except ValueError as e:
@@ -1176,6 +1189,7 @@ Handle cases where LLM doesn't generate tool calls:
 import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
+from serapeum.core.tools import ToolCallError
 from serapeum.ollama import Ollama
 
 class Output(BaseModel):
@@ -1192,7 +1206,7 @@ tools_llm = ToolOrchestratingLLM(
 
 try:
     result = tools_llm()
-except ValueError as e:
+except ToolCallError as e:
     print(f"No tool calls generated: {e}")
     # Try with different prompt or parameters
 ```
@@ -1271,6 +1285,7 @@ class Classification(BaseModel):
 
 # Create once
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+
 classifier = ToolOrchestratingLLM(
     output_tool=Classification,
     prompt="Classify: {text}",
@@ -1278,9 +1293,10 @@ classifier = ToolOrchestratingLLM(
 )
 
 # Reuse many times - this is efficient!
-texts = ["text1", "text2", "text3"]
+texts = ["Apple", "Tomato", "Guava"]
 for text in texts:
     result = classifier(text=text)
+    print(f"Text: {text}, Category: {result}")
 ```
 
 ### 4. Use Parallel Calls for Lists

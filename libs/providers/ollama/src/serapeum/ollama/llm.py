@@ -39,7 +39,7 @@ from serapeum.core.llms import (
 
 from serapeum.core.llms.orchestrators import StreamingObjectProcessor
 from serapeum.core.prompts import PromptTemplate
-from serapeum.core.tools import ArgumentCoercer, ToolCallArguments
+from serapeum.core.tools import ArgumentCoercer, ToolCallArguments, ToolCallError
 from serapeum.core.types import StructuredLLMMode
 from serapeum.ollama.client import OllamaClientMixin
 
@@ -841,9 +841,11 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         tool_calls = response.message.additional_kwargs.get("tool_calls", [])
         if not tool_calls or len(tool_calls) < 1:
             if error_on_no_tool_call:
-                raise ValueError(
-                    f"Expected at least one tool call, but got {len(tool_calls) if tool_calls else 0} tool calls."
+                raise ToolCallError(
+                    f"Expected at least one tool call, but The llm response contained "
+                    f" {len(tool_calls) if tool_calls else 0} tool calls."
                 )
+
             else:
                 return []
 

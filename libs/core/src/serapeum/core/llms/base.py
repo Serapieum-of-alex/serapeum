@@ -3,7 +3,7 @@
 This module defines the high-level LLM class with helpers for prompts,
 streaming, and structured outputs.
 """
-
+from __future__ import annotations
 from abc import ABC
 from typing import (
     TYPE_CHECKING,

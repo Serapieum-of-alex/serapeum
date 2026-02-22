@@ -31,7 +31,7 @@ class FunctionCallingLLM(LLM):
 
     def chat_with_tools(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -57,7 +57,7 @@ class FunctionCallingLLM(LLM):
 
     async def achat_with_tools(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -83,7 +83,7 @@ class FunctionCallingLLM(LLM):
 
     def stream_chat_with_tools(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -104,7 +104,7 @@ class FunctionCallingLLM(LLM):
 
     async def astream_chat_with_tools(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -125,7 +125,7 @@ class FunctionCallingLLM(LLM):
     @abstractmethod
     def _prepare_chat_with_tools(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -137,7 +137,7 @@ class FunctionCallingLLM(LLM):
     def _validate_chat_with_tools_response(
         self,
         response: ChatResponse,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
     ) -> ChatResponse:
@@ -157,7 +157,7 @@ class FunctionCallingLLM(LLM):
 
     def predict_and_call(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -190,7 +190,7 @@ class FunctionCallingLLM(LLM):
 
     async def apredict_and_call(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,

@@ -306,29 +306,73 @@ Create tools from functions or Pydantic models and let the LLM use them:
 
 ```python
 import os
-from pydantic import BaseModel, Field
 from serapeum.ollama import Ollama
 from serapeum.core.tools import CallableTool
-from serapeum.core.llms.orchestrators import ToolOrchestratingLLM
-from serapeum.core.prompts import PromptTemplate
+
+def search_flights(origin: str, destination: str) -> dict:
+    """Return estimated round-trip flight cost between two cities."""
+    # Mock data
+    prices = {
+        ("london", "tokyo"): 850,
+        ("new york", "paris"): 620,
+        ("sydney", "dubai"): 540,
+    }
+    key = (origin.lower(), destination.lower())
+    cost = prices.get(key, 700)
+    return {"origin": origin, "destination": destination, "round_trip_cost_usd": cost}
 
 
-# Define tools using Pydantic models
-class WeatherInput(BaseModel):
-    """WeatherInput data(location, unit)"""
-    location: str = Field(description="City name, e.g., 'San Francisco'")
-    unit: str = Field(description="Temperature unit: 'celsius' or 'fahrenheit'", default="celsius")
+def search_hotels(city: str, nights: int) -> dict:
+    """Return estimated hotel cost for a stay in a city."""
+    # Mock data — price per night
+    per_night = {
+        "tokyo": 180,
+        "paris": 210,
+        "dubai": 160,
+    }
+    rate = per_night.get(city.lower(), 150)
+    return {"city": city, "nights": nights, "rate_per_night_usd": rate, "total_usd": rate * nights}
 
-def get_weather(location: str, unit: str = "celsius") -> str:
-    """Get current weather for a location."""
-    return f"The weather in {location} is 72°{unit[0].upper()} and sunny."
+
+search_flight_tool = CallableTool.from_function(search_flights)
+search_hotels_tool = CallableTool.from_function(search_hotels)
+
+tools = [
+    search_flight_tool,
+    search_hotels_tool,
+]
+
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=120,
+)
+
+response = llm.predict_and_call(
+    tools=tools,
+    user_msg="I'm planning a 7-night trip from London to Tokyo. What are the flight and hotel costs?",
+    allow_parallel_tool_calls=True,
+)
+print(response)
+```
+
+### Direct Tool Calling
+
+You can also use tools directly with the base LLM:
+
+```python
+import os
+from pydantic import BaseModel, Field
+from serapeum.core.llms import Message, MessageRole
+from serapeum.core.tools import CallableTool
+from serapeum.ollama import Ollama
 
 class CalculatorInput(BaseModel):
     """CalculatorInput data(operation, a, b)"""
     operation: str = Field(description="Math operation: add, subtract, multiply, divide")
     a: float = Field(description="First number")
     b: float = Field(description="Second number")
-
+    
 def calculate(operation: str, a: float, b: float) -> float:
     """Perform basic math operations."""
     ops = {
@@ -339,40 +383,17 @@ def calculate(operation: str, a: float, b: float) -> float:
     }
     return ops.get(operation, 0)
 
-# Create tools
-weather_input = CallableTool.from_model(
-    WeatherInput,
-)
-get_weather_tool = CallableTool.from_function(get_weather)
-calculator_tool = CallableTool.from_model(
-    CalculatorInput,
-)
-calculate_tool = CallableTool.from_function(calculate)
-# Create orchestrator with tools
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=120, json_mode=True)
 
-orchestrator = ToolOrchestratingLLM(
-    llm=llm,
-    prompt=PromptTemplate("Answer the user's question: {query}"),
-    tools=[weather_input, calculator_tool],
-)
-
-# Use tools via natural language
-result = orchestrator(query="What's 15 multiplied by 8?")
-print(result)  # Uses calculator_tool automatically
-
-result = orchestrator(query="What's the weather in Paris?")
-print(result)  # Uses weather_tool automatically
-```
-
-### Direct Tool Calling
-
-You can also use tools directly with the base LLM:
-
-```python
-from serapeum.core.llms import Message, MessageRole
+calculator_tool = CallableTool.from_model(CalculatorInput)
 
 messages = [Message(role=MessageRole.USER, content="What's 25 + 17?")]
+
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=120,
+)
+
 response = llm.chat_with_tools(
     tools=[calculator_tool],
     chat_history=messages,
@@ -398,6 +419,9 @@ if tool_calls:
 Generate embeddings for RAG and semantic search:
 
 ### Basic Embedding Generation
+- The embedding API is only available in the local ollama server.
+- The embedding API is not available in the public cloud.
+- you need to install the ollama server locally. [Run Ollama Server](https://docs.ollama.com/)
 
 ```python
 from serapeum.ollama import OllamaEmbedding
@@ -405,7 +429,6 @@ from serapeum.ollama import OllamaEmbedding
 # Initialize embedding model
 embed_model = OllamaEmbedding(
     model_name="nomic-embed-text",
-    base_url="http://localhost:11434",
 )
 
 # Generate single embedding
@@ -522,7 +545,7 @@ Combine LLM and embeddings for Retrieval-Augmented Generation:
 ```python
 import os
 from serapeum.ollama import Ollama, OllamaEmbedding
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole 
 import numpy as np
 
 # Initialize both components
@@ -534,22 +557,18 @@ knowledge_base = [
     "The Eiffel Tower is in Paris, France.",
     "The Great Wall of China is in China.",
     "The Statue of Liberty is in New York, USA.",
-    "The Colosseum is in Rome, Italy.",
 ]
 
 # Generate embeddings for knowledge base
-kb_embeddings = embed_model.get_text_embeddings(knowledge_base)
+kb_embeddings = embed_model.get_text_embedding_batch(knowledge_base)
 
 # User query
 query = "Where is the Eiffel Tower?"
 query_emb = embed_model.get_query_embedding(query)
 
 # Similarity search
-def cosine_similarity(a, b):
-    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
 similarities = [
-    (doc, cosine_similarity(query_emb, emb))
+    (doc, embed_model.similarity(query_emb, emb))
     for doc, emb in zip(knowledge_base, kb_embeddings)
 ]
 similarities.sort(key=lambda x: x[1], reverse=True)
@@ -582,7 +601,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",                    # Required: Ollama model name
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    base_url="http://localhost:11434",   # Ollama server URL
+    base_url="https://api.ollama.com",   # Ollama server URL
     temperature=0.75,                    # Sampling temperature (0.0-1.0)
     context_window=3900,                 # Max context tokens
     request_timeout=60.0,                # Request timeout in seconds
@@ -601,7 +620,7 @@ llm = Ollama(
 **Key Parameters:**
 
 - **model**: Model identifier (e.g., `"qwen3.5:397b"`, `"mistral:latest"`)
-- **base_url**: Ollama server endpoint (default: `http://localhost:11434`)
+- **base_url**: Ollama cloud server endpoint (default: `https://api.ollama.com`)
 - **temperature**: Controls randomness (0.0 = deterministic, 1.0 = very random)
 - **json_mode**: Request JSON-formatted responses when `True`
 - **request_timeout**: Timeout for API calls (increase for slower models)

@@ -39,7 +39,9 @@ dev = [
     "nbval>=0.11.0",
     "mypy>=1.13.0",
     "pytest-xdist>=3.8.0",
-    "pytest-benchmark"
+    "pytest-benchmark",
+    "pytest-markdown-docs>=0.9.1",
+    "python-dotenv"
 ]
 
 docs = [
@@ -58,7 +60,6 @@ docs = [
     "notebook<7.0",
     "jupyter",
     "commitizen (>=4.8.3,<5.0.0)",
-    "pytest-markdown-docs>=0.9.1"
 ]
 
 [project.urls]
@@ -153,8 +154,8 @@ members = [
     "libs/providers/*",
 ]
 
-#[tool.uv]
-#managed = false
+[tool.uv]
+managed = false
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }

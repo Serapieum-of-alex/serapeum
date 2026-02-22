@@ -264,6 +264,7 @@ result = tools_llm(language="Python", code="def foo(): pass")
 Standard blocking execution:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -272,7 +273,7 @@ class Summary(BaseModel):
     main_points: list[str]
     conclusion: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Summary,
@@ -280,8 +281,11 @@ tools_llm = ToolOrchestratingLLM(
     llm=llm,
 )
 
+text = """
+The ancient Egyptian pyramids, built over 4,500 years ago, stand as some of humanity's most remarkable architectural achievements. The Great Pyramid of Giza, constructed for Pharaoh Khufu, was the tallest man-made structure in the world for nearly 4,000 years. These massive tombs were built using millions of limestone blocks, each weighing several tons, transported and assembled with astonishing precision. The pyramids served as elaborate burial chambers designed to protect pharaohs and their treasures for the afterlife. Today, they remain the only surviving wonder of the ancient world, drawing millions of visitors each year.
+"""
 # Synchronous call using __call__
-result = tools_llm(text="Long article text here...")
+result = tools_llm(text=text)
 print(result.main_points)
 print(result.conclusion)
 ```
@@ -291,6 +295,7 @@ print(result.conclusion)
 Non-blocking async execution:
 
 ```python
+import os
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -301,7 +306,7 @@ class Classification(BaseModel):
     subcategory: str
     confidence: float
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Classification,
@@ -324,6 +329,7 @@ print(f"{result.category} > {result.subcategory}")
 Process multiple inputs concurrently:
 
 ```python
+import os
 import asyncio
 from typing import List
 from pydantic import BaseModel
@@ -334,7 +340,7 @@ class EntityExtraction(BaseModel):
     entities: List[str]
     entity_types: List[str]
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=EntityExtraction,
@@ -362,6 +368,7 @@ for text, result in zip(texts, results):
 Stream progressive updates:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -371,7 +378,7 @@ class Article(BaseModel):
     sections: list[str]
     word_count: int
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Article,
@@ -391,6 +398,7 @@ for partial_article in tools_llm.stream_call(topic="AI"):
 Async version of streaming:
 
 ```python
+import os
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -401,7 +409,7 @@ class Report(BaseModel):
     findings: list[str]
     recommendations: list[str]
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Report,
@@ -461,6 +469,7 @@ result = tools_llm(
 By default, only one tool call is expected:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -470,7 +479,7 @@ class Product(BaseModel):
     price: float
     description: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Product,
@@ -489,6 +498,7 @@ print(type(result))  # <class 'Product'>
 Enable parallel tool calls to receive multiple objects:
 
 ```python
+import os
 from typing import List
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -498,7 +508,7 @@ class Item(BaseModel):
     name: str
     category: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Item,
@@ -557,6 +567,7 @@ for questions_so_far in tools_llm.stream_call(topic="Python"):
 Change the prompt at runtime:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -566,7 +577,7 @@ class Response(BaseModel):
     answer: str
     reasoning: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Response,
@@ -669,6 +680,7 @@ for comment in result.comments:
 Enable detailed logging:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -676,7 +688,7 @@ from serapeum.ollama import Ollama
 class Data(BaseModel):
     result: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Data,
@@ -951,8 +963,9 @@ asyncio.run(main())
 Use lambda functions for simple transformations:
 
 ```python
+import os
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Simple lambda function for temperature conversion
 convert_temp = lambda celsius: {
@@ -961,7 +974,7 @@ convert_temp = lambda celsius: {
     "kelvin": celsius + 273.15
 }
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=convert_temp,  # Pass lambda function
@@ -1115,15 +1128,16 @@ except ValueError as e:
 Implement retry logic for robustness:
 
 ```python
+import os
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Result(BaseModel):
     data: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Result,
@@ -1242,16 +1256,17 @@ llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), req
 Create instances once and reuse them:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Classification(BaseModel):
     category: str
     confidence: float
 
 # Create once
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 classifier = ToolOrchestratingLLM(
     output_cls=Classification,
     prompt="Classify: {text}",

@@ -21,6 +21,7 @@ This guide provides comprehensive examples covering all possible ways to use `To
 The most straightforward way to use `ToolOrchestratingLLM`:
 
 ```python
+import os
 from typing import List
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -37,7 +38,7 @@ class Album(BaseModel):
     songs: List[Song]
 
 # Initialize the LLM with function calling support
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Create ToolOrchestratingLLM with string prompt
 tools_llm = ToolOrchestratingLLM(
@@ -62,6 +63,7 @@ print(len(result.songs))  # 3
 Provide a fully configured function-calling LLM:
 
 ```python
+import os
 from typing import List
 from pydantic import BaseModel, Field
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -75,7 +77,8 @@ class Task(BaseModel):
 
 # Initialize Ollama with function calling support
 llm = Ollama(
-    model="llama3.1",
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=80,
     temperature=0.7,
 )
@@ -95,13 +98,14 @@ result = tools_llm(project="Build a web application")
 Set a default function-calling LLM for the entire application:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.configs.configs import Configs
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
 
 # Set global LLM
-Configs.llm = Ollama(model="llama3.1", request_timeout=80)
+Configs.llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 class Entity(BaseModel):
     name: str
@@ -124,6 +128,7 @@ result = tools_llm(text="Apple Inc. is a technology company")
 Control which tool the LLM should use:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -132,7 +137,7 @@ class Response(BaseModel):
     answer: str
     confidence: float
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Force the LLM to use the tool
 tools_llm = ToolOrchestratingLLM(
@@ -154,6 +159,7 @@ result = tools_llm(question="What is Python?")
 Simple string prompts are automatically wrapped in `PromptTemplate`:
 
 ```python
+import os
 from typing import List
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -165,7 +171,7 @@ class Recipe(BaseModel):
     steps: List[str]
     prep_time: int
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     output_cls=Recipe,
@@ -181,6 +187,7 @@ result = tools_llm(cuisine="Italian", dish="pasta")
 Use `PromptTemplate` for more control:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -191,7 +198,7 @@ class Analysis(BaseModel):
     topics: list[str]
     summary: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Create explicit PromptTemplate
 prompt_template = PromptTemplate(
@@ -212,10 +219,10 @@ result = tools_llm(text="AI is transforming industries worldwide")
 Use structured message templates for complex prompts:
 
 ```python
+import os
 from pydantic import BaseModel
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, ToolOrchestratingLLM
 from serapeum.core.prompts import ChatPromptTemplate
-from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
 
 class CodeReview(BaseModel):
@@ -223,7 +230,7 @@ class CodeReview(BaseModel):
     suggestions: list[str]
     rating: int  # 1-10
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Create message templates
 messages = [

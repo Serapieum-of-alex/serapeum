@@ -173,4 +173,4 @@ repos:
         entry: pytest -v --markdown-docs docs/
         language: system
         pass_filenames: false
-        always_run: true
+        iles: ^docs/.*\.md$

@@ -2,158 +2,162 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/AUTHORS/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/LICENSE/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/change-log/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/developer-guide/SECURITY/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/developer-guide/contributing/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/developer-guide/installation/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/developer-guide/taskfile/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
+    </url>
+    <url>
+         <loc>https://serapieum-of-alex.github.io/Serapeum/main/developer-guide/testing-docs/</loc>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/overview/core-package/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/overview/providers/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/overview/providers/adding-new-providers/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/overview/providers/ollama/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/embeddings/module/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/llm-classes-comparison/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/text_completion_llm/examples/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/text_completion_llm/general/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_class/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_components/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_dataflow/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_sequence/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_state/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/tool_orchestrating_llm/examples/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/tool_orchestrating_llm/general/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/tools/callable_tools/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/core/tools/tools/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/providers/add_new_providers/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/providers/ollama/api_reference/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/providers/ollama/examples/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/providers/ollama/general/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/providers/ollama/ollama_class/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/providers/ollama/ollama_components/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/providers/ollama/ollama_dataflow/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/providers/ollama/ollama_sequence/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/main/reference/providers/ollama/ollama_state/</loc>
-         <lastmod>2026-02-22</lastmod>
+         <lastmod>2026-02-23</lastmod>
     </url>
 </urlset>

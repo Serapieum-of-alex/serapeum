@@ -1,4 +1,5 @@
 """Shared Ollama connection configuration and client mixin."""
+
 from __future__ import annotations
 
 from typing import Any

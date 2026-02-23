@@ -70,7 +70,7 @@ jobs:
           esac
 
       - name: Create GitHub Release
-        uses: Serapieum-of-alex/github-actions/actions/release/github@main
+        uses: Serapieum-of-alex/github-actions/actions/release/github@github-release/v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           increment: ${{ inputs.increment }}

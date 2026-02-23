@@ -13,6 +13,7 @@ Run cloud e2e tests only::
 
     pytest tests/llm/test_ollama_cloud.py -m e2e
 """
+
 from __future__ import annotations
 
 import pytest
@@ -21,7 +22,6 @@ from serapeum.core.llms import Message
 from serapeum.ollama import Ollama
 from serapeum.ollama.client import DEFAULT_BASE_URL, OLLAMA_CLOUD_BASE_URL
 from ..models import cloud_client
-
 
 
 class TestApiKeyField:
@@ -238,9 +238,7 @@ class TestCloudChat:
         Expected: Non-empty assistant content string.
         Checks: Async chat works through the cloud backend.
         """
-        response = await cloud_llm.achat(
-            [Message(role="user", content="Say hello.")]
-        )
+        response = await cloud_llm.achat([Message(role="user", content="Say hello.")])
 
         assert response is not None
         assert response.message.content is not None

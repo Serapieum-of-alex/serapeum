@@ -958,7 +958,7 @@ class BaseNode(SerializableModel, ABC):
         return self.linked_nodes_cache
 
     def __str__(self) -> str:
-        """str"""
+        """STR."""
         source_text_truncated = truncate_text(
             self.get_content().strip(), TRUNCATE_LENGTH
         )

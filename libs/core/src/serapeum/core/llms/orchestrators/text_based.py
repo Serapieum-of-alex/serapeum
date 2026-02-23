@@ -17,6 +17,14 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
     The wrapper binds a prompt, an output parser, and an LLM together so every invocation returns a
     validated Pydantic model that matches the declared schema.
 
+    Note:
+        Despite the name, this class works with **both** chat/instruct models and raw
+        text-completion models. Internally it routes to ``llm.chat()`` when
+        ``llm.metadata.is_chat_model`` is True, and to ``llm.complete()`` otherwise.
+
+        Streaming is **not** supported by this class. If you need incremental results via
+        ``stream_call()`` or ``astream_call()``, use ``ToolOrchestratingLLM`` instead.
+
     Args:
         output_parser (Optional[BaseParser]): Parser used to coerce raw text into the target
             model. Required when `output_cls` is not supplied.
@@ -346,7 +354,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         return output_parser, output_cls
 
     @property
-    def output_cls(self) -> Type[BaseModel]:
+    def output_tool(self) -> Type[BaseModel]:
         """Return the Pydantic model produced by this program.
 
         Returns:

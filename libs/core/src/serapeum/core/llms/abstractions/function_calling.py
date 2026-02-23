@@ -1,5 +1,6 @@
 """LLM mixins and helpers for function/tool calling workflows."""
 
+from __future__ import annotations
 import asyncio
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Sequence
@@ -12,9 +13,10 @@ from serapeum.core.base.llms.types import (
 )
 from serapeum.core.llms.base import LLM
 from serapeum.core.tools.types import ToolCallArguments
+from serapeum.core.tools.invoke import ExecutionConfig, ToolExecutor
+from serapeum.core.chat import AgentChatResponse
 
 if TYPE_CHECKING:
-    from serapeum.core.chat.types import AgentChatResponse
     from serapeum.core.tools.types import BaseTool
 
 
@@ -30,7 +32,7 @@ class FunctionCallingLLM(LLM):
 
     def chat_with_tools(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -56,7 +58,7 @@ class FunctionCallingLLM(LLM):
 
     async def achat_with_tools(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -82,7 +84,7 @@ class FunctionCallingLLM(LLM):
 
     def stream_chat_with_tools(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -103,7 +105,7 @@ class FunctionCallingLLM(LLM):
 
     async def astream_chat_with_tools(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -124,7 +126,7 @@ class FunctionCallingLLM(LLM):
     @abstractmethod
     def _prepare_chat_with_tools(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -136,7 +138,7 @@ class FunctionCallingLLM(LLM):
     def _validate_chat_with_tools_response(
         self,
         response: ChatResponse,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
     ) -> ChatResponse:
@@ -156,7 +158,7 @@ class FunctionCallingLLM(LLM):
 
     def predict_and_call(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -164,10 +166,8 @@ class FunctionCallingLLM(LLM):
         error_on_no_tool_call: bool = True,
         error_on_tool_error: bool = False,
         **kwargs: Any,
-    ) -> "AgentChatResponse":
+    ) -> AgentChatResponse:
         """Predict and call the tool."""
-        from serapeum.core.tools import ExecutionConfig, ToolExecutor
-
         response = self.chat_with_tools(
             tools,
             user_msg=user_msg,
@@ -191,7 +191,7 @@ class FunctionCallingLLM(LLM):
 
     async def apredict_and_call(
         self,
-        tools: Sequence["BaseTool"],
+        tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -199,10 +199,8 @@ class FunctionCallingLLM(LLM):
         error_on_no_tool_call: bool = True,
         error_on_tool_error: bool = False,
         **kwargs: Any,
-    ) -> "AgentChatResponse":
+    ) -> AgentChatResponse:
         """Predict and call the tool."""
-        from serapeum.core.tools import ExecutionConfig, ToolExecutor
-
         response = await self.achat_with_tools(
             tools,
             user_msg=user_msg,
@@ -234,9 +232,7 @@ class FunctionCallingLLM(LLM):
         response: ChatResponse,
         error_on_tool_error: bool,
         allow_parallel_tool_calls: bool,
-    ) -> "AgentChatResponse":
-        from serapeum.core.chat.types import AgentChatResponse
-
+    ) -> AgentChatResponse:
         tool_outputs_with_error = [
             tool_output for tool_output in tool_outputs if tool_output.is_error
         ]

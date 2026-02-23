@@ -353,5 +353,3 @@ Key decisions documented in `docs/architecture/`:
 - Only create documentation files when explicitly requested or when adding new features that require user-facing docs
 - Keep responses concise and actionable
 - Focus on code changes and direct answers rather than creating auxiliary markdown files
-
-

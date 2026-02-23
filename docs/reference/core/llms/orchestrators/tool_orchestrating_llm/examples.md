@@ -3,14 +3,57 @@
 This guide provides comprehensive examples covering all possible ways to use `ToolOrchestratingLLM`.
 
 ## Table of Contents
+1. [Prerequisites: Ollama Cloud API Key](#prerequisites-ollama-cloud-api-key)
+2. [Basic Usage](#basic-usage)
+3. [Initialization Patterns](#initialization-patterns)
+4. [Prompt Formats](#prompt-formats)
+5. [Execution Modes](#execution-modes)
+6. [Parallel Tool Calls](#parallel-tool-calls)
+7. [Advanced Usage](#advanced-usage)
+8. [Error Handling](#error-handling)
 
-1. [Basic Usage](#basic-usage)
-2. [Initialization Patterns](#initialization-patterns)
-3. [Prompt Formats](#prompt-formats)
-4. [Execution Modes](#execution-modes)
-5. [Parallel Tool Calls](#parallel-tool-calls)
-6. [Advanced Usage](#advanced-usage)
-7. [Error Handling](#error-handling)
+---
+
+## Prerequisites: Ollama Cloud API Key
+
+The examples in this guide use the [Ollama Cloud](https://ollama.com/cloud) inference API, which requires an API key.
+
+**Steps to create your API key:**
+
+1. Create an account at [ollama.com](https://ollama.com) (or sign in if you already have one)
+2. Navigate to [ollama.com/settings/keys](https://ollama.com/settings/keys)
+3. Click **Generate** to create a new API key
+4. Copy the key immediately — it will not be shown again
+
+**Set the environment variable:**
+
+```bash
+export OLLAMA_API_KEY=your_api_key_here
+```
+
+Or add it to your `.env` file:
+
+```
+OLLAMA_API_KEY=your_api_key_here
+```
+
+**Loading the `.env` file in Python:**
+
+Install [`python-dotenv`](https://pypi.org/project/python-dotenv/):
+
+```bash
+pip install python-dotenv
+```
+
+Then load it at the top of your script:
+
+```python notest
+from dotenv import load_dotenv
+
+load_dotenv()  # loads variables from .env into os.environ
+```
+
+All examples below read the key via `os.environ.get("OLLAMA_API_KEY")`.
 
 ---
 
@@ -21,6 +64,7 @@ This guide provides comprehensive examples covering all possible ways to use `To
 The most straightforward way to use `ToolOrchestratingLLM`:
 
 ```python
+import os
 from typing import List
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -37,11 +81,15 @@ class Album(BaseModel):
     songs: List[Song]
 
 # Initialize the LLM with function calling support
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(
+  model="qwen3.5:397b",
+  api_key=os.environ.get("OLLAMA_API_KEY"),
+  request_timeout=80
+)
 
 # Create ToolOrchestratingLLM with string prompt
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Album,
+    output_tool=Album,
     prompt="Create an album about {topic} with {num_songs} songs.",
     llm=llm,
 )
@@ -62,6 +110,7 @@ print(len(result.songs))  # 3
 Provide a fully configured function-calling LLM:
 
 ```python
+import os
 from typing import List
 from pydantic import BaseModel, Field
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -75,13 +124,14 @@ class Task(BaseModel):
 
 # Initialize Ollama with function calling support
 llm = Ollama(
-    model="llama3.1",
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=80,
     temperature=0.7,
 )
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Task,
+    output_tool=Task,
     prompt="Break down this project into tasks: {project}",
     llm=llm,
 )
@@ -95,13 +145,14 @@ result = tools_llm(project="Build a web application")
 Set a default function-calling LLM for the entire application:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.configs.configs import Configs
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
 
 # Set global LLM
-Configs.llm = Ollama(model="llama3.1", request_timeout=80)
+Configs.llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 class Entity(BaseModel):
     name: str
@@ -110,7 +161,7 @@ class Entity(BaseModel):
 
 # No need to pass llm parameter
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Entity,
+    output_tool=Entity,
     prompt="Extract entity from: {text}",
     # llm=None uses Configs.llm by default
 )
@@ -124,6 +175,7 @@ result = tools_llm(text="Apple Inc. is a technology company")
 Control which tool the LLM should use:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -132,11 +184,11 @@ class Response(BaseModel):
     answer: str
     confidence: float
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Force the LLM to use the tool
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Response,
+    output_tool=Response,
     prompt="Answer: {question}",
     llm=llm,
     tool_choice="auto",  # or "required" to force tool use
@@ -154,6 +206,7 @@ result = tools_llm(question="What is Python?")
 Simple string prompts are automatically wrapped in `PromptTemplate`:
 
 ```python
+import os
 from typing import List
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -165,10 +218,10 @@ class Recipe(BaseModel):
     steps: List[str]
     prep_time: int
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Recipe,
+    output_tool=Recipe,
     prompt="Create a {cuisine} recipe for {dish}",  # String prompt
     llm=llm,
 )
@@ -181,6 +234,7 @@ result = tools_llm(cuisine="Italian", dish="pasta")
 Use `PromptTemplate` for more control:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -191,7 +245,7 @@ class Analysis(BaseModel):
     topics: list[str]
     summary: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Create explicit PromptTemplate
 prompt_template = PromptTemplate(
@@ -199,7 +253,7 @@ prompt_template = PromptTemplate(
 )
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Analysis,
+    output_tool=Analysis,
     prompt=prompt_template,
     llm=llm,
 )
@@ -212,10 +266,10 @@ result = tools_llm(text="AI is transforming industries worldwide")
 Use structured message templates for complex prompts:
 
 ```python
+import os
 from pydantic import BaseModel
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, ToolOrchestratingLLM
 from serapeum.core.prompts import ChatPromptTemplate
-from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
 
 class CodeReview(BaseModel):
@@ -223,7 +277,7 @@ class CodeReview(BaseModel):
     suggestions: list[str]
     rating: int  # 1-10
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Create message templates
 messages = [
@@ -240,7 +294,7 @@ messages = [
 prompt = ChatPromptTemplate(message_templates=messages)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=CodeReview,
+    output_tool=CodeReview,
     prompt=prompt,
     llm=llm,
 )
@@ -257,6 +311,7 @@ result = tools_llm(language="Python", code="def foo(): pass")
 Standard blocking execution:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -265,16 +320,19 @@ class Summary(BaseModel):
     main_points: list[str]
     conclusion: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Summary,
+    output_tool=Summary,
     prompt="Summarize: {text}",
     llm=llm,
 )
 
+text = """
+The ancient Egyptian pyramids, built over 4,500 years ago, stand as some of humanity's most remarkable architectural achievements. The Great Pyramid of Giza, constructed for Pharaoh Khufu, was the tallest man-made structure in the world for nearly 4,000 years. These massive tombs were built using millions of limestone blocks, each weighing several tons, transported and assembled with astonishing precision. The pyramids served as elaborate burial chambers designed to protect pharaohs and their treasures for the afterlife. Today, they remain the only surviving wonder of the ancient world, drawing millions of visitors each year.
+"""
 # Synchronous call using __call__
-result = tools_llm(text="Long article text here...")
+result = tools_llm(text=text)
 print(result.main_points)
 print(result.conclusion)
 ```
@@ -284,6 +342,7 @@ print(result.conclusion)
 Non-blocking async execution:
 
 ```python
+import os
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -294,10 +353,10 @@ class Classification(BaseModel):
     subcategory: str
     confidence: float
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Classification,
+    output_tool=Classification,
     prompt="Classify: {item}",
     llm=llm,
 )
@@ -317,6 +376,7 @@ print(f"{result.category} > {result.subcategory}")
 Process multiple inputs concurrently:
 
 ```python
+import os
 import asyncio
 from typing import List
 from pydantic import BaseModel
@@ -327,10 +387,10 @@ class EntityExtraction(BaseModel):
     entities: List[str]
     entity_types: List[str]
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=EntityExtraction,
+    output_tool=EntityExtraction,
     prompt="Extract entities from: {text}",
     llm=llm,
 )
@@ -355,6 +415,7 @@ for text, result in zip(texts, results):
 Stream progressive updates:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -364,10 +425,10 @@ class Article(BaseModel):
     sections: list[str]
     word_count: int
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Article,
+    output_tool=Article,
     prompt="Write an article about {topic}",
     llm=llm,
 )
@@ -375,7 +436,7 @@ tools_llm = ToolOrchestratingLLM(
 # Stream results as they arrive
 for partial_article in tools_llm.stream_call(topic="AI"):
     print(f"Current title: {partial_article.title}")
-    print(f"Sections so far: {len(partial_article.sections)}")
+    print(f"Sections so far: {partial_article.sections}")
     # Display progressive updates in UI
 ```
 
@@ -384,6 +445,7 @@ for partial_article in tools_llm.stream_call(topic="AI"):
 Async version of streaming:
 
 ```python
+import os
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -394,10 +456,10 @@ class Report(BaseModel):
     findings: list[str]
     recommendations: list[str]
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Report,
+    output_tool=Report,
     prompt="Generate report on {subject}",
     llm=llm,
 )
@@ -405,8 +467,8 @@ tools_llm = ToolOrchestratingLLM(
 async def stream_report(subject: str):
     stream = await tools_llm.astream_call(subject=subject)
     async for partial_report in stream:
-        print(f"Findings: {len(partial_report.findings)}")
-        print(f"Recommendations: {len(partial_report.recommendations)}")
+        print(f"Findings: {partial_report.findings}")
+        print(f"Recommendations: {partial_report.recommendations}")
 
 asyncio.run(stream_report("Market analysis"))
 ```
@@ -416,6 +478,7 @@ asyncio.run(stream_report("Market analysis"))
 Forward parameters directly to the LLM:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -425,10 +488,10 @@ class Story(BaseModel):
     plot: str
     characters: list[str]
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Story,
+    output_tool=Story,
     prompt="Write a {genre} story",
     llm=llm,
 )
@@ -453,6 +516,7 @@ result = tools_llm(
 By default, only one tool call is expected:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -462,10 +526,10 @@ class Product(BaseModel):
     price: float
     description: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Product,
+    output_tool=Product,
     prompt="Extract product info: {text}",
     llm=llm,
     allow_parallel_tool_calls=False,  # Default
@@ -481,6 +545,7 @@ print(type(result))  # <class 'Product'>
 Enable parallel tool calls to receive multiple objects:
 
 ```python
+import os
 from typing import List
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -490,10 +555,10 @@ class Item(BaseModel):
     name: str
     category: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Item,
+    output_tool=Item,
     prompt="Extract all items from this list: {text}",
     llm=llm,
     allow_parallel_tool_calls=True,  # Enable parallel calls
@@ -512,6 +577,7 @@ for item in results:
 Stream multiple objects as they're generated:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -520,10 +586,10 @@ class Question(BaseModel):
     question: str
     difficulty: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Question,
+    output_tool=Question,
     prompt="Generate 5 questions about {topic}",
     llm=llm,
     allow_parallel_tool_calls=True,
@@ -548,6 +614,7 @@ for questions_so_far in tools_llm.stream_call(topic="Python"):
 Change the prompt at runtime:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -557,11 +624,15 @@ class Response(BaseModel):
     answer: str
     reasoning: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(
+  model="qwen3-vl:235b-instruct",
+  api_key=os.environ.get("OLLAMA_API_KEY"),
+  request_timeout=80
+)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Response,
-    prompt="Answer briefly: {question}",
+    output_tool=Response,
+    prompt="Answer the following question briefly: {question}",
     llm=llm,
 )
 
@@ -569,7 +640,7 @@ tools_llm = ToolOrchestratingLLM(
 result1 = tools_llm(question="What is AI?")
 
 # Update prompt dynamically
-tools_llm.prompt = PromptTemplate("Answer in detail: {question}")
+tools_llm.prompt = PromptTemplate("Answer the following question in detail: {question}")
 
 # Use with new prompt
 result2 = tools_llm(question="What is AI?")
@@ -580,6 +651,7 @@ result2 = tools_llm(question="What is AI?")
 Create once, use many times:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -589,11 +661,11 @@ class Sentiment(BaseModel):
     confidence: float
     keywords: list[str]
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Create reusable instance
 sentiment_analyzer = ToolOrchestratingLLM(
-    output_cls=Sentiment,
+    output_tool=Sentiment,
     prompt="Analyze sentiment of: {text}",
     llm=llm,
 )
@@ -615,6 +687,7 @@ for review in reviews:
 Use deeply nested Pydantic models:
 
 ```python
+import os
 from typing import List
 from pydantic import BaseModel, Field
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -636,10 +709,10 @@ class Article(BaseModel):
     tags: List[str]
     comments: List[Comment]
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Article,
+    output_tool=Article,
     prompt="Create a blog article about {topic} with comments",
     llm=llm,
 )
@@ -658,6 +731,7 @@ for comment in result.comments:
 Enable detailed logging:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -665,17 +739,25 @@ from serapeum.ollama import Ollama
 class Data(BaseModel):
     result: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Data,
+    output_tool=Data,
     prompt="Process: {input}",
     llm=llm,
     verbose=True,  # Enable verbose logging
 )
 
+text = """
+The Great Sphinx of Giza, standing on the western bank of the Nile, is one of the most iconic monuments of ancient  
+Egypt. Carved from a single mass of limestone, this colossal statue features the body of a lion and the head of a
+human, believed by many scholars to represent Pharaoh Khafre. Dating back to around 2500 BCE, the Sphinx has endured
+millennia of erosion, sand burial, and restoration, yet it continues to captivate visitors and researchers alike
+with its mysterious origins and enigmatic smile.
+"""
+
 # Will log detailed information about tool calls
-result = tools_llm(input="test data")
+result = tools_llm(input=text)
 ```
 
 ### 5. Custom Tool Choice
@@ -683,6 +765,7 @@ result = tools_llm(input="test data")
 Control tool selection:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
@@ -690,11 +773,11 @@ from serapeum.ollama import Ollama
 class Output(BaseModel):
     data: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Force the LLM to always use the tool
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Output,
+    output_tool=Output,
     prompt="Generate output for: {input}",
     llm=llm,
     tool_choice="required",  # Force tool use
@@ -707,13 +790,14 @@ result = tools_llm(input="test")
 
 ## Using Regular Functions with ToolOrchestratingLLM
 
-`ToolOrchestratingLLM` now supports both Pydantic models and regular Python functions as `output_cls`. When you pass a function, the system automatically detects it and creates the appropriate tool.
+`ToolOrchestratingLLM` now supports both Pydantic models and regular Python functions as `output_tool`. When you pass a function, the system automatically detects it and creates the appropriate tool.
 
 ### 1. Using Regular Functions
 
-Pass regular Python functions directly as `output_cls`:
+Pass regular Python functions directly as `output_tool`:
 
 ```python
+import os
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
 
@@ -745,10 +829,10 @@ def calculate_statistics(numbers: list[float], operation: str) -> dict[str, floa
     }
 
 # Use function directly with ToolOrchestratingLLM
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=calculate_statistics,  # Pass function directly!
+    output_tool=calculate_statistics,  # Pass function directly!
     prompt="Calculate the mean of these numbers: {text}",
     llm=llm,
 )
@@ -766,6 +850,7 @@ print(f"Count: {result['count']}")
 Wrap regular Python classes in functions and use with ToolOrchestratingLLM:
 
 ```python
+import os
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
 
@@ -802,10 +887,10 @@ def validate_email(email: str, check_mx: bool = False) -> dict:
     return validator.to_dict()
 
 # Use function with ToolOrchestratingLLM
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=validate_email,  # Pass function that uses the class
+    output_tool=validate_email,  # Pass function that uses the class
     prompt="Validate this email: {email_text}",
     llm=llm,
 )
@@ -821,9 +906,10 @@ print(f"Valid: {result['is_valid']}")
 Use factory functions that return dataclass instances:
 
 ```python
+import os
 from dataclasses import dataclass
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 @dataclass
 class Product:
@@ -857,10 +943,10 @@ def create_product(name: str, price: float, category: str, in_stock: bool = True
     return product.to_dict()
 
 # Use factory function with ToolOrchestratingLLM
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=create_product,  # Pass factory function
+    output_tool=create_product,  # Pass factory function
     prompt="Create a product entry for: {product_info}",
     llm=llm,
 )
@@ -877,9 +963,10 @@ print(f"Category: {result['category']}")
 Use async functions directly with ToolOrchestratingLLM:
 
 ```python
+import os
 import asyncio
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 async def fetch_user_data(user_id: int, include_posts: bool = False) -> dict:
     """Asynchronously fetch user data.
@@ -910,10 +997,10 @@ async def fetch_user_data(user_id: int, include_posts: bool = False) -> dict:
 
 # Use async function with ToolOrchestratingLLM
 async def main():
-    llm = Ollama(model="llama3.1", request_timeout=80)
+    llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
     tools_llm = ToolOrchestratingLLM(
-        output_cls=fetch_user_data,  # Pass async function
+        output_tool=fetch_user_data,  # Pass async function
         prompt="Fetch data for user ID {user_id_text} with their posts",
         llm=llm,
     )
@@ -935,8 +1022,9 @@ asyncio.run(main())
 Use lambda functions for simple transformations:
 
 ```python
+import os
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Simple lambda function for temperature conversion
 convert_temp = lambda celsius: {
@@ -945,10 +1033,10 @@ convert_temp = lambda celsius: {
     "kelvin": celsius + 273.15
 }
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="deepseek-v3.1:671b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=convert_temp,  # Pass lambda function
+    output_tool=convert_temp,  # Pass lambda function
     prompt="Convert {temperature} degrees Celsius",
     llm=llm,
 )
@@ -970,8 +1058,9 @@ print(f"Kelvin: {result['kelvin']}")
 Use functions that return complex data structures:
 
 ```python
+import os
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 def analyze_text(text: str, language: str = "en") -> dict:
     """Analyze text and return basic metrics.
@@ -991,10 +1080,10 @@ def analyze_text(text: str, language: str = "en") -> dict:
         "avg_word_length": sum(len(w) for w in words) / len(words) if words else 0
     }
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=analyze_text,  # Pass function with complex return
+    output_tool=analyze_text,  # Pass function with complex return
     prompt="Analyze this text: {text_input}",
     llm=llm,
 )
@@ -1008,7 +1097,7 @@ print(f"Average word length: {result['avg_word_length']:.2f}")
 
 ### Important Notes
 
-**Advantages of using functions as output_cls:**
+**Advantages of using functions as output_tool:**
 1. Works with existing Python functions - no need to convert to Pydantic
 2. Full access to all `ToolOrchestratingLLM` features (streaming, async, etc.)
 3. Automatic tool creation and orchestration
@@ -1038,9 +1127,10 @@ print(f"Average word length: {result['avg_word_length']:.2f}")
 Catch initialization errors:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Data(BaseModel):
     value: str
@@ -1050,7 +1140,7 @@ class Data(BaseModel):
 
 try:
     tools_llm = ToolOrchestratingLLM(
-        output_cls=Data,
+        output_tool=Data,
         prompt="Process: {input}",
         llm=None,  # No LLM provided
     )
@@ -1065,25 +1155,27 @@ except ValueError as e:
 Handle runtime errors:
 
 ```python
+import os
 from pydantic import BaseModel, ValidationError
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.core.tools import ToolCallError
+from serapeum.ollama import Ollama
 
 class StrictData(BaseModel):
     number: int  # Must be integer
     ratio: float  # Must be float
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=StrictData,
+    output_tool=StrictData,
     prompt="Extract numbers from: {text}",
     llm=llm,
 )
 
 try:
     result = tools_llm(text="Some text with invalid data")
-except ValidationError as e:
+except ToolCallError as e:
     print(f"Validation failed: {e}")
     # LLM generated invalid tool arguments
 except ValueError as e:
@@ -1096,18 +1188,19 @@ except ValueError as e:
 Implement retry logic for robustness:
 
 ```python
+import os
 import asyncio
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Result(BaseModel):
     data: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Result,
+    output_tool=Result,
     prompt="Process: {input}",
     llm=llm,
 )
@@ -1136,17 +1229,19 @@ result = asyncio.run(call_with_retry(tools_llm, input="test"))
 Handle cases where LLM doesn't generate tool calls:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.core.tools import ToolCallError
+from serapeum.ollama import Ollama
 
 class Output(BaseModel):
     result: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Output,
+    output_tool=Output,
     prompt="Generate output",
     llm=llm,
     tool_choice="required",  # Force tool use to prevent this
@@ -1154,7 +1249,7 @@ tools_llm = ToolOrchestratingLLM(
 
 try:
     result = tools_llm()
-except ValueError as e:
+except ToolCallError as e:
     print(f"No tool calls generated: {e}")
     # Try with different prompt or parameters
 ```
@@ -1168,9 +1263,10 @@ except ValueError as e:
 Always define clear Pydantic models with descriptions:
 
 ```python
+import os
 from pydantic import BaseModel, Field
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class WellDefinedModel(BaseModel):
     """A well-documented model for structured output."""
@@ -1187,10 +1283,10 @@ class WellDefinedModel(BaseModel):
         default_factory=list
     )
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=WellDefinedModel,
+    output_tool=WellDefinedModel,
     prompt="Extract information from: {text}",
     llm=llm,
 )
@@ -1201,17 +1297,18 @@ tools_llm = ToolOrchestratingLLM(
 Ensure your LLM supports function calling:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
 # Good: Models that support function calling
 good_models = [
-    "llama3.1",
+    "qwen3.5:397b",
     "llama3.2",
     "mistral",
     # Check Ollama docs for function calling support
 ]
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 # llm.metadata.is_function_calling_model should be True
 ```
 
@@ -1220,26 +1317,29 @@ llm = Ollama(model="llama3.1", request_timeout=80)
 Create instances once and reuse them:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Classification(BaseModel):
     category: str
     confidence: float
 
 # Create once
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+
 classifier = ToolOrchestratingLLM(
-    output_cls=Classification,
+    output_tool=Classification,
     prompt="Classify: {text}",
     llm=llm,
 )
 
 # Reuse many times - this is efficient!
-texts = ["text1", "text2", "text3"]
+texts = ["Apple", "Tomato", "Guava"]
 for text in texts:
     result = classifier(text=text)
+    print(f"Text: {text}, Category: {result}")
 ```
 
 ### 4. Use Parallel Calls for Lists
@@ -1247,19 +1347,20 @@ for text in texts:
 When extracting multiple items, use parallel tool calls:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 class Item(BaseModel):
     name: str
     type: str
 
-llm = Ollama(model="llama3.1", request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Good: Enable parallel for extracting multiple items
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Item,
+    output_tool=Item,
     prompt="Extract ALL items from: {text}",
     llm=llm,
     allow_parallel_tool_calls=True,  # Enable for lists

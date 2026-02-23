@@ -1,4 +1,3 @@
-
 """Unit tests for OllamaEmbedding Pydantic validation and instantiation."""
 
 from __future__ import annotations
@@ -145,7 +144,9 @@ class TestModelValidatorBehavior:
                 host="http://localhost:11434", timeout=60, headers={"X-Custom": "value"}
             )
 
-    def test_api_key_auth_header_preserved_when_client_kwargs_also_has_headers(self) -> None:
+    def test_api_key_auth_header_preserved_when_client_kwargs_also_has_headers(
+        self,
+    ) -> None:
         with (
             patch("serapeum.ollama.client.ollama_sdk.Client") as mock_client_cls,
             patch("serapeum.ollama.client.ollama_sdk.AsyncClient") as mock_async_cls,
@@ -350,9 +351,7 @@ class TestPydanticSerialization:
         assert recreated.model_name == original.model_name
         assert recreated.base_url == original.base_url
         assert recreated.batch_size == original.batch_size
-        assert (
-            recreated.ollama_additional_kwargs == original.ollama_additional_kwargs
-        )
+        assert recreated.ollama_additional_kwargs == original.ollama_additional_kwargs
         assert recreated.query_instruction == original.query_instruction
         assert recreated.text_instruction == original.text_instruction
         assert recreated.keep_alive == original.keep_alive
@@ -459,9 +458,7 @@ class TestClientKwargsIsolation:
         embedder1.ollama_additional_kwargs["temperature"] = 0.8
 
         assert "temperature" not in embedder2.ollama_additional_kwargs
-        assert (
-            embedder1.ollama_additional_kwargs != embedder2.ollama_additional_kwargs
-        )
+        assert embedder1.ollama_additional_kwargs != embedder2.ollama_additional_kwargs
 
     def test_modifying_client_kwargs_after_init_does_not_affect_clients(self) -> None:
         with (

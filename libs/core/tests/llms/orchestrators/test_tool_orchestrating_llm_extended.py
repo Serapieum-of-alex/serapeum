@@ -212,7 +212,7 @@ class TestToolOrchestratingLLM:
         """Construct with prompt_template_str and a function-calling-capable LLM.
 
         Input:
-            output_cls=Album, prompt_template_str, llm with metadata.is_function_calling_model=True
+            output_tool=Album, prompt_template_str, llm with metadata.is_function_calling_model=True
         Expected:
             Returns a ToolOrchestratingLLM instance with configured prompt and flags
         Check:
@@ -220,7 +220,7 @@ class TestToolOrchestratingLLM:
         """
         llm = NonFunctionCallingMockLLM()
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            output_tool=Album,
             prompt="Album with {topic}",
             llm=llm,  # metadata says it supports function calling
             allow_parallel_tool_calls=True,
@@ -244,7 +244,7 @@ class TestToolOrchestratingLLM:
 
         with pytest.raises(ValueError):
             ToolOrchestratingLLM(
-                output_cls=Album,
+                output_tool=Album,
                 prompt="Album with {topic}",
                 llm=NoFC(),
             )
@@ -257,7 +257,7 @@ class TestToolOrchestratingLLM:
         Check: pytest.raises(ValueError)
         """
         with pytest.raises(TypeError):
-            ToolOrchestratingLLM(output_cls=Album, llm=NonFunctionCallingMockLLM())
+            ToolOrchestratingLLM(output_tool=Album, llm=NonFunctionCallingMockLLM())
 
     def test_fallback_to_configs_llm(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Use Configs.llm if llm is not provided explicitly.
@@ -273,7 +273,7 @@ class TestToolOrchestratingLLM:
             raising=False,
         )
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            output_tool=Album,
             prompt="Album with {topic}",
         )
         assert isinstance(tools_llm, ToolOrchestratingLLM)
@@ -290,9 +290,9 @@ class TestToolOrchestratingLLMProperties:
         Check: identity equality
         """
         tools_llm = ToolOrchestratingLLM(
-            Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
+            output_tool=Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
         )
-        assert tools_llm.output_cls is Album
+        assert tools_llm.output_tool is Album
 
     def test_prompt_getter_setter(self) -> None:
         """Prompt property getter and setter work as expected.
@@ -302,7 +302,7 @@ class TestToolOrchestratingLLMProperties:
         Check: identity equality
         """
         tools_llm = ToolOrchestratingLLM(
-            Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
+            output_tool=Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
         )
         new_prompt = PromptTemplate("New {var}")
         tools_llm.prompt = new_prompt
@@ -321,7 +321,9 @@ class TestToolOrchestratingLLMCall:
         """
         llm = NonFunctionCallingMockLLM()
         llm._extend_messages = MagicMock(side_effect=lambda msgs: msgs)  # track call
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album with {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            output_tool=Album, prompt="Album with {topic}", llm=llm
+        )
         result = tools_llm(topic="rock")
         assert isinstance(result, Album)
         assert result == SAMPLE_ALBUM
@@ -336,7 +338,7 @@ class TestToolOrchestratingLLMCall:
         """
         llm = NonFunctionCallingMockLLM()
         tools_llm = ToolOrchestratingLLM(
-            Album,
+            output_tool=Album,
             prompt="Album with {topic}",
             llm=llm,
             allow_parallel_tool_calls=True,
@@ -359,7 +361,9 @@ class TestToolOrchestratingLLMAsyncCall:
         Check: isinstance and equality
         """
         llm = NonFunctionCallingMockLLM()
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album with {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            output_tool=Album, prompt="Album with {topic}", llm=llm
+        )
         result = await tools_llm.acall(topic="pop")
         assert isinstance(result, Album)
         assert result == SAMPLE_ALBUM
@@ -376,7 +380,7 @@ class TestToolOrchestratingLLMStreamCall:
         Check: pytest.raises(ValueError)
         """
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            output_tool=Album,
             prompt="Album {topic}",
             llm=NonFunctionCallingMockLLM(),
         )
@@ -392,7 +396,7 @@ class TestToolOrchestratingLLMStreamCall:
         """
         llm = MockFunctionCallingLLM()
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            output_tool=Album,
             prompt="Album {topic}",
             llm=llm,
             allow_parallel_tool_calls=False,
@@ -416,7 +420,9 @@ class TestToolOrchestratingLLMStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            output_tool=Album, prompt="Album {topic}", llm=llm
+        )
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:
@@ -441,7 +447,7 @@ class TestToolOrchestratingLLMAStreamCall:
         Check: pytest.raises(ValueError)
         """
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            output_tool=Album,
             prompt="Album {topic}",
             llm=NonFunctionCallingMockLLM(),
         )
@@ -460,7 +466,7 @@ class TestToolOrchestratingLLMAStreamCall:
         """
         llm = MockFunctionCallingLLM()
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            output_tool=Album,
             prompt="Album {topic}",
             llm=llm,
             allow_parallel_tool_calls=False,
@@ -486,7 +492,9 @@ class TestToolOrchestratingLLMAStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            output_tool=Album, prompt="Album {topic}", llm=llm
+        )
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:

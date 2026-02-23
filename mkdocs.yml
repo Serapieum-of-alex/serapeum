@@ -158,6 +158,7 @@ nav:
       - Installation: developer-guide/installation.md
       - contributing: developer-guide/contributing.md
       - Taskfile: developer-guide/taskfile.md
+      - testing-documentation: developer-guide/testing-docs.md
   - About:
     - Change-log: change-log.md
     - Contributing: contributing.md

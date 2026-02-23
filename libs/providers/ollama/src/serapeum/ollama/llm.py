@@ -39,7 +39,7 @@ from serapeum.core.llms import (
 
 from serapeum.core.llms.orchestrators import StreamingObjectProcessor
 from serapeum.core.prompts import PromptTemplate
-from serapeum.core.tools import ArgumentCoercer, ToolCallArguments
+from serapeum.core.tools import ArgumentCoercer, ToolCallArguments, ToolCallError
 from serapeum.core.types import StructuredLLMMode
 from serapeum.ollama.client import OllamaClientMixin
 
@@ -412,7 +412,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         )
 
     @property
-    def client(self) -> ollama_sdk.Client:      # type: ignore
+    def client(self) -> ollama_sdk.Client:  # type: ignore
         """Synchronous Ollama client lazily bound to ``base_url``.
 
         Returns:
@@ -432,10 +432,10 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 ```
         """
         if self._client is None:
-            self._client = ollama_sdk.Client(**self._build_client_kwargs())      # type: ignore
+            self._client = ollama_sdk.Client(**self._build_client_kwargs())  # type: ignore
         return self._client
 
-    def _ensure_async_client(self) -> ollama_sdk.AsyncClient:   # type: ignore
+    def _ensure_async_client(self) -> ollama_sdk.AsyncClient:  # type: ignore
         """Return a per-event-loop AsyncClient, recreating when loop changes or closes.
 
         This avoids ``Event loop is closed`` errors when test runners (e.g.,
@@ -467,7 +467,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         cached_loop = getattr(self, "_async_client_loop", None)
         if self._async_client is None:
             # No client yet: create and bind to current loop (may be None)
-            self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
+            self._async_client = ollama_sdk.AsyncClient(**client_kwargs)  # type: ignore
             self._async_client_loop = current_loop
         else:
             # If no loop recorded yet (e.g., injected client), bind without recreation
@@ -479,11 +479,11 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 and hasattr(current_loop, "is_closed")
                 and current_loop.is_closed()
             ):
-                self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
+                self._async_client = ollama_sdk.AsyncClient(**client_kwargs)  # type: ignore
                 self._async_client_loop = current_loop
             # Or if the cached loop has been closed since creation
             elif hasattr(cached_loop, "is_closed") and cached_loop.is_closed():
-                self._async_client = ollama_sdk.AsyncClient(**client_kwargs)        # type: ignore
+                self._async_client = ollama_sdk.AsyncClient(**client_kwargs)  # type: ignore
                 self._async_client_loop = current_loop
             else:
                 # Reuse existing client even if loop identity differs but both are open
@@ -492,7 +492,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         return self._async_client
 
     @property
-    def async_client(self) -> ollama_sdk.AsyncClient:       # type: ignore
+    def async_client(self) -> ollama_sdk.AsyncClient:  # type: ignore
         """Async Ollama client bound to the current asyncio event loop.
 
         This property lazily creates or reuses an AsyncClient instance, automatically
@@ -550,9 +550,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         }
 
     @staticmethod
-    def _convert_to_ollama_messages(
-        messages: MessageList
-    ) -> list[dict[str, Any]]:
+    def _convert_to_ollama_messages(messages: MessageList) -> list[dict[str, Any]]:
         """Convert internal MessageList to the Ollama wire format.
 
         Args:
@@ -831,7 +829,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> empty = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=""))
                 >>> try:
                 ...     _ = llm.get_tool_calls_from_response(empty, error_on_no_tool_call=True)
-                ... except ValueError as e:
+                ... except ToolCallError as e:
                 ...     msg = str(e)
                 >>> 'Expected at least one tool call' in msg
                 True
@@ -841,9 +839,12 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         tool_calls = response.message.additional_kwargs.get("tool_calls", [])
         if not tool_calls or len(tool_calls) < 1:
             if error_on_no_tool_call:
-                raise ValueError(
-                    f"Expected at least one tool call, but got {len(tool_calls) if tool_calls else 0} tool calls."
+                raise ToolCallError(
+                    f"Expected at least one tool call, but the LLM response contained "
+                    f"{len(tool_calls) if tool_calls else 0} tool calls.",
+                    tool_name=None,
                 )
+
             else:
                 return []
 
@@ -908,7 +909,9 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             raw=raw,
         )
 
-    def chat(self, messages: MessageList | list[Message], **kwargs: Any) -> ChatResponse:
+    def chat(
+        self, messages: MessageList | list[Message], **kwargs: Any
+    ) -> ChatResponse:
         """Send a chat request to Ollama and return the assistant message.
 
         Args:
@@ -1035,7 +1038,9 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             raw=r,
         )
 
-    def stream_chat(self, messages: MessageList | list[Message], **kwargs: Any) -> ChatResponseGen:
+    def stream_chat(
+        self, messages: MessageList | list[Message], **kwargs: Any
+    ) -> ChatResponseGen:
         """Stream assistant deltas for a chat request.
 
         Args:
@@ -1165,7 +1170,9 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         return gen()
 
-    async def achat(self, messages: MessageList | list[Message], **kwargs: Any) -> ChatResponse:
+    async def achat(
+        self, messages: MessageList | list[Message], **kwargs: Any
+    ) -> ChatResponse:
         """Asynchronously send a chat request and return the complete assistant message.
 
         Async variant of the chat method that sends messages to Ollama and waits

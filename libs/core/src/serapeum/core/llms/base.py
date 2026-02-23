@@ -4,6 +4,7 @@ This module defines the high-level LLM class with helpers for prompts,
 streaming, and structured outputs.
 """
 
+from __future__ import annotations
 from abc import ABC
 from typing import (
     TYPE_CHECKING,
@@ -1137,7 +1138,7 @@ class LLM(BaseLLM, ABC):
                 from serapeum.core.llms import ToolOrchestratingLLM
 
                 return ToolOrchestratingLLM(
-                    output_cls=output_cls,
+                    output_tool=output_cls,
                     llm=self,
                     prompt=prompt,
                     **kwargs,
@@ -1156,7 +1157,7 @@ class LLM(BaseLLM, ABC):
             from serapeum.core.llms import ToolOrchestratingLLM
 
             return ToolOrchestratingLLM(
-                output_cls=output_cls,
+                output_tool=output_cls,
                 llm=self,
                 prompt=prompt,
                 **kwargs,

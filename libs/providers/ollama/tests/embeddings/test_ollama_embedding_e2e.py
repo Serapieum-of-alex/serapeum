@@ -203,7 +203,9 @@ class TestInstructionEmbedding:
         embedding1 = embedder1.get_text_embedding(text)
 
         # With instruction
-        embedder2 = OllamaEmbedding(model_name=local_model, text_instruction="Document:")
+        embedder2 = OllamaEmbedding(
+            model_name=local_model, text_instruction="Document:"
+        )
         embedding2 = embedder2.get_text_embedding(text)
 
         # Embeddings should differ

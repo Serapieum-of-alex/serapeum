@@ -84,7 +84,7 @@ class TestToolOrchestratingLLM:
         # from serapeum.ollama import Ollama
         # llm = Ollama(model="llama3.1:latest", request_timeout=80)
         tools_llm = ToolOrchestratingLLM(
-            output_cls=MockAlbum,
+            output_tool=MockAlbum,
             prompt=prompt_template_str,
             llm=llm,
         )
@@ -101,7 +101,7 @@ class TestToolOrchestratingLLM:
         # llm = Ollama(model="llama3.1:latest", request_timeout=80)
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM(
-            output_cls=MockAlbum,
+            output_tool=MockAlbum,
             prompt=prompt_template_str,
             llm=llm,
             allow_parallel_tool_calls=True,
@@ -125,7 +125,7 @@ class TestToolOrchestratingLLM:
         # same as above but async
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM(
-            output_cls=MockAlbum,
+            output_tool=MockAlbum,
             prompt=prompt_template_str,
             llm=llm,
         )

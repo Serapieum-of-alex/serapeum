@@ -15,6 +15,7 @@ from serapeum.core.tools.types import (
     BaseToolAsyncAdapter,
     MinimalToolSchema,
     ToolCallArguments,
+    ToolCallError,
     ToolMetadata,
     ToolOutput,
 )
@@ -1085,3 +1086,162 @@ class TestArgumentCoercer:
             coercer = ArgumentCoercer()
             result = coercer.coerce({})
             assert result == {}
+
+
+class TestToolCallError:
+    """Test suite for ToolCallError custom exception."""
+
+    @pytest.mark.unit
+    def test_is_exception_subclass(self):
+        """Verify ToolCallError is a subclass of the built-in Exception.
+
+        Inputs: ToolCallError class itself.
+        Expected: issubclass(ToolCallError, Exception) is True.
+        Checks: Class hierarchy assertion.
+        """
+        assert issubclass(ToolCallError, Exception)
+
+    @pytest.mark.unit
+    def test_instance_is_exception(self):
+        """Verify a ToolCallError instance satisfies isinstance(e, Exception).
+
+        Inputs: ToolCallError("msg").
+        Expected: isinstance check returns True for both Exception and ToolCallError.
+        Checks: isinstance assertions.
+        """
+        err = ToolCallError("something went wrong")
+        assert isinstance(err, Exception)
+        assert isinstance(err, ToolCallError)
+
+    @pytest.mark.unit
+    def test_message_only_str(self):
+        """str(e) equals the message when tool_name is omitted.
+
+        Inputs: message="tool execution failed", no tool_name.
+        Expected: str(err) == "tool execution failed".
+        Checks: Exact string equality.
+        """
+        err = ToolCallError("tool execution failed")
+        assert str(err) == "tool execution failed"
+
+    @pytest.mark.unit
+    def test_message_only_args(self):
+        """err.args[0] equals the message (standard Exception contract).
+
+        Inputs: message="oops".
+        Expected: err.args == ("oops",).
+        Checks: args tuple equality.
+        """
+        err = ToolCallError("oops")
+        assert err.args == ("oops",)
+
+    @pytest.mark.unit
+    def test_tool_name_defaults_to_none(self):
+        """tool_name attribute is None when not supplied.
+
+        Inputs: ToolCallError("msg") — no tool_name keyword.
+        Expected: err.tool_name is None.
+        Checks: Identity check against None.
+        """
+        err = ToolCallError("msg")
+        assert err.tool_name is None
+
+    # ------------------------------------------------------------------
+    # Construction — message + tool_name
+    # ------------------------------------------------------------------
+
+    @pytest.mark.unit
+    def test_message_and_tool_name_stored(self):
+        """Both message and tool_name are stored correctly.
+
+        Inputs: message="call failed", tool_name="search".
+        Expected: str(err) == "call failed" and err.tool_name == "search".
+        Checks: Exact equality for both attributes.
+        """
+        err = ToolCallError("call failed", tool_name="search")
+        assert str(err) == "call failed"
+        assert err.tool_name == "search"
+
+    @pytest.mark.unit
+    def test_tool_name_explicit_none(self):
+        """Explicitly passing tool_name=None stores None.
+
+        Inputs: ToolCallError("msg", tool_name=None).
+        Expected: err.tool_name is None.
+        Checks: Identity check against None.
+        """
+        err = ToolCallError("msg", tool_name=None)
+        assert err.tool_name is None
+
+    # ------------------------------------------------------------------
+    # Parametrised message variants (boundary / edge cases)
+    # ------------------------------------------------------------------
+
+    @pytest.mark.unit
+    @pytest.mark.parametrize(
+        "message, tool_name",
+        [
+            ("", None),  # empty message, no tool
+            ("error", "my_tool"),  # normal case with tool
+            ("x" * 1000, "long_tool_name"),  # long message
+            ("Expected 1 tool call, got 0", None),  # realistic production message
+        ],
+    )
+    def test_parametrised_construction(self, message: str, tool_name):
+        """ToolCallError stores message and tool_name correctly for various inputs.
+
+        Inputs: Parametrised (message, tool_name) pairs including empty string
+            and very long message to cover boundary conditions.
+        Expected: str(err) == message and err.tool_name == tool_name.
+        Checks: Exact string equality and tool_name equality.
+        """
+        err = ToolCallError(message, tool_name=tool_name)
+        assert str(err) == message
+        assert err.tool_name == tool_name
+
+    # ------------------------------------------------------------------
+    # Raise and catch
+    # ------------------------------------------------------------------
+
+    @pytest.mark.unit
+    def test_can_be_raised_and_caught_as_tool_call_error(self):
+        """ToolCallError can be raised and caught by its own type.
+
+        Inputs: raise ToolCallError("boom") inside a try block.
+        Expected: except ToolCallError catches it; message and tool_name accessible.
+        Checks: Caught exception message and tool_name attribute.
+        """
+        with pytest.raises(ToolCallError, match="boom"):
+            raise ToolCallError("boom", tool_name="my_tool")
+
+    @pytest.mark.unit
+    def test_can_be_caught_as_base_exception(self):
+        """ToolCallError can be caught by the broader Exception type.
+
+        Inputs: raise ToolCallError("err") inside a try/except Exception block.
+        Expected: except Exception catches it; str(e) == "err".
+        Checks: The caught instance is ToolCallError and message is preserved.
+        """
+        try:
+            raise ToolCallError("err", tool_name="t")
+        except Exception as exc:
+            assert isinstance(exc, ToolCallError)
+            assert str(exc) == "err"
+            assert exc.tool_name == "t"
+        else:
+            pytest.fail("ToolCallError was not raised")
+
+    @pytest.mark.unit
+    def test_raise_without_tool_name_catchable(self):
+        """Raising without tool_name is caught and tool_name is None on caught instance.
+
+        Inputs: raise ToolCallError("no tool") — no tool_name.
+        Expected: Caught exception has tool_name == None.
+        Checks: tool_name attribute after catching.
+        """
+        try:
+            raise ToolCallError("no tool")
+        except ToolCallError as exc:
+            assert exc.tool_name is None
+        else:
+            pytest.fail("ToolCallError was not raised")

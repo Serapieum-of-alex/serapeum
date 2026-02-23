@@ -13,7 +13,7 @@ class BasePydanticLLM(ABC, Generic[Model]):
 
     @property
     @abstractmethod
-    def output_cls(self) -> Type[Model]:
+    def output_tool(self) -> Type[Model]:
         pass
 
     @abstractmethod

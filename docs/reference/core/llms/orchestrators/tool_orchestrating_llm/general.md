@@ -5,39 +5,56 @@ This directory contains comprehensive documentation explaining the complete work
 ## Overview
 
 The `ToolOrchestratingLLM` is a function-calling orchestrator that:
-1. **Converts Pydantic models** into callable tools with JSON schemas
+1. **Converts Pydantic models or plain callables** into callable tools with JSON schemas
 2. **Formats prompts** with template variables
 3. **Executes function calling** via LLM with tool schemas
 4. **Parses tool outputs** into validated Pydantic model instances
 
+!!! note "output_tool accepts both classes and callables"
+    Despite the parameter name, `output_tool` accepts **either** a Pydantic `BaseModel`
+    subclass **or** a plain Python function/callable. When a function is passed, its
+    signature is used to auto-generate the JSON schema for the tool call.
+
+    ```python
+    # Option A: Pydantic model class
+    tools_llm = ToolOrchestratingLLM(output_tool=MyModel, prompt="...", llm=llm)
+
+    # Option B: Plain callable function
+    def extract(name: str, age: int) -> dict:
+        return {"name": name, "age": age}
+
+    tools_llm = ToolOrchestratingLLM(output_tool=extract, prompt="...", llm=llm)
+    ```
+
 ## Example Usage
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
 
 # Define the output schema
-class MockAlbum(BaseModel):
+class Song(BaseModel):
+    title: str
+
+class Album(BaseModel):
     title: str
     artist: str
-    songs: List[MockSong]
-
-class MockSong(BaseModel):
-    title: str
+    songs: list[Song]
 
 # Initialize LLM with function calling support
-llm = Ollama(model='llama3.1', request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Create ToolOrchestratingLLM instance
 tools_llm = ToolOrchestratingLLM(
-    output_cls=MockAlbum,
+    output_tool=Album,
     prompt='This is a test album with {topic}',
     llm=llm,
 )
 
 # Execute and get structured output via function calling
-obj_output = tools_llm(topic="songs")
+obj_output = tools_llm(topic="birds")
 # Returns: MockAlbum(title="hello", artist="world", songs=[...])
 ```
 
@@ -122,7 +139,7 @@ Depicts the lifecycle states and transitions.
 ### Initialization Workflow
 ```
 1. Initialize ToolOrchestratingLLM with:
-   - output_cls: Pydantic model (MockAlbum)
+   - output_tool: Pydantic model (MockAlbum)
    - prompt: String or BasePromptTemplate
    - llm: Function-calling LLM (Ollama)
    - tool_choice: Optional tool selection strategy

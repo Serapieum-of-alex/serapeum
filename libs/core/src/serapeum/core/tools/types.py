@@ -21,6 +21,7 @@ __all__ = [
     "ToolOutput",
     "BaseTool",
     "AsyncBaseTool",
+    "ToolCallError",
 ]
 
 
@@ -1164,3 +1165,16 @@ class ArgumentCoercer:
                 result = coerced_dict
 
         return result
+
+
+class ToolCallError(Exception):
+    """Exception raised when a tool call fails.
+
+    Args:
+        message (str): Description of the failure.
+        tool_name (str | None): Name of the tool that failed, if known.
+    """
+
+    def __init__(self, message: str, tool_name: str | None = None) -> None:
+        super().__init__(message)
+        self.tool_name = tool_name

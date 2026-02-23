@@ -136,7 +136,7 @@ class TestTextCompletionLLMInit:
             llm=llm,
         )
 
-        assert text_llm.output_cls is DummyModel
+        assert text_llm.output_tool is DummyModel
         assert text_llm.prompt is prompt_template
         assert text_llm._output_parser is output_parser  # type: ignore[attr-defined]
         assert text_llm._llm is llm  # type: ignore[attr-defined]
@@ -157,7 +157,7 @@ class TestTextCompletionLLMInit:
         )
 
         assert isinstance(text_llm._output_parser, PydanticParser)  # type: ignore[attr-defined]
-        assert text_llm.output_cls is DummyModel
+        assert text_llm.output_tool is DummyModel
         assert isinstance(text_llm.prompt, PromptTemplate)
 
     def test_init_with_string_prompt_coerces_to_template(self) -> None:
@@ -364,7 +364,7 @@ class TestOutputClsProperty:
             llm=DummyLLM(),
         )
 
-        assert text_llm.output_cls is DummyModel
+        assert text_llm.output_tool is DummyModel
 
 
 class TestPromptProperty:

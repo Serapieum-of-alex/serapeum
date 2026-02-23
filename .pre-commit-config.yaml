@@ -165,3 +165,12 @@ repos:
         entry: pytest --doctest-modules
         language: system
         files: ^src/serapeum/.*\.py$
+
+  - repo: local
+    hooks:
+      - id: markdown-docs-check
+        name: "[docs - check] markdown code examples"
+        entry: pytest -v --markdown-docs
+        language: system
+        files: \.md$
+        pass_filenames: true

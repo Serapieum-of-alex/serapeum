@@ -21,7 +21,7 @@
 <link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1554,7 +1554,7 @@ Hold "Ctrl" to enable pan &amp; zoom
         +messages_to_prompt: Callable
         +completion_to_prompt: Callable
         +output_parser: Optional[BaseParser]
-        +pydantic_program_mode: StructuredLLMMode
+        +structured_output_mode: StructuredOutputMode
         +_get_prompt(prompt, **kwargs) str
         +_get_messages(prompt, **kwargs) List[Message]
         +_parse_output(output) str
@@ -1564,7 +1564,7 @@ Hold "Ctrl" to enable pan &amp; zoom
         +stream(prompt, **kwargs) TokenGen
         +apredict(prompt, **kwargs) str
         +astream(prompt, **kwargs) TokenAsyncGen
-        +structured_predict(output_cls, prompt, **kwargs) Model
+        +parse(output_cls, prompt, **kwargs) Model
     }
 
     class FunctionCallingLLM {
@@ -1794,7 +1794,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <p><strong>High-Level Orchestration</strong>
 - <strong>Prompt Management</strong>: Extends prompts with system messages
 - <strong>Message Formatting</strong>: Converts between formats
-- <strong>Structured Outputs</strong>: Forces Pydantic model outputs via <code>structured_predict</code>
+- <strong>Structured Outputs</strong>: Forces Pydantic model outputs via <code>parse</code>
 - <strong>Parser Integration</strong>: Applies output parsers to responses</p>
 <h3 id="basellm-root-class"><a class="toclink" href="#basellm-root-class">BaseLLM (Root Class)</a><a class="headerlink" href="#basellm-root-class" title="Permanent link">#</a></h3>
 <p><strong>Core Interface</strong>

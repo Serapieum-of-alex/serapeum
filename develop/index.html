@@ -20,7 +20,7 @@
 <link href="assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1445,8 +1445,8 @@
 <a href="#__codelineno-3-18" id="__codelineno-3-18" name="__codelineno-3-18"></a>
 <a href="#__codelineno-3-19" id="__codelineno-3-19" name="__codelineno-3-19"></a><span class="c1"># Force structured output</span>
 <a href="#__codelineno-3-20" id="__codelineno-3-20" name="__codelineno-3-20"></a><span class="n">llm_json</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">"llama3.1"</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"OLLAMA_API_KEY"</span><span class="p">),</span> <span class="n">json_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a href="#__codelineno-3-21" id="__codelineno-3-21" name="__codelineno-3-21"></a><span class="n">result</span> <span class="o">=</span> <span class="n">llm_json</span><span class="o">.</span><span class="n">structured_predict</span><span class="p">(</span>
-<a href="#__codelineno-3-22" id="__codelineno-3-22" name="__codelineno-3-22"></a>    <span class="n">output_cls</span><span class="o">=</span><span class="n">CityInfo</span><span class="p">,</span>
+<a href="#__codelineno-3-21" id="__codelineno-3-21" name="__codelineno-3-21"></a><span class="n">result</span> <span class="o">=</span> <span class="n">llm_json</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span>
+<a href="#__codelineno-3-22" id="__codelineno-3-22" name="__codelineno-3-22"></a>    <span class="n">schema</span><span class="o">=</span><span class="n">CityInfo</span><span class="p">,</span>
 <a href="#__codelineno-3-23" id="__codelineno-3-23" name="__codelineno-3-23"></a>    <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
 <a href="#__codelineno-3-24" id="__codelineno-3-24" name="__codelineno-3-24"></a>    <span class="n">city</span><span class="o">=</span><span class="s2">"Paris"</span>
 <a href="#__codelineno-3-25" id="__codelineno-3-25" name="__codelineno-3-25"></a><span class="p">)</span>

@@ -21,7 +21,7 @@
 <link href="../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -2036,7 +2036,7 @@
 <li><code>SerializableModel</code>: Base model with JSON/pickle serialization helpers</li>
 <li><code>Model</code>: Pydantic model base</li>
 <li>
-<p><code>StructuredLLMMode</code>: Enum for structured output modes</p>
+<p><code>StructuredOutputMode</code>: Enum for structured output modes</p>
 </li>
 <li>
 <p><strong>serapeum.core.utils</strong></p>
@@ -2119,10 +2119,10 @@
 <li><code>stream(prompt, **kwargs) → CompletionResponseGen</code></li>
 <li><code>apredict(...) → str</code> (async)</li>
 <li><code>astream(...) → CompletionResponseAsyncGen</code> (async)</li>
-<li><code>structured_predict(output_cls: type[BaseModel], prompt, **kwargs) → BaseModel</code></li>
-<li><code>stream_structured_predict(...) → Generator[BaseModel, None, None]</code></li>
-<li><code>astructured_predict(...) → BaseModel</code> (async)</li>
-<li><code>astream_structured_predict(...) → AsyncGenerator[BaseModel, None]</code> (async)</li>
+<li><code>parse(output_cls: type[BaseModel], prompt, **kwargs) → BaseModel</code></li>
+<li><code>stream_parse(...) → Generator[BaseModel, None, None]</code></li>
+<li><code>aparse(...) → BaseModel</code> (async)</li>
+<li><code>astream_parse(...) → AsyncGenerator[BaseModel, None]</code> (async)</li>
 </ul>
 <h3 id="functioncallingllm"><a class="toclink" href="#functioncallingllm">FunctionCallingLLM</a><a class="headerlink" href="#functioncallingllm" title="Permanent link">#</a></h3>
 <ul>
@@ -2165,7 +2165,7 @@
 <h3 id="structured-output-flow"><a class="toclink" href="#structured-output-flow">Structured Output Flow</a><a class="headerlink" href="#structured-output-flow" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>User input
 <a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>  → PromptTemplate
-<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>  → LLM.structured_predict(output_cls=MyModel, ...)
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>  → LLM.parse(output_cls=MyModel, ...)
 <a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>  → Pydantic BaseModel instance
 </code></pre></div>
 <h3 id="tool-calling-flow"><a class="toclink" href="#tool-calling-flow">Tool-Calling Flow</a><a class="headerlink" href="#tool-calling-flow" title="Permanent link">#</a></h3>
@@ -2227,7 +2227,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     end
 
     subgraph "LLM Abstraction Layer"
-        L1[LLM&lt;br/&gt;predict, structured_predict]
+        L1[LLM&lt;br/&gt;predict, parse]
         L2[FunctionCallingLLM&lt;br/&gt;chat_with_tools, predict_and_call]
         L3[StructuredOutputLLM&lt;br/&gt;Force structured outputs]
     end
@@ -2329,10 +2329,10 @@ Hold "Ctrl" to enable pan &amp; zoom
         +stream(prompt, **kwargs) Generator
         +apredict(prompt, **kwargs) str
         +astream(prompt, **kwargs) AsyncGen
-        +structured_predict(output_cls, prompt, **kwargs) BaseModel
-        +stream_structured_predict(...) Generator
-        +astructured_predict(...) BaseModel
-        +astream_structured_predict(...) AsyncGen
+        +parse(output_cls, prompt, **kwargs) BaseModel
+        +stream_parse(...) Generator
+        +aparse(...) BaseModel
+        +astream_parse(...) AsyncGen
     }
 
     class FunctionCallingLLM {
@@ -2656,7 +2656,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 - Orchestrators automatically handle tool calling
 - All tool operations return <code>ToolOutput</code></p>
 <p><strong>Structured Outputs:</strong>
-- Use <code>structured_predict()</code> with Pydantic models
+- Use <code>parse()</code> with Pydantic models
 - Works with both streaming and non-streaming
 - Automatic validation and parsing</p>
 <hr/>

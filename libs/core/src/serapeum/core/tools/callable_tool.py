@@ -516,14 +516,14 @@ class CallableTool(AsyncBaseTool):
             - ToolOrchestratingLLM: Uses this function to create tools for LLM calls
             - _parse_tool_outputs: Parses outputs from tools created by this function
         """
-        schema = schema.model_json_schema()
-        schema_description = schema.get("description", None)
+        json_schema = schema.model_json_schema()
+        schema_description = json_schema.get("description", None)
         model_doc = (schema.__doc__ or "").strip()
         # Prefer the model's own description/docstring; fall back to a concise default
         description = (
             schema_description
             or model_doc
-            or f"Create an instance of {schema['title']}."
+            or f"Create an instance of {json_schema['title']}."
         )
 
         # NOTE: this does not specify the schema in the function signature,
@@ -536,7 +536,7 @@ class CallableTool(AsyncBaseTool):
 
         return cls.from_function(
             func=model_fn,
-            name=schema["title"],
+            name=json_schema["title"],
             description=description,
             tool_schema=schema,
         )

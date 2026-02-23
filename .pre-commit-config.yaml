@@ -54,16 +54,16 @@ repos:
         name: "[py   - check] pydocstyle"
         files: ^serapeum/
 
-#   - repo: https://github.com/psf/black
-#     rev: 25.1.0
-#     hooks:
-#       - id: black
-#         name: "[py   - format] black"
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        name: "[py   - format] black"
   - repo: https://github.com/pycqa/flake8
     rev: 7.2.0
     hooks:
       - id: flake8
-        additional_dependencies: [Flake8-pyproject, flake8-bugbear, flake8-docstrings, flake8-black]
+        additional_dependencies: [Flake8-pyproject, flake8-bugbear, flake8-docstrings]
         name: "[py   - check] flake8"
         exclude: ^(examples/|tests/)
   - repo: https://github.com/pycqa/isort

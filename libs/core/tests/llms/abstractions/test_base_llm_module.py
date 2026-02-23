@@ -591,46 +591,46 @@ class TestGetPrompt:
 #
 #     def test_structured_predict_sync(self, monkeypatch):
 #         """Inputs: fake program with .call returning Item(name+suffix).
-#         Expected: LLM.structured_predict returns a BaseModel of requested type from program.
+#         Expected: LLM.parse returns a BaseModel of requested type from program.
 #         Checks: returned model has expected value.
 #         """
 #         self._patch_program(monkeypatch, self.FakeProgram("!"))
 #         llm = CompletionStubLLM()
-#         item = llm.structured_predict(self.Item, PromptTemplate("{name}"), name="bob")
+#         item = llm.parse(self.Item, PromptTemplate("{name}"), name="bob")
 #         assert isinstance(item, BaseModel)
 #         assert item.value == "bob!"
 #
 #     @pytest.mark.asyncio
 #     async def test_astructured_predict_async(self, monkeypatch):
 #         """Inputs: fake program with .acall.
-#         Expected: astructured_predict awaits and returns BaseModel.
+#         Expected: aparse awaits and returns BaseModel.
 #         Checks: instance type and value.
 #         """
 #         self._patch_program(monkeypatch, self.FakeProgram("?"))
 #         llm = CompletionStubLLM()
-#         item = await llm.astructured_predict(self.Item, PromptTemplate("{name}"), name="zoe")
+#         item = await llm.aparse(self.Item, PromptTemplate("{name}"), name="zoe")
 #         assert isinstance(item, BaseModel)
 #         assert item.value == "zoe?"
 #
 #     def test_stream_structured_predict_sync(self, monkeypatch):
 #         """Inputs: fake program with .stream_call yielding Items and lists.
-#         Expected: stream_structured_predict yields BaseModel instances progressively.
+#         Expected: stream_parse yields BaseModel instances progressively.
 #         Checks: sequence of yielded .value fields.
 #         """
 #         self._patch_program(monkeypatch, self.FakeProgram())
 #         llm = CompletionStubLLM()
-#         values = [part.value for part in llm.stream_structured_predict(self.Item, PromptTemplate("{name}"), name="sig")]
+#         values = [part.value for part in llm.stream_parse(self.Item, PromptTemplate("{name}"), name="sig")]
 #         assert values == ["sig", "SIG"]
 #
 #     @pytest.mark.asyncio
 #     async def test_astructured_stream_async(self, monkeypatch):
 #         """Inputs: fake program with .astream_call yielding two items.
-#         Expected: astream_structured_predict returns async gen yielding two models.
+#         Expected: astream_parse returns async gen yielding two models.
 #         Checks: collected values match expected.
 #         """
 #         self._patch_program(monkeypatch, self.FakeProgram())
 #         llm = CompletionStubLLM()
-#         agen = await llm.astream_structured_predict(self.Item, PromptTemplate("{name}"), name="yo")
+#         agen = await llm.astream_parse(self.Item, PromptTemplate("{name}"), name="yo")
 #         values = [m.value async for m in agen]
 #         assert values == ["yo", "yo!"]
 #

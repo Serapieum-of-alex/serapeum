@@ -44,7 +44,7 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
         """Chat endpoint for LLM."""
         chat_prompt = ChatPromptTemplate(message_templates=messages)
 
-        output = self.llm.structured_predict(
+        output = self.llm.parse(
             output_cls=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
         )
         return ChatResponse(
@@ -59,7 +59,7 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
     ) -> ChatResponseGen:
         chat_prompt = ChatPromptTemplate(message_templates=messages)
 
-        stream_output = self.llm.stream_structured_predict(
+        stream_output = self.llm.stream_parse(
             output_cls=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
         )
         for partial_output in stream_output:
@@ -81,7 +81,7 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
     ) -> ChatResponse:
         chat_prompt = ChatPromptTemplate(message_templates=messages)
 
-        output = await self.llm.astructured_predict(
+        output = await self.llm.aparse(
             output_cls=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
         )
         return ChatResponse(
@@ -101,7 +101,7 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
         async def gen() -> ChatResponseAsyncGen:
             chat_prompt = ChatPromptTemplate(message_templates=messages)
 
-            stream_output = await self.llm.astream_structured_predict(
+            stream_output = await self.llm.astream_parse(
                 output_cls=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
             )
             async for partial_output in stream_output:

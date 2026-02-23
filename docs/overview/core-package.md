@@ -157,10 +157,10 @@ See the [Provider Integrations Guide](providers.md) for complete documentation o
 - `stream(prompt, **kwargs) → CompletionResponseGen`
 - `apredict(...) → str` (async)
 - `astream(...) → CompletionResponseAsyncGen` (async)
-- `structured_predict(output_cls: type[BaseModel], prompt, **kwargs) → BaseModel`
-- `stream_structured_predict(...) → Generator[BaseModel, None, None]`
-- `astructured_predict(...) → BaseModel` (async)
-- `astream_structured_predict(...) → AsyncGenerator[BaseModel, None]` (async)
+- `parse(output_cls: type[BaseModel], prompt, **kwargs) → BaseModel`
+- `stream_parse(...) → Generator[BaseModel, None, None]`
+- `aparse(...) → BaseModel` (async)
+- `astream_parse(...) → AsyncGenerator[BaseModel, None]` (async)
 
 ### FunctionCallingLLM
 - `chat_with_tools(tools, user_msg=None, chat_history=None, **kwargs) → ChatResponse`
@@ -203,7 +203,7 @@ User input/messages
 ```
 User input
   → PromptTemplate
-  → LLM.structured_predict(output_cls=MyModel, ...)
+  → LLM.parse(output_cls=MyModel, ...)
   → Pydantic BaseModel instance
 ```
 
@@ -255,7 +255,7 @@ graph TB
     end
 
     subgraph "LLM Abstraction Layer"
-        L1[LLM<br/>predict, structured_predict]
+        L1[LLM<br/>predict, parse]
         L2[FunctionCallingLLM<br/>chat_with_tools, predict_and_call]
         L3[StructuredOutputLLM<br/>Force structured outputs]
     end
@@ -338,10 +338,10 @@ classDiagram
         +stream(prompt, **kwargs) Generator
         +apredict(prompt, **kwargs) str
         +astream(prompt, **kwargs) AsyncGen
-        +structured_predict(output_cls, prompt, **kwargs) BaseModel
-        +stream_structured_predict(...) Generator
-        +astructured_predict(...) BaseModel
-        +astream_structured_predict(...) AsyncGen
+        +parse(output_cls, prompt, **kwargs) BaseModel
+        +stream_parse(...) Generator
+        +aparse(...) BaseModel
+        +astream_parse(...) AsyncGen
     }
 
     class FunctionCallingLLM {
@@ -620,7 +620,7 @@ classDiagram
 - All tool operations return `ToolOutput`
 
 **Structured Outputs:**
-- Use `structured_predict()` with Pydantic models
+- Use `parse()` with Pydantic models
 - Works with both streaming and non-streaming
 - Automatic validation and parsing
 

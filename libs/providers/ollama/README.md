@@ -184,48 +184,51 @@ from pydantic import BaseModel, Field
 from serapeum.ollama import Ollama
 from serapeum.core.prompts import PromptTemplate
 
+
 class Person(BaseModel):
-    name: str = Field(description="Person's full name")
-    age: int = Field(description="Person's age in years")
-    occupation: str = Field(description="Person's job title")
+  name: str = Field(description="Person's full name")
+  age: int = Field(description="Person's age in years")
+  occupation: str = Field(description="Person's job title")
 
 llm = Ollama(model="llama3.1", json_mode=True)
 
 prompt = PromptTemplate(
-    "Extract person information from: {text}\n"
-    "Return a JSON object with name, age, and occupation."
+  "Extract person information from: {text}\n"
+  "Return a JSON object with name, age, and occupation."
 )
 
 # Synchronous structured prediction
-person = llm.structured_predict(
-    output_cls=Person,
-    prompt=prompt,
-    text="John Doe is a 32-year-old software engineer at Tech Corp."
+person = llm.parse(
+  output_cls=Person,
+  prompt=prompt,
+  text="John Doe is a 32-year-old software engineer at Tech Corp."
 )
 
 print(f"{person.name}, {person.age}, works as {person.occupation}")
 # Output: John Doe, 32, works as software engineer
 
 # Streaming structured outputs
-for partial in llm.stream_structured_predict(
-    output_cls=Person,
-    prompt=prompt,
-    text="Jane Smith, age 28, data scientist"
+for partial in llm.stream_parse(
+        output_cls=Person,
+        prompt=prompt,
+        text="Jane Smith, age 28, data scientist"
 ):
-    if isinstance(partial, list):
-        partial = partial[0]
-    print(f"Partial: {partial}")
+  if isinstance(partial, list):
+    partial = partial[0]
+  print(f"Partial: {partial}")
 
 # Async structured prediction
 async def get_structured():
-    person = await llm.astructured_predict(
-        output_cls=Person,
-        prompt=prompt,
-        text="Alice Johnson is 45 and works as a CEO."
-    )
-    return person
+  person = await llm.aparse(
+    output_cls=Person,
+    prompt=prompt,
+    text="Alice Johnson is 45 and works as a CEO."
+  )
+  return person
 
 import asyncio
+
+
 result = asyncio.run(get_structured())
 print(result)
 ```

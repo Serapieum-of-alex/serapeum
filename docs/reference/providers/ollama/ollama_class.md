@@ -32,7 +32,7 @@ classDiagram
         +stream(prompt, **kwargs) TokenGen
         +apredict(prompt, **kwargs) str
         +astream(prompt, **kwargs) TokenAsyncGen
-        +structured_predict(output_cls, prompt, **kwargs) Model
+        +parse(output_cls, prompt, **kwargs) Model
     }
 
     class FunctionCallingLLM {
@@ -269,7 +269,7 @@ BaseLLM (abstract)
 **High-Level Orchestration**
 - **Prompt Management**: Extends prompts with system messages
 - **Message Formatting**: Converts between formats
-- **Structured Outputs**: Forces Pydantic model outputs via `structured_predict`
+- **Structured Outputs**: Forces Pydantic model outputs via `parse`
 - **Parser Integration**: Applies output parsers to responses
 
 ### BaseLLM (Root Class)

@@ -282,7 +282,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             ...     request_timeout=120,
             ... )
             >>> prompt = PromptTemplate("Extract city and country from: {text}")
-            >>> result = llm.structured_predict(
+            >>> result = llm.parse(
             ...     Capital, prompt, text="Paris is the capital of France."
             ... )
             >>> isinstance(result, Capital)
@@ -318,7 +318,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         stream_chat: Streaming chat yielding incremental deltas.
         achat: Asynchronous chat completion.
         astream_chat: Asynchronous streaming chat.
-        structured_predict: Structured output via JSON schema and Pydantic validation.
+        parse: Structured output via JSON schema and Pydantic validation.
         list_models: List all models available on the Ollama server.
         alist_models: Async variant of list_models.
     """
@@ -1226,7 +1226,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         return self._build_chat_response(response)
 
-    def structured_predict(
+    def parse(
         self,
         output_cls: type[BaseModel],
         prompt: PromptTemplate,
@@ -1265,7 +1265,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 ...     age: int = Field(description="Person's age in years")
                 >>> llm = Ollama(model="llama3.1", api_key=os.environ['OLLAMA_API_KEY'], request_timeout=120)     # doctest: +SKIP
                 >>> prompt = PromptTemplate("Extract person info: {text}")  # doctest: +SKIP
-                >>> result = llm.structured_predict(    # doctest: +SKIP
+                >>> result = llm.parse(    # doctest: +SKIP
                 ...     Person,
                 ...     prompt,
                 ...     text="John Doe is 30 years old"
@@ -1276,8 +1276,8 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 ```
 
         See Also:
-            astructured_predict: Async variant.
-            stream_structured_predict: Streaming counterpart yielding partial models.
+            aparse: Async variant.
+            stream_parse: Streaming counterpart yielding partial models.
         """
         if self.structured_output_mode == StructuredOutputMode.DEFAULT:
             llm_kwargs = llm_kwargs or {}
@@ -1287,11 +1287,11 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
             return output_cls.model_validate_json(response.message.content or "")
         else:
-            return super().structured_predict(
+            return super().parse(
                 output_cls, prompt, llm_kwargs, **prompt_args
             )
 
-    async def astructured_predict(
+    async def aparse(
         self,
         output_cls: type[BaseModel],
         prompt: PromptTemplate,
@@ -1300,7 +1300,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
     ) -> BaseModel:
         """Asynchronously generate structured output conforming to a Pydantic model schema.
 
-        Async variant of structured_predict. Instructs the Ollama model to emit JSON
+        Async variant of parse. Instructs the Ollama model to emit JSON
         matching the schema of output_cls, then validates and parses the response
         into a Pydantic instance using the async chat interface.
 
@@ -1330,7 +1330,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> llm = Ollama(model="llama3.1", request_timeout=120)  # doctest: +SKIP
                 >>> async def extract_city():       # doctest: +SKIP
                 ...     prompt = PromptTemplate("Extract city: {text}")
-                ...     result = await llm.astructured_predict(
+                ...     result = await llm.aparse(
                 ...         City,
                 ...         prompt,
                 ...         text="Paris is in France"
@@ -1341,8 +1341,8 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 ```
 
         See Also:
-            structured_predict: Synchronous variant.
-            astream_structured_predict: Async streaming variant.
+            parse: Synchronous variant.
+            astream_parse: Async streaming variant.
         """
         if self.structured_output_mode == StructuredOutputMode.DEFAULT:
             llm_kwargs = llm_kwargs or {}
@@ -1353,11 +1353,11 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
             return output_cls.model_validate_json(response.message.content or "")
         else:
-            return await super().astructured_predict(
+            return await super().aparse(
                 output_cls, prompt, llm_kwargs, **prompt_args
             )
 
-    def stream_structured_predict(
+    def stream_parse(
         self,
         output_cls: type[BaseModel],
         prompt: PromptTemplate,
@@ -1392,7 +1392,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 ...     points: list[str]
                 >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
                 >>> prompt = PromptTemplate("Summarize: {text}")
-                >>> for obj in llm.stream_structured_predict(   # doctest: +SKIP
+                >>> for obj in llm.stream_parse(   # doctest: +SKIP
                 ...     Summary,
                 ...     prompt,
                 ...     text="Long article text..."
@@ -1403,8 +1403,8 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 ```
 
         See Also:
-            astream_structured_predict: Asynchronous streaming counterpart.
-            structured_predict: Non-streaming variant.
+            astream_parse: Asynchronous streaming counterpart.
+            parse: Non-streaming variant.
         """
         if self.structured_output_mode == StructuredOutputMode.DEFAULT:
 
@@ -1439,11 +1439,11 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
             return gen(output_cls, prompt, llm_kwargs, prompt_args)
         else:
-            return super().stream_structured_predict(  # type: ignore[return-value]
+            return super().stream_parse(  # type: ignore[return-value]
                 output_cls, prompt, llm_kwargs, **prompt_args
             )
 
-    async def astream_structured_predict(
+    async def astream_parse(
         self,
         output_cls: type[BaseModel],
         prompt: PromptTemplate,
@@ -1452,7 +1452,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
     ) -> AsyncGenerator[BaseModel | list[BaseModel], None]:
         """Asynchronously stream incrementally parsed structured objects as the model generates JSON.
 
-        Async variant of stream_structured_predict. Yields partially complete Pydantic
+        Async variant of stream_parse. Yields partially complete Pydantic
         instances as the model streams JSON content, allowing early access to structured
         data before the full response completes. Uses StreamingObjectProcessor with
         flexible mode to handle incomplete JSON.
@@ -1482,7 +1482,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
                 >>> async def stream_analysis():
                 ...     prompt = PromptTemplate("Analyze: {text}")
-                ...     async for obj in await llm.astream_structured_predict(
+                ...     async for obj in await llm.astream_parse(
                 ...         Analysis,
                 ...         prompt,
                 ...         text="Product review text..."
@@ -1494,8 +1494,8 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 ```
 
         See Also:
-            stream_structured_predict: Synchronous streaming counterpart.
-            astructured_predict: Non-streaming async variant.
+            stream_parse: Synchronous streaming counterpart.
+            aparse: Non-streaming async variant.
         """
         if self.structured_output_mode == StructuredOutputMode.DEFAULT:
 
@@ -1531,6 +1531,6 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             return gen(output_cls, prompt, llm_kwargs, prompt_args)
         else:
             # Fall back to non-streaming structured predict
-            return await super().astream_structured_predict(  # type: ignore[return-value]
+            return await super().astream_parse(  # type: ignore[return-value]
                 output_cls, prompt, llm_kwargs, **prompt_args
             )

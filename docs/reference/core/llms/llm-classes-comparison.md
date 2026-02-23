@@ -93,7 +93,7 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 - Takes two inputs:
   - `llm`: Any LLM instance (base LLM, function-calling LLM, etc.)
   - `output_cls`: A Pydantic model class defining the output structure
-- Delegates to the underlying LLM's `structured_predict()` method
+- Delegates to the underlying LLM's `parse()` method
 - Converts all responses to JSON representations of the output model
 - Maintains the same interface as the base LLM (chat, stream_chat, etc.)
 - Supports streaming structured outputs

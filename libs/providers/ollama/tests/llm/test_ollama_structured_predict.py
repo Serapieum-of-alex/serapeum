@@ -1,4 +1,4 @@
-"""E2E tests for Ollama.structured_predict and related streaming/async variants.
+"""E2E tests for Ollama.parse and related streaming/async variants.
 
 Covers schema extraction edge cases across the full range of Pydantic model
 structures: flat models, nested models with $defs, optional fields, enums,
@@ -223,12 +223,12 @@ def _assert_valid_instance(result: BaseModel, cls: type[BaseModel]) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Tests — structured_predict (sync)
+# Tests — parse (sync)
 # ---------------------------------------------------------------------------
 
 
 class TestStructuredPredictSync:
-    """Synchronous structured_predict across all schema edge-case models."""
+    """Synchronous parse across all schema edge-case models."""
 
     @pytest.mark.e2e
     @_SKIP
@@ -243,7 +243,7 @@ class TestStructuredPredictSync:
             "Extract the following information from the text into the requested fields.\n"
             "Text: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             PersonBasic, prompt, text="Jane Smith is 34 years old, 1.72 m tall, and works as a nurse."
         )
         _assert_valid_instance(result, PersonBasic)
@@ -264,7 +264,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract contact details from the text.\nText: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             Contact,
             prompt,
             text="Reach Alice at alice@example.com or call her on +1-555-0100.",
@@ -284,7 +284,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract contact details from the text.\nText: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             Contact,
             prompt,
             text="Contact us at support@example.org for help.",
@@ -304,7 +304,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract configuration settings from the description.\nDescription: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             Config,
             prompt,
             text="Set the language to French (fr), max_tokens to 512, and temperature to 0.3.",
@@ -325,7 +325,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract employee information from the text.\nText: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             Employee,
             prompt,
             text=(
@@ -349,7 +349,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract the invoice details from the following text.\nText: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             Invoice,
             prompt,
             text=(
@@ -375,7 +375,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Analyse the product review and extract the requested fields.\nReview: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             Review,
             prompt,
             text=(
@@ -400,7 +400,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract the traffic-light state from the text.\nText: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             TrafficLight,
             prompt,
             text="The light at Main & 5th is currently showing red.",
@@ -420,7 +420,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract the measurement details from the text.\nText: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             Measurement,
             prompt,
             text="The package weighs 2.5 kg.",
@@ -441,7 +441,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract product information from the description.\nDescription: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             ConstrainedProduct,
             prompt,
             text="SKU: WDG-001. Price: $19.99. Currently 150 units in stock.",
@@ -464,7 +464,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract the route details from the text.\nText: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             Route,
             prompt,
             text=(
@@ -491,7 +491,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract profile information from the text.\nText: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             Profile,
             prompt,
             text="User: dev_guru42. Bio: 'Open-source enthusiast and coffee lover.'",
@@ -512,7 +512,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract the topic and keywords from the text.\nText: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             Keywords,
             prompt,
             text="Quantum computing uses qubits to perform calculations far beyond classical computers.",
@@ -534,7 +534,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract the first and last name from the text.\nText: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             NormalizedName,
             prompt,
             text="The author is alice johnson.",
@@ -556,8 +556,8 @@ class TestStructuredPredictSync:
             "Extract the following information from the text.\nText: {text}"
         )
         text = "Bob Wilson is 45 years old, 1.80 m tall, and is retired."
-        result1 = llm_model.structured_predict(PersonBasic, prompt, text=text)
-        result2 = llm_model.structured_predict(PersonBasic, prompt, text=text)
+        result1 = llm_model.parse(PersonBasic, prompt, text=text)
+        result2 = llm_model.parse(PersonBasic, prompt, text=text)
         assert isinstance(result1, PersonBasic)
         assert isinstance(result2, PersonBasic)
         # With temperature=0, name and age should be identical
@@ -578,7 +578,7 @@ class TestStructuredPredictSync:
         prompt = PromptTemplate(
             "Extract person info from the text.\nText: {text}"
         )
-        result = llm_model.structured_predict(
+        result = llm_model.parse(
             PersonBasic,
             prompt,
             llm_kwargs={"num_predict": 200},
@@ -588,12 +588,12 @@ class TestStructuredPredictSync:
 
 
 # ---------------------------------------------------------------------------
-# Tests — astructured_predict (async)
+# Tests — aparse (async)
 # ---------------------------------------------------------------------------
 
 
 class TestStructuredPredictAsync:
-    """Async astructured_predict across key schema shapes."""
+    """Async aparse across key schema shapes."""
 
     @pytest.mark.e2e
     @pytest.mark.asyncio()
@@ -601,14 +601,14 @@ class TestStructuredPredictAsync:
     async def test_async_flat_model(self, llm_model: Ollama) -> None:
         """Async variant returns correct type for a flat primitive schema.
 
-        Inputs: person description via astructured_predict.
+        Inputs: person description via aparse.
         Expected: PersonBasic instance with all required fields.
         Checks: isinstance check; all required fields non-None.
         """
         prompt = PromptTemplate(
             "Extract the following information from the text.\nText: {text}"
         )
-        result = await llm_model.astructured_predict(
+        result = await llm_model.aparse(
             PersonBasic,
             prompt,
             text="Emma Torres is 27, 1.68 m tall, and works as a data analyst.",
@@ -628,7 +628,7 @@ class TestStructuredPredictAsync:
         prompt = PromptTemplate(
             "Extract employee information from the text.\nText: {text}"
         )
-        result = await llm_model.astructured_predict(
+        result = await llm_model.aparse(
             Employee,
             prompt,
             text=(
@@ -652,7 +652,7 @@ class TestStructuredPredictAsync:
         prompt = PromptTemplate(
             "Analyse the review and extract the requested fields.\nReview: {text}"
         )
-        result = await llm_model.astructured_predict(
+        result = await llm_model.aparse(
             Review,
             prompt,
             text="Terrible product. Broke after two days. Would not recommend.",
@@ -674,7 +674,7 @@ class TestStructuredPredictAsync:
         prompt = PromptTemplate(
             "Extract the invoice details from the following text.\nText: {text}"
         )
-        result = await llm_model.astructured_predict(
+        result = await llm_model.aparse(
             Invoice,
             prompt,
             text=(
@@ -688,7 +688,7 @@ class TestStructuredPredictAsync:
 
 
 # ---------------------------------------------------------------------------
-# Tests — stream_structured_predict (sync streaming)
+# Tests — stream_parse (sync streaming)
 # ---------------------------------------------------------------------------
 
 
@@ -707,7 +707,7 @@ class TestStreamStructuredPredict:
         prompt = PromptTemplate(
             "Extract the following information from the text.\nText: {text}"
         )
-        gen = llm_model.stream_structured_predict(
+        gen = llm_model.stream_parse(
             PersonBasic,
             prompt,
             text="Liam Chen is 31, 1.75 m tall, and works as a teacher.",
@@ -733,7 +733,7 @@ class TestStreamStructuredPredict:
         prompt = PromptTemplate(
             "Extract employee information from the text.\nText: {text}"
         )
-        gen = llm_model.stream_structured_predict(
+        gen = llm_model.stream_parse(
             Employee,
             prompt,
             text="Sofia Russo is a Lead Engineer at Via Roma 5, Rome, Italy.",
@@ -758,7 +758,7 @@ class TestStreamStructuredPredict:
         prompt = PromptTemplate(
             "Extract contact details from the text.\nText: {text}"
         )
-        gen = llm_model.stream_structured_predict(
+        gen = llm_model.stream_parse(
             Contact,
             prompt,
             text="You can reach support at help@company.io.",
@@ -771,7 +771,7 @@ class TestStreamStructuredPredict:
 
 
 # ---------------------------------------------------------------------------
-# Tests — astream_structured_predict (async streaming)
+# Tests — astream_parse (async streaming)
 # ---------------------------------------------------------------------------
 
 
@@ -785,13 +785,13 @@ class TestAsyncStreamStructuredPredict:
         """Async streaming yields at least one BaseModel instance.
 
         Inputs: measurement description.
-        Expected: At least one item yielded from astream_structured_predict.
+        Expected: At least one item yielded from astream_parse.
         Checks: last item is a Measurement or list; no exception raised.
         """
         prompt = PromptTemplate(
             "Extract the measurement details from the text.\nText: {text}"
         )
-        gen = await llm_model.astream_structured_predict(
+        gen = await llm_model.astream_parse(
             Measurement,
             prompt,
             text="The temperature outside is 23.5 °C.",
@@ -814,7 +814,7 @@ class TestAsyncStreamStructuredPredict:
         prompt = PromptTemplate(
             "Extract the route details from the text.\nText: {text}"
         )
-        gen = await llm_model.astream_structured_predict(
+        gen = await llm_model.astream_parse(
             Route,
             prompt,
             text=(

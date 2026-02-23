@@ -113,7 +113,7 @@ classDiagram
         +stream(prompt, **kwargs) TokenGen
         +apredict(prompt, **kwargs) str
         +astream(prompt, **kwargs) TokenAsyncGen
-        +structured_predict(output_cls, prompt, **kwargs) Model
+        +parse(output_cls, prompt, **kwargs) Model
     }
 
     class FunctionCallingLLM {

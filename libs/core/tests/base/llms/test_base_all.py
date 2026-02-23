@@ -666,7 +666,7 @@ class TestStructuredPredict:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """
-        Inputs: fake program callable and llm_kwargs passed to structured_predict.
+        Inputs: fake program callable and llm_kwargs passed to parse.
         Expected result: program is invoked with llm_kwargs and prompt args.
         Checks: returned model uses forwarded llm_kwargs.
         """
@@ -680,7 +680,7 @@ class TestStructuredPredict:
         monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: fake_program)
 
         # act
-        result = llm.structured_predict(
+        result = llm.parse(
             _OutputModel, prompt, llm_kwargs={"temp": 0.3}, name="ada"
         )
 
@@ -709,7 +709,7 @@ class TestAStructuredPredict:
         monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
 
         # act
-        result = await llm.astructured_predict(
+        result = await llm.aparse(
             _OutputModel, prompt, llm_kwargs={"seed": 7}, name="ada"
         )
 
@@ -738,7 +738,7 @@ class TestStreamStructuredPredict:
         # act
         results = [
             item.name
-            for item in llm.stream_structured_predict(_OutputModel, prompt, name="flow")
+            for item in llm.stream_parse(_OutputModel, prompt, name="flow")
         ]
 
         # assert
@@ -784,7 +784,7 @@ class TestAstreamStructuredPredict:
     ) -> None:
         """
         Inputs: fake program with async stream results.
-        Expected result: astream_structured_predict yields values from program.
+        Expected result: astream_parse yields values from program.
         Checks: async iteration returns expected names.
         """
         # arrange
@@ -802,7 +802,7 @@ class TestAstreamStructuredPredict:
         monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
 
         # act
-        stream = await llm.astream_structured_predict(_OutputModel, prompt, name="eta")
+        stream = await llm.astream_parse(_OutputModel, prompt, name="eta")
         collected = [item.name async for item in stream]
 
         # assert

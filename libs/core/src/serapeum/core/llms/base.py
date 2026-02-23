@@ -467,7 +467,7 @@ class LLM(BaseLLM, ABC):
             'Hello, world!'
 
             ```
-        - Parse structured output using ``structured_predict``
+        - Parse structured output using ``parse``
             ```python
             >>> from pydantic import BaseModel
             >>> class Person(BaseModel):
@@ -475,11 +475,11 @@ class LLM(BaseLLM, ABC):
             ...
             >>> from serapeum.core.prompts import PromptTemplate
             >>> class StubLLM(EchoLLM):
-            ...     def structured_predict(self, output_cls, prompt, **prompt_args):
+            ...     def parse(self, output_cls, prompt, **prompt_args):
             ...         return output_cls(name=prompt.format(**prompt_args))
             ...
             >>> stub = StubLLM()
-            >>> stub.structured_predict(Person, PromptTemplate("{name}"), name="Ada").name
+            >>> stub.parse(Person, PromptTemplate("{name}"), name="Ada").name
             'Ada'
 
             ```
@@ -1176,7 +1176,7 @@ class LLM(BaseLLM, ABC):
                 f"Unsupported pydantic program mode: {self.structured_output_mode}"
             )
 
-    def structured_predict(
+    def parse(
         self,
         output_cls: type[BaseModel],
         prompt: PromptTemplate,
@@ -1233,7 +1233,7 @@ class LLM(BaseLLM, ABC):
                 ...     "serapeum.core.llms.base.LLM._get_structured_output_tool",
                 ...     return_value=fake_program,
                 ... ):
-                ...     DemoLLM().structured_predict(Person, PromptTemplate("{name}"), name="ada").name
+                ...     DemoLLM().parse(Person, PromptTemplate("{name}"), name="ada").name
                 'Ada'
 
                 ```
@@ -1273,7 +1273,7 @@ class LLM(BaseLLM, ABC):
                 ...     "serapeum.core.llms.base.LLM._get_structured_output_tool",
                 ...     return_value=fake_program,
                 ... ):
-                ...     DemoLLM().structured_predict(
+                ...     DemoLLM().parse(
                 ...         Stats,
                 ...         PromptTemplate("{name}"),
                 ...         llm_kwargs={"temperature": 0.3},
@@ -1283,8 +1283,8 @@ class LLM(BaseLLM, ABC):
 
                 ```
         See Also:
-            astructured_predict: Async counterpart that awaits the structured program.
-            stream_structured_predict: Streams partial structured outputs incrementally.
+            aparse: Async counterpart that awaits the structured program.
+            stream_parse: Streams partial structured outputs incrementally.
         """
         structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
 
@@ -1292,7 +1292,7 @@ class LLM(BaseLLM, ABC):
 
         return result
 
-    async def astructured_predict(
+    async def aparse(
         self,
         output_cls: type[BaseModel],
         prompt: PromptTemplate,
@@ -1352,7 +1352,7 @@ class LLM(BaseLLM, ABC):
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         from serapeum.core.prompts import PromptTemplate
-                ...         result = await DemoLLM().astructured_predict(
+                ...         result = await DemoLLM().aparse(
                 ...             Person,
                 ...             PromptTemplate("{name}"),
                 ...             name="ignored",
@@ -1401,7 +1401,7 @@ class LLM(BaseLLM, ABC):
                 ...         return_value=FakeProgram(),
                 ...     ):
                 ...         from serapeum.core.prompts import PromptTemplate
-                ...         result = await DemoLLM().astructured_predict(
+                ...         result = await DemoLLM().aparse(
                 ...             Report,
                 ...             PromptTemplate("{name}"),
                 ...             llm_kwargs={"seed": 42},
@@ -1414,8 +1414,8 @@ class LLM(BaseLLM, ABC):
 
                 ```
         See Also:
-            structured_predict: Blocking variant using the same structured program.
-            astream_structured_predict: Emits partial values asynchronously during execution.
+            parse: Blocking variant using the same structured program.
+            astream_parse: Emits partial values asynchronously during execution.
         """
         structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
 
@@ -1423,7 +1423,7 @@ class LLM(BaseLLM, ABC):
 
         return result
 
-    def stream_structured_predict(
+    def stream_parse(
         self,
         output_cls: type[BaseModel],
         prompt: PromptTemplate,
@@ -1484,7 +1484,7 @@ class LLM(BaseLLM, ABC):
                 ... ):
                 ...     tokens = [
                 ...         part.value
-                ...         for part in DemoLLM().stream_structured_predict(
+                ...         for part in DemoLLM().stream_parse(
                 ...             Item,
                 ...             PromptTemplate("{name}"),
                 ...             name="signal",
@@ -1532,7 +1532,7 @@ class LLM(BaseLLM, ABC):
                 ...     return_value=FakeProgram(),
                 ... ):
                 ...     batches = list(
-                ...         DemoLLM().stream_structured_predict(
+                ...         DemoLLM().stream_parse(
                 ...             Item,
                 ...             PromptTemplate("{name}"),
                 ...             name="ignored",
@@ -1543,8 +1543,8 @@ class LLM(BaseLLM, ABC):
 
                 ```
         See Also:
-            astream_structured_predict: Async variant yielding values via an async iterator.
-            structured_predict: Non-streaming version that returns the final model directly.
+            astream_parse: Async variant yielding values via an async iterator.
+            parse: Non-streaming version that returns the final model directly.
         """
         structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
 
@@ -1630,13 +1630,13 @@ class LLM(BaseLLM, ABC):
 
                 ```
         See Also:
-            astream_structured_predict: Public helper that wraps this coroutine for callers.
+            astream_parse: Public helper that wraps this coroutine for callers.
         """
         structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
 
         return await structured_output_tool.astream_call(llm_kwargs=llm_kwargs, **prompt_args)  # type: ignore[return-value]
 
-    async def astream_structured_predict(
+    async def astream_parse(
         self,
         output_cls: type[BaseModel],
         prompt: PromptTemplate,
@@ -1699,7 +1699,7 @@ class LLM(BaseLLM, ABC):
                 ...         "serapeum.core.llms.base.LLM._get_structured_output_tool",
                 ...         return_value=FakeProgram(),
                 ...     ):
-                ...         stream = await DemoLLM().astream_structured_predict(
+                ...         stream = await DemoLLM().astream_parse(
                 ...             Item,
                 ...             PromptTemplate("{name}"),
                 ...             name="flow",
@@ -1754,7 +1754,7 @@ class LLM(BaseLLM, ABC):
                 ...         "serapeum.core.llms.base.LLM._get_structured_output_tool",
                 ...         return_value=FakeProgram(),
                 ...     ):
-                ...         stream = await DemoLLM().astream_structured_predict(
+                ...         stream = await DemoLLM().astream_parse(
                 ...             Item,
                 ...             PromptTemplate("{name}"),
                 ...             name="ignored",
@@ -1769,7 +1769,7 @@ class LLM(BaseLLM, ABC):
 
                 ```
         See Also:
-            stream_structured_predict: Synchronous counterpart yielding from a regular generator.
+            stream_parse: Synchronous counterpart yielding from a regular generator.
             _structured_astream_call: Internal helper that retrieves the structured async stream.
         """
 

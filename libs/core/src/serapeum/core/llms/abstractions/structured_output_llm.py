@@ -45,7 +45,7 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
         chat_prompt = ChatPromptTemplate(message_templates=messages)
 
         output = self.llm.parse(
-            output_cls=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
+            schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
         )
         return ChatResponse(
             message=Message(
@@ -60,7 +60,7 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
         chat_prompt = ChatPromptTemplate(message_templates=messages)
 
         stream_output = self.llm.stream_parse(
-            output_cls=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
+            schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
         )
         for partial_output in stream_output:
             yield ChatResponse(
@@ -82,7 +82,7 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
         chat_prompt = ChatPromptTemplate(message_templates=messages)
 
         output = await self.llm.aparse(
-            output_cls=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
+            schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
         )
         return ChatResponse(
             message=Message(
@@ -102,7 +102,7 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
             chat_prompt = ChatPromptTemplate(message_templates=messages)
 
             stream_output = await self.llm.astream_parse(
-                output_cls=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
+                schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
             )
             async for partial_output in stream_output:
                 yield ChatResponse(

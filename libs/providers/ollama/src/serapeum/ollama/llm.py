@@ -669,7 +669,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
     def _prepare_chat_with_tools(
         self,
-        tools: list["BaseTool"],
+        tools: list[BaseTool],
         user_msg: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
@@ -1228,7 +1228,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
     def parse(
         self,
-        output_cls: type[BaseModel],
+        schema: type[BaseModel],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1241,7 +1241,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         format parameter and validates the response content.
 
         Args:
-            output_cls: Target Pydantic model class defining the expected structure.
+            schema: Target Pydantic model class defining the expected structure.
             prompt: PromptTemplate that will be formatted with prompt_args to create messages.
             llm_kwargs: Additional provider arguments passed to the chat method.
                 Defaults to empty dict.
@@ -1281,19 +1281,19 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         """
         if self.structured_output_mode == StructuredOutputMode.DEFAULT:
             llm_kwargs = llm_kwargs or {}
-            llm_kwargs["format"] = output_cls.model_json_schema()
+            llm_kwargs["format"] = schema.model_json_schema()
             messages = prompt.format_messages(**prompt_args)
             response = self.chat(messages, **llm_kwargs)
 
-            return output_cls.model_validate_json(response.message.content or "")
+            return schema.model_validate_json(response.message.content or "")
         else:
             return super().parse(
-                output_cls, prompt, llm_kwargs, **prompt_args
+                schema, prompt, llm_kwargs, **prompt_args
             )
 
     async def aparse(
         self,
-        output_cls: type[BaseModel],
+        schema: type[BaseModel],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1305,7 +1305,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         into a Pydantic instance using the async chat interface.
 
         Args:
-            output_cls: Target Pydantic model class defining the expected structure.
+            schema: Target Pydantic model class defining the expected structure.
             prompt: PromptTemplate that will be formatted with prompt_args to create messages.
             llm_kwargs: Additional provider arguments passed to the achat method.
                 Defaults to empty dict.
@@ -1346,20 +1346,20 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         """
         if self.structured_output_mode == StructuredOutputMode.DEFAULT:
             llm_kwargs = llm_kwargs or {}
-            llm_kwargs["format"] = output_cls.model_json_schema()
+            llm_kwargs["format"] = schema.model_json_schema()
 
             messages = prompt.format_messages(**prompt_args)
             response = await self.achat(messages, **llm_kwargs)
 
-            return output_cls.model_validate_json(response.message.content or "")
+            return schema.model_validate_json(response.message.content or "")
         else:
             return await super().aparse(
-                output_cls, prompt, llm_kwargs, **prompt_args
+                schema, prompt, llm_kwargs, **prompt_args
             )
 
     def stream_parse(
         self,
-        output_cls: type[BaseModel],
+        schema: type[BaseModel],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1371,7 +1371,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         Uses StreamingObjectProcessor with flexible mode to handle incomplete JSON.
 
         Args:
-            output_cls: Pydantic model class defining the expected structure.
+            schema: Pydantic model class defining the expected structure.
             prompt: PromptTemplate that will be formatted with prompt_args to create messages.
             llm_kwargs: Additional provider arguments passed to stream_chat.
                 Defaults to empty dict.
@@ -1437,15 +1437,15 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                     except Exception:
                         continue
 
-            return gen(output_cls, prompt, llm_kwargs, prompt_args)
+            return gen(schema, prompt, llm_kwargs, prompt_args)
         else:
             return super().stream_parse(  # type: ignore[return-value]
-                output_cls, prompt, llm_kwargs, **prompt_args
+                schema, prompt, llm_kwargs, **prompt_args
             )
 
     async def astream_parse(
         self,
-        output_cls: type[BaseModel],
+        schema: type[BaseModel],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1458,7 +1458,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         flexible mode to handle incomplete JSON.
 
         Args:
-            output_cls: Pydantic model class defining the expected structure.
+            schema: Pydantic model class defining the expected structure.
             prompt: PromptTemplate that will be formatted with prompt_args to create messages.
             llm_kwargs: Additional provider arguments passed to astream_chat.
                 Defaults to empty dict.
@@ -1528,9 +1528,9 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                     except Exception:
                         continue
 
-            return gen(output_cls, prompt, llm_kwargs, prompt_args)
+            return gen(schema, prompt, llm_kwargs, prompt_args)
         else:
             # Fall back to non-streaming structured predict
             return await super().astream_parse(  # type: ignore[return-value]
-                output_cls, prompt, llm_kwargs, **prompt_args
+                schema, prompt, llm_kwargs, **prompt_args
             )

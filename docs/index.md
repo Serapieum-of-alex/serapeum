@@ -127,7 +127,7 @@ prompt = PromptTemplate(
 # Force structured output
 llm_json = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"), json_mode=True)
 result = llm_json.parse(
-    output_cls=CityInfo,
+    schema=CityInfo,
     prompt=prompt,
     city="Paris"
 )

@@ -475,8 +475,8 @@ class LLM(BaseLLM, ABC):
             ...
             >>> from serapeum.core.prompts import PromptTemplate
             >>> class StubLLM(EchoLLM):
-            ...     def parse(self, output_cls, prompt, **prompt_args):
-            ...         return output_cls(name=prompt.format(**prompt_args))
+            ...     def parse(self, schema, prompt, **prompt_args):
+            ...         return schema(name=prompt.format(**prompt_args))
             ...
             >>> stub = StubLLM()
             >>> stub.parse(Person, PromptTemplate("{name}"), name="Ada").name
@@ -1122,7 +1122,7 @@ class LLM(BaseLLM, ABC):
 
     def _get_structured_output_tool(
         self,
-        output_cls: type[BaseModel],
+        schema: type[BaseModel],
         prompt: PromptTemplate,
         **kwargs: Any,
     ):
@@ -1137,7 +1137,7 @@ class LLM(BaseLLM, ABC):
                 from serapeum.core.llms import ToolOrchestratingLLM
 
                 return ToolOrchestratingLLM(
-                    output_tool=output_cls,
+                    output_tool=schema,
                     llm=self,
                     prompt=prompt,
                     **kwargs,
@@ -1147,7 +1147,7 @@ class LLM(BaseLLM, ABC):
                 from serapeum.core.output_parsers import PydanticParser
 
                 return TextCompletionLLM(
-                    output_parser=PydanticParser(output_cls=output_cls),
+                    output_parser=PydanticParser(output_cls=schema),
                     llm=self,
                     prompt=prompt,
                     **kwargs,
@@ -1156,7 +1156,7 @@ class LLM(BaseLLM, ABC):
             from serapeum.core.llms import ToolOrchestratingLLM
 
             return ToolOrchestratingLLM(
-                output_tool=output_cls,
+                output_tool=schema,
                 llm=self,
                 prompt=prompt,
                 **kwargs,
@@ -1166,7 +1166,7 @@ class LLM(BaseLLM, ABC):
             from serapeum.core.output_parsers import PydanticParser
 
             return TextCompletionLLM(
-                output_parser=PydanticParser(output_cls=output_cls),
+                output_parser=PydanticParser(output_cls=schema),
                 llm=self,
                 prompt=prompt,
                 **kwargs,
@@ -1178,7 +1178,7 @@ class LLM(BaseLLM, ABC):
 
     def parse(
         self,
-        output_cls: type[BaseModel],
+        schema: type[BaseModel],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1186,7 +1186,7 @@ class LLM(BaseLLM, ABC):
         """Invoke the structured output program for synchronous predictions.
 
         Args:
-            output_cls (type[BaseModel]): Pydantic model describing the expected output schema.
+            schema (type[BaseModel]): Pydantic model describing the expected output schema.
             prompt (PromptTemplate): Template used to gather inputs and instructions.
             llm_kwargs (dict[str, Any] | None): Provider-specific arguments forwarded to the underlying LLM.
             **prompt_args (Any): Additional template variables passed to ``prompt``.
@@ -1286,7 +1286,7 @@ class LLM(BaseLLM, ABC):
             aparse: Async counterpart that awaits the structured program.
             stream_parse: Streams partial structured outputs incrementally.
         """
-        structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
+        structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
         result = structured_output_tool(llm_kwargs=llm_kwargs, **prompt_args)
 
@@ -1294,7 +1294,7 @@ class LLM(BaseLLM, ABC):
 
     async def aparse(
         self,
-        output_cls: type[BaseModel],
+        schema: type[BaseModel],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1302,7 +1302,7 @@ class LLM(BaseLLM, ABC):
         """Run the structured output program asynchronously.
 
         Args:
-            output_cls (type[BaseModel]): Pydantic model describing the target schema.
+            schema (type[BaseModel]): Pydantic model describing the target schema.
             prompt (PromptTemplate): Template used to generate program inputs.
             llm_kwargs (dict[str, Any] | None): Optional provider arguments forwarded to the program.
             **prompt_args (Any): Additional inputs passed to the template.
@@ -1417,7 +1417,7 @@ class LLM(BaseLLM, ABC):
             parse: Blocking variant using the same structured program.
             astream_parse: Emits partial values asynchronously during execution.
         """
-        structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
+        structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
         result = await structured_output_tool.acall(llm_kwargs=llm_kwargs, **prompt_args)
 
@@ -1425,7 +1425,7 @@ class LLM(BaseLLM, ABC):
 
     def stream_parse(
         self,
-        output_cls: type[BaseModel],
+        schema: type[BaseModel],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1433,7 +1433,7 @@ class LLM(BaseLLM, ABC):
         """Stream structured predictions as they become available.
 
         Args:
-            output_cls (type[BaseModel]): Pydantic model describing the structured response.
+            schema (type[BaseModel]): Pydantic model describing the structured response.
             prompt (PromptTemplate): Template orchestrating the program execution.
             llm_kwargs (dict[str, Any] | None): Additional arguments forwarded to the underlying LLM.
             **prompt_args (Any): Keyword arguments interpolated into the template.
@@ -1546,7 +1546,7 @@ class LLM(BaseLLM, ABC):
             astream_parse: Async variant yielding values via an async iterator.
             parse: Non-streaming version that returns the final model directly.
         """
-        structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
+        structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
         result = structured_output_tool.stream_call(llm_kwargs=llm_kwargs, **prompt_args)
         for r in result:
@@ -1554,7 +1554,7 @@ class LLM(BaseLLM, ABC):
 
     async def _structured_astream_call(
         self,
-        output_cls: type[Model],
+        schema: type[Model],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1562,7 +1562,7 @@ class LLM(BaseLLM, ABC):
         """Obtain the async structured program stream without additional wrapping.
 
         Args:
-            output_cls (type[Model]): Structured output model requested by the caller.
+            schema (type[Model]): Structured output model requested by the caller.
             prompt (PromptTemplate): Template defining the structured program execution.
             llm_kwargs (dict[str, Any] | None): Keyword arguments forwarded to the LLM.
             **prompt_args (Any): Arguments substituted into ``prompt``.
@@ -1632,13 +1632,13 @@ class LLM(BaseLLM, ABC):
         See Also:
             astream_parse: Public helper that wraps this coroutine for callers.
         """
-        structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
+        structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
         return await structured_output_tool.astream_call(llm_kwargs=llm_kwargs, **prompt_args)  # type: ignore[return-value]
 
     async def astream_parse(
         self,
-        output_cls: type[BaseModel],
+        schema: type[BaseModel],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1646,7 +1646,7 @@ class LLM(BaseLLM, ABC):
         """Stream structured predictions asynchronously.
 
         Args:
-            output_cls (type[BaseModel]): Structured response model expected from the program.
+            schema (type[BaseModel]): Structured response model expected from the program.
             prompt (PromptTemplate): Prompt orchestrating the structured interaction.
             llm_kwargs (dict[str, Any] | None): Provider arguments injected into the structured program.
             **prompt_args (Any): Additional inputs formatted into ``prompt``.
@@ -1774,7 +1774,7 @@ class LLM(BaseLLM, ABC):
         """
 
         async def gen() -> AsyncGenerator[Model | list[Model], None]:
-            structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
+            structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
             result = await structured_output_tool.astream_call(llm_kwargs=llm_kwargs, **prompt_args)
             async for r in result:

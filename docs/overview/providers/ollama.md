@@ -267,7 +267,7 @@ prompt = PromptTemplate(
 
 # Synchronous structured prediction
 person = llm.parse(
-    output_cls=Person,
+    schema=Person,
     prompt=prompt,
     text="John Doe is a 32-year-old software engineer at Tech Corp."
 )
@@ -277,7 +277,7 @@ print(f"{person.name}, {person.age}, works as {person.occupation}")
 
 # Streaming structured outputs
 for partial in llm.stream_parse(
-        output_cls=Person,
+        schema=Person,
         prompt=prompt,
         text="Jane Smith, age 28, data scientist"
 ):
@@ -288,7 +288,7 @@ for partial in llm.stream_parse(
 # Async structured prediction
 async def get_structured():
     person = await llm.aparse(
-        output_cls=Person,
+        schema=Person,
         prompt=prompt,
         text="Alice Johnson is 45 and works as a CEO."
     )

@@ -1286,9 +1286,9 @@ class LLM(BaseLLM, ABC):
             astructured_predict: Async counterpart that awaits the structured program.
             stream_structured_predict: Streams partial structured outputs incrementally.
         """
-        program = self._get_structured_output_tool(output_cls, prompt)
+        structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
 
-        result = program(llm_kwargs=llm_kwargs, **prompt_args)
+        result = structured_output_tool(llm_kwargs=llm_kwargs, **prompt_args)
 
         return result
 
@@ -1417,9 +1417,9 @@ class LLM(BaseLLM, ABC):
             structured_predict: Blocking variant using the same structured program.
             astream_structured_predict: Emits partial values asynchronously during execution.
         """
-        program = self._get_structured_output_tool(output_cls, prompt)
+        structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
 
-        result = await program.acall(llm_kwargs=llm_kwargs, **prompt_args)
+        result = await structured_output_tool.acall(llm_kwargs=llm_kwargs, **prompt_args)
 
         return result
 
@@ -1546,9 +1546,9 @@ class LLM(BaseLLM, ABC):
             astream_structured_predict: Async variant yielding values via an async iterator.
             structured_predict: Non-streaming version that returns the final model directly.
         """
-        program = self._get_structured_output_tool(output_cls, prompt)
+        structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
 
-        result = program.stream_call(llm_kwargs=llm_kwargs, **prompt_args)
+        result = structured_output_tool.stream_call(llm_kwargs=llm_kwargs, **prompt_args)
         for r in result:
             yield r
 
@@ -1632,9 +1632,9 @@ class LLM(BaseLLM, ABC):
         See Also:
             astream_structured_predict: Public helper that wraps this coroutine for callers.
         """
-        program = self._get_structured_output_tool(output_cls, prompt)
+        structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
 
-        return await program.astream_call(llm_kwargs=llm_kwargs, **prompt_args)  # type: ignore[return-value]
+        return await structured_output_tool.astream_call(llm_kwargs=llm_kwargs, **prompt_args)  # type: ignore[return-value]
 
     async def astream_structured_predict(
         self,
@@ -1774,9 +1774,9 @@ class LLM(BaseLLM, ABC):
         """
 
         async def gen() -> AsyncGenerator[Model | list[Model], None]:
-            program = self._get_structured_output_tool(output_cls, prompt)
+            structured_output_tool = self._get_structured_output_tool(output_cls, prompt)
 
-            result = await program.astream_call(llm_kwargs=llm_kwargs, **prompt_args)
+            result = await structured_output_tool.astream_call(llm_kwargs=llm_kwargs, **prompt_args)
             async for r in result:
                 yield r
 

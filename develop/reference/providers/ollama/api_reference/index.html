@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -6152,7 +6152,7 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-1228" name="__codelineno-0-1228"></a>
 <a id="__codelineno-0-1229" name="__codelineno-0-1229"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span>
 <a id="__codelineno-0-1230" name="__codelineno-0-1230"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1231" name="__codelineno-0-1231"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-0-1231" name="__codelineno-0-1231"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <a id="__codelineno-0-1232" name="__codelineno-0-1232"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
 <a id="__codelineno-0-1233" name="__codelineno-0-1233"></a>        <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-1234" name="__codelineno-0-1234"></a>        <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -6217,7 +6217,7 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-1293" name="__codelineno-0-1293"></a>
 <a id="__codelineno-0-1294" name="__codelineno-0-1294"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aparse</span><span class="p">(</span>
 <a id="__codelineno-0-1295" name="__codelineno-0-1295"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1296" name="__codelineno-0-1296"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-0-1296" name="__codelineno-0-1296"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <a id="__codelineno-0-1297" name="__codelineno-0-1297"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
 <a id="__codelineno-0-1298" name="__codelineno-0-1298"></a>        <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-1299" name="__codelineno-0-1299"></a>        <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -6283,7 +6283,7 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-1359" name="__codelineno-0-1359"></a>
 <a id="__codelineno-0-1360" name="__codelineno-0-1360"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">stream_parse</span><span class="p">(</span>
 <a id="__codelineno-0-1361" name="__codelineno-0-1361"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1362" name="__codelineno-0-1362"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-0-1362" name="__codelineno-0-1362"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <a id="__codelineno-0-1363" name="__codelineno-0-1363"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
 <a id="__codelineno-0-1364" name="__codelineno-0-1364"></a>        <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-1365" name="__codelineno-0-1365"></a>        <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -6369,7 +6369,7 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-1445" name="__codelineno-0-1445"></a>
 <a id="__codelineno-0-1446" name="__codelineno-0-1446"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">astream_parse</span><span class="p">(</span>
 <a id="__codelineno-0-1447" name="__codelineno-0-1447"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1448" name="__codelineno-0-1448"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-0-1448" name="__codelineno-0-1448"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <a id="__codelineno-0-1449" name="__codelineno-0-1449"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
 <a id="__codelineno-0-1450" name="__codelineno-0-1450"></a>        <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-1451" name="__codelineno-0-1451"></a>        <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -6937,7 +6937,7 @@ into a Pydantic instance using the async chat interface.</p>
                 <code>schema</code>
             </td>
             <td>
-                  <code><span title="type">type</span>[<span title="pydantic.BaseModel">BaseModel</span>]</code>
+                  <code><span title="type">type</span>[<span title="pydantic.BaseModel">BaseModel</span>] | <span title="typing.Callable">Callable</span>[..., <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -7145,7 +7145,7 @@ astream_parse: Async streaming variant.</p>
 <span class="normal"><a href="#__codelineno-0-1357">1357</a></span>
 <span class="normal"><a href="#__codelineno-0-1358">1358</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1294" name="__codelineno-0-1294"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aparse</span><span class="p">(</span>
 <a id="__codelineno-0-1295" name="__codelineno-0-1295"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1296" name="__codelineno-0-1296"></a>    <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-0-1296" name="__codelineno-0-1296"></a>    <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <a id="__codelineno-0-1297" name="__codelineno-0-1297"></a>    <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
 <a id="__codelineno-0-1298" name="__codelineno-0-1298"></a>    <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-1299" name="__codelineno-0-1299"></a>    <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -7533,7 +7533,7 @@ flexible mode to handle incomplete JSON.</p>
                 <code>schema</code>
             </td>
             <td>
-                  <code><span title="type">type</span>[<span title="pydantic.BaseModel">BaseModel</span>]</code>
+                  <code><span title="type">type</span>[<span title="pydantic.BaseModel">BaseModel</span>] | <span title="typing.Callable">Callable</span>[..., <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -7765,7 +7765,7 @@ aparse: Non-streaming async variant.</p>
 <span class="normal"><a href="#__codelineno-0-1535">1535</a></span>
 <span class="normal"><a href="#__codelineno-0-1536">1536</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1446" name="__codelineno-0-1446"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">astream_parse</span><span class="p">(</span>
 <a id="__codelineno-0-1447" name="__codelineno-0-1447"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1448" name="__codelineno-0-1448"></a>    <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-0-1448" name="__codelineno-0-1448"></a>    <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <a id="__codelineno-0-1449" name="__codelineno-0-1449"></a>    <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
 <a id="__codelineno-0-1450" name="__codelineno-0-1450"></a>    <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-1451" name="__codelineno-0-1451"></a>    <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -8504,7 +8504,7 @@ format parameter and validates the response content.</p>
                 <code>schema</code>
             </td>
             <td>
-                  <code><span title="type">type</span>[<span title="pydantic.BaseModel">BaseModel</span>]</code>
+                  <code><span title="type">type</span>[<span title="pydantic.BaseModel">BaseModel</span>] | <span title="typing.Callable">Callable</span>[..., <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -8710,7 +8710,7 @@ stream_parse: Streaming counterpart yielding partial models.</p>
 <span class="normal"><a href="#__codelineno-0-1291">1291</a></span>
 <span class="normal"><a href="#__codelineno-0-1292">1292</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1229" name="__codelineno-0-1229"></a><span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span>
 <a id="__codelineno-0-1230" name="__codelineno-0-1230"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1231" name="__codelineno-0-1231"></a>    <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-0-1231" name="__codelineno-0-1231"></a>    <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <a id="__codelineno-0-1232" name="__codelineno-0-1232"></a>    <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
 <a id="__codelineno-0-1233" name="__codelineno-0-1233"></a>    <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-1234" name="__codelineno-0-1234"></a>    <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -9035,7 +9035,7 @@ Uses StreamingObjectProcessor with flexible mode to handle incomplete JSON.</p>
                 <code>schema</code>
             </td>
             <td>
-                  <code><span title="type">type</span>[<span title="pydantic.BaseModel">BaseModel</span>]</code>
+                  <code><span title="type">type</span>[<span title="pydantic.BaseModel">BaseModel</span>] | <span title="typing.Callable">Callable</span>[..., <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -9248,7 +9248,7 @@ parse: Non-streaming variant.</p>
 <span class="normal"><a href="#__codelineno-0-1443">1443</a></span>
 <span class="normal"><a href="#__codelineno-0-1444">1444</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1360" name="__codelineno-0-1360"></a><span class="k">def</span><span class="w"> </span><span class="nf">stream_parse</span><span class="p">(</span>
 <a id="__codelineno-0-1361" name="__codelineno-0-1361"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1362" name="__codelineno-0-1362"></a>    <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-0-1362" name="__codelineno-0-1362"></a>    <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 <a id="__codelineno-0-1363" name="__codelineno-0-1363"></a>    <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
 <a id="__codelineno-0-1364" name="__codelineno-0-1364"></a>    <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-1365" name="__codelineno-0-1365"></a>    <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>

@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Generator
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Generator, Callable
 
 import ollama as ollama_sdk  # type: ignore[attr-defined]
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
@@ -1228,7 +1228,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
     def parse(
         self,
-        schema: type[BaseModel],
+        schema: type[BaseModel] | Callable[..., Any],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1293,7 +1293,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
     async def aparse(
         self,
-        schema: type[BaseModel],
+        schema: type[BaseModel] | Callable[..., Any],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1359,7 +1359,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
     def stream_parse(
         self,
-        schema: type[BaseModel],
+        schema: type[BaseModel] | Callable[..., Any],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,
@@ -1445,7 +1445,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
     async def astream_parse(
         self,
-        schema: type[BaseModel],
+        schema: type[BaseModel] | Callable[..., Any],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         **prompt_args: Any,

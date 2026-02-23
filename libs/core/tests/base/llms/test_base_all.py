@@ -593,7 +593,7 @@ class TestGetProgram:
         prompt = PromptTemplate("{name}")
 
         # act
-        program = llm._get_program(_OutputModel, prompt)
+        program = llm._get_structured_output_tool(_OutputModel, prompt)
 
         # assert
         assert isinstance(program, ToolOrchestratingLLM)
@@ -609,7 +609,7 @@ class TestGetProgram:
         prompt = PromptTemplate("{name}")
 
         # act
-        program = llm._get_program(_OutputModel, prompt)
+        program = llm._get_structured_output_tool(_OutputModel, prompt)
 
         # assert
         assert isinstance(program, TextCompletionLLM)
@@ -625,7 +625,7 @@ class TestGetProgram:
         prompt = PromptTemplate("{name}")
 
         # act
-        program = llm._get_program(_OutputModel, prompt)
+        program = llm._get_structured_output_tool(_OutputModel, prompt)
 
         # assert
         assert isinstance(program, ToolOrchestratingLLM)
@@ -641,7 +641,7 @@ class TestGetProgram:
         prompt = PromptTemplate("{name}")
 
         # act
-        program = llm._get_program(_OutputModel, prompt)
+        program = llm._get_structured_output_tool(_OutputModel, prompt)
 
         # assert
         assert isinstance(program, TextCompletionLLM)
@@ -658,7 +658,7 @@ class TestGetProgram:
 
         # act
         with pytest.raises(ValueError, match="Unsupported pydantic program mode"):
-            llm._get_program(_OutputModel, prompt)
+            llm._get_structured_output_tool(_OutputModel, prompt)
 
 
 class TestStructuredPredict:
@@ -677,7 +677,7 @@ class TestStructuredPredict:
         def fake_program(llm_kwargs: dict | None = None, **kwargs: Any) -> _OutputModel:
             return _OutputModel(name=f"{kwargs['name']}:{llm_kwargs['temp']}")
 
-        monkeypatch.setattr(llm, "_get_program", lambda *args, **kwargs: fake_program)
+        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: fake_program)
 
         # act
         result = llm.structured_predict(
@@ -706,7 +706,7 @@ class TestAStructuredPredict:
             ) -> _OutputModel:
                 return _OutputModel(name=f"{kwargs['name']}:{llm_kwargs['seed']}")
 
-        monkeypatch.setattr(llm, "_get_program", lambda *args, **kwargs: FakeProgram())
+        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
 
         # act
         result = await llm.astructured_predict(
@@ -733,7 +733,7 @@ class TestStreamStructuredPredict:
                 yield _OutputModel(name=kwargs["name"])
                 yield _OutputModel(name=kwargs["name"].upper())
 
-        monkeypatch.setattr(llm, "_get_program", lambda *args, **kwargs: FakeProgram())
+        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
 
         # act
         results = [
@@ -767,7 +767,7 @@ class TestStructuredAstreamCall:
 
                 return gen()
 
-        monkeypatch.setattr(llm, "_get_program", lambda *args, **kwargs: FakeProgram())
+        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
 
         # act
         stream = await llm._structured_astream_call(_OutputModel, prompt, name="ada")
@@ -799,7 +799,7 @@ class TestAstreamStructuredPredict:
 
                 return gen()
 
-        monkeypatch.setattr(llm, "_get_program", lambda *args, **kwargs: FakeProgram())
+        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
 
         # act
         stream = await llm.astream_structured_predict(_OutputModel, prompt, name="eta")

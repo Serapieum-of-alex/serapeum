@@ -1,3 +1,18 @@
+## serapeum-ollama-0.3.0 (2026-02-23)
+
+
+- feat(core)!: add markdown doc testing and refactor orchestrator API (#29)
+- feat(core)!: add markdown doc testing and refactor orchestrator API
+-   - Add pytest-markdown-docs to validate code blocks in documentation files
+  - Configure markdown testing as pre-commit hook and CI workflow
+  - Rename `output_cls` parameter to `output_tool` in ToolOrchestratingLLM
+  - Change ToolOrchestratingLLM to accept keyword-only arguments only
+  - Add custom ToolCallError exception for structured error handling
+  - Update Ollama provider and examples to use Ollama Cloud API
+  - Add python-dotenv dependency for environment variable management
+-   BREAKING CHANGE: ToolOrchestratingLLM now requires keyword-only arguments, and the `output_cls` parameter has been renamed to `output_tool`.  
+- ref: #30
+
 ## serapeum-ollama-0.2.0 (2026-02-22)
 
 

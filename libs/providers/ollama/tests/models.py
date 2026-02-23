@@ -1,4 +1,5 @@
 """Test data models for Ollama integration tests."""
+
 from __future__ import annotations
 import os
 
@@ -15,7 +16,7 @@ is_ci: bool = os.environ.get("CI", "").lower() == "true"
 
 # Local client (used by existing tests)
 try:
-    _local_client = ollama_sdk.Client()     # type: ignore
+    _local_client = ollama_sdk.Client()  # type: ignore
     _local_client.list()
 except Exception:
     _local_client = None
@@ -23,11 +24,11 @@ except Exception:
 
 # Cloud client (used by cloud tests)
 try:
-    cloud_client = ollama_sdk.Client(       # type: ignore
+    cloud_client = ollama_sdk.Client(  # type: ignore
         host="https://api.ollama.com",
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    cloud_client.list()   # connectivity probe — raises if unreachable / unauthorized
+    cloud_client.list()  # connectivity probe — raises if unreachable / unauthorized
 except Exception:
     cloud_client = None
 
@@ -35,4 +36,3 @@ except Exception:
 # In CI use the cloud client so local-gated tests run against the cloud backend.
 # Locally fall back to the local Ollama server.
 client = cloud_client if (is_ci and cloud_client is not None) else _local_client
-

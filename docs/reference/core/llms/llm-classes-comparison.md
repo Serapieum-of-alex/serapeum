@@ -118,8 +118,8 @@ class PersonInfo(BaseModel):
 
 # Wrap an LLM to always return PersonInfo
 base_llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=90
 )
 structured_llm = StructuredOutputLLM(
@@ -180,7 +180,7 @@ class WeatherInfo(BaseModel):
     conditions: str
 
 llm = Ollama(
-    model="qwen3.5:397b", 
+    model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY")
 )
 # Create orchestrator

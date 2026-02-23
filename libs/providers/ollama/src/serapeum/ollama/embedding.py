@@ -473,9 +473,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
         formatted_texts = [self._format_text(text) for text in texts]
         return await self._a_embed_batch_raw(formatted_texts)
 
-    def _embed_batch_raw(
-        self, texts: list[str]
-    ) -> Sequence[Sequence[float]]:
+    def _embed_batch_raw(self, texts: list[str]) -> Sequence[Sequence[float]]:
         """Generate raw embeddings for multiple texts using the Ollama API.
 
         Low-level private method that directly calls the Ollama embed API without any
@@ -500,9 +498,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
         )
         return result.embeddings
 
-    async def _a_embed_batch_raw(
-        self, texts: list[str]
-    ) -> Sequence[Sequence[float]]:
+    async def _a_embed_batch_raw(self, texts: list[str]) -> Sequence[Sequence[float]]:
         """Asynchronously generate raw embeddings for multiple texts using the Ollama API.
 
         Async low-level private method that directly calls the Ollama embed API without any

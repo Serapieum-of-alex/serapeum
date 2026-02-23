@@ -397,8 +397,8 @@ response2 = llm.chat(messages2)
 import os
 from serapeum.ollama import Ollama
 llm = Ollama(
-  model="qwen3.5:397b", 
-  api_key=os.environ.get("OLLAMA_API_KEY"), 
+  model="qwen3.5:397b",
+  api_key=os.environ.get("OLLAMA_API_KEY"),
   request_timeout=180
 )
 for chunk in llm.stream_chat(messages):
@@ -412,8 +412,8 @@ from pydantic import BaseModel
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
 llm = Ollama(
-  model="qwen3.5:397b", 
-  api_key=os.environ.get("OLLAMA_API_KEY"), 
+  model="qwen3.5:397b",
+  api_key=os.environ.get("OLLAMA_API_KEY"),
   request_timeout=180
 )
 
@@ -430,8 +430,8 @@ import os
 import asyncio
 from serapeum.ollama import Ollama
 llm = Ollama(
-  model="qwen3.5:397b", 
-  api_key=os.environ.get("OLLAMA_API_KEY"), 
+  model="qwen3.5:397b",
+  api_key=os.environ.get("OLLAMA_API_KEY"),
   request_timeout=180
 )
 

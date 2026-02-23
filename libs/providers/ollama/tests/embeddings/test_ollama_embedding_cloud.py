@@ -13,6 +13,7 @@ Run cloud e2e tests only::
 
     pytest tests/embeddings/test_ollama_embedding_cloud.py -m e2e
 """
+
 from __future__ import annotations
 
 import pytest
@@ -25,7 +26,9 @@ cloud_client = None
 
 
 @pytest.fixture
-def cloud_embedder(embedding_model_cloud: str, ollama_api_key_required: str) -> OllamaEmbedding:
+def cloud_embedder(
+    embedding_model_cloud: str, ollama_api_key_required: str
+) -> OllamaEmbedding:
     """Return an OllamaEmbedding instance configured for the cloud backend.
 
     Uses the api_key and cloud_embedding_model from the shared test models module.
@@ -56,7 +59,9 @@ class TestApiKeyField:
         Expected: embedder.api_key == "my-embed-key".
         Checks: Field assignment round-trips correctly.
         """
-        embedder = OllamaEmbedding(model_name="nomic-embed-text", api_key="my-embed-key")
+        embedder = OllamaEmbedding(
+            model_name="nomic-embed-text", api_key="my-embed-key"
+        )
         assert embedder.api_key == "my-embed-key"
 
     @pytest.mark.unit
@@ -230,9 +235,7 @@ class TestCloudTextEmbedding:
         cloud_client is None,
         reason="Ollama Cloud not reachable or api_key missing/invalid",
     )
-    def test_text_embedding_consistency(
-        self, cloud_embedder: OllamaEmbedding
-    ) -> None:
+    def test_text_embedding_consistency(self, cloud_embedder: OllamaEmbedding) -> None:
         """
         Inputs: Same text embedded twice consecutively.
         Expected: Identical vectors.
@@ -303,9 +306,7 @@ class TestCloudAsyncEmbedding:
         Expected: Non-empty list of floats.
         Checks: Async query embedding works through the cloud backend.
         """
-        embedding = await cloud_embedder.aget_query_embedding(
-            "What is deep learning?"
-        )
+        embedding = await cloud_embedder.aget_query_embedding("What is deep learning?")
 
         assert isinstance(embedding, list)
         assert len(embedding) > 0

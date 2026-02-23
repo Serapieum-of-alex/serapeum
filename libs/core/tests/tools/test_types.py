@@ -1181,10 +1181,10 @@ class TestToolCallError:
     @pytest.mark.parametrize(
         "message, tool_name",
         [
-            ("", None),                              # empty message, no tool
-            ("error", "my_tool"),                    # normal case with tool
-            ("x" * 1000, "long_tool_name"),          # long message
-            ("Expected 1 tool call, got 0", None),   # realistic production message
+            ("", None),  # empty message, no tool
+            ("error", "my_tool"),  # normal case with tool
+            ("x" * 1000, "long_tool_name"),  # long message
+            ("Expected 1 tool call, got 0", None),  # realistic production message
         ],
     )
     def test_parametrised_construction(self, message: str, tool_name):

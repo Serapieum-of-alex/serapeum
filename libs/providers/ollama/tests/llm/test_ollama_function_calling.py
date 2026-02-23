@@ -46,7 +46,9 @@ def make_agent_response_from_models(models: Sequence[BaseModel]) -> AgentChatRes
 class TestToolOrchestratingLLM:
     """Tests for ToolOrchestratingLLM."""
 
-    def test_valid_with_prompt_str_and_llm(self, llm_model: Ollama, album: type[BaseModel]) -> None:
+    def test_valid_with_prompt_str_and_llm(
+        self, llm_model: Ollama, album: type[BaseModel]
+    ) -> None:
         """Construct with prompt_template_str and a function-calling-capable LLM.
 
         Input:
@@ -66,7 +68,9 @@ class TestToolOrchestratingLLM:
         assert isinstance(tools_llm, ToolOrchestratingLLM)
         assert isinstance(tools_llm.prompt, PromptTemplate)
 
-    def test_missing_prompt_raises(self, llm_model: Ollama, album: type[BaseModel]) -> None:
+    def test_missing_prompt_raises(
+        self, llm_model: Ollama, album: type[BaseModel]
+    ) -> None:
         """Raise ValueError if neither prompt nor prompt_template_str is provided.
 
         Input: llm provided but both prompt and prompt_template_str are None
@@ -81,7 +85,9 @@ class TestToolOrchestratingLLMCall:
     """Synchronous execution via __call__ covering single/multiple outputs."""
 
     @pytest.mark.e2e
-    def test_single_output_call(self, llm_model: Ollama, album: type[BaseModel]) -> None:
+    def test_single_output_call(
+        self, llm_model: Ollama, album: type[BaseModel]
+    ) -> None:
         """Call returns a single Album when parallel=False.
 
         Input: Program with allow_parallel_tool_calls=False using NonFunctionCallingMockLLM
@@ -97,7 +103,9 @@ class TestToolOrchestratingLLMCall:
         assert isinstance(result, album)
 
     @pytest.mark.e2e
-    def test_multiple_outputs_call_parallel_enabled(self, llm_model: Ollama, album: type[BaseModel]) -> None:
+    def test_multiple_outputs_call_parallel_enabled(
+        self, llm_model: Ollama, album: type[BaseModel]
+    ) -> None:
         """Call returns list of Albums when parallel=True.
 
         Input: Program with allow_parallel_tool_calls=True
@@ -121,7 +129,9 @@ class TestToolOrchestratingLLMAsyncCall:
     """Async execution via acall covering standard single-output scenario."""
 
     @pytest.mark.e2e
-    async def test_async_single_output(self, llm_model: Ollama, album: type[BaseModel]) -> None:
+    async def test_async_single_output(
+        self, llm_model: Ollama, album: type[BaseModel]
+    ) -> None:
         """Acall returns a single Album when parallel=False.
 
         Input: Program with allow_parallel_tool_calls=False using NonFunctionCallingMockLLM
@@ -139,7 +149,9 @@ class TestToolOrchestratingLLMStreamCall:
     """Tests for the synchronous streaming interface `stream_call`."""
 
     @pytest.mark.e2e
-    def test_streaming_yields_processed_objects(self, llm_model: Ollama, album: type[BaseModel]) -> None:
+    def test_streaming_yields_processed_objects(
+        self, llm_model: Ollama, album: type[BaseModel]
+    ) -> None:
         """stream_call yields objects returned by process_streaming_objects per chunk.
 
         Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects

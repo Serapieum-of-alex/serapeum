@@ -25,8 +25,8 @@ class ModelTest(BaseModel):
 
 # Initialize components
 LLM = Ollama(
-    model="ministral-3:14b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="ministral-3:14b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180
 )
 output_parser = PydanticParser(output_cls=ModelTest)

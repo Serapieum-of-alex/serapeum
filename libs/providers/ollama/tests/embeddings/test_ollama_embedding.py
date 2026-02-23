@@ -76,7 +76,7 @@ def mock_ollama_async_client(mock_embed_response: MagicMock) -> AsyncMock:
     Returns:
         AsyncMock configured as Ollama AsyncClient with embed method.
     """
-    client = AsyncMock(spec=ollama_sdk.AsyncClient)     # type: ignore
+    client = AsyncMock(spec=ollama_sdk.AsyncClient)  # type: ignore
     client.embed.return_value = mock_embed_response
     return client
 
@@ -88,7 +88,7 @@ def mock_client_with_error() -> MagicMock:
     Returns:
         MagicMock that raises exception on embed call.
     """
-    client = MagicMock(spec=ollama_sdk.Client)      # type: ignore
+    client = MagicMock(spec=ollama_sdk.Client)  # type: ignore
     client.embed.side_effect = ConnectionError("Failed to connect to Ollama server")
     return client
 
@@ -100,7 +100,7 @@ def mock_timeout_client() -> MagicMock:
     Returns:
         MagicMock that raises TimeoutError.
     """
-    client = MagicMock(spec=ollama_sdk.Client)      # type: ignore
+    client = MagicMock(spec=ollama_sdk.Client)  # type: ignore
     client.embed.side_effect = TimeoutError("Request timed out")
     return client
 
@@ -922,7 +922,7 @@ class TestBatchEmbeddingAsyncMethods:
         mock_ollama_async_client.embed.return_value = mock_batch_embed_response
 
         texts = ["text1", "text2"]
-        result = await configured_embedder._aget_text_embeddings(texts)
+        _ = await configured_embedder._aget_text_embeddings(texts)
 
         call_args = mock_ollama_async_client.embed.call_args
         assert call_args[1]["input"] == ["Text: text1", "Text: text2"]
@@ -1456,7 +1456,7 @@ class TestOllamaEmbeddingIntegration:
             "_get_query_embedding",
             wraps=configured_embedder._get_query_embedding,
         ) as mock_get:
-            result = configured_embedder.get_query_embedding("What is AI?")
+            _ = configured_embedder.get_query_embedding("What is AI?")
 
             # Assert - Verify internal method called
             mock_get.assert_called_once_with("What is AI?")
@@ -1483,7 +1483,7 @@ class TestOllamaEmbeddingIntegration:
             "_get_text_embedding",
             wraps=configured_embedder._get_text_embedding,
         ) as mock_get:
-            result = configured_embedder.get_text_embedding("AI is a field")
+            _ = configured_embedder.get_text_embedding("AI is a field")
 
             # Assert - Verify internal method called
             mock_get.assert_called_once_with("AI is a field")
@@ -1511,7 +1511,7 @@ class TestOllamaEmbeddingIntegration:
             "_aget_query_embedding",
             wraps=configured_embedder._aget_query_embedding,
         ) as mock_aget:
-            result = await configured_embedder.aget_query_embedding("What is AI?")
+            _ = await configured_embedder.aget_query_embedding("What is AI?")
 
             # Assert - Verify internal async method called
             mock_aget.assert_called_once_with("What is AI?")
@@ -1535,7 +1535,7 @@ class TestOllamaEmbeddingIntegration:
             "_aget_text_embedding",
             wraps=configured_embedder._aget_text_embedding,
         ) as mock_aget:
-            result = await configured_embedder.aget_text_embedding("AI is a field")
+            _ = await configured_embedder.aget_text_embedding("AI is a field")
 
             # Assert - Verify internal async method called
             mock_aget.assert_called_once_with("AI is a field")

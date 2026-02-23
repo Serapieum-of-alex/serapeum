@@ -37,7 +37,7 @@ from serapeum.ollama import Ollama
 # Define the output schema
 class Song(BaseModel):
     title: str
-    
+
 class Album(BaseModel):
     title: str
     artist: str

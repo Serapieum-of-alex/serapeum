@@ -417,7 +417,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     def __call__(
         self,
         *args: Any,
-        llm_kwargs: dict[str, Any] | None= None,
+        llm_kwargs: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> BaseModel | list[BaseModel]:
         """Execute the program to generate structured output.

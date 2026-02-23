@@ -456,7 +456,7 @@ from serapeum.ollama import OllamaEmbedding
 embed_model = OllamaEmbedding(model_name="nomic-embed-text")
 
 async def embed_documents():
-    
+
     # Async single embedding
     embedding = await embed_model.aget_text_embedding("Hello, world!")
     print(f"Embedding generated: {len(embedding)} dimensions")

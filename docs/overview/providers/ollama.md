@@ -108,8 +108,8 @@ from serapeum.core.llms import Message, MessageRole
 
 # Initialize the LLM
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     temperature=0.7
 )
 
@@ -171,8 +171,8 @@ from serapeum.ollama import Ollama
 from serapeum.core.prompts import PromptTemplate
 
 llm = Ollama(
-    model="qwen3.5:397b", 
-    api_key=os.environ.get("OLLAMA_API_KEY"), 
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     temperature=0.8
 )
 
@@ -372,7 +372,7 @@ class CalculatorInput(BaseModel):
     operation: str = Field(description="Math operation: add, subtract, multiply, divide")
     a: float = Field(description="First number")
     b: float = Field(description="Second number")
-    
+
 def calculate(operation: str, a: float, b: float) -> float:
     """Perform basic math operations."""
     ops = {
@@ -545,7 +545,7 @@ Combine LLM and embeddings for Retrieval-Augmented Generation:
 ```python
 import os
 from serapeum.ollama import Ollama, OllamaEmbedding
-from serapeum.core.llms import Message, MessageRole 
+from serapeum.core.llms import Message, MessageRole
 import numpy as np
 
 # Initialize both components

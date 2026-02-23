@@ -321,7 +321,9 @@ class TestToolOrchestratingLLMCall:
         """
         llm = NonFunctionCallingMockLLM()
         llm._extend_messages = MagicMock(side_effect=lambda msgs: msgs)  # track call
-        tools_llm = ToolOrchestratingLLM(output_tool=Album, prompt="Album with {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            output_tool=Album, prompt="Album with {topic}", llm=llm
+        )
         result = tools_llm(topic="rock")
         assert isinstance(result, Album)
         assert result == SAMPLE_ALBUM
@@ -359,7 +361,9 @@ class TestToolOrchestratingLLMAsyncCall:
         Check: isinstance and equality
         """
         llm = NonFunctionCallingMockLLM()
-        tools_llm = ToolOrchestratingLLM(output_tool=Album, prompt="Album with {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            output_tool=Album, prompt="Album with {topic}", llm=llm
+        )
         result = await tools_llm.acall(topic="pop")
         assert isinstance(result, Album)
         assert result == SAMPLE_ALBUM
@@ -416,7 +420,9 @@ class TestToolOrchestratingLLMStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(output_tool=Album, prompt="Album {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            output_tool=Album, prompt="Album {topic}", llm=llm
+        )
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:
@@ -486,7 +492,9 @@ class TestToolOrchestratingLLMAStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(output_tool=Album, prompt="Album {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            output_tool=Album, prompt="Album {topic}", llm=llm
+        )
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:

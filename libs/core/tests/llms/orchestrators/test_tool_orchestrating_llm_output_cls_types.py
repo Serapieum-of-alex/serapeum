@@ -221,7 +221,7 @@ class TestCreateToolMethod:
         """
         llm = MockLLM()
         tools_llm = ToolOrchestratingLLM(
-            output_tool=SimpleOutput,
+            schema=SimpleOutput,
             prompt="Test prompt",
             llm=llm,
         )
@@ -239,7 +239,7 @@ class TestCreateToolMethod:
         """
         llm = MockLLM()
         tools_llm = ToolOrchestratingLLM(
-            output_tool=simple_function,
+            schema=simple_function,
             prompt="Test prompt",
             llm=llm,
         )
@@ -257,7 +257,7 @@ class TestCreateToolMethod:
         """
         llm = MockLLM()
         tools_llm = ToolOrchestratingLLM(
-            output_tool=async_function,
+            schema=async_function,
             prompt="Test prompt",
             llm=llm,
         )
@@ -277,7 +277,7 @@ class TestCreateToolMethod:
 
         llm = MockLLM()
         tools_llm = ToolOrchestratingLLM(
-            output_tool=lambda_func,
+            schema=lambda_func,
             prompt="Test prompt",
             llm=llm,
         )
@@ -301,7 +301,7 @@ class TestCreateToolMethod:
 
         llm = MockLLM()
         tools_llm = ToolOrchestratingLLM(
-            output_tool=callable_obj,
+            schema=callable_obj,
             prompt="Test prompt",
             llm=llm,
         )
@@ -320,7 +320,7 @@ class TestCreateToolMethod:
 
         with pytest.raises(TypeError) as exc_info:
             ToolOrchestratingLLM(
-                output_tool="invalid_string",  # type: ignore
+                schema="invalid_string",  # type: ignore
                 prompt="Test prompt",
                 llm=llm,
             )
@@ -340,7 +340,7 @@ class TestCreateToolMethod:
 
         with pytest.raises(TypeError):
             ToolOrchestratingLLM(
-                output_tool=None,  # type: ignore
+                schema=None,  # type: ignore
                 prompt="Test prompt",
                 llm=llm,
             )
@@ -355,7 +355,7 @@ class TestCreateToolMethod:
 
         with pytest.raises(TypeError):
             ToolOrchestratingLLM(
-                output_tool=42,  # type: ignore
+                schema=42,  # type: ignore
                 prompt="Test prompt",
                 llm=llm,
             )
@@ -378,7 +378,7 @@ class TestPydanticModelsIntegration:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=SimpleOutput,
+            schema=SimpleOutput,
             prompt="Generate output for {input}",
             llm=llm,
         )
@@ -400,7 +400,7 @@ class TestPydanticModelsIntegration:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=SimpleOutput,
+            schema=SimpleOutput,
             prompt="Generate output for {input}",
             llm=llm,
         )
@@ -425,7 +425,7 @@ class TestPydanticModelsIntegration:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=ComplexOutput,
+            schema=ComplexOutput,
             prompt="Generate complex output",
             llm=llm,
         )
@@ -447,7 +447,7 @@ class TestPydanticModelsIntegration:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=SimpleOutput,
+            schema=SimpleOutput,
             prompt="Generate multiple outputs",
             llm=llm,
             allow_parallel_tool_calls=True,
@@ -477,7 +477,7 @@ class TestRegularFunctionsIntegration:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=simple_function,
+            schema=simple_function,
             prompt="Process {text}",
             llm=llm,
         )
@@ -498,7 +498,7 @@ class TestRegularFunctionsIntegration:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=complex_function,
+            schema=complex_function,
             prompt="Calculate {a} and {b}",
             llm=llm,
         )
@@ -520,7 +520,7 @@ class TestRegularFunctionsIntegration:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=async_function,
+            schema=async_function,
             prompt="Process value {value}",
             llm=llm,
         )
@@ -541,7 +541,7 @@ class TestRegularFunctionsIntegration:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=dataclass_factory,
+            schema=dataclass_factory,
             prompt="Create item with {name}",
             llm=llm,
         )
@@ -564,7 +564,7 @@ class TestRegularFunctionsIntegration:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=lambda_func,
+            schema=lambda_func,
             prompt="Calculate {x} and {y}",
             llm=llm,
         )
@@ -590,7 +590,7 @@ class TestRegularFunctionsIntegration:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=callable_obj,
+            schema=callable_obj,
             prompt="Process {message}",
             llm=llm,
         )
@@ -615,14 +615,14 @@ class TestMixedUsagePatterns:
 
         # First with Pydantic model
         tools_llm1 = ToolOrchestratingLLM(
-            output_tool=SimpleOutput,
+            schema=SimpleOutput,
             prompt="Test 1",
             llm=llm,
         )
 
         # Then with function
         tools_llm2 = ToolOrchestratingLLM(
-            output_tool=simple_function,
+            schema=simple_function,
             prompt="Test 2",
             llm=llm,
         )
@@ -646,7 +646,7 @@ class TestMixedUsagePatterns:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=simple_function,
+            schema=simple_function,
             prompt="Test",
             llm=llm,
             verbose=True,
@@ -666,7 +666,7 @@ class TestMixedUsagePatterns:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=simple_function,
+            schema=simple_function,
             prompt="Test",
             llm=llm,
         )
@@ -720,7 +720,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=process_strings,
+            schema=process_strings,
             prompt="Process these items: {items}",
             llm=llm,
         )
@@ -759,7 +759,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=calculate_stats,
+            schema=calculate_stats,
             prompt="Calculate stats for: {numbers}",
             llm=llm,
         )
@@ -803,7 +803,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=process_measurements,
+            schema=process_measurements,
             prompt="Process measurements: {values}",
             llm=llm,
         )
@@ -846,7 +846,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=process_config,
+            schema=process_config,
             prompt="Process config",
             llm=llm,
         )
@@ -891,7 +891,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=analyze_scores,
+            schema=analyze_scores,
             prompt="Analyze these scores",
             llm=llm,
         )
@@ -938,7 +938,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=format_name,
+            schema=format_name,
             prompt="Format name: {first} {last}",
             llm=llm,
         )
@@ -975,7 +975,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=process_value,
+            schema=process_value,
             prompt="Process value: {value}",
             llm=llm,
         )
@@ -1013,7 +1013,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=calculate_distance,
+            schema=calculate_distance,
             prompt="Calculate distance",
             llm=llm,
         )
@@ -1061,7 +1061,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=process_matrix,
+            schema=process_matrix,
             prompt="Process matrix",
             llm=llm,
         )
@@ -1106,7 +1106,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=process_nested_data,
+            schema=process_nested_data,
             prompt="Process data",
             llm=llm,
         )
@@ -1153,7 +1153,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=process_records,
+            schema=process_records,
             prompt="Process records",
             llm=llm,
         )
@@ -1202,7 +1202,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=process_tags,
+            schema=process_tags,
             prompt="Process item: {title}",
             llm=llm,
         )
@@ -1249,7 +1249,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=process_complex_structure,
+            schema=process_complex_structure,
             prompt="Process complex data",
             llm=llm,
         )
@@ -1306,7 +1306,7 @@ class TestComplexArgumentTypes:
         llm = MockLLM(return_value=mock_output)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=analyze_data,
+            schema=analyze_data,
             prompt="Analyze data",
             llm=llm,
         )
@@ -1340,11 +1340,11 @@ class TestOllamaE2E:
         Expected: Should generate valid SimpleOutput from LLM.
         """
         from serapeum.ollama import Ollama
-
+        from serapeum.core.prompts import PromptTemplate
         llm = Ollama(model="llama3.1", request_timeout=80)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=SimpleOutput,
+            schema=SimpleOutput,
             prompt="Generate a simple output with value '{text}' and count the words",
             llm=llm,
         )
@@ -1375,7 +1375,7 @@ class TestOllamaE2E:
         llm = Ollama(model="llama3.1", request_timeout=80)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=extract_info,
+            schema=extract_info,
             prompt="Extract information from: {text}",
             llm=llm,
         )
@@ -1408,7 +1408,7 @@ class TestOllamaE2E:
         llm = Ollama(model="llama3.1", request_timeout=80)
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=async_processor,
+            schema=async_processor,
             prompt="Process this text: {text}",
             llm=llm,
         )
@@ -1436,7 +1436,7 @@ class TestEdgeCases:
         llm = MockLLM(return_value="test_string")
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=return_string,
+            schema=return_string,
             prompt="Test",
             llm=llm,
         )
@@ -1458,7 +1458,7 @@ class TestEdgeCases:
         llm = MockLLM(return_value={"message": "no params"})
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=no_params,
+            schema=no_params,
             prompt="Generate output",
             llm=llm,
         )
@@ -1479,7 +1479,7 @@ class TestEdgeCases:
         llm = MockLLM(return_value={"a": 1, "b": 2})
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=flexible_func,
+            schema=flexible_func,
             prompt="Test",
             llm=llm,
         )
@@ -1516,7 +1516,7 @@ class TestEdgeCases:
         llm = MockLLM()
 
         tools_llm = ToolOrchestratingLLM(
-            output_tool=ValidatedModel,
+            schema=ValidatedModel,
             prompt="Test",
             llm=llm,
         )

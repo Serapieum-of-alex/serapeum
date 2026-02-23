@@ -70,7 +70,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         ...     value: int
         >>> llm = Ollama(model='llama3.1')
         >>> tools_llm = ToolOrchestratingLLM(
-        ...     output_tool=Output,
+        ...     schema=Output,
         ...     prompt='You are a helpful assistant.',
         ...     llm=llm,
         ... )
@@ -83,7 +83,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     def __init__(
         self,
         *,
-        output_tool: Type[Model] | Callable[..., Any],
+        schema: Type[Model] | Callable[..., Any],
         prompt: BasePromptTemplate | str,
         llm: FunctionCallingLLM | None = None,
         tool_choice: str | dict[str, Any] | None = None,
@@ -93,7 +93,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         """Initialize the ToolOrchestratingLLM instance.
 
         Args:
-            output_tool (Union[Type[Model], Callable[..., Any]]): Either a Pydantic
+            schema (Union[Type[Model], Callable[..., Any]]): Either a Pydantic
                 model class or a callable function defining the expected output.
                 Despite the name, this accepts plain callables (not only classes).
                 If a Pydantic model is provided, it will be converted into a tool via
@@ -131,11 +131,11 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> class Output(BaseModel):
             ...     value: int
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_tool=Output,
+            ...     schema=Output,
             ...     prompt='Prompt here',
             ...     llm=Ollama(model='llama3.1'),
             ... )
-            >>> tools_llm.output_tool is Output
+            >>> tools_llm.schema is Output
             True
 
             ```
@@ -148,16 +148,16 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ...     '''Calculate the sum of two numbers.'''
             ...     return {'result': a + b}
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_tool=calculate_sum,
+            ...     schema=calculate_sum,
             ...     prompt='Calculate the sum of {x} and {y}',
             ...     llm=Ollama(model='llama3.1'),
             ... )
-            >>> callable(tools_llm.output_tool)
+            >>> callable(tools_llm.schema)
             True
 
             ```
         """
-        self._output_tool = self._validate_output_tool(output_tool)
+        self._output_tool = self._validate_output_tool(schema)
         self._llm = self._validate_llm(llm)
         self._prompt = self._validate_prompt(prompt)
         self._verbose = verbose
@@ -166,12 +166,12 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
     @staticmethod
     def _validate_output_tool(
-        output_tool: Type[Model] | Callable[..., Any],
+        schema: Type[Model] | Callable[..., Any],
     ) -> Type[Model] | Callable[..., Any]:
         """Validate that output_tool is a Pydantic model class or a callable.
 
         Args:
-            output_tool (Union[Type[Model], Callable[..., Any]]): The value to validate.
+            schema (Union[Type[Model], Callable[..., Any]]): The value to validate.
 
         Returns:
             Union[Type[Model], Callable[..., Any]]: The validated output_tool unchanged.
@@ -210,14 +210,14 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ```
         """
         if not (
-            (isinstance(output_tool, type) and issubclass(output_tool, BaseModel))
-            or callable(output_tool)
+            (isinstance(schema, type) and issubclass(schema, BaseModel))
+            or callable(schema)
         ):
             raise TypeError(
                 "output_tool must be either a Pydantic BaseModel subclass or a callable function. "
-                f"Got {type(output_tool)}"
+                f"Got {type(schema)}"
             )
-        return output_tool
+        return schema
 
     def _create_tool(self) -> CallableTool:
         """Create a CallableTool from the output_tool.
@@ -331,7 +331,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         return llm
 
     @property
-    def output_tool(self) -> Type[BaseModel] | Callable[..., Any]:
+    def schema(self) -> Type[BaseModel] | Callable[..., Any]:
         """Get the output class or callable used to define the expected structure.
 
         Returns:
@@ -345,8 +345,8 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.ollama import Ollama
             >>> class Out(BaseModel):
             ...     x: int
-            >>> tools_llm = ToolOrchestratingLLM(output_tool=Out, prompt='prompt', llm=Ollama(model='llama3.1'))
-            >>> tools_llm.output_tool is Out
+            >>> tools_llm = ToolOrchestratingLLM(schema=Out, prompt='prompt', llm=Ollama(model='llama3.1'))
+            >>> tools_llm.schema is Out
             True
 
             ```
@@ -355,8 +355,8 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.ollama import Ollama
             >>> def fn(x: int) -> dict:
             ...     return {"x": x}
-            >>> tools_llm = ToolOrchestratingLLM(output_tool=fn, prompt='prompt', llm=Ollama(model='llama3.1'))
-            >>> tools_llm.output_tool is fn
+            >>> tools_llm = ToolOrchestratingLLM(schema=fn, prompt='prompt', llm=Ollama(model='llama3.1'))
+            >>> tools_llm.schema is fn
             True
 
             ```
@@ -377,7 +377,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.core.prompts.base import PromptTemplate
             >>> from serapeum.ollama import Ollama
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_tool=type('M', (BaseModel,), {}),
+            ...     schema=type('M', (BaseModel,), {}),
             ...     prompt='Hi',
             ...     llm=Ollama(model='llama3.1'),
             ... )
@@ -402,7 +402,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.core.prompts.base import PromptTemplate
             >>> from serapeum.ollama import Ollama
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_tool=type('M', (BaseModel,), {}),
+            ...     schema=type('M', (BaseModel,), {}),
             ...     prompt='Hi',
             ...     llm=Ollama(model='llama3.1'),
             ... )
@@ -453,7 +453,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ...     name: str
             ...     age: int
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_tool=Person,
+            ...     schema=Person,
             ...     prompt="Extract the person's name and age from the following text: {text}",
             ...     llm=Ollama(model='llama3.1', request_timeout=80),
             ... ) # doctest: +SKIP
@@ -470,7 +470,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> class Item(BaseModel):
             ...     name: str
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_tool=Item,
+            ...     schema=Item,
             ...     prompt='List three fruit names as separate tool calls.',
             ...     llm=Ollama(model='llama3.1', request_timeout=80),
             ...     allow_parallel_tool_calls=True,
@@ -602,7 +602,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> class Number(BaseModel):
             ...     n: int
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_tool=Number,
+            ...     schema=Number,
             ...     prompt='Stream the numbers 1, 2, and 3 as separate tool calls.',
             ...     llm=Ollama(model='llama3.1', request_timeout=80),
             ... )
@@ -698,7 +698,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> class Number(BaseModel):
             ...     n: int
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_tool=Number,
+            ...     schema=Number,
             ...     prompt='Stream the numbers 1, 2, and 3 as separate tool calls.',
             ...     llm=Ollama(model='llama3.1', request_timeout=80),
             ... )

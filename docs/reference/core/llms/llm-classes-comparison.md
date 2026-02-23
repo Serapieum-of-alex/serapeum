@@ -167,11 +167,13 @@ High-level orchestrator that converts Pydantic models or Python functions into t
 - You're using modern LLMs with function-calling support (GPT-4, Claude, Llama 3.1+)
 
 #### Example with Pydantic Model
+
 ```python
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
+
 
 class WeatherInfo(BaseModel):
     """Weather information for a location."""
@@ -185,7 +187,7 @@ llm = Ollama(
 )
 # Create orchestrator
 weather_extractor = ToolOrchestratingLLM(
-    output_tool=WeatherInfo,
+    schema=WeatherInfo,
     prompt="Extract weather information from: {text}",
     llm=llm,
 )
@@ -199,10 +201,12 @@ print(result)
 ```
 
 #### Example with Function
+
 ```python
 import os
 from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
+
 
 def calculate_sum(a: int, b: int) -> dict:
     """Calculate the sum of two numbers."""
@@ -211,7 +215,7 @@ def calculate_sum(a: int, b: int) -> dict:
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"))
 # Create orchestrator with function
 calculator = ToolOrchestratingLLM(
-    output_tool=calculate_sum,
+    schema=calculate_sum,
     prompt="Calculate the sum of {x} and {y}",
     llm=llm,
 )
@@ -222,11 +226,13 @@ print(result)
 ```
 
 #### Example with Streaming
+
 ```python
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
+
 
 class Story(BaseModel):
     title: str
@@ -234,7 +240,7 @@ class Story(BaseModel):
     genre: str
 
 story_generator = ToolOrchestratingLLM(
-    output_tool=Story,
+    schema=Story,
     prompt="Generate a short {genre} story",
     llm=Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=90),
 )

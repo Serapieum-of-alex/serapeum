@@ -716,7 +716,7 @@ llm = Ollama(
 
 # Create ToolOrchestratingLLM
 tools_llm = ToolOrchestratingLLM(
-    output_tool=Album,
+    schema=Album,
     prompt="Create an album about {topic} with two random songs",
     llm=llm,
 )
@@ -753,7 +753,7 @@ llm = Ollama(
 
 # Enable parallel tool calls
 tools_llm = ToolOrchestratingLLM(
-    output_tool=Album,
+    schema=Album,
     prompt="Create albums about {topic}",
     llm=llm,
     allow_parallel_tool_calls=True,
@@ -790,7 +790,7 @@ llm = Ollama(
 )
 
 tools_llm = ToolOrchestratingLLM(
-    output_tool=Album,
+    schema=Album,
     prompt="Create albums about {topic}",
     llm=llm,
     allow_parallel_tool_calls=False,
@@ -945,7 +945,7 @@ async def async_tool_example():
     )
 
     tools_llm = ToolOrchestratingLLM(
-        output_tool=Album,
+        schema=Album,
         prompt="Create an album about {topic}",
         llm=llm,
     )
@@ -983,7 +983,7 @@ async def async_stream_tool_example():
     )
 
     tools_llm = ToolOrchestratingLLM(
-        output_tool=Album,
+        schema=Album,
         prompt="Create albums about {topic}",
         llm=llm,
         allow_parallel_tool_calls=False,

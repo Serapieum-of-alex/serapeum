@@ -59,7 +59,7 @@ class TestToolOrchestratingLLM:
             Instance type and prompt type are correct
         """
         tools_llm = ToolOrchestratingLLM(
-            output_tool=album,
+            schema=album,
             prompt="Album with {topic}",
             llm=llm_model,  # metadata says it supports function calling
             allow_parallel_tool_calls=True,
@@ -78,7 +78,7 @@ class TestToolOrchestratingLLM:
         Check: pytest.raises(ValueError)
         """
         with pytest.raises(TypeError):
-            ToolOrchestratingLLM(output_tool=album, llm=llm_model)
+            ToolOrchestratingLLM(schema=album, llm=llm_model)
 
 
 class TestToolOrchestratingLLMCall:
@@ -95,7 +95,7 @@ class TestToolOrchestratingLLMCall:
         Check: isinstance and equality
         """
         tools_llm = ToolOrchestratingLLM(
-            output_tool=album,
+            schema=album,
             prompt="Create an Album about {topic} music. Include the album name, artist name, and two songs with their titles.",
             llm=llm_model,
         )
@@ -113,7 +113,7 @@ class TestToolOrchestratingLLMCall:
         Check: types and order
         """
         tools_llm = ToolOrchestratingLLM(
-            output_tool=album,
+            schema=album,
             prompt="Album with {topic}",
             llm=llm_model,
             allow_parallel_tool_calls=True,
@@ -139,7 +139,7 @@ class TestToolOrchestratingLLMAsyncCall:
         Check: isinstance and equality
         """
         tools_llm = ToolOrchestratingLLM(
-            output_tool=album, prompt="Album with {topic}", llm=llm_model
+            schema=album, prompt="Album with {topic}", llm=llm_model
         )
         result = await tools_llm.acall(topic="pop")
         assert isinstance(result, album)
@@ -159,7 +159,7 @@ class TestToolOrchestratingLLMStreamCall:
         Check: Sequence and values
         """
         tools_llm = ToolOrchestratingLLM(
-            output_tool=album,
+            schema=album,
             prompt="Album {topic}",
             llm=llm_model,
             allow_parallel_tool_calls=False,
@@ -186,7 +186,7 @@ class TestToolOrchestratingLLMAStreamCall:
         Check: Sequence and values
         """
         tools_llm = ToolOrchestratingLLM(
-            output_tool=album,
+            schema=album,
             prompt="Album {topic}",
             llm=llm_model,
             allow_parallel_tool_calls=False,

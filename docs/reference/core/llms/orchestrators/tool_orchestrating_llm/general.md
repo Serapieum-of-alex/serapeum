@@ -34,6 +34,7 @@ from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
 
+
 # Define the output schema
 class Song(BaseModel):
     title: str
@@ -48,7 +49,7 @@ llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), req
 
 # Create ToolOrchestratingLLM instance
 tools_llm = ToolOrchestratingLLM(
-    output_tool=Album,
+    schema=Album,
     prompt='This is a test album with {topic}',
     llm=llm,
 )

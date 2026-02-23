@@ -1137,7 +1137,7 @@ class LLM(BaseLLM, ABC):
                 from serapeum.core.llms import ToolOrchestratingLLM
 
                 return ToolOrchestratingLLM(
-                    output_tool=schema,
+                    schema=schema,
                     llm=self,
                     prompt=prompt,
                     **kwargs,
@@ -1156,7 +1156,7 @@ class LLM(BaseLLM, ABC):
             from serapeum.core.llms import ToolOrchestratingLLM
 
             return ToolOrchestratingLLM(
-                output_tool=schema,
+                schema=schema,
                 llm=self,
                 prompt=prompt,
                 **kwargs,

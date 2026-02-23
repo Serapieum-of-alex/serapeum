@@ -40,7 +40,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     - Regular functions → ``CallableTool.from_function()``
 
     Attributes:
-        _output_tool (Union[Type[Model], Callable]): Either a Pydantic model class
+        _schema (Union[Type[Model], Callable]): Either a Pydantic model class
             or a callable function defining the expected output structure.
         _llm (FunctionCallingLLM): The language model with function-calling
             support. Must advertise support via ``llm.metadata.is_function_calling_model``.
@@ -157,7 +157,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
             ```
         """
-        self._output_tool = self._validate_output_tool(schema)
+        self._schema = self._validate_output_tool(schema)
         self._llm = self._validate_llm(llm)
         self._prompt = self._validate_prompt(prompt)
         self._verbose = verbose
@@ -232,17 +232,17 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             TypeError: If output_tool is neither a Pydantic model nor a callable.
         """
         # Check if it's a Pydantic model (class that inherits from BaseModel)
-        if isinstance(self._output_tool, type) and issubclass(
-            self._output_tool, BaseModel
+        if isinstance(self._schema, type) and issubclass(
+            self._schema, BaseModel
         ):
-            return CallableTool.from_model(self._output_tool)
+            return CallableTool.from_model(self._schema)
         # Check if it's a callable (function, method, or callable class)
-        elif callable(self._output_tool):
-            return CallableTool.from_function(self._output_tool)
+        elif callable(self._schema):
+            return CallableTool.from_function(self._schema)
         else:
             raise TypeError(
                 f"output_tool must be either a Pydantic BaseModel subclass or a callable function. "
-                f"Got {type(self._output_tool)}"
+                f"Got {type(self._schema)}"
             )
 
     @staticmethod
@@ -361,7 +361,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
             ```
         """
-        return self._output_tool
+        return self._schema
 
     @property
     def prompt(self) -> BasePromptTemplate:
@@ -643,7 +643,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
         cur_objects = None
         processor = StreamingObjectProcessor(
-            output_cls=self._output_tool,
+            output_cls=self._schema,
             flexible_mode=True,
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
             llm=self._llm,
@@ -739,7 +739,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             **llm_kwargs,
         )
         processor = StreamingObjectProcessor(
-            output_cls=self._output_tool,
+            output_cls=self._schema,
             flexible_mode=True,
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
             llm=self._llm,

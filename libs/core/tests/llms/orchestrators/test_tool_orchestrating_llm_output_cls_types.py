@@ -1340,7 +1340,6 @@ class TestOllamaE2E:
         Expected: Should generate valid SimpleOutput from LLM.
         """
         from serapeum.ollama import Ollama
-        from serapeum.core.prompts import PromptTemplate
         llm = Ollama(model="llama3.1", request_timeout=80)
 
         tools_llm = ToolOrchestratingLLM(

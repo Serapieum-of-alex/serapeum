@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -2797,6 +2797,8 @@
       
         
       
+        
+      
     
     
     
@@ -2913,6 +2915,34 @@
     
   
     Taskfile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../developer-guide/testing-docs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    testing-documentation
   
 
     
@@ -8343,7 +8373,7 @@ SerializableModel: Base class providing serialization capabilities.</p>
 <a id="__codelineno-0-958" name="__codelineno-0-958"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linked_nodes_cache</span>
 <a id="__codelineno-0-959" name="__codelineno-0-959"></a>
 <a id="__codelineno-0-960" name="__codelineno-0-960"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-0-961" name="__codelineno-0-961"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;str&quot;&quot;&quot;</span>
+<a id="__codelineno-0-961" name="__codelineno-0-961"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;STR.&quot;&quot;&quot;</span>
 <a id="__codelineno-0-962" name="__codelineno-0-962"></a>        <span class="n">source_text_truncated</span> <span class="o">=</span> <span class="n">truncate_text</span><span class="p">(</span>
 <a id="__codelineno-0-963" name="__codelineno-0-963"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">get_content</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">TRUNCATE_LENGTH</span>
 <a id="__codelineno-0-964" name="__codelineno-0-964"></a>        <span class="p">)</span>
@@ -8519,7 +8549,7 @@ when the links field is reassigned through Pydantic's field validation.</p>
 
     <div class="doc doc-contents ">
 
-        <p>str</p>
+        <p>STR.</p>
 
 
             <details class="mkdocstrings-source">
@@ -8533,7 +8563,7 @@ when the links field is reassigned through Pydantic's field validation.</p>
 <span class="normal"><a href="#__codelineno-0-966">966</a></span>
 <span class="normal"><a href="#__codelineno-0-967">967</a></span>
 <span class="normal"><a href="#__codelineno-0-968">968</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-960" name="__codelineno-0-960"></a><span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-0-961" name="__codelineno-0-961"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;str&quot;&quot;&quot;</span>
+<a id="__codelineno-0-961" name="__codelineno-0-961"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;STR.&quot;&quot;&quot;</span>
 <a id="__codelineno-0-962" name="__codelineno-0-962"></a>    <span class="n">source_text_truncated</span> <span class="o">=</span> <span class="n">truncate_text</span><span class="p">(</span>
 <a id="__codelineno-0-963" name="__codelineno-0-963"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">get_content</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">TRUNCATE_LENGTH</span>
 <a id="__codelineno-0-964" name="__codelineno-0-964"></a>    <span class="p">)</span>

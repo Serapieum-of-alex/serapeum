@@ -97,7 +97,7 @@ classDiagram
         +messages_to_prompt: MessagesToPromptCallable
         +completion_to_prompt: CompletionToPromptCallable
         +output_parser: Optional[BaseParser]
-        +pydantic_program_mode: StructuredLLMMode
+        +structured_output_mode: StructuredOutputMode
         +_get_prompt(prompt, **kwargs) str
         +_get_messages(prompt, **kwargs) List[Message]
         +_parse_output(output) str

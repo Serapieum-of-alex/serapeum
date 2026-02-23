@@ -30,7 +30,7 @@ from serapeum.core.base.llms.types import (
 )
 from serapeum.core.output_parsers import BaseParser, TokenAsyncGen, TokenGen
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
-from serapeum.core.types import Model, StructuredLLMMode
+from serapeum.core.types import Model, StructuredOutputMode
 
 if TYPE_CHECKING:
     from serapeum.core.llms import StructuredOutputLLM
@@ -435,7 +435,7 @@ class LLM(BaseLLM, ABC):
         messages_to_prompt (MessagesToPromptCallable): Callable converting chat messages into prompts.
         completion_to_prompt (CompletionToPromptCallable): Callable adapting prepared prompts for completions.
         output_parser (Optional[BaseParser]): Parser used to coerce raw model text into structured values.
-        pydantic_program_mode (StructuredLLMMode): Strategy for executing pydantic-based structured outputs.
+        structured_output_mode (StructuredOutputMode): Strategy for executing pydantic-based structured outputs.
         query_wrapper_prompt (Optional[BasePromptTemplate]): Legacy prompt wrapper retained for backwards compatibility.
 
     Examples:
@@ -506,9 +506,8 @@ class LLM(BaseLLM, ABC):
         default=None,
         exclude=True,
     )
-    pydantic_program_mode: StructuredLLMMode = StructuredLLMMode.DEFAULT
+    structured_output_mode: StructuredOutputMode = StructuredOutputMode.DEFAULT
 
-    # # deprecated
     query_wrapper_prompt: BasePromptTemplate | None = Field(
         description="Query wrapper prompt for LLM calls.",
         default=None,
@@ -1129,11 +1128,11 @@ class LLM(BaseLLM, ABC):
     ):
         """Select and build the structured program for this LLM.
 
-        The decision is based on ``self.pydantic_program_mode`` and
+        The decision is based on ``self.structured_output_mode`` and
         ``self.metadata.is_function_calling_model``. Imports are local to avoid
         circular dependencies at import time.
         """
-        if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
+        if self.structured_output_mode == StructuredOutputMode.DEFAULT:
             if self.metadata.is_function_calling_model:
                 from serapeum.core.llms import ToolOrchestratingLLM
 
@@ -1153,7 +1152,7 @@ class LLM(BaseLLM, ABC):
                     prompt=prompt,
                     **kwargs,
                 )
-        elif self.pydantic_program_mode == StructuredLLMMode.FUNCTION:
+        elif self.structured_output_mode == StructuredOutputMode.FUNCTION:
             from serapeum.core.llms import ToolOrchestratingLLM
 
             return ToolOrchestratingLLM(
@@ -1162,7 +1161,7 @@ class LLM(BaseLLM, ABC):
                 prompt=prompt,
                 **kwargs,
             )
-        elif self.pydantic_program_mode == StructuredLLMMode.LLM:
+        elif self.structured_output_mode == StructuredOutputMode.LLM:
             from serapeum.core.llms import TextCompletionLLM
             from serapeum.core.output_parsers import PydanticParser
 
@@ -1174,7 +1173,7 @@ class LLM(BaseLLM, ABC):
             )
         else:
             raise ValueError(
-                f"Unsupported pydantic program mode: {self.pydantic_program_mode}"
+                f"Unsupported pydantic program mode: {self.structured_output_mode}"
             )
 
     def structured_predict(

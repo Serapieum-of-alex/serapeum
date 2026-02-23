@@ -586,7 +586,7 @@ class TestGetPrompt:
 #     def _patch_program(self, monkeypatch, program):
 #         monkeypatch.setattr(
 #             "serapeum.core.llms/orchestrators.utils.get_program_for_llm",
-#             lambda output_cls, prompt, llm, pydantic_program_mode=None: program,
+#             lambda output_cls, prompt, llm, structured_output_mode=None: program,
 #         )
 #
 #     def test_structured_predict_sync(self, monkeypatch):

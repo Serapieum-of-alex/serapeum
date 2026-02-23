@@ -80,7 +80,7 @@ This page summarizes the main modules, key classes, and the public API surface o
 - **serapeum.core.types**
   - `SerializableModel`: Base model with JSON/pickle serialization helpers
   - `Model`: Pydantic model base
-  - `StructuredLLMMode`: Enum for structured output modes
+  - `StructuredOutputMode`: Enum for structured output modes
 
 - **serapeum.core.utils**
   - Common utilities: sync/async helpers, base utilities

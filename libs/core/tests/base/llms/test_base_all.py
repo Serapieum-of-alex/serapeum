@@ -22,7 +22,7 @@ from serapeum.core.llms.base import (
 )
 from serapeum.core.output_parsers import BaseParser
 from serapeum.core.prompts import ChatPromptTemplate, PromptTemplate
-from serapeum.core.types import StructuredLLMMode
+from serapeum.core.types import StructuredOutputMode
 
 
 class _FormatParser(BaseParser):
@@ -621,7 +621,7 @@ class TestGetProgram:
         Checks: returned instance type.
         """
         # arrange
-        llm = _FunctionCallingLLM(pydantic_program_mode=StructuredLLMMode.FUNCTION)
+        llm = _FunctionCallingLLM(structured_output_mode=StructuredOutputMode.FUNCTION)
         prompt = PromptTemplate("{name}")
 
         # act
@@ -637,7 +637,7 @@ class TestGetProgram:
         Checks: returned instance type.
         """
         # arrange
-        llm = _RecordingLLM(pydantic_program_mode=StructuredLLMMode.LLM)
+        llm = _RecordingLLM(structured_output_mode=StructuredOutputMode.LLM)
         prompt = PromptTemplate("{name}")
 
         # act
@@ -653,7 +653,7 @@ class TestGetProgram:
         Checks: exception message includes mode string.
         """
         # arrange
-        llm = _RecordingLLM(pydantic_program_mode=StructuredLLMMode.GUIDANCE)
+        llm = _RecordingLLM(structured_output_mode=StructuredOutputMode.GUIDANCE)
         prompt = PromptTemplate("{name}")
 
         # act

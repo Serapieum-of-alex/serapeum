@@ -170,11 +170,11 @@ set a default LLM instance and control structured output mode:
 
 ```python
 from serapeum.core.configs import Configs
-from serapeum.core.types import StructuredLLMMode
+from serapeum.core.types import StructuredOutputMode
 
 
 Configs.llm = llm
-Configs.pydantic_program_mode = StructuredLLMMode.OPENAI
+Configs.structured_output_mode = StructuredOutputMode.OPENAI
 ```
 
 ## Links

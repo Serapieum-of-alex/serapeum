@@ -40,7 +40,7 @@ from serapeum.core.llms import (
 from serapeum.core.llms.orchestrators import StreamingObjectProcessor
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ArgumentCoercer, ToolCallArguments, ToolCallError
-from serapeum.core.types import StructuredLLMMode
+from serapeum.core.types import StructuredOutputMode
 from serapeum.ollama.client import OllamaClientMixin
 
 if TYPE_CHECKING:
@@ -1237,7 +1237,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         Instructs the Ollama model to emit JSON matching the schema of output_cls,
         then validates and parses the response into a Pydantic instance. When using
-        StructuredLLMMode.DEFAULT, this injects the model's JSON schema into the
+        StructuredOutputMode.DEFAULT, this injects the model's JSON schema into the
         format parameter and validates the response content.
 
         Args:
@@ -1279,10 +1279,9 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             astructured_predict: Async variant.
             stream_structured_predict: Streaming counterpart yielding partial models.
         """
-        if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
+        if self.structured_output_mode == StructuredOutputMode.DEFAULT:
             llm_kwargs = llm_kwargs or {}
             llm_kwargs["format"] = output_cls.model_json_schema()
-
             messages = prompt.format_messages(**prompt_args)
             response = self.chat(messages, **llm_kwargs)
 
@@ -1345,7 +1344,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             structured_predict: Synchronous variant.
             astream_structured_predict: Async streaming variant.
         """
-        if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
+        if self.structured_output_mode == StructuredOutputMode.DEFAULT:
             llm_kwargs = llm_kwargs or {}
             llm_kwargs["format"] = output_cls.model_json_schema()
 
@@ -1407,7 +1406,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             astream_structured_predict: Asynchronous streaming counterpart.
             structured_predict: Non-streaming variant.
         """
-        if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
+        if self.structured_output_mode == StructuredOutputMode.DEFAULT:
 
             def gen(
                 output_cls: type[BaseModel],
@@ -1498,7 +1497,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             stream_structured_predict: Synchronous streaming counterpart.
             astructured_predict: Non-streaming async variant.
         """
-        if self.pydantic_program_mode == StructuredLLMMode.DEFAULT:
+        if self.structured_output_mode == StructuredOutputMode.DEFAULT:
 
             async def gen(
                 output_cls: type[BaseModel],

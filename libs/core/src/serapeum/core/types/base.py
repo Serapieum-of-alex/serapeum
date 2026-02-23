@@ -21,7 +21,7 @@ from pydantic_core import CoreSchema
 
 Model = TypeVar("Model", bound=BaseModel)
 
-__all__ = ["SerializableModel", "Model", "StructuredLLMMode"]
+__all__ = ["SerializableModel", "Model", "StructuredOutputMode"]
 
 
 logger = logging.getLogger(__name__)
@@ -145,7 +145,7 @@ class SerializableModel(BaseModel):
         return cls.from_dict(data, **kwargs)
 
 
-class StructuredLLMMode(str, Enum):
+class StructuredOutputMode(str, Enum):
     """Pydantic program mode."""
 
     DEFAULT = "default"

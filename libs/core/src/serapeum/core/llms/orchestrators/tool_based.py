@@ -34,7 +34,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     produce structured data. It handles prompt formatting, invoking the LLM
     (sync/async), optional streaming, and parsing the tool outputs.
 
-    The class automatically detects the type of ``output_tool`` and uses the
+    The class automatically detects the type of ``schema`` and uses the
     appropriate factory method:
     - Pydantic models → ``CallableTool.from_model()``
     - Regular functions → ``CallableTool.from_function()``
@@ -115,7 +115,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         Raises:
             AssertionError: If no LLM is provided and ``Configs.llm`` is not set.
             ValueError: If the provided LLM does not support function calling.
-            TypeError: If output_tool is neither a Pydantic model nor a callable.
+            TypeError: If schema is neither a Pydantic model nor a callable.
 
         See Also:
             - Configs: Global configuration for default LLM settings
@@ -157,7 +157,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
             ```
         """
-        self._schema = self._validate_output_tool(schema)
+        self._schema = self._validate_schema(schema)
         self._llm = self._validate_llm(llm)
         self._prompt = self._validate_prompt(prompt)
         self._verbose = verbose
@@ -165,19 +165,19 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         self._tool_choice = tool_choice
 
     @staticmethod
-    def _validate_output_tool(
+    def _validate_schema(
         schema: Type[Model] | Callable[..., Any],
     ) -> Type[Model] | Callable[..., Any]:
-        """Validate that output_tool is a Pydantic model class or a callable.
+        """Validate that schema is a Pydantic model class or a callable.
 
         Args:
             schema (Union[Type[Model], Callable[..., Any]]): The value to validate.
 
         Returns:
-            Union[Type[Model], Callable[..., Any]]: The validated output_tool unchanged.
+            Union[Type[Model], Callable[..., Any]]: The validated schema unchanged.
 
         Raises:
-            TypeError: If output_tool is neither a Pydantic BaseModel subclass nor a callable.
+            TypeError: If schema is neither a Pydantic BaseModel subclass nor a callable.
 
         Examples:
         - Accept a Pydantic model class.
@@ -186,7 +186,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.core.llms import ToolOrchestratingLLM
             >>> class Out(BaseModel):
             ...     x: int
-            >>> ToolOrchestratingLLM._validate_output_tool(Out) is Out
+            >>> ToolOrchestratingLLM._validate_schema(Out) is Out
             True
 
             ```
@@ -195,17 +195,17 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.core.llms import ToolOrchestratingLLM
             >>> def fn(x: int) -> dict:
             ...     return {"x": x}
-            >>> ToolOrchestratingLLM._validate_output_tool(fn) is fn
+            >>> ToolOrchestratingLLM._validate_schema(fn) is fn
             True
 
             ```
         - Reject non-callable, non-model values.
             ```python
             >>> from serapeum.core.llms import ToolOrchestratingLLM
-            >>> ToolOrchestratingLLM._validate_output_tool(42)
+            >>> ToolOrchestratingLLM._validate_schema(42)
             Traceback (most recent call last):
             ...
-            TypeError: output_tool must be either a Pydantic BaseModel subclass or a callable function. Got <class 'int'>
+            TypeError: schema must be either a Pydantic BaseModel subclass or a callable function. Got <class 'int'>
 
             ```
         """
@@ -214,22 +214,22 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             or callable(schema)
         ):
             raise TypeError(
-                "output_tool must be either a Pydantic BaseModel subclass or a callable function. "
+                "schema must be either a Pydantic BaseModel subclass or a callable function. "
                 f"Got {type(schema)}"
             )
         return schema
 
     def _create_tool(self) -> CallableTool:
-        """Create a CallableTool from the output_tool.
+        """Create a CallableTool from the schema.
 
-        Automatically detects whether output_tool is a Pydantic model or a callable
+        Automatically detects whether schema is a Pydantic model or a callable
         function and uses the appropriate factory method.
 
         Returns:
-            CallableTool: Tool instance created from output_tool.
+            CallableTool: Tool instance created from schema.
 
         Raises:
-            TypeError: If output_tool is neither a Pydantic model nor a callable.
+            TypeError: If schema is neither a Pydantic model nor a callable.
         """
         # Check if it's a Pydantic model (class that inherits from BaseModel)
         if isinstance(self._schema, type) and issubclass(
@@ -241,7 +241,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             return CallableTool.from_function(self._schema)
         else:
             raise TypeError(
-                f"output_tool must be either a Pydantic BaseModel subclass or a callable function. "
+                f"schema must be either a Pydantic BaseModel subclass or a callable function. "
                 f"Got {type(self._schema)}"
             )
 

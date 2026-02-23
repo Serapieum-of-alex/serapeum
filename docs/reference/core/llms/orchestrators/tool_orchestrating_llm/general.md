@@ -10,20 +10,20 @@ The `ToolOrchestratingLLM` is a function-calling orchestrator that:
 3. **Executes function calling** via LLM with tool schemas
 4. **Parses tool outputs** into validated Pydantic model instances
 
-!!! note "output_tool accepts both classes and callables"
-    Despite the parameter name, `output_tool` accepts **either** a Pydantic `BaseModel`
+!!! note "schema accepts both classes and callables"
+    Despite the parameter name, `schema` accepts **either** a Pydantic `BaseModel`
     subclass **or** a plain Python function/callable. When a function is passed, its
     signature is used to auto-generate the JSON schema for the tool call.
 
     ```python
     # Option A: Pydantic model class
-    tools_llm = ToolOrchestratingLLM(output_tool=MyModel, prompt="...", llm=llm)
+    tools_llm = ToolOrchestratingLLM(schema=MyModel, prompt="...", llm=llm)
 
     # Option B: Plain callable function
     def extract(name: str, age: int) -> dict:
         return {"name": name, "age": age}
 
-    tools_llm = ToolOrchestratingLLM(output_tool=extract, prompt="...", llm=llm)
+    tools_llm = ToolOrchestratingLLM(schema=extract, prompt="...", llm=llm)
     ```
 
 ## Example Usage
@@ -140,7 +140,7 @@ Depicts the lifecycle states and transitions.
 ### Initialization Workflow
 ```
 1. Initialize ToolOrchestratingLLM with:
-   - output_tool: Pydantic model (MockAlbum)
+   - schema: Pydantic model (MockAlbum)
    - prompt: String or BasePromptTemplate
    - llm: Function-calling LLM (Ollama)
    - tool_choice: Optional tool selection strategy

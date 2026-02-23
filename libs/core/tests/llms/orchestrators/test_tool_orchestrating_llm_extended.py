@@ -212,7 +212,7 @@ class TestToolOrchestratingLLM:
         """Construct with prompt_template_str and a function-calling-capable LLM.
 
         Input:
-            output_tool=Album, prompt_template_str, llm with metadata.is_function_calling_model=True
+            schema=Album, prompt_template_str, llm with metadata.is_function_calling_model=True
         Expected:
             Returns a ToolOrchestratingLLM instance with configured prompt and flags
         Check:

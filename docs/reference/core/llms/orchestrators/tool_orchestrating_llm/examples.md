@@ -811,11 +811,11 @@ result = tools_llm(input="test")
 
 ## Using Regular Functions with ToolOrchestratingLLM
 
-`ToolOrchestratingLLM` now supports both Pydantic models and regular Python functions as `output_tool`. When you pass a function, the system automatically detects it and creates the appropriate tool.
+`ToolOrchestratingLLM` now supports both Pydantic models and regular Python functions as `schema`. When you pass a function, the system automatically detects it and creates the appropriate tool.
 
 ### 1. Using Regular Functions
 
-Pass regular Python functions directly as `output_tool`:
+Pass regular Python functions directly as `schema`:
 
 ```python
 import os
@@ -1124,7 +1124,7 @@ print(f"Average word length: {result['avg_word_length']:.2f}")
 
 ### Important Notes
 
-**Advantages of using functions as output_tool:**
+**Advantages of using functions as schema:**
 1. Works with existing Python functions - no need to convert to Pydantic
 2. Full access to all `ToolOrchestratingLLM` features (streaming, async, etc.)
 3. Automatic tool creation and orchestration

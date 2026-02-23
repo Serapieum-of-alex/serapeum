@@ -10,7 +10,7 @@ This guide provides comprehensive examples covering all possible ways to use `To
 5. [Execution Modes](#execution-modes)
 6. [Parallel Tool Calls](#parallel-tool-calls)
 7. [Advanced Usage](#advanced-usage)
-8[Error Handling](#error-handling)
+8. [Error Handling](#error-handling)
 
 ---
 

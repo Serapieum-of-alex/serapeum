@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Generator, Callable
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Generator, Literal, overload
 
 import ollama as ollama_sdk  # type: ignore[attr-defined]
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
@@ -1226,13 +1226,37 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         return self._build_chat_response(response)
 
+    @overload
+    def parse(
+        self,
+        schema: type[BaseModel] | Callable[..., Any],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ...,
+        *,
+        stream: Literal[False] = ...,
+        **prompt_args: Any,
+    ) -> BaseModel: ...
+
+    @overload
+    def parse(
+        self,
+        schema: type[BaseModel] | Callable[..., Any],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ...,
+        *,
+        stream: Literal[True],
+        **prompt_args: Any,
+    ) -> Generator[BaseModel | list[BaseModel], None, None]: ...
+
     def parse(
         self,
         schema: type[BaseModel] | Callable[..., Any],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
+        *,
+        stream: bool = False,
         **prompt_args: Any,
-    ) -> BaseModel:
+    ) -> BaseModel | Generator[BaseModel | list[BaseModel], None, None]:
         """Generate structured output conforming to a Pydantic model schema.
 
         Instructs the Ollama model to emit JSON matching the schema of output_cls,
@@ -1240,30 +1264,43 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         StructuredOutputMode.DEFAULT, this injects the model's JSON schema into the
         format parameter and validates the response content.
 
+        When ``stream=True``, yields incrementally parsed Pydantic instances as the
+        model streams JSON content, using StreamingObjectProcessor with flexible mode
+        to handle incomplete JSON fragments.
+
         Args:
-            schema: Target Pydantic model class defining the expected structure.
-            prompt: PromptTemplate that will be formatted with prompt_args to create messages.
+            schema: Target Pydantic model class (or callable) defining the expected
+                structure. A callable is accepted when routing through
+                ToolOrchestratingLLM (non-DEFAULT modes).
+            prompt: PromptTemplate that will be formatted with prompt_args to create
+                messages.
             llm_kwargs: Additional provider arguments passed to the chat method.
                 Defaults to empty dict.
+            stream: If ``False`` (default), returns a single validated instance after
+                the full response is received. If ``True``, returns a generator that
+                yields partially complete instances as JSON is streamed.
             **prompt_args: Template variables used to format the prompt.
 
         Returns:
-            Instance of output_cls parsed and validated from the model's JSON response.
+            A validated ``BaseModel`` instance when ``stream=False``, or a
+            ``Generator`` yielding ``BaseModel | list[BaseModel]`` when
+            ``stream=True``.
 
         Raises:
-            ValidationError: If the model's response doesn't match the schema.
+            ValidationError: If the model's response doesn't match the schema
+                (non-streaming mode only).
 
         Examples:
             - Extract structured data from unstructured text
                 ```python
-                >>> from examples.core.structured_outputs.structured_outputs import api_key                >>> import os
+                >>> import os
                 >>> from pydantic import BaseModel, Field
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> from serapeum.ollama import Ollama      # type: ignore
                 >>> class Person(BaseModel):
                 ...     name: str = Field(description="Person's full name")
                 ...     age: int = Field(description="Person's age in years")
-                >>> llm = Ollama(model="llama3.1", api_key=os.environ['OLLAMA_API_KEY'], request_timeout=120)     # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
                 >>> prompt = PromptTemplate("Extract person info: {text}")  # doctest: +SKIP
                 >>> result = llm.parse(    # doctest: +SKIP
                 ...     Person,
@@ -1275,21 +1312,73 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
                 ```
 
+            - Stream structured data as it's generated
+                ```python
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.prompts import PromptTemplate
+                >>> from serapeum.ollama import Ollama      # type: ignore
+                >>> class Summary(BaseModel):
+                ...     title: str
+                ...     points: list[str]
+                >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
+                >>> prompt = PromptTemplate("Summarize: {text}")
+                >>> for obj in llm.parse(   # doctest: +SKIP
+                ...     Summary, prompt, stream=True, text="Long article..."
+                ... ):
+                ...     print(obj)
+
+                ```
+
         See Also:
-            aparse: Async variant.
-            stream_parse: Streaming counterpart yielding partial models.
+            aparse: Async variant (non-streaming).
+            astream_parse: Async streaming variant.
         """
         if self.structured_output_mode == StructuredOutputMode.DEFAULT:
-            llm_kwargs = llm_kwargs or {}
-            llm_kwargs["format"] = schema.model_json_schema()
-            messages = prompt.format_messages(**prompt_args)
-            response = self.chat(messages, **llm_kwargs)
-
-            return schema.model_validate_json(response.message.content or "")
-        else:
-            return super().parse(
+            if stream:
+                return self._stream_parse_default(schema, prompt, llm_kwargs, prompt_args)
+            return self._parse_default(schema, prompt, llm_kwargs, prompt_args)
+        if stream:
+            return super().stream_parse(  # type: ignore[return-value]
                 schema, prompt, llm_kwargs, **prompt_args
             )
+        return super().parse(schema, prompt, llm_kwargs, **prompt_args)
+
+    def _parse_default(
+        self,
+        schema: type[BaseModel] | Callable[..., Any],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None,
+        prompt_args: dict[str, Any],
+    ) -> BaseModel:
+        llm_kwargs = llm_kwargs or {}
+        llm_kwargs["format"] = schema.model_json_schema()
+        messages = prompt.format_messages(**prompt_args)
+        response = self.chat(messages, **llm_kwargs)
+        return schema.model_validate_json(response.message.content or "")
+
+    def _stream_parse_default(
+        self,
+        schema: type[BaseModel] | Callable[..., Any],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None,
+        prompt_args: dict[str, Any],
+    ) -> Generator[BaseModel | list[BaseModel], None, None]:
+        _llm_kwargs = llm_kwargs or {}
+        _llm_kwargs["format"] = schema.model_json_schema()
+        messages = prompt.format_messages(**prompt_args)
+        processor = StreamingObjectProcessor(
+            output_cls=schema,
+            flexible_mode=True,
+            allow_parallel_tool_calls=False,
+        )
+        cur_objects = None
+        for response in self.stream_chat(messages, **_llm_kwargs):
+            try:
+                objects = processor.process(response, cur_objects)
+                cur_objects = objects if isinstance(objects, list) else [objects]
+                yield objects
+            except Exception:
+                continue
 
     async def aparse(
         self,
@@ -1354,92 +1443,6 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             return schema.model_validate_json(response.message.content or "")
         else:
             return await super().aparse(
-                schema, prompt, llm_kwargs, **prompt_args
-            )
-
-    def stream_parse(
-        self,
-        schema: type[BaseModel] | Callable[..., Any],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        **prompt_args: Any,
-    ) -> Generator[BaseModel | list[BaseModel], None, None]:
-        """Stream incrementally parsed structured objects as the model generates JSON.
-
-        Yields partially complete Pydantic instances as the model streams JSON content,
-        allowing early access to structured data before the full response completes.
-        Uses StreamingObjectProcessor with flexible mode to handle incomplete JSON.
-
-        Args:
-            schema: Pydantic model class defining the expected structure.
-            prompt: PromptTemplate that will be formatted with prompt_args to create messages.
-            llm_kwargs: Additional provider arguments passed to stream_chat.
-                Defaults to empty dict.
-            **prompt_args: Template variables used to format the prompt.
-
-        Yields:
-            Parsed Pydantic instance(s) - either a single BaseModel or list of BaseModel.
-            Each yielded value represents the current state of parsing as more JSON arrives.
-
-        Examples:
-            - Stream structured data as it's generated
-                ```python
-                >>> from pydantic import BaseModel
-                >>> from serapeum.core.prompts import PromptTemplate
-                >>> from serapeum.ollama import Ollama      # type: ignore
-                >>> class Summary(BaseModel):
-                ...     title: str
-                ...     points: list[str]
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
-                >>> prompt = PromptTemplate("Summarize: {text}")
-                >>> for obj in llm.stream_parse(   # doctest: +SKIP
-                ...     Summary,
-                ...     prompt,
-                ...     text="Long article text..."
-                ... ):
-                ...     # obj is a Summary instance, progressively more complete
-                ...     print(f"Current title: {obj.title if hasattr(obj, 'title') else 'N/A'}")
-
-                ```
-
-        See Also:
-            astream_parse: Asynchronous streaming counterpart.
-            parse: Non-streaming variant.
-        """
-        if self.structured_output_mode == StructuredOutputMode.DEFAULT:
-
-            def gen(
-                output_cls: type[BaseModel],
-                prompt: PromptTemplate,
-                llm_kwargs: dict[str, Any] | None,
-                prompt_args: dict[str, Any],
-            ) -> Generator[BaseModel | list[BaseModel], None, None]:
-                llm_kwargs = llm_kwargs or {}
-                llm_kwargs["format"] = output_cls.model_json_schema()
-
-                messages = prompt.format_messages(**prompt_args)
-                response_gen = self.stream_chat(messages, **llm_kwargs)
-
-                processor = StreamingObjectProcessor(
-                    output_cls=output_cls,
-                    flexible_mode=True,
-                    allow_parallel_tool_calls=False,
-                )
-                cur_objects = None
-                for response in response_gen:
-                    try:
-                        objects = processor.process(response, cur_objects)
-
-                        cur_objects = (
-                            objects if isinstance(objects, list) else [objects]
-                        )
-                        yield objects
-                    except Exception:
-                        continue
-
-            return gen(schema, prompt, llm_kwargs, prompt_args)
-        else:
-            return super().stream_parse(  # type: ignore[return-value]
                 schema, prompt, llm_kwargs, **prompt_args
             )
 

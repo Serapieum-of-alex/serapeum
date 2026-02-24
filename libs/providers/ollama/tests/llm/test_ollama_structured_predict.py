@@ -688,7 +688,7 @@ class TestStructuredPredictAsync:
 
 
 # ---------------------------------------------------------------------------
-# Tests — stream_parse (sync streaming)
+# Tests — parse(stream=True) (sync streaming)
 # ---------------------------------------------------------------------------
 
 
@@ -707,9 +707,10 @@ class TestStreamStructuredPredict:
         prompt = PromptTemplate(
             "Extract the following information from the text.\nText: {text}"
         )
-        gen = llm_model.stream_parse(
+        gen = llm_model.parse(
             PersonBasic,
             prompt,
+            stream=True,
             text="Liam Chen is 31, 1.75 m tall, and works as a teacher.",
         )
         results = list(gen)
@@ -733,9 +734,10 @@ class TestStreamStructuredPredict:
         prompt = PromptTemplate(
             "Extract employee information from the text.\nText: {text}"
         )
-        gen = llm_model.stream_parse(
+        gen = llm_model.parse(
             Employee,
             prompt,
+            stream=True,
             text="Sofia Russo is a Lead Engineer at Via Roma 5, Rome, Italy.",
         )
         results = list(gen)
@@ -758,9 +760,10 @@ class TestStreamStructuredPredict:
         prompt = PromptTemplate(
             "Extract contact details from the text.\nText: {text}"
         )
-        gen = llm_model.stream_parse(
+        gen = llm_model.parse(
             Contact,
             prompt,
+            stream=True,
             text="You can reach support at help@company.io.",
         )
         results = list(gen)
@@ -768,6 +771,143 @@ class TestStreamStructuredPredict:
         final = last[0] if isinstance(last, list) else last
         assert isinstance(final, Contact)
         assert "@" in final.email
+
+    @pytest.mark.e2e
+    @_SKIP
+    def test_stream_enum_field(self, llm_model: Ollama) -> None:
+        """Streaming handles enum-constrained fields.
+
+        Inputs: positive product review text.
+        Expected: Final yielded value is a Review with a valid Sentiment member.
+        Checks: sentiment is Sentiment instance; generator completes without error.
+        """
+        prompt = PromptTemplate(
+            "Analyse the product review and extract the requested fields.\nReview: {text}"
+        )
+        gen = llm_model.parse(
+            Review,
+            prompt,
+            stream=True,
+            text="Great product, highly recommend! Works exactly as described.",
+        )
+        results = list(gen)
+        assert len(results) >= 1
+        last = results[-1]
+        final = last[0] if isinstance(last, list) else last
+        assert isinstance(final, Review)
+        assert isinstance(final.sentiment, Sentiment)
+
+    @pytest.mark.e2e
+    @_SKIP
+    def test_stream_list_of_nested_models(self, llm_model: Ollama) -> None:
+        """Streaming handles list[NestedModel] schemas — exercises the list branch in the processor.
+
+        Inputs: invoice description with multiple line items.
+        Expected: Final yielded value is an Invoice with at least one LineItem.
+        Checks: items is a list; last item is Invoice or list; total_usd > 0.
+        """
+        prompt = PromptTemplate(
+            "Extract the invoice details from the following text.\nText: {text}"
+        )
+        gen = llm_model.parse(
+            Invoice,
+            prompt,
+            stream=True,
+            text=(
+                "Invoice #INV-2024-003 for Beta Corp. "
+                "Items: 3x Keyboard at $50.00 each, 2x Mouse at $25.00 each. "
+                "Total: $200.00."
+            ),
+        )
+        results = list(gen)
+        assert len(results) >= 1
+        last = results[-1]
+        final = last[0] if isinstance(last, list) else last
+        assert isinstance(final, Invoice)
+        assert len(final.items) >= 1
+        assert final.total_usd > 0
+
+    @pytest.mark.e2e
+    @_SKIP
+    def test_stream_deeply_nested_three_levels(self, llm_model: Ollama) -> None:
+        """Streaming completes without error on a three-level nested schema.
+
+        Inputs: route description with GPS coordinates.
+        Expected: Final item is a Route with both waypoints populated.
+        Checks: origin and destination are Waypoint instances with Location.
+        """
+        prompt = PromptTemplate(
+            "Extract the route details from the text.\nText: {text}"
+        )
+        gen = llm_model.parse(
+            Route,
+            prompt,
+            stream=True,
+            text=(
+                "Start at Central Park (40.7851° N, 73.9683° W) "
+                "and finish at Times Square (40.7580° N, 73.9855° W)."
+            ),
+        )
+        results = list(gen)
+        assert len(results) >= 1
+        last = results[-1]
+        final = last[0] if isinstance(last, list) else last
+        assert isinstance(final, Route)
+        assert isinstance(final.origin, Waypoint)
+        assert isinstance(final.destination, Waypoint)
+
+    @pytest.mark.e2e
+    @_SKIP
+    def test_stream_list_of_primitives(self, llm_model: Ollama) -> None:
+        """Streaming handles list[str] fields without nested models.
+
+        Inputs: quantum computing description.
+        Expected: Final item is a Keywords instance with a non-empty keywords list.
+        Checks: keywords is a list of strings.
+        """
+        prompt = PromptTemplate(
+            "Extract the topic and keywords from the text.\nText: {text}"
+        )
+        gen = llm_model.parse(
+            Keywords,
+            prompt,
+            stream=True,
+            text="Machine learning models learn patterns from large datasets to make predictions.",
+        )
+        results = list(gen)
+        assert len(results) >= 1
+        last = results[-1]
+        final = last[0] if isinstance(last, list) else last
+        assert isinstance(final, Keywords)
+        assert isinstance(final.keywords, list)
+        assert len(final.keywords) >= 1
+
+    @pytest.mark.e2e
+    @_SKIP
+    def test_stream_llm_kwargs_forwarded(self, llm_model: Ollama) -> None:
+        """llm_kwargs are forwarded to stream_chat when stream=True.
+
+        Passing num_predict limits token generation; streaming must still complete
+        and yield a parseable object for a small flat schema.
+        Inputs: flat PersonBasic schema with num_predict=200 in llm_kwargs.
+        Expected: At least one PersonBasic (or partial) yielded; no exception raised.
+        Checks: result is BaseModel; generator completes cleanly.
+        """
+        prompt = PromptTemplate(
+            "Extract the following information from the text.\nText: {text}"
+        )
+        gen = llm_model.parse(
+            PersonBasic,
+            prompt,
+            {"num_predict": 200},
+            stream=True,
+            text="Nina Patel is 33, 1.70 m tall, and works as a pharmacist.",
+        )
+        results = list(gen)
+        assert len(results) >= 1
+        last = results[-1]
+        final = last[0] if isinstance(last, list) else last
+        assert isinstance(final, BaseModel)
 
 
 # ---------------------------------------------------------------------------

@@ -3062,6 +3062,7 @@ dev = [
     { name = "pytest-benchmark" },
     { name = "pytest-cov" },
     { name = "pytest-markdown-docs" },
+    { name = "pytest-mock" },
     { name = "pytest-xdist" },
 ]
 
@@ -3086,6 +3087,7 @@ dev = [
     { name = "pytest-benchmark" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "pytest-markdown-docs", specifier = ">=0.9.1" },
+    { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
 ]
 

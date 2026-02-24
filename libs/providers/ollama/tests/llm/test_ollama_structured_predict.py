@@ -911,7 +911,7 @@ class TestStreamStructuredPredict:
 
 
 # ---------------------------------------------------------------------------
-# Tests — astream_parse (async streaming)
+# Tests — aparse async streaming
 # ---------------------------------------------------------------------------
 
 
@@ -925,15 +925,16 @@ class TestAsyncStreamStructuredPredict:
         """Async streaming yields at least one BaseModel instance.
 
         Inputs: measurement description.
-        Expected: At least one item yielded from astream_parse.
+        Expected: At least one item yielded from aparse with stream=True.
         Checks: last item is a Measurement or list; no exception raised.
         """
         prompt = PromptTemplate(
             "Extract the measurement details from the text.\nText: {text}"
         )
-        gen = await llm_model.astream_parse(
+        gen = await llm_model.aparse(
             Measurement,
             prompt,
+            stream=True,
             text="The temperature outside is 23.5 °C.",
         )
         results = []
@@ -954,9 +955,10 @@ class TestAsyncStreamStructuredPredict:
         prompt = PromptTemplate(
             "Extract the route details from the text.\nText: {text}"
         )
-        gen = await llm_model.astream_parse(
+        gen = await llm_model.aparse(
             Route,
             prompt,
+            stream=True,
             text=(
                 "Drive from Eiffel Tower (48.8584° N, 2.2945° E) "
                 "to the Louvre (48.8606° N, 2.3376° E)."
@@ -966,3 +968,181 @@ class TestAsyncStreamStructuredPredict:
         async for obj in gen:
             results.append(obj)
         assert len(results) >= 1
+
+    @pytest.mark.e2e
+    @pytest.mark.asyncio()
+    @_SKIP
+    async def test_async_stream_flat_model(self, llm_model: Ollama) -> None:
+        """Async streaming yields PersonBasic instances for a flat primitive schema.
+
+        Inputs: person description via aparse with stream=True.
+        Expected: At least one item yielded; last item is PersonBasic or list containing one.
+        Checks: no exception; isinstance(final, PersonBasic).
+        """
+        prompt = PromptTemplate(
+            "Extract the following information from the text.\nText: {text}"
+        )
+        gen = await llm_model.aparse(
+            PersonBasic,
+            prompt,
+            stream=True,
+            text="Oliver Kahn is 54, 1.88 m tall, and works as a football coach.",
+        )
+        results = []
+        async for obj in gen:
+            results.append(obj)
+        assert len(results) >= 1, "Expected at least one yielded item"
+        last = results[-1]
+        final = last[0] if isinstance(last, list) else last
+        assert isinstance(final, PersonBasic), f"Expected PersonBasic, got {type(final)}"
+
+    @pytest.mark.e2e
+    @pytest.mark.asyncio()
+    @_SKIP
+    async def test_async_stream_final_object_complete(self, llm_model: Ollama) -> None:
+        """Async streaming final item has all required fields populated.
+
+        Inputs: contact info text with email via aparse with stream=True.
+        Expected: Last yielded Contact has email containing '@'.
+        Checks: email field is non-empty and contains '@'.
+        """
+        prompt = PromptTemplate(
+            "Extract contact details from the text.\nText: {text}"
+        )
+        gen = await llm_model.aparse(
+            Contact,
+            prompt,
+            stream=True,
+            text="For support reach out at contact@example.org.",
+        )
+        results = []
+        async for obj in gen:
+            results.append(obj)
+        assert len(results) >= 1, "Expected at least one yielded item"
+        last = results[-1]
+        final = last[0] if isinstance(last, list) else last
+        assert isinstance(final, Contact), f"Expected Contact, got {type(final)}"
+        assert "@" in final.email, f"email should contain '@', got '{final.email}'"
+
+    @pytest.mark.e2e
+    @pytest.mark.asyncio()
+    @_SKIP
+    async def test_async_stream_enum_field(self, llm_model: Ollama) -> None:
+        """Async streaming correctly resolves enum-constrained fields.
+
+        Inputs: positive product review text via aparse with stream=True.
+        Expected: Final yielded Review has a valid Sentiment member.
+        Checks: sentiment is a Sentiment instance; generator completes without error.
+        """
+        prompt = PromptTemplate(
+            "Analyse the product review and extract the requested fields.\nReview: {text}"
+        )
+        gen = await llm_model.aparse(
+            Review,
+            prompt,
+            stream=True,
+            text="Incredible build quality. Exceeded all my expectations. Highly recommended.",
+        )
+        results = []
+        async for obj in gen:
+            results.append(obj)
+        assert len(results) >= 1, "Expected at least one yielded item"
+        last = results[-1]
+        final = last[0] if isinstance(last, list) else last
+        assert isinstance(final, Review), f"Expected Review, got {type(final)}"
+        assert isinstance(final.sentiment, Sentiment), (
+            f"Expected Sentiment, got {type(final.sentiment)}"
+        )
+
+    @pytest.mark.e2e
+    @pytest.mark.asyncio()
+    @_SKIP
+    async def test_async_stream_list_of_nested_models(self, llm_model: Ollama) -> None:
+        """Async streaming handles array of nested objects.
+
+        Inputs: invoice description via aparse with stream=True.
+        Expected: Final item is an Invoice with at least one LineItem.
+        Checks: items is a list; total_usd > 0.
+        """
+        prompt = PromptTemplate(
+            "Extract the invoice details from the following text.\nText: {text}"
+        )
+        gen = await llm_model.aparse(
+            Invoice,
+            prompt,
+            stream=True,
+            text=(
+                "Invoice #INV-A-001 for Alpha Dynamics. "
+                "2x Monitor at $300.00 each, 1x Docking Station at $150.00. Total: $750.00."
+            ),
+        )
+        results = []
+        async for obj in gen:
+            results.append(obj)
+        assert len(results) >= 1, "Expected at least one yielded item"
+        last = results[-1]
+        final = last[0] if isinstance(last, list) else last
+        assert isinstance(final, Invoice), f"Expected Invoice, got {type(final)}"
+        assert len(final.items) >= 1, "Expected at least one line item"
+        assert final.total_usd > 0, f"Expected total_usd > 0, got {final.total_usd}"
+
+    @pytest.mark.e2e
+    @pytest.mark.asyncio()
+    @_SKIP
+    async def test_async_stream_list_of_primitives(self, llm_model: Ollama) -> None:
+        """Async streaming handles list[str] fields without nested models.
+
+        Inputs: deep learning description via aparse with stream=True.
+        Expected: Final item is a Keywords instance with non-empty keywords list.
+        Checks: keywords is a list of strings; at least one keyword.
+        """
+        prompt = PromptTemplate(
+            "Extract the topic and keywords from the text.\nText: {text}"
+        )
+        gen = await llm_model.aparse(
+            Keywords,
+            prompt,
+            stream=True,
+            text="Deep learning relies on neural networks with multiple hidden layers for representation learning.",
+        )
+        results = []
+        async for obj in gen:
+            results.append(obj)
+        assert len(results) >= 1, "Expected at least one yielded item"
+        last = results[-1]
+        final = last[0] if isinstance(last, list) else last
+        assert isinstance(final, Keywords), f"Expected Keywords, got {type(final)}"
+        assert isinstance(final.keywords, list), (
+            f"keywords should be a list, got {type(final.keywords)}"
+        )
+        assert len(final.keywords) >= 1, "Expected at least one keyword"
+
+    @pytest.mark.e2e
+    @pytest.mark.asyncio()
+    @_SKIP
+    async def test_async_stream_llm_kwargs_forwarded(self, llm_model: Ollama) -> None:
+        """llm_kwargs are forwarded to astream_chat when stream=True.
+
+        Passing num_predict limits token generation; streaming must still complete
+        and yield a parseable object for a small flat schema.
+        Inputs: flat PersonBasic schema with num_predict=200 in llm_kwargs.
+        Expected: At least one PersonBasic (or partial) yielded; no exception raised.
+        Checks: result is BaseModel; generator completes cleanly.
+        """
+        prompt = PromptTemplate(
+            "Extract the following information from the text.\nText: {text}"
+        )
+        gen = await llm_model.aparse(
+            PersonBasic,
+            prompt,
+            {"num_predict": 200},
+            stream=True,
+            text="Carlos Silva is 41, 1.72 m tall, and works as an architect.",
+        )
+        results = []
+        async for obj in gen:
+            results.append(obj)
+        assert len(results) >= 1, "Expected at least one yielded item"
+        last = results[-1]
+        final = last[0] if isinstance(last, list) else last
+        assert isinstance(final, BaseModel), f"Expected BaseModel, got {type(final)}"

@@ -1,21 +1,28 @@
-"""Unit/mock tests for Ollama.parse routing and private helpers.
+"""Unit/mock tests for Ollama.parse / Ollama.aparse routing and private helpers.
 
 All tests are @pytest.mark.mock — no running Ollama server required.
 The existing e2e tests in test_ollama_structured_predict.py already cover full
 integration across all Pydantic schema shapes.  These tests focus on:
 
-  - Routing logic in parse(): which branch is taken based on
+  - Routing logic in parse() / aparse(): which branch is taken based on
     structured_output_mode and stream flag.
-  - _parse_default: format injection, kwargs handling, message formatting,
-    return value, content coercion.
-  - _stream_parse_default: generator laziness, format injection, processor
-    construction args, exception swallowing, cur_objects update logic.
+  - _parse_default / _aparse_default: format injection, kwargs handling,
+    message formatting, return value, content coercion.
+  - _stream_parse_default / _astream_parse_default: generator laziness,
+    format injection, processor construction args, exception swallowing,
+    cur_objects update logic.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
-from types import GeneratorType
+from types import AsyncGeneratorType, GeneratorType
+
+
+async def _async_gen(*items):  # type: ignore[return]
+    """Async generator yielding items in order — used as astream_chat mock return."""
+    for item in items:
+        yield item
 
 import pytest
 from pytest_mock import MockerFixture
@@ -419,6 +426,449 @@ class TestStreamParseDefault:
         mocker.patch.object(llm, "stream_chat", return_value=iter([]))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
+        mock_proc_cls.assert_called_once_with(
+            output_cls=Simple,
+            flexible_mode=True,
+            allow_parallel_tool_calls=False,
+        )
+
+
+class TestAParseRouting:
+    """aparse() dispatches to the correct async implementation branch."""
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_default_stream_false_calls_aparse_default(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: DEFAULT mode (default), stream=False (default), topic="python".
+        Expected: _aparse_default awaited with (schema, prompt, None, {"topic": "python"}).
+        Checks: return value is what _aparse_default returns; super path not taken.
+        """
+        expected = Simple(value="x")
+        mock_pd = mocker.patch.object(
+            llm, "_aparse_default", new_callable=mocker.AsyncMock, return_value=expected
+        )
+        result = await llm.aparse(Simple, prompt, topic="python")
+        mock_pd.assert_called_once_with(Simple, prompt, None, {"topic": "python"})
+        assert result is expected, f"Expected {expected}, got {result}"
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_default_stream_true_calls_astream_parse_default(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: DEFAULT mode, stream=True (keyword-only), topic="python".
+        Expected: _astream_parse_default called (not awaited); result forwarded directly.
+        Checks: method called once with correct args; returned async generator forwarded.
+        """
+        mock_gen = mocker.MagicMock()
+        mock_spd = mocker.patch.object(llm, "_astream_parse_default", return_value=mock_gen)
+        result = await llm.aparse(Simple, prompt, stream=True, topic="python")
+        mock_spd.assert_called_once_with(Simple, prompt, None, {"topic": "python"})
+        assert result is mock_gen, f"Expected forwarded generator, got {result}"
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_default_mode_explicit_llm_kwargs_forwarded(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: explicit llm_kwargs={"temperature": 0.0}, stream=False.
+        Expected: _aparse_default receives the same kwargs dict.
+        Checks: llm_kwargs positional arg is passed through unchanged.
+        """
+        kwargs = {"temperature": 0.0}
+        expected = Simple(value="y")
+        mock_pd = mocker.patch.object(
+            llm, "_aparse_default", new_callable=mocker.AsyncMock, return_value=expected
+        )
+        await llm.aparse(Simple, prompt, kwargs, topic="x")
+        mock_pd.assert_called_once_with(Simple, prompt, kwargs, {"topic": "x"})
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    @pytest.mark.parametrize(
+        "mode",
+        [StructuredOutputMode.FUNCTION, StructuredOutputMode.LLM],
+    )
+    async def test_non_default_stream_false_calls_super_aparse(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture, mode: StructuredOutputMode
+    ) -> None:
+        """
+        Inputs: non-DEFAULT mode (FUNCTION or LLM), stream=False.
+        Expected: LLM.aparse (the base class implementation) is awaited.
+        Checks: _aparse_default is NOT called; super path IS taken.
+        """
+        llm.structured_output_mode = mode
+        expected = Simple(value="super")
+        mock_super = mocker.patch.object(
+            LLM, "aparse", new_callable=mocker.AsyncMock, return_value=expected
+        )
+        mock_pd = mocker.patch.object(llm, "_aparse_default")
+        result = await llm.aparse(Simple, prompt, topic="x")
+        mock_super.assert_called_once()
+        mock_pd.assert_not_called()
+        assert result is expected, f"Expected super().aparse() result, got {result}"
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    @pytest.mark.parametrize(
+        "mode",
+        [StructuredOutputMode.FUNCTION, StructuredOutputMode.LLM],
+    )
+    async def test_non_default_stream_true_calls_super_astream_parse(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture, mode: StructuredOutputMode
+    ) -> None:
+        """
+        Inputs: non-DEFAULT mode (FUNCTION or LLM), stream=True.
+        Expected: LLM.astream_parse is awaited; _astream_parse_default is NOT called.
+        Checks: super path taken for async streaming in non-DEFAULT mode.
+        """
+        llm.structured_output_mode = mode
+        mock_gen = mocker.MagicMock()
+        mock_super = mocker.patch.object(
+            LLM, "astream_parse", new_callable=mocker.AsyncMock, return_value=mock_gen
+        )
+        mock_spd = mocker.patch.object(llm, "_astream_parse_default")
+        result = await llm.aparse(Simple, prompt, stream=True, topic="x")
+        mock_super.assert_called_once()
+        mock_spd.assert_not_called()
+        assert result is mock_gen, f"Expected super().astream_parse() result, got {result}"
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_stream_is_keyword_only(
+        self, llm: Ollama, prompt: PromptTemplate
+    ) -> None:
+        """
+        Inputs: True passed as the 4th positional argument (would be stream).
+        Expected: TypeError — the * in the signature makes stream keyword-only.
+        Checks: Python enforces keyword-only constraint at call time.
+        """
+        with pytest.raises(TypeError):
+            await llm.aparse(Simple, prompt, None, True)  # type: ignore[call-arg]
+
+
+class TestAParseDefault:
+    """_aparse_default: format injection, kwargs handling, message formatting, return value."""
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_injects_format_into_achat_kwargs(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture, make_chat_response: Callable
+    ) -> None:
+        """
+        Inputs: schema=Simple, llm_kwargs=None.
+        Expected: self.achat called with format=Simple.model_json_schema().
+        Checks: 'format' key present with the correct schema value.
+        """
+        mock_achat = mocker.patch.object(
+            llm, "achat", new_callable=mocker.AsyncMock,
+            return_value=make_chat_response('{"value": "hi"}'),
+        )
+        await llm._aparse_default(Simple, prompt, None, {"topic": "x"})
+        _, achat_kwargs = mock_achat.call_args
+        assert achat_kwargs.get("format") == Simple.model_json_schema(), (
+            f"Expected format={Simple.model_json_schema()}, got {achat_kwargs.get('format')}"
+        )
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_none_llm_kwargs_uses_empty_dict(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture, make_chat_response: Callable
+    ) -> None:
+        """
+        Inputs: llm_kwargs=None.
+        Expected: No error; achat is called successfully with a fresh dict.
+        Checks: None is handled via `llm_kwargs or {}`.
+        """
+        mocker.patch.object(
+            llm, "achat", new_callable=mocker.AsyncMock,
+            return_value=make_chat_response('{"value": "ok"}'),
+        )
+        result = await llm._aparse_default(Simple, prompt, None, {"topic": "x"})
+        assert isinstance(result, Simple), f"Expected Simple, got {type(result)}"
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_existing_kwargs_keys_preserved_alongside_format(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture, make_chat_response: Callable
+    ) -> None:
+        """
+        Inputs: llm_kwargs={"temperature": 0.1}.
+        Expected: achat receives both 'temperature' and 'format' keys.
+        Checks: format injection does not discard pre-existing kwargs.
+        """
+        mock_achat = mocker.patch.object(
+            llm, "achat", new_callable=mocker.AsyncMock,
+            return_value=make_chat_response('{"value": "ok"}'),
+        )
+        await llm._aparse_default(Simple, prompt, {"temperature": 0.1}, {"topic": "x"})
+        _, achat_kwargs = mock_achat.call_args
+        assert "temperature" in achat_kwargs, "'temperature' key dropped from achat kwargs"
+        assert "format" in achat_kwargs, "'format' key not injected into achat kwargs"
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_calls_format_messages_with_unpacked_prompt_args(
+        self, llm: Ollama, mocker: MockerFixture, make_chat_response: Callable
+    ) -> None:
+        """
+        Inputs: prompt_args={"topic": "AI"}.
+        Expected: prompt.format_messages(topic="AI") is called (kwargs unpacked).
+        Checks: prompt_args dict is correctly unpacked when calling format_messages.
+        """
+        mock_prompt = mocker.MagicMock(spec=PromptTemplate)
+        mock_prompt.format_messages.return_value = []
+        mocker.patch.object(
+            llm, "achat", new_callable=mocker.AsyncMock,
+            return_value=make_chat_response('{"value": "ok"}'),
+        )
+        await llm._aparse_default(Simple, mock_prompt, None, {"topic": "AI"})
+        mock_prompt.format_messages.assert_called_once_with(topic="AI")
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_returns_validated_model_instance(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture, make_chat_response: Callable
+    ) -> None:
+        """
+        Inputs: response content '{"value": "hello"}'.
+        Expected: Simple(value="hello") returned.
+        Checks: model_validate_json result is what the method returns.
+        """
+        mocker.patch.object(
+            llm, "achat", new_callable=mocker.AsyncMock,
+            return_value=make_chat_response('{"value": "hello"}'),
+        )
+        result = await llm._aparse_default(Simple, prompt, None, {"topic": "x"})
+        assert isinstance(result, Simple), f"Expected Simple, got {type(result)}"
+        assert result.value == "hello", f"Expected 'hello', got '{result.value}'"
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_empty_content_string_passed_to_validate(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture, make_chat_response: Callable
+    ) -> None:
+        """
+        Inputs: response.message.content == "".
+        Expected: model_validate_json("") called (empty string forwarded as-is).
+        Checks: content or "" with empty string yields "".
+        """
+        mock_schema = mocker.MagicMock()
+        mock_schema.model_json_schema.return_value = {}
+        mocker.patch.object(
+            llm, "achat", new_callable=mocker.AsyncMock,
+            return_value=make_chat_response(""),
+        )
+        await llm._aparse_default(mock_schema, prompt, None, {"topic": "x"})
+        mock_schema.model_validate_json.assert_called_once_with("")
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_none_content_coerced_to_empty_string(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture, make_chat_response: Callable
+    ) -> None:
+        """
+        Inputs: response.message.content == None.
+        Expected: model_validate_json("") called — None coerced via `content or ""`.
+        Checks: the `or ""` guard exercises the None branch.
+        """
+        mock_schema = mocker.MagicMock()
+        mock_schema.model_json_schema.return_value = {}
+        mocker.patch.object(
+            llm, "achat", new_callable=mocker.AsyncMock,
+            return_value=make_chat_response(None),
+        )
+        await llm._aparse_default(mock_schema, prompt, None, {"topic": "x"})
+        mock_schema.model_validate_json.assert_called_once_with("")
+
+
+class TestAStreamParseDefault:
+    """_astream_parse_default: async generator semantics, processor wiring, exception handling."""
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_is_async_generator_before_any_io(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: schema=Simple, empty astream_chat iterator.
+        Expected: Calling _astream_parse_default returns AsyncGeneratorType immediately.
+        Checks: astream_chat is NOT called until the generator is advanced.
+        """
+        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        gen = llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})
+        assert isinstance(gen, AsyncGeneratorType), (
+            f"Expected AsyncGeneratorType, got {type(gen)}"
+        )
+        mock_asc.assert_not_called()
+        await gen.aclose()
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_injects_format_into_astream_chat_kwargs(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: schema=Simple, llm_kwargs=None.
+        Expected: astream_chat called with format=Simple.model_json_schema().
+        Checks: format key present with correct schema value.
+        """
+        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc.return_value = _async_gen(mocker.MagicMock())
+        mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
+        mock_proc_cls.return_value.process.return_value = Simple(value="partial")
+        async for _ in llm._astream_parse_default(Simple, prompt, None, {"topic": "x"}):
+            pass
+        _, asc_kwargs = mock_asc.call_args
+        assert asc_kwargs.get("format") == Simple.model_json_schema(), (
+            f"Expected format={Simple.model_json_schema()}, got {asc_kwargs.get('format')}"
+        )
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_none_llm_kwargs_does_not_raise(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: llm_kwargs=None.
+        Expected: generator completes without AttributeError.
+        Checks: None is handled via `_llm_kwargs or {}`.
+        """
+        obj = Simple(value="x")
+        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc.return_value = _async_gen(mocker.MagicMock())
+        mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
+        mock_proc_cls.return_value.process.return_value = obj
+        results = [item async for item in llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})]
+        assert results == [obj], f"Expected [{obj}], got {results}"
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_yields_objects_from_processor_in_order(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: astream_chat returns two chunks; processor returns one object per chunk.
+        Expected: both objects yielded in chunk order.
+        Checks: all successful processor results are yielded; count matches.
+        """
+        chunks = [mocker.MagicMock(), mocker.MagicMock()]
+        objects = [Simple(value="a"), Simple(value="b")]
+        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc.return_value = _async_gen(*chunks)
+        mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
+        mock_proc_cls.return_value.process.side_effect = objects
+        results = [item async for item in llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})]
+        assert results == objects, f"Expected {objects}, got {results}"
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_processor_exception_swallowed_and_iteration_continues(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: 3 chunks; processor raises ValueError on chunk 2, succeeds on 1 and 3.
+        Expected: only objects from chunks 1 and 3 yielded; no exception propagates.
+        Checks: bare `except Exception: continue` branch is exercised.
+        """
+        chunks = [mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock()]
+        obj_a = Simple(value="a")
+        obj_c = Simple(value="c")
+        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc.return_value = _async_gen(*chunks)
+        mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
+        mock_proc_cls.return_value.process.side_effect = [obj_a, ValueError("bad JSON fragment"), obj_c]
+        results = [item async for item in llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})]
+        assert results == [obj_a, obj_c], f"Expected [{obj_a}, {obj_c}], got {results}"
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_all_chunks_raise_yields_nothing(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: processor raises RuntimeError on every chunk.
+        Expected: generator completes normally, yielding an empty sequence.
+        Checks: exception swallowing works for every iteration step.
+        """
+        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc.return_value = _async_gen(mocker.MagicMock(), mocker.MagicMock())
+        mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
+        mock_proc_cls.return_value.process.side_effect = RuntimeError("boom")
+        results = [item async for item in llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})]
+        assert results == [], f"Expected empty list, got {results}"
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_cur_objects_wraps_single_result_for_next_call(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: processor returns a single BaseModel on both calls.
+        Expected: second process() call receives cur_objects=[first_object].
+        Checks: `objects if isinstance(objects, list) else [objects]` wrapping branch.
+        """
+        chunks = [mocker.MagicMock(), mocker.MagicMock()]
+        obj1 = Simple(value="first")
+        obj2 = Simple(value="second")
+        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc.return_value = _async_gen(*chunks)
+        mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
+        mock_proc = mock_proc_cls.return_value
+        mock_proc.process.side_effect = [obj1, obj2]
+        [item async for item in llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})]
+        process_calls = mock_proc.process.call_args_list
+        assert process_calls[0] == mocker.call(chunks[0], None), (
+            f"First call: expected (chunks[0], None), got {process_calls[0]}"
+        )
+        assert process_calls[1] == mocker.call(chunks[1], [obj1]), (
+            f"Second call: expected (chunks[1], [{obj1}]), got {process_calls[1]}"
+        )
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_cur_objects_list_result_passed_as_is(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: processor returns a list[BaseModel] on the first call.
+        Expected: second process() call receives that list directly (not re-wrapped).
+        Checks: `isinstance(objects, list)` branch passes the list through unchanged.
+        """
+        chunks = [mocker.MagicMock(), mocker.MagicMock()]
+        obj_list = [Simple(value="x"), Simple(value="y")]
+        obj2 = Simple(value="second")
+        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc.return_value = _async_gen(*chunks)
+        mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
+        mock_proc = mock_proc_cls.return_value
+        mock_proc.process.side_effect = [obj_list, obj2]
+        [item async for item in llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})]
+        process_calls = mock_proc.process.call_args_list
+        assert process_calls[1] == mocker.call(chunks[1], obj_list), (
+            f"Second call: expected (chunks[1], obj_list), got {process_calls[1]}"
+        )
+
+    @pytest.mark.mock
+    @pytest.mark.asyncio()
+    async def test_processor_constructed_with_correct_kwargs(
+        self, llm: Ollama, prompt: PromptTemplate, mocker: MockerFixture
+    ) -> None:
+        """
+        Inputs: schema=Simple.
+        Expected: StreamingObjectProcessor(output_cls=Simple, flexible_mode=True,
+                  allow_parallel_tool_calls=False).
+        Checks: constructor receives exact keyword arguments — no accidental drift.
+        """
+        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc.return_value = _async_gen()
+        mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
+        [item async for item in llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})]
         mock_proc_cls.assert_called_once_with(
             output_cls=Simple,
             flexible_mode=True,

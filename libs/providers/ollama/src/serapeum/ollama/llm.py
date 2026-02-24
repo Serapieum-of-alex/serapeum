@@ -1380,31 +1380,68 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             except Exception:
                 continue
 
+    @overload
+    async def aparse(
+        self,
+        schema: type[BaseModel] | Callable[..., Any],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ...,
+        *,
+        stream: Literal[False] = ...,
+        **prompt_args: Any,
+    ) -> BaseModel: ...
+
+    @overload
+    async def aparse(
+        self,
+        schema: type[BaseModel] | Callable[..., Any],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ...,
+        *,
+        stream: Literal[True],
+        **prompt_args: Any,
+    ) -> AsyncGenerator[BaseModel | list[BaseModel], None]: ...
+
     async def aparse(
         self,
         schema: type[BaseModel] | Callable[..., Any],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
+        *,
+        stream: bool = False,
         **prompt_args: Any,
-    ) -> BaseModel:
+    ) -> BaseModel | AsyncGenerator[BaseModel | list[BaseModel], None]:
         """Asynchronously generate structured output conforming to a Pydantic model schema.
 
         Async variant of parse. Instructs the Ollama model to emit JSON
         matching the schema of output_cls, then validates and parses the response
         into a Pydantic instance using the async chat interface.
 
+        When ``stream=True``, returns an async generator that yields incrementally
+        parsed Pydantic instances as the model streams JSON content, using
+        StreamingObjectProcessor with flexible mode to handle incomplete JSON fragments.
+
         Args:
-            schema: Target Pydantic model class defining the expected structure.
-            prompt: PromptTemplate that will be formatted with prompt_args to create messages.
+            schema: Target Pydantic model class (or callable) defining the expected
+                structure. A callable is accepted when routing through
+                ToolOrchestratingLLM (non-DEFAULT modes).
+            prompt: PromptTemplate that will be formatted with prompt_args to create
+                messages.
             llm_kwargs: Additional provider arguments passed to the achat method.
                 Defaults to empty dict.
+            stream: If ``False`` (default), awaits the full response and returns a
+                single validated instance. If ``True``, returns an async generator
+                that yields partially complete instances as JSON is streamed.
             **prompt_args: Template variables used to format the prompt.
 
         Returns:
-            Instance of output_cls parsed and validated from the model's JSON response.
+            A validated ``BaseModel`` instance when ``stream=False``, or an
+            ``AsyncGenerator`` yielding ``BaseModel | list[BaseModel]`` when
+            ``stream=True``.
 
         Raises:
-            ValidationError: If the model's response doesn't match the schema.
+            ValidationError: If the model's response doesn't match the schema
+                (non-streaming mode only).
 
         Examples:
             - Async structured extraction
@@ -1419,60 +1456,12 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> llm = Ollama(model="llama3.1", request_timeout=120)  # doctest: +SKIP
                 >>> async def extract_city():       # doctest: +SKIP
                 ...     prompt = PromptTemplate("Extract city: {text}")
-                ...     result = await llm.aparse(
-                ...         City,
-                ...         prompt,
-                ...         text="Paris is in France"
-                ...     )
+                ...     result = await llm.aparse(City, prompt, text="Paris is in France")
                 ...     return result.name == "Paris"
                 >>> asyncio.run(extract_city())  # Returns True     # doctest: +SKIP
 
                 ```
 
-        See Also:
-            parse: Synchronous variant.
-            astream_parse: Async streaming variant.
-        """
-        if self.structured_output_mode == StructuredOutputMode.DEFAULT:
-            llm_kwargs = llm_kwargs or {}
-            llm_kwargs["format"] = schema.model_json_schema()
-
-            messages = prompt.format_messages(**prompt_args)
-            response = await self.achat(messages, **llm_kwargs)
-
-            return schema.model_validate_json(response.message.content or "")
-        else:
-            return await super().aparse(
-                schema, prompt, llm_kwargs, **prompt_args
-            )
-
-    async def astream_parse(
-        self,
-        schema: type[BaseModel] | Callable[..., Any],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        **prompt_args: Any,
-    ) -> AsyncGenerator[BaseModel | list[BaseModel], None]:
-        """Asynchronously stream incrementally parsed structured objects as the model generates JSON.
-
-        Async variant of stream_parse. Yields partially complete Pydantic
-        instances as the model streams JSON content, allowing early access to structured
-        data before the full response completes. Uses StreamingObjectProcessor with
-        flexible mode to handle incomplete JSON.
-
-        Args:
-            schema: Pydantic model class defining the expected structure.
-            prompt: PromptTemplate that will be formatted with prompt_args to create messages.
-            llm_kwargs: Additional provider arguments passed to astream_chat.
-                Defaults to empty dict.
-            **prompt_args: Template variables used to format the prompt.
-
-        Returns:
-            Async generator yielding parsed Pydantic instance(s) - either a single BaseModel
-            or list of BaseModel. Each yielded value represents the current state of parsing
-            as more JSON arrives.
-
-        Examples:
             - Async stream structured data as it's generated
                 ```python
                 >>> import asyncio
@@ -1485,55 +1474,61 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
                 >>> async def stream_analysis():
                 ...     prompt = PromptTemplate("Analyze: {text}")
-                ...     async for obj in await llm.astream_parse(
-                ...         Analysis,
-                ...         prompt,
-                ...         text="Product review text..."
+                ...     async for obj in await llm.aparse(
+                ...         Analysis, prompt, stream=True, text="Product review text..."
                 ...     ):
-                ...         # obj is progressively more complete
-                ...         print(f"Sentiment: {obj.sentiment if hasattr(obj, 'sentiment') else 'pending'}")
+                ...         print(obj)
                 >>> asyncio.run(stream_analysis())      # doctest: +SKIP
 
                 ```
 
         See Also:
-            stream_parse: Synchronous streaming counterpart.
-            aparse: Non-streaming async variant.
+            parse: Synchronous variant.
         """
         if self.structured_output_mode == StructuredOutputMode.DEFAULT:
-
-            async def gen(
-                output_cls: type[BaseModel],
-                prompt: PromptTemplate,
-                llm_kwargs: dict[str, Any] | None,
-                prompt_args: dict[str, Any],
-            ) -> AsyncGenerator[BaseModel | list[BaseModel], None]:
-                llm_kwargs = llm_kwargs or {}
-                llm_kwargs["format"] = output_cls.model_json_schema()
-
-                messages = prompt.format_messages(**prompt_args)
-                response_gen = await self.astream_chat(messages, **llm_kwargs)
-
-                processor = StreamingObjectProcessor(
-                    output_cls=output_cls,
-                    flexible_mode=True,
-                    allow_parallel_tool_calls=False,
-                )
-                cur_objects = None
-                async for response in response_gen:
-                    try:
-                        objects = processor.process(response, cur_objects)
-
-                        cur_objects = (
-                            objects if isinstance(objects, list) else [objects]
-                        )
-                        yield objects
-                    except Exception:
-                        continue
-
-            return gen(schema, prompt, llm_kwargs, prompt_args)
-        else:
-            # Fall back to non-streaming structured predict
+            if stream:
+                return self._astream_parse_default(schema, prompt, llm_kwargs, prompt_args)
+            return await self._aparse_default(schema, prompt, llm_kwargs, prompt_args)
+        if stream:
             return await super().astream_parse(  # type: ignore[return-value]
                 schema, prompt, llm_kwargs, **prompt_args
             )
+        return await super().aparse(schema, prompt, llm_kwargs, **prompt_args)
+
+    async def _aparse_default(
+        self,
+        schema: type[BaseModel] | Callable[..., Any],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None,
+        prompt_args: dict[str, Any],
+    ) -> BaseModel:
+        llm_kwargs = llm_kwargs or {}
+        llm_kwargs["format"] = schema.model_json_schema()
+        messages = prompt.format_messages(**prompt_args)
+        response = await self.achat(messages, **llm_kwargs)
+        return schema.model_validate_json(response.message.content or "")
+
+    async def _astream_parse_default(
+        self,
+        schema: type[BaseModel] | Callable[..., Any],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None,
+        prompt_args: dict[str, Any],
+    ) -> AsyncGenerator[BaseModel | list[BaseModel], None]:
+        _llm_kwargs = llm_kwargs or {}
+        _llm_kwargs["format"] = schema.model_json_schema()
+        messages = prompt.format_messages(**prompt_args)
+        response_gen = await self.astream_chat(messages, **_llm_kwargs)
+        processor = StreamingObjectProcessor(
+            output_cls=schema,
+            flexible_mode=True,
+            allow_parallel_tool_calls=False,
+        )
+        cur_objects = None
+        async for response in response_gen:
+            try:
+                objects = processor.process(response, cur_objects)
+                cur_objects = objects if isinstance(objects, list) else [objects]
+                yield objects
+            except Exception:
+                continue

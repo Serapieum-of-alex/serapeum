@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -2271,17 +2271,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#serapeum.ollama.llm.Ollama.astream_parse" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        astream_parse
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#serapeum.ollama.llm.Ollama.chat" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2996,17 +2985,6 @@
     <span class="md-ellipsis">
       
         astream_chat
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#serapeum.ollama.llm.Ollama.astream_parse" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        astream_parse
       
     </span>
   </a>
@@ -5031,12 +5009,7 @@ alist_models: Async variant of list_models.</p>
 <span class="normal"><a href="#__codelineno-0-1531">1531</a></span>
 <span class="normal"><a href="#__codelineno-0-1532">1532</a></span>
 <span class="normal"><a href="#__codelineno-0-1533">1533</a></span>
-<span class="normal"><a href="#__codelineno-0-1534">1534</a></span>
-<span class="normal"><a href="#__codelineno-0-1535">1535</a></span>
-<span class="normal"><a href="#__codelineno-0-1536">1536</a></span>
-<span class="normal"><a href="#__codelineno-0-1537">1537</a></span>
-<span class="normal"><a href="#__codelineno-0-1538">1538</a></span>
-<span class="normal"><a href="#__codelineno-0-1539">1539</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-134" name="__codelineno-0-134"></a><span class="k">class</span><span class="w"> </span><span class="nc">Ollama</span><span class="p">(</span><span class="n">OllamaClientMixin</span><span class="p">,</span> <span class="n">ChatToCompletionMixin</span><span class="p">,</span> <span class="n">FunctionCallingLLM</span><span class="p">):</span>
+<span class="normal"><a href="#__codelineno-0-1534">1534</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-134" name="__codelineno-0-134"></a><span class="k">class</span><span class="w"> </span><span class="nc">Ollama</span><span class="p">(</span><span class="n">OllamaClientMixin</span><span class="p">,</span> <span class="n">ChatToCompletionMixin</span><span class="p">,</span> <span class="n">FunctionCallingLLM</span><span class="p">):</span>
 <a id="__codelineno-0-135" name="__codelineno-0-135"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Ollama LLM adapter for chat, streaming, structured output, and tool calling.</span>
 <a id="__codelineno-0-136" name="__codelineno-0-136"></a>
 <a id="__codelineno-0-137" name="__codelineno-0-137"></a><span class="sd">    Integrates with a local or remote Ollama server to expose synchronous and</span>
@@ -6285,163 +6258,158 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-1380" name="__codelineno-0-1380"></a>            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
 <a id="__codelineno-0-1381" name="__codelineno-0-1381"></a>                <span class="k">continue</span>
 <a id="__codelineno-0-1382" name="__codelineno-0-1382"></a>
-<a id="__codelineno-0-1383" name="__codelineno-0-1383"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aparse</span><span class="p">(</span>
-<a id="__codelineno-0-1384" name="__codelineno-0-1384"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1385" name="__codelineno-0-1385"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<a id="__codelineno-0-1386" name="__codelineno-0-1386"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
-<a id="__codelineno-0-1387" name="__codelineno-0-1387"></a>        <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-1388" name="__codelineno-0-1388"></a>        <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<a id="__codelineno-0-1389" name="__codelineno-0-1389"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span><span class="p">:</span>
-<a id="__codelineno-0-1390" name="__codelineno-0-1390"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Asynchronously generate structured output conforming to a Pydantic model schema.</span>
-<a id="__codelineno-0-1391" name="__codelineno-0-1391"></a>
-<a id="__codelineno-0-1392" name="__codelineno-0-1392"></a><span class="sd">        Async variant of parse. Instructs the Ollama model to emit JSON</span>
-<a id="__codelineno-0-1393" name="__codelineno-0-1393"></a><span class="sd">        matching the schema of output_cls, then validates and parses the response</span>
-<a id="__codelineno-0-1394" name="__codelineno-0-1394"></a><span class="sd">        into a Pydantic instance using the async chat interface.</span>
-<a id="__codelineno-0-1395" name="__codelineno-0-1395"></a>
-<a id="__codelineno-0-1396" name="__codelineno-0-1396"></a><span class="sd">        Args:</span>
-<a id="__codelineno-0-1397" name="__codelineno-0-1397"></a><span class="sd">            schema: Target Pydantic model class defining the expected structure.</span>
-<a id="__codelineno-0-1398" name="__codelineno-0-1398"></a><span class="sd">            prompt: PromptTemplate that will be formatted with prompt_args to create messages.</span>
-<a id="__codelineno-0-1399" name="__codelineno-0-1399"></a><span class="sd">            llm_kwargs: Additional provider arguments passed to the achat method.</span>
-<a id="__codelineno-0-1400" name="__codelineno-0-1400"></a><span class="sd">                Defaults to empty dict.</span>
-<a id="__codelineno-0-1401" name="__codelineno-0-1401"></a><span class="sd">            **prompt_args: Template variables used to format the prompt.</span>
-<a id="__codelineno-0-1402" name="__codelineno-0-1402"></a>
-<a id="__codelineno-0-1403" name="__codelineno-0-1403"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-0-1404" name="__codelineno-0-1404"></a><span class="sd">            Instance of output_cls parsed and validated from the model&#39;s JSON response.</span>
-<a id="__codelineno-0-1405" name="__codelineno-0-1405"></a>
-<a id="__codelineno-0-1406" name="__codelineno-0-1406"></a><span class="sd">        Raises:</span>
-<a id="__codelineno-0-1407" name="__codelineno-0-1407"></a><span class="sd">            ValidationError: If the model&#39;s response doesn&#39;t match the schema.</span>
-<a id="__codelineno-0-1408" name="__codelineno-0-1408"></a>
-<a id="__codelineno-0-1409" name="__codelineno-0-1409"></a><span class="sd">        Examples:</span>
-<a id="__codelineno-0-1410" name="__codelineno-0-1410"></a><span class="sd">            - Async structured extraction</span>
-<a id="__codelineno-0-1411" name="__codelineno-0-1411"></a><span class="sd">                ```python</span>
-<a id="__codelineno-0-1412" name="__codelineno-0-1412"></a><span class="sd">                &gt;&gt;&gt; import asyncio</span>
-<a id="__codelineno-0-1413" name="__codelineno-0-1413"></a><span class="sd">                &gt;&gt;&gt; from pydantic import BaseModel</span>
-<a id="__codelineno-0-1414" name="__codelineno-0-1414"></a><span class="sd">                &gt;&gt;&gt; from serapeum.core.prompts import PromptTemplate</span>
-<a id="__codelineno-0-1415" name="__codelineno-0-1415"></a><span class="sd">                &gt;&gt;&gt; from serapeum.ollama import Ollama      # type: ignore</span>
-<a id="__codelineno-0-1416" name="__codelineno-0-1416"></a><span class="sd">                &gt;&gt;&gt; class City(BaseModel):</span>
-<a id="__codelineno-0-1417" name="__codelineno-0-1417"></a><span class="sd">                ...     name: str</span>
-<a id="__codelineno-0-1418" name="__codelineno-0-1418"></a><span class="sd">                ...     country: str</span>
-<a id="__codelineno-0-1419" name="__codelineno-0-1419"></a><span class="sd">                &gt;&gt;&gt; llm = Ollama(model=&quot;llama3.1&quot;, request_timeout=120)  # doctest: +SKIP</span>
-<a id="__codelineno-0-1420" name="__codelineno-0-1420"></a><span class="sd">                &gt;&gt;&gt; async def extract_city():       # doctest: +SKIP</span>
-<a id="__codelineno-0-1421" name="__codelineno-0-1421"></a><span class="sd">                ...     prompt = PromptTemplate(&quot;Extract city: {text}&quot;)</span>
-<a id="__codelineno-0-1422" name="__codelineno-0-1422"></a><span class="sd">                ...     result = await llm.aparse(</span>
-<a id="__codelineno-0-1423" name="__codelineno-0-1423"></a><span class="sd">                ...         City,</span>
-<a id="__codelineno-0-1424" name="__codelineno-0-1424"></a><span class="sd">                ...         prompt,</span>
-<a id="__codelineno-0-1425" name="__codelineno-0-1425"></a><span class="sd">                ...         text=&quot;Paris is in France&quot;</span>
-<a id="__codelineno-0-1426" name="__codelineno-0-1426"></a><span class="sd">                ...     )</span>
-<a id="__codelineno-0-1427" name="__codelineno-0-1427"></a><span class="sd">                ...     return result.name == &quot;Paris&quot;</span>
-<a id="__codelineno-0-1428" name="__codelineno-0-1428"></a><span class="sd">                &gt;&gt;&gt; asyncio.run(extract_city())  # Returns True     # doctest: +SKIP</span>
-<a id="__codelineno-0-1429" name="__codelineno-0-1429"></a>
-<a id="__codelineno-0-1430" name="__codelineno-0-1430"></a><span class="sd">                ```</span>
-<a id="__codelineno-0-1431" name="__codelineno-0-1431"></a>
-<a id="__codelineno-0-1432" name="__codelineno-0-1432"></a><span class="sd">        See Also:</span>
-<a id="__codelineno-0-1433" name="__codelineno-0-1433"></a><span class="sd">            parse: Synchronous variant.</span>
-<a id="__codelineno-0-1434" name="__codelineno-0-1434"></a><span class="sd">            astream_parse: Async streaming variant.</span>
-<a id="__codelineno-0-1435" name="__codelineno-0-1435"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-1436" name="__codelineno-0-1436"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">structured_output_mode</span> <span class="o">==</span> <span class="n">StructuredOutputMode</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">:</span>
-<a id="__codelineno-0-1437" name="__codelineno-0-1437"></a>            <span class="n">llm_kwargs</span> <span class="o">=</span> <span class="n">llm_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
-<a id="__codelineno-0-1438" name="__codelineno-0-1438"></a>            <span class="n">llm_kwargs</span><span class="p">[</span><span class="s2">&quot;format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
-<a id="__codelineno-0-1439" name="__codelineno-0-1439"></a>
-<a id="__codelineno-0-1440" name="__codelineno-0-1440"></a>            <span class="n">messages</span> <span class="o">=</span> <span class="n">prompt</span><span class="o">.</span><span class="n">format_messages</span><span class="p">(</span><span class="o">**</span><span class="n">prompt_args</span><span class="p">)</span>
-<a id="__codelineno-0-1441" name="__codelineno-0-1441"></a>            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">achat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">llm_kwargs</span><span class="p">)</span>
-<a id="__codelineno-0-1442" name="__codelineno-0-1442"></a>
-<a id="__codelineno-0-1443" name="__codelineno-0-1443"></a>            <span class="k">return</span> <span class="n">schema</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-1444" name="__codelineno-0-1444"></a>        <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-1445" name="__codelineno-0-1445"></a>            <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">aparse</span><span class="p">(</span>
-<a id="__codelineno-0-1446" name="__codelineno-0-1446"></a>                <span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span>
-<a id="__codelineno-0-1447" name="__codelineno-0-1447"></a>            <span class="p">)</span>
-<a id="__codelineno-0-1448" name="__codelineno-0-1448"></a>
-<a id="__codelineno-0-1449" name="__codelineno-0-1449"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">astream_parse</span><span class="p">(</span>
-<a id="__codelineno-0-1450" name="__codelineno-0-1450"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1451" name="__codelineno-0-1451"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<a id="__codelineno-0-1452" name="__codelineno-0-1452"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
-<a id="__codelineno-0-1453" name="__codelineno-0-1453"></a>        <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-1454" name="__codelineno-0-1454"></a>        <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<a id="__codelineno-0-1455" name="__codelineno-0-1455"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">BaseModel</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
-<a id="__codelineno-0-1456" name="__codelineno-0-1456"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Asynchronously stream incrementally parsed structured objects as the model generates JSON.</span>
-<a id="__codelineno-0-1457" name="__codelineno-0-1457"></a>
-<a id="__codelineno-0-1458" name="__codelineno-0-1458"></a><span class="sd">        Async variant of stream_parse. Yields partially complete Pydantic</span>
-<a id="__codelineno-0-1459" name="__codelineno-0-1459"></a><span class="sd">        instances as the model streams JSON content, allowing early access to structured</span>
-<a id="__codelineno-0-1460" name="__codelineno-0-1460"></a><span class="sd">        data before the full response completes. Uses StreamingObjectProcessor with</span>
-<a id="__codelineno-0-1461" name="__codelineno-0-1461"></a><span class="sd">        flexible mode to handle incomplete JSON.</span>
+<a id="__codelineno-0-1383" name="__codelineno-0-1383"></a>    <span class="nd">@overload</span>
+<a id="__codelineno-0-1384" name="__codelineno-0-1384"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aparse</span><span class="p">(</span>
+<a id="__codelineno-0-1385" name="__codelineno-0-1385"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-1386" name="__codelineno-0-1386"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<a id="__codelineno-0-1387" name="__codelineno-0-1387"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
+<a id="__codelineno-0-1388" name="__codelineno-0-1388"></a>        <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
+<a id="__codelineno-0-1389" name="__codelineno-0-1389"></a>        <span class="o">*</span><span class="p">,</span>
+<a id="__codelineno-0-1390" name="__codelineno-0-1390"></a>        <span class="n">stream</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
+<a id="__codelineno-0-1391" name="__codelineno-0-1391"></a>        <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<a id="__codelineno-0-1392" name="__codelineno-0-1392"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span><span class="p">:</span> <span class="o">...</span>
+<a id="__codelineno-0-1393" name="__codelineno-0-1393"></a>
+<a id="__codelineno-0-1394" name="__codelineno-0-1394"></a>    <span class="nd">@overload</span>
+<a id="__codelineno-0-1395" name="__codelineno-0-1395"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aparse</span><span class="p">(</span>
+<a id="__codelineno-0-1396" name="__codelineno-0-1396"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-1397" name="__codelineno-0-1397"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<a id="__codelineno-0-1398" name="__codelineno-0-1398"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
+<a id="__codelineno-0-1399" name="__codelineno-0-1399"></a>        <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
+<a id="__codelineno-0-1400" name="__codelineno-0-1400"></a>        <span class="o">*</span><span class="p">,</span>
+<a id="__codelineno-0-1401" name="__codelineno-0-1401"></a>        <span class="n">stream</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">True</span><span class="p">],</span>
+<a id="__codelineno-0-1402" name="__codelineno-0-1402"></a>        <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<a id="__codelineno-0-1403" name="__codelineno-0-1403"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">BaseModel</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span> <span class="o">...</span>
+<a id="__codelineno-0-1404" name="__codelineno-0-1404"></a>
+<a id="__codelineno-0-1405" name="__codelineno-0-1405"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aparse</span><span class="p">(</span>
+<a id="__codelineno-0-1406" name="__codelineno-0-1406"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-1407" name="__codelineno-0-1407"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<a id="__codelineno-0-1408" name="__codelineno-0-1408"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
+<a id="__codelineno-0-1409" name="__codelineno-0-1409"></a>        <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-1410" name="__codelineno-0-1410"></a>        <span class="o">*</span><span class="p">,</span>
+<a id="__codelineno-0-1411" name="__codelineno-0-1411"></a>        <span class="n">stream</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-1412" name="__codelineno-0-1412"></a>        <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<a id="__codelineno-0-1413" name="__codelineno-0-1413"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">BaseModel</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<a id="__codelineno-0-1414" name="__codelineno-0-1414"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Asynchronously generate structured output conforming to a Pydantic model schema.</span>
+<a id="__codelineno-0-1415" name="__codelineno-0-1415"></a>
+<a id="__codelineno-0-1416" name="__codelineno-0-1416"></a><span class="sd">        Async variant of parse. Instructs the Ollama model to emit JSON</span>
+<a id="__codelineno-0-1417" name="__codelineno-0-1417"></a><span class="sd">        matching the schema of output_cls, then validates and parses the response</span>
+<a id="__codelineno-0-1418" name="__codelineno-0-1418"></a><span class="sd">        into a Pydantic instance using the async chat interface.</span>
+<a id="__codelineno-0-1419" name="__codelineno-0-1419"></a>
+<a id="__codelineno-0-1420" name="__codelineno-0-1420"></a><span class="sd">        When ``stream=True``, returns an async generator that yields incrementally</span>
+<a id="__codelineno-0-1421" name="__codelineno-0-1421"></a><span class="sd">        parsed Pydantic instances as the model streams JSON content, using</span>
+<a id="__codelineno-0-1422" name="__codelineno-0-1422"></a><span class="sd">        StreamingObjectProcessor with flexible mode to handle incomplete JSON fragments.</span>
+<a id="__codelineno-0-1423" name="__codelineno-0-1423"></a>
+<a id="__codelineno-0-1424" name="__codelineno-0-1424"></a><span class="sd">        Args:</span>
+<a id="__codelineno-0-1425" name="__codelineno-0-1425"></a><span class="sd">            schema: Target Pydantic model class (or callable) defining the expected</span>
+<a id="__codelineno-0-1426" name="__codelineno-0-1426"></a><span class="sd">                structure. A callable is accepted when routing through</span>
+<a id="__codelineno-0-1427" name="__codelineno-0-1427"></a><span class="sd">                ToolOrchestratingLLM (non-DEFAULT modes).</span>
+<a id="__codelineno-0-1428" name="__codelineno-0-1428"></a><span class="sd">            prompt: PromptTemplate that will be formatted with prompt_args to create</span>
+<a id="__codelineno-0-1429" name="__codelineno-0-1429"></a><span class="sd">                messages.</span>
+<a id="__codelineno-0-1430" name="__codelineno-0-1430"></a><span class="sd">            llm_kwargs: Additional provider arguments passed to the achat method.</span>
+<a id="__codelineno-0-1431" name="__codelineno-0-1431"></a><span class="sd">                Defaults to empty dict.</span>
+<a id="__codelineno-0-1432" name="__codelineno-0-1432"></a><span class="sd">            stream: If ``False`` (default), awaits the full response and returns a</span>
+<a id="__codelineno-0-1433" name="__codelineno-0-1433"></a><span class="sd">                single validated instance. If ``True``, returns an async generator</span>
+<a id="__codelineno-0-1434" name="__codelineno-0-1434"></a><span class="sd">                that yields partially complete instances as JSON is streamed.</span>
+<a id="__codelineno-0-1435" name="__codelineno-0-1435"></a><span class="sd">            **prompt_args: Template variables used to format the prompt.</span>
+<a id="__codelineno-0-1436" name="__codelineno-0-1436"></a>
+<a id="__codelineno-0-1437" name="__codelineno-0-1437"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-0-1438" name="__codelineno-0-1438"></a><span class="sd">            A validated ``BaseModel`` instance when ``stream=False``, or an</span>
+<a id="__codelineno-0-1439" name="__codelineno-0-1439"></a><span class="sd">            ``AsyncGenerator`` yielding ``BaseModel | list[BaseModel]`` when</span>
+<a id="__codelineno-0-1440" name="__codelineno-0-1440"></a><span class="sd">            ``stream=True``.</span>
+<a id="__codelineno-0-1441" name="__codelineno-0-1441"></a>
+<a id="__codelineno-0-1442" name="__codelineno-0-1442"></a><span class="sd">        Raises:</span>
+<a id="__codelineno-0-1443" name="__codelineno-0-1443"></a><span class="sd">            ValidationError: If the model&#39;s response doesn&#39;t match the schema</span>
+<a id="__codelineno-0-1444" name="__codelineno-0-1444"></a><span class="sd">                (non-streaming mode only).</span>
+<a id="__codelineno-0-1445" name="__codelineno-0-1445"></a>
+<a id="__codelineno-0-1446" name="__codelineno-0-1446"></a><span class="sd">        Examples:</span>
+<a id="__codelineno-0-1447" name="__codelineno-0-1447"></a><span class="sd">            - Async structured extraction</span>
+<a id="__codelineno-0-1448" name="__codelineno-0-1448"></a><span class="sd">                ```python</span>
+<a id="__codelineno-0-1449" name="__codelineno-0-1449"></a><span class="sd">                &gt;&gt;&gt; import asyncio</span>
+<a id="__codelineno-0-1450" name="__codelineno-0-1450"></a><span class="sd">                &gt;&gt;&gt; from pydantic import BaseModel</span>
+<a id="__codelineno-0-1451" name="__codelineno-0-1451"></a><span class="sd">                &gt;&gt;&gt; from serapeum.core.prompts import PromptTemplate</span>
+<a id="__codelineno-0-1452" name="__codelineno-0-1452"></a><span class="sd">                &gt;&gt;&gt; from serapeum.ollama import Ollama      # type: ignore</span>
+<a id="__codelineno-0-1453" name="__codelineno-0-1453"></a><span class="sd">                &gt;&gt;&gt; class City(BaseModel):</span>
+<a id="__codelineno-0-1454" name="__codelineno-0-1454"></a><span class="sd">                ...     name: str</span>
+<a id="__codelineno-0-1455" name="__codelineno-0-1455"></a><span class="sd">                ...     country: str</span>
+<a id="__codelineno-0-1456" name="__codelineno-0-1456"></a><span class="sd">                &gt;&gt;&gt; llm = Ollama(model=&quot;llama3.1&quot;, request_timeout=120)  # doctest: +SKIP</span>
+<a id="__codelineno-0-1457" name="__codelineno-0-1457"></a><span class="sd">                &gt;&gt;&gt; async def extract_city():       # doctest: +SKIP</span>
+<a id="__codelineno-0-1458" name="__codelineno-0-1458"></a><span class="sd">                ...     prompt = PromptTemplate(&quot;Extract city: {text}&quot;)</span>
+<a id="__codelineno-0-1459" name="__codelineno-0-1459"></a><span class="sd">                ...     result = await llm.aparse(City, prompt, text=&quot;Paris is in France&quot;)</span>
+<a id="__codelineno-0-1460" name="__codelineno-0-1460"></a><span class="sd">                ...     return result.name == &quot;Paris&quot;</span>
+<a id="__codelineno-0-1461" name="__codelineno-0-1461"></a><span class="sd">                &gt;&gt;&gt; asyncio.run(extract_city())  # Returns True     # doctest: +SKIP</span>
 <a id="__codelineno-0-1462" name="__codelineno-0-1462"></a>
-<a id="__codelineno-0-1463" name="__codelineno-0-1463"></a><span class="sd">        Args:</span>
-<a id="__codelineno-0-1464" name="__codelineno-0-1464"></a><span class="sd">            schema: Pydantic model class defining the expected structure.</span>
-<a id="__codelineno-0-1465" name="__codelineno-0-1465"></a><span class="sd">            prompt: PromptTemplate that will be formatted with prompt_args to create messages.</span>
-<a id="__codelineno-0-1466" name="__codelineno-0-1466"></a><span class="sd">            llm_kwargs: Additional provider arguments passed to astream_chat.</span>
-<a id="__codelineno-0-1467" name="__codelineno-0-1467"></a><span class="sd">                Defaults to empty dict.</span>
-<a id="__codelineno-0-1468" name="__codelineno-0-1468"></a><span class="sd">            **prompt_args: Template variables used to format the prompt.</span>
-<a id="__codelineno-0-1469" name="__codelineno-0-1469"></a>
-<a id="__codelineno-0-1470" name="__codelineno-0-1470"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-0-1471" name="__codelineno-0-1471"></a><span class="sd">            Async generator yielding parsed Pydantic instance(s) - either a single BaseModel</span>
-<a id="__codelineno-0-1472" name="__codelineno-0-1472"></a><span class="sd">            or list of BaseModel. Each yielded value represents the current state of parsing</span>
-<a id="__codelineno-0-1473" name="__codelineno-0-1473"></a><span class="sd">            as more JSON arrives.</span>
-<a id="__codelineno-0-1474" name="__codelineno-0-1474"></a>
-<a id="__codelineno-0-1475" name="__codelineno-0-1475"></a><span class="sd">        Examples:</span>
-<a id="__codelineno-0-1476" name="__codelineno-0-1476"></a><span class="sd">            - Async stream structured data as it&#39;s generated</span>
-<a id="__codelineno-0-1477" name="__codelineno-0-1477"></a><span class="sd">                ```python</span>
-<a id="__codelineno-0-1478" name="__codelineno-0-1478"></a><span class="sd">                &gt;&gt;&gt; import asyncio</span>
-<a id="__codelineno-0-1479" name="__codelineno-0-1479"></a><span class="sd">                &gt;&gt;&gt; from pydantic import BaseModel</span>
-<a id="__codelineno-0-1480" name="__codelineno-0-1480"></a><span class="sd">                &gt;&gt;&gt; from serapeum.core.prompts import PromptTemplate</span>
-<a id="__codelineno-0-1481" name="__codelineno-0-1481"></a><span class="sd">                &gt;&gt;&gt; from serapeum.ollama import Ollama      # type: ignore</span>
-<a id="__codelineno-0-1482" name="__codelineno-0-1482"></a><span class="sd">                &gt;&gt;&gt; class Analysis(BaseModel):</span>
-<a id="__codelineno-0-1483" name="__codelineno-0-1483"></a><span class="sd">                ...     sentiment: str</span>
-<a id="__codelineno-0-1484" name="__codelineno-0-1484"></a><span class="sd">                ...     keywords: list[str]</span>
-<a id="__codelineno-0-1485" name="__codelineno-0-1485"></a><span class="sd">                &gt;&gt;&gt; llm = Ollama(model=&quot;llama3.1&quot;, request_timeout=120)     # doctest: +SKIP</span>
-<a id="__codelineno-0-1486" name="__codelineno-0-1486"></a><span class="sd">                &gt;&gt;&gt; async def stream_analysis():</span>
-<a id="__codelineno-0-1487" name="__codelineno-0-1487"></a><span class="sd">                ...     prompt = PromptTemplate(&quot;Analyze: {text}&quot;)</span>
-<a id="__codelineno-0-1488" name="__codelineno-0-1488"></a><span class="sd">                ...     async for obj in await llm.astream_parse(</span>
-<a id="__codelineno-0-1489" name="__codelineno-0-1489"></a><span class="sd">                ...         Analysis,</span>
-<a id="__codelineno-0-1490" name="__codelineno-0-1490"></a><span class="sd">                ...         prompt,</span>
-<a id="__codelineno-0-1491" name="__codelineno-0-1491"></a><span class="sd">                ...         text=&quot;Product review text...&quot;</span>
-<a id="__codelineno-0-1492" name="__codelineno-0-1492"></a><span class="sd">                ...     ):</span>
-<a id="__codelineno-0-1493" name="__codelineno-0-1493"></a><span class="sd">                ...         # obj is progressively more complete</span>
-<a id="__codelineno-0-1494" name="__codelineno-0-1494"></a><span class="sd">                ...         print(f&quot;Sentiment: {obj.sentiment if hasattr(obj, &#39;sentiment&#39;) else &#39;pending&#39;}&quot;)</span>
-<a id="__codelineno-0-1495" name="__codelineno-0-1495"></a><span class="sd">                &gt;&gt;&gt; asyncio.run(stream_analysis())      # doctest: +SKIP</span>
-<a id="__codelineno-0-1496" name="__codelineno-0-1496"></a>
-<a id="__codelineno-0-1497" name="__codelineno-0-1497"></a><span class="sd">                ```</span>
-<a id="__codelineno-0-1498" name="__codelineno-0-1498"></a>
-<a id="__codelineno-0-1499" name="__codelineno-0-1499"></a><span class="sd">        See Also:</span>
-<a id="__codelineno-0-1500" name="__codelineno-0-1500"></a><span class="sd">            stream_parse: Synchronous streaming counterpart.</span>
-<a id="__codelineno-0-1501" name="__codelineno-0-1501"></a><span class="sd">            aparse: Non-streaming async variant.</span>
-<a id="__codelineno-0-1502" name="__codelineno-0-1502"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-1503" name="__codelineno-0-1503"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">structured_output_mode</span> <span class="o">==</span> <span class="n">StructuredOutputMode</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">:</span>
-<a id="__codelineno-0-1504" name="__codelineno-0-1504"></a>
-<a id="__codelineno-0-1505" name="__codelineno-0-1505"></a>            <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">gen</span><span class="p">(</span>
-<a id="__codelineno-0-1506" name="__codelineno-0-1506"></a>                <span class="n">output_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
-<a id="__codelineno-0-1507" name="__codelineno-0-1507"></a>                <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
-<a id="__codelineno-0-1508" name="__codelineno-0-1508"></a>                <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-1509" name="__codelineno-0-1509"></a>                <span class="n">prompt_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<a id="__codelineno-0-1510" name="__codelineno-0-1510"></a>            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">BaseModel</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
-<a id="__codelineno-0-1511" name="__codelineno-0-1511"></a>                <span class="n">llm_kwargs</span> <span class="o">=</span> <span class="n">llm_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
-<a id="__codelineno-0-1512" name="__codelineno-0-1512"></a>                <span class="n">llm_kwargs</span><span class="p">[</span><span class="s2">&quot;format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_cls</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
-<a id="__codelineno-0-1513" name="__codelineno-0-1513"></a>
-<a id="__codelineno-0-1514" name="__codelineno-0-1514"></a>                <span class="n">messages</span> <span class="o">=</span> <span class="n">prompt</span><span class="o">.</span><span class="n">format_messages</span><span class="p">(</span><span class="o">**</span><span class="n">prompt_args</span><span class="p">)</span>
-<a id="__codelineno-0-1515" name="__codelineno-0-1515"></a>                <span class="n">response_gen</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">astream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">llm_kwargs</span><span class="p">)</span>
-<a id="__codelineno-0-1516" name="__codelineno-0-1516"></a>
-<a id="__codelineno-0-1517" name="__codelineno-0-1517"></a>                <span class="n">processor</span> <span class="o">=</span> <span class="n">StreamingObjectProcessor</span><span class="p">(</span>
-<a id="__codelineno-0-1518" name="__codelineno-0-1518"></a>                    <span class="n">output_cls</span><span class="o">=</span><span class="n">output_cls</span><span class="p">,</span>
-<a id="__codelineno-0-1519" name="__codelineno-0-1519"></a>                    <span class="n">flexible_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-0-1520" name="__codelineno-0-1520"></a>                    <span class="n">allow_parallel_tool_calls</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-0-1521" name="__codelineno-0-1521"></a>                <span class="p">)</span>
-<a id="__codelineno-0-1522" name="__codelineno-0-1522"></a>                <span class="n">cur_objects</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-1523" name="__codelineno-0-1523"></a>                <span class="k">async</span> <span class="k">for</span> <span class="n">response</span> <span class="ow">in</span> <span class="n">response_gen</span><span class="p">:</span>
-<a id="__codelineno-0-1524" name="__codelineno-0-1524"></a>                    <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-1525" name="__codelineno-0-1525"></a>                        <span class="n">objects</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">cur_objects</span><span class="p">)</span>
-<a id="__codelineno-0-1526" name="__codelineno-0-1526"></a>
-<a id="__codelineno-0-1527" name="__codelineno-0-1527"></a>                        <span class="n">cur_objects</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-1528" name="__codelineno-0-1528"></a>                            <span class="n">objects</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">objects</span><span class="p">]</span>
-<a id="__codelineno-0-1529" name="__codelineno-0-1529"></a>                        <span class="p">)</span>
-<a id="__codelineno-0-1530" name="__codelineno-0-1530"></a>                        <span class="k">yield</span> <span class="n">objects</span>
-<a id="__codelineno-0-1531" name="__codelineno-0-1531"></a>                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-<a id="__codelineno-0-1532" name="__codelineno-0-1532"></a>                        <span class="k">continue</span>
-<a id="__codelineno-0-1533" name="__codelineno-0-1533"></a>
-<a id="__codelineno-0-1534" name="__codelineno-0-1534"></a>            <span class="k">return</span> <span class="n">gen</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="n">prompt_args</span><span class="p">)</span>
-<a id="__codelineno-0-1535" name="__codelineno-0-1535"></a>        <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-1536" name="__codelineno-0-1536"></a>            <span class="c1"># Fall back to non-streaming structured predict</span>
-<a id="__codelineno-0-1537" name="__codelineno-0-1537"></a>            <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">astream_parse</span><span class="p">(</span>  <span class="c1"># type: ignore[return-value]</span>
-<a id="__codelineno-0-1538" name="__codelineno-0-1538"></a>                <span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span>
-<a id="__codelineno-0-1539" name="__codelineno-0-1539"></a>            <span class="p">)</span>
+<a id="__codelineno-0-1463" name="__codelineno-0-1463"></a><span class="sd">                ```</span>
+<a id="__codelineno-0-1464" name="__codelineno-0-1464"></a>
+<a id="__codelineno-0-1465" name="__codelineno-0-1465"></a><span class="sd">            - Async stream structured data as it&#39;s generated</span>
+<a id="__codelineno-0-1466" name="__codelineno-0-1466"></a><span class="sd">                ```python</span>
+<a id="__codelineno-0-1467" name="__codelineno-0-1467"></a><span class="sd">                &gt;&gt;&gt; import asyncio</span>
+<a id="__codelineno-0-1468" name="__codelineno-0-1468"></a><span class="sd">                &gt;&gt;&gt; from pydantic import BaseModel</span>
+<a id="__codelineno-0-1469" name="__codelineno-0-1469"></a><span class="sd">                &gt;&gt;&gt; from serapeum.core.prompts import PromptTemplate</span>
+<a id="__codelineno-0-1470" name="__codelineno-0-1470"></a><span class="sd">                &gt;&gt;&gt; from serapeum.ollama import Ollama      # type: ignore</span>
+<a id="__codelineno-0-1471" name="__codelineno-0-1471"></a><span class="sd">                &gt;&gt;&gt; class Analysis(BaseModel):</span>
+<a id="__codelineno-0-1472" name="__codelineno-0-1472"></a><span class="sd">                ...     sentiment: str</span>
+<a id="__codelineno-0-1473" name="__codelineno-0-1473"></a><span class="sd">                ...     keywords: list[str]</span>
+<a id="__codelineno-0-1474" name="__codelineno-0-1474"></a><span class="sd">                &gt;&gt;&gt; llm = Ollama(model=&quot;llama3.1&quot;, request_timeout=120)     # doctest: +SKIP</span>
+<a id="__codelineno-0-1475" name="__codelineno-0-1475"></a><span class="sd">                &gt;&gt;&gt; async def stream_analysis():</span>
+<a id="__codelineno-0-1476" name="__codelineno-0-1476"></a><span class="sd">                ...     prompt = PromptTemplate(&quot;Analyze: {text}&quot;)</span>
+<a id="__codelineno-0-1477" name="__codelineno-0-1477"></a><span class="sd">                ...     async for obj in await llm.aparse(</span>
+<a id="__codelineno-0-1478" name="__codelineno-0-1478"></a><span class="sd">                ...         Analysis, prompt, stream=True, text=&quot;Product review text...&quot;</span>
+<a id="__codelineno-0-1479" name="__codelineno-0-1479"></a><span class="sd">                ...     ):</span>
+<a id="__codelineno-0-1480" name="__codelineno-0-1480"></a><span class="sd">                ...         print(obj)</span>
+<a id="__codelineno-0-1481" name="__codelineno-0-1481"></a><span class="sd">                &gt;&gt;&gt; asyncio.run(stream_analysis())      # doctest: +SKIP</span>
+<a id="__codelineno-0-1482" name="__codelineno-0-1482"></a>
+<a id="__codelineno-0-1483" name="__codelineno-0-1483"></a><span class="sd">                ```</span>
+<a id="__codelineno-0-1484" name="__codelineno-0-1484"></a>
+<a id="__codelineno-0-1485" name="__codelineno-0-1485"></a><span class="sd">        See Also:</span>
+<a id="__codelineno-0-1486" name="__codelineno-0-1486"></a><span class="sd">            parse: Synchronous variant.</span>
+<a id="__codelineno-0-1487" name="__codelineno-0-1487"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-1488" name="__codelineno-0-1488"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">structured_output_mode</span> <span class="o">==</span> <span class="n">StructuredOutputMode</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">:</span>
+<a id="__codelineno-0-1489" name="__codelineno-0-1489"></a>            <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-0-1490" name="__codelineno-0-1490"></a>                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astream_parse_default</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="n">prompt_args</span><span class="p">)</span>
+<a id="__codelineno-0-1491" name="__codelineno-0-1491"></a>            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aparse_default</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="n">prompt_args</span><span class="p">)</span>
+<a id="__codelineno-0-1492" name="__codelineno-0-1492"></a>        <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-0-1493" name="__codelineno-0-1493"></a>            <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">astream_parse</span><span class="p">(</span>  <span class="c1"># type: ignore[return-value]</span>
+<a id="__codelineno-0-1494" name="__codelineno-0-1494"></a>                <span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span>
+<a id="__codelineno-0-1495" name="__codelineno-0-1495"></a>            <span class="p">)</span>
+<a id="__codelineno-0-1496" name="__codelineno-0-1496"></a>        <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">aparse</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span><span class="p">)</span>
+<a id="__codelineno-0-1497" name="__codelineno-0-1497"></a>
+<a id="__codelineno-0-1498" name="__codelineno-0-1498"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_aparse_default</span><span class="p">(</span>
+<a id="__codelineno-0-1499" name="__codelineno-0-1499"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-1500" name="__codelineno-0-1500"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<a id="__codelineno-0-1501" name="__codelineno-0-1501"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
+<a id="__codelineno-0-1502" name="__codelineno-0-1502"></a>        <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-1503" name="__codelineno-0-1503"></a>        <span class="n">prompt_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<a id="__codelineno-0-1504" name="__codelineno-0-1504"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span><span class="p">:</span>
+<a id="__codelineno-0-1505" name="__codelineno-0-1505"></a>        <span class="n">llm_kwargs</span> <span class="o">=</span> <span class="n">llm_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+<a id="__codelineno-0-1506" name="__codelineno-0-1506"></a>        <span class="n">llm_kwargs</span><span class="p">[</span><span class="s2">&quot;format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
+<a id="__codelineno-0-1507" name="__codelineno-0-1507"></a>        <span class="n">messages</span> <span class="o">=</span> <span class="n">prompt</span><span class="o">.</span><span class="n">format_messages</span><span class="p">(</span><span class="o">**</span><span class="n">prompt_args</span><span class="p">)</span>
+<a id="__codelineno-0-1508" name="__codelineno-0-1508"></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">achat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">llm_kwargs</span><span class="p">)</span>
+<a id="__codelineno-0-1509" name="__codelineno-0-1509"></a>        <span class="k">return</span> <span class="n">schema</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-1510" name="__codelineno-0-1510"></a>
+<a id="__codelineno-0-1511" name="__codelineno-0-1511"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_astream_parse_default</span><span class="p">(</span>
+<a id="__codelineno-0-1512" name="__codelineno-0-1512"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-1513" name="__codelineno-0-1513"></a>        <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<a id="__codelineno-0-1514" name="__codelineno-0-1514"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
+<a id="__codelineno-0-1515" name="__codelineno-0-1515"></a>        <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-1516" name="__codelineno-0-1516"></a>        <span class="n">prompt_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<a id="__codelineno-0-1517" name="__codelineno-0-1517"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">BaseModel</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<a id="__codelineno-0-1518" name="__codelineno-0-1518"></a>        <span class="n">_llm_kwargs</span> <span class="o">=</span> <span class="n">llm_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+<a id="__codelineno-0-1519" name="__codelineno-0-1519"></a>        <span class="n">_llm_kwargs</span><span class="p">[</span><span class="s2">&quot;format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
+<a id="__codelineno-0-1520" name="__codelineno-0-1520"></a>        <span class="n">messages</span> <span class="o">=</span> <span class="n">prompt</span><span class="o">.</span><span class="n">format_messages</span><span class="p">(</span><span class="o">**</span><span class="n">prompt_args</span><span class="p">)</span>
+<a id="__codelineno-0-1521" name="__codelineno-0-1521"></a>        <span class="n">response_gen</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">astream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">_llm_kwargs</span><span class="p">)</span>
+<a id="__codelineno-0-1522" name="__codelineno-0-1522"></a>        <span class="n">processor</span> <span class="o">=</span> <span class="n">StreamingObjectProcessor</span><span class="p">(</span>
+<a id="__codelineno-0-1523" name="__codelineno-0-1523"></a>            <span class="n">output_cls</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+<a id="__codelineno-0-1524" name="__codelineno-0-1524"></a>            <span class="n">flexible_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-1525" name="__codelineno-0-1525"></a>            <span class="n">allow_parallel_tool_calls</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-1526" name="__codelineno-0-1526"></a>        <span class="p">)</span>
+<a id="__codelineno-0-1527" name="__codelineno-0-1527"></a>        <span class="n">cur_objects</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-1528" name="__codelineno-0-1528"></a>        <span class="k">async</span> <span class="k">for</span> <span class="n">response</span> <span class="ow">in</span> <span class="n">response_gen</span><span class="p">:</span>
+<a id="__codelineno-0-1529" name="__codelineno-0-1529"></a>            <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-1530" name="__codelineno-0-1530"></a>                <span class="n">objects</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">cur_objects</span><span class="p">)</span>
+<a id="__codelineno-0-1531" name="__codelineno-0-1531"></a>                <span class="n">cur_objects</span> <span class="o">=</span> <span class="n">objects</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">objects</span><span class="p">]</span>
+<a id="__codelineno-0-1532" name="__codelineno-0-1532"></a>                <span class="k">yield</span> <span class="n">objects</span>
+<a id="__codelineno-0-1533" name="__codelineno-0-1533"></a>            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<a id="__codelineno-0-1534" name="__codelineno-0-1534"></a>                <span class="k">continue</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -6888,13 +6856,17 @@ astream_chat: Async streaming variant.</p>
 
 
 <h4 id="serapeum.ollama.llm.Ollama.aparse" class="doc doc-heading"><a href="#serapeum.ollama.llm.Ollama.aparse" class="toclink">
-            <code class="highlight language-python"><span class="n">aparse</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">aparse</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
   </span>
 
 </a><a href="#serapeum.ollama.llm.Ollama.aparse" class="headerlink" title="Permanent link">#</a></h4>
+          <div class="doc-overloads">
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">aparse</span><span class="p">(</span><span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stream</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span>
+</code></pre></div><div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">aparse</span><span class="p">(</span><span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stream</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">True</span><span class="p">],</span> <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">BaseModel</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
+</code></pre></div>          </div>
 
 
     <div class="doc doc-contents ">
@@ -6903,6 +6875,9 @@ astream_chat: Async streaming variant.</p>
 <p>Async variant of parse. Instructs the Ollama model to emit JSON
 matching the schema of output_cls, then validates and parses the response
 into a Pydantic instance using the async chat interface.</p>
+<p>When <code>stream=True</code>, returns an async generator that yields incrementally
+parsed Pydantic instances as the model streams JSON content, using
+StreamingObjectProcessor with flexible mode to handle incomplete JSON fragments.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -6925,7 +6900,9 @@ into a Pydantic instance using the async chat interface.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Target Pydantic model class defining the expected structure.</p>
+                <p>Target Pydantic model class (or callable) defining the expected
+structure. A callable is accepted when routing through
+ToolOrchestratingLLM (non-DEFAULT modes).</p>
               </div>
             </td>
             <td>
@@ -6941,7 +6918,8 @@ into a Pydantic instance using the async chat interface.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>PromptTemplate that will be formatted with prompt_args to create messages.</p>
+                <p>PromptTemplate that will be formatted with prompt_args to create
+messages.</p>
               </div>
             </td>
             <td>
@@ -6963,6 +6941,24 @@ Defaults to empty dict.</p>
             </td>
             <td>
                   <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>stream</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>False</code> (default), awaits the full response and returns a
+single validated instance. If <code>True</code>, returns an async generator
+that yields partially complete instances as JSON is streamed.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -6996,11 +6992,31 @@ Defaults to empty dict.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="pydantic.BaseModel">BaseModel</span></code>
+                  <code><span title="pydantic.BaseModel">BaseModel</span> | <span title="typing.AsyncGenerator">AsyncGenerator</span>[<span title="pydantic.BaseModel">BaseModel</span> | <span title="list">list</span>[<span title="pydantic.BaseModel">BaseModel</span>], None]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Instance of output_cls parsed and validated from the model's JSON response.</p>
+                <p>A validated <code>BaseModel</code> instance when <code>stream=False</code>, or an</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pydantic.BaseModel">BaseModel</span> | <span title="typing.AsyncGenerator">AsyncGenerator</span>[<span title="pydantic.BaseModel">BaseModel</span> | <span title="list">list</span>[<span title="pydantic.BaseModel">BaseModel</span>], None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>AsyncGenerator</code> yielding <code>BaseModel | list[BaseModel]</code> when</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pydantic.BaseModel">BaseModel</span> | <span title="typing.AsyncGenerator">AsyncGenerator</span>[<span title="pydantic.BaseModel">BaseModel</span> | <span title="list">list</span>[<span title="pydantic.BaseModel">BaseModel</span>], None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>stream=True</code>.</p>
               </div>
             </td>
           </tr>
@@ -7023,7 +7039,8 @@ Defaults to empty dict.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If the model's response doesn't match the schema.</p>
+                <p>If the model's response doesn't match the schema
+(non-streaming mode only).</p>
               </div>
             </td>
           </tr>
@@ -7033,7 +7050,8 @@ Defaults to empty dict.</p>
 
 <p><span class="doc-section-title">Examples:</span></p>
     <ul>
-<li>Async structured extraction
+<li>
+<p>Async structured extraction
     <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.prompts</span><span class="w"> </span><span class="kn">import</span> <span class="n">PromptTemplate</span>
@@ -7044,48 +7062,41 @@ Defaults to empty dict.</p>
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.1&quot;</span><span class="p">,</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>  <span class="c1"># doctest: +SKIP</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="o">&gt;&gt;&gt;</span> <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">extract_city</span><span class="p">():</span>       <span class="c1"># doctest: +SKIP</span>
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="o">...</span>     <span class="n">prompt</span> <span class="o">=</span> <span class="n">PromptTemplate</span><span class="p">(</span><span class="s2">&quot;Extract city: </span><span class="si">{text}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="o">...</span>     <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">llm</span><span class="o">.</span><span class="n">aparse</span><span class="p">(</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="o">...</span>         <span class="n">City</span><span class="p">,</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="o">...</span>         <span class="n">prompt</span><span class="p">,</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="o">...</span>         <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Paris is in France&quot;</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="o">...</span>     <span class="p">)</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="o">...</span>     <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Paris&quot;</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">extract_city</span><span class="p">())</span>  <span class="c1"># Returns True     # doctest: +SKIP</span>
-</code></pre></div></li>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="o">...</span>     <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">llm</span><span class="o">.</span><span class="n">aparse</span><span class="p">(</span><span class="n">City</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Paris is in France&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="o">...</span>     <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Paris&quot;</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">extract_city</span><span class="p">())</span>  <span class="c1"># Returns True     # doctest: +SKIP</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>Async stream structured data as it's generated
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.prompts</span><span class="w"> </span><span class="kn">import</span> <span class="n">PromptTemplate</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>      <span class="c1"># type: ignore</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="o">&gt;&gt;&gt;</span> <span class="k">class</span><span class="w"> </span><span class="nc">Analysis</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="o">...</span>     <span class="n">sentiment</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="o">...</span>     <span class="n">keywords</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.1&quot;</span><span class="p">,</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>     <span class="c1"># doctest: +SKIP</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="o">&gt;&gt;&gt;</span> <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stream_analysis</span><span class="p">():</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="o">...</span>     <span class="n">prompt</span> <span class="o">=</span> <span class="n">PromptTemplate</span><span class="p">(</span><span class="s2">&quot;Analyze: </span><span class="si">{text}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="o">...</span>     <span class="k">async</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">llm</span><span class="o">.</span><span class="n">aparse</span><span class="p">(</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="o">...</span>         <span class="n">Analysis</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Product review text...&quot;</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="o">...</span>     <span class="p">):</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="o">...</span>         <span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stream_analysis</span><span class="p">())</span>      <span class="c1"># doctest: +SKIP</span>
+</code></pre></div></p>
+</li>
 </ul>
 
 
 <details class="see-also" open>
   <summary>See Also</summary>
-  <p>parse: Synchronous variant.
-astream_parse: Async streaming variant.</p>
+  <p>parse: Synchronous variant.</p>
 </details>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>libs/providers/ollama/src/serapeum/ollama/llm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1383">1383</a></span>
-<span class="normal"><a href="#__codelineno-0-1384">1384</a></span>
-<span class="normal"><a href="#__codelineno-0-1385">1385</a></span>
-<span class="normal"><a href="#__codelineno-0-1386">1386</a></span>
-<span class="normal"><a href="#__codelineno-0-1387">1387</a></span>
-<span class="normal"><a href="#__codelineno-0-1388">1388</a></span>
-<span class="normal"><a href="#__codelineno-0-1389">1389</a></span>
-<span class="normal"><a href="#__codelineno-0-1390">1390</a></span>
-<span class="normal"><a href="#__codelineno-0-1391">1391</a></span>
-<span class="normal"><a href="#__codelineno-0-1392">1392</a></span>
-<span class="normal"><a href="#__codelineno-0-1393">1393</a></span>
-<span class="normal"><a href="#__codelineno-0-1394">1394</a></span>
-<span class="normal"><a href="#__codelineno-0-1395">1395</a></span>
-<span class="normal"><a href="#__codelineno-0-1396">1396</a></span>
-<span class="normal"><a href="#__codelineno-0-1397">1397</a></span>
-<span class="normal"><a href="#__codelineno-0-1398">1398</a></span>
-<span class="normal"><a href="#__codelineno-0-1399">1399</a></span>
-<span class="normal"><a href="#__codelineno-0-1400">1400</a></span>
-<span class="normal"><a href="#__codelineno-0-1401">1401</a></span>
-<span class="normal"><a href="#__codelineno-0-1402">1402</a></span>
-<span class="normal"><a href="#__codelineno-0-1403">1403</a></span>
-<span class="normal"><a href="#__codelineno-0-1404">1404</a></span>
-<span class="normal"><a href="#__codelineno-0-1405">1405</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1405">1405</a></span>
 <span class="normal"><a href="#__codelineno-0-1406">1406</a></span>
 <span class="normal"><a href="#__codelineno-0-1407">1407</a></span>
 <span class="normal"><a href="#__codelineno-0-1408">1408</a></span>
@@ -7127,71 +7138,147 @@ astream_parse: Async streaming variant.</p>
 <span class="normal"><a href="#__codelineno-0-1444">1444</a></span>
 <span class="normal"><a href="#__codelineno-0-1445">1445</a></span>
 <span class="normal"><a href="#__codelineno-0-1446">1446</a></span>
-<span class="normal"><a href="#__codelineno-0-1447">1447</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1383" name="__codelineno-0-1383"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aparse</span><span class="p">(</span>
-<a id="__codelineno-0-1384" name="__codelineno-0-1384"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1385" name="__codelineno-0-1385"></a>    <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<a id="__codelineno-0-1386" name="__codelineno-0-1386"></a>    <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
-<a id="__codelineno-0-1387" name="__codelineno-0-1387"></a>    <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-1388" name="__codelineno-0-1388"></a>    <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<a id="__codelineno-0-1389" name="__codelineno-0-1389"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span><span class="p">:</span>
-<a id="__codelineno-0-1390" name="__codelineno-0-1390"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Asynchronously generate structured output conforming to a Pydantic model schema.</span>
-<a id="__codelineno-0-1391" name="__codelineno-0-1391"></a>
-<a id="__codelineno-0-1392" name="__codelineno-0-1392"></a><span class="sd">    Async variant of parse. Instructs the Ollama model to emit JSON</span>
-<a id="__codelineno-0-1393" name="__codelineno-0-1393"></a><span class="sd">    matching the schema of output_cls, then validates and parses the response</span>
-<a id="__codelineno-0-1394" name="__codelineno-0-1394"></a><span class="sd">    into a Pydantic instance using the async chat interface.</span>
-<a id="__codelineno-0-1395" name="__codelineno-0-1395"></a>
-<a id="__codelineno-0-1396" name="__codelineno-0-1396"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-1397" name="__codelineno-0-1397"></a><span class="sd">        schema: Target Pydantic model class defining the expected structure.</span>
-<a id="__codelineno-0-1398" name="__codelineno-0-1398"></a><span class="sd">        prompt: PromptTemplate that will be formatted with prompt_args to create messages.</span>
-<a id="__codelineno-0-1399" name="__codelineno-0-1399"></a><span class="sd">        llm_kwargs: Additional provider arguments passed to the achat method.</span>
-<a id="__codelineno-0-1400" name="__codelineno-0-1400"></a><span class="sd">            Defaults to empty dict.</span>
-<a id="__codelineno-0-1401" name="__codelineno-0-1401"></a><span class="sd">        **prompt_args: Template variables used to format the prompt.</span>
-<a id="__codelineno-0-1402" name="__codelineno-0-1402"></a>
-<a id="__codelineno-0-1403" name="__codelineno-0-1403"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-1404" name="__codelineno-0-1404"></a><span class="sd">        Instance of output_cls parsed and validated from the model&#39;s JSON response.</span>
-<a id="__codelineno-0-1405" name="__codelineno-0-1405"></a>
-<a id="__codelineno-0-1406" name="__codelineno-0-1406"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-1407" name="__codelineno-0-1407"></a><span class="sd">        ValidationError: If the model&#39;s response doesn&#39;t match the schema.</span>
-<a id="__codelineno-0-1408" name="__codelineno-0-1408"></a>
-<a id="__codelineno-0-1409" name="__codelineno-0-1409"></a><span class="sd">    Examples:</span>
-<a id="__codelineno-0-1410" name="__codelineno-0-1410"></a><span class="sd">        - Async structured extraction</span>
-<a id="__codelineno-0-1411" name="__codelineno-0-1411"></a><span class="sd">            ```python</span>
-<a id="__codelineno-0-1412" name="__codelineno-0-1412"></a><span class="sd">            &gt;&gt;&gt; import asyncio</span>
-<a id="__codelineno-0-1413" name="__codelineno-0-1413"></a><span class="sd">            &gt;&gt;&gt; from pydantic import BaseModel</span>
-<a id="__codelineno-0-1414" name="__codelineno-0-1414"></a><span class="sd">            &gt;&gt;&gt; from serapeum.core.prompts import PromptTemplate</span>
-<a id="__codelineno-0-1415" name="__codelineno-0-1415"></a><span class="sd">            &gt;&gt;&gt; from serapeum.ollama import Ollama      # type: ignore</span>
-<a id="__codelineno-0-1416" name="__codelineno-0-1416"></a><span class="sd">            &gt;&gt;&gt; class City(BaseModel):</span>
-<a id="__codelineno-0-1417" name="__codelineno-0-1417"></a><span class="sd">            ...     name: str</span>
-<a id="__codelineno-0-1418" name="__codelineno-0-1418"></a><span class="sd">            ...     country: str</span>
-<a id="__codelineno-0-1419" name="__codelineno-0-1419"></a><span class="sd">            &gt;&gt;&gt; llm = Ollama(model=&quot;llama3.1&quot;, request_timeout=120)  # doctest: +SKIP</span>
-<a id="__codelineno-0-1420" name="__codelineno-0-1420"></a><span class="sd">            &gt;&gt;&gt; async def extract_city():       # doctest: +SKIP</span>
-<a id="__codelineno-0-1421" name="__codelineno-0-1421"></a><span class="sd">            ...     prompt = PromptTemplate(&quot;Extract city: {text}&quot;)</span>
-<a id="__codelineno-0-1422" name="__codelineno-0-1422"></a><span class="sd">            ...     result = await llm.aparse(</span>
-<a id="__codelineno-0-1423" name="__codelineno-0-1423"></a><span class="sd">            ...         City,</span>
-<a id="__codelineno-0-1424" name="__codelineno-0-1424"></a><span class="sd">            ...         prompt,</span>
-<a id="__codelineno-0-1425" name="__codelineno-0-1425"></a><span class="sd">            ...         text=&quot;Paris is in France&quot;</span>
-<a id="__codelineno-0-1426" name="__codelineno-0-1426"></a><span class="sd">            ...     )</span>
-<a id="__codelineno-0-1427" name="__codelineno-0-1427"></a><span class="sd">            ...     return result.name == &quot;Paris&quot;</span>
-<a id="__codelineno-0-1428" name="__codelineno-0-1428"></a><span class="sd">            &gt;&gt;&gt; asyncio.run(extract_city())  # Returns True     # doctest: +SKIP</span>
-<a id="__codelineno-0-1429" name="__codelineno-0-1429"></a>
-<a id="__codelineno-0-1430" name="__codelineno-0-1430"></a><span class="sd">            ```</span>
-<a id="__codelineno-0-1431" name="__codelineno-0-1431"></a>
-<a id="__codelineno-0-1432" name="__codelineno-0-1432"></a><span class="sd">    See Also:</span>
-<a id="__codelineno-0-1433" name="__codelineno-0-1433"></a><span class="sd">        parse: Synchronous variant.</span>
-<a id="__codelineno-0-1434" name="__codelineno-0-1434"></a><span class="sd">        astream_parse: Async streaming variant.</span>
-<a id="__codelineno-0-1435" name="__codelineno-0-1435"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-1436" name="__codelineno-0-1436"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">structured_output_mode</span> <span class="o">==</span> <span class="n">StructuredOutputMode</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">:</span>
-<a id="__codelineno-0-1437" name="__codelineno-0-1437"></a>        <span class="n">llm_kwargs</span> <span class="o">=</span> <span class="n">llm_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
-<a id="__codelineno-0-1438" name="__codelineno-0-1438"></a>        <span class="n">llm_kwargs</span><span class="p">[</span><span class="s2">&quot;format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
-<a id="__codelineno-0-1439" name="__codelineno-0-1439"></a>
-<a id="__codelineno-0-1440" name="__codelineno-0-1440"></a>        <span class="n">messages</span> <span class="o">=</span> <span class="n">prompt</span><span class="o">.</span><span class="n">format_messages</span><span class="p">(</span><span class="o">**</span><span class="n">prompt_args</span><span class="p">)</span>
-<a id="__codelineno-0-1441" name="__codelineno-0-1441"></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">achat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">llm_kwargs</span><span class="p">)</span>
-<a id="__codelineno-0-1442" name="__codelineno-0-1442"></a>
-<a id="__codelineno-0-1443" name="__codelineno-0-1443"></a>        <span class="k">return</span> <span class="n">schema</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-1444" name="__codelineno-0-1444"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-1445" name="__codelineno-0-1445"></a>        <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">aparse</span><span class="p">(</span>
-<a id="__codelineno-0-1446" name="__codelineno-0-1446"></a>            <span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span>
-<a id="__codelineno-0-1447" name="__codelineno-0-1447"></a>        <span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-1447">1447</a></span>
+<span class="normal"><a href="#__codelineno-0-1448">1448</a></span>
+<span class="normal"><a href="#__codelineno-0-1449">1449</a></span>
+<span class="normal"><a href="#__codelineno-0-1450">1450</a></span>
+<span class="normal"><a href="#__codelineno-0-1451">1451</a></span>
+<span class="normal"><a href="#__codelineno-0-1452">1452</a></span>
+<span class="normal"><a href="#__codelineno-0-1453">1453</a></span>
+<span class="normal"><a href="#__codelineno-0-1454">1454</a></span>
+<span class="normal"><a href="#__codelineno-0-1455">1455</a></span>
+<span class="normal"><a href="#__codelineno-0-1456">1456</a></span>
+<span class="normal"><a href="#__codelineno-0-1457">1457</a></span>
+<span class="normal"><a href="#__codelineno-0-1458">1458</a></span>
+<span class="normal"><a href="#__codelineno-0-1459">1459</a></span>
+<span class="normal"><a href="#__codelineno-0-1460">1460</a></span>
+<span class="normal"><a href="#__codelineno-0-1461">1461</a></span>
+<span class="normal"><a href="#__codelineno-0-1462">1462</a></span>
+<span class="normal"><a href="#__codelineno-0-1463">1463</a></span>
+<span class="normal"><a href="#__codelineno-0-1464">1464</a></span>
+<span class="normal"><a href="#__codelineno-0-1465">1465</a></span>
+<span class="normal"><a href="#__codelineno-0-1466">1466</a></span>
+<span class="normal"><a href="#__codelineno-0-1467">1467</a></span>
+<span class="normal"><a href="#__codelineno-0-1468">1468</a></span>
+<span class="normal"><a href="#__codelineno-0-1469">1469</a></span>
+<span class="normal"><a href="#__codelineno-0-1470">1470</a></span>
+<span class="normal"><a href="#__codelineno-0-1471">1471</a></span>
+<span class="normal"><a href="#__codelineno-0-1472">1472</a></span>
+<span class="normal"><a href="#__codelineno-0-1473">1473</a></span>
+<span class="normal"><a href="#__codelineno-0-1474">1474</a></span>
+<span class="normal"><a href="#__codelineno-0-1475">1475</a></span>
+<span class="normal"><a href="#__codelineno-0-1476">1476</a></span>
+<span class="normal"><a href="#__codelineno-0-1477">1477</a></span>
+<span class="normal"><a href="#__codelineno-0-1478">1478</a></span>
+<span class="normal"><a href="#__codelineno-0-1479">1479</a></span>
+<span class="normal"><a href="#__codelineno-0-1480">1480</a></span>
+<span class="normal"><a href="#__codelineno-0-1481">1481</a></span>
+<span class="normal"><a href="#__codelineno-0-1482">1482</a></span>
+<span class="normal"><a href="#__codelineno-0-1483">1483</a></span>
+<span class="normal"><a href="#__codelineno-0-1484">1484</a></span>
+<span class="normal"><a href="#__codelineno-0-1485">1485</a></span>
+<span class="normal"><a href="#__codelineno-0-1486">1486</a></span>
+<span class="normal"><a href="#__codelineno-0-1487">1487</a></span>
+<span class="normal"><a href="#__codelineno-0-1488">1488</a></span>
+<span class="normal"><a href="#__codelineno-0-1489">1489</a></span>
+<span class="normal"><a href="#__codelineno-0-1490">1490</a></span>
+<span class="normal"><a href="#__codelineno-0-1491">1491</a></span>
+<span class="normal"><a href="#__codelineno-0-1492">1492</a></span>
+<span class="normal"><a href="#__codelineno-0-1493">1493</a></span>
+<span class="normal"><a href="#__codelineno-0-1494">1494</a></span>
+<span class="normal"><a href="#__codelineno-0-1495">1495</a></span>
+<span class="normal"><a href="#__codelineno-0-1496">1496</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1405" name="__codelineno-0-1405"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aparse</span><span class="p">(</span>
+<a id="__codelineno-0-1406" name="__codelineno-0-1406"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-1407" name="__codelineno-0-1407"></a>    <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<a id="__codelineno-0-1408" name="__codelineno-0-1408"></a>    <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
+<a id="__codelineno-0-1409" name="__codelineno-0-1409"></a>    <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-1410" name="__codelineno-0-1410"></a>    <span class="o">*</span><span class="p">,</span>
+<a id="__codelineno-0-1411" name="__codelineno-0-1411"></a>    <span class="n">stream</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-1412" name="__codelineno-0-1412"></a>    <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<a id="__codelineno-0-1413" name="__codelineno-0-1413"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">BaseModel</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<a id="__codelineno-0-1414" name="__codelineno-0-1414"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Asynchronously generate structured output conforming to a Pydantic model schema.</span>
+<a id="__codelineno-0-1415" name="__codelineno-0-1415"></a>
+<a id="__codelineno-0-1416" name="__codelineno-0-1416"></a><span class="sd">    Async variant of parse. Instructs the Ollama model to emit JSON</span>
+<a id="__codelineno-0-1417" name="__codelineno-0-1417"></a><span class="sd">    matching the schema of output_cls, then validates and parses the response</span>
+<a id="__codelineno-0-1418" name="__codelineno-0-1418"></a><span class="sd">    into a Pydantic instance using the async chat interface.</span>
+<a id="__codelineno-0-1419" name="__codelineno-0-1419"></a>
+<a id="__codelineno-0-1420" name="__codelineno-0-1420"></a><span class="sd">    When ``stream=True``, returns an async generator that yields incrementally</span>
+<a id="__codelineno-0-1421" name="__codelineno-0-1421"></a><span class="sd">    parsed Pydantic instances as the model streams JSON content, using</span>
+<a id="__codelineno-0-1422" name="__codelineno-0-1422"></a><span class="sd">    StreamingObjectProcessor with flexible mode to handle incomplete JSON fragments.</span>
+<a id="__codelineno-0-1423" name="__codelineno-0-1423"></a>
+<a id="__codelineno-0-1424" name="__codelineno-0-1424"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-1425" name="__codelineno-0-1425"></a><span class="sd">        schema: Target Pydantic model class (or callable) defining the expected</span>
+<a id="__codelineno-0-1426" name="__codelineno-0-1426"></a><span class="sd">            structure. A callable is accepted when routing through</span>
+<a id="__codelineno-0-1427" name="__codelineno-0-1427"></a><span class="sd">            ToolOrchestratingLLM (non-DEFAULT modes).</span>
+<a id="__codelineno-0-1428" name="__codelineno-0-1428"></a><span class="sd">        prompt: PromptTemplate that will be formatted with prompt_args to create</span>
+<a id="__codelineno-0-1429" name="__codelineno-0-1429"></a><span class="sd">            messages.</span>
+<a id="__codelineno-0-1430" name="__codelineno-0-1430"></a><span class="sd">        llm_kwargs: Additional provider arguments passed to the achat method.</span>
+<a id="__codelineno-0-1431" name="__codelineno-0-1431"></a><span class="sd">            Defaults to empty dict.</span>
+<a id="__codelineno-0-1432" name="__codelineno-0-1432"></a><span class="sd">        stream: If ``False`` (default), awaits the full response and returns a</span>
+<a id="__codelineno-0-1433" name="__codelineno-0-1433"></a><span class="sd">            single validated instance. If ``True``, returns an async generator</span>
+<a id="__codelineno-0-1434" name="__codelineno-0-1434"></a><span class="sd">            that yields partially complete instances as JSON is streamed.</span>
+<a id="__codelineno-0-1435" name="__codelineno-0-1435"></a><span class="sd">        **prompt_args: Template variables used to format the prompt.</span>
+<a id="__codelineno-0-1436" name="__codelineno-0-1436"></a>
+<a id="__codelineno-0-1437" name="__codelineno-0-1437"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-1438" name="__codelineno-0-1438"></a><span class="sd">        A validated ``BaseModel`` instance when ``stream=False``, or an</span>
+<a id="__codelineno-0-1439" name="__codelineno-0-1439"></a><span class="sd">        ``AsyncGenerator`` yielding ``BaseModel | list[BaseModel]`` when</span>
+<a id="__codelineno-0-1440" name="__codelineno-0-1440"></a><span class="sd">        ``stream=True``.</span>
+<a id="__codelineno-0-1441" name="__codelineno-0-1441"></a>
+<a id="__codelineno-0-1442" name="__codelineno-0-1442"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-1443" name="__codelineno-0-1443"></a><span class="sd">        ValidationError: If the model&#39;s response doesn&#39;t match the schema</span>
+<a id="__codelineno-0-1444" name="__codelineno-0-1444"></a><span class="sd">            (non-streaming mode only).</span>
+<a id="__codelineno-0-1445" name="__codelineno-0-1445"></a>
+<a id="__codelineno-0-1446" name="__codelineno-0-1446"></a><span class="sd">    Examples:</span>
+<a id="__codelineno-0-1447" name="__codelineno-0-1447"></a><span class="sd">        - Async structured extraction</span>
+<a id="__codelineno-0-1448" name="__codelineno-0-1448"></a><span class="sd">            ```python</span>
+<a id="__codelineno-0-1449" name="__codelineno-0-1449"></a><span class="sd">            &gt;&gt;&gt; import asyncio</span>
+<a id="__codelineno-0-1450" name="__codelineno-0-1450"></a><span class="sd">            &gt;&gt;&gt; from pydantic import BaseModel</span>
+<a id="__codelineno-0-1451" name="__codelineno-0-1451"></a><span class="sd">            &gt;&gt;&gt; from serapeum.core.prompts import PromptTemplate</span>
+<a id="__codelineno-0-1452" name="__codelineno-0-1452"></a><span class="sd">            &gt;&gt;&gt; from serapeum.ollama import Ollama      # type: ignore</span>
+<a id="__codelineno-0-1453" name="__codelineno-0-1453"></a><span class="sd">            &gt;&gt;&gt; class City(BaseModel):</span>
+<a id="__codelineno-0-1454" name="__codelineno-0-1454"></a><span class="sd">            ...     name: str</span>
+<a id="__codelineno-0-1455" name="__codelineno-0-1455"></a><span class="sd">            ...     country: str</span>
+<a id="__codelineno-0-1456" name="__codelineno-0-1456"></a><span class="sd">            &gt;&gt;&gt; llm = Ollama(model=&quot;llama3.1&quot;, request_timeout=120)  # doctest: +SKIP</span>
+<a id="__codelineno-0-1457" name="__codelineno-0-1457"></a><span class="sd">            &gt;&gt;&gt; async def extract_city():       # doctest: +SKIP</span>
+<a id="__codelineno-0-1458" name="__codelineno-0-1458"></a><span class="sd">            ...     prompt = PromptTemplate(&quot;Extract city: {text}&quot;)</span>
+<a id="__codelineno-0-1459" name="__codelineno-0-1459"></a><span class="sd">            ...     result = await llm.aparse(City, prompt, text=&quot;Paris is in France&quot;)</span>
+<a id="__codelineno-0-1460" name="__codelineno-0-1460"></a><span class="sd">            ...     return result.name == &quot;Paris&quot;</span>
+<a id="__codelineno-0-1461" name="__codelineno-0-1461"></a><span class="sd">            &gt;&gt;&gt; asyncio.run(extract_city())  # Returns True     # doctest: +SKIP</span>
+<a id="__codelineno-0-1462" name="__codelineno-0-1462"></a>
+<a id="__codelineno-0-1463" name="__codelineno-0-1463"></a><span class="sd">            ```</span>
+<a id="__codelineno-0-1464" name="__codelineno-0-1464"></a>
+<a id="__codelineno-0-1465" name="__codelineno-0-1465"></a><span class="sd">        - Async stream structured data as it&#39;s generated</span>
+<a id="__codelineno-0-1466" name="__codelineno-0-1466"></a><span class="sd">            ```python</span>
+<a id="__codelineno-0-1467" name="__codelineno-0-1467"></a><span class="sd">            &gt;&gt;&gt; import asyncio</span>
+<a id="__codelineno-0-1468" name="__codelineno-0-1468"></a><span class="sd">            &gt;&gt;&gt; from pydantic import BaseModel</span>
+<a id="__codelineno-0-1469" name="__codelineno-0-1469"></a><span class="sd">            &gt;&gt;&gt; from serapeum.core.prompts import PromptTemplate</span>
+<a id="__codelineno-0-1470" name="__codelineno-0-1470"></a><span class="sd">            &gt;&gt;&gt; from serapeum.ollama import Ollama      # type: ignore</span>
+<a id="__codelineno-0-1471" name="__codelineno-0-1471"></a><span class="sd">            &gt;&gt;&gt; class Analysis(BaseModel):</span>
+<a id="__codelineno-0-1472" name="__codelineno-0-1472"></a><span class="sd">            ...     sentiment: str</span>
+<a id="__codelineno-0-1473" name="__codelineno-0-1473"></a><span class="sd">            ...     keywords: list[str]</span>
+<a id="__codelineno-0-1474" name="__codelineno-0-1474"></a><span class="sd">            &gt;&gt;&gt; llm = Ollama(model=&quot;llama3.1&quot;, request_timeout=120)     # doctest: +SKIP</span>
+<a id="__codelineno-0-1475" name="__codelineno-0-1475"></a><span class="sd">            &gt;&gt;&gt; async def stream_analysis():</span>
+<a id="__codelineno-0-1476" name="__codelineno-0-1476"></a><span class="sd">            ...     prompt = PromptTemplate(&quot;Analyze: {text}&quot;)</span>
+<a id="__codelineno-0-1477" name="__codelineno-0-1477"></a><span class="sd">            ...     async for obj in await llm.aparse(</span>
+<a id="__codelineno-0-1478" name="__codelineno-0-1478"></a><span class="sd">            ...         Analysis, prompt, stream=True, text=&quot;Product review text...&quot;</span>
+<a id="__codelineno-0-1479" name="__codelineno-0-1479"></a><span class="sd">            ...     ):</span>
+<a id="__codelineno-0-1480" name="__codelineno-0-1480"></a><span class="sd">            ...         print(obj)</span>
+<a id="__codelineno-0-1481" name="__codelineno-0-1481"></a><span class="sd">            &gt;&gt;&gt; asyncio.run(stream_analysis())      # doctest: +SKIP</span>
+<a id="__codelineno-0-1482" name="__codelineno-0-1482"></a>
+<a id="__codelineno-0-1483" name="__codelineno-0-1483"></a><span class="sd">            ```</span>
+<a id="__codelineno-0-1484" name="__codelineno-0-1484"></a>
+<a id="__codelineno-0-1485" name="__codelineno-0-1485"></a><span class="sd">    See Also:</span>
+<a id="__codelineno-0-1486" name="__codelineno-0-1486"></a><span class="sd">        parse: Synchronous variant.</span>
+<a id="__codelineno-0-1487" name="__codelineno-0-1487"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-1488" name="__codelineno-0-1488"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">structured_output_mode</span> <span class="o">==</span> <span class="n">StructuredOutputMode</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">:</span>
+<a id="__codelineno-0-1489" name="__codelineno-0-1489"></a>        <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-0-1490" name="__codelineno-0-1490"></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astream_parse_default</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="n">prompt_args</span><span class="p">)</span>
+<a id="__codelineno-0-1491" name="__codelineno-0-1491"></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aparse_default</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="n">prompt_args</span><span class="p">)</span>
+<a id="__codelineno-0-1492" name="__codelineno-0-1492"></a>    <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-0-1493" name="__codelineno-0-1493"></a>        <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">astream_parse</span><span class="p">(</span>  <span class="c1"># type: ignore[return-value]</span>
+<a id="__codelineno-0-1494" name="__codelineno-0-1494"></a>            <span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span>
+<a id="__codelineno-0-1495" name="__codelineno-0-1495"></a>        <span class="p">)</span>
+<a id="__codelineno-0-1496" name="__codelineno-0-1496"></a>    <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">aparse</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -7473,371 +7560,6 @@ achat: Non-streaming async chat.</p>
 <a id="__codelineno-0-1169" name="__codelineno-0-1169"></a>                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_tool_call_response</span><span class="p">(</span><span class="n">tools_dict</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
 <a id="__codelineno-0-1170" name="__codelineno-0-1170"></a>
 <a id="__codelineno-0-1171" name="__codelineno-0-1171"></a>    <span class="k">return</span> <span class="n">gen</span><span class="p">()</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h4 id="serapeum.ollama.llm.Ollama.astream_parse" class="doc doc-heading"><a href="#serapeum.ollama.llm.Ollama.astream_parse" class="toclink">
-            <code class="highlight language-python"><span class="n">astream_parse</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span><span class="p">)</span></code>
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
-  </span>
-
-</a><a href="#serapeum.ollama.llm.Ollama.astream_parse" class="headerlink" title="Permanent link">#</a></h4>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Asynchronously stream incrementally parsed structured objects as the model generates JSON.</p>
-<p>Async variant of stream_parse. Yields partially complete Pydantic
-instances as the model streams JSON content, allowing early access to structured
-data before the full response completes. Uses StreamingObjectProcessor with
-flexible mode to handle incomplete JSON.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>schema</code>
-            </td>
-            <td>
-                  <code><span title="type">type</span>[<span title="pydantic.BaseModel">BaseModel</span>] | <span title="typing.Callable">Callable</span>[..., <span title="typing.Any">Any</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Pydantic model class defining the expected structure.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>prompt</code>
-            </td>
-            <td>
-                  <code><span title="serapeum.core.prompts.PromptTemplate">PromptTemplate</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>PromptTemplate that will be formatted with prompt_args to create messages.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>llm_kwargs</code>
-            </td>
-            <td>
-                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Additional provider arguments passed to astream_chat.
-Defaults to empty dict.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>**prompt_args</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Template variables used to format the prompt.</p>
-              </div>
-            </td>
-            <td>
-                  <code>{}</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="typing.AsyncGenerator">AsyncGenerator</span>[<span title="pydantic.BaseModel">BaseModel</span> | <span title="list">list</span>[<span title="pydantic.BaseModel">BaseModel</span>], None]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Async generator yielding parsed Pydantic instance(s) - either a single BaseModel</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="typing.AsyncGenerator">AsyncGenerator</span>[<span title="pydantic.BaseModel">BaseModel</span> | <span title="list">list</span>[<span title="pydantic.BaseModel">BaseModel</span>], None]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>or list of BaseModel. Each yielded value represents the current state of parsing</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="typing.AsyncGenerator">AsyncGenerator</span>[<span title="pydantic.BaseModel">BaseModel</span> | <span title="list">list</span>[<span title="pydantic.BaseModel">BaseModel</span>], None]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>as more JSON arrives.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<p><span class="doc-section-title">Examples:</span></p>
-    <ul>
-<li>Async stream structured data as it's generated
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.prompts</span><span class="w"> </span><span class="kn">import</span> <span class="n">PromptTemplate</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>      <span class="c1"># type: ignore</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="o">&gt;&gt;&gt;</span> <span class="k">class</span><span class="w"> </span><span class="nc">Analysis</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="o">...</span>     <span class="n">sentiment</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="o">...</span>     <span class="n">keywords</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.1&quot;</span><span class="p">,</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>     <span class="c1"># doctest: +SKIP</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="o">&gt;&gt;&gt;</span> <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stream_analysis</span><span class="p">():</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="o">...</span>     <span class="n">prompt</span> <span class="o">=</span> <span class="n">PromptTemplate</span><span class="p">(</span><span class="s2">&quot;Analyze: </span><span class="si">{text}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="o">...</span>     <span class="k">async</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">llm</span><span class="o">.</span><span class="n">astream_parse</span><span class="p">(</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="o">...</span>         <span class="n">Analysis</span><span class="p">,</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="o">...</span>         <span class="n">prompt</span><span class="p">,</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="o">...</span>         <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Product review text...&quot;</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="o">...</span>     <span class="p">):</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="o">...</span>         <span class="c1"># obj is progressively more complete</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="o">...</span>         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sentiment: </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="n">sentiment</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;sentiment&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;pending&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stream_analysis</span><span class="p">())</span>      <span class="c1"># doctest: +SKIP</span>
-</code></pre></div></li>
-</ul>
-
-
-<details class="see-also" open>
-  <summary>See Also</summary>
-  <p>stream_parse: Synchronous streaming counterpart.
-aparse: Non-streaming async variant.</p>
-</details>
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>libs/providers/ollama/src/serapeum/ollama/llm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1449">1449</a></span>
-<span class="normal"><a href="#__codelineno-0-1450">1450</a></span>
-<span class="normal"><a href="#__codelineno-0-1451">1451</a></span>
-<span class="normal"><a href="#__codelineno-0-1452">1452</a></span>
-<span class="normal"><a href="#__codelineno-0-1453">1453</a></span>
-<span class="normal"><a href="#__codelineno-0-1454">1454</a></span>
-<span class="normal"><a href="#__codelineno-0-1455">1455</a></span>
-<span class="normal"><a href="#__codelineno-0-1456">1456</a></span>
-<span class="normal"><a href="#__codelineno-0-1457">1457</a></span>
-<span class="normal"><a href="#__codelineno-0-1458">1458</a></span>
-<span class="normal"><a href="#__codelineno-0-1459">1459</a></span>
-<span class="normal"><a href="#__codelineno-0-1460">1460</a></span>
-<span class="normal"><a href="#__codelineno-0-1461">1461</a></span>
-<span class="normal"><a href="#__codelineno-0-1462">1462</a></span>
-<span class="normal"><a href="#__codelineno-0-1463">1463</a></span>
-<span class="normal"><a href="#__codelineno-0-1464">1464</a></span>
-<span class="normal"><a href="#__codelineno-0-1465">1465</a></span>
-<span class="normal"><a href="#__codelineno-0-1466">1466</a></span>
-<span class="normal"><a href="#__codelineno-0-1467">1467</a></span>
-<span class="normal"><a href="#__codelineno-0-1468">1468</a></span>
-<span class="normal"><a href="#__codelineno-0-1469">1469</a></span>
-<span class="normal"><a href="#__codelineno-0-1470">1470</a></span>
-<span class="normal"><a href="#__codelineno-0-1471">1471</a></span>
-<span class="normal"><a href="#__codelineno-0-1472">1472</a></span>
-<span class="normal"><a href="#__codelineno-0-1473">1473</a></span>
-<span class="normal"><a href="#__codelineno-0-1474">1474</a></span>
-<span class="normal"><a href="#__codelineno-0-1475">1475</a></span>
-<span class="normal"><a href="#__codelineno-0-1476">1476</a></span>
-<span class="normal"><a href="#__codelineno-0-1477">1477</a></span>
-<span class="normal"><a href="#__codelineno-0-1478">1478</a></span>
-<span class="normal"><a href="#__codelineno-0-1479">1479</a></span>
-<span class="normal"><a href="#__codelineno-0-1480">1480</a></span>
-<span class="normal"><a href="#__codelineno-0-1481">1481</a></span>
-<span class="normal"><a href="#__codelineno-0-1482">1482</a></span>
-<span class="normal"><a href="#__codelineno-0-1483">1483</a></span>
-<span class="normal"><a href="#__codelineno-0-1484">1484</a></span>
-<span class="normal"><a href="#__codelineno-0-1485">1485</a></span>
-<span class="normal"><a href="#__codelineno-0-1486">1486</a></span>
-<span class="normal"><a href="#__codelineno-0-1487">1487</a></span>
-<span class="normal"><a href="#__codelineno-0-1488">1488</a></span>
-<span class="normal"><a href="#__codelineno-0-1489">1489</a></span>
-<span class="normal"><a href="#__codelineno-0-1490">1490</a></span>
-<span class="normal"><a href="#__codelineno-0-1491">1491</a></span>
-<span class="normal"><a href="#__codelineno-0-1492">1492</a></span>
-<span class="normal"><a href="#__codelineno-0-1493">1493</a></span>
-<span class="normal"><a href="#__codelineno-0-1494">1494</a></span>
-<span class="normal"><a href="#__codelineno-0-1495">1495</a></span>
-<span class="normal"><a href="#__codelineno-0-1496">1496</a></span>
-<span class="normal"><a href="#__codelineno-0-1497">1497</a></span>
-<span class="normal"><a href="#__codelineno-0-1498">1498</a></span>
-<span class="normal"><a href="#__codelineno-0-1499">1499</a></span>
-<span class="normal"><a href="#__codelineno-0-1500">1500</a></span>
-<span class="normal"><a href="#__codelineno-0-1501">1501</a></span>
-<span class="normal"><a href="#__codelineno-0-1502">1502</a></span>
-<span class="normal"><a href="#__codelineno-0-1503">1503</a></span>
-<span class="normal"><a href="#__codelineno-0-1504">1504</a></span>
-<span class="normal"><a href="#__codelineno-0-1505">1505</a></span>
-<span class="normal"><a href="#__codelineno-0-1506">1506</a></span>
-<span class="normal"><a href="#__codelineno-0-1507">1507</a></span>
-<span class="normal"><a href="#__codelineno-0-1508">1508</a></span>
-<span class="normal"><a href="#__codelineno-0-1509">1509</a></span>
-<span class="normal"><a href="#__codelineno-0-1510">1510</a></span>
-<span class="normal"><a href="#__codelineno-0-1511">1511</a></span>
-<span class="normal"><a href="#__codelineno-0-1512">1512</a></span>
-<span class="normal"><a href="#__codelineno-0-1513">1513</a></span>
-<span class="normal"><a href="#__codelineno-0-1514">1514</a></span>
-<span class="normal"><a href="#__codelineno-0-1515">1515</a></span>
-<span class="normal"><a href="#__codelineno-0-1516">1516</a></span>
-<span class="normal"><a href="#__codelineno-0-1517">1517</a></span>
-<span class="normal"><a href="#__codelineno-0-1518">1518</a></span>
-<span class="normal"><a href="#__codelineno-0-1519">1519</a></span>
-<span class="normal"><a href="#__codelineno-0-1520">1520</a></span>
-<span class="normal"><a href="#__codelineno-0-1521">1521</a></span>
-<span class="normal"><a href="#__codelineno-0-1522">1522</a></span>
-<span class="normal"><a href="#__codelineno-0-1523">1523</a></span>
-<span class="normal"><a href="#__codelineno-0-1524">1524</a></span>
-<span class="normal"><a href="#__codelineno-0-1525">1525</a></span>
-<span class="normal"><a href="#__codelineno-0-1526">1526</a></span>
-<span class="normal"><a href="#__codelineno-0-1527">1527</a></span>
-<span class="normal"><a href="#__codelineno-0-1528">1528</a></span>
-<span class="normal"><a href="#__codelineno-0-1529">1529</a></span>
-<span class="normal"><a href="#__codelineno-0-1530">1530</a></span>
-<span class="normal"><a href="#__codelineno-0-1531">1531</a></span>
-<span class="normal"><a href="#__codelineno-0-1532">1532</a></span>
-<span class="normal"><a href="#__codelineno-0-1533">1533</a></span>
-<span class="normal"><a href="#__codelineno-0-1534">1534</a></span>
-<span class="normal"><a href="#__codelineno-0-1535">1535</a></span>
-<span class="normal"><a href="#__codelineno-0-1536">1536</a></span>
-<span class="normal"><a href="#__codelineno-0-1537">1537</a></span>
-<span class="normal"><a href="#__codelineno-0-1538">1538</a></span>
-<span class="normal"><a href="#__codelineno-0-1539">1539</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1449" name="__codelineno-0-1449"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">astream_parse</span><span class="p">(</span>
-<a id="__codelineno-0-1450" name="__codelineno-0-1450"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1451" name="__codelineno-0-1451"></a>    <span class="n">schema</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<a id="__codelineno-0-1452" name="__codelineno-0-1452"></a>    <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
-<a id="__codelineno-0-1453" name="__codelineno-0-1453"></a>    <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-1454" name="__codelineno-0-1454"></a>    <span class="o">**</span><span class="n">prompt_args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<a id="__codelineno-0-1455" name="__codelineno-0-1455"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">BaseModel</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
-<a id="__codelineno-0-1456" name="__codelineno-0-1456"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Asynchronously stream incrementally parsed structured objects as the model generates JSON.</span>
-<a id="__codelineno-0-1457" name="__codelineno-0-1457"></a>
-<a id="__codelineno-0-1458" name="__codelineno-0-1458"></a><span class="sd">    Async variant of stream_parse. Yields partially complete Pydantic</span>
-<a id="__codelineno-0-1459" name="__codelineno-0-1459"></a><span class="sd">    instances as the model streams JSON content, allowing early access to structured</span>
-<a id="__codelineno-0-1460" name="__codelineno-0-1460"></a><span class="sd">    data before the full response completes. Uses StreamingObjectProcessor with</span>
-<a id="__codelineno-0-1461" name="__codelineno-0-1461"></a><span class="sd">    flexible mode to handle incomplete JSON.</span>
-<a id="__codelineno-0-1462" name="__codelineno-0-1462"></a>
-<a id="__codelineno-0-1463" name="__codelineno-0-1463"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-1464" name="__codelineno-0-1464"></a><span class="sd">        schema: Pydantic model class defining the expected structure.</span>
-<a id="__codelineno-0-1465" name="__codelineno-0-1465"></a><span class="sd">        prompt: PromptTemplate that will be formatted with prompt_args to create messages.</span>
-<a id="__codelineno-0-1466" name="__codelineno-0-1466"></a><span class="sd">        llm_kwargs: Additional provider arguments passed to astream_chat.</span>
-<a id="__codelineno-0-1467" name="__codelineno-0-1467"></a><span class="sd">            Defaults to empty dict.</span>
-<a id="__codelineno-0-1468" name="__codelineno-0-1468"></a><span class="sd">        **prompt_args: Template variables used to format the prompt.</span>
-<a id="__codelineno-0-1469" name="__codelineno-0-1469"></a>
-<a id="__codelineno-0-1470" name="__codelineno-0-1470"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-1471" name="__codelineno-0-1471"></a><span class="sd">        Async generator yielding parsed Pydantic instance(s) - either a single BaseModel</span>
-<a id="__codelineno-0-1472" name="__codelineno-0-1472"></a><span class="sd">        or list of BaseModel. Each yielded value represents the current state of parsing</span>
-<a id="__codelineno-0-1473" name="__codelineno-0-1473"></a><span class="sd">        as more JSON arrives.</span>
-<a id="__codelineno-0-1474" name="__codelineno-0-1474"></a>
-<a id="__codelineno-0-1475" name="__codelineno-0-1475"></a><span class="sd">    Examples:</span>
-<a id="__codelineno-0-1476" name="__codelineno-0-1476"></a><span class="sd">        - Async stream structured data as it&#39;s generated</span>
-<a id="__codelineno-0-1477" name="__codelineno-0-1477"></a><span class="sd">            ```python</span>
-<a id="__codelineno-0-1478" name="__codelineno-0-1478"></a><span class="sd">            &gt;&gt;&gt; import asyncio</span>
-<a id="__codelineno-0-1479" name="__codelineno-0-1479"></a><span class="sd">            &gt;&gt;&gt; from pydantic import BaseModel</span>
-<a id="__codelineno-0-1480" name="__codelineno-0-1480"></a><span class="sd">            &gt;&gt;&gt; from serapeum.core.prompts import PromptTemplate</span>
-<a id="__codelineno-0-1481" name="__codelineno-0-1481"></a><span class="sd">            &gt;&gt;&gt; from serapeum.ollama import Ollama      # type: ignore</span>
-<a id="__codelineno-0-1482" name="__codelineno-0-1482"></a><span class="sd">            &gt;&gt;&gt; class Analysis(BaseModel):</span>
-<a id="__codelineno-0-1483" name="__codelineno-0-1483"></a><span class="sd">            ...     sentiment: str</span>
-<a id="__codelineno-0-1484" name="__codelineno-0-1484"></a><span class="sd">            ...     keywords: list[str]</span>
-<a id="__codelineno-0-1485" name="__codelineno-0-1485"></a><span class="sd">            &gt;&gt;&gt; llm = Ollama(model=&quot;llama3.1&quot;, request_timeout=120)     # doctest: +SKIP</span>
-<a id="__codelineno-0-1486" name="__codelineno-0-1486"></a><span class="sd">            &gt;&gt;&gt; async def stream_analysis():</span>
-<a id="__codelineno-0-1487" name="__codelineno-0-1487"></a><span class="sd">            ...     prompt = PromptTemplate(&quot;Analyze: {text}&quot;)</span>
-<a id="__codelineno-0-1488" name="__codelineno-0-1488"></a><span class="sd">            ...     async for obj in await llm.astream_parse(</span>
-<a id="__codelineno-0-1489" name="__codelineno-0-1489"></a><span class="sd">            ...         Analysis,</span>
-<a id="__codelineno-0-1490" name="__codelineno-0-1490"></a><span class="sd">            ...         prompt,</span>
-<a id="__codelineno-0-1491" name="__codelineno-0-1491"></a><span class="sd">            ...         text=&quot;Product review text...&quot;</span>
-<a id="__codelineno-0-1492" name="__codelineno-0-1492"></a><span class="sd">            ...     ):</span>
-<a id="__codelineno-0-1493" name="__codelineno-0-1493"></a><span class="sd">            ...         # obj is progressively more complete</span>
-<a id="__codelineno-0-1494" name="__codelineno-0-1494"></a><span class="sd">            ...         print(f&quot;Sentiment: {obj.sentiment if hasattr(obj, &#39;sentiment&#39;) else &#39;pending&#39;}&quot;)</span>
-<a id="__codelineno-0-1495" name="__codelineno-0-1495"></a><span class="sd">            &gt;&gt;&gt; asyncio.run(stream_analysis())      # doctest: +SKIP</span>
-<a id="__codelineno-0-1496" name="__codelineno-0-1496"></a>
-<a id="__codelineno-0-1497" name="__codelineno-0-1497"></a><span class="sd">            ```</span>
-<a id="__codelineno-0-1498" name="__codelineno-0-1498"></a>
-<a id="__codelineno-0-1499" name="__codelineno-0-1499"></a><span class="sd">    See Also:</span>
-<a id="__codelineno-0-1500" name="__codelineno-0-1500"></a><span class="sd">        stream_parse: Synchronous streaming counterpart.</span>
-<a id="__codelineno-0-1501" name="__codelineno-0-1501"></a><span class="sd">        aparse: Non-streaming async variant.</span>
-<a id="__codelineno-0-1502" name="__codelineno-0-1502"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-1503" name="__codelineno-0-1503"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">structured_output_mode</span> <span class="o">==</span> <span class="n">StructuredOutputMode</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">:</span>
-<a id="__codelineno-0-1504" name="__codelineno-0-1504"></a>
-<a id="__codelineno-0-1505" name="__codelineno-0-1505"></a>        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">gen</span><span class="p">(</span>
-<a id="__codelineno-0-1506" name="__codelineno-0-1506"></a>            <span class="n">output_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
-<a id="__codelineno-0-1507" name="__codelineno-0-1507"></a>            <span class="n">prompt</span><span class="p">:</span> <span class="n">PromptTemplate</span><span class="p">,</span>
-<a id="__codelineno-0-1508" name="__codelineno-0-1508"></a>            <span class="n">llm_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-1509" name="__codelineno-0-1509"></a>            <span class="n">prompt_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<a id="__codelineno-0-1510" name="__codelineno-0-1510"></a>        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">BaseModel</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
-<a id="__codelineno-0-1511" name="__codelineno-0-1511"></a>            <span class="n">llm_kwargs</span> <span class="o">=</span> <span class="n">llm_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
-<a id="__codelineno-0-1512" name="__codelineno-0-1512"></a>            <span class="n">llm_kwargs</span><span class="p">[</span><span class="s2">&quot;format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_cls</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
-<a id="__codelineno-0-1513" name="__codelineno-0-1513"></a>
-<a id="__codelineno-0-1514" name="__codelineno-0-1514"></a>            <span class="n">messages</span> <span class="o">=</span> <span class="n">prompt</span><span class="o">.</span><span class="n">format_messages</span><span class="p">(</span><span class="o">**</span><span class="n">prompt_args</span><span class="p">)</span>
-<a id="__codelineno-0-1515" name="__codelineno-0-1515"></a>            <span class="n">response_gen</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">astream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">llm_kwargs</span><span class="p">)</span>
-<a id="__codelineno-0-1516" name="__codelineno-0-1516"></a>
-<a id="__codelineno-0-1517" name="__codelineno-0-1517"></a>            <span class="n">processor</span> <span class="o">=</span> <span class="n">StreamingObjectProcessor</span><span class="p">(</span>
-<a id="__codelineno-0-1518" name="__codelineno-0-1518"></a>                <span class="n">output_cls</span><span class="o">=</span><span class="n">output_cls</span><span class="p">,</span>
-<a id="__codelineno-0-1519" name="__codelineno-0-1519"></a>                <span class="n">flexible_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-0-1520" name="__codelineno-0-1520"></a>                <span class="n">allow_parallel_tool_calls</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-0-1521" name="__codelineno-0-1521"></a>            <span class="p">)</span>
-<a id="__codelineno-0-1522" name="__codelineno-0-1522"></a>            <span class="n">cur_objects</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-1523" name="__codelineno-0-1523"></a>            <span class="k">async</span> <span class="k">for</span> <span class="n">response</span> <span class="ow">in</span> <span class="n">response_gen</span><span class="p">:</span>
-<a id="__codelineno-0-1524" name="__codelineno-0-1524"></a>                <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-1525" name="__codelineno-0-1525"></a>                    <span class="n">objects</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">cur_objects</span><span class="p">)</span>
-<a id="__codelineno-0-1526" name="__codelineno-0-1526"></a>
-<a id="__codelineno-0-1527" name="__codelineno-0-1527"></a>                    <span class="n">cur_objects</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-1528" name="__codelineno-0-1528"></a>                        <span class="n">objects</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">objects</span><span class="p">]</span>
-<a id="__codelineno-0-1529" name="__codelineno-0-1529"></a>                    <span class="p">)</span>
-<a id="__codelineno-0-1530" name="__codelineno-0-1530"></a>                    <span class="k">yield</span> <span class="n">objects</span>
-<a id="__codelineno-0-1531" name="__codelineno-0-1531"></a>                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-<a id="__codelineno-0-1532" name="__codelineno-0-1532"></a>                    <span class="k">continue</span>
-<a id="__codelineno-0-1533" name="__codelineno-0-1533"></a>
-<a id="__codelineno-0-1534" name="__codelineno-0-1534"></a>        <span class="k">return</span> <span class="n">gen</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="n">prompt_args</span><span class="p">)</span>
-<a id="__codelineno-0-1535" name="__codelineno-0-1535"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-1536" name="__codelineno-0-1536"></a>        <span class="c1"># Fall back to non-streaming structured predict</span>
-<a id="__codelineno-0-1537" name="__codelineno-0-1537"></a>        <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">astream_parse</span><span class="p">(</span>  <span class="c1"># type: ignore[return-value]</span>
-<a id="__codelineno-0-1538" name="__codelineno-0-1538"></a>            <span class="n">schema</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">llm_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">prompt_args</span>
-<a id="__codelineno-0-1539" name="__codelineno-0-1539"></a>        <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

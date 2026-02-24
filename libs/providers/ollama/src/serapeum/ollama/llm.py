@@ -314,10 +314,8 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
     See Also:
         OllamaEmbedding: Companion class for generating embeddings with Ollama.
         OllamaClientMixin: Shared connection logic, URL resolution, and client injection.
-        chat: Synchronous chat completion.
-        stream_chat: Streaming chat yielding incremental deltas.
-        achat: Asynchronous chat completion.
-        astream_chat: Asynchronous streaming chat.
+        chat: Synchronous chat completion (supports streaming via ``stream=True``).
+        achat: Asynchronous chat completion (supports streaming via ``stream=True``).
         parse: Structured output via JSON schema and Pydantic validation.
         list_models: List all models available on the Ollama server.
         alist_models: Async variant of list_models.
@@ -909,22 +907,48 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             raw=raw,
         )
 
+    @overload
     def chat(
-        self, messages: MessageList | list[Message], **kwargs: Any
-    ) -> ChatResponse:
+        self,
+        messages: MessageList | list[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
+    ) -> ChatResponse: ...
+
+    @overload
+    def chat(
+        self,
+        messages: MessageList | list[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
+    ) -> ChatResponseGen: ...
+
+    def chat(
+        self,
+        messages: MessageList | list[Message],
+        *,
+        stream: bool = False,
+        **kwargs: Any,
+    ) -> ChatResponse | ChatResponseGen:
         """Send a chat request to Ollama and return the assistant message.
 
         Args:
             messages (MessageList):
                 Sequence of chat messages.
+            stream (bool):
+                If ``False`` (default), returns a single ChatResponse with the complete
+                message. If ``True``, returns a generator yielding incremental ChatResponse
+                chunks with deltas.
             **kwargs (Any):
                 Provider-specific overrides such as ``tools`` or ``format``.
 
         Returns:
-            ChatResponse: Parsed response containing the assistant message and optional token usage.
+            ChatResponse when ``stream=False``, or ChatResponseGen when ``stream=True``.
 
         Examples:
-            - Minimal chat against a running Ollama server (requires server and model)
+            - Non-streaming chat against a running Ollama server (requires server and model)
                 ```python
                 >>> from serapeum.core.llms import Message, MessageRole
                 >>> # Ensure `ollama serve` is running and the model is available locally.
@@ -936,7 +960,27 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 True
 
                 ```
+            - Streaming chat with deltas
+                ```python
+                >>> from serapeum.core.llms import Message, MessageRole
+                >>> llm = Ollama(model="llama3.1", request_timeout=180)
+                >>> chunks = list(llm.chat(
+                ...     [Message(role=MessageRole.USER, content="Say hello")],
+                ...     stream=True
+                ... ))  # doctest: +SKIP
+                >>> isinstance(chunks[-1].message.content, str) and len(chunks) >= 1  # doctest: +SKIP
+                True
+
+                ```
         """
+        if stream:
+            return self._stream_chat(messages, **kwargs)
+        return self._chat(messages, **kwargs)
+
+    def _chat(
+        self, messages: MessageList | list[Message], **kwargs: Any
+    ) -> ChatResponse:
+        """Internal non-streaming chat implementation."""
         ollama_messages = self._convert_to_ollama_messages(messages)
 
         tools = kwargs.pop("tools", None)
@@ -1038,36 +1082,10 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             raw=r,
         )
 
-    def stream_chat(
+    def _stream_chat(
         self, messages: MessageList | list[Message], **kwargs: Any
     ) -> ChatResponseGen:
-        """Stream assistant deltas for a chat request.
-
-        Args:
-            messages (MessageList): Sequence of chat messages.
-            **kwargs (Any): Provider-specific options such as ``tools`` or ``format``.
-
-        Yields:
-            ChatResponse: Incremental responses with ``delta`` and cumulative content.
-
-        Examples:
-            - Stream deltas from a real Ollama server (requires server and model)
-                ```python
-                >>> from serapeum.core.llms import Message, MessageRole
-                >>> # Pre-requisites:
-                >>> #   1) Start the server: `ollama serve`
-                >>> #   2) Pull a model:    `ollama pull llama3.1`
-                >>> llm = Ollama(model="llama3.1", request_timeout=180)
-                >>> chunks = list(llm.stream_chat([Message(role=MessageRole.USER, content="Say hello succinctly")])) # doctest: +SKIP
-                >>> chunks  # doctest: +SKIP
-                [ChatResponse(raw={'model': 'llama3.1', 'created_at': '2026-02-15T20:33:53.7035231Z', 'done': False, 'done_reason': None, 'total_duration': None, 'load_duration': None, 'prompt_eval_count': None, 'prompt_eval_duration': None, 'eval_count': None, 'eval_duration': None, 'message': Message(role='assistant', content='Hello', thinking=None, images=None, tool_name=None, tool_calls=None), 'logprobs': None}, likelihood_score=None, additional_kwargs={}, delta='Hello', message=Message(role=<MessageRole.ASSISTANT: 'assistant'>, additional_kwargs={'tool_calls': []}, chunks=[TextChunk(content='Hello', path=None, url=None, type='text')])),
-                 ChatResponse(raw={'model': 'llama3.1', 'created_at': '2026-02-15T20:33:53.7201343Z', 'done': False, 'done_reason': None, 'total_duration': None, 'load_duration': None, 'prompt_eval_count': None, 'prompt_eval_duration': None, 'eval_count': None, 'eval_duration': None, 'message': Message(role='assistant', content='!', thinking=None, images=None, tool_name=None, tool_calls=None), 'logprobs': None}, likelihood_score=None, additional_kwargs={}, delta='!', message=Message(role=<MessageRole.ASSISTANT: 'assistant'>, additional_kwargs={'tool_calls': []}, chunks=[TextChunk(content='Hello!', path=None, url=None, type='text')])),
-                 ChatResponse(raw={'model': 'llama3.1', 'created_at': '2026-02-15T20:33:53.7350848Z', 'done': True, 'done_reason': 'stop', 'total_duration': 2473382300, 'load_duration': 2159171600, 'prompt_eval_count': 14, 'prompt_eval_duration': 278611400, 'eval_count': 3, 'eval_duration': 29859300, 'message': Message(role='assistant', content='', thinking=None, images=None, tool_name=None, tool_calls=None), 'logprobs': None, 'usage': {'prompt_tokens': 14, 'completion_tokens': 3, 'total_tokens': 17}}, likelihood_score=None, additional_kwargs={}, delta='', message=Message(role=<MessageRole.ASSISTANT: 'assistant'>, additional_kwargs={'tool_calls': []}, chunks=[TextChunk(content='Hello!', path=None, url=None, type='text')]))]
-                >>> isinstance(chunks[-1].message.content, str) and len(chunks) >= 1    # doctest: +SKIP
-                True
-
-                ```
-        """
+        """Internal streaming chat implementation."""
         ollama_messages = self._convert_to_ollama_messages(messages)
 
         tools = kwargs.pop("tools", None)
@@ -1096,27 +1114,66 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         return gen()
 
-    async def astream_chat(
-        self, messages: MessageList | list[Message], **kwargs: Any
-    ) -> ChatResponseAsyncGen:
-        """Asynchronously stream assistant deltas for a chat request.
+    @overload
+    async def achat(
+        self,
+        messages: MessageList | list[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
+    ) -> ChatResponse: ...
 
-        Async variant of stream_chat that yields ChatResponse chunks as the model
-        generates content. Each chunk includes both the current delta and cumulative
-        content. Tool calls are de-duplicated across chunks.
+    @overload
+    async def achat(
+        self,
+        messages: MessageList | list[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
+    ) -> ChatResponseAsyncGen: ...
+
+    async def achat(
+        self,
+        messages: MessageList | list[Message],
+        *,
+        stream: bool = False,
+        **kwargs: Any,
+    ) -> ChatResponse | ChatResponseAsyncGen:
+        """Asynchronously send a chat request and return the assistant message.
+
+        Async variant of the chat method that sends messages to Ollama. When
+        ``stream=False`` (default), waits for the complete response. When
+        ``stream=True``, returns an async generator yielding incremental chunks.
 
         Args:
             messages: Sequence of chat messages forming the conversation context.
-            **kwargs: Provider-specific options such as:
+            stream (bool):
+                If ``False`` (default), awaits the full response and returns a single
+                ChatResponse. If ``True``, returns an async generator yielding
+                ChatResponse chunks with deltas.
+            **kwargs: Provider-specific overrides such as:
                 - tools: List of tool specifications for function calling
                 - format: Response format (e.g., "json")
 
         Returns:
-            Async generator yielding ChatResponse chunks with incremental deltas
-            and cumulative content.
+            ChatResponse when ``stream=False``, or ChatResponseAsyncGen when ``stream=True``.
 
         Examples:
-            - Async stream chat responses
+            - Async non-streaming chat
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.ollama import Ollama      # type: ignore
+                >>> llm = Ollama(model="llama3.1", request_timeout=120) # doctest: +SKIP
+                >>> async def chat_example():   # doctest: +SKIP
+                ...     response = await llm.achat([
+                ...         Message(role=MessageRole.USER, content="Say hello")
+                ...     ])
+                ...     return isinstance(response.message.content, str)
+                >>> asyncio.run(chat_example())  # Returns True     # doctest: +SKIP
+
+                ```
+            - Async streaming chat
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.llms import Message, MessageRole
@@ -1124,9 +1181,10 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> llm = Ollama(model="llama3.1", request_timeout=120) # doctest: +SKIP
                 >>> async def stream_example():
                 ...     chunks = []
-                ...     async for chunk in await llm.astream_chat([
-                ...         Message(role=MessageRole.USER, content="Count to 3")
-                ...     ]):
+                ...     async for chunk in await llm.achat(
+                ...         [Message(role=MessageRole.USER, content="Count to 3")],
+                ...         stream=True
+                ...     ):
                 ...         chunks.append(chunk.delta)
                 ...     return len(chunks) > 0
                 >>> asyncio.run(stream_example())  # Returns True   # doctest: +SKIP
@@ -1134,9 +1192,37 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 ```
 
         See Also:
-            stream_chat: Synchronous streaming variant.
-            achat: Non-streaming async chat.
+            chat: Synchronous variant.
         """
+        if stream:
+            return await self._astream_chat(messages, **kwargs)
+        return await self._achat(messages, **kwargs)
+
+    async def _achat(
+        self, messages: MessageList | list[Message], **kwargs: Any
+    ) -> ChatResponse:
+        """Internal non-streaming async chat implementation."""
+        ollama_messages = self._convert_to_ollama_messages(messages)
+
+        tools = kwargs.pop("tools", None)
+        response_format = kwargs.pop("format", "json" if self.json_mode else None)
+
+        response = await self.async_client.chat(
+            model=self.model,
+            messages=ollama_messages,
+            stream=False,
+            format=response_format,
+            tools=tools,
+            options=self._model_kwargs,
+            keep_alive=self.keep_alive,
+        )
+
+        return self._build_chat_response(response)
+
+    async def _astream_chat(
+        self, messages: MessageList | list[Message], **kwargs: Any
+    ) -> ChatResponseAsyncGen:
+        """Internal streaming async chat implementation."""
         ollama_messages = self._convert_to_ollama_messages(messages)
 
         tools = kwargs.pop("tools", None)
@@ -1169,62 +1255,6 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                     yield self._parse_tool_call_response(tools_dict, r)
 
         return gen()
-
-    async def achat(
-        self, messages: MessageList | list[Message], **kwargs: Any
-    ) -> ChatResponse:
-        """Asynchronously send a chat request and return the complete assistant message.
-
-        Async variant of the chat method that sends messages to Ollama and waits
-        for the complete response. Unlike astream_chat, this returns a single
-        ChatResponse with the full assistant message after generation completes.
-
-        Args:
-            messages: Sequence of chat messages forming the conversation context.
-            **kwargs: Provider-specific overrides such as:
-                - tools: List of tool specifications for function calling
-                - format: Response format (e.g., "json")
-
-        Returns:
-            ChatResponse containing the complete assistant message, any tool calls,
-            and optional token usage statistics.
-
-        Examples:
-            - Async chat with minimal setup
-                ```python
-                >>> import asyncio
-                >>> from serapeum.core.llms import Message, MessageRole
-                >>> from serapeum.ollama import Ollama      # type: ignore
-                >>> llm = Ollama(model="llama3.1", request_timeout=120) # doctest: +SKIP
-                >>> async def chat_example():   # doctest: +SKIP
-                ...     response = await llm.achat([
-                ...         Message(role=MessageRole.USER, content="Say hello")
-                ...     ])
-                ...     return isinstance(response.message.content, str)
-                >>> asyncio.run(chat_example())  # Returns True     # doctest: +SKIP
-
-                ```
-
-        See Also:
-            chat: Synchronous chat variant.
-            astream_chat: Async streaming variant.
-        """
-        ollama_messages = self._convert_to_ollama_messages(messages)
-
-        tools = kwargs.pop("tools", None)
-        response_format = kwargs.pop("format", "json" if self.json_mode else None)
-
-        response = await self.async_client.chat(
-            model=self.model,
-            messages=ollama_messages,
-            stream=False,
-            format=response_format,
-            tools=tools,
-            options=self._model_kwargs,
-            keep_alive=self.keep_alive,
-        )
-
-        return self._build_chat_response(response)
 
     @overload
     def parse(
@@ -1331,7 +1361,6 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         See Also:
             aparse: Async variant (non-streaming).
-            astream_parse: Async streaming variant.
         """
         if self.structured_output_mode == StructuredOutputMode.DEFAULT:
             if stream:
@@ -1372,7 +1401,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             allow_parallel_tool_calls=False,
         )
         cur_objects = None
-        for response in self.stream_chat(messages, **_llm_kwargs):
+        for response in self.chat(messages, stream=True, **_llm_kwargs):
             try:
                 objects = processor.process(response, cur_objects)
                 cur_objects = objects if isinstance(objects, list) else [objects]
@@ -1518,7 +1547,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         _llm_kwargs = llm_kwargs or {}
         _llm_kwargs["format"] = schema.model_json_schema()
         messages = prompt.format_messages(**prompt_args)
-        response_gen = await self.astream_chat(messages, **_llm_kwargs)
+        response_gen = await self.achat(messages, stream=True, **_llm_kwargs)
         processor = StreamingObjectProcessor(
             output_cls=schema,
             flexible_mode=True,

@@ -285,7 +285,7 @@ class TestStreamParseDefault:
         Expected: Calling _stream_parse_default returns a GeneratorType immediately.
         Checks: stream_chat is NOT called until the generator is advanced.
         """
-        mock_sc = mocker.patch.object(llm, "stream_chat", return_value=iter([]))
+        mock_sc = mocker.patch.object(llm, "_stream_chat", return_value=iter([]))
         result = llm._stream_parse_default(Simple, prompt, None, {"topic": "x"})
         assert isinstance(result, GeneratorType)
         mock_sc.assert_not_called()
@@ -296,10 +296,10 @@ class TestStreamParseDefault:
     ) -> None:
         """
         Inputs: schema=Simple, llm_kwargs=None.
-        Expected: stream_chat called with format=Simple.model_json_schema().
+        Expected: chat(..., stream=True) called with format=Simple.model_json_schema().
         Checks: format key present with correct schema value.
         """
-        mock_sc = mocker.patch.object(llm, "stream_chat", return_value=iter([mocker.MagicMock()]))
+        mock_sc = mocker.patch.object(llm, "_stream_chat", return_value=iter([mocker.MagicMock()]))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.return_value = Simple(value="partial")
         list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
@@ -316,7 +316,7 @@ class TestStreamParseDefault:
         Checks: None is handled via `llm_kwargs or {}`.
         """
         obj = Simple(value="x")
-        mocker.patch.object(llm, "stream_chat", return_value=iter([mocker.MagicMock()]))
+        mocker.patch.object(llm, "_stream_chat", return_value=iter([mocker.MagicMock()]))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.return_value = obj
         results = list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
@@ -333,7 +333,7 @@ class TestStreamParseDefault:
         """
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         objects = [Simple(value="a"), Simple(value="b")]
-        mocker.patch.object(llm, "stream_chat", return_value=iter(chunks))
+        mocker.patch.object(llm, "_stream_chat", return_value=iter(chunks))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = objects
         results = list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
@@ -351,7 +351,7 @@ class TestStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock()]
         obj_a = Simple(value="a")
         obj_c = Simple(value="c")
-        mocker.patch.object(llm, "stream_chat", return_value=iter(chunks))
+        mocker.patch.object(llm, "_stream_chat", return_value=iter(chunks))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = [obj_a, ValueError("bad JSON fragment"), obj_c]
         results = list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
@@ -366,7 +366,7 @@ class TestStreamParseDefault:
         Expected: generator completes normally, yielding an empty sequence.
         Checks: exception swallowing works for every iteration step.
         """
-        mocker.patch.object(llm, "stream_chat", return_value=iter([mocker.MagicMock(), mocker.MagicMock()]))
+        mocker.patch.object(llm, "_stream_chat", return_value=iter([mocker.MagicMock(), mocker.MagicMock()]))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = RuntimeError("boom")
         results = list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
@@ -384,7 +384,7 @@ class TestStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         obj1 = Simple(value="first")
         obj2 = Simple(value="second")
-        mocker.patch.object(llm, "stream_chat", return_value=iter(chunks))
+        mocker.patch.object(llm, "_stream_chat", return_value=iter(chunks))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc = mock_proc_cls.return_value
         mock_proc.process.side_effect = [obj1, obj2]
@@ -405,7 +405,7 @@ class TestStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         obj_list = [Simple(value="x"), Simple(value="y")]
         obj2 = Simple(value="second")
-        mocker.patch.object(llm, "stream_chat", return_value=iter(chunks))
+        mocker.patch.object(llm, "_stream_chat", return_value=iter(chunks))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc = mock_proc_cls.return_value
         mock_proc.process.side_effect = [obj_list, obj2]
@@ -423,7 +423,7 @@ class TestStreamParseDefault:
                   allow_parallel_tool_calls=False).
         Checks: constructor receives exact keyword arguments — no accidental drift.
         """
-        mocker.patch.object(llm, "stream_chat", return_value=iter([]))
+        mocker.patch.object(llm, "_stream_chat", return_value=iter([]))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
         mock_proc_cls.assert_called_once_with(
@@ -524,7 +524,7 @@ class TestAParseRouting:
     ) -> None:
         """
         Inputs: non-DEFAULT mode (FUNCTION or LLM), stream=True.
-        Expected: LLM.astream_parse is awaited; _astream_parse_default is NOT called.
+        Expected: LLM.aparse is awaited; _astream_parse_default is NOT called.
         Checks: super path taken for async streaming in non-DEFAULT mode.
         """
         llm.structured_output_mode = mode
@@ -700,7 +700,7 @@ class TestAStreamParseDefault:
         Expected: Calling _astream_parse_default returns AsyncGeneratorType immediately.
         Checks: astream_chat is NOT called until the generator is advanced.
         """
-        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
         gen = llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})
         assert isinstance(gen, AsyncGeneratorType), (
             f"Expected AsyncGeneratorType, got {type(gen)}"
@@ -718,7 +718,7 @@ class TestAStreamParseDefault:
         Expected: astream_chat called with format=Simple.model_json_schema().
         Checks: format key present with correct schema value.
         """
-        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(mocker.MagicMock())
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.return_value = Simple(value="partial")
@@ -740,7 +740,7 @@ class TestAStreamParseDefault:
         Checks: None is handled via `_llm_kwargs or {}`.
         """
         obj = Simple(value="x")
-        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(mocker.MagicMock())
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.return_value = obj
@@ -759,7 +759,7 @@ class TestAStreamParseDefault:
         """
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         objects = [Simple(value="a"), Simple(value="b")]
-        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(*chunks)
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = objects
@@ -779,7 +779,7 @@ class TestAStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock()]
         obj_a = Simple(value="a")
         obj_c = Simple(value="c")
-        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(*chunks)
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = [obj_a, ValueError("bad JSON fragment"), obj_c]
@@ -796,7 +796,7 @@ class TestAStreamParseDefault:
         Expected: generator completes normally, yielding an empty sequence.
         Checks: exception swallowing works for every iteration step.
         """
-        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(mocker.MagicMock(), mocker.MagicMock())
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = RuntimeError("boom")
@@ -816,7 +816,7 @@ class TestAStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         obj1 = Simple(value="first")
         obj2 = Simple(value="second")
-        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(*chunks)
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc = mock_proc_cls.return_value
@@ -843,7 +843,7 @@ class TestAStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         obj_list = [Simple(value="x"), Simple(value="y")]
         obj2 = Simple(value="second")
-        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(*chunks)
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc = mock_proc_cls.return_value
@@ -865,7 +865,7 @@ class TestAStreamParseDefault:
                   allow_parallel_tool_calls=False).
         Checks: constructor receives exact keyword arguments — no accidental drift.
         """
-        mock_asc = mocker.patch.object(llm, "astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen()
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         [item async for item in llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})]

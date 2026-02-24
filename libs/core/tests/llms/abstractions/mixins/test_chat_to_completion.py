@@ -23,14 +23,17 @@ class MockLLM(ChatToCompletionMixin):
         self.response_text = response_text
         self.last_messages = None
 
-    def chat(self, messages: MessageList, **kwargs):
+    def chat(self, messages: MessageList, stream, **kwargs):
         """Mock chat implementation."""
-        self.last_messages = messages
-        return ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content=self.response_text)
-        )
+        if not stream:
+            self.last_messages = messages
+            return ChatResponse(
+                message=Message(role=MessageRole.ASSISTANT, content=self.response_text)
+            )
+        else:
+            return self._stream_chat(messages, **kwargs)
 
-    def stream_chat(self, messages: MessageList, **kwargs):
+    def _stream_chat(self, messages: MessageList, **kwargs):
         """Mock streaming chat implementation."""
         self.last_messages = messages
         # Yield two chunks

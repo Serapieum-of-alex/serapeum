@@ -101,7 +101,7 @@ class FunctionCallingLLM(LLM):
             **kwargs,
         )
 
-        return self.stream_chat(**chat_kwargs)
+        return self.chat(stream=True, **chat_kwargs)
 
     async def astream_chat_with_tools(
         self,
@@ -121,7 +121,7 @@ class FunctionCallingLLM(LLM):
             allow_parallel_tool_calls=allow_parallel_tool_calls,
             **kwargs,
         )
-        return await self.astream_chat(**chat_kwargs)
+        return await self.achat(stream=True, **chat_kwargs)
 
     @abstractmethod
     def _prepare_chat_with_tools(

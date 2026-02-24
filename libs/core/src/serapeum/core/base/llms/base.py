@@ -61,7 +61,7 @@ class BaseLLM(SerializableModel):
         return converted_messages
 
     @abstractmethod
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse | ChatResponseGen:
         pass
 
     @abstractmethod
@@ -77,7 +77,7 @@ class BaseLLM(SerializableModel):
         pass
 
     @abstractmethod
-    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse | ChatResponseAsyncGen:
         pass
 
     @abstractmethod

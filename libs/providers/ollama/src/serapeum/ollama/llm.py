@@ -1054,8 +1054,8 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 ```
 
         See Also:
-            stream_chat: Uses this helper to materialize per-chunk responses.
-            astream_chat: Async variant that uses this helper.
+            chat: Uses this helper to materialize per-chunk responses.
+            achat: Async variant that uses this helper.
         """
         r = dict(r)
 
@@ -1091,28 +1091,25 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         tools = kwargs.pop("tools", None)
         response_format = kwargs.pop("format", "json" if self.json_mode else None)
 
-        def gen() -> ChatResponseGen:
-            response = self.client.chat(
-                model=self.model,
-                messages=ollama_messages,
-                stream=True,
-                format=response_format,
-                tools=tools,
-                options=self._model_kwargs,
-                keep_alive=self.keep_alive,
-            )
+        response = self.client.chat(
+            model=self.model,
+            messages=ollama_messages,
+            stream=True,
+            format=response_format,
+            tools=tools,
+            options=self._model_kwargs,
+            keep_alive=self.keep_alive,
+        )
 
-            tools_dict = {
-                "response_txt": "",
-                "seen_tool_calls": set(),
-                "all_tool_calls": [],
-            }
+        tools_dict = {
+            "response_txt": "",
+            "seen_tool_calls": set(),
+            "all_tool_calls": [],
+        }
 
-            for r in response:
-                if r["message"]["content"] is not None:
-                    yield self._parse_tool_call_response(tools_dict, r)
-
-        return gen()
+        for r in response:
+            if r["message"]["content"] is not None:
+                yield self._parse_tool_call_response(tools_dict, r)
 
     @overload
     async def achat(
@@ -1228,33 +1225,30 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         tools = kwargs.pop("tools", None)
         response_format = kwargs.pop("format", "json" if self.json_mode else None)
 
-        async def gen() -> ChatResponseAsyncGen:
-            response = await self.async_client.chat(
-                model=self.model,
-                messages=ollama_messages,
-                stream=True,
-                format=response_format,
-                tools=tools,
-                options=self._model_kwargs,
-                keep_alive=self.keep_alive,
-            )
+        response = await self.async_client.chat(
+            model=self.model,
+            messages=ollama_messages,
+            stream=True,
+            format=response_format,
+            tools=tools,
+            options=self._model_kwargs,
+            keep_alive=self.keep_alive,
+        )
 
-            # Some client/mocking setups may return a coroutine that resolves to
-            # an async iterator; normalize by awaiting when needed.
-            if inspect.iscoroutine(response) and not hasattr(response, "__aiter__"):
-                response = await response
+        # Some client/mocking setups may return a coroutine that resolves to
+        # an async iterator; normalize by awaiting when needed.
+        if inspect.iscoroutine(response) and not hasattr(response, "__aiter__"):
+            response = await response
 
-            tools_dict = {
-                "response_txt": "",
-                "seen_tool_calls": set(),
-                "all_tool_calls": [],
-            }
+        tools_dict = {
+            "response_txt": "",
+            "seen_tool_calls": set(),
+            "all_tool_calls": [],
+        }
 
-            async for r in response:
-                if r["message"]["content"] is not None:
-                    yield self._parse_tool_call_response(tools_dict, r)
-
-        return gen()
+        async for r in response:
+            if r["message"]["content"] is not None:
+                yield self._parse_tool_call_response(tools_dict, r)
 
     @overload
     def parse(

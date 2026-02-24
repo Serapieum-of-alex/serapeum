@@ -41,7 +41,9 @@ dev = [
     "pytest-xdist>=3.8.0",
     "pytest-benchmark",
     "pytest-markdown-docs>=0.9.1",
-    "python-dotenv"
+    "pytest-mock>=3.14.0",
+    "python-dotenv",
+    "pytest-mock>=3.14.0"
 ]
 
 docs = [

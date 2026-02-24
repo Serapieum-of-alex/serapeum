@@ -255,9 +255,9 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             ...     temperature=0.0,
             ...     request_timeout=120,
             ... )
-            >>> chunks = list(llm.stream_chat([
+            >>> chunks = list(llm.chat([
             ...     Message(role=MessageRole.USER, content="Say 'hello'.")
-            ... ]))
+            ... ], stream=True))
             >>> chunks
             [ChatResponse(raw={'model': 'qwen3-next:80b', ... chunks=[TextChunk(content='', path=None, url=None, type='text')])),
             ChatResponse(raw={'model': 'qwen3-next:80b', ...  chunks=[TextChunk(content='', path=None, url=None, type='text')])),

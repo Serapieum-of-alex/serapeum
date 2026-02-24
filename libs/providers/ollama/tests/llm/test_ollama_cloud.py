@@ -219,7 +219,7 @@ class TestCloudChat:
         Checks: Streaming protocol works correctly against the cloud backend.
         """
         chunks = list(
-            cloud_llm.stream_chat([Message(role="user", content="Count to 3.")])
+            cloud_llm.chat([Message(role="user", content="Count to 3.")], stream=True)
         )
 
         assert len(chunks) > 0
@@ -260,8 +260,8 @@ class TestCloudChat:
         Checks: Async streaming protocol works correctly against the cloud backend.
         """
         chunks = []
-        async for chunk in await cloud_llm.astream_chat(
-            [Message(role="user", content="Count to 3.")]
+        async for chunk in await cloud_llm.achat(
+            [Message(role="user", content="Count to 3.")], stream=True
         ):
             chunks.append(chunk)
 

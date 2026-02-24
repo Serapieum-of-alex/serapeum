@@ -110,7 +110,7 @@ def test_ollama_stream_chat(llm_model) -> None:
     Inputs: model_name and user message.
     Expected: Each streamed response is non-empty and has a delta.
     """
-    response = llm_model.stream_chat([Message(role="user", content="Hello!")])
+    response = llm_model.chat([Message(role="user", content="Hello!")], stream=True)
     for r in response:
         assert r is not None
         assert r.delta is not None
@@ -177,7 +177,7 @@ async def test_ollama_async_stream_chat(llm_model) -> None:
     Inputs: model_name and user message.
     Expected: Each streamed response is non-empty and has a delta.
     """
-    response = await llm_model.astream_chat([Message(role="user", content="Hello!")])
+    response = await llm_model.achat([Message(role="user", content="Hello!")], stream=True)
     async for r in response:
         assert r is not None
         assert r.delta is not None

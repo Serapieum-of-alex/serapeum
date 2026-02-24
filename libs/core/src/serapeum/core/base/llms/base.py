@@ -71,12 +71,6 @@ class BaseLLM(SerializableModel):
         pass
 
     @abstractmethod
-    def stream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseGen:
-        pass
-
-    @abstractmethod
     def stream_complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponseGen:
@@ -90,12 +84,6 @@ class BaseLLM(SerializableModel):
     async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
-        pass
-
-    @abstractmethod
-    async def astream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseAsyncGen:
         pass
 
     @abstractmethod

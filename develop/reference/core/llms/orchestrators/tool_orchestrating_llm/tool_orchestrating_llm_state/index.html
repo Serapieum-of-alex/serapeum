@@ -1671,8 +1671,8 @@ Hold "Ctrl" to enable pan &amp; zoom
 
     Ready --&gt; ExecutingSync: __call__ invoked
     Ready --&gt; ExecutingAsync: acall invoked
-    Ready --&gt; ExecutingStream: stream_call invoked
-    Ready --&gt; ExecutingAsyncStream: astream_call invoked
+    Ready --&gt; ExecutingStream: __call__(stream=True) invoked
+    Ready --&gt; ExecutingAsyncStream: acall(stream=True) invoked
     Ready --&gt; UpdatingPrompt: prompt.setter called
 
     UpdatingPrompt --&gt; Ready: Prompt updated
@@ -1794,8 +1794,8 @@ Hold "Ctrl" to enable pan &amp; zoom
 <li><strong>Transitions</strong>:</li>
 <li><code>__call__</code> → ExecutingSync</li>
 <li><code>acall</code> → ExecutingAsync</li>
-<li><code>stream_call</code> → ExecutingStream</li>
-<li><code>astream_call</code> → ExecutingAsyncStream</li>
+<li><code>__call__(stream=True)</code> → ExecutingStream</li>
+<li><code>acall(stream=True)</code> → ExecutingAsyncStream</li>
 <li><code>prompt.setter</code> → UpdatingPrompt</li>
 <li><strong>Data</strong>: All instance state available and immutable (except prompt)</li>
 </ul>
@@ -1823,7 +1823,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 </ul>
 <h3 id="executingstream-synchronous-streaming"><a class="toclink" href="#executingstream-synchronous-streaming">ExecutingStream (Synchronous Streaming)</a><a class="headerlink" href="#executingstream-synchronous-streaming" title="Permanent link">#</a></h3>
 <ul>
-<li><strong>Entry</strong>: <code>stream_call</code> invoked</li>
+<li><strong>Entry</strong>: <code>__call__(stream=True)</code> invoked</li>
 <li><strong>Substates</strong>:</li>
 <li><code>CreatingToolStream</code>: Create CallableTool</li>
 <li><code>FormattingPromptStream</code>: Format messages</li>
@@ -1843,7 +1843,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 </ul>
 <h3 id="executingasyncstream-asynchronous-streaming"><a class="toclink" href="#executingasyncstream-asynchronous-streaming">ExecutingAsyncStream (Asynchronous Streaming)</a><a class="headerlink" href="#executingasyncstream-asynchronous-streaming" title="Permanent link">#</a></h3>
 <ul>
-<li><strong>Entry</strong>: <code>astream_call</code> invoked</li>
+<li><strong>Entry</strong>: <code>acall(stream=True)</code> invoked</li>
 <li><strong>Substates</strong>: Same as ExecutingStream but async</li>
 <li><strong>Exit</strong>: Async generator exhausted or error raised</li>
 <li><strong>Data</strong>: Same as ExecutingStream</li>
@@ -1905,8 +1905,8 @@ Hold "Ctrl" to enable pan &amp; zoom
 <li><code>__init__</code> → Starts validation</li>
 <li><code>__call__</code> → Starts sync execution</li>
 <li><code>acall</code> → Starts async execution</li>
-<li><code>stream_call</code> → Starts streaming</li>
-<li><code>astream_call</code> → Starts async streaming</li>
+<li><code>__call__(stream=True)</code> → Starts streaming</li>
+<li><code>acall(stream=True)</code> → Starts async streaming</li>
 <li><code>prompt.setter</code> → Updates prompt</li>
 </ol>
 <h3 id="system-triggered-transitions"><a class="toclink" href="#system-triggered-transitions">System-Triggered Transitions</a><a class="headerlink" href="#system-triggered-transitions" title="Permanent link">#</a></h3>
@@ -1956,7 +1956,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <h3 id="transient-per-stream"><a class="toclink" href="#transient-per-stream">Transient Per Stream</a><a class="headerlink" href="#transient-per-stream" title="Permanent link">#</a></h3>
 <ul>
 <li><code>cur_objects</code>: Maintains progressive parsing state</li>
-<li>Each new stream_call creates fresh state</li>
+<li>Each new streaming call creates fresh state</li>
 </ul>
 <h2 id="parallel-execution-states"><a class="toclink" href="#parallel-execution-states">Parallel Execution States</a><a class="headerlink" href="#parallel-execution-states" title="Permanent link">#</a></h2>
 <p>When <code>allow_parallel_tool_calls=True</code>:</p>

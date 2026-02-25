@@ -3540,7 +3540,7 @@
 <li><code>output_cls</code>: A Pydantic model class defining the output structure</li>
 <li>Delegates to the underlying LLM's <code>parse()</code> method</li>
 <li>Converts all responses to JSON representations of the output model</li>
-<li>Maintains the same interface as the base LLM (chat, stream_chat, etc.)</li>
+<li>Maintains the same interface as the base LLM (<code>chat(stream=...)</code>, etc.)</li>
 <li>Supports streaming structured outputs</li>
 </ul>
 <h4 id="when-to-use_1"><a class="toclink" href="#when-to-use_1">When to Use</a><a class="headerlink" href="#when-to-use_1" title="Permanent link">#</a></h4>
@@ -3595,7 +3595,7 @@
 <li><code>prompt</code>: Template string or <code>BasePromptTemplate</code></li>
 <li><code>llm</code>: A <code>FunctionCallingLLM</code> instance</li>
 <li><strong>Advanced capabilities</strong>:</li>
-<li>Streaming support via <code>stream_call()</code> and <code>astream_call()</code></li>
+<li>Streaming support via <code>__call__(stream=True)</code> and <code>acall(stream=True)</code></li>
 <li>Parallel tool calls with <code>allow_parallel_tool_calls=True</code></li>
 <li>Custom tool selection with <code>tool_choice</code> parameter</li>
 <li><strong>Sync and async</strong>: Both <code>__call__()</code> and <code>acall()</code> methods</li>
@@ -3680,7 +3680,7 @@
 <a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="p">)</span>
 <a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>
 <a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="c1"># Stream partial results</span>
-<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="k">for</span> <span class="n">partial_story</span> <span class="ow">in</span> <span class="n">story_generator</span><span class="o">.</span><span class="n">stream_call</span><span class="p">(</span><span class="n">genre</span><span class="o">=</span><span class="s2">&quot;sci-fi&quot;</span><span class="p">):</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="k">for</span> <span class="n">partial_story</span> <span class="ow">in</span> <span class="n">story_generator</span><span class="p">(</span><span class="n">genre</span><span class="o">=</span><span class="s2">&quot;sci-fi&quot;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">partial_story</span><span class="p">)</span>  <span class="c1"># Progressively complete Story objects</span>
 </code></pre></div>
 <hr />

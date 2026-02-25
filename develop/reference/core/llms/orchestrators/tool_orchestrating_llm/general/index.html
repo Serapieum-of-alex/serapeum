@@ -3502,8 +3502,8 @@ signature is used to auto-generate the JSON schema for the tool call.</p>
 <p>Supports multiple execution modes:
 - Sync: <code>__call__</code>
 - Async: <code>acall</code>
-- Streaming: <code>stream_call</code>
-- Async streaming: <code>astream_call</code></p>
+- Streaming: <code>__call__(stream=True)</code>
+- Async streaming: <code>acall(stream=True)</code></p>
 <h2 id="comparison-with-textcompletionllm"><a class="toclink" href="#comparison-with-textcompletionllm">Comparison with TextCompletionLLM</a><a class="headerlink" href="#comparison-with-textcompletionllm" title="Permanent link">#</a></h2>
 <table>
 <thead>
@@ -3560,7 +3560,7 @@ signature is used to auto-generate the JSON schema for the tool call.</p>
 <ol>
 <li><strong>Reusable Instances</strong>: <code>ToolOrchestratingLLM</code> instances are reusable after initialization</li>
 <li><strong>Async Support</strong>: <code>acall()</code> method provides async execution</li>
-<li><strong>Streaming Support</strong>: <code>stream_call()</code> yields progressive updates</li>
+<li><strong>Streaming Support</strong>: <code>__call__(stream=True)</code> yields progressive updates</li>
 <li><strong>Parallel Tool Calls</strong>: Enable with <code>allow_parallel_tool_calls=True</code></li>
 <li><strong>Stateless Execution</strong>: Each call creates independent transient state</li>
 <li><strong>Tool Schema Caching</strong>: Tool schemas are generated once per call</li>

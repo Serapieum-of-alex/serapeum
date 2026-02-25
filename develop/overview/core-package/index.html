@@ -2104,14 +2104,10 @@
 <h2 id="representative-public-methods"><a class="toclink" href="#representative-public-methods">Representative Public Methods</a><a class="headerlink" href="#representative-public-methods" title="Permanent link">#</a></h2>
 <h3 id="basellm"><a class="toclink" href="#basellm">BaseLLM</a><a class="headerlink" href="#basellm" title="Permanent link">#</a></h3>
 <ul>
-<li><code>chat(messages, **kwargs) → ChatResponse</code></li>
-<li><code>complete(prompt, formatted=False, **kwargs) → CompletionResponse</code></li>
-<li><code>stream_chat(...) → ChatResponseGen</code></li>
-<li><code>stream_complete(...) → CompletionResponseGen</code></li>
-<li><code>achat(...) → ChatResponse</code> (async)</li>
-<li><code>acomplete(...) → CompletionResponse</code> (async)</li>
-<li><code>astream_chat(...) → ChatResponseAsyncGen</code> (async)</li>
-<li><code>astream_complete(...) → CompletionResponseAsyncGen</code> (async)</li>
+<li><code>chat(messages, stream=False, **kwargs) → ChatResponse | ChatResponseGen</code></li>
+<li><code>complete(prompt, formatted=False, stream=False, **kwargs) → CompletionResponse | CompletionResponseGen</code></li>
+<li><code>achat(messages, stream=False, **kwargs) → ChatResponse | ChatResponseAsyncGen</code> (async)</li>
+<li><code>acomplete(prompt, formatted=False, stream=False, **kwargs) → CompletionResponse | CompletionResponseAsyncGen</code> (async)</li>
 </ul>
 <h3 id="llm"><a class="toclink" href="#llm">LLM</a><a class="headerlink" href="#llm" title="Permanent link">#</a></h3>
 <ul>
@@ -2141,10 +2137,8 @@
 </ul>
 <h3 id="toolorchestratingllm"><a class="toclink" href="#toolorchestratingllm">ToolOrchestratingLLM</a><a class="headerlink" href="#toolorchestratingllm" title="Permanent link">#</a></h3>
 <ul>
-<li><code>__call__(**prompt_args, llm_kwargs=None) → BaseModel | Any</code></li>
-<li><code>acall(**prompt_args, llm_kwargs=None) → BaseModel | Any</code> (async)</li>
-<li><code>stream_call(**prompt_args, llm_kwargs=None) → Generator</code></li>
-<li><code>astream_call(**prompt_args, llm_kwargs=None) → AsyncGenerator</code> (async)</li>
+<li><code>__call__(**prompt_args, stream=False, llm_kwargs=None) → BaseModel | Generator</code></li>
+<li><code>acall(**prompt_args, stream=False, llm_kwargs=None) → BaseModel | AsyncGenerator</code> (async)</li>
 </ul>
 <h3 id="baseembedding"><a class="toclink" href="#baseembedding">BaseEmbedding</a><a class="headerlink" href="#baseembedding" title="Permanent link">#</a></h3>
 <ul>
@@ -2314,14 +2308,10 @@ Hold "Ctrl" to enable pan &amp; zoom
 <pre class="mermaid"><code>classDiagram
     class BaseLLM {
         &lt;&lt;abstract&gt;&gt;
-        +chat(messages) ChatResponse
-        +complete(prompt) CompletionResponse
-        +stream_chat(messages) Generator
-        +stream_complete(prompt) Generator
-        +achat(messages) ChatResponse
-        +acomplete(prompt) CompletionResponse
-        +astream_chat(messages) AsyncGen
-        +astream_complete(prompt) AsyncGen
+        +chat(messages, stream=false) ChatResponse | Generator
+        +complete(prompt, stream=false) CompletionResponse | Generator
+        +achat(messages, stream=false) ChatResponse | AsyncGen
+        +acomplete(prompt, stream=false) CompletionResponse | AsyncGen
     }
 
     class LLM {
@@ -2347,10 +2337,8 @@ Hold "Ctrl" to enable pan &amp; zoom
         -llm: FunctionCallingLLM
         -tools: List~BaseTool~
         -prompt: PromptTemplate
-        +__call__(**prompt_args) Any
-        +acall(**prompt_args) Any
-        +stream_call(**prompt_args) Generator
-        +astream_call(**prompt_args) AsyncGen
+        +__call__(**prompt_args, stream=False) Any | Generator
+        +acall(**prompt_args, stream=False) Any | AsyncGen
     }
 
     class CallableTool {
@@ -2425,10 +2413,8 @@ Hold "Ctrl" to enable pan &amp; zoom
 <pre class="mermaid"><code>classDiagram
     class FunctionCallingLLM {
         &lt;&lt;abstract&gt;&gt;
-        +_chat(messages) ChatResponse*
-        +_complete(prompt) CompletionResponse*
-        +_stream_chat(messages) Generator*
-        +_stream_complete(prompt) Generator*
+        +chat(messages, stream=false) ChatResponse | Generator*
+        +achat(messages, stream=false) ChatResponse | AsyncGen*
     }
 
     class BaseEmbedding {

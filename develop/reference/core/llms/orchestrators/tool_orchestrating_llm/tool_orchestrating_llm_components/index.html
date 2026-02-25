@@ -1456,8 +1456,8 @@ Hold "Ctrl" to enable pan &amp; zoom
         subgraph Execution Methods
             CALL["__call__"]
             ACALL["acall"]
-            STREAM["stream_call"]
-            ASTREAM["astream_call"]
+            STREAM["__call__(stream=True)"]
+            ASTREAM["acall(stream=True)"]
         end
     end
 
@@ -1785,7 +1785,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-3-8" id="__codelineno-3-8" name="__codelineno-3-8"></a>      └─→ Return MockAlbum or List[MockAlbum]
 </code></pre></div>
 <h3 id="5-streaming-execution-pattern-sync"><a class="toclink" href="#5-streaming-execution-pattern-sync">5. Streaming Execution Pattern (Sync)</a><a class="headerlink" href="#5-streaming-execution-pattern-sync" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>User → for obj in ToolOrchestratingLLM.stream_call(...):
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>User → for obj in ToolOrchestratingLLM(stream=True, ...):
 <a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a>  ├─→ [Same tool creation and message formatting]
 <a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>  ├─→ Ollama.stream_chat_with_tools([tool], messages, ...)
 <a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a>  │   └─→ Yields partial ChatResponse chunks
@@ -1798,7 +1798,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-4-11" id="__codelineno-4-11" name="__codelineno-4-11"></a>      └─→ Yield MockAlbum (partial or complete)
 </code></pre></div>
 <h3 id="6-async-streaming-pattern"><a class="toclink" href="#6-async-streaming-pattern">6. Async Streaming Pattern</a><a class="headerlink" href="#6-async-streaming-pattern" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>User → async for obj in await ToolOrchestratingLLM.astream_call(...):
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>User → async for obj in await ToolOrchestratingLLM.acall(stream=True, ...):
 <a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a>  ├─→ [Same tool creation and message formatting]
 <a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>  ├─→ await Ollama.astream_chat_with_tools([tool], messages, ...)
 <a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a>  │   └─→ Async yields partial ChatResponse chunks

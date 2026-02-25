@@ -1522,7 +1522,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 </button>
 </nav>
 <pre class="mermaid"><code>flowchart TD
-    StreamStart([stream_call called]) --&gt; CreateTool[Create CallableTool]
+    StreamStart(["__call__(stream=True) called"]) --&gt; CreateTool[Create CallableTool]
     CreateTool --&gt; FormatMsgs[Format messages]
     FormatMsgs --&gt; StreamChat[stream_chat_with_tools]
 

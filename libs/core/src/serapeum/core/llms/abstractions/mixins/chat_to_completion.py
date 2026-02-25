@@ -139,30 +139,6 @@ class ChatToCompletionMixin:
         chat_response = self.chat(messages, stream=False, **kwargs)  # type: ignore[attr-defined]
         return chat_response.to_completion_response()
 
-    def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseGen:
-        """Streaming completion — convenience shim for ``complete(stream=True)``.
-
-        Args:
-            prompt: The prompt string to complete.
-            formatted: Whether the prompt is already formatted (unused, for compatibility).
-            **kwargs: Additional arguments passed to the chat method.
-
-        Returns:
-            CompletionResponseGen: Generator yielding completion response chunks.
-
-        Examples:
-            ```python
-            >>> # Assuming MyLLM is defined as shown in class docstring
-            >>> llm = MyLLM(model="example")
-            >>> for chunk in llm.stream_complete("Tell me a story"):
-            ...     print(chunk.delta, end='')
-            'Response'
-            ```
-        """
-        return self.complete(prompt, formatted=formatted, stream=True, **kwargs)
-
     @overload
     async def acomplete(
         self,
@@ -224,31 +200,3 @@ class ChatToCompletionMixin:
             return ChatResponse.astream_to_completion_response(chat_response_gen)
         chat_response = await self.achat(messages, stream=False, **kwargs)  # type: ignore[attr-defined]
         return chat_response.to_completion_response()
-
-    async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseAsyncGen:
-        """Async streaming completion — convenience shim for ``acomplete(stream=True)``.
-
-        Args:
-            prompt: The prompt string to complete.
-            formatted: Whether the prompt is already formatted (unused, for compatibility).
-            **kwargs: Additional arguments passed to the achat method.
-
-        Returns:
-            CompletionResponseAsyncGen: Async generator yielding completion response chunks.
-
-        Examples:
-            ```python
-            >>> import asyncio
-            >>> # Assuming MyLLM is defined as shown in class docstring
-            >>> async def example():
-            ...     llm = MyLLM(model="example")
-            ...     stream = await llm.astream_complete("Tell me a story")
-            ...     async for chunk in stream:
-            ...         print(chunk.delta, end='')
-            >>> asyncio.run(example())
-            'Response'
-            ```
-        """
-        return await self.acomplete(prompt, formatted=formatted, stream=True, **kwargs)

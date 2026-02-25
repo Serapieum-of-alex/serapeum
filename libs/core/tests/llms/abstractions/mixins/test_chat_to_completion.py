@@ -99,7 +99,7 @@ class TestChatToCompletionMixin:
         Checks: Chunks match the chat stream chunks.
         """
         llm = MockLLM()
-        chunks = list(llm.stream_complete("Stream test"))
+        chunks = list(llm.complete("Stream test", stream=True))
 
         # Check we got chunks
         assert len(chunks) == 2

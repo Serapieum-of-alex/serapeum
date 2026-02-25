@@ -127,7 +127,7 @@ def test_ollama_stream_complete(llm_model) -> None:
     Inputs: model_name and prompt string.
     Expected: Each streamed response is non-empty and has a delta.
     """
-    response = llm_model.stream_complete("Hello!")
+    response = llm_model.complete("Hello!", stream=True)
     for r in response:
         assert r is not None
         assert r.delta is not None

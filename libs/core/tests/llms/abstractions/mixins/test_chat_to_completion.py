@@ -44,14 +44,17 @@ class MockLLM(ChatToCompletionMixin):
             message=Message(role=MessageRole.ASSISTANT, content="OK"), delta="K"
         )
 
-    async def achat(self, messages: MessageList, **kwargs):
+    async def achat(self, messages: MessageList, stream, **kwargs):
         """Mock async chat implementation."""
-        self.last_messages = messages
-        return ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content=self.response_text)
-        )
+        if not stream:
+            self.last_messages = messages
+            return ChatResponse(
+                message=Message(role=MessageRole.ASSISTANT, content=self.response_text)
+            )
+        else:
+            return await self._astream_chat(messages, **kwargs)
 
-    async def astream_chat(self, messages: MessageList, **kwargs):
+    async def _astream_chat(self, messages: MessageList, **kwargs):
         """Mock async streaming chat implementation."""
         self.last_messages = messages
 
@@ -184,4 +187,4 @@ class TestChatToCompletionMixin:
         llm = KwargsCapturingLLM()
         llm.complete("Test", temperature=0.7, max_tokens=100)
 
-        assert llm.captured_kwargs == {"temperature": 0.7, "max_tokens": 100}
+        assert llm.captured_kwargs == {"stream": False, "temperature": 0.7, "max_tokens": 100}

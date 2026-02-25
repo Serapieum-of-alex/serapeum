@@ -77,14 +77,16 @@ class FunctionCallingLLM(LLM):
             **kwargs,
         )
         if stream:
-            return self.chat(stream=True, **chat_kwargs)
-        response = self.chat(**chat_kwargs)
-        return self._validate_chat_with_tools_response(
-            response,
-            tools,
-            allow_parallel_tool_calls=allow_parallel_tool_calls,
-            **kwargs,
-        )
+            result = self.chat(stream=True, **chat_kwargs)
+        else:
+            response = self.chat(**chat_kwargs)
+            result = self._validate_chat_with_tools_response(
+                response,
+                tools,
+                allow_parallel_tool_calls=allow_parallel_tool_calls,
+                **kwargs,
+            )
+        return result
 
     @overload
     async def achat_with_tools(
@@ -133,14 +135,16 @@ class FunctionCallingLLM(LLM):
             **kwargs,
         )
         if stream:
-            return await self.achat(stream=True, **chat_kwargs)
-        response = await self.achat(**chat_kwargs)
-        return self._validate_chat_with_tools_response(
-            response,
-            tools,
-            allow_parallel_tool_calls=allow_parallel_tool_calls,
-            **kwargs,
-        )
+            result = await self.achat(stream=True, **chat_kwargs)
+        else:
+            response = await self.achat(**chat_kwargs)
+            result = self._validate_chat_with_tools_response(
+                response,
+                tools,
+                allow_parallel_tool_calls=allow_parallel_tool_calls,
+                **kwargs,
+            )
+        return result
 
     @abstractmethod
     def _prepare_chat_with_tools(
@@ -239,11 +243,11 @@ class FunctionCallingLLM(LLM):
         ]
 
         tool_outputs = await asyncio.gather(*tool_tasks)
-        agent_response = self.parse_tool_outputs(
+        result = self.parse_tool_outputs(
             tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls
         )
 
-        return agent_response
+        return result
 
     @staticmethod
     def parse_tool_outputs(
@@ -266,17 +270,17 @@ class FunctionCallingLLM(LLM):
             output_text = "\n\n".join(
                 [tool_output.content for tool_output in tool_outputs]
             )
-            agent_response = AgentChatResponse(
+            result = AgentChatResponse(
                 response=output_text, sources=tool_outputs
             )
         elif len(tool_outputs) > 1:
             raise ValueError("Invalid")
         elif len(tool_outputs) == 0:
-            agent_response = AgentChatResponse(
+            result = AgentChatResponse(
                 response=response.message.content or "", sources=tool_outputs
             )
         else:
-            agent_response = AgentChatResponse(
+            result = AgentChatResponse(
                 response=tool_outputs[0].content, sources=tool_outputs
             )
-        return agent_response
+        return result

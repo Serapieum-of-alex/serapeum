@@ -35,7 +35,7 @@ stateDiagram-v2
 
             Idle --> ProcessingChat: chat(messages)
             Idle --> ProcessingComplete: complete(prompt)
-            Idle --> ProcessingStream: stream_chat(messages)
+            Idle --> ProcessingStream: chat(messages, stream=True)
             Idle --> ProcessingAsync: achat(messages)
             Idle --> ProcessingTools: chat_with_tools(messages, tools)
 

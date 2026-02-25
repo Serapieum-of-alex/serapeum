@@ -128,7 +128,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     This mock:
       - Returns a configurable list of ToolCallArguments from
         `get_tool_calls_from_response` (set via `self.tool_calls`).
-      - Provides basic streaming generators for `stream_chat`/`astream_chat`.
+      - Provides basic streaming generators via chat(stream=True)/achat(stream=True).
     """
 
     def __init__(self) -> None:
@@ -145,32 +145,26 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     # ---- Base abstract methods (minimal stubs) ----
     def chat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | Generator[ChatResponse, None, None]:  # type: ignore[override]
         if stream:
-            return self.stream_chat(messages, **kwargs)
+            return self._stream_chat(messages, **kwargs)
         return ChatResponse(message=Message.from_str("ok"))
+
+    def _stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator[ChatResponse, None, None]:
+        yield ChatResponse(message=Message.from_str("chunk-1"))
+        yield ChatResponse(message=Message.from_str("chunk-2"))
 
     def complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
 
-    def stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator[ChatResponse, None, None]:  # type: ignore[override]
-        yield ChatResponse(message=Message.from_str("chunk-1"))
-        yield ChatResponse(message=Message.from_str("chunk-2"))
-
-    def stream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
-        raise NotImplementedError
-
     async def achat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | AsyncGenerator[ChatResponse, None]:  # type: ignore[override]
         if stream:
-            return self.astream_chat(messages, **kwargs)
+            return self._astream_chat(messages, **kwargs)
         return ChatResponse(message=Message.from_str("ok"))
 
-    async def acomplete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
-        raise NotImplementedError
-
-    async def astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> AsyncGenerator[ChatResponse, None]:  # type: ignore[override]
+    async def _astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> AsyncGenerator[ChatResponse, None]:
         yield ChatResponse(message=Message.from_str("chunk-1"))
         yield ChatResponse(message=Message.from_str("chunk-2"))
 
-    async def astream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
+    async def acomplete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
 
     # ---- FunctionCallingLLM specifics ----

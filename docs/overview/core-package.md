@@ -255,7 +255,7 @@ graph TB
     end
 
     subgraph "Base Protocol Layer"
-        B1[BaseLLM<br/>chat, complete, stream_chat]
+        B1[BaseLLM<br/>chat(stream), complete(stream)]
         B2[BaseEmbedding<br/>get_text_embedding]
     end
 

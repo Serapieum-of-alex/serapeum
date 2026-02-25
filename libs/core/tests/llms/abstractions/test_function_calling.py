@@ -1,13 +1,12 @@
 """Tests for FunctionCallingLLM."""
 
-from typing import Any, AsyncGenerator, Coroutine, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import pytest
 from pydantic import BaseModel, Field
 
 from serapeum.core.base.llms.types import (
     ChatResponse,
-    ChatResponseGen,
     CompletionResponse,
     Message,
     Metadata,
@@ -25,26 +24,6 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         super().__init__()
         self._tool_selection = tool_selection
 
-    async def achat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> Coroutine[Any, Any, ChatResponse]:
-        return ChatResponse(message=Message(role="user", content=""))
-
-    def acomplete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> Coroutine[Any, Any, CompletionResponse]:
-        pass
-
-    def astream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> Coroutine[Any, Any, AsyncGenerator[ChatResponse, None]]:
-        pass
-
-    def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> Coroutine[Any, Any, AsyncGenerator[CompletionResponse, None]]:
-        pass
-
     def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         return ChatResponse(message=Message(role="user", content=""))
 
@@ -53,14 +32,14 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     ) -> CompletionResponse:
         pass
 
-    def stream_chat(
+    async def achat(
         self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseGen:
-        pass
+    ) -> ChatResponse:
+        return ChatResponse(message=Message(role="user", content=""))
 
-    def stream_complete(
+    async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> ChatResponseGen:
+    ) -> CompletionResponse:
         pass
 
     @property

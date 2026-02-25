@@ -149,7 +149,7 @@ sequenceDiagram
     deactivate ToolOrchestratingLLM
 
     Note over User: Streaming Usage
-    User->>Ollama: stream_chat(messages)
+    User->>Ollama: chat(messages, stream=True)
     activate Ollama
 
     Ollama->>Ollama: _chat(messages, stream=True)

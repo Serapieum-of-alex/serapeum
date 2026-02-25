@@ -148,7 +148,7 @@ graph TB
     CORESP -->|Return| UC
 
     %% Stream Flow
-    UC -->|2c. stream_chat(messages)| OL
+    UC -->|2c. chat(messages, stream=True)| OL
     OL -->|stream=True| CLI
     CLI -->|Streaming POST| EP_CHAT
     EP_CHAT -.->|Chunk 1| CLI

@@ -63,48 +63,38 @@ class _RecordingLLM(LLM):
     def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         raise NotImplementedError()
 
-    def stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator:
-        raise NotImplementedError()
-
     def complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
+        self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs: Any
+    ) -> CompletionResponse | Generator[CompletionResponse, None, None]:
+        if stream:
+            self.last_stream_complete = (prompt, formatted, kwargs)
+
+            def gen() -> Generator[CompletionResponse, None, None]:
+                yield CompletionResponse(text=prompt, delta="a")
+                yield CompletionResponse(text=prompt, delta="b")
+
+            return gen()
+
         self.last_complete = (prompt, formatted, kwargs)
         return CompletionResponse(text=prompt, delta=prompt)
-
-    def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> Generator[CompletionResponse, None, None]:
-        self.last_stream_complete = (prompt, formatted, kwargs)
-
-        def gen() -> Generator[CompletionResponse, None, None]:
-            yield CompletionResponse(text=prompt, delta="a")
-            yield CompletionResponse(text=prompt, delta="b")
-
-        return gen()
 
     async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         raise NotImplementedError()
 
-    async def astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Any:
-        raise NotImplementedError()
-
     async def acomplete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
+        self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs: Any
+    ) -> CompletionResponse | AsyncGenerator[CompletionResponse, None]:
+        if stream:
+            self.last_astream_complete = (prompt, formatted, kwargs)
+
+            async def gen() -> AsyncGenerator[CompletionResponse, None]:
+                yield CompletionResponse(text=prompt, delta="x")
+                yield CompletionResponse(text=prompt, delta="y")
+
+            return gen()
+
         self.last_acomplete = (prompt, formatted, kwargs)
         return CompletionResponse(text=prompt[::-1], delta=prompt[::-1])
-
-    async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> AsyncGenerator[CompletionResponse, None]:
-        self.last_astream_complete = (prompt, formatted, kwargs)
-
-        async def gen() -> AsyncGenerator[CompletionResponse, None]:
-            yield CompletionResponse(text=prompt, delta="x")
-            yield CompletionResponse(text=prompt, delta="y")
-
-        return gen()
 
 
 class _ChatLLM(LLM):
@@ -121,68 +111,62 @@ class _ChatLLM(LLM):
     def _log_template_data(self, prompt: Any, **kwargs: Any) -> None:
         self.logged = (prompt, kwargs)
 
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+    def chat(
+        self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
+    ) -> ChatResponse | Generator[ChatResponse, None, None]:
+        if stream:
+            self.last_stream_chat = (messages, kwargs)
+
+            def gen() -> Generator[ChatResponse, None, None]:
+                yield ChatResponse(
+                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    delta="o",
+                )
+                yield ChatResponse(
+                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    delta="k",
+                )
+
+            return gen()
+
         self.last_chat = (messages, kwargs)
         return ChatResponse(
             message=Message(role=MessageRole.ASSISTANT, content="pong"),
             delta=None,
         )
 
-    def stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator:
-        self.last_stream_chat = (messages, kwargs)
-
-        def gen() -> Generator[ChatResponse, None, None]:
-            yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="ok"),
-                delta="o",
-            )
-            yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="ok"),
-                delta="k",
-            )
-
-        return gen()
-
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
         raise NotImplementedError()
 
-    def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> Generator:
-        raise NotImplementedError()
+    async def achat(
+        self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
+    ) -> ChatResponse | AsyncGenerator[ChatResponse, None]:
+        if stream:
+            self.last_astream_chat = (messages, kwargs)
 
-    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+            async def gen() -> AsyncGenerator[ChatResponse, None]:
+                yield ChatResponse(
+                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    delta="o",
+                )
+                yield ChatResponse(
+                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    delta="k",
+                )
+
+            return gen()
+
         self.last_achat = (messages, kwargs)
         return ChatResponse(
             message=Message(role=MessageRole.ASSISTANT, content="pong"),
             delta=None,
         )
 
-    async def astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Any:
-        self.last_astream_chat = (messages, kwargs)
-
-        async def gen() -> AsyncGenerator[ChatResponse, None]:
-            yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="ok"),
-                delta="o",
-            )
-            yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="ok"),
-                delta="k",
-            )
-
-        return gen()
-
     async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
-        raise NotImplementedError()
-
-    async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> Any:
         raise NotImplementedError()
 
 

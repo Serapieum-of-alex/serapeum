@@ -57,26 +57,24 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
         **kwargs: Any,
     ) -> ChatResponseGen: ...
 
+    def _stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponseGen:
+        chat_prompt = ChatPromptTemplate(message_templates=messages)
+        for partial_output in self.llm.stream_parse(
+            schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
+        ):
+            yield ChatResponse(
+                message=Message(
+                    role=MessageRole.ASSISTANT, content=partial_output.json()
+                ),
+                raw=partial_output,
+            )
+
     def chat(
         self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
     ) -> ChatResponse | ChatResponseGen:
         """Chat endpoint for LLM."""
         if stream:
-            def _gen() -> ChatResponseGen:
-                chat_prompt = ChatPromptTemplate(message_templates=messages)
-                stream_output = self.llm.stream_parse(
-                    schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
-                )
-                for partial_output in stream_output:
-                    yield ChatResponse(
-                        message=Message(
-                            role=MessageRole.ASSISTANT, content=partial_output.json()
-                        ),
-                        raw=partial_output,
-                    )
-
-            return _gen()
-
+            return self._stream_chat(messages, **kwargs)
         chat_prompt = ChatPromptTemplate(message_templates=messages)
         output = self.llm.parse(
             schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
@@ -106,6 +104,20 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
         **kwargs: Any,
     ) -> ChatResponseAsyncGen: ...
 
+    async def _astream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> ChatResponseAsyncGen:
+        chat_prompt = ChatPromptTemplate(message_templates=messages)
+        async for partial_output in await self.llm.astream_parse(
+            schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
+        ):
+            yield ChatResponse(
+                message=Message(
+                    role=MessageRole.ASSISTANT, content=partial_output.json()
+                ),
+                raw=partial_output,
+            )
+
     async def achat(
         self,
         messages: Sequence[Message],
@@ -115,21 +127,7 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
     ) -> ChatResponse | ChatResponseAsyncGen:
         """Async chat endpoint for LLM."""
         if stream:
-            async def gen() -> ChatResponseAsyncGen:
-                chat_prompt = ChatPromptTemplate(message_templates=messages)
-                stream_output = await self.llm.astream_parse(
-                    schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
-                )
-                async for partial_output in stream_output:
-                    yield ChatResponse(
-                        message=Message(
-                            role=MessageRole.ASSISTANT, content=partial_output.json()
-                        ),
-                        raw=partial_output,
-                    )
-
-            return gen()
-
+            return self._astream_chat(messages, **kwargs)
         chat_prompt = ChatPromptTemplate(message_templates=messages)
         output = await self.llm.aparse(
             schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs

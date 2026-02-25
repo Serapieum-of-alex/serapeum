@@ -75,7 +75,7 @@ ollama list
 
 ```python
 from serapeum.ollama import Ollama
-`from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 # Initialize the model
 llm = Ollama(model="llama3.1", request_timeout=120)

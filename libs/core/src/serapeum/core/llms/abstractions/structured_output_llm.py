@@ -74,17 +74,19 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
     ) -> ChatResponse | ChatResponseGen:
         """Chat endpoint for LLM."""
         if stream:
-            return self._stream_chat(messages, **kwargs)
-        chat_prompt = ChatPromptTemplate(message_templates=messages)
-        output = self.llm.parse(
-            schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
-        )
-        return ChatResponse(
-            message=Message(
-                role=MessageRole.ASSISTANT, content=output.model_dump_json()
-            ),
-            raw=output,
-        )
+            result = self._stream_chat(messages, **kwargs)
+        else:
+            chat_prompt = ChatPromptTemplate(message_templates=messages)
+            output = self.llm.parse(
+                schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
+            )
+            result = ChatResponse(
+                message=Message(
+                    role=MessageRole.ASSISTANT, content=output.model_dump_json()
+                ),
+                raw=output,
+            )
+        return result
 
     @overload
     async def achat(
@@ -127,14 +129,16 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
     ) -> ChatResponse | ChatResponseAsyncGen:
         """Async chat endpoint for LLM."""
         if stream:
-            return self._astream_chat(messages, **kwargs)
-        chat_prompt = ChatPromptTemplate(message_templates=messages)
-        output = await self.llm.aparse(
-            schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
-        )
-        return ChatResponse(
-            message=Message(
-                role=MessageRole.ASSISTANT, content=output.model_dump_json()
-            ),
-            raw=output,
-        )
+            result = self._astream_chat(messages, **kwargs)
+        else:
+            chat_prompt = ChatPromptTemplate(message_templates=messages)
+            output = await self.llm.aparse(
+                schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
+            )
+            result = ChatResponse(
+                message=Message(
+                    role=MessageRole.ASSISTANT, content=output.model_dump_json()
+                ),
+                raw=output,
+            )
+        return result

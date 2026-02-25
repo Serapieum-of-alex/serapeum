@@ -121,8 +121,8 @@ def test_ollama_stream_chat(llm_model) -> None:
 @pytest.mark.skipif(
     client is None, reason="Ollama client is not available or test model is missing"
 )
-def test_ollama_stream_complete(llm_model) -> None:
-    """Test stream_complete method with real client.
+def test_ollama_complete_streaming(llm_model) -> None:
+    """Test complete(stream=True) with real client.
 
     Inputs: model_name and prompt string.
     Expected: Each streamed response is non-empty and has a delta.
@@ -189,13 +189,13 @@ async def test_ollama_async_stream_chat(llm_model) -> None:
     client is None, reason="Ollama client is not available or test model is missing"
 )
 @pytest.mark.asyncio()
-async def test_ollama_async_stream_complete(llm_model) -> None:
-    """Test async stream_complete method with real client.
+async def test_ollama_acomplete_streaming(llm_model) -> None:
+    """Test acomplete(stream=True) with real client.
 
     Inputs: model_name and prompt string.
     Expected: Each streamed response is non-empty and has a delta.
     """
-    response = await llm_model.astream_complete("Hello!")
+    response = await llm_model.acomplete("Hello!", stream=True)
     async for r in response:
         assert r is not None
         assert r.delta is not None

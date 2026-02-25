@@ -1548,7 +1548,7 @@ class LLM(BaseLLM, ABC):
         """
         structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
-        result = structured_output_tool.stream_call(llm_kwargs=llm_kwargs, **prompt_args)
+        result = structured_output_tool(stream=True, llm_kwargs=llm_kwargs, **prompt_args)
         for r in result:
             yield r
 
@@ -1634,7 +1634,7 @@ class LLM(BaseLLM, ABC):
         """
         structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
-        return await structured_output_tool.astream_call(llm_kwargs=llm_kwargs, **prompt_args)  # type: ignore[return-value]
+        return await structured_output_tool.acall(stream=True, llm_kwargs=llm_kwargs, **prompt_args)  # type: ignore[return-value]
 
     async def astream_parse(
         self,
@@ -1776,7 +1776,7 @@ class LLM(BaseLLM, ABC):
         async def gen() -> AsyncGenerator[Model | list[Model], None]:
             structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
-            result = await structured_output_tool.astream_call(llm_kwargs=llm_kwargs, **prompt_args)
+            result = await structured_output_tool.acall(stream=True, llm_kwargs=llm_kwargs, **prompt_args)
             async for r in result:
                 yield r
 

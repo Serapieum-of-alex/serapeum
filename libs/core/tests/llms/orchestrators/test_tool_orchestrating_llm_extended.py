@@ -368,13 +368,13 @@ class TestToolOrchestratingLLMAsyncCall:
 
 
 class TestToolOrchestratingLLMStreamCall:
-    """Tests for the synchronous streaming interface `stream_call`."""
+    """Tests for synchronous streaming via ``__call__(stream=True)``."""
 
     def test_raises_for_non_function_calling_llm(self) -> None:
         """Raise ValueError if the underlying LLM is not a FunctionCallingLLM.
 
         Input: Program created with NonFunctionCallingMockLLM
-        Expected: ValueError from stream_call
+        Expected: ValueError from __call__(stream=True)
         Check: pytest.raises(ValueError)
         """
         tools_llm = ToolOrchestratingLLM(
@@ -383,10 +383,10 @@ class TestToolOrchestratingLLMStreamCall:
             llm=NonFunctionCallingMockLLM(),
         )
         with pytest.raises(ValueError):
-            list(tools_llm.stream_call(topic="t"))  # force iteration
+            list(tools_llm(topic="t", stream=True))  # force iteration
 
     def test_streaming_yields_processed_objects(self) -> None:
-        """stream_call yields objects returned by process_streaming_objects per chunk.
+        """__call__(stream=True) yields objects returned by StreamingObjectProcessor per chunk.
 
         Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects
         Expected: Two yields with objects we control
@@ -406,7 +406,7 @@ class TestToolOrchestratingLLMStreamCall:
             side_effect=[obj1, obj2],
         ) as mock_proc:
 
-            out = list(tools_llm.stream_call(topic="x"))
+            out = list(tools_llm(topic="x", stream=True))
             assert out == [obj1, obj2]
             assert mock_proc.call_count == 2
 
@@ -428,20 +428,20 @@ class TestToolOrchestratingLLMStreamCall:
                 "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
                 side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
             ):
-                out = list(tools_llm.stream_call(topic="x"))
+                out = list(tools_llm(topic="x", stream=True))
         assert out == [SAMPLE_ALBUM]
         mock_logger.warning.assert_called()
 
 
 @pytest.mark.asyncio()
 class TestToolOrchestratingLLMAStreamCall:
-    """Tests for the asynchronous streaming interface `astream_call`."""
+    """Tests for async streaming via ``acall(stream=True)``."""
 
     async def test_raises_for_non_function_calling_llm(self) -> None:
         """Raise ValueError if the underlying LLM is not a FunctionCallingLLM.
 
         Input: Program created with NonFunctionCallingMockLLM
-        Expected: ValueError from astream_call
+        Expected: ValueError from acall(stream=True)
         Check: pytest.raises(ValueError)
         """
         tools_llm = ToolOrchestratingLLM(
@@ -450,13 +450,10 @@ class TestToolOrchestratingLLMAStreamCall:
             llm=NonFunctionCallingMockLLM(),
         )
         with pytest.raises(ValueError):
-            gen = await tools_llm.astream_call(topic="t")
-            # exhaust the async generator to trigger computation
-            async for _ in gen:
-                pass
+            await tools_llm.acall(topic="t", stream=True)
 
     async def test_async_streaming_yields_processed_objects_mock(self) -> None:
-        """astream_call yields objects returned by process_streaming_objects per chunk.
+        """acall(stream=True) yields objects returned by StreamingObjectProcessor per chunk.
 
         Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects
         Expected: Two yields with objects we control (awaited via async for)
@@ -475,7 +472,7 @@ class TestToolOrchestratingLLMAStreamCall:
             "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
             side_effect=[obj1, obj2],
         ) as mock_proc:
-            agen = await tools_llm.astream_call(topic="x")
+            agen = await tools_llm.acall(topic="x", stream=True)
             results: list[Album] = []
             async for item in agen:  # type: ignore
                 results.append(item)
@@ -500,7 +497,7 @@ class TestToolOrchestratingLLMAStreamCall:
                 "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
                 side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
             ):
-                agen = await tools_llm.astream_call(topic="x")
+                agen = await tools_llm.acall(topic="x", stream=True)
                 results: list[Album] = []
                 async for item in agen:  # type: ignore
                     results.append(item)

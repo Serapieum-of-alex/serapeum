@@ -1,7 +1,7 @@
 """Base classes for LLM-powered structured tools using Pydantic models."""
 
 from abc import ABC, abstractmethod
-from typing import Any, AsyncGenerator, Generator, Generic, List, Type, Union
+from typing import Any, Generic, List, Type, Union
 
 from pydantic import BaseModel
 
@@ -22,17 +22,3 @@ class BasePydanticLLM(ABC, Generic[Model]):
 
     async def acall(self, *args: Any, **kwargs: Any) -> Union[Model, List[Model]]:
         return self(*args, **kwargs)
-
-    def stream_call(
-        self, *args: Any, **kwargs: Any
-    ) -> Generator[
-        Union[Model, List[Model], "BaseModel", List["BaseModel"]], None, None
-    ]:
-        raise NotImplementedError("stream_call is not supported by default.")
-
-    async def astream_call(
-        self, *args: Any, **kwargs: Any
-    ) -> AsyncGenerator[
-        Union[Model, List[Model], "BaseModel", List["BaseModel"]], None
-    ]:
-        raise NotImplementedError("astream_call is not supported by default.")

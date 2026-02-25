@@ -729,9 +729,12 @@ class TestStreamStructuredPredict:
         prompt = PromptTemplate("{name}")
 
         class FakeProgram:
-            def stream_call(self, llm_kwargs: dict | None = None, **kwargs: Any):
-                yield _OutputModel(name=kwargs["name"])
-                yield _OutputModel(name=kwargs["name"].upper())
+            def __call__(self, *args: Any, stream: bool = False, llm_kwargs: dict | None = None, **kwargs: Any):
+                def _gen():
+                    yield _OutputModel(name=kwargs["name"])
+                    yield _OutputModel(name=kwargs["name"].upper())
+
+                return _gen()
 
         monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
 
@@ -760,7 +763,7 @@ class TestStructuredAstreamCall:
         prompt = PromptTemplate("{name}")
 
         class FakeProgram:
-            async def astream_call(self, llm_kwargs: dict | None = None, **kwargs: Any):
+            async def acall(self, *args: Any, stream: bool = False, llm_kwargs: dict | None = None, **kwargs: Any):
                 async def gen() -> AsyncGenerator[_OutputModel, None]:
                     yield _OutputModel(name=kwargs["name"])
                     yield _OutputModel(name=kwargs["name"].upper())
@@ -792,7 +795,7 @@ class TestAstreamStructuredPredict:
         prompt = PromptTemplate("{name}")
 
         class FakeProgram:
-            async def astream_call(self, llm_kwargs: dict | None = None, **kwargs: Any):
+            async def acall(self, *args: Any, stream: bool = False, llm_kwargs: dict | None = None, **kwargs: Any):
                 async def gen() -> AsyncGenerator[_OutputModel, None]:
                     yield _OutputModel(name=kwargs["name"])
                     yield _OutputModel(name=kwargs["name"].upper())

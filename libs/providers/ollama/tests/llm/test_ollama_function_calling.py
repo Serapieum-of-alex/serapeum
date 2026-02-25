@@ -165,7 +165,7 @@ class TestToolOrchestratingLLMStreamCall:
             allow_parallel_tool_calls=False,
         )
 
-        out = tools_llm.stream_call(topic="x")
+        out = tools_llm(topic="x", stream=True)
         out = list(out)
         assert len(out) == 2
         assert all(isinstance(obj, album) for obj in out)
@@ -192,7 +192,7 @@ class TestToolOrchestratingLLMAStreamCall:
             allow_parallel_tool_calls=False,
         )
 
-        agen = await tools_llm.astream_call(topic="x")
+        agen = await tools_llm.acall(topic="x", stream=True)
         results: list[album] = []
         async for item in agen:
             results.append(item)

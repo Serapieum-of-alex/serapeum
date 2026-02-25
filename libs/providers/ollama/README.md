@@ -75,7 +75,7 @@ ollama list
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole
+`from serapeum.core.llms import Message, MessageRole
 
 # Initialize the model
 llm = Ollama(model="llama3.1", request_timeout=120)
@@ -94,7 +94,7 @@ The `Ollama` class provides a complete chat interface:
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole, MessageList
+from serapeum.core.llms import Message, MessageRole, MessageList
 
 llm = Ollama(
     model="llama3.1",
@@ -130,7 +130,7 @@ Stream responses token-by-token for real-time feedback:
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 llm = Ollama(model="llama3.1")
 
@@ -153,7 +153,7 @@ Full async support for concurrent operations:
 ```python
 import asyncio
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 async def main():
     llm = Ollama(model="llama3.1")
@@ -302,7 +302,7 @@ result = orchestrator(query="What's the weather in Paris?")
 print(result)  # Uses weather_tool automatically
 
 # You can also use tools directly with the base LLM
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 messages = [Message(role=MessageRole.USER, content="What's 25 + 17?")]
 response = llm.chat_with_tools(
@@ -518,7 +518,7 @@ Combine embeddings with LLMs for RAG (Retrieval-Augmented Generation):
 
 ```python
 from serapeum.ollama import Ollama, OllamaEmbedding
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 # Initialize both LLM and embeddings
 llm = Ollama(model="llama3.1")

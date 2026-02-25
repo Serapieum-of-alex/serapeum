@@ -43,7 +43,6 @@ dev = [
     "pytest-markdown-docs>=0.9.1",
     "pytest-mock>=3.14.0",
     "python-dotenv",
-    "pytest-mock>=3.14.0"
 ]
 
 docs = [
@@ -156,8 +155,8 @@ members = [
     "libs/providers/*",
 ]
 
-#[tool.uv]
-#managed = false
+[tool.uv]
+managed = false
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }

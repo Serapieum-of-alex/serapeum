@@ -1,6 +1,6 @@
 """Structured output wrapper and helpers around the core LLM API."""
 
-from typing import Any, Sequence, Type
+from typing import Any, Literal, Sequence, Type, overload
 
 from pydantic import BaseModel, Field, SerializeAsAny
 
@@ -39,6 +39,24 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
     def metadata(self) -> Metadata:
         return self.llm.metadata
 
+    @overload
+    def chat(
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
+    ) -> ChatResponse: ...
+
+    @overload
+    def chat(
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
+    ) -> ChatResponseGen: ...
+
     def chat(
         self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
     ) -> ChatResponse | ChatResponseGen:
@@ -69,6 +87,24 @@ class StructuredOutputLLM(ChatToCompletionMixin, LLM):
             ),
             raw=output,
         )
+
+    @overload
+    async def achat(
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
+    ) -> ChatResponse: ...
+
+    @overload
+    async def achat(
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
+    ) -> ChatResponseAsyncGen: ...
 
     async def achat(
         self,

@@ -33,10 +33,8 @@ classDiagram
 
     class FunctionCallingLLM {
         <<abstract>>
-        +chat_with_tools(messages, tools, **kwargs) ChatResponse
-        +achat_with_tools(messages, tools, **kwargs) ChatResponse
-        +stream_chat_with_tools(messages, tools, **kwargs) ChatResponseGen
-        +astream_chat_with_tools(messages, tools, **kwargs) ChatResponseAsyncGen
+        +chat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         +get_tool_calls_from_response(response, error_on_no_tool_call) List[ToolSelection]
         #_prepare_chat_with_tools(messages, tools, **kwargs) dict
         #_validate_chat_with_tools_response(response, tools, **kwargs) ChatResponse
@@ -63,10 +61,8 @@ classDiagram
         +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
         +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
-        +chat_with_tools(messages, tools, **kwargs) ChatResponse
-        +stream_chat_with_tools(messages, tools, **kwargs) ChatResponseGen
-        +achat_with_tools(messages, tools, **kwargs) ChatResponse
-        +astream_chat_with_tools(messages, tools, **kwargs) ChatResponseAsyncGen
+        +chat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         -_chat(messages, stream, **kwargs) ChatResponse
         -_achat(messages, stream, **kwargs) ChatResponse
         -_prepare_chat_with_tools(messages, tools, **kwargs) dict

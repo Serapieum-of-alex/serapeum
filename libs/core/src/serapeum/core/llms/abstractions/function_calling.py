@@ -3,7 +3,7 @@
 from __future__ import annotations
 import asyncio
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any, Literal, Sequence, overload
 
 from serapeum.core.base.llms.types import (
     ChatResponse,
@@ -30,6 +30,32 @@ class FunctionCallingLLM(LLM):
         """
         super().__init__(*args, **kwargs)
 
+    @overload
+    def chat_with_tools(
+        self,
+        tools: Sequence[BaseTool],
+        user_msg: str | Message | None = ...,
+        chat_history: list[Message] | None = ...,
+        verbose: bool = ...,
+        allow_parallel_tool_calls: bool = ...,
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
+    ) -> ChatResponse: ...
+
+    @overload
+    def chat_with_tools(
+        self,
+        tools: Sequence[BaseTool],
+        user_msg: str | Message | None = ...,
+        chat_history: list[Message] | None = ...,
+        verbose: bool = ...,
+        allow_parallel_tool_calls: bool = ...,
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
+    ) -> ChatResponseGen: ...
+
     def chat_with_tools(
         self,
         tools: Sequence[BaseTool],
@@ -37,8 +63,10 @@ class FunctionCallingLLM(LLM):
         chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
+        *,
+        stream: bool = False,
         **kwargs: Any,
-    ) -> ChatResponse:
+    ) -> ChatResponse | ChatResponseGen:
         """Chat with function calling."""
         chat_kwargs = self._prepare_chat_with_tools(
             tools,
@@ -48,6 +76,8 @@ class FunctionCallingLLM(LLM):
             allow_parallel_tool_calls=allow_parallel_tool_calls,
             **kwargs,
         )
+        if stream:
+            return self.chat(stream=True, **chat_kwargs)
         response = self.chat(**chat_kwargs)
         return self._validate_chat_with_tools_response(
             response,
@@ -56,6 +86,32 @@ class FunctionCallingLLM(LLM):
             **kwargs,
         )
 
+    @overload
+    async def achat_with_tools(
+        self,
+        tools: Sequence[BaseTool],
+        user_msg: str | Message | None = ...,
+        chat_history: list[Message] | None = ...,
+        verbose: bool = ...,
+        allow_parallel_tool_calls: bool = ...,
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
+    ) -> ChatResponse: ...
+
+    @overload
+    async def achat_with_tools(
+        self,
+        tools: Sequence[BaseTool],
+        user_msg: str | Message | None = ...,
+        chat_history: list[Message] | None = ...,
+        verbose: bool = ...,
+        allow_parallel_tool_calls: bool = ...,
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
+    ) -> ChatResponseAsyncGen: ...
+
     async def achat_with_tools(
         self,
         tools: Sequence[BaseTool],
@@ -63,8 +119,10 @@ class FunctionCallingLLM(LLM):
         chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
+        *,
+        stream: bool = False,
         **kwargs: Any,
-    ) -> ChatResponse:
+    ) -> ChatResponse | ChatResponseAsyncGen:
         """Async chat with function calling."""
         chat_kwargs = self._prepare_chat_with_tools(
             tools,
@@ -74,6 +132,8 @@ class FunctionCallingLLM(LLM):
             allow_parallel_tool_calls=allow_parallel_tool_calls,
             **kwargs,
         )
+        if stream:
+            return await self.achat(stream=True, **chat_kwargs)
         response = await self.achat(**chat_kwargs)
         return self._validate_chat_with_tools_response(
             response,
@@ -81,47 +141,6 @@ class FunctionCallingLLM(LLM):
             allow_parallel_tool_calls=allow_parallel_tool_calls,
             **kwargs,
         )
-
-    def stream_chat_with_tools(
-        self,
-        tools: Sequence[BaseTool],
-        user_msg: str | Message | None = None,
-        chat_history: list[Message] | None = None,
-        verbose: bool = False,
-        allow_parallel_tool_calls: bool = False,
-        **kwargs: Any,
-    ) -> ChatResponseGen:
-        """Stream chat with function calling."""
-        chat_kwargs = self._prepare_chat_with_tools(
-            tools,
-            user_msg=user_msg,
-            chat_history=chat_history,
-            verbose=verbose,
-            allow_parallel_tool_calls=allow_parallel_tool_calls,
-            **kwargs,
-        )
-
-        return self.chat(stream=True, **chat_kwargs)
-
-    async def astream_chat_with_tools(
-        self,
-        tools: Sequence[BaseTool],
-        user_msg: str | Message | None = None,
-        chat_history: list[Message] | None = None,
-        verbose: bool = False,
-        allow_parallel_tool_calls: bool = False,
-        **kwargs: Any,
-    ) -> ChatResponseAsyncGen:
-        """Async stream chat with function calling."""
-        chat_kwargs = self._prepare_chat_with_tools(
-            tools,
-            user_msg=user_msg,
-            chat_history=chat_history,
-            verbose=verbose,
-            allow_parallel_tool_calls=allow_parallel_tool_calls,
-            **kwargs,
-        )
-        return await self.achat(stream=True, **chat_kwargs)
 
     @abstractmethod
     def _prepare_chat_with_tools(

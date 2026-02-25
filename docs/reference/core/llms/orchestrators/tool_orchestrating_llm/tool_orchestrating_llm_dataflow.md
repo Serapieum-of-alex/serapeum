@@ -240,7 +240,7 @@ Output:
 flowchart TD
     StreamStart(["__call__(stream=True) called"]) --> CreateTool[Create CallableTool]
     CreateTool --> FormatMsgs[Format messages]
-    FormatMsgs --> StreamChat[stream_chat_with_tools]
+    FormatMsgs --> StreamChat[chat_with_tools(stream=True)]
 
     StreamChat --> ReceiveChunk{Receive chunk}
     ReceiveChunk --> ProcessChunk[StreamingObjectProcessor.process]

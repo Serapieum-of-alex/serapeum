@@ -44,10 +44,8 @@ Provides the foundation for LLM providers that support function/tool calling. Th
 #### Key Features
 - Extends the base `LLM` class with tool-calling capabilities
 - Provides convenience methods for tool workflows:
-  - `chat_with_tools()` - Chat with function calling (sync)
-  - `achat_with_tools()` - Chat with function calling (async)
-  - `stream_chat_with_tools()` - Streaming chat with tools (sync)
-  - `astream_chat_with_tools()` - Streaming chat with tools (async)
+  - `chat_with_tools(stream=False)` - Chat with function calling; pass `stream=True` for streaming (sync)
+  - `achat_with_tools(stream=False)` - Chat with function calling; pass `stream=True` for streaming (async)
   - `predict_and_call()` - Predict and execute tool (sync)
   - `apredict_and_call()` - Predict and execute tool (async)
   - `get_tool_calls_from_response()` - Extract tool calls from response

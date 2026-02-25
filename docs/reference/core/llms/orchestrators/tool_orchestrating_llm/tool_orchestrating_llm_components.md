@@ -62,8 +62,8 @@ graph TB
         subgraph Orchestration Methods
             PAC[predict_and_call]
             APAC[apredict_and_call]
-            SCT[stream_chat_with_tools]
-            ASCT[astream_chat_with_tools]
+            SCT[chat_with_tools(stream=True)]
+            ASCT[achat_with_tools(stream=True)]
         end
 
         subgraph Message Processing
@@ -315,7 +315,7 @@ User → await ToolOrchestratingLLM.acall(...)
 ```
 User → for obj in ToolOrchestratingLLM(stream=True, ...):
   ├─→ [Same tool creation and message formatting]
-  ├─→ Ollama.stream_chat_with_tools([tool], messages, ...)
+  ├─→ Ollama.chat_with_tools([tool], messages, stream=True, ...)
   │   └─→ Yields partial ChatResponse chunks
   └─→ For each chunk:
       ├─→ StreamingObjectProcessor.process(chunk, cur_objects)
@@ -330,7 +330,7 @@ User → for obj in ToolOrchestratingLLM(stream=True, ...):
 ```
 User → async for obj in await ToolOrchestratingLLM.acall(stream=True, ...):
   ├─→ [Same tool creation and message formatting]
-  ├─→ await Ollama.astream_chat_with_tools([tool], messages, ...)
+  ├─→ await Ollama.achat_with_tools([tool], messages, stream=True, ...)
   │   └─→ Async yields partial ChatResponse chunks
   └─→ For each chunk:
       ├─→ StreamingObjectProcessor.process(chunk, cur_objects)

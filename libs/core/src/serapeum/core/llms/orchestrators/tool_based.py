@@ -502,11 +502,12 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
-        chat_response_gen = self._llm.stream_chat_with_tools(
+        chat_response_gen = self._llm.chat_with_tools(
             [tool],
             chat_history=messages,
             verbose=self._verbose,
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
+            stream=True,
             **llm_kwargs,
         )
 
@@ -606,11 +607,12 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
-        chat_response_gen = await self._llm.astream_chat_with_tools(
+        chat_response_gen = await self._llm.achat_with_tools(
             [tool],
             chat_history=messages,
             verbose=self._verbose,
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
+            stream=True,
             **llm_kwargs,
         )
         processor = StreamingObjectProcessor(

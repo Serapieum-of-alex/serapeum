@@ -114,10 +114,8 @@ classDiagram
         <<abstract>>
         +predict_and_call(tools, chat_history, ...) AgentChatResponse
         +apredict_and_call(tools, chat_history, ...) AgentChatResponse
-        +stream_chat_with_tools(tools, chat_history, ...) Generator
-        +astream_chat_with_tools(tools, chat_history, ...) AsyncGenerator
-        +chat_with_tools(tools, chat_history, ...) AgentChatResponse
-        +achat_with_tools(tools, chat_history, ...) AgentChatResponse
+        +chat_with_tools(tools, chat_history, stream, ...) ChatResponse | Generator
+        +achat_with_tools(tools, chat_history, stream, ...) ChatResponse | AsyncGenerator
         -_prepare_chat_with_tools(tools, chat_history, ...) Tuple
         -_validate_chat_with_tools_response(...) AgentChatResponse
     }
@@ -135,8 +133,8 @@ classDiagram
         +acomplete(prompt, **kwargs) CompletionResponse
         +predict_and_call(tools, ...) AgentChatResponse
         +apredict_and_call(tools, ...) AgentChatResponse
-        +stream_chat_with_tools(tools, ...) Generator
-        +astream_chat_with_tools(tools, ...) AsyncGenerator
+        +chat_with_tools(tools, stream, ...) ChatResponse | Generator
+        +achat_with_tools(tools, stream, ...) ChatResponse | AsyncGenerator
         -_chat_request(messages, stream, **kwargs) dict
         -_complete_request(prompt, stream, **kwargs) dict
         -_prepare_tools_schema(tools) List[Dict]

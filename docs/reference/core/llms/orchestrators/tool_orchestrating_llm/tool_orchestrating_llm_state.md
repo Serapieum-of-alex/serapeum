@@ -175,7 +175,7 @@ stateDiagram-v2
 - **Substates**:
   1. `CreatingToolStream`: Create CallableTool
   2. `FormattingPromptStream`: Format messages
-  3. `InitiatingStream`: Start stream_chat_with_tools
+  3. `InitiatingStream`: Start chat_with_tools(stream=True)
   4. `StreamingChunks`: Process chunks loop
      - `ReceivingChunk`: Get next chunk from generator
      - `ProcessingChunk`: Initialize StreamingObjectProcessor

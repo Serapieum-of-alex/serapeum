@@ -159,11 +159,10 @@ See the [Provider Integrations Guide](providers.md) for complete documentation o
 - `astream_parse(...) → AsyncGenerator[BaseModel, None]` (async)
 
 ### FunctionCallingLLM
-- `chat_with_tools(tools, user_msg=None, chat_history=None, **kwargs) → ChatResponse`
+- `chat_with_tools(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseGen`
+- `achat_with_tools(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseAsyncGen` (async)
 - `predict_and_call(tools, user_msg=None, chat_history=None, **kwargs) → AgentChatResponse`
 - `get_tool_calls_from_response(response, error_on_no_tool_call=True) → list[ToolCallArguments]`
-- `stream_chat_with_tools(...) → ChatResponseGen`
-- `astream_chat_with_tools(...) → ChatResponseAsyncGen` (async)
 
 ### CallableTool
 - `from_function(func, name=None, description=None, **kwargs) → CallableTool` (class method)
@@ -335,11 +334,10 @@ classDiagram
     }
 
     class FunctionCallingLLM {
-        +chat_with_tools(tools, user_msg, chat_history) ChatResponse
+        +chat_with_tools(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseGen
+        +achat_with_tools(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseAsyncGen
         +predict_and_call(tools, user_msg, chat_history) AgentChatResponse
         +get_tool_calls_from_response(response) List~ToolCallArguments~
-        +stream_chat_with_tools(tools, ...) Generator
-        +astream_chat_with_tools(tools, ...) AsyncGen
     }
 
     class ToolOrchestratingLLM {

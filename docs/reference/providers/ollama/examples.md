@@ -642,7 +642,7 @@ message = Message(
 )
 
 # Stream with tools
-for chunk in llm.stream_chat_with_tools(tools=[tool], user_msg=message):
+for chunk in llm.chat_with_tools(tools=[tool], user_msg=message, stream=True):
     # Process streaming tool calls
     if chunk.message.additional_kwargs.get("tool_calls"):
         print(f"Tool call chunk: {chunk.message.additional_kwargs['tool_calls']}")

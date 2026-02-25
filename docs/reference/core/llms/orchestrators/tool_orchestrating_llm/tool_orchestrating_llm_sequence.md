@@ -145,7 +145,7 @@ The async flow (`acall`) follows the same pattern but uses:
 ## Streaming Execution Flow
 
 For `__call__(stream=True)`:
-1. Uses `stream_chat_with_tools` instead of `predict_and_call`
+1. Uses `chat_with_tools(stream=True)` instead of `predict_and_call`
 2. Yields partial responses as `StreamingObjectProcessor` parses incremental tool calls
 3. Maintains `cur_objects` state across chunks
 4. Each yield contains progressively updated Pydantic instances

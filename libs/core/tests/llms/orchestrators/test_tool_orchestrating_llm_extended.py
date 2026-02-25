@@ -143,7 +143,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         return Metadata(is_function_calling_model=True, model_name="mock_fc")
 
     # ---- Base abstract methods (minimal stubs) ----
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:  # type: ignore[override]
+    def chat(self, messages: Sequence[Message], stream, **kwargs: Any) -> ChatResponse:  # type: ignore[override]
         return ChatResponse(message=Message.from_str("ok"))
 
     def complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]

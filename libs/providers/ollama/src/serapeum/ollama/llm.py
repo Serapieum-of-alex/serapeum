@@ -835,6 +835,8 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 ```
         """
         tool_calls = response.message.additional_kwargs.get("tool_calls", [])
+
+        tool_selections = []
         if not tool_calls or len(tool_calls) < 1:
             if error_on_no_tool_call:
                 raise ToolCallError(
@@ -842,26 +844,21 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                     f"{len(tool_calls) if tool_calls else 0} tool calls.",
                     tool_name=None,
                 )
+        else:
+            coercer = ArgumentCoercer()
+            for tool_call in tool_calls:
+                # Coerce arguments to proper types (handles JSON strings, type mismatches, etc.)
+                raw_arguments = tool_call["function"]["arguments"]
+                argument_dict = coercer.coerce(raw_arguments)
 
-            else:
-                return []
-
-        tool_selections = []
-        coercer = ArgumentCoercer()
-
-        for tool_call in tool_calls:
-            # Coerce arguments to proper types (handles JSON strings, type mismatches, etc.)
-            raw_arguments = tool_call["function"]["arguments"]
-            argument_dict = coercer.coerce(raw_arguments)
-
-            tool_selections.append(
-                ToolCallArguments(
-                    # tool ids not provided by Ollama
-                    tool_id=tool_call["function"]["name"],
-                    tool_name=tool_call["function"]["name"],
-                    tool_kwargs=argument_dict,
+                tool_selections.append(
+                    ToolCallArguments(
+                        # tool ids not provided by Ollama
+                        tool_id=tool_call["function"]["name"],
+                        tool_name=tool_call["function"]["name"],
+                        tool_kwargs=argument_dict,
+                    )
                 )
-            )
 
         return tool_selections
 
@@ -973,9 +970,8 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
                 ```
         """
-        if stream:
-            return self._stream_chat(messages, **kwargs)
-        return self._chat(messages, **kwargs)
+        result = self._stream_chat(messages, **kwargs) if stream else self._chat(messages, **kwargs)
+        return result
 
     def _chat(
         self, messages: MessageList | list[Message], **kwargs: Any
@@ -1191,9 +1187,8 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         See Also:
             chat: Synchronous variant.
         """
-        if stream:
-            return await self._astream_chat(messages, **kwargs)
-        return await self._achat(messages, **kwargs)
+        result = await self._astream_chat(messages, **kwargs) if stream else await self._achat(messages, **kwargs)
+        return result
 
     async def _achat(
         self, messages: MessageList | list[Message], **kwargs: Any
@@ -1360,14 +1355,18 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             aparse: Async variant (non-streaming).
         """
         if self.structured_output_mode == StructuredOutputMode.DEFAULT:
-            if stream:
-                return self._stream_parse_default(schema, prompt, llm_kwargs, prompt_args)
-            return self._parse_default(schema, prompt, llm_kwargs, prompt_args)
-        if stream:
-            return super().stream_parse(  # type: ignore[return-value]
-                schema, prompt, llm_kwargs, **prompt_args
+            result = (
+                self._stream_parse_default(schema, prompt, llm_kwargs, prompt_args)
+                if stream
+                else self._parse_default(schema, prompt, llm_kwargs, prompt_args)
             )
-        return super().parse(schema, prompt, llm_kwargs, **prompt_args)
+        else:
+            result = (
+                super().stream_parse(schema, prompt, llm_kwargs, **prompt_args)  # type: ignore[return-value]
+                if stream
+                else super().parse(schema, prompt, llm_kwargs, **prompt_args)
+            )
+        return result
 
     def _parse_default(
         self,
@@ -1512,14 +1511,18 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             parse: Synchronous variant.
         """
         if self.structured_output_mode == StructuredOutputMode.DEFAULT:
-            if stream:
-                return self._astream_parse_default(schema, prompt, llm_kwargs, prompt_args)
-            return await self._aparse_default(schema, prompt, llm_kwargs, prompt_args)
-        if stream:
-            return await super().astream_parse(  # type: ignore[return-value]
-                schema, prompt, llm_kwargs, **prompt_args
+            result = (
+                self._astream_parse_default(schema, prompt, llm_kwargs, prompt_args)
+                if stream
+                else await self._aparse_default(schema, prompt, llm_kwargs, prompt_args)
             )
-        return await super().aparse(schema, prompt, llm_kwargs, **prompt_args)
+        else:
+            result = (
+                await super().astream_parse(schema, prompt, llm_kwargs, **prompt_args)  # type: ignore[return-value]
+                if stream
+                else await super().aparse(schema, prompt, llm_kwargs, **prompt_args)
+            )
+        return result
 
     async def _aparse_default(
         self,

@@ -6,7 +6,7 @@ implement to support chat/completion, streaming, and async variants.
 
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any, Sequence
 
 from pydantic import ConfigDict
@@ -25,7 +25,7 @@ from serapeum.core.base.llms.types import (
 from serapeum.core.types import SerializableModel
 
 
-class BaseLLM(SerializableModel):
+class BaseLLM(SerializableModel, ABC):
     """BaseLLM interface."""
 
     # Allow subclasses/tests to attach auxiliary attributes (e.g., test doubles)
@@ -61,7 +61,7 @@ class BaseLLM(SerializableModel):
         return converted_messages
 
     @abstractmethod
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse | ChatResponseGen:
+    def chat(self, messages: Sequence[Message], stream: bool, **kwargs: Any) -> ChatResponse | ChatResponseGen:
         pass
 
     @abstractmethod
@@ -77,7 +77,7 @@ class BaseLLM(SerializableModel):
         pass
 
     @abstractmethod
-    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse | ChatResponseAsyncGen:
+    async def achat(self, messages: Sequence[Message], stream: bool, **kwargs: Any) -> (ChatResponse | ChatResponseAsyncGen):
         pass
 
     @abstractmethod

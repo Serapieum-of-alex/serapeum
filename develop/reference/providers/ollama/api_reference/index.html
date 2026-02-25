@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -6047,7 +6047,7 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-1192" name="__codelineno-0-1192"></a><span class="sd">            chat: Synchronous variant.</span>
 <a id="__codelineno-0-1193" name="__codelineno-0-1193"></a><span class="sd">        &quot;&quot;&quot;</span>
 <a id="__codelineno-0-1194" name="__codelineno-0-1194"></a>        <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
-<a id="__codelineno-0-1195" name="__codelineno-0-1195"></a>            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-0-1195" name="__codelineno-0-1195"></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 <a id="__codelineno-0-1196" name="__codelineno-0-1196"></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_achat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 <a id="__codelineno-0-1197" name="__codelineno-0-1197"></a>
 <a id="__codelineno-0-1198" name="__codelineno-0-1198"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_achat</span><span class="p">(</span>
@@ -6890,7 +6890,7 @@ ChatResponse chunks with deltas.</p>
 <a id="__codelineno-0-1192" name="__codelineno-0-1192"></a><span class="sd">        chat: Synchronous variant.</span>
 <a id="__codelineno-0-1193" name="__codelineno-0-1193"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-1194" name="__codelineno-0-1194"></a>    <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
-<a id="__codelineno-0-1195" name="__codelineno-0-1195"></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-0-1195" name="__codelineno-0-1195"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 <a id="__codelineno-0-1196" name="__codelineno-0-1196"></a>    <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_achat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>

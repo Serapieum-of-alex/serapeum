@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -3493,10 +3493,8 @@
 <ul>
 <li>Extends the base <code>LLM</code> class with tool-calling capabilities</li>
 <li>Provides convenience methods for tool workflows:</li>
-<li><code>chat_with_tools()</code> - Chat with function calling (sync)</li>
-<li><code>achat_with_tools()</code> - Chat with function calling (async)</li>
-<li><code>stream_chat_with_tools()</code> - Streaming chat with tools (sync)</li>
-<li><code>astream_chat_with_tools()</code> - Streaming chat with tools (async)</li>
+<li><code>chat_with_tools(stream=False)</code> - Chat with function calling; pass <code>stream=True</code> for streaming (sync)</li>
+<li><code>achat_with_tools(stream=False)</code> - Chat with function calling; pass <code>stream=True</code> for streaming (async)</li>
 <li><code>predict_and_call()</code> - Predict and execute tool (sync)</li>
 <li><code>apredict_and_call()</code> - Predict and execute tool (async)</li>
 <li><code>get_tool_calls_from_response()</code> - Extract tool calls from response</li>

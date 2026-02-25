@@ -21,7 +21,7 @@
 <link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1565,10 +1565,8 @@ Hold "Ctrl" to enable pan &amp; zoom
 
     class FunctionCallingLLM {
         &lt;&lt;abstract&gt;&gt;
-        +chat_with_tools(messages, tools, **kwargs) ChatResponse
-        +achat_with_tools(messages, tools, **kwargs) ChatResponse
-        +stream_chat_with_tools(messages, tools, **kwargs) ChatResponseGen
-        +astream_chat_with_tools(messages, tools, **kwargs) ChatResponseAsyncGen
+        +chat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         +get_tool_calls_from_response(response, error_on_no_tool_call) List[ToolSelection]
         #_prepare_chat_with_tools(messages, tools, **kwargs) dict
         #_validate_chat_with_tools_response(response, tools, **kwargs) ChatResponse
@@ -1595,10 +1593,8 @@ Hold "Ctrl" to enable pan &amp; zoom
         +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
         +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
-        +chat_with_tools(messages, tools, **kwargs) ChatResponse
-        +stream_chat_with_tools(messages, tools, **kwargs) ChatResponseGen
-        +achat_with_tools(messages, tools, **kwargs) ChatResponse
-        +astream_chat_with_tools(messages, tools, **kwargs) ChatResponseAsyncGen
+        +chat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         -_chat(messages, stream, **kwargs) ChatResponse
         -_achat(messages, stream, **kwargs) ChatResponse
         -_prepare_chat_with_tools(messages, tools, **kwargs) dict

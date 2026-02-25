@@ -21,7 +21,7 @@
 <link href="../../../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1488,8 +1488,8 @@ Hold "Ctrl" to enable pan &amp; zoom
         subgraph Orchestration Methods
             PAC[predict_and_call]
             APAC[apredict_and_call]
-            SCT[stream_chat_with_tools]
-            ASCT[astream_chat_with_tools]
+            SCT[chat_with_tools(stream=True)]
+            ASCT[achat_with_tools(stream=True)]
         end
 
         subgraph Message Processing
@@ -1787,7 +1787,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <h3 id="5-streaming-execution-pattern-sync"><a class="toclink" href="#5-streaming-execution-pattern-sync">5. Streaming Execution Pattern (Sync)</a><a class="headerlink" href="#5-streaming-execution-pattern-sync" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>User → for obj in ToolOrchestratingLLM(stream=True, ...):
 <a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a>  ├─→ [Same tool creation and message formatting]
-<a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>  ├─→ Ollama.stream_chat_with_tools([tool], messages, ...)
+<a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>  ├─→ Ollama.chat_with_tools([tool], messages, stream=True, ...)
 <a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a>  │   └─→ Yields partial ChatResponse chunks
 <a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a>  └─→ For each chunk:
 <a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a>      ├─→ StreamingObjectProcessor.process(chunk, cur_objects)
@@ -1800,7 +1800,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <h3 id="6-async-streaming-pattern"><a class="toclink" href="#6-async-streaming-pattern">6. Async Streaming Pattern</a><a class="headerlink" href="#6-async-streaming-pattern" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>User → async for obj in await ToolOrchestratingLLM.acall(stream=True, ...):
 <a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a>  ├─→ [Same tool creation and message formatting]
-<a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>  ├─→ await Ollama.astream_chat_with_tools([tool], messages, ...)
+<a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>  ├─→ await Ollama.achat_with_tools([tool], messages, stream=True, ...)
 <a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a>  │   └─→ Async yields partial ChatResponse chunks
 <a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a>  └─→ For each chunk:
 <a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a>      ├─→ StreamingObjectProcessor.process(chunk, cur_objects)

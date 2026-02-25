@@ -155,8 +155,8 @@ members = [
     "libs/providers/*",
 ]
 
-[tool.uv]
-managed = false
+#[tool.uv]
+#managed = false
 
 [tool.uv.sources]
 serapeum-core = { workspace = true }

@@ -93,8 +93,8 @@ markers = [
     "unit: marks tests as unit test (deselect with '-m \"not unit\"')",
 ]
 
-[tool.uv]
-managed = false
+#[tool.uv]
+#managed = false
 
 [build-system]
 requires = ["hatchling"]

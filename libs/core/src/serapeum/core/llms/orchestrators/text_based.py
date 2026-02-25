@@ -22,8 +22,8 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         text-completion models. Internally it routes to ``llm.chat()`` when
         ``llm.metadata.is_chat_model`` is True, and to ``llm.complete()`` otherwise.
 
-        Streaming is **not** supported by this class. If you need incremental results via
-        ``stream_call()`` or ``astream_call()``, use ``ToolOrchestratingLLM`` instead.
+        Streaming is **not** supported by this class. If you need incremental results,
+        use ``ToolOrchestratingLLM`` with ``stream=True`` (i.e. ``tools_llm(stream=True, ...)``).
 
     Args:
         output_parser (Optional[BaseParser]): Parser used to coerce raw text into the target

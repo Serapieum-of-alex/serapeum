@@ -143,14 +143,10 @@ See the [Provider Integrations Guide](providers.md) for complete documentation o
 ## Representative Public Methods
 
 ### BaseLLM
-- `chat(messages, **kwargs) → ChatResponse`
-- `complete(prompt, formatted=False, **kwargs) → CompletionResponse`
-- `stream_chat(...) → ChatResponseGen`
-- `stream_complete(...) → CompletionResponseGen`
-- `achat(...) → ChatResponse` (async)
-- `acomplete(...) → CompletionResponse` (async)
-- `astream_chat(...) → ChatResponseAsyncGen` (async)
-- `astream_complete(...) → CompletionResponseAsyncGen` (async)
+- `chat(messages, stream=False, **kwargs) → ChatResponse | ChatResponseGen`
+- `complete(prompt, formatted=False, stream=False, **kwargs) → CompletionResponse | CompletionResponseGen`
+- `achat(messages, stream=False, **kwargs) → ChatResponse | ChatResponseAsyncGen` (async)
+- `acomplete(prompt, formatted=False, stream=False, **kwargs) → CompletionResponse | CompletionResponseAsyncGen` (async)
 
 ### LLM
 - `predict(prompt: PromptTemplate, **kwargs) → str`
@@ -176,10 +172,8 @@ See the [Provider Integrations Guide](providers.md) for complete documentation o
 - `acall(input, **kwargs) → ToolOutput` (async)
 
 ### ToolOrchestratingLLM
-- `__call__(**prompt_args, llm_kwargs=None) → BaseModel | Any`
-- `acall(**prompt_args, llm_kwargs=None) → BaseModel | Any` (async)
-- `stream_call(**prompt_args, llm_kwargs=None) → Generator`
-- `astream_call(**prompt_args, llm_kwargs=None) → AsyncGenerator` (async)
+- `__call__(**prompt_args, stream=False, llm_kwargs=None) → BaseModel | Generator`
+- `acall(**prompt_args, stream=False, llm_kwargs=None) → BaseModel | AsyncGenerator` (async)
 
 ### BaseEmbedding
 - `get_text_embedding(text: str) → list[float]`
@@ -323,14 +317,10 @@ Key classes and their primary methods:
 classDiagram
     class BaseLLM {
         <<abstract>>
-        +chat(messages) ChatResponse
-        +complete(prompt) CompletionResponse
-        +stream_chat(messages) Generator
-        +stream_complete(prompt) Generator
-        +achat(messages) ChatResponse
-        +acomplete(prompt) CompletionResponse
-        +astream_chat(messages) AsyncGen
-        +astream_complete(prompt) AsyncGen
+        +chat(messages, stream=false) ChatResponse | Generator
+        +complete(prompt, stream=false) CompletionResponse | Generator
+        +achat(messages, stream=false) ChatResponse | AsyncGen
+        +acomplete(prompt, stream=false) CompletionResponse | AsyncGen
     }
 
     class LLM {
@@ -356,10 +346,8 @@ classDiagram
         -llm: FunctionCallingLLM
         -tools: List~BaseTool~
         -prompt: PromptTemplate
-        +__call__(**prompt_args) Any
-        +acall(**prompt_args) Any
-        +stream_call(**prompt_args) Generator
-        +astream_call(**prompt_args) AsyncGen
+        +__call__(**prompt_args, stream=False) Any | Generator
+        +acall(**prompt_args, stream=False) Any | AsyncGen
     }
 
     class CallableTool {
@@ -415,10 +403,8 @@ How providers implement the core abstractions:
 classDiagram
     class FunctionCallingLLM {
         <<abstract>>
-        +_chat(messages) ChatResponse*
-        +_complete(prompt) CompletionResponse*
-        +_stream_chat(messages) Generator*
-        +_stream_complete(prompt) Generator*
+        +chat(messages, stream=false) ChatResponse | Generator*
+        +achat(messages, stream=false) ChatResponse | AsyncGen*
     }
 
     class BaseEmbedding {

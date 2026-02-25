@@ -7,8 +7,8 @@ This guide provides comprehensive examples covering all possible ways to use `Te
     text-completion models. Internally it routes to `llm.chat()` when
     `llm.metadata.is_chat_model` is `True`, and to `llm.complete()` otherwise.
 
-    **Streaming is not supported** by this class. If you need incremental results via
-    `stream_call()` or `astream_call()`, use [`ToolOrchestratingLLM`](../tool_orchestrating_llm/examples.md) instead.
+    **Streaming is not supported** by this class. If you need incremental results,
+    use [`ToolOrchestratingLLM`](../tool_orchestrating_llm/examples.md) with `stream=True` instead.
 
 ## Table of Contents
 

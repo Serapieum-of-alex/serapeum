@@ -95,7 +95,7 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
   - `output_cls`: A Pydantic model class defining the output structure
 - Delegates to the underlying LLM's `parse()` method
 - Converts all responses to JSON representations of the output model
-- Maintains the same interface as the base LLM (chat, stream_chat, etc.)
+- Maintains the same interface as the base LLM (`chat(stream=...)`, etc.)
 - Supports streaming structured outputs
 
 #### When to Use
@@ -154,7 +154,7 @@ High-level orchestrator that converts Pydantic models or Python functions into t
   - `prompt`: Template string or `BasePromptTemplate`
   - `llm`: A `FunctionCallingLLM` instance
 - **Advanced capabilities**:
-  - Streaming support via `stream_call()` and `astream_call()`
+  - Streaming support via `__call__(stream=True)` and `acall(stream=True)`
   - Parallel tool calls with `allow_parallel_tool_calls=True`
   - Custom tool selection with `tool_choice` parameter
 - **Sync and async**: Both `__call__()` and `acall()` methods
@@ -246,7 +246,7 @@ story_generator = ToolOrchestratingLLM(
 )
 
 # Stream partial results
-for partial_story in story_generator.stream_call(genre="sci-fi"):
+for partial_story in story_generator(genre="sci-fi", stream=True):
     print(partial_story)  # Progressively complete Story objects
 ```
 

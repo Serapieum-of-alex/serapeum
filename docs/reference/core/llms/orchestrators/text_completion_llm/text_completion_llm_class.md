@@ -82,14 +82,10 @@ classDiagram
     class BaseLLM {
         <<abstract>>
         +metadata: Metadata
-        +chat(messages, **kwargs) ChatResponse
-        +stream_chat(messages, **kwargs) ChatResponseGen
-        +achat(messages, **kwargs) ChatResponse
-        +astream_chat(messages, **kwargs) ChatResponseAsyncGen
-        +complete(prompt, **kwargs) CompletionResponse
-        +stream_complete(prompt, **kwargs) CompletionResponseGen
-        +acomplete(prompt, **kwargs) CompletionResponse
-        +astream_complete(prompt, **kwargs) CompletionResponseAsyncGen
+        +chat(messages, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
+        +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
     }
 
     class LLM {

@@ -217,8 +217,8 @@ Single or parallel tool calls:
 Supports multiple execution modes:
 - Sync: `__call__`
 - Async: `acall`
-- Streaming: `stream_call`
-- Async streaming: `astream_call`
+- Streaming: `__call__(stream=True)`
+- Async streaming: `acall(stream=True)`
 
 ## Comparison with TextCompletionLLM
 
@@ -237,7 +237,7 @@ Supports multiple execution modes:
 
 1. **Reusable Instances**: `ToolOrchestratingLLM` instances are reusable after initialization
 2. **Async Support**: `acall()` method provides async execution
-3. **Streaming Support**: `stream_call()` yields progressive updates
+3. **Streaming Support**: `__call__(stream=True)` yields progressive updates
 4. **Parallel Tool Calls**: Enable with `allow_parallel_tool_calls=True`
 5. **Stateless Execution**: Each call creates independent transient state
 6. **Tool Schema Caching**: Tool schemas are generated once per call

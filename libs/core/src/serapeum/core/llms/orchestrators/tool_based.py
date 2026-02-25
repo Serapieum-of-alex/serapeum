@@ -491,7 +491,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     ) -> Generator[Model | list[Model], None, None]:
         """Internal streaming implementation — use ``__call__(stream=True)``."""
         if not isinstance(self._llm, FunctionCallingLLM):
-            raise ValueError("stream_call is only supported for LLMs.")
+            raise ValueError("Streaming is only supported for FunctionCallingLLM instances.")
 
         llm_kwargs = llm_kwargs or {}
         tool = self._create_tool()
@@ -595,7 +595,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     ) -> AsyncGenerator[Model | list[Model], None]:
         """Internal async streaming implementation — use ``acall(stream=True)``."""
         if not isinstance(self._llm, FunctionCallingLLM):
-            raise ValueError("stream_call is only supported for LLMs.")
+            raise ValueError("Streaming is only supported for FunctionCallingLLM instances.")
 
         tool = self._create_tool()
         llm_kwargs = llm_kwargs or {}

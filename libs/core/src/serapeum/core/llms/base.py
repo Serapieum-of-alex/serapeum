@@ -1473,9 +1473,11 @@ class LLM(BaseLLM, ABC):
                 ...         raise NotImplementedError()
                 ...
                 >>> class FakeProgram:
-                ...     def stream_call(self, llm_kwargs=None, **kwargs):
-                ...         yield Item(value=kwargs["name"])
-                ...         yield Item(value=kwargs["name"].upper())
+                ...     def __call__(self, *args, stream=False, llm_kwargs=None, **kwargs):
+                ...         def _gen():
+                ...             yield Item(value=kwargs["name"])
+                ...             yield Item(value=kwargs["name"].upper())
+                ...         return _gen()
                 ...
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> with patch(
@@ -1522,9 +1524,11 @@ class LLM(BaseLLM, ABC):
                 ...         raise NotImplementedError()
                 ...
                 >>> class FakeProgram:
-                ...     def stream_call(self, llm_kwargs=None, **kwargs):
-                ...         yield [Item(value="partial")]
-                ...         yield [Item(value="final")]
+                ...     def __call__(self, *args, stream=False, llm_kwargs=None, **kwargs):
+                ...         def _gen():
+                ...             yield [Item(value="partial")]
+                ...             yield [Item(value="final")]
+                ...         return _gen()
                 ...
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> with patch(
@@ -1603,7 +1607,7 @@ class LLM(BaseLLM, ABC):
                 ...         raise NotImplementedError()
                 ...
                 >>> class FakeProgram:
-                ...     async def astream_call(self, llm_kwargs=None, **kwargs):
+                ...     async def acall(self, *args, stream=False, llm_kwargs=None, **kwargs):
                 ...         async def generator():
                 ...             yield Item(value="partial")
                 ...             yield Item(value="final")
@@ -1687,7 +1691,7 @@ class LLM(BaseLLM, ABC):
                 ...         raise NotImplementedError()
                 ...
                 >>> class FakeProgram:
-                ...     async def astream_call(self, llm_kwargs=None, **kwargs):
+                ...     async def acall(self, *args, stream=False, llm_kwargs=None, **kwargs):
                 ...         async def generator():
                 ...             yield Item(value=kwargs["name"])
                 ...             yield Item(value=kwargs["name"].upper())
@@ -1742,7 +1746,7 @@ class LLM(BaseLLM, ABC):
                 ...         raise NotImplementedError()
                 ...
                 >>> class FakeProgram:
-                ...     async def astream_call(self, llm_kwargs=None, **kwargs):
+                ...     async def acall(self, *args, stream=False, llm_kwargs=None, **kwargs):
                 ...         async def generator():
                 ...             yield [Item(value="chunk")]
                 ...             yield [Item(value="done")]
@@ -1989,11 +1993,11 @@ class LLM(BaseLLM, ABC):
 
         if self.metadata.is_chat_model:
             messages = self._get_messages(prompt, **prompt_args)
-            chat_response = self.stream_chat(messages)
+            chat_response = self.chat(messages, stream=True)
             stream_tokens = stream_response_to_tokens(chat_response)
         else:
             formatted_prompt = self._get_prompt(prompt, **prompt_args)
-            stream_response = self.stream_complete(formatted_prompt, formatted=True)
+            stream_response = self.complete(formatted_prompt, formatted=True, stream=True)
             stream_tokens = stream_response_to_tokens(stream_response)
 
         if prompt.output_parser is not None or self.output_parser is not None:
@@ -2218,12 +2222,12 @@ class LLM(BaseLLM, ABC):
         """
         if self.metadata.is_chat_model:
             messages = self._get_messages(prompt, **prompt_args)
-            chat_response = await self.astream_chat(messages)
+            chat_response = await self.achat(messages, stream=True)
             stream_tokens = await astream_response_to_tokens(chat_response)
         else:
             formatted_prompt = self._get_prompt(prompt, **prompt_args)
-            stream_response = await self.astream_complete(
-                formatted_prompt, formatted=True
+            stream_response = await self.acomplete(
+                formatted_prompt, formatted=True, stream=True
             )
             stream_tokens = await astream_response_to_tokens(stream_response)
 

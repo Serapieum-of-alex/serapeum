@@ -15,10 +15,8 @@ classDiagram
         +__init__(output_cls, prompt, llm, tool_choice, allow_parallel, verbose)
         +output_cls: Type[Model]
         +prompt: BasePromptTemplate
-        +__call__(llm_kwargs, **kwargs) Union[Model, List[Model]]
-        +acall(llm_kwargs, **kwargs) Union[Model, List[Model]]
-        +stream_call(llm_kwargs, **kwargs) Generator[Model, None, None]
-        +astream_call(llm_kwargs, **kwargs) AsyncGenerator[Model, None]
+        +__call__(stream, llm_kwargs, **kwargs) Union[Model, List[Model]] | Generator[Model, None, None]
+        +acall(stream, llm_kwargs, **kwargs) Union[Model, List[Model]] | AsyncGenerator[Model, None]
         -_output_cls: Type[Model]
         -_llm: FunctionCallingLLM
         -_prompt: BasePromptTemplate
@@ -88,14 +86,10 @@ classDiagram
     class BaseLLM {
         <<abstract>>
         +metadata: Metadata
-        +chat(messages, **kwargs) ChatResponse
-        +stream_chat(messages, **kwargs) ChatResponseGen
-        +achat(messages, **kwargs) ChatResponse
-        +astream_chat(messages, **kwargs) ChatResponseAsyncGen
-        +complete(prompt, **kwargs) CompletionResponse
-        +stream_complete(prompt, **kwargs) CompletionResponseGen
-        +acomplete(prompt, **kwargs) CompletionResponse
-        +astream_complete(prompt, **kwargs) CompletionResponseAsyncGen
+        +chat(messages, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
+        +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
     }
 
     class LLM {

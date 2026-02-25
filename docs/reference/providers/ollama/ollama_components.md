@@ -280,7 +280,7 @@ User → Ollama.complete(prompt, **kwargs)
 
 ### 5. Streaming Pattern
 ```
-User → Ollama.stream_chat(messages, **kwargs)
+User → Ollama.chat(messages, stream=True, **kwargs)
   └─→ _chat(messages, stream=True, **kwargs)
       ├─→ Build request with stream=True
       ├─→ client.chat(**request) returns iterator

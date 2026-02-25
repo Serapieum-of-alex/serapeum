@@ -30,8 +30,8 @@ graph TB
         subgraph Execution Methods
             CALL["__call__"]
             ACALL["acall"]
-            STREAM["stream_call"]
-            ASTREAM["astream_call"]
+            STREAM["__call__(stream=True)"]
+            ASTREAM["acall(stream=True)"]
         end
     end
 
@@ -313,7 +313,7 @@ User → await ToolOrchestratingLLM.acall(...)
 
 ### 5. Streaming Execution Pattern (Sync)
 ```
-User → for obj in ToolOrchestratingLLM.stream_call(...):
+User → for obj in ToolOrchestratingLLM(stream=True, ...):
   ├─→ [Same tool creation and message formatting]
   ├─→ Ollama.stream_chat_with_tools([tool], messages, ...)
   │   └─→ Yields partial ChatResponse chunks
@@ -328,7 +328,7 @@ User → for obj in ToolOrchestratingLLM.stream_call(...):
 
 ### 6. Async Streaming Pattern
 ```
-User → async for obj in await ToolOrchestratingLLM.astream_call(...):
+User → async for obj in await ToolOrchestratingLLM.acall(stream=True, ...):
   ├─→ [Same tool creation and message formatting]
   ├─→ await Ollama.astream_chat_with_tools([tool], messages, ...)
   │   └─→ Async yields partial ChatResponse chunks

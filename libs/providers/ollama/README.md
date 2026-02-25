@@ -138,7 +138,7 @@ messages = [Message(role=MessageRole.USER, content="Write a haiku about coding."
 
 # Synchronous streaming
 print("Streaming response: ", end="")
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     print(chunk.delta, end="", flush=True)
 print()  # newline
 
@@ -166,7 +166,7 @@ async def main():
 
     # Async streaming
     messages = [Message(role=MessageRole.USER, content="Count to 5.")]
-    stream = await llm.astream_chat(messages)
+    stream = await llm.achat(messages, stream=True)
 
     async for chunk in stream:
         print(chunk.delta, end="", flush=True)
@@ -208,10 +208,11 @@ print(f"{person.name}, {person.age}, works as {person.occupation}")
 # Output: John Doe, 32, works as software engineer
 
 # Streaming structured outputs
-for partial in llm.stream_parse(
+for partial in llm.parse(
         schema=Person,
         prompt=prompt,
-        text="Jane Smith, age 28, data scientist"
+        text="Jane Smith, age 28, data scientist",
+        stream=True
 ):
   if isinstance(partial, list):
     partial = partial[0]
@@ -270,18 +271,18 @@ def calculate(operation: str, a: float, b: float) -> float:
     return ops.get(operation, 0)
 
 # Create tools
-weather_tool = CallableTool.from_model(
-    WeatherInput,
+weather_tool = CallableTool.from_function(
+    # WeatherInput,
     get_weather,
-    name="get_weather",
-    description="Get current weather for a location"
+    # name="get_weather",
+    # description="Get current weather for a location"
 )
 
-calculator_tool = CallableTool.from_model(
-    CalculatorInput,
+calculator_tool = CallableTool.from_function(
+    # CalculatorInput,
     calculate,
-    name="calculate",
-    description="Perform basic arithmetic operations"
+    # name="calculate",
+    # description="Perform basic arithmetic operations"
 )
 
 # Create orchestrator with tools
@@ -290,7 +291,7 @@ llm = Ollama(model="llama3.1", request_timeout=120, json_mode=True)
 orchestrator = ToolOrchestratingLLM(
     llm=llm,
     prompt=PromptTemplate("Answer the user's question: {query}"),
-    tools=[weather_tool, calculator_tool],
+    schema=[weather_tool, calculator_tool],
 )
 
 # Use tools via natural language

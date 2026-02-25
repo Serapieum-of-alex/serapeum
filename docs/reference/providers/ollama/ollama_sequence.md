@@ -233,7 +233,7 @@ User → ToolOrchestratingLLM(llm=Ollama)
 
 ### 5. Streaming
 ```
-User → Ollama.stream_chat
+User → Ollama.chat(stream=True)
   ├─→ _chat(stream=True)
   ├─→ Client.chat(stream=True)
   └─→ For each chunk:

@@ -7,14 +7,10 @@ classDiagram
     class BaseLLM {
         <<abstract>>
         +metadata: Metadata
-        +chat(messages, **kwargs) ChatResponse
-        +stream_chat(messages, **kwargs) ChatResponseGen
-        +achat(messages, **kwargs) ChatResponse
-        +astream_chat(messages, **kwargs) ChatResponseAsyncGen
-        +complete(prompt, **kwargs) CompletionResponse
-        +stream_complete(prompt, **kwargs) CompletionResponseGen
-        +acomplete(prompt, **kwargs) CompletionResponse
-        +astream_complete(prompt, **kwargs) CompletionResponseAsyncGen
+        +chat(messages, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
+        +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
     }
 
     class LLM {
@@ -63,14 +59,10 @@ classDiagram
         +metadata: Metadata
         +client: Client
         +async_client: AsyncClient
-        +chat(messages, **kwargs) ChatResponse
-        +stream_chat(messages, **kwargs) ChatResponseGen
-        +achat(messages, **kwargs) ChatResponse
-        +astream_chat(messages, **kwargs) ChatResponseAsyncGen
-        +complete(prompt, **kwargs) CompletionResponse
-        +stream_complete(prompt, **kwargs) CompletionResponseGen
-        +acomplete(prompt, **kwargs) CompletionResponse
-        +astream_complete(prompt, **kwargs) CompletionResponseAsyncGen
+        +chat(messages, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
+        +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
         +chat_with_tools(messages, tools, **kwargs) ChatResponse
         +stream_chat_with_tools(messages, tools, **kwargs) ChatResponseGen
         +achat_with_tools(messages, tools, **kwargs) ChatResponse
@@ -176,10 +168,8 @@ classDiagram
         -_output_cls: Type[BaseModel]
         -_tools: List[BaseTool]
         -_allow_parallel_tool_calls: bool
-        +__call__(**kwargs) BaseModel | List[BaseModel]
-        +acall(**kwargs) BaseModel | List[BaseModel]
-        +stream_call(**kwargs) Generator[BaseModel]
-        +astream_call(**kwargs) AsyncGenerator[BaseModel]
+        +__call__(**kwargs, stream=False) BaseModel | List[BaseModel] | Generator[BaseModel]
+        +acall(**kwargs, stream=False) BaseModel | List[BaseModel] | AsyncGenerator[BaseModel]
     }
 
     class BaseModel {

@@ -219,7 +219,7 @@ response = llm.complete(prompt)
 ### 5. Idle → ProcessingStream → Idle
 ```python
 # Streaming maintains state across multiple yields
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     print(chunk.message.content)
 
 # Transition to ProcessingStream:
@@ -491,11 +491,11 @@ except TimeoutError:
 ### 5. Streaming
 ```python
 # ✓ Good: Complete stream before next call
-for chunk in llm.stream_chat(messages1):
+for chunk in llm.chat(messages1, stream=True):
     process(chunk)
 response = llm.chat(messages2)  # Safe
 
 # ⚠ Warning: Interleaving streams
-stream1 = llm.stream_chat(messages1)
-stream2 = llm.stream_chat(messages2)  # Both use same client
+stream1 = llm.chat(messages1, stream=True)
+stream2 = llm.chat(messages2, stream=True)  # Both use same client
 ```

@@ -445,7 +445,7 @@ tools_llm = ToolOrchestratingLLM(
 )
 
 # Stream results as they arrive
-for partial_article in tools_llm.stream_call(topic="AI"):
+for partial_article in tools_llm(topic="AI", stream=True):
     print(f"Current title: {partial_article.title}")
     print(f"Sections so far: {partial_article.sections}")
     # Display progressive updates in UI
@@ -477,7 +477,7 @@ tools_llm = ToolOrchestratingLLM(
 )
 
 async def stream_report(subject: str):
-    stream = await tools_llm.astream_call(subject=subject)
+    stream = await tools_llm.acall(subject=subject, stream=True)
     async for partial_report in stream:
         print(f"Findings: {partial_report.findings}")
         print(f"Recommendations: {partial_report.recommendations}")
@@ -612,7 +612,7 @@ tools_llm = ToolOrchestratingLLM(
 )
 
 # Stream list of questions as they arrive
-for questions_so_far in tools_llm.stream_call(topic="Python"):
+for questions_so_far in tools_llm(topic="Python", stream=True):
     if isinstance(questions_so_far, list):
         print(f"Questions generated: {len(questions_so_far)}")
         # Show latest question

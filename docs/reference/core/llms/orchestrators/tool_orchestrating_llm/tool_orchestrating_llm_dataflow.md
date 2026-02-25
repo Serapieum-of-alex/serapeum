@@ -238,7 +238,7 @@ Output:
 
 ```mermaid
 flowchart TD
-    StreamStart([stream_call called]) --> CreateTool[Create CallableTool]
+    StreamStart(["__call__(stream=True) called"]) --> CreateTool[Create CallableTool]
     CreateTool --> FormatMsgs[Format messages]
     FormatMsgs --> StreamChat[stream_chat_with_tools]
 

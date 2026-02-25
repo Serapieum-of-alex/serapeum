@@ -377,7 +377,7 @@ llm = Ollama(
 messages = [Message(role=MessageRole.USER, content="Count from 1 to 5.")]
 
 # Stream responses
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     print(chunk.message.content, end="", flush=True)
     # Outputs: "1" " 2" " 3" " 4" " 5"
 ```
@@ -399,7 +399,7 @@ llm = Ollama(
 prompt = "Write a haiku about coding:"
 
 # Stream completion
-for chunk in llm.stream_complete(prompt):
+for chunk in llm.complete(prompt, stream=True):
     print(chunk.text, end="", flush=True)
 ```
 
@@ -421,7 +421,7 @@ llm = Ollama(
 messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
 
 full_response = ""
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     delta = chunk.delta  # Incremental content
     if delta:
         full_response += delta
@@ -797,7 +797,7 @@ tools_llm = ToolOrchestratingLLM(
 )
 
 # Stream results
-for album in tools_llm.stream_call(topic="rock"):
+for album in tools_llm(topic="rock", stream=True):
     print(f"Received: {album.title}")
 ```
 
@@ -876,7 +876,7 @@ async def async_stream_example():
 
     messages = [Message(role=MessageRole.USER, content="Count to 5")]
 
-    async for chunk in await llm.astream_chat(messages):
+    async for chunk in await llm.achat(messages, stream=True):
         print(chunk.message.content, end="", flush=True)
 
 
@@ -989,7 +989,7 @@ async def async_stream_tool_example():
         allow_parallel_tool_calls=False,
     )
 
-    stream = await tools_llm.astream_call(topic="rock")
+    stream = await tools_llm.acall(topic="rock", stream=True)
     async for album in stream:
         print(f"Received: {album.title}")
 

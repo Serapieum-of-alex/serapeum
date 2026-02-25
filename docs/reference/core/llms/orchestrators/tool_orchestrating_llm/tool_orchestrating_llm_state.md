@@ -23,8 +23,8 @@ stateDiagram-v2
 
     Ready --> ExecutingSync: __call__ invoked
     Ready --> ExecutingAsync: acall invoked
-    Ready --> ExecutingStream: stream_call invoked
-    Ready --> ExecutingAsyncStream: astream_call invoked
+    Ready --> ExecutingStream: __call__(stream=True) invoked
+    Ready --> ExecutingAsyncStream: acall(stream=True) invoked
     Ready --> UpdatingPrompt: prompt.setter called
 
     UpdatingPrompt --> Ready: Prompt updated
@@ -145,8 +145,8 @@ stateDiagram-v2
 - **Transitions**:
   - `__call__` → ExecutingSync
   - `acall` → ExecutingAsync
-  - `stream_call` → ExecutingStream
-  - `astream_call` → ExecutingAsyncStream
+  - `__call__(stream=True)` → ExecutingStream
+  - `acall(stream=True)` → ExecutingAsyncStream
   - `prompt.setter` → UpdatingPrompt
 - **Data**: All instance state available and immutable (except prompt)
 
@@ -171,7 +171,7 @@ stateDiagram-v2
 - **Data**: Same as ExecutingSync
 
 ### ExecutingStream (Synchronous Streaming)
-- **Entry**: `stream_call` invoked
+- **Entry**: `__call__(stream=True)` invoked
 - **Substates**:
   1. `CreatingToolStream`: Create CallableTool
   2. `FormattingPromptStream`: Format messages
@@ -188,7 +188,7 @@ stateDiagram-v2
 - **Data**: Streaming state (cur_objects, partial_resp)
 
 ### ExecutingAsyncStream (Asynchronous Streaming)
-- **Entry**: `astream_call` invoked
+- **Entry**: `acall(stream=True)` invoked
 - **Substates**: Same as ExecutingStream but async
 - **Exit**: Async generator exhausted or error raised
 - **Data**: Same as ExecutingStream
@@ -256,8 +256,8 @@ stateDiagram-v2
 1. `__init__` → Starts validation
 2. `__call__` → Starts sync execution
 3. `acall` → Starts async execution
-4. `stream_call` → Starts streaming
-5. `astream_call` → Starts async streaming
+4. `__call__(stream=True)` → Starts streaming
+5. `acall(stream=True)` → Starts async streaming
 6. `prompt.setter` → Updates prompt
 
 ### System-Triggered Transitions
@@ -302,7 +302,7 @@ stateDiagram-v2
 
 ### Transient Per Stream
 - `cur_objects`: Maintains progressive parsing state
-- Each new stream_call creates fresh state
+- Each new streaming call creates fresh state
 
 ## Parallel Execution States
 

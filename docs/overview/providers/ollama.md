@@ -212,7 +212,7 @@ messages = [Message(role=MessageRole.USER, content="Write a haiku about coding."
 
 # Synchronous streaming
 print("Streaming response: ", end="")
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     print(chunk.delta, end="", flush=True)
 print()
 
@@ -232,7 +232,7 @@ async def stream_example():
     llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"))
     messages = [Message(role=MessageRole.USER, content="Count to 5.")]
 
-    stream = await llm.astream_chat(messages)
+    stream = await llm.achat(messages, stream=True)
     async for chunk in stream:
         print(chunk.delta, end="", flush=True)
     print()
@@ -705,7 +705,7 @@ async def main():
 
     # Async streaming
     messages = [Message(role=MessageRole.USER, content="Count to 5.")]
-    stream = await llm.astream_chat(messages)
+    stream = await llm.achat(messages, stream=True)
 
     async for chunk in stream:
         print(chunk.delta, end="", flush=True)

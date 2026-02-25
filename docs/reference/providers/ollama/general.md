@@ -401,7 +401,7 @@ llm = Ollama(
   api_key=os.environ.get("OLLAMA_API_KEY"),
   request_timeout=180
 )
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     print(chunk.message.content, end="", flush=True)
 ```
 

@@ -245,20 +245,12 @@ from serapeum.core.tools import CallableTool
 from serapeum.core.llms.orchestrators import ToolOrchestratingLLM
 from serapeum.core.prompts import PromptTemplate
 
-# Define tools using Pydantic models
-class WeatherInput(BaseModel):
-    location: str = Field(description="City name, e.g., 'San Francisco'")
-    unit: str = Field(description="Temperature unit: 'celsius' or 'fahrenheit'")
+# Define tools
 
 def get_weather(location: str, unit: str = "celsius") -> str:
     """Get current weather for a location."""
     # Simulated weather data
     return f"The weather in {location} is 72°{unit[0].upper()} and sunny."
-
-class CalculatorInput(BaseModel):
-    operation: str = Field(description="Math operation: add, subtract, multiply, divide")
-    a: float = Field(description="First number")
-    b: float = Field(description="Second number")
 
 def calculate(operation: str, a: float, b: float) -> float:
     """Perform basic math operations."""
@@ -270,40 +262,33 @@ def calculate(operation: str, a: float, b: float) -> float:
     }
     return ops.get(operation, 0)
 
-# Create tools
-weather_tool = CallableTool.from_function(
-    # WeatherInput,
-    get_weather,
-    # name="get_weather",
-    # description="Get current weather for a location"
-)
-
-calculator_tool = CallableTool.from_function(
-    # CalculatorInput,
-    calculate,
-    # name="calculate",
-    # description="Perform basic arithmetic operations"
-)
-
 # Create orchestrator with tools
 llm = Ollama(model="llama3.1", request_timeout=120, json_mode=True)
 
 orchestrator = ToolOrchestratingLLM(
     llm=llm,
     prompt=PromptTemplate("Answer the user's question: {query}"),
-    schema=[weather_tool, calculator_tool],
+    schema=calculate,
 )
 
 # Use tools via natural language
 result = orchestrator(query="What's 15 multiplied by 8?")
 print(result)  # Uses calculator_tool automatically
 
+
+orchestrator = ToolOrchestratingLLM(
+    llm=llm,
+    prompt=PromptTemplate("Answer the user's question: {query}"),
+    schema=get_weather,
+)
 result = orchestrator(query="What's the weather in Paris?")
 print(result)  # Uses weather_tool automatically
 
 # You can also use tools directly with the base LLM
 from serapeum.core.llms import Message, MessageRole
+from serapeum.core.tools import CallableTool
 
+calculator_tool = CallableTool.from_function(calculate)
 messages = [Message(role=MessageRole.USER, content="What's 25 + 17?")]
 response = llm.chat_with_tools(
     tools=[calculator_tool],

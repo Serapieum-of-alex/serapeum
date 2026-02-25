@@ -143,34 +143,32 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         return Metadata(is_function_calling_model=True, model_name="mock_fc")
 
     # ---- Base abstract methods (minimal stubs) ----
-    def chat(self, messages: Sequence[Message], stream, **kwargs: Any) -> ChatResponse:  # type: ignore[override]
+    def chat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | Generator[ChatResponse, None, None]:  # type: ignore[override]
+        if stream:
+            return self.stream_chat(messages, **kwargs)
         return ChatResponse(message=Message.from_str("ok"))
 
     def complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
 
     def stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator[ChatResponse, None, None]:  # type: ignore[override]
-        def gen() -> Generator[ChatResponse, None, None]:
-            yield ChatResponse(message=Message.from_str("chunk-1"))
-            yield ChatResponse(message=Message.from_str("chunk-2"))
-
-        return gen()
+        yield ChatResponse(message=Message.from_str("chunk-1"))
+        yield ChatResponse(message=Message.from_str("chunk-2"))
 
     def stream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
 
-    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:  # type: ignore[override]
+    async def achat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | AsyncGenerator[ChatResponse, None]:  # type: ignore[override]
+        if stream:
+            return self.astream_chat(messages, **kwargs)
         return ChatResponse(message=Message.from_str("ok"))
 
     async def acomplete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
 
     async def astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> AsyncGenerator[ChatResponse, None]:  # type: ignore[override]
-        async def agen() -> AsyncGenerator[ChatResponse, None]:
-            yield ChatResponse(message=Message.from_str("chunk-1"))
-            yield ChatResponse(message=Message.from_str("chunk-2"))
-
-        return agen()
+        yield ChatResponse(message=Message.from_str("chunk-1"))
+        yield ChatResponse(message=Message.from_str("chunk-2"))
 
     async def astream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError

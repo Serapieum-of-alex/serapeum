@@ -1246,9 +1246,12 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             "all_tool_calls": [],
         }
 
-        async for r in response:
-            if r["message"]["content"] is not None:
-                yield self._parse_tool_call_response(tools_dict, r)
+        async def gen() -> ChatResponseAsyncGen:
+            async for r in response:
+                if r["message"]["content"] is not None:
+                    yield self._parse_tool_call_response(tools_dict, r)
+
+        return gen()
 
     @overload
     def parse(

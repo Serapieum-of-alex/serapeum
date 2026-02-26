@@ -1,0 +1,26 @@
+%% Sequence Diagram: Function Calling / Tool Execution
+sequenceDiagram
+  autonumber
+  actor User
+  participant F as FunctionCallingLLM
+  participant O as Ollama
+  participant T as Tools
+  participant A as AgentChatResponse
+
+  User->>F: invoke_callable(tools, user_msg, chat_history, ...)
+  activate F
+  F->>F: _prepare_chat_with_tools()
+  F->>O: chat(messages with tool schemas)
+  O-->>F: ChatResponse (with tool_calls)
+  F->>F: _validate_chat_with_tools_response()
+  F->>F: get_tool_calls_from_response()
+  par execute tools (maybe parallel)
+    F->>T: __call__(ToolCallArguments)
+    T-->>F: ToolOutput
+  and
+    F->>T: __call__(...)
+    T-->>F: ToolOutput
+  end
+  F->>A: build AgentChatResponse(tool_outputs, model_response)
+  A-->>User: AgentChatResponse
+  deactivate F

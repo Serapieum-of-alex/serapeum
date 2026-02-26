@@ -1,8 +1,0 @@
-%% State Machine: Tool Execution Lifecycle
-stateDiagram-v2
-  [*] --> Created
-  Created --> Prepared: validate metadata and inputs
-  Prepared --> Executing: start call
-  Executing --> Completed: success
-  Executing --> Failed: exception or error
-  Failed --> Completed: error handled optional

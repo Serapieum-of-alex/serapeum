@@ -279,15 +279,16 @@ The system handles:
 
 ### Structured Outputs
 
-Use `LLM.structured_predict()` to force structured outputs:
+Use `LLM.parse()` to force structured outputs:
 
 ```python
 from pydantic import BaseModel
 
+
 class Output(BaseModel):
     field: str
 
-result = llm.structured_predict("prompt", output_schema=Output)
+result = llm.parse("prompt", output_schema=Output)
 ```
 
 Supports:
@@ -353,5 +354,3 @@ Key decisions documented in `docs/architecture/`:
 - Only create documentation files when explicitly requested or when adding new features that require user-facing docs
 - Keep responses concise and actionable
 - Focus on code changes and direct answers rather than creating auxiliary markdown files
-
-

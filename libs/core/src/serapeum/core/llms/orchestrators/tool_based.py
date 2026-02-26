@@ -6,12 +6,10 @@ from typing import (
     Any,
     AsyncGenerator,
     Callable,
-    Dict,
     Generator,
-    List,
-    Optional,
+    Literal,
     Type,
-    Union,
+    overload,
 )
 
 from pydantic import BaseModel
@@ -38,13 +36,13 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     produce structured data. It handles prompt formatting, invoking the LLM
     (sync/async), optional streaming, and parsing the tool outputs.
 
-    The class automatically detects the type of ``output_cls`` and uses the
+    The class automatically detects the type of ``schema`` and uses the
     appropriate factory method:
     - Pydantic models → ``CallableTool.from_model()``
     - Regular functions → ``CallableTool.from_function()``
 
     Attributes:
-        _output_cls (Union[Type[Model], Callable]): Either a Pydantic model class
+        _schema (Union[Type[Model], Callable]): Either a Pydantic model class
             or a callable function defining the expected output structure.
         _llm (FunctionCallingLLM): The language model with function-calling
             support. Must advertise support via ``llm.metadata.is_function_calling_model``.
@@ -74,7 +72,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         ...     value: int
         >>> llm = Ollama(model='llama3.1')
         >>> tools_llm = ToolOrchestratingLLM(
-        ...     output_cls=Output,
+        ...     schema=Output,
         ...     prompt='You are a helpful assistant.',
         ...     llm=llm,
         ... )
@@ -86,18 +84,20 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
     def __init__(
         self,
-        output_cls: Union[Type[Model], Callable[..., Any]],
-        prompt: Union[BasePromptTemplate, str],
-        llm: Optional[FunctionCallingLLM] = None,
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        *,
+        schema: Type[Model] | Callable[..., Any],
+        prompt: BasePromptTemplate | str,
+        llm: FunctionCallingLLM | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
         allow_parallel_tool_calls: bool = False,
         verbose: bool = False,
     ) -> None:
         """Initialize the ToolOrchestratingLLM instance.
 
         Args:
-            output_cls (Union[Type[Model], Callable[..., Any]]): Either a Pydantic
+            schema (Union[Type[Model], Callable[..., Any]]): Either a Pydantic
                 model class or a callable function defining the expected output.
+                Despite the name, this accepts plain callables (not only classes).
                 If a Pydantic model is provided, it will be converted into a tool via
                 ``CallableTool.from_model()``. If a callable function is provided,
                 it will be converted via ``CallableTool.from_function()``.
@@ -117,7 +117,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         Raises:
             AssertionError: If no LLM is provided and ``Configs.llm`` is not set.
             ValueError: If the provided LLM does not support function calling.
-            TypeError: If output_cls is neither a Pydantic model nor a callable.
+            TypeError: If schema is neither a Pydantic model nor a callable.
 
         See Also:
             - Configs: Global configuration for default LLM settings
@@ -133,11 +133,11 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> class Output(BaseModel):
             ...     value: int
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     Output,
-            ...     'Prompt here',
-            ...     Ollama(model='llama3.1'),
+            ...     schema=Output,
+            ...     prompt='Prompt here',
+            ...     llm=Ollama(model='llama3.1'),
             ... )
-            >>> tools_llm.output_cls is Output
+            >>> tools_llm.schema is Output
             True
 
             ```
@@ -150,50 +150,105 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             ...     '''Calculate the sum of two numbers.'''
             ...     return {'result': a + b}
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     calculate_sum,
-            ...     'Calculate the sum of {x} and {y}',
-            ...     Ollama(model='llama3.1'),
+            ...     schema=calculate_sum,
+            ...     prompt='Calculate the sum of {x} and {y}',
+            ...     llm=Ollama(model='llama3.1'),
             ... )
-            >>> callable(tools_llm.output_cls)
+            >>> callable(tools_llm.schema)
             True
 
             ```
         """
-        self._output_cls = output_cls
+        self._schema = self._validate_schema(schema)
         self._llm = self._validate_llm(llm)
         self._prompt = self._validate_prompt(prompt)
         self._verbose = verbose
         self._allow_parallel_tool_calls = allow_parallel_tool_calls
         self._tool_choice = tool_choice
 
-    def _create_tool(self) -> CallableTool:
-        """Create a CallableTool from the output_cls.
+    @staticmethod
+    def _validate_schema(
+        schema: Type[Model] | Callable[..., Any],
+    ) -> Type[Model] | Callable[..., Any]:
+        """Validate that schema is a Pydantic model class or a callable.
 
-        Automatically detects whether output_cls is a Pydantic model or a callable
+        Args:
+            schema (Union[Type[Model], Callable[..., Any]]): The value to validate.
+
+        Returns:
+            Union[Type[Model], Callable[..., Any]]: The validated schema unchanged.
+
+        Raises:
+            TypeError: If schema is neither a Pydantic BaseModel subclass nor a callable.
+
+        Examples:
+        - Accept a Pydantic model class.
+            ```python
+            >>> from pydantic import BaseModel
+            >>> from serapeum.core.llms import ToolOrchestratingLLM
+            >>> class Out(BaseModel):
+            ...     x: int
+            >>> ToolOrchestratingLLM._validate_schema(Out) is Out
+            True
+
+            ```
+        - Accept a plain callable.
+            ```python
+            >>> from serapeum.core.llms import ToolOrchestratingLLM
+            >>> def fn(x: int) -> dict:
+            ...     return {"x": x}
+            >>> ToolOrchestratingLLM._validate_schema(fn) is fn
+            True
+
+            ```
+        - Reject non-callable, non-model values.
+            ```python
+            >>> from serapeum.core.llms import ToolOrchestratingLLM
+            >>> ToolOrchestratingLLM._validate_schema(42)
+            Traceback (most recent call last):
+            ...
+            TypeError: schema must be either a Pydantic BaseModel subclass or a callable function. Got <class 'int'>
+
+            ```
+        """
+        if not (
+            (isinstance(schema, type) and issubclass(schema, BaseModel))
+            or callable(schema)
+        ):
+            raise TypeError(
+                "schema must be either a Pydantic BaseModel subclass or a callable function. "
+                f"Got {type(schema)}"
+            )
+        return schema
+
+    def _create_tool(self) -> CallableTool:
+        """Create a CallableTool from the schema.
+
+        Automatically detects whether schema is a Pydantic model or a callable
         function and uses the appropriate factory method.
 
         Returns:
-            CallableTool: Tool instance created from output_cls.
+            CallableTool: Tool instance created from schema.
 
         Raises:
-            TypeError: If output_cls is neither a Pydantic model nor a callable.
+            TypeError: If schema is neither a Pydantic model nor a callable.
         """
         # Check if it's a Pydantic model (class that inherits from BaseModel)
-        if isinstance(self._output_cls, type) and issubclass(
-            self._output_cls, BaseModel
+        if isinstance(self._schema, type) and issubclass(
+            self._schema, BaseModel
         ):
-            return CallableTool.from_model(self._output_cls)
+            return CallableTool.from_model(self._schema)
         # Check if it's a callable (function, method, or callable class)
-        elif callable(self._output_cls):
-            return CallableTool.from_function(self._output_cls)
+        elif callable(self._schema):
+            return CallableTool.from_function(self._schema)
         else:
             raise TypeError(
-                f"output_cls must be either a Pydantic BaseModel subclass or a callable function. "
-                f"Got {type(self._output_cls)}"
+                f"schema must be either a Pydantic BaseModel subclass or a callable function. "
+                f"Got {type(self._schema)}"
             )
 
     @staticmethod
-    def _validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
+    def _validate_prompt(prompt: BasePromptTemplate | str) -> BasePromptTemplate:
         """Validate and normalize a prompt input.
 
         If a plain string is provided, it is wrapped in a ``PromptTemplate``.
@@ -278,26 +333,37 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         return llm
 
     @property
-    def output_cls(self) -> Type[BaseModel]:
-        """Get the output Pydantic model class.
+    def schema(self) -> Type[BaseModel] | Callable[..., Any]:
+        """Get the output class or callable used to define the expected structure.
 
         Returns:
-            Type[BaseModel]: The Pydantic model class used for structured output.
+            Union[Type[BaseModel], Callable[..., Any]]: The Pydantic model class or
+            callable function passed at construction time.
 
         Examples:
-        - Inspect the configured output class.
+        - Inspect the configured output class (Pydantic model).
             ```python
             >>> from pydantic import BaseModel
             >>> from serapeum.ollama import Ollama
             >>> class Out(BaseModel):
             ...     x: int
-            >>> tools_llm = ToolOrchestratingLLM(Out, 'prompt', Ollama(model='llama3.1'))
-            >>> tools_llm.output_cls is Out
+            >>> tools_llm = ToolOrchestratingLLM(schema=Out, prompt='prompt', llm=Ollama(model='llama3.1'))
+            >>> tools_llm.schema is Out
+            True
+
+            ```
+        - Inspect the configured output class (callable function).
+            ```python
+            >>> from serapeum.ollama import Ollama
+            >>> def fn(x: int) -> dict:
+            ...     return {"x": x}
+            >>> tools_llm = ToolOrchestratingLLM(schema=fn, prompt='prompt', llm=Ollama(model='llama3.1'))
+            >>> tools_llm.schema is fn
             True
 
             ```
         """
-        return self._output_cls
+        return self._schema
 
     @property
     def prompt(self) -> BasePromptTemplate:
@@ -313,7 +379,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.core.prompts.base import PromptTemplate
             >>> from serapeum.ollama import Ollama
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=type('M', (BaseModel,), {}),
+            ...     schema=type('M', (BaseModel,), {}),
             ...     prompt='Hi',
             ...     llm=Ollama(model='llama3.1'),
             ... )
@@ -338,7 +404,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.core.prompts.base import PromptTemplate
             >>> from serapeum.ollama import Ollama
             >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=type('M', (BaseModel,), {}),
+            ...     schema=type('M', (BaseModel,), {}),
             ...     prompt='Hi',
             ...     llm=Ollama(model='llama3.1'),
             ... )
@@ -350,12 +416,31 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         """
         self._prompt = prompt
 
+    @overload
     def __call__(
         self,
         *args: Any,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        stream: Literal[False] = ...,
+        llm_kwargs: dict[str, Any] | None = ...,
         **kwargs: Any,
-    ) -> Union[BaseModel, List[BaseModel]]:
+    ) -> BaseModel | list[BaseModel]: ...
+
+    @overload
+    def __call__(
+        self,
+        *args: Any,
+        stream: Literal[True],
+        llm_kwargs: dict[str, Any] | None = ...,
+        **kwargs: Any,
+    ) -> Generator[Model | list[Model], None, None]: ...
+
+    def __call__(
+        self,
+        *args: Any,
+        stream: bool = False,
+        llm_kwargs: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> BaseModel | list[BaseModel] | Generator[Model | list[Model], None, None]:
         """Execute the program to generate structured output.
 
         Formats the prompt with provided kwargs, invokes the LLM with the function
@@ -363,67 +448,34 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
 
         Args:
             *args (Any): Positional arguments (currently unused).
+            stream (bool): If True, returns a generator yielding incremental results.
+                Defaults to False.
             llm_kwargs (Optional[Dict[str, Any]]): Additional keyword arguments to
                 pass to the LLM (e.g., temperature, max_tokens). Defaults to ``None``.
             **kwargs (Any): Keyword arguments used to format the prompt template.
-                These should match variables in the prompt.
 
         Returns:
-            BaseModel: A single Pydantic model instance when parallel calls are
-            disabled, or a list of Pydantic models when enabled.
+            Union[BaseModel, List[BaseModel]] when stream=False;
+            Generator[Union[Model, List[Model]], None, None] when stream=True.
 
         Raises:
-            ValueError: If the underlying LLM raises an error due to invalid
-                arguments or internal failures.
+            ValueError: If stream=True and the LLM does not support function calling.
 
         See Also:
             - acall: Async version of this method
-            - stream_call: Streaming version for incremental results
-
-        Examples:
-        - Run a single structured prediction with a real LLM (Ollama).
-            ```python
-            >>> from pydantic import BaseModel
-            >>> from serapeum.ollama import Ollama
-            >>> class Person(BaseModel):
-            ...     name: str
-            ...     age: int
-            >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=Person,
-            ...     prompt="Extract the person's name and age from the following text: {text}",
-            ...     llm=Ollama(model='llama3.1', request_timeout=80),
-            ... ) # doctest: +SKIP
-            >>> result = tools_llm(text='My name is Alice and I am 30 years old.')  # doctest: +SKIP
-            >>> print(result) # doctest: +SKIP
-            name='Alice' age=30
-
-            ```
-
-        - Enable parallel tool-calls to receive multiple objects when the model chooses to call the tool more than once.
-            ```python
-            >>> from pydantic import BaseModel
-            >>> from serapeum.ollama import Ollama
-            >>> class Item(BaseModel):
-            ...     name: str
-            >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=Item,
-            ...     prompt='List three fruit names as separate tool calls.',
-            ...     llm=Ollama(model='llama3.1', request_timeout=80),
-            ...     allow_parallel_tool_calls=True,
-            ... ) # doctest: +SKIP
-            >>> results = tools_llm()  # doctest: +SKIP
-            >>> print(results) # doctest: +SKIP)
-            [Item(name='Apple'), Item(name='Banana'), Item(name='Orange')]
-
-            ```
         """
+        if stream:
+            return self._stream_call(*args, llm_kwargs=llm_kwargs, **kwargs)
         llm_kwargs = llm_kwargs or {}
         tool = self._create_tool()
         # convert the prompt into messages
         messages = self.prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
-        agent_response: AgentChatResponse = self._llm.predict_and_call(
+        if self._tool_choice is not None:
+            llm_kwargs.setdefault("tool_choice", self._tool_choice)
+
+        agent_response: AgentChatResponse = self._llm.invoke_callable(
             [tool],
             chat_history=messages,
             verbose=self._verbose,
@@ -434,56 +486,101 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
         )
 
-    async def acall(
-        self,
-        *args: Any,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
-        **kwargs: Any,
-    ) -> Union[BaseModel, List[BaseModel]]:
-        """Asynchronously execute the program to generate structured output.
+    def _stream_call(
+        self, *args: Any, llm_kwargs: dict[str, Any] | None = None, **kwargs: Any
+    ) -> Generator[Model | list[Model], None, None]:
+        """Internal streaming implementation — use ``__call__(stream=True)``."""
+        if not isinstance(self._llm, FunctionCallingLLM):
+            raise ValueError("Streaming is only supported for FunctionCallingLLM instances.")
 
-        Async version of ``__call__``. Formats the prompt with provided kwargs,
-        asynchronously invokes the LLM with the function-calling tool, and parses
-        the response into structured Pydantic model(s).
-
-        Args:
-            *args (Any): Positional arguments (currently unused).
-            llm_kwargs (Optional[Dict[str, Any]]): Additional keyword arguments to
-                pass to the LLM (e.g., temperature, max_tokens). Defaults to ``None``.
-            **kwargs (Any): Keyword arguments used to format the prompt template.
-                These should match variables in the prompt.
-
-        Returns:
-            BaseModel: A single Pydantic model instance when parallel calls are
-            disabled, or a list of Pydantic models when enabled.
-
-        See Also:
-            - __call__: Synchronous version of this method
-            - astream_call: Async streaming version for incremental results
-
-        Examples:
-        - Typical async usage with a real LLM (Ollama).
-            ```python
-            >>> import asyncio
-            >>> from pydantic import BaseModel
-            >>> from serapeum.ollama import Ollama
-            >>> class Out(BaseModel):
-            ...     value: int
-            >>> tools_llm = ToolOrchestratingLLM(
-            ...     Out,
-            ...     'Return an integer value for {thing}',
-            ...     Ollama(model='llama3.1', request_timeout=80)
-            ... )
-            >>> result = asyncio.run(tools_llm.acall(thing='a number'))  # doctest: +SKIP
-            >>> result  # doctest: +SKIP
-            Out(value=123)
-
-            ```
-        """
         llm_kwargs = llm_kwargs or {}
         tool = self._create_tool()
 
-        agent_response = await self._llm.apredict_and_call(
+        if self._tool_choice is not None:
+            llm_kwargs.setdefault("tool_choice", self._tool_choice)
+
+        messages = self._prompt.format_messages(**kwargs)
+        messages = self._llm._extend_messages(messages)
+
+        chat_response_gen = self._llm.generate_tool_calls(
+            [tool],
+            chat_history=messages,
+            verbose=self._verbose,
+            allow_parallel_tool_calls=self._allow_parallel_tool_calls,
+            stream=True,
+            **llm_kwargs,
+        )
+
+        cur_objects = None
+        processor = StreamingObjectProcessor(
+            output_cls=self._schema,
+            flexible_mode=True,
+            allow_parallel_tool_calls=self._allow_parallel_tool_calls,
+            llm=self._llm,
+        )
+        for partial_resp in chat_response_gen:
+            try:
+                objects = processor.process(partial_resp, cur_objects)
+                cur_objects = objects if isinstance(objects, list) else [objects]
+                yield objects
+            except Exception as e:
+                _logger.warning(f"Failed to parse streaming response: {e}")
+                continue
+
+    @overload
+    async def acall(
+        self,
+        *args: Any,
+        stream: Literal[False] = ...,
+        llm_kwargs: dict[str, Any] | None = ...,
+        **kwargs: Any,
+    ) -> BaseModel | list[BaseModel]: ...
+
+    @overload
+    async def acall(
+        self,
+        *args: Any,
+        stream: Literal[True],
+        llm_kwargs: dict[str, Any] | None = ...,
+        **kwargs: Any,
+    ) -> AsyncGenerator[Model | list[Model], None]: ...
+
+    async def acall(
+        self,
+        *args: Any,
+        stream: bool = False,
+        llm_kwargs: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> BaseModel | list[BaseModel] | AsyncGenerator[Model | list[Model], None]:
+        """Asynchronously execute the program to generate structured output.
+
+        Args:
+            *args (Any): Positional arguments (currently unused).
+            stream (bool): If True, returns an async generator yielding incremental
+                results. Defaults to False.
+            llm_kwargs (Optional[Dict[str, Any]]): Additional keyword arguments to
+                pass to the LLM. Defaults to ``None``.
+            **kwargs (Any): Keyword arguments used to format the prompt template.
+
+        Returns:
+            Union[BaseModel, List[BaseModel]] when stream=False;
+            AsyncGenerator[Union[Model, List[Model]], None] when stream=True.
+
+        Raises:
+            ValueError: If stream=True and the LLM does not support function calling.
+
+        See Also:
+            - __call__: Synchronous version of this method
+        """
+        if stream:
+            return await self._astream_call(*args, llm_kwargs=llm_kwargs, **kwargs)
+        llm_kwargs = llm_kwargs or {}
+        tool = self._create_tool()
+
+        if self._tool_choice is not None:
+            llm_kwargs.setdefault("tool_choice", self._tool_choice)
+
+        agent_response = await self._llm.ainvoke_callable(
             [tool],
             chat_history=self._prompt.format_messages(**kwargs),
             verbose=self._verbose,
@@ -494,187 +591,42 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
         )
 
-    def stream_call(
-        self, *args: Any, llm_kwargs: Optional[Dict[str, Any]] = None, **kwargs: Any
-    ) -> Generator[Union[Model, List[Model]], None, None]:
-        """Stream structured output generation with incremental updates.
-
-        Returns a generator that yields progressively refined structured objects as
-        the LLM generates its response. Each item is a partial or complete instance
-        of the output model, enabling progressive rendering in UIs.
-
-        Args:
-            *args (Any): Positional arguments (currently unused).
-            llm_kwargs (Optional[Dict[str, Any]]): Additional keyword arguments to
-                pass to the LLM (e.g., temperature, max_tokens). Defaults to ``None``.
-            **kwargs (Any): Keyword arguments used to format the prompt template.
-
-        Yields:
-            Union[Model, List[Model]]: Progressive updates of the structured output.
-            When ``allow_parallel_tool_calls`` is True, a list of models may be yielded.
-
-        Raises:
-            ValueError: If ``self._llm`` is not an instance of ``FunctionCallingLLM``.
-
-        Warns:
-            Logs a warning when parsing streaming responses fails and continues with
-            the next chunk.
-
-        See Also:
-            - __call__: Non-streaming synchronous version
-            - astream_call: Async streaming version
-
-        Examples:
-        - Iterate over streaming results with a real LLM (Ollama). Requires an Ollama server and a pulled model.
-            ```python
-            >>> from pydantic import BaseModel
-            >>> from serapeum.ollama import Ollama
-            >>> class Number(BaseModel):
-            ...     n: int
-            >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=Number,
-            ...     prompt='Stream the numbers 1, 2, and 3 as separate tool calls.',
-            ...     llm=Ollama(model='llama3.1', request_timeout=80),
-            ... )
-            >>> for obj in tools_llm.stream_call():  # doctest: +SKIP
-            >>>      print(obj)
-            n=1
-            Multiple outputs found, returning first one.
-            If you want to return all outputs, set allow_parallel_tool_calls=True.
-            n=1
-            Multiple outputs found, returning first one.
-            If you want to return all outputs, set allow_parallel_tool_calls=True.
-            Multiple outputs found, returning first one.
-            If you want to return all outputs, set allow_parallel_tool_calls=True.
-            n=1
-            n=1
-
-            ```
-        """
+    async def _astream_call(
+        self, *args: Any, llm_kwargs: dict[str, Any] | None = None, **kwargs: Any
+    ) -> AsyncGenerator[Model | list[Model], None]:
+        """Internal async streaming implementation — use ``acall(stream=True)``."""
         if not isinstance(self._llm, FunctionCallingLLM):
-            raise ValueError("stream_call is only supported for LLMs.")
+            raise ValueError("Streaming is only supported for FunctionCallingLLM instances.")
 
-        llm_kwargs = llm_kwargs or {}
         tool = self._create_tool()
+        llm_kwargs = llm_kwargs or {}
+
+        if self._tool_choice is not None:
+            llm_kwargs.setdefault("tool_choice", self._tool_choice)
 
         messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
-        chat_response_gen = self._llm.stream_chat_with_tools(
+        chat_response_gen = await self._llm.agenerate_tool_calls(
             [tool],
             chat_history=messages,
             verbose=self._verbose,
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
+            stream=True,
             **llm_kwargs,
         )
-
-        cur_objects = None
-        for partial_resp in chat_response_gen:
-            try:
-                processor = StreamingObjectProcessor(
-                    output_cls=self._output_cls,
-                    flexible_mode=True,
-                    allow_parallel_tool_calls=self._allow_parallel_tool_calls,
-                    llm=self._llm,
-                )
-                objects = processor.process(partial_resp, cur_objects)
-
-                cur_objects = objects if isinstance(objects, list) else [objects]
-                yield objects
-            except Exception as e:
-                _logger.warning(f"Failed to parse streaming response: {e}")
-                continue
-
-    async def astream_call(
-        self, *args: Any, llm_kwargs: Optional[Dict[str, Any]] = None, **kwargs: Any
-    ) -> AsyncGenerator[Union[Model, List[Model]], None]:
-        """Asynchronously stream structured output generation with incremental updates.
-
-        Async counterpart to ``stream_call``. Yields progressively refined structured
-        objects as the LLM generates its response.
-
-        Args:
-            *args (Any): Positional arguments (currently unused).
-            llm_kwargs (Optional[Dict[str, Any]]): Additional keyword arguments to
-                pass to the LLM (e.g., temperature, max_tokens). Defaults to ``None``.
-            **kwargs (Any): Keyword arguments used to format the prompt template.
-
-        Returns:
-            AsyncGenerator[Union[Model, List[Model]], None]:
-                An async generator that yields progressive updates of the structured
-                output. Must be awaited before iteration.
-                When ``allow_parallel_tool_calls`` is True,
-                a list of models may be yielded.
-
-        Raises:
-            ValueError: If ``self._llm`` is not a ``FunctionCallingLLM`` instance.
-
-        Warns:
-            Logs a warning when parsing streaming responses fails and continues with
-            the next chunk.
-
-        See Also:
-            - acall: Non-streaming async version
-            - stream_call: Synchronous streaming version
-
-        Examples:
-        - Consume async streaming results with a real LLM (Ollama). Requires an Ollama server and a pulled model.
-            ```python
-            >>> import asyncio
-            >>> from pydantic import BaseModel
-            >>> from serapeum.ollama import Ollama
-            >>> class Number(BaseModel):
-            ...     n: int
-            >>> tools_llm = ToolOrchestratingLLM(
-            ...     output_cls=Number,
-            ...     prompt='Stream the numbers 1, 2, and 3 as separate tool calls.',
-            ...     llm=Ollama(model='llama3.1', request_timeout=80),
-            ... )
-            >>> async def consume():  # doctest: +SKIP
-            >>>     async for obj in await tools_llm.astream_call():  # doctest: +SKIP
-            >>>         print(obj)  # doctest: +SKIP
-            >>> asyncio.run(consume())  # doctest: +SKIP
-            n=1
-            Multiple outputs found, returning first one.
-            If you want to return all outputs, set allow_parallel_tool_calls=True.
-            n=1
-            Multiple outputs found, returning first one.
-            If you want to return all outputs, set allow_parallel_tool_calls=True.
-            Multiple outputs found, returning first one.
-            If you want to return all outputs, set allow_parallel_tool_calls=True.
-            n=1
-            n=1
-
-            ```
-        """
-        if not isinstance(self._llm, FunctionCallingLLM):
-            raise ValueError("stream_call is only supported for LLMs.")
-
-        tool = self._create_tool()
-
-        messages = self._prompt.format_messages(**kwargs)
-        messages = self._llm._extend_messages(messages)
-
-        chat_response_gen = await self._llm.astream_chat_with_tools(
-            [tool],
-            chat_history=messages,
-            verbose=self._verbose,
+        processor = StreamingObjectProcessor(
+            output_cls=self._schema,
+            flexible_mode=True,
             allow_parallel_tool_calls=self._allow_parallel_tool_calls,
-            **(llm_kwargs or {}),
+            llm=self._llm,
         )
 
-        async def gen() -> AsyncGenerator[Union[Model, List[Model]], None]:
+        async def gen() -> AsyncGenerator[Model | list[Model], None]:
             cur_objects = None
             async for partial_resp in chat_response_gen:
                 try:
-                    processor = StreamingObjectProcessor(
-                        output_cls=self._output_cls,
-                        flexible_mode=True,
-                        allow_parallel_tool_calls=self._allow_parallel_tool_calls,
-                        llm=self._llm,
-                    )
                     objects = processor.process(partial_resp, cur_objects)
-
                     cur_objects = objects if isinstance(objects, list) else [objects]
                     yield objects
                 except Exception as e:

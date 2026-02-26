@@ -74,21 +74,6 @@ class CompletionStubLLM(LLM):
         # return uppercase to make transformations visible
         return CompletionResponse(text=prompt.upper(), delta=prompt.upper())
 
-    def stream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseGen:
-        raise NotImplementedError()
-
-    def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseGen:
-        def gen() -> CompletionResponseGen:
-            # yield delta pieces deterministically
-            yield CompletionResponse(text=prompt, delta=prompt[:1])
-            yield CompletionResponse(text=prompt, delta=prompt[1:])
-
-        return gen()
-
     # -- async
     async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         raise NotImplementedError()
@@ -97,20 +82,6 @@ class CompletionStubLLM(LLM):
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
         return CompletionResponse(text=prompt[::-1], delta=prompt[::-1])
-
-    async def astream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseAsyncGen:
-        raise NotImplementedError()
-
-    async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseAsyncGen:
-        async def agen() -> CompletionResponseAsyncGen:
-            yield CompletionResponse(text=prompt, delta=prompt[:1])
-            yield CompletionResponse(text=prompt, delta=prompt[1:])
-
-        return agen()
 
 
 class ChatStubLLM(LLM):
@@ -125,7 +96,19 @@ class ChatStubLLM(LLM):
         return Metadata.model_construct(is_chat_model=True)
 
     # -- sync
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+    def chat(
+        self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
+    ) -> ChatResponse | ChatResponseGen:
+        if stream:
+            def gen() -> ChatResponseGen:
+                yield ChatResponse(
+                    message=Message(content="ok", role=MessageRole.ASSISTANT), delta="o"
+                )
+                yield ChatResponse(
+                    message=Message(content="ok", role=MessageRole.ASSISTANT), delta="k"
+                )
+
+            return gen()
         return ChatResponse(message=Message(content="pong", role=MessageRole.ASSISTANT))
 
     def complete(
@@ -133,49 +116,25 @@ class ChatStubLLM(LLM):
     ) -> CompletionResponse:
         raise NotImplementedError()
 
-    def stream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseGen:
-        def gen() -> ChatResponseGen:
-            yield ChatResponse(
-                message=Message(content="ok", role=MessageRole.ASSISTANT), delta="o"
-            )
-            yield ChatResponse(
-                message=Message(content="ok", role=MessageRole.ASSISTANT), delta="k"
-            )
-
-        return gen()
-
-    def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseGen:
-        raise NotImplementedError()
-
     # -- async
-    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+    async def achat(
+        self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
+    ) -> ChatResponse | ChatResponseAsyncGen:
+        if stream:
+            async def agen() -> ChatResponseAsyncGen:
+                yield ChatResponse(
+                    message=Message(content="ok", role=MessageRole.ASSISTANT), delta="o"
+                )
+                yield ChatResponse(
+                    message=Message(content="ok", role=MessageRole.ASSISTANT), delta="k"
+                )
+
+            return agen()
         return ChatResponse(message=Message(content="pong", role=MessageRole.ASSISTANT))
 
     async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
-        raise NotImplementedError()
-
-    async def astream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseAsyncGen:
-        async def agen() -> ChatResponseAsyncGen:
-            yield ChatResponse(
-                message=Message(content="ok", role=MessageRole.ASSISTANT), delta="o"
-            )
-            yield ChatResponse(
-                message=Message(content="ok", role=MessageRole.ASSISTANT), delta="k"
-            )
-
-        return agen()
-
-    async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseAsyncGen:
         raise NotImplementedError()
 
 
@@ -586,51 +545,51 @@ class TestGetPrompt:
 #     def _patch_program(self, monkeypatch, program):
 #         monkeypatch.setattr(
 #             "serapeum.core.llms/orchestrators.utils.get_program_for_llm",
-#             lambda output_cls, prompt, llm, pydantic_program_mode=None: program,
+#             lambda output_cls, prompt, llm, structured_output_mode=None: program,
 #         )
 #
 #     def test_structured_predict_sync(self, monkeypatch):
 #         """Inputs: fake program with .call returning Item(name+suffix).
-#         Expected: LLM.structured_predict returns a BaseModel of requested type from program.
+#         Expected: LLM.parse returns a BaseModel of requested type from program.
 #         Checks: returned model has expected value.
 #         """
 #         self._patch_program(monkeypatch, self.FakeProgram("!"))
 #         llm = CompletionStubLLM()
-#         item = llm.structured_predict(self.Item, PromptTemplate("{name}"), name="bob")
+#         item = llm.parse(self.Item, PromptTemplate("{name}"), name="bob")
 #         assert isinstance(item, BaseModel)
 #         assert item.value == "bob!"
 #
 #     @pytest.mark.asyncio
 #     async def test_astructured_predict_async(self, monkeypatch):
 #         """Inputs: fake program with .acall.
-#         Expected: astructured_predict awaits and returns BaseModel.
+#         Expected: aparse awaits and returns BaseModel.
 #         Checks: instance type and value.
 #         """
 #         self._patch_program(monkeypatch, self.FakeProgram("?"))
 #         llm = CompletionStubLLM()
-#         item = await llm.astructured_predict(self.Item, PromptTemplate("{name}"), name="zoe")
+#         item = await llm.aparse(self.Item, PromptTemplate("{name}"), name="zoe")
 #         assert isinstance(item, BaseModel)
 #         assert item.value == "zoe?"
 #
 #     def test_stream_structured_predict_sync(self, monkeypatch):
 #         """Inputs: fake program with .stream_call yielding Items and lists.
-#         Expected: stream_structured_predict yields BaseModel instances progressively.
+#         Expected: stream_parse yields BaseModel instances progressively.
 #         Checks: sequence of yielded .value fields.
 #         """
 #         self._patch_program(monkeypatch, self.FakeProgram())
 #         llm = CompletionStubLLM()
-#         values = [part.value for part in llm.stream_structured_predict(self.Item, PromptTemplate("{name}"), name="sig")]
+#         values = [part.value for part in llm.stream_parse(self.Item, PromptTemplate("{name}"), name="sig")]
 #         assert values == ["sig", "SIG"]
 #
 #     @pytest.mark.asyncio
 #     async def test_astructured_stream_async(self, monkeypatch):
 #         """Inputs: fake program with .astream_call yielding two items.
-#         Expected: astream_structured_predict returns async gen yielding two models.
+#         Expected: astream_parse returns async gen yielding two models.
 #         Checks: collected values match expected.
 #         """
 #         self._patch_program(monkeypatch, self.FakeProgram())
 #         llm = CompletionStubLLM()
-#         agen = await llm.astream_structured_predict(self.Item, PromptTemplate("{name}"), name="yo")
+#         agen = await llm.astream_parse(self.Item, PromptTemplate("{name}"), name="yo")
 #         values = [m.value async for m in agen]
 #         assert values == ["yo", "yo!"]
 #

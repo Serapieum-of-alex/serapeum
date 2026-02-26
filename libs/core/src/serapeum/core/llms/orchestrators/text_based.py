@@ -1,6 +1,6 @@
 """Structured text completion LLM runner for Pydantic models."""
-
-from typing import Any, Dict, Optional, Tuple, Type, Union
+from __future__ import annotations
+from typing import Any, Type
 
 from pydantic import BaseModel
 
@@ -16,6 +16,14 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
 
     The wrapper binds a prompt, an output parser, and an LLM together so every invocation returns a
     validated Pydantic model that matches the declared schema.
+
+    Note:
+        Despite the name, this class works with **both** chat/instruct models and raw
+        text-completion models. Internally it routes to ``llm.chat()`` when
+        ``llm.metadata.is_chat_model`` is True, and to ``llm.complete()`` otherwise.
+
+        Streaming is **not** supported by this class. If you need incremental results,
+        use ``ToolOrchestratingLLM`` with ``stream=True`` (i.e. ``tools_llm(stream=True, ...)``).
 
     Args:
         output_parser (Optional[BaseParser]): Parser used to coerce raw text into the target
@@ -87,10 +95,10 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
     def __init__(
         self,
         *,
-        prompt: Union[BasePromptTemplate, str],
-        output_parser: Optional[BaseParser] = None,
-        output_cls: Optional[Type[BaseModel]] = None,
-        llm: Optional[LLM] = None,
+        prompt: BasePromptTemplate | str,
+        output_parser: BaseParser | None = None,
+        output_cls: Type[BaseModel] | None = None,
+        llm: LLM | None = None,
         verbose: bool = False,
     ) -> None:
         """Initialize the structured completion pipeline.
@@ -160,7 +168,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         self._prompt.output_parser = self._output_parser
 
     @staticmethod
-    def _validate_prompt(prompt: Union[BasePromptTemplate, str]) -> BasePromptTemplate:
+    def _validate_prompt(prompt: BasePromptTemplate | str) -> BasePromptTemplate:
         """Validate that the provided prompt is usable by the program.
 
         Args:
@@ -261,7 +269,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
     @staticmethod
     def _validate_output_parser_cls(
         output_parser: BaseParser, output_cls: Type[BaseModel]
-    ) -> Tuple[BaseParser, Type[BaseModel]]:
+    ) -> tuple[BaseParser, Type[BaseModel]]:
         """Validate and normalize parser/schema configuration.
 
         Args:
@@ -346,7 +354,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         return output_parser, output_cls
 
     @property
-    def output_cls(self) -> Type[BaseModel]:
+    def schema(self) -> Type[BaseModel]:
         """Return the Pydantic model produced by this program.
 
         Returns:
@@ -465,7 +473,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
 
     def __call__(
         self,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> BaseModel:
@@ -555,7 +563,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
 
     async def acall(
         self,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> BaseModel:

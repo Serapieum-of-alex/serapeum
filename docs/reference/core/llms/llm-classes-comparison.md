@@ -10,7 +10,7 @@ Serapeum provides four distinct LLM classes organized across two architectural l
 ┌─────────────────────────────────────────────────────────────┐
 │  Orchestration Layer (High-level workflows)                 │
 ├─────────────────────────────────────────────────────────────┤
-│  ToolOrchestratingLLM       │  TextCompletionLLM             │
+│  ToolOrchestratingLLM       │  TextCompletionLLM            │
 │  (uses function calling)    │  (uses text parsing)          │
 │  - Converts models to tools │  - Binds prompt+parser+LLM    │
 │  - Executes tool calls      │  - Parses raw text output     │
@@ -22,7 +22,7 @@ Serapeum provides four distinct LLM classes organized across two architectural l
 ┌─────────────────────────────────────────────────────────────┐
 │  LLM Layer (Core abstractions)                              │
 ├─────────────────────────────────────────────────────────────┤
-│  FunctionCallingLLM         │  StructuredOutputLLM                 │
+│  FunctionCallingLLM         │  StructuredOutputLLM          │
 │  (base for providers)       │  (wrapper for structured IO)  │
 │  - Tool calling interface   │  - Forces Pydantic outputs    │
 │  - Provider implementations │  - Wraps any LLM              │
@@ -44,12 +44,10 @@ Provides the foundation for LLM providers that support function/tool calling. Th
 #### Key Features
 - Extends the base `LLM` class with tool-calling capabilities
 - Provides convenience methods for tool workflows:
-  - `chat_with_tools()` - Chat with function calling (sync)
-  - `achat_with_tools()` - Chat with function calling (async)
-  - `stream_chat_with_tools()` - Streaming chat with tools (sync)
-  - `astream_chat_with_tools()` - Streaming chat with tools (async)
-  - `predict_and_call()` - Predict and execute tool (sync)
-  - `apredict_and_call()` - Predict and execute tool (async)
+  - `generate_tool_calls(stream=False)` - Chat with function calling; pass `stream=True` for streaming (sync)
+  - `agenerate_tool_calls(stream=False)` - Chat with function calling; pass `stream=True` for streaming (async)
+  - `invoke_callable()` - Predict and execute tool (sync)
+  - `ainvoke_callable()` - Predict and execute tool (async)
   - `get_tool_calls_from_response()` - Extract tool calls from response
 - Abstract method `_prepare_chat_with_tools()` that providers must implement
 
@@ -93,9 +91,9 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 - Takes two inputs:
   - `llm`: Any LLM instance (base LLM, function-calling LLM, etc.)
   - `output_cls`: A Pydantic model class defining the output structure
-- Delegates to the underlying LLM's `structured_predict()` method
+- Delegates to the underlying LLM's `parse()` method
 - Converts all responses to JSON representations of the output model
-- Maintains the same interface as the base LLM (chat, stream_chat, etc.)
+- Maintains the same interface as the base LLM (`chat(stream=...)`, etc.)
 - Supports streaming structured outputs
 
 #### When to Use
@@ -105,10 +103,11 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 
 #### Example
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
 from serapeum.core.llms import StructuredOutputLLM
-from serapeum.core.base.llms.types import Message
+from serapeum.core.llms import Message
 
 class PersonInfo(BaseModel):
     name: str
@@ -116,7 +115,11 @@ class PersonInfo(BaseModel):
     occupation: str
 
 # Wrap an LLM to always return PersonInfo
-base_llm = Ollama(model="llama3.1", request_timeout=90)
+base_llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=90
+)
 structured_llm = StructuredOutputLLM(
     llm=base_llm,
     output_cls=PersonInfo
@@ -127,7 +130,7 @@ response = structured_llm.chat([
     Message(role="user", content="Tell me about Alice, a 30-year-old engineer")
 ])
 print(response.raw)
-PersonInfo(name='Alice', age=30, occupation='Engineer')
+# PersonInfo(name='Alice', age=30, occupation='Engineer')
 ```
 
 ---
@@ -149,7 +152,7 @@ High-level orchestrator that converts Pydantic models or Python functions into t
   - `prompt`: Template string or `BasePromptTemplate`
   - `llm`: A `FunctionCallingLLM` instance
 - **Advanced capabilities**:
-  - Streaming support via `stream_call()` and `astream_call()`
+  - Streaming support via `__call__(stream=True)` and `acall(stream=True)`
   - Parallel tool calls with `allow_parallel_tool_calls=True`
   - Custom tool selection with `tool_choice` parameter
 - **Sync and async**: Both `__call__()` and `acall()` methods
@@ -162,10 +165,13 @@ High-level orchestrator that converts Pydantic models or Python functions into t
 - You're using modern LLMs with function-calling support (GPT-4, Claude, Llama 3.1+)
 
 #### Example with Pydantic Model
+
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
+
 
 class WeatherInfo(BaseModel):
     """Weather information for a location."""
@@ -173,11 +179,15 @@ class WeatherInfo(BaseModel):
     temperature: float
     conditions: str
 
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY")
+)
 # Create orchestrator
 weather_extractor = ToolOrchestratingLLM(
-    output_cls=WeatherInfo,
+    schema=WeatherInfo,
     prompt="Extract weather information from: {text}",
-    llm=Ollama(model="llama3.1"),
+    llm=llm,
 )
 
 # Get structured output
@@ -185,35 +195,42 @@ result = weather_extractor(
     text="It's 72 degrees and sunny in San Francisco"
 )
 print(result)
-WeatherInfo(location='San Francisco', temperature=72.0, conditions='sunny')
+# WeatherInfo(location='San Francisco', temperature=72.0, conditions='sunny')
 ```
 
 #### Example with Function
+
 ```python
+import os
 from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
+
 
 def calculate_sum(a: int, b: int) -> dict:
     """Calculate the sum of two numbers."""
     return {"result": a + b}
 
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"))
 # Create orchestrator with function
 calculator = ToolOrchestratingLLM(
-    output_cls=calculate_sum,
+    schema=calculate_sum,
     prompt="Calculate the sum of {x} and {y}",
-    llm=Ollama(model="llama3.1"),
+    llm=llm,
 )
 
 result = calculator(x=5, y=3)
 print(result)
-{'result': 8}
+# {'result': 8}
 ```
 
 #### Example with Streaming
+
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
+
 
 class Story(BaseModel):
     title: str
@@ -221,13 +238,13 @@ class Story(BaseModel):
     genre: str
 
 story_generator = ToolOrchestratingLLM(
-    output_cls=Story,
+    schema=Story,
     prompt="Generate a short {genre} story",
-    llm=Ollama(model="llama3.1", request_timeout=90),
+    llm=Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=90),
 )
 
 # Stream partial results
-for partial_story in story_generator.stream_call(genre="sci-fi"):
+for partial_story in story_generator(genre="sci-fi", stream=True):
     print(partial_story)  # Progressively complete Story objects
 ```
 
@@ -258,6 +275,7 @@ Provides structured outputs by parsing raw text completions (without using funct
 
 #### Example
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
 from serapeum.core.output_parsers import PydanticParser
@@ -268,22 +286,24 @@ class Task(BaseModel):
     priority: int
     completed: bool
 
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=90)
 # Create text completion LLM
 task_extractor = TextCompletionLLM(
     output_parser=PydanticParser(output_cls=Task),
-    prompt="Extract task information from: {text}. Return as JSON.",
-    llm=Ollama(model="llama3.1", request_timeout=90),
+    prompt="Extract task information from: {text}.",
+    llm=llm,
 )
 
 result = task_extractor(
     text="Finish the report - high priority, not done yet"
 )
 result
-Task(title='Finish the report', priority=1, completed=False)
+# Task(title='Finish the report', priority=1, completed=False)
 ```
 
 #### Example with Just output_cls
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
 from serapeum.core.llms import TextCompletionLLM
@@ -296,7 +316,7 @@ class Product(BaseModel):
 product_extractor = TextCompletionLLM(
     output_cls=Product,  # Parser created automatically
     prompt="Extract product: {description}",
-    llm=Ollama(model="llama3.1", request_timeout=90),
+    llm=Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=90),
 )
 
 result = product_extractor(description="iPhone 15 Pro - $999")
@@ -382,4 +402,4 @@ Do you just want to wrap an existing LLM to enforce a format?
 
 - [Callable Tools Guide](../tools/callable_tools.md)
 - [Provider Integration Guide](../../../architecture/integration-guide.md)
-- [Architecture Overview](../../../overview/codebase-map.md)
+- [Architecture Overview](../../../overview/core-package.md)

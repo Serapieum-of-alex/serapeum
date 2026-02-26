@@ -89,7 +89,7 @@ class NonFunctionCallingMockLLM(MagicMock):
         return Metadata(is_function_calling_model=True, model_name="non_fc_mock")
 
     # The following two are used by ToolOrchestratingLLM.__call__/acall tests
-    def predict_and_call(
+    def invoke_callable(
         self,
         tools: List["BaseTool"],
         user_msg: Optional[Union[str, Message]] = None,
@@ -105,7 +105,7 @@ class NonFunctionCallingMockLLM(MagicMock):
         )
         return make_agent_response_from_models(models)
 
-    async def apredict_and_call(
+    async def ainvoke_callable(
         self,
         tools: List["BaseTool"],
         user_msg: Optional[Union[str, Message]] = None,
@@ -128,7 +128,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     This mock:
       - Returns a configurable list of ToolCallArguments from
         `get_tool_calls_from_response` (set via `self.tool_calls`).
-      - Provides basic streaming generators for `stream_chat`/`astream_chat`.
+      - Provides basic streaming generators via chat(stream=True)/achat(stream=True).
     """
 
     def __init__(self) -> None:
@@ -143,36 +143,28 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         return Metadata(is_function_calling_model=True, model_name="mock_fc")
 
     # ---- Base abstract methods (minimal stubs) ----
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:  # type: ignore[override]
+    def chat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | Generator[ChatResponse, None, None]:  # type: ignore[override]
+        if stream:
+            return self._stream_chat(messages, **kwargs)
         return ChatResponse(message=Message.from_str("ok"))
+
+    def _stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator[ChatResponse, None, None]:
+        yield ChatResponse(message=Message.from_str("chunk-1"))
+        yield ChatResponse(message=Message.from_str("chunk-2"))
 
     def complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
 
-    def stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator[ChatResponse, None, None]:  # type: ignore[override]
-        def gen() -> Generator[ChatResponse, None, None]:
-            yield ChatResponse(message=Message.from_str("chunk-1"))
-            yield ChatResponse(message=Message.from_str("chunk-2"))
-
-        return gen()
-
-    def stream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
-        raise NotImplementedError
-
-    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:  # type: ignore[override]
+    async def achat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | AsyncGenerator[ChatResponse, None]:  # type: ignore[override]
+        if stream:
+            return self._astream_chat(messages, **kwargs)
         return ChatResponse(message=Message.from_str("ok"))
 
+    async def _astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> AsyncGenerator[ChatResponse, None]:
+        yield ChatResponse(message=Message.from_str("chunk-1"))
+        yield ChatResponse(message=Message.from_str("chunk-2"))
+
     async def acomplete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
-        raise NotImplementedError
-
-    async def astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> AsyncGenerator[ChatResponse, None]:  # type: ignore[override]
-        async def agen() -> AsyncGenerator[ChatResponse, None]:
-            yield ChatResponse(message=Message.from_str("chunk-1"))
-            yield ChatResponse(message=Message.from_str("chunk-2"))
-
-        return agen()
-
-    async def astream_complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
 
     # ---- FunctionCallingLLM specifics ----
@@ -212,7 +204,7 @@ class TestToolOrchestratingLLM:
         """Construct with prompt_template_str and a function-calling-capable LLM.
 
         Input:
-            output_cls=Album, prompt_template_str, llm with metadata.is_function_calling_model=True
+            schema=Album, prompt_template_str, llm with metadata.is_function_calling_model=True
         Expected:
             Returns a ToolOrchestratingLLM instance with configured prompt and flags
         Check:
@@ -220,7 +212,7 @@ class TestToolOrchestratingLLM:
         """
         llm = NonFunctionCallingMockLLM()
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            schema=Album,
             prompt="Album with {topic}",
             llm=llm,  # metadata says it supports function calling
             allow_parallel_tool_calls=True,
@@ -244,7 +236,7 @@ class TestToolOrchestratingLLM:
 
         with pytest.raises(ValueError):
             ToolOrchestratingLLM(
-                output_cls=Album,
+                schema=Album,
                 prompt="Album with {topic}",
                 llm=NoFC(),
             )
@@ -257,7 +249,7 @@ class TestToolOrchestratingLLM:
         Check: pytest.raises(ValueError)
         """
         with pytest.raises(TypeError):
-            ToolOrchestratingLLM(output_cls=Album, llm=NonFunctionCallingMockLLM())
+            ToolOrchestratingLLM(schema=Album, llm=NonFunctionCallingMockLLM())
 
     def test_fallback_to_configs_llm(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Use Configs.llm if llm is not provided explicitly.
@@ -273,7 +265,7 @@ class TestToolOrchestratingLLM:
             raising=False,
         )
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            schema=Album,
             prompt="Album with {topic}",
         )
         assert isinstance(tools_llm, ToolOrchestratingLLM)
@@ -290,9 +282,9 @@ class TestToolOrchestratingLLMProperties:
         Check: identity equality
         """
         tools_llm = ToolOrchestratingLLM(
-            Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
+            schema=Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
         )
-        assert tools_llm.output_cls is Album
+        assert tools_llm.schema is Album
 
     def test_prompt_getter_setter(self) -> None:
         """Prompt property getter and setter work as expected.
@@ -302,7 +294,7 @@ class TestToolOrchestratingLLMProperties:
         Check: identity equality
         """
         tools_llm = ToolOrchestratingLLM(
-            Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
+            schema=Album, prompt="x {y}", llm=NonFunctionCallingMockLLM()
         )
         new_prompt = PromptTemplate("New {var}")
         tools_llm.prompt = new_prompt
@@ -321,7 +313,9 @@ class TestToolOrchestratingLLMCall:
         """
         llm = NonFunctionCallingMockLLM()
         llm._extend_messages = MagicMock(side_effect=lambda msgs: msgs)  # track call
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album with {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            schema=Album, prompt="Album with {topic}", llm=llm
+        )
         result = tools_llm(topic="rock")
         assert isinstance(result, Album)
         assert result == SAMPLE_ALBUM
@@ -336,7 +330,7 @@ class TestToolOrchestratingLLMCall:
         """
         llm = NonFunctionCallingMockLLM()
         tools_llm = ToolOrchestratingLLM(
-            Album,
+            schema=Album,
             prompt="Album with {topic}",
             llm=llm,
             allow_parallel_tool_calls=True,
@@ -359,32 +353,34 @@ class TestToolOrchestratingLLMAsyncCall:
         Check: isinstance and equality
         """
         llm = NonFunctionCallingMockLLM()
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album with {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            schema=Album, prompt="Album with {topic}", llm=llm
+        )
         result = await tools_llm.acall(topic="pop")
         assert isinstance(result, Album)
         assert result == SAMPLE_ALBUM
 
 
 class TestToolOrchestratingLLMStreamCall:
-    """Tests for the synchronous streaming interface `stream_call`."""
+    """Tests for synchronous streaming via ``__call__(stream=True)``."""
 
     def test_raises_for_non_function_calling_llm(self) -> None:
         """Raise ValueError if the underlying LLM is not a FunctionCallingLLM.
 
         Input: Program created with NonFunctionCallingMockLLM
-        Expected: ValueError from stream_call
+        Expected: ValueError from __call__(stream=True)
         Check: pytest.raises(ValueError)
         """
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            schema=Album,
             prompt="Album {topic}",
             llm=NonFunctionCallingMockLLM(),
         )
         with pytest.raises(ValueError):
-            list(tools_llm.stream_call(topic="t"))  # force iteration
+            list(tools_llm(topic="t", stream=True))  # force iteration
 
     def test_streaming_yields_processed_objects(self) -> None:
-        """stream_call yields objects returned by process_streaming_objects per chunk.
+        """__call__(stream=True) yields objects returned by StreamingObjectProcessor per chunk.
 
         Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects
         Expected: Two yields with objects we control
@@ -392,7 +388,7 @@ class TestToolOrchestratingLLMStreamCall:
         """
         llm = MockFunctionCallingLLM()
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            schema=Album,
             prompt="Album {topic}",
             llm=llm,
             allow_parallel_tool_calls=False,
@@ -404,7 +400,7 @@ class TestToolOrchestratingLLMStreamCall:
             side_effect=[obj1, obj2],
         ) as mock_proc:
 
-            out = list(tools_llm.stream_call(topic="x"))
+            out = list(tools_llm(topic="x", stream=True))
             assert out == [obj1, obj2]
             assert mock_proc.call_count == 2
 
@@ -416,7 +412,9 @@ class TestToolOrchestratingLLMStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            schema=Album, prompt="Album {topic}", llm=llm
+        )
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:
@@ -424,35 +422,32 @@ class TestToolOrchestratingLLMStreamCall:
                 "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
                 side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
             ):
-                out = list(tools_llm.stream_call(topic="x"))
+                out = list(tools_llm(topic="x", stream=True))
         assert out == [SAMPLE_ALBUM]
         mock_logger.warning.assert_called()
 
 
 @pytest.mark.asyncio()
 class TestToolOrchestratingLLMAStreamCall:
-    """Tests for the asynchronous streaming interface `astream_call`."""
+    """Tests for async streaming via ``acall(stream=True)``."""
 
     async def test_raises_for_non_function_calling_llm(self) -> None:
         """Raise ValueError if the underlying LLM is not a FunctionCallingLLM.
 
         Input: Program created with NonFunctionCallingMockLLM
-        Expected: ValueError from astream_call
+        Expected: ValueError from acall(stream=True)
         Check: pytest.raises(ValueError)
         """
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            schema=Album,
             prompt="Album {topic}",
             llm=NonFunctionCallingMockLLM(),
         )
         with pytest.raises(ValueError):
-            gen = await tools_llm.astream_call(topic="t")
-            # exhaust the async generator to trigger computation
-            async for _ in gen:
-                pass
+            await tools_llm.acall(topic="t", stream=True)
 
     async def test_async_streaming_yields_processed_objects_mock(self) -> None:
-        """astream_call yields objects returned by process_streaming_objects per chunk.
+        """acall(stream=True) yields objects returned by StreamingObjectProcessor per chunk.
 
         Input: MockFunctionCallingLLM that emits 2 ChatResponse chunks; patched process_streaming_objects
         Expected: Two yields with objects we control (awaited via async for)
@@ -460,7 +455,7 @@ class TestToolOrchestratingLLMAStreamCall:
         """
         llm = MockFunctionCallingLLM()
         tools_llm = ToolOrchestratingLLM(
-            output_cls=Album,
+            schema=Album,
             prompt="Album {topic}",
             llm=llm,
             allow_parallel_tool_calls=False,
@@ -471,7 +466,7 @@ class TestToolOrchestratingLLMAStreamCall:
             "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
             side_effect=[obj1, obj2],
         ) as mock_proc:
-            agen = await tools_llm.astream_call(topic="x")
+            agen = await tools_llm.acall(topic="x", stream=True)
             results: list[Album] = []
             async for item in agen:  # type: ignore
                 results.append(item)
@@ -486,7 +481,9 @@ class TestToolOrchestratingLLMAStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(Album, prompt="Album {topic}", llm=llm)
+        tools_llm = ToolOrchestratingLLM(
+            schema=Album, prompt="Album {topic}", llm=llm
+        )
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:
@@ -494,7 +491,7 @@ class TestToolOrchestratingLLMAStreamCall:
                 "serapeum.core.llms.orchestrators.tool_based.StreamingObjectProcessor.process",
                 side_effect=[RuntimeError("boom"), SAMPLE_ALBUM],
             ):
-                agen = await tools_llm.astream_call(topic="x")
+                agen = await tools_llm.acall(topic="x", stream=True)
                 results: list[Album] = []
                 async for item in agen:  # type: ignore
                     results.append(item)

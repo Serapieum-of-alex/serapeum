@@ -161,7 +161,7 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
 
         Streaming chat:
         ```python
-        for chunk in llm.stream_chat([Message(role=MessageRole.USER, content="Hi")]):
+        for chunk in llm.chat([Message(role=MessageRole.USER, content="Hi")], stream=True):
             print(chunk.delta, end="", flush=True)
         ```
 
@@ -264,18 +264,23 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
             })
         return provider_messages
 
-    # ===== REQUIRED: Implement these 4 chat methods =====
+    # ===== REQUIRED: Implement these 2 chat methods =====
+    # Each accepts stream: bool and handles both modes internally.
 
-    def chat(self, messages: MessageList, **kwargs: Any) -> ChatResponse:
-        """Send a chat request.
+    def chat(self, messages: MessageList, stream: bool = False, **kwargs: Any) -> ChatResponse | ChatResponseGen:
+        """Send a chat request (or streaming if stream=True).
 
         Args:
             messages: List of messages in the conversation
+            stream: If True, return a generator yielding incremental chunks
             **kwargs: Provider-specific options
 
         Returns:
-            ChatResponse with the assistant's message
+            ChatResponse when stream=False, ChatResponseGen when stream=True
         """
+        if stream:
+            return self._stream_chat(messages, **kwargs)
+
         provider_messages = self._convert_messages(messages)
 
         response = self.client.chat.completions.create(
@@ -294,12 +299,8 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
             raw=response,
         )
 
-    def stream_chat(self, messages: MessageList, **kwargs: Any) -> ChatResponseGen:
-        """Stream chat responses.
-
-        Args:
-            messages: List of messages in the conversation
-            **kwargs: Provider-specific options
+    def _stream_chat(self, messages: MessageList, **kwargs: Any) -> ChatResponseGen:
+        """Internal streaming chat helper.
 
         Yields:
             ChatResponse chunks with delta content
@@ -332,16 +333,20 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
 
         return gen()
 
-    async def achat(self, messages: MessageList, **kwargs: Any) -> ChatResponse:
-        """Async chat request.
+    async def achat(self, messages: MessageList, stream: bool = False, **kwargs: Any) -> ChatResponse | ChatResponseAsyncGen:
+        """Async chat request (or streaming if stream=True).
 
         Args:
             messages: List of messages in the conversation
+            stream: If True, return an async generator yielding incremental chunks
             **kwargs: Provider-specific options
 
         Returns:
-            ChatResponse with the assistant's message
+            ChatResponse when stream=False, ChatResponseAsyncGen when stream=True
         """
+        if stream:
+            return await self._astream_chat(messages, **kwargs)
+
         provider_messages = self._convert_messages(messages)
 
         response = await self.async_client.chat.completions.create(
@@ -360,14 +365,10 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
             raw=response,
         )
 
-    async def astream_chat(
+    async def _astream_chat(
         self, messages: MessageList, **kwargs: Any
     ) -> ChatResponseAsyncGen:
-        """Async streaming chat.
-
-        Args:
-            messages: List of messages in the conversation
-            **kwargs: Provider-specific options
+        """Internal async streaming chat helper.
 
         Returns:
             Async generator yielding ChatResponse chunks
@@ -401,7 +402,7 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
         return gen()
 
     # ===== COMPLETION METHODS =====
-    # complete(), stream_complete(), acomplete(), astream_complete()
+    # complete(stream=False), acomplete(stream=False)
     # are automatically provided by ChatToCompletionMixin!
 
     # ===== FUNCTION CALLING (Optional) =====
@@ -526,7 +527,7 @@ class TestChat:
         assert response.message.role == MessageRole.ASSISTANT
 
     def test_stream_chat(self, llm, mock_client):
-        """Test streaming chat."""
+        """Test streaming chat via chat(stream=True)."""
         # Mock streaming response
         mock_chunks = [
             Mock(choices=[Mock(delta=Mock(content="Hel"))]),
@@ -539,7 +540,7 @@ class TestChat:
         messages = MessageList.from_list([
             Message(role=MessageRole.USER, content="Hi")
         ])
-        chunks = list(llm.stream_chat(messages))
+        chunks = list(llm.chat(messages, stream=True))
 
         assert len(chunks) == 2
         assert chunks[0].delta == "Hel"
@@ -642,9 +643,9 @@ print(response.message.content)
 ### Streaming
 
 ```python
-for chunk in llm.stream_chat([
+for chunk in llm.chat([
     Message(role=MessageRole.USER, content="Tell me a story")
-]):
+], stream=True):
     print(chunk.delta, end="", flush=True)
 ```
 
@@ -743,11 +744,9 @@ uv run pytest libs/providers/{provider}/tests/ --cov=serapeum.providers.{provide
    ```
    Order matters for Method Resolution Order (MRO)!
 
-2. **Implement 4 chat methods only**:
-   - `chat(messages, **kwargs)`
-   - `stream_chat(messages, **kwargs)`
-   - `achat(messages, **kwargs)`
-   - `astream_chat(messages, **kwargs)`
+2. **Implement 2 chat methods** (each accepts `stream: bool` and handles both modes):
+   - `chat(messages, stream=False, **kwargs)`
+   - `achat(messages, stream=False, **kwargs)`
 
 3. **Get completion methods for free** from the mixin
 
@@ -784,20 +783,23 @@ For a minimal provider implementation, you only need ~100 lines of code:
 from serapeum.core.llms import ChatToCompletionMixin, FunctionCallingLLM
 
 class MinimalLLM(ChatToCompletionMixin, FunctionCallingLLM):
-    def chat(self, messages, **kwargs):
+    def chat(self, messages, stream=False, **kwargs):
+        if stream:
+            return self._stream_chat(messages, **kwargs)
         # Call your provider's API
         return ChatResponse(...)
 
-    def stream_chat(self, messages, **kwargs):
+    def _stream_chat(self, messages, **kwargs):
         # Stream from provider
         yield ChatResponse(...)
 
-    async def achat(self, messages, **kwargs):
+    async def achat(self, messages, stream=False, **kwargs):
+        if stream:
+            return await self._astream_chat(messages, **kwargs)
         # Async call
         return ChatResponse(...)
 
-    async def astream_chat(self, messages, **kwargs):
-        # Async stream
+    async def _astream_chat(self, messages, **kwargs):
         async def gen():
             yield ChatResponse(...)
         return gen()

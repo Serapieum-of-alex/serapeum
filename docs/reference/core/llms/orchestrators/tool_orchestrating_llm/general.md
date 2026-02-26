@@ -5,39 +5,57 @@ This directory contains comprehensive documentation explaining the complete work
 ## Overview
 
 The `ToolOrchestratingLLM` is a function-calling orchestrator that:
-1. **Converts Pydantic models** into callable tools with JSON schemas
+1. **Converts Pydantic models or plain callables** into callable tools with JSON schemas
 2. **Formats prompts** with template variables
 3. **Executes function calling** via LLM with tool schemas
 4. **Parses tool outputs** into validated Pydantic model instances
 
+!!! note "schema accepts both classes and callables"
+    Despite the parameter name, `schema` accepts **either** a Pydantic `BaseModel`
+    subclass **or** a plain Python function/callable. When a function is passed, its
+    signature is used to auto-generate the JSON schema for the tool call.
+
+    ```python
+    # Option A: Pydantic model class
+    tools_llm = ToolOrchestratingLLM(schema=MyModel, prompt="...", llm=llm)
+
+    # Option B: Plain callable function
+    def extract(name: str, age: int) -> dict:
+        return {"name": name, "age": age}
+
+    tools_llm = ToolOrchestratingLLM(schema=extract, prompt="...", llm=llm)
+    ```
+
 ## Example Usage
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.ollama import Ollama
 
+
 # Define the output schema
-class MockAlbum(BaseModel):
+class Song(BaseModel):
+    title: str
+
+class Album(BaseModel):
     title: str
     artist: str
-    songs: List[MockSong]
-
-class MockSong(BaseModel):
-    title: str
+    songs: list[Song]
 
 # Initialize LLM with function calling support
-llm = Ollama(model='llama3.1', request_timeout=80)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
 
 # Create ToolOrchestratingLLM instance
 tools_llm = ToolOrchestratingLLM(
-    output_cls=MockAlbum,
+    schema=Album,
     prompt='This is a test album with {topic}',
     llm=llm,
 )
 
 # Execute and get structured output via function calling
-obj_output = tools_llm(topic="songs")
+obj_output = tools_llm(topic="birds")
 # Returns: MockAlbum(title="hello", artist="world", songs=[...])
 ```
 
@@ -54,7 +72,7 @@ Shows the chronological flow of method calls and interactions.
 **Key Sections**:
 - Initialization phase (validation and component setup)
 - Tool creation (CallableTool.from_model)
-- Execution phase (predict_and_call with tools)
+- Execution phase (invoke_callable with tools)
 - Tool execution and output parsing
 
 ### 2. [Architecture and Class Relationships](./tool_orchestrating_llm_class.md)
@@ -122,7 +140,7 @@ Depicts the lifecycle states and transitions.
 ### Initialization Workflow
 ```
 1. Initialize ToolOrchestratingLLM with:
-   - output_cls: Pydantic model (MockAlbum)
+   - schema: Pydantic model (MockAlbum)
    - prompt: String or BasePromptTemplate
    - llm: Function-calling LLM (Ollama)
    - tool_choice: Optional tool selection strategy
@@ -153,7 +171,7 @@ Depicts the lifecycle states and transitions.
 
 4. Execute function calling:
    a. Prepare request with tool schemas
-   b. Call predict_and_call([tool], messages, ...)
+   b. Call invoke_callable([tool], messages, ...)
    c. HTTP POST to Ollama server with tools parameter
    d. LLM generates tool_calls in response
 
@@ -199,8 +217,8 @@ Single or parallel tool calls:
 Supports multiple execution modes:
 - Sync: `__call__`
 - Async: `acall`
-- Streaming: `stream_call`
-- Async streaming: `astream_call`
+- Streaming: `__call__(stream=True)`
+- Async streaming: `acall(stream=True)`
 
 ## Comparison with TextCompletionLLM
 
@@ -219,7 +237,7 @@ Supports multiple execution modes:
 
 1. **Reusable Instances**: `ToolOrchestratingLLM` instances are reusable after initialization
 2. **Async Support**: `acall()` method provides async execution
-3. **Streaming Support**: `stream_call()` yields progressive updates
+3. **Streaming Support**: `__call__(stream=True)` yields progressive updates
 4. **Parallel Tool Calls**: Enable with `allow_parallel_tool_calls=True`
 5. **Stateless Execution**: Each call creates independent transient state
 6. **Tool Schema Caching**: Tool schemas are generated once per call

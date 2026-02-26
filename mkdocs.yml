@@ -11,7 +11,7 @@ theme:
   features:
     - navigation.instant
     - navigation.tracking
-    - navigation.expand
+    # - navigation.expand  # Disabled: keep sections collapsed by default
     - navigation.indexes
     - navigation.footer
     - navigation.sections
@@ -110,14 +110,12 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Developer Guide:
-      - Installation: developer-guide/installation.md
-      - contributing: developer-guide/contributing.md
-      - Taskfile: developer-guide/taskfile.md
   - Overview:
-    - Codebase Map: overview/codebase-map.md
-  - Architecture:
-    - Diagrams: architecture/diagrams.md
+    - Core package: overview/core-package.md
+    - Provider Integrations:
+        - Overview: overview/providers.md
+        - Ollama: overview/providers/ollama.md
+        - Adding New Providers: overview/providers/adding-new-providers.md
   - Reference:
     - Core:
         - llms:
@@ -156,6 +154,11 @@ nav:
           - API-Reference: reference/providers/ollama/api_reference.md
       - Add New Providers:
           - Instructions: reference/providers/add_new_providers.md
+  - Developer Guide:
+      - Installation: developer-guide/installation.md
+      - contributing: developer-guide/contributing.md
+      - Taskfile: developer-guide/taskfile.md
+      - testing-documentation: developer-guide/testing-docs.md
   - About:
     - Change-log: change-log.md
     - Contributing: contributing.md

@@ -332,6 +332,8 @@ ChunkType = Annotated[
 class Message(BaseModel):
     """Message."""
 
+    model_config = ConfigDict(extra="forbid")
+
     role: MessageRole = MessageRole.USER
     additional_kwargs: dict[str, Any] = Field(default_factory=dict)
     chunks: list[ChunkType] = Field(default_factory=list)

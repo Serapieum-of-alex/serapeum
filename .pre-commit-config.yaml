@@ -63,7 +63,7 @@ repos:
     rev: 7.2.0
     hooks:
       - id: flake8
-        additional_dependencies: [Flake8-pyproject, flake8-bugbear, flake8-docstrings, flake8-black]
+        additional_dependencies: [Flake8-pyproject, flake8-bugbear, flake8-docstrings]
         name: "[py   - check] flake8"
         exclude: ^(examples/|tests/)
   - repo: https://github.com/pycqa/isort
@@ -165,3 +165,12 @@ repos:
         entry: pytest --doctest-modules
         language: system
         files: ^src/serapeum/.*\.py$
+
+  - repo: local
+    hooks:
+      - id: markdown-docs-check
+        name: "[docs - check] markdown code examples"
+        entry: pytest -v --markdown-docs docs/
+        language: system
+        pass_filenames: false
+        files: ^docs/.*\.md$

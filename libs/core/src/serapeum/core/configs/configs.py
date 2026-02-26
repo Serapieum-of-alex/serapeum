@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from serapeum.core.llms import LLM
-from serapeum.core.types import StructuredLLMMode
+from serapeum.core.types import StructuredOutputMode
 
 
 @dataclass
@@ -24,14 +24,14 @@ class _Configs:
         self._llm = llm
 
     @property
-    def pydantic_program_mode(self) -> StructuredLLMMode:
+    def structured_output_mode(self) -> StructuredOutputMode:
         """Get the pydantic program mode."""
-        return self.llm.pydantic_program_mode
+        return self.llm.structured_output_mode
 
-    @pydantic_program_mode.setter
-    def pydantic_program_mode(self, pydantic_program_mode: StructuredLLMMode) -> None:
+    @structured_output_mode.setter
+    def structured_output_mode(self, structured_output_mode: StructuredOutputMode) -> None:
         """Set the pydantic program mode."""
-        self.llm.pydantic_program_mode = pydantic_program_mode
+        self.llm.structured_output_mode = structured_output_mode
 
 
 # Singleton

@@ -1,4 +1,5 @@
 """Embedding module."""
+
 from __future__ import annotations
 from serapeum.core.base.embeddings.types import (
     NodeType,

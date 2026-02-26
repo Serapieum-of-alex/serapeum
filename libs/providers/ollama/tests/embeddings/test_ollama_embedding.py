@@ -76,7 +76,7 @@ def mock_ollama_async_client(mock_embed_response: MagicMock) -> AsyncMock:
     Returns:
         AsyncMock configured as Ollama AsyncClient with embed method.
     """
-    client = AsyncMock(spec=ollama_sdk.AsyncClient)     # type: ignore
+    client = AsyncMock(spec=ollama_sdk.AsyncClient)  # type: ignore
     client.embed.return_value = mock_embed_response
     return client
 
@@ -88,7 +88,7 @@ def mock_client_with_error() -> MagicMock:
     Returns:
         MagicMock that raises exception on embed call.
     """
-    client = MagicMock(spec=ollama_sdk.Client)      # type: ignore
+    client = MagicMock(spec=ollama_sdk.Client)  # type: ignore
     client.embed.side_effect = ConnectionError("Failed to connect to Ollama server")
     return client
 
@@ -100,7 +100,7 @@ def mock_timeout_client() -> MagicMock:
     Returns:
         MagicMock that raises TimeoutError.
     """
-    client = MagicMock(spec=ollama_sdk.Client)      # type: ignore
+    client = MagicMock(spec=ollama_sdk.Client)  # type: ignore
     client.embed.side_effect = TimeoutError("Request timed out")
     return client
 
@@ -143,12 +143,17 @@ def embedder_factory():
 
     def _create(**kwargs):
         with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
+            patch("serapeum.ollama.client.ollama_sdk.Client"),
+            patch("serapeum.ollama.client.ollama_sdk.AsyncClient"),
         ):
             defaults = {"model_name": "test-model"}
             defaults.update(kwargs)
-            return OllamaEmbedding(**defaults)
+            embedder = OllamaEmbedding(**defaults)
+            # Trigger lazy client creation inside the patch context so that
+            # _client and _async_client are MagicMock instances, not None.
+            _ = embedder.client
+            _ = embedder.async_client
+        return embedder
 
     return _create
 
@@ -180,10 +185,6 @@ class TestOllamaEmbeddingInitialization:
         assert embedder.ollama_additional_kwargs == {}
         assert embedder.client_kwargs == {}
 
-        # Assert - Verify clients were created
-        assert embedder._client is not None
-        assert embedder._async_client is not None
-
     def test_full_initialization(self) -> None:
         """Test initialization with all parameters specified.
 
@@ -214,10 +215,6 @@ class TestOllamaEmbeddingInitialization:
         assert embedder.keep_alive == 120.0
         assert embedder.ollama_additional_kwargs == custom_kwargs
         assert embedder.client_kwargs == client_kwargs
-
-        # Assert - Verify clients were created
-        assert embedder._client is not None
-        assert embedder._async_client is not None
 
     def test_initialization_with_none_kwargs(self) -> None:
         """Test initialization handling of optional kwargs.
@@ -925,7 +922,7 @@ class TestBatchEmbeddingAsyncMethods:
         mock_ollama_async_client.embed.return_value = mock_batch_embed_response
 
         texts = ["text1", "text2"]
-        result = await configured_embedder._aget_text_embeddings(texts)
+        _ = await configured_embedder._aget_text_embeddings(texts)
 
         call_args = mock_ollama_async_client.embed.call_args
         assert call_args[1]["input"] == ["Text: text1", "Text: text2"]
@@ -1038,14 +1035,10 @@ class TestErrorHandling:
         Expected: ValidationError raised
         Checks: Pydantic type validation enforced
         """
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            with pytest.raises(ValidationError) as exc_info:
-                OllamaEmbedding(model_name=123)  # type: ignore
+        with pytest.raises(ValidationError) as exc_info:
+            OllamaEmbedding(model_name=123)  # type: ignore
 
-            assert "model_name" in str(exc_info.value)
+        assert "model_name" in str(exc_info.value)
 
     def test_invalid_base_url_type(self) -> None:
         """Test validation error with invalid base_url type.
@@ -1054,14 +1047,10 @@ class TestErrorHandling:
         Expected: ValidationError raised
         Checks: URL validation enforced
         """
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            with pytest.raises(ValidationError) as exc_info:
-                OllamaEmbedding(model_name="test", base_url=12345)  # type: ignore
+        with pytest.raises(ValidationError) as exc_info:
+            OllamaEmbedding(model_name="test", base_url=12345)  # type: ignore
 
-            assert "base_url" in str(exc_info.value)
+        assert "base_url" in str(exc_info.value)
 
     def test_invalid_ollama_additional_kwargs_type(self) -> None:
         """Test validation error with invalid ollama_additional_kwargs type.
@@ -1070,17 +1059,13 @@ class TestErrorHandling:
         Expected: ValidationError raised
         Checks: Dict type validation enforced
         """
-        with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client"),
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
-        ):
-            with pytest.raises(ValidationError) as exc_info:
-                OllamaEmbedding(
-                    model_name="test",
-                    ollama_additional_kwargs="not a dict",  # type: ignore
-                )
+        with pytest.raises(ValidationError) as exc_info:
+            OllamaEmbedding(
+                model_name="test",
+                ollama_additional_kwargs="not a dict",  # type: ignore
+            )
 
-            assert "ollama_additional_kwargs" in str(exc_info.value)
+        assert "ollama_additional_kwargs" in str(exc_info.value)
 
     def test_malformed_response_from_api(self, embedder_factory) -> None:
         """Test handling of malformed API responses.
@@ -1125,13 +1110,15 @@ class TestClientInitialization:
         Checks: Header configuration propagated to clients
         """
         with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client,
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient") as mock_async,
+            patch("serapeum.ollama.client.ollama_sdk.Client") as mock_client,
+            patch("serapeum.ollama.client.ollama_sdk.AsyncClient") as mock_async,
         ):
             custom_headers = {"Authorization": "Bearer secret-token"}
-            OllamaEmbedding(
+            embedder = OllamaEmbedding(
                 model_name="test", client_kwargs={"headers": custom_headers}
             )
+            _ = embedder.client
+            _ = embedder.async_client
 
             # Verify headers passed to both clients
             mock_client.assert_called_once()
@@ -1147,12 +1134,14 @@ class TestClientInitialization:
         Checks: Timeout settings propagated correctly
         """
         with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client,
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient") as mock_async,
+            patch("serapeum.ollama.client.ollama_sdk.Client") as mock_client,
+            patch("serapeum.ollama.client.ollama_sdk.AsyncClient") as mock_async,
         ):
-            OllamaEmbedding(
+            embedder = OllamaEmbedding(
                 model_name="test", client_kwargs={"timeout": 120}
             )
+            _ = embedder.client
+            _ = embedder.async_client
 
             mock_client.assert_called_once()
             mock_async.assert_called_once()
@@ -1167,8 +1156,8 @@ class TestClientInitialization:
         Checks: Complex configuration handled correctly
         """
         with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client,
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient"),
+            patch("serapeum.ollama.client.ollama_sdk.Client") as mock_client,
+            patch("serapeum.ollama.client.ollama_sdk.AsyncClient"),
         ):
             client_config = {
                 "timeout": 60,
@@ -1176,11 +1165,12 @@ class TestClientInitialization:
                 "verify": False,
             }
 
-            OllamaEmbedding(
+            embedder = OllamaEmbedding(
                 model_name="test",
                 base_url="https://custom:443",
                 client_kwargs=client_config,
             )
+            _ = embedder.client
 
             # Verify all kwargs passed
             call_kwargs = mock_client.call_args[1]
@@ -1189,19 +1179,21 @@ class TestClientInitialization:
             assert call_kwargs["verify"] is False
 
     def test_client_created_on_initialization(self) -> None:
-        """Test that clients are created during model validation.
+        """Test that clients are created lazily on first property access.
 
-        Inputs: OllamaEmbedding instantiation
-        Expected: Both sync and async clients initialized immediately
-        Checks: _initialize_clients validator executed
+        Inputs: OllamaEmbedding instantiation and property access
+        Expected: Both sync and async clients initialized on first access
+        Checks: Lazy initialization via client/async_client properties
         """
         with (
-            patch("serapeum.ollama.embedding.ollama_sdk.Client") as mock_client,
-            patch("serapeum.ollama.embedding.ollama_sdk.AsyncClient") as mock_async,
+            patch("serapeum.ollama.client.ollama_sdk.Client") as mock_client,
+            patch("serapeum.ollama.client.ollama_sdk.AsyncClient") as mock_async,
         ):
             embedder = OllamaEmbedding(model_name="test")
+            _ = embedder.client
+            _ = embedder.async_client
 
-            # Verify clients were created
+            # Verify clients were created on property access
             assert mock_client.called
             assert mock_async.called
 
@@ -1464,7 +1456,7 @@ class TestOllamaEmbeddingIntegration:
             "_get_query_embedding",
             wraps=configured_embedder._get_query_embedding,
         ) as mock_get:
-            result = configured_embedder.get_query_embedding("What is AI?")
+            _ = configured_embedder.get_query_embedding("What is AI?")
 
             # Assert - Verify internal method called
             mock_get.assert_called_once_with("What is AI?")
@@ -1491,7 +1483,7 @@ class TestOllamaEmbeddingIntegration:
             "_get_text_embedding",
             wraps=configured_embedder._get_text_embedding,
         ) as mock_get:
-            result = configured_embedder.get_text_embedding("AI is a field")
+            _ = configured_embedder.get_text_embedding("AI is a field")
 
             # Assert - Verify internal method called
             mock_get.assert_called_once_with("AI is a field")
@@ -1519,7 +1511,7 @@ class TestOllamaEmbeddingIntegration:
             "_aget_query_embedding",
             wraps=configured_embedder._aget_query_embedding,
         ) as mock_aget:
-            result = await configured_embedder.aget_query_embedding("What is AI?")
+            _ = await configured_embedder.aget_query_embedding("What is AI?")
 
             # Assert - Verify internal async method called
             mock_aget.assert_called_once_with("What is AI?")
@@ -1543,7 +1535,7 @@ class TestOllamaEmbeddingIntegration:
             "_aget_text_embedding",
             wraps=configured_embedder._aget_text_embedding,
         ) as mock_aget:
-            result = await configured_embedder.aget_text_embedding("AI is a field")
+            _ = await configured_embedder.aget_text_embedding("AI is a field")
 
             # Assert - Verify internal async method called
             mock_aget.assert_called_once_with("AI is a field")
@@ -1691,16 +1683,16 @@ class TestOllamaEmbeddingProperties:
     ) -> None:
         """Test that client instances remain stable after initialization.
 
-        Inputs: Access _client and _async_client multiple times
-        Expected: Same object references returned
-        Checks: Clients not recreated on access
+        Inputs: Access client and async_client properties multiple times
+        Expected: Same object references returned (lazy singleton)
+        Checks: Clients not recreated on repeated property access
         """
-        client1 = basic_embedder._client
-        client2 = basic_embedder._client
+        client1 = basic_embedder.client
+        client2 = basic_embedder.client
         assert client1 is client2
 
-        async_client1 = basic_embedder._async_client
-        async_client2 = basic_embedder._async_client
+        async_client1 = basic_embedder.async_client
+        async_client2 = basic_embedder.async_client
         assert async_client1 is async_client2
 
 
@@ -2088,14 +2080,17 @@ class TestBaseEmbeddingIntegration:
         assert hasattr(basic_embedder, "ollama_additional_kwargs")
 
     def test_private_attrs_initialized(self, basic_embedder: OllamaEmbedding) -> None:
-        """Test that private attributes are initialized.
+        """Test that private attributes are initialized lazily via properties.
 
-        Inputs: Access _client and _async_client
-        Expected: Both attributes exist and are not None
-        Checks: PrivateAttr initialization in __init__
+        Inputs: Access client and async_client properties
+        Expected: Both private attrs exist and are not None after property access
+        Checks: Lazy PrivateAttr initialization via properties
         """
         assert hasattr(basic_embedder, "_client")
         assert hasattr(basic_embedder, "_async_client")
+        # Properties trigger lazy initialization
+        _ = basic_embedder.client
+        _ = basic_embedder.async_client
         assert basic_embedder._client is not None
         assert basic_embedder._async_client is not None
 
@@ -2108,6 +2103,8 @@ class TestBaseEmbeddingIntegration:
         """
         embedder = OllamaEmbedding(model_name="test", client_kwargs={"timeout": 120})
 
-        # Assert - Clients should exist (created with kwargs)
+        # Assert - Clients are created lazily on first property access
+        _ = embedder.client
+        _ = embedder.async_client
         assert embedder._client is not None
         assert embedder._async_client is not None

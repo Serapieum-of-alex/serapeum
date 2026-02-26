@@ -1,0 +1,28 @@
+%% Sequence Diagram: Tool Orchestration (ToolOrchestratingLLM)
+sequenceDiagram
+  autonumber
+  actor User
+  participant TLLM as ToolOrchestratingLLM
+  participant PT as PromptTemplate
+  participant CT as CallableTool
+  participant F as FunctionCallingLLM
+  participant P as Pydantic Model
+
+  User->>TLLM: __call__(**kwargs, llm_kwargs)
+  activate TLLM
+  TLLM->>PT: format()/format_messages()
+  PT-->>TLLM: formatted prompt/messages
+  TLLM->>CT: from_model(schema)
+  CT-->>TLLM: tool instance
+  TLLM->>F: invoke_callable([tool], user_msg, chat_history, ...)
+  F-->>TLLM: AgentChatResponse with ToolOutputs
+  TLLM->>P: validate and instantiate schema
+  P-->>TLLM: model instance
+  TLLM-->>User: Pydantic model instance
+  deactivate TLLM
+
+  opt Streaming
+    User->>TLLM: __call__(stream=True) / acall(stream=True)
+    TLLM-->>User: partial models (incremental)
+    TLLM-->>User: final validated model
+  end

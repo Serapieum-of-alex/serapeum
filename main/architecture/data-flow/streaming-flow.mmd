@@ -1,0 +1,26 @@
+%% Data Flow: Streaming (Sync and Async)
+flowchart TB
+  classDef process fill:#e3f2fd,stroke:#1565c0
+  classDef datamodel fill:#e8f5e9,stroke:#2e7d32
+
+  U[User]:::process
+  SC["chat(stream=True)"]:::process
+  SSC["complete(stream=True)"]:::process
+  G[Generator ChatResponseGen]:::datamodel
+  CG[Generator CompletionResponseGen]:::datamodel
+  ASP["achat(stream=True)"]:::process
+  ASSP["acomplete(stream=True)"]:::process
+  AG[AsyncGenerator ChatResponseAsyncGen]:::datamodel
+  ACG[AsyncGenerator CompletionResponseAsyncGen]:::datamodel
+  TP[stream_response_to_tokens]:::process
+  T[Tokens]:::datamodel
+
+  subgraph Sync_Path
+    U --> SC --> G --> TP --> T
+    U --> SSC --> CG --> TP --> T
+  end
+
+  subgraph Async_Path
+    U --> ASP --> AG --> TP --> T
+    U --> ASSP --> ACG --> TP --> T
+  end

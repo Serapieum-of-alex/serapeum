@@ -21,7 +21,7 @@
 <link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -933,216 +933,6 @@
     </span>
 </a>
 </li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#4-idle-processingcomplete-idle">
-<span class="md-ellipsis">
-      
-        4. Idle → ProcessingComplete → Idle
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#5-idle-processingstream-idle">
-<span class="md-ellipsis">
-      
-        5. Idle → ProcessingStream → Idle
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#6-idle-processingasync-idle">
-<span class="md-ellipsis">
-      
-        6. Idle → ProcessingAsync → Idle
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#7-idle-processingtools-idle">
-<span class="md-ellipsis">
-      
-        7. Idle → ProcessingTools → Idle
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#8-any-state-error-idle">
-<span class="md-ellipsis">
-      
-        8. Any State → Error → Idle
-      
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#state-variables">
-<span class="md-ellipsis">
-      
-        State Variables
-      
-    </span>
-</a>
-<nav aria-label="State Variables" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#configuration-state-immutable-after-init">
-<span class="md-ellipsis">
-      
-        Configuration State (Immutable after init)
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#client-state-mutable-lazy-initialized">
-<span class="md-ellipsis">
-      
-        Client State (Mutable, lazy-initialized)
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#request-state-per-call-transient">
-<span class="md-ellipsis">
-      
-        Request State (Per-call, transient)
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#streaming-state-per-stream-transient">
-<span class="md-ellipsis">
-      
-        Streaming State (Per-stream, transient)
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#response-state-per-call-returned">
-<span class="md-ellipsis">
-      
-        Response State (Per-call, returned)
-      
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#lifecycle-diagram">
-<span class="md-ellipsis">
-      
-        Lifecycle Diagram
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#concurrency-considerations">
-<span class="md-ellipsis">
-      
-        Concurrency Considerations
-      
-    </span>
-</a>
-<nav aria-label="Concurrency Considerations" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#thread-safety">
-<span class="md-ellipsis">
-      
-        Thread Safety
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#async-safety">
-<span class="md-ellipsis">
-      
-        Async Safety
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#streaming-state">
-<span class="md-ellipsis">
-      
-        Streaming State
-      
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#state-management-best-practices">
-<span class="md-ellipsis">
-      
-        State Management Best Practices
-      
-    </span>
-</a>
-<nav aria-label="State Management Best Practices" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#1-initialization">
-<span class="md-ellipsis">
-      
-        1. Initialization
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#2-client-reuse">
-<span class="md-ellipsis">
-      
-        2. Client Reuse
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#3-configuration">
-<span class="md-ellipsis">
-      
-        3. Configuration
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#4-error-handling">
-<span class="md-ellipsis">
-      
-        4. Error Handling
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#5-streaming">
-<span class="md-ellipsis">
-      
-        5. Streaming
-      
-    </span>
-</a>
-</li>
 </ul>
 </nav>
 </li>
@@ -1392,216 +1182,6 @@
     </span>
 </a>
 </li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#4-idle-processingcomplete-idle">
-<span class="md-ellipsis">
-      
-        4. Idle → ProcessingComplete → Idle
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#5-idle-processingstream-idle">
-<span class="md-ellipsis">
-      
-        5. Idle → ProcessingStream → Idle
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#6-idle-processingasync-idle">
-<span class="md-ellipsis">
-      
-        6. Idle → ProcessingAsync → Idle
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#7-idle-processingtools-idle">
-<span class="md-ellipsis">
-      
-        7. Idle → ProcessingTools → Idle
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#8-any-state-error-idle">
-<span class="md-ellipsis">
-      
-        8. Any State → Error → Idle
-      
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#state-variables">
-<span class="md-ellipsis">
-      
-        State Variables
-      
-    </span>
-</a>
-<nav aria-label="State Variables" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#configuration-state-immutable-after-init">
-<span class="md-ellipsis">
-      
-        Configuration State (Immutable after init)
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#client-state-mutable-lazy-initialized">
-<span class="md-ellipsis">
-      
-        Client State (Mutable, lazy-initialized)
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#request-state-per-call-transient">
-<span class="md-ellipsis">
-      
-        Request State (Per-call, transient)
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#streaming-state-per-stream-transient">
-<span class="md-ellipsis">
-      
-        Streaming State (Per-stream, transient)
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#response-state-per-call-returned">
-<span class="md-ellipsis">
-      
-        Response State (Per-call, returned)
-      
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#lifecycle-diagram">
-<span class="md-ellipsis">
-      
-        Lifecycle Diagram
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#concurrency-considerations">
-<span class="md-ellipsis">
-      
-        Concurrency Considerations
-      
-    </span>
-</a>
-<nav aria-label="Concurrency Considerations" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#thread-safety">
-<span class="md-ellipsis">
-      
-        Thread Safety
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#async-safety">
-<span class="md-ellipsis">
-      
-        Async Safety
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#streaming-state">
-<span class="md-ellipsis">
-      
-        Streaming State
-      
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#state-management-best-practices">
-<span class="md-ellipsis">
-      
-        State Management Best Practices
-      
-    </span>
-</a>
-<nav aria-label="State Management Best Practices" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#1-initialization">
-<span class="md-ellipsis">
-      
-        1. Initialization
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#2-client-reuse">
-<span class="md-ellipsis">
-      
-        2. Client Reuse
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#3-configuration">
-<span class="md-ellipsis">
-      
-        3. Configuration
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#4-error-handling">
-<span class="md-ellipsis">
-      
-        4. Error Handling
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#5-streaming">
-<span class="md-ellipsis">
-      
-        5. Streaming
-      
-    </span>
-</a>
-</li>
 </ul>
 </nav>
 </li>
@@ -1815,304 +1395,282 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-1-13" id="__codelineno-1-13" name="__codelineno-1-13"></a><span class="c1"># - Ready to process requests</span>
 </code></pre></div>
 <h3 id="3-idle-processingchat-idle"><a class="toclink" href="#3-idle-processingchat-idle">3. Idle → ProcessingChat → Idle</a><a class="headerlink" href="#3-idle-processingchat-idle" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="c1"># Idle state: Ready for requests</span>
-<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
-<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>
-<a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a><span class="c1"># Transition to ProcessingChat:</span>
-<a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="c1"># 1. BuildingRequest: Create request dict</span>
-<a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a><span class="c1"># 2. ConvertingMessages: Message objects to dicts</span>
-<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a><span class="c1"># 3. AddingOptions: Merge temperature, etc.</span>
-<a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a><span class="c1"># 4. AddingFormat: Add json format if enabled</span>
-<a href="#__codelineno-2-9" id="__codelineno-2-9" name="__codelineno-2-9"></a><span class="c1"># 5. SendingRequest: client.chat(**request)</span>
-<a href="#__codelineno-2-10" id="__codelineno-2-10" name="__codelineno-2-10"></a><span class="c1"># 6. WaitingResponse: Block until response</span>
-<a href="#__codelineno-2-11" id="__codelineno-2-11" name="__codelineno-2-11"></a><span class="c1"># 7. ParsingResponse: _chat_from_response(raw)</span>
-<a href="#__codelineno-2-12" id="__codelineno-2-12" name="__codelineno-2-12"></a><span class="c1"># 8. CreatingChatResponse: Build ChatResponse object</span>
+<p>```python notest</p>
+<h1 id="idle-state-ready-for-requests"><a class="toclink" href="#idle-state-ready-for-requests">Idle state: Ready for requests</a><a class="headerlink" href="#idle-state-ready-for-requests" title="Permanent link">#</a></h1>
+<p>response = llm.chat(messages)</p>
+<h1 id="transition-to-processingchat"><a class="toclink" href="#transition-to-processingchat">Transition to ProcessingChat:</a><a class="headerlink" href="#transition-to-processingchat" title="Permanent link">#</a></h1>
+<h1 id="1-buildingrequest-create-request-dict"><a class="toclink" href="#1-buildingrequest-create-request-dict">1. BuildingRequest: Create request dict</a><a class="headerlink" href="#1-buildingrequest-create-request-dict" title="Permanent link">#</a></h1>
+<h1 id="2-convertingmessages-message-objects-to-dicts"><a class="toclink" href="#2-convertingmessages-message-objects-to-dicts">2. ConvertingMessages: Message objects to dicts</a><a class="headerlink" href="#2-convertingmessages-message-objects-to-dicts" title="Permanent link">#</a></h1>
+<h1 id="3-addingoptions-merge-temperature-etc"><a class="toclink" href="#3-addingoptions-merge-temperature-etc">3. AddingOptions: Merge temperature, etc.</a><a class="headerlink" href="#3-addingoptions-merge-temperature-etc" title="Permanent link">#</a></h1>
+<h1 id="4-addingformat-add-json-format-if-enabled"><a class="toclink" href="#4-addingformat-add-json-format-if-enabled">4. AddingFormat: Add json format if enabled</a><a class="headerlink" href="#4-addingformat-add-json-format-if-enabled" title="Permanent link">#</a></h1>
+<h1 id="5-sendingrequest-clientchatrequest"><a class="toclink" href="#5-sendingrequest-clientchatrequest">5. SendingRequest: client.chat(**request)</a><a class="headerlink" href="#5-sendingrequest-clientchatrequest" title="Permanent link">#</a></h1>
+<h1 id="6-waitingresponse-block-until-response"><a class="toclink" href="#6-waitingresponse-block-until-response">6. WaitingResponse: Block until response</a><a class="headerlink" href="#6-waitingresponse-block-until-response" title="Permanent link">#</a></h1>
+<h1 id="7-parsingresponse-_chat_from_responseraw"><a class="toclink" href="#7-parsingresponse-_chat_from_responseraw">7. ParsingResponse: _chat_from_response(raw)</a><a class="headerlink" href="#7-parsingresponse-_chat_from_responseraw" title="Permanent link">#</a></h1>
+<h1 id="8-creatingchatresponse-build-chatresponse-object"><a class="toclink" href="#8-creatingchatresponse-build-chatresponse-object">8. CreatingChatResponse: Build ChatResponse object</a><a class="headerlink" href="#8-creatingchatresponse-build-chatresponse-object" title="Permanent link">#</a></h1>
+<h1 id="transition-back-to-idle"><a class="toclink" href="#transition-back-to-idle">Transition back to Idle:</a><a class="headerlink" href="#transition-back-to-idle" title="Permanent link">#</a></h1>
+<h1 id="-return-chatresponse-to-caller"><a class="toclink" href="#-return-chatresponse-to-caller">- Return ChatResponse to caller</a><a class="headerlink" href="#-return-chatresponse-to-caller" title="Permanent link">#</a></h1>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>### 4. Idle → ProcessingComplete → Idle
+<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>```python notest
+<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a># Complete uses decorator pattern
+<a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>response = llm.complete(prompt)
+<a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>
+<a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a># Transition to ProcessingComplete:
+<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a># 1. DecoratorWrap: @chat_to_completion_decorator intercepts
+<a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a># 2. ConvertToMessage: prompt → Message(role=USER, content=prompt)
+<a href="#__codelineno-2-9" id="__codelineno-2-9" name="__codelineno-2-9"></a># 3. DelegateToChat: Call self.chat([message])
+<a href="#__codelineno-2-10" id="__codelineno-2-10" name="__codelineno-2-10"></a>#    [Enters ProcessingChat state]
+<a href="#__codelineno-2-11" id="__codelineno-2-11" name="__codelineno-2-11"></a># 4. DecoratorUnwrap: Extract message.content
+<a href="#__codelineno-2-12" id="__codelineno-2-12" name="__codelineno-2-12"></a># 5. CreateCompletionResponse: Wrap in CompletionResponse
 <a href="#__codelineno-2-13" id="__codelineno-2-13" name="__codelineno-2-13"></a>
-<a href="#__codelineno-2-14" id="__codelineno-2-14" name="__codelineno-2-14"></a><span class="c1"># Transition back to Idle:</span>
-<a href="#__codelineno-2-15" id="__codelineno-2-15" name="__codelineno-2-15"></a><span class="c1"># - Return ChatResponse to caller</span>
-</code></pre></div>
-<h3 id="4-idle-processingcomplete-idle"><a class="toclink" href="#4-idle-processingcomplete-idle">4. Idle → ProcessingComplete → Idle</a><a class="headerlink" href="#4-idle-processingcomplete-idle" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="c1"># Complete uses decorator pattern</span>
-<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">complete</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
-<a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>
-<a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="c1"># Transition to ProcessingComplete:</span>
-<a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a><span class="c1"># 1. DecoratorWrap: @chat_to_completion_decorator intercepts</span>
-<a href="#__codelineno-3-6" id="__codelineno-3-6" name="__codelineno-3-6"></a><span class="c1"># 2. ConvertToMessage: prompt → Message(role=USER, content=prompt)</span>
-<a href="#__codelineno-3-7" id="__codelineno-3-7" name="__codelineno-3-7"></a><span class="c1"># 3. DelegateToChat: Call self.chat([message])</span>
-<a href="#__codelineno-3-8" id="__codelineno-3-8" name="__codelineno-3-8"></a><span class="c1">#    [Enters ProcessingChat state]</span>
-<a href="#__codelineno-3-9" id="__codelineno-3-9" name="__codelineno-3-9"></a><span class="c1"># 4. DecoratorUnwrap: Extract message.content</span>
-<a href="#__codelineno-3-10" id="__codelineno-3-10" name="__codelineno-3-10"></a><span class="c1"># 5. CreateCompletionResponse: Wrap in CompletionResponse</span>
-<a href="#__codelineno-3-11" id="__codelineno-3-11" name="__codelineno-3-11"></a>
-<a href="#__codelineno-3-12" id="__codelineno-3-12" name="__codelineno-3-12"></a><span class="c1"># Transition back to Idle:</span>
-<a href="#__codelineno-3-13" id="__codelineno-3-13" name="__codelineno-3-13"></a><span class="c1"># - Return CompletionResponse to caller</span>
+<a href="#__codelineno-2-14" id="__codelineno-2-14" name="__codelineno-2-14"></a># Transition back to Idle:
+<a href="#__codelineno-2-15" id="__codelineno-2-15" name="__codelineno-2-15"></a># - Return CompletionResponse to caller
 </code></pre></div>
 <h3 id="5-idle-processingstream-idle"><a class="toclink" href="#5-idle-processingstream-idle">5. Idle → ProcessingStream → Idle</a><a class="headerlink" href="#5-idle-processingstream-idle" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="c1"># Streaming maintains state across multiple yields</span>
-<a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-<a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a>
-<a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a><span class="c1"># Transition to ProcessingStream:</span>
-<a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="c1"># 1. BuildingStreamRequest: Create request with stream=True</span>
-<a href="#__codelineno-4-7" id="__codelineno-4-7" name="__codelineno-4-7"></a><span class="c1"># 2. SendingStreamRequest: client.chat(stream=True)</span>
-<a href="#__codelineno-4-8" id="__codelineno-4-8" name="__codelineno-4-8"></a><span class="c1"># 3. StreamLoop - for each chunk:</span>
-<a href="#__codelineno-4-9" id="__codelineno-4-9" name="__codelineno-4-9"></a><span class="c1">#    a. WaitingChunk: Block for next chunk</span>
-<a href="#__codelineno-4-10" id="__codelineno-4-10" name="__codelineno-4-10"></a><span class="c1">#    b. ReceivingChunk: Chunk dict arrives</span>
-<a href="#__codelineno-4-11" id="__codelineno-4-11" name="__codelineno-4-11"></a><span class="c1">#    c. ParsingChunk: _chat_stream_from_response(chunk)</span>
-<a href="#__codelineno-4-12" id="__codelineno-4-12" name="__codelineno-4-12"></a><span class="c1">#    d. AccumulatingContent: Append to content buffer</span>
-<a href="#__codelineno-4-13" id="__codelineno-4-13" name="__codelineno-4-13"></a><span class="c1">#    e. AccumulatingTools: Append to tool_calls buffer</span>
-<a href="#__codelineno-4-14" id="__codelineno-4-14" name="__codelineno-4-14"></a><span class="c1">#    f. YieldingResponse: Create and yield ChatResponse with delta</span>
-<a href="#__codelineno-4-15" id="__codelineno-4-15" name="__codelineno-4-15"></a><span class="c1">#    g. CheckDone: If done=True, exit loop</span>
-<a href="#__codelineno-4-16" id="__codelineno-4-16" name="__codelineno-4-16"></a><span class="c1"># 4. StreamLoop exits when done=True</span>
-<a href="#__codelineno-4-17" id="__codelineno-4-17" name="__codelineno-4-17"></a>
-<a href="#__codelineno-4-18" id="__codelineno-4-18" name="__codelineno-4-18"></a><span class="c1"># Transition back to Idle:</span>
-<a href="#__codelineno-4-19" id="__codelineno-4-19" name="__codelineno-4-19"></a><span class="c1"># - Generator exhausted</span>
-</code></pre></div>
-<h3 id="6-idle-processingasync-idle"><a class="toclink" href="#6-idle-processingasync-idle">6. Idle → ProcessingAsync → Idle</a><a class="headerlink" href="#6-idle-processingasync-idle" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="c1"># Async uses separate client and event loop</span>
-<a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">llm</span><span class="o">.</span><span class="n">achat</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
-<a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>
-<a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a><span class="c1"># Transition to ProcessingAsync:</span>
-<a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a><span class="c1"># 1. EnsureAsyncClient: Check self._async_client</span>
-<a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a><span class="c1">#    - If None, create AsyncClient(host=base_url, timeout=timeout)</span>
-<a href="#__codelineno-5-7" id="__codelineno-5-7" name="__codelineno-5-7"></a><span class="c1"># 2. BuildingAsyncRequest: Create request dict</span>
-<a href="#__codelineno-5-8" id="__codelineno-5-8" name="__codelineno-5-8"></a><span class="c1"># 3. SendingAsyncRequest: await async_client.chat(**request)</span>
-<a href="#__codelineno-5-9" id="__codelineno-5-9" name="__codelineno-5-9"></a><span class="c1"># 4. WaitingAsyncResponse: Coroutine awaits response</span>
-<a href="#__codelineno-5-10" id="__codelineno-5-10" name="__codelineno-5-10"></a><span class="c1"># 5. ParsingAsyncResponse: _chat_from_response(raw)</span>
-<a href="#__codelineno-5-11" id="__codelineno-5-11" name="__codelineno-5-11"></a><span class="c1"># 6. CreatingAsyncChatResponse: Build ChatResponse</span>
-<a href="#__codelineno-5-12" id="__codelineno-5-12" name="__codelineno-5-12"></a>
-<a href="#__codelineno-5-13" id="__codelineno-5-13" name="__codelineno-5-13"></a><span class="c1"># Transition back to Idle:</span>
-<a href="#__codelineno-5-14" id="__codelineno-5-14" name="__codelineno-5-14"></a><span class="c1"># - Return ChatResponse to caller</span>
+<p>```python notest</p>
+<h1 id="streaming-maintains-state-across-multiple-yields"><a class="toclink" href="#streaming-maintains-state-across-multiple-yields">Streaming maintains state across multiple yields</a><a class="headerlink" href="#streaming-maintains-state-across-multiple-yields" title="Permanent link">#</a></h1>
+<p>for chunk in llm.chat(messages, stream=True):
+    print(chunk.message.content)</p>
+<h1 id="transition-to-processingstream"><a class="toclink" href="#transition-to-processingstream">Transition to ProcessingStream:</a><a class="headerlink" href="#transition-to-processingstream" title="Permanent link">#</a></h1>
+<h1 id="1-buildingstreamrequest-create-request-with-streamtrue"><a class="toclink" href="#1-buildingstreamrequest-create-request-with-streamtrue">1. BuildingStreamRequest: Create request with stream=True</a><a class="headerlink" href="#1-buildingstreamrequest-create-request-with-streamtrue" title="Permanent link">#</a></h1>
+<h1 id="2-sendingstreamrequest-clientchatstreamtrue"><a class="toclink" href="#2-sendingstreamrequest-clientchatstreamtrue">2. SendingStreamRequest: client.chat(stream=True)</a><a class="headerlink" href="#2-sendingstreamrequest-clientchatstreamtrue" title="Permanent link">#</a></h1>
+<h1 id="3-streamloop-for-each-chunk"><a class="toclink" href="#3-streamloop-for-each-chunk">3. StreamLoop - for each chunk:</a><a class="headerlink" href="#3-streamloop-for-each-chunk" title="Permanent link">#</a></h1>
+<h1 id="a-waitingchunk-block-for-next-chunk"><a class="toclink" href="#a-waitingchunk-block-for-next-chunk">a. WaitingChunk: Block for next chunk</a><a class="headerlink" href="#a-waitingchunk-block-for-next-chunk" title="Permanent link">#</a></h1>
+<h1 id="b-receivingchunk-chunk-dict-arrives"><a class="toclink" href="#b-receivingchunk-chunk-dict-arrives">b. ReceivingChunk: Chunk dict arrives</a><a class="headerlink" href="#b-receivingchunk-chunk-dict-arrives" title="Permanent link">#</a></h1>
+<h1 id="c-parsingchunk-_chat_stream_from_responsechunk"><a class="toclink" href="#c-parsingchunk-_chat_stream_from_responsechunk">c. ParsingChunk: _chat_stream_from_response(chunk)</a><a class="headerlink" href="#c-parsingchunk-_chat_stream_from_responsechunk" title="Permanent link">#</a></h1>
+<h1 id="d-accumulatingcontent-append-to-content-buffer"><a class="toclink" href="#d-accumulatingcontent-append-to-content-buffer">d. AccumulatingContent: Append to content buffer</a><a class="headerlink" href="#d-accumulatingcontent-append-to-content-buffer" title="Permanent link">#</a></h1>
+<h1 id="e-accumulatingtools-append-to-tool_calls-buffer"><a class="toclink" href="#e-accumulatingtools-append-to-tool_calls-buffer">e. AccumulatingTools: Append to tool_calls buffer</a><a class="headerlink" href="#e-accumulatingtools-append-to-tool_calls-buffer" title="Permanent link">#</a></h1>
+<h1 id="f-yieldingresponse-create-and-yield-chatresponse-with-delta"><a class="toclink" href="#f-yieldingresponse-create-and-yield-chatresponse-with-delta">f. YieldingResponse: Create and yield ChatResponse with delta</a><a class="headerlink" href="#f-yieldingresponse-create-and-yield-chatresponse-with-delta" title="Permanent link">#</a></h1>
+<h1 id="g-checkdone-if-donetrue-exit-loop"><a class="toclink" href="#g-checkdone-if-donetrue-exit-loop">g. CheckDone: If done=True, exit loop</a><a class="headerlink" href="#g-checkdone-if-donetrue-exit-loop" title="Permanent link">#</a></h1>
+<h1 id="4-streamloop-exits-when-donetrue"><a class="toclink" href="#4-streamloop-exits-when-donetrue">4. StreamLoop exits when done=True</a><a class="headerlink" href="#4-streamloop-exits-when-donetrue" title="Permanent link">#</a></h1>
+<h1 id="transition-back-to-idle_1"><a class="toclink" href="#transition-back-to-idle_1">Transition back to Idle:</a><a class="headerlink" href="#transition-back-to-idle_1" title="Permanent link">#</a></h1>
+<h1 id="-generator-exhausted"><a class="toclink" href="#-generator-exhausted">- Generator exhausted</a><a class="headerlink" href="#-generator-exhausted" title="Permanent link">#</a></h1>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a>### 6. Idle → ProcessingAsync → Idle
+<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a>```python notest
+<a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a># Async uses separate client and event loop
+<a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a>response = await llm.achat(messages)
+<a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a>
+<a href="#__codelineno-3-6" id="__codelineno-3-6" name="__codelineno-3-6"></a># Transition to ProcessingAsync:
+<a href="#__codelineno-3-7" id="__codelineno-3-7" name="__codelineno-3-7"></a># 1. EnsureAsyncClient: Check self._async_client
+<a href="#__codelineno-3-8" id="__codelineno-3-8" name="__codelineno-3-8"></a>#    - If None, create AsyncClient(host=base_url, timeout=timeout)
+<a href="#__codelineno-3-9" id="__codelineno-3-9" name="__codelineno-3-9"></a># 2. BuildingAsyncRequest: Create request dict
+<a href="#__codelineno-3-10" id="__codelineno-3-10" name="__codelineno-3-10"></a># 3. SendingAsyncRequest: await async_client.chat(**request)
+<a href="#__codelineno-3-11" id="__codelineno-3-11" name="__codelineno-3-11"></a># 4. WaitingAsyncResponse: Coroutine awaits response
+<a href="#__codelineno-3-12" id="__codelineno-3-12" name="__codelineno-3-12"></a># 5. ParsingAsyncResponse: _chat_from_response(raw)
+<a href="#__codelineno-3-13" id="__codelineno-3-13" name="__codelineno-3-13"></a># 6. CreatingAsyncChatResponse: Build ChatResponse
+<a href="#__codelineno-3-14" id="__codelineno-3-14" name="__codelineno-3-14"></a>
+<a href="#__codelineno-3-15" id="__codelineno-3-15" name="__codelineno-3-15"></a># Transition back to Idle:
+<a href="#__codelineno-3-16" id="__codelineno-3-16" name="__codelineno-3-16"></a># - Return ChatResponse to caller
 </code></pre></div>
 <h3 id="7-idle-processingtools-idle"><a class="toclink" href="#7-idle-processingtools-idle">7. Idle → ProcessingTools → Idle</a><a class="headerlink" href="#7-idle-processingtools-idle" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="c1"># Tool calling adds preparation and validation steps</span>
-<a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate_tool_calls</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="p">)</span>
-<a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a>
-<a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a><span class="c1"># Transition to ProcessingTools:</span>
-<a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a><span class="c1"># 1. PreparingTools: _prepare_chat_with_tools(messages, tools)</span>
-<a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a><span class="c1"># 2. ConvertingTools: For each tool:</span>
-<a href="#__codelineno-6-7" id="__codelineno-6-7" name="__codelineno-6-7"></a><span class="c1">#    a. ExtractingSchemas: Get tool.metadata.fn_schema</span>
-<a href="#__codelineno-6-8" id="__codelineno-6-8" name="__codelineno-6-8"></a><span class="c1">#    b. BuildingToolDicts: Create Ollama tool dict format</span>
-<a href="#__codelineno-6-9" id="__codelineno-6-9" name="__codelineno-6-9"></a><span class="c1"># 3. MergingKwargs: Add tools to kwargs</span>
-<a href="#__codelineno-6-10" id="__codelineno-6-10" name="__codelineno-6-10"></a><span class="c1"># 4. CallingChat: Delegate to chat(messages, **kwargs)</span>
-<a href="#__codelineno-6-11" id="__codelineno-6-11" name="__codelineno-6-11"></a><span class="c1">#    [Enters ProcessingChat state]</span>
-<a href="#__codelineno-6-12" id="__codelineno-6-12" name="__codelineno-6-12"></a><span class="c1"># 5. ValidatingToolResponse: _validate_chat_with_tools_response</span>
-<a href="#__codelineno-6-13" id="__codelineno-6-13" name="__codelineno-6-13"></a><span class="c1"># 6. CheckParallel: Check allow_parallel_tool_calls flag</span>
-<a href="#__codelineno-6-14" id="__codelineno-6-14" name="__codelineno-6-14"></a><span class="c1">#    - If False: ForcingSingle → trim to first tool call</span>
-<a href="#__codelineno-6-15" id="__codelineno-6-15" name="__codelineno-6-15"></a><span class="c1">#    - If True: ReturningMultiple → keep all tool calls</span>
-<a href="#__codelineno-6-16" id="__codelineno-6-16" name="__codelineno-6-16"></a>
-<a href="#__codelineno-6-17" id="__codelineno-6-17" name="__codelineno-6-17"></a><span class="c1"># Transition back to Idle:</span>
-<a href="#__codelineno-6-18" id="__codelineno-6-18" name="__codelineno-6-18"></a><span class="c1"># - Return ChatResponse with tool_calls</span>
-</code></pre></div>
-<h3 id="8-any-state-error-idle"><a class="toclink" href="#8-any-state-error-idle">8. Any State → Error → Idle</a><a class="headerlink" href="#8-any-state-error-idle" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="k">try</span><span class="p">:</span>
-<a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a>    <span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
-<a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a><span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a>    <span class="c1"># Handle error</span>
-<a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a>
-<a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a><span class="c1"># Error transition can occur from:</span>
-<a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a><span class="c1"># - ProcessingChat: Network timeout, invalid response</span>
-<a href="#__codelineno-7-8" id="__codelineno-7-8" name="__codelineno-7-8"></a><span class="c1"># - ProcessingComplete: Any chat error propagates</span>
-<a href="#__codelineno-7-9" id="__codelineno-7-9" name="__codelineno-7-9"></a><span class="c1"># - ProcessingStream: Chunk parsing error</span>
-<a href="#__codelineno-7-10" id="__codelineno-7-10" name="__codelineno-7-10"></a><span class="c1"># - ProcessingAsync: Async operation failure</span>
-<a href="#__codelineno-7-11" id="__codelineno-7-11" name="__codelineno-7-11"></a><span class="c1"># - ProcessingTools: Tool schema validation error</span>
-<a href="#__codelineno-7-12" id="__codelineno-7-12" name="__codelineno-7-12"></a>
-<a href="#__codelineno-7-13" id="__codelineno-7-13" name="__codelineno-7-13"></a><span class="c1"># Error state:</span>
-<a href="#__codelineno-7-14" id="__codelineno-7-14" name="__codelineno-7-14"></a><span class="c1"># 1. LoggingError: Log exception details</span>
-<a href="#__codelineno-7-15" id="__codelineno-7-15" name="__codelineno-7-15"></a><span class="c1"># 2. RaisingException: Raise appropriate exception type</span>
-<a href="#__codelineno-7-16" id="__codelineno-7-16" name="__codelineno-7-16"></a><span class="c1">#    - TimeoutError: request_timeout exceeded</span>
-<a href="#__codelineno-7-17" id="__codelineno-7-17" name="__codelineno-7-17"></a><span class="c1">#    - ConnectionError: Cannot reach server</span>
-<a href="#__codelineno-7-18" id="__codelineno-7-18" name="__codelineno-7-18"></a><span class="c1">#    - ValueError: Invalid response format</span>
-<a href="#__codelineno-7-19" id="__codelineno-7-19" name="__codelineno-7-19"></a><span class="c1">#    - KeyError: Missing required field in response</span>
-<a href="#__codelineno-7-20" id="__codelineno-7-20" name="__codelineno-7-20"></a>
-<a href="#__codelineno-7-21" id="__codelineno-7-21" name="__codelineno-7-21"></a><span class="c1"># Transition back to Idle:</span>
-<a href="#__codelineno-7-22" id="__codelineno-7-22" name="__codelineno-7-22"></a><span class="c1"># - Exception handled by caller</span>
-<a href="#__codelineno-7-23" id="__codelineno-7-23" name="__codelineno-7-23"></a><span class="c1"># - Instance still usable for next call</span>
+<p>```python notest</p>
+<h1 id="tool-calling-adds-preparation-and-validation-steps"><a class="toclink" href="#tool-calling-adds-preparation-and-validation-steps">Tool calling adds preparation and validation steps</a><a class="headerlink" href="#tool-calling-adds-preparation-and-validation-steps" title="Permanent link">#</a></h1>
+<p>response = llm.generate_tool_calls(messages, tools)</p>
+<h1 id="transition-to-processingtools"><a class="toclink" href="#transition-to-processingtools">Transition to ProcessingTools:</a><a class="headerlink" href="#transition-to-processingtools" title="Permanent link">#</a></h1>
+<h1 id="1-preparingtools-_prepare_chat_with_toolsmessages-tools"><a class="toclink" href="#1-preparingtools-_prepare_chat_with_toolsmessages-tools">1. PreparingTools: _prepare_chat_with_tools(messages, tools)</a><a class="headerlink" href="#1-preparingtools-_prepare_chat_with_toolsmessages-tools" title="Permanent link">#</a></h1>
+<h1 id="2-convertingtools-for-each-tool"><a class="toclink" href="#2-convertingtools-for-each-tool">2. ConvertingTools: For each tool:</a><a class="headerlink" href="#2-convertingtools-for-each-tool" title="Permanent link">#</a></h1>
+<h1 id="a-extractingschemas-get-toolmetadatafn_schema"><a class="toclink" href="#a-extractingschemas-get-toolmetadatafn_schema">a. ExtractingSchemas: Get tool.metadata.fn_schema</a><a class="headerlink" href="#a-extractingschemas-get-toolmetadatafn_schema" title="Permanent link">#</a></h1>
+<h1 id="b-buildingtooldicts-create-ollama-tool-dict-format"><a class="toclink" href="#b-buildingtooldicts-create-ollama-tool-dict-format">b. BuildingToolDicts: Create Ollama tool dict format</a><a class="headerlink" href="#b-buildingtooldicts-create-ollama-tool-dict-format" title="Permanent link">#</a></h1>
+<h1 id="3-mergingkwargs-add-tools-to-kwargs"><a class="toclink" href="#3-mergingkwargs-add-tools-to-kwargs">3. MergingKwargs: Add tools to kwargs</a><a class="headerlink" href="#3-mergingkwargs-add-tools-to-kwargs" title="Permanent link">#</a></h1>
+<h1 id="4-callingchat-delegate-to-chatmessages-kwargs"><a class="toclink" href="#4-callingchat-delegate-to-chatmessages-kwargs">4. CallingChat: Delegate to chat(messages, **kwargs)</a><a class="headerlink" href="#4-callingchat-delegate-to-chatmessages-kwargs" title="Permanent link">#</a></h1>
+<h1 id="enters-processingchat-state"><a class="toclink" href="#enters-processingchat-state">[Enters ProcessingChat state]</a><a class="headerlink" href="#enters-processingchat-state" title="Permanent link">#</a></h1>
+<h1 id="5-validatingtoolresponse-_validate_chat_with_tools_response"><a class="toclink" href="#5-validatingtoolresponse-_validate_chat_with_tools_response">5. ValidatingToolResponse: _validate_chat_with_tools_response</a><a class="headerlink" href="#5-validatingtoolresponse-_validate_chat_with_tools_response" title="Permanent link">#</a></h1>
+<h1 id="6-checkparallel-check-allow_parallel_tool_calls-flag"><a class="toclink" href="#6-checkparallel-check-allow_parallel_tool_calls-flag">6. CheckParallel: Check allow_parallel_tool_calls flag</a><a class="headerlink" href="#6-checkparallel-check-allow_parallel_tool_calls-flag" title="Permanent link">#</a></h1>
+<h1 id="-if-false-forcingsingle-trim-to-first-tool-call"><a class="toclink" href="#-if-false-forcingsingle-trim-to-first-tool-call">- If False: ForcingSingle → trim to first tool call</a><a class="headerlink" href="#-if-false-forcingsingle-trim-to-first-tool-call" title="Permanent link">#</a></h1>
+<h1 id="-if-true-returningmultiple-keep-all-tool-calls"><a class="toclink" href="#-if-true-returningmultiple-keep-all-tool-calls">- If True: ReturningMultiple → keep all tool calls</a><a class="headerlink" href="#-if-true-returningmultiple-keep-all-tool-calls" title="Permanent link">#</a></h1>
+<h1 id="transition-back-to-idle_2"><a class="toclink" href="#transition-back-to-idle_2">Transition back to Idle:</a><a class="headerlink" href="#transition-back-to-idle_2" title="Permanent link">#</a></h1>
+<h1 id="-return-chatresponse-with-tool_calls"><a class="toclink" href="#-return-chatresponse-with-tool_calls">- Return ChatResponse with tool_calls</a><a class="headerlink" href="#-return-chatresponse-with-tool_calls" title="Permanent link">#</a></h1>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>### 8. Any State → Error → Idle
+<a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a>```python notest
+<a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>try:
+<a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a>    response = llm.chat(messages)
+<a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a>except Exception as e:
+<a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a>    # Handle error
+<a href="#__codelineno-4-7" id="__codelineno-4-7" name="__codelineno-4-7"></a>
+<a href="#__codelineno-4-8" id="__codelineno-4-8" name="__codelineno-4-8"></a># Error transition can occur from:
+<a href="#__codelineno-4-9" id="__codelineno-4-9" name="__codelineno-4-9"></a># - ProcessingChat: Network timeout, invalid response
+<a href="#__codelineno-4-10" id="__codelineno-4-10" name="__codelineno-4-10"></a># - ProcessingComplete: Any chat error propagates
+<a href="#__codelineno-4-11" id="__codelineno-4-11" name="__codelineno-4-11"></a># - ProcessingStream: Chunk parsing error
+<a href="#__codelineno-4-12" id="__codelineno-4-12" name="__codelineno-4-12"></a># - ProcessingAsync: Async operation failure
+<a href="#__codelineno-4-13" id="__codelineno-4-13" name="__codelineno-4-13"></a># - ProcessingTools: Tool schema validation error
+<a href="#__codelineno-4-14" id="__codelineno-4-14" name="__codelineno-4-14"></a>
+<a href="#__codelineno-4-15" id="__codelineno-4-15" name="__codelineno-4-15"></a># Error state:
+<a href="#__codelineno-4-16" id="__codelineno-4-16" name="__codelineno-4-16"></a># 1. LoggingError: Log exception details
+<a href="#__codelineno-4-17" id="__codelineno-4-17" name="__codelineno-4-17"></a># 2. RaisingException: Raise appropriate exception type
+<a href="#__codelineno-4-18" id="__codelineno-4-18" name="__codelineno-4-18"></a>#    - TimeoutError: request_timeout exceeded
+<a href="#__codelineno-4-19" id="__codelineno-4-19" name="__codelineno-4-19"></a>#    - ConnectionError: Cannot reach server
+<a href="#__codelineno-4-20" id="__codelineno-4-20" name="__codelineno-4-20"></a>#    - ValueError: Invalid response format
+<a href="#__codelineno-4-21" id="__codelineno-4-21" name="__codelineno-4-21"></a>#    - KeyError: Missing required field in response
+<a href="#__codelineno-4-22" id="__codelineno-4-22" name="__codelineno-4-22"></a>
+<a href="#__codelineno-4-23" id="__codelineno-4-23" name="__codelineno-4-23"></a># Transition back to Idle:
+<a href="#__codelineno-4-24" id="__codelineno-4-24" name="__codelineno-4-24"></a># - Exception handled by caller
+<a href="#__codelineno-4-25" id="__codelineno-4-25" name="__codelineno-4-25"></a># - Instance still usable for next call
 </code></pre></div>
 <h2 id="state-variables"><a class="toclink" href="#state-variables">State Variables</a><a class="headerlink" href="#state-variables" title="Permanent link">#</a></h2>
 <h3 id="configuration-state-immutable-after-init"><a class="toclink" href="#configuration-state-immutable-after-init">Configuration State (Immutable after init)</a><a class="headerlink" href="#configuration-state-immutable-after-init" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="c1"># Set during __init__, never change</span>
-<a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"llama3.1"</span>
-<a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"http://localhost:11434"</span>
-<a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a><span class="bp">self</span><span class="o">.</span><span class="n">request_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">180.0</span>
-<a href="#__codelineno-8-5" id="__codelineno-8-5" name="__codelineno-8-5"></a><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.75</span>
-<a href="#__codelineno-8-6" id="__codelineno-8-6" name="__codelineno-8-6"></a><span class="bp">self</span><span class="o">.</span><span class="n">context_window</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3900</span>
-<a href="#__codelineno-8-7" id="__codelineno-8-7" name="__codelineno-8-7"></a><span class="bp">self</span><span class="o">.</span><span class="n">prompt_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"prompt"</span>
-<a href="#__codelineno-8-8" id="__codelineno-8-8" name="__codelineno-8-8"></a><span class="bp">self</span><span class="o">.</span><span class="n">json_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-<a href="#__codelineno-8-9" id="__codelineno-8-9" name="__codelineno-8-9"></a><span class="bp">self</span><span class="o">.</span><span class="n">additional_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-<a href="#__codelineno-8-10" id="__codelineno-8-10" name="__codelineno-8-10"></a><span class="bp">self</span><span class="o">.</span><span class="n">keep_alive</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-<a href="#__codelineno-8-11" id="__codelineno-8-11" name="__codelineno-8-11"></a><span class="bp">self</span><span class="o">.</span><span class="n">_is_function_calling_model</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-</code></pre></div>
-<h3 id="client-state-mutable-lazy-initialized"><a class="toclink" href="#client-state-mutable-lazy-initialized">Client State (Mutable, lazy-initialized)</a><a class="headerlink" href="#client-state-mutable-lazy-initialized" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-9-1" id="__codelineno-9-1" name="__codelineno-9-1"></a><span class="c1"># None until first use</span>
-<a href="#__codelineno-9-2" id="__codelineno-9-2" name="__codelineno-9-2"></a><span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Client</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-<a href="#__codelineno-9-3" id="__codelineno-9-3" name="__codelineno-9-3"></a><span class="bp">self</span><span class="o">.</span><span class="n">_async_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-<a href="#__codelineno-9-4" id="__codelineno-9-4" name="__codelineno-9-4"></a>
-<a href="#__codelineno-9-5" id="__codelineno-9-5" name="__codelineno-9-5"></a><span class="c1"># After first sync call</span>
-<a href="#__codelineno-9-6" id="__codelineno-9-6" name="__codelineno-9-6"></a><span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">:</span> <span class="n">Client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request_timeout</span><span class="p">)</span>
-<a href="#__codelineno-9-7" id="__codelineno-9-7" name="__codelineno-9-7"></a>
-<a href="#__codelineno-9-8" id="__codelineno-9-8" name="__codelineno-9-8"></a><span class="c1"># After first async call</span>
-<a href="#__codelineno-9-9" id="__codelineno-9-9" name="__codelineno-9-9"></a><span class="bp">self</span><span class="o">.</span><span class="n">_async_client</span><span class="p">:</span> <span class="n">AsyncClient</span> <span class="o">=</span> <span class="n">AsyncClient</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request_timeout</span><span class="p">)</span>
-</code></pre></div>
+<p>```python notest</p>
+<h1 id="set-during-init-never-change"><a class="toclink" href="#set-during-init-never-change">Set during <strong>init</strong>, never change</a><a class="headerlink" href="#set-during-init-never-change" title="Permanent link">#</a></h1>
+<p>self.model: str = "llama3.1"
+self.base_url: str = "http://localhost:11434"
+self.request_timeout: float = 180.0
+self.temperature: float = 0.75
+self.context_window: int = 3900
+self.prompt_key: str = "prompt"
+self.json_mode: bool = False
+self.additional_kwargs: dict[str, Any] = {}
+self.keep_alive: Optional[str] = None
+self._is_function_calling_model: bool = True
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>### Client State (Mutable, lazy-initialized)
+<a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a>```python notest
+<a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a># None until first use
+<a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a>self._client: Client | None = None
+<a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a>self._async_client: AsyncClient | None = None
+<a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a>
+<a href="#__codelineno-5-7" id="__codelineno-5-7" name="__codelineno-5-7"></a># After first sync call
+<a href="#__codelineno-5-8" id="__codelineno-5-8" name="__codelineno-5-8"></a>self._client: Client = Client(host=self.base_url, timeout=self.request_timeout)
+<a href="#__codelineno-5-9" id="__codelineno-5-9" name="__codelineno-5-9"></a>
+<a href="#__codelineno-5-10" id="__codelineno-5-10" name="__codelineno-5-10"></a># After first async call
+<a href="#__codelineno-5-11" id="__codelineno-5-11" name="__codelineno-5-11"></a>self._async_client: AsyncClient = AsyncClient(host=self.base_url, timeout=self.request_timeout)
+</code></pre></div></p>
 <h3 id="request-state-per-call-transient"><a class="toclink" href="#request-state-per-call-transient">Request State (Per-call, transient)</a><a class="headerlink" href="#request-state-per-call-transient" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a><span class="c1"># Created fresh for each call, not stored</span>
-<a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a><span class="n">request_dict</span> <span class="o">=</span> <span class="p">{</span>
-<a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a>    <span class="s2">"model"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-<a href="#__codelineno-10-4" id="__codelineno-10-4" name="__codelineno-10-4"></a>    <span class="s2">"messages"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
-<a href="#__codelineno-10-5" id="__codelineno-10-5" name="__codelineno-10-5"></a>    <span class="s2">"options"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"temperature"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span> <span class="o">...</span><span class="p">},</span>
-<a href="#__codelineno-10-6" id="__codelineno-10-6" name="__codelineno-10-6"></a>    <span class="s2">"stream"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-<a href="#__codelineno-10-7" id="__codelineno-10-7" name="__codelineno-10-7"></a>    <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"json"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">json_mode</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-<a href="#__codelineno-10-8" id="__codelineno-10-8" name="__codelineno-10-8"></a>    <span class="s2">"tools"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="k">if</span> <span class="n">tools</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-<a href="#__codelineno-10-9" id="__codelineno-10-9" name="__codelineno-10-9"></a>    <span class="s2">"keep_alive"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">keep_alive</span>
-<a href="#__codelineno-10-10" id="__codelineno-10-10" name="__codelineno-10-10"></a><span class="p">}</span>
-</code></pre></div>
-<h3 id="streaming-state-per-stream-transient"><a class="toclink" href="#streaming-state-per-stream-transient">Streaming State (Per-stream, transient)</a><a class="headerlink" href="#streaming-state-per-stream-transient" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-11-1" id="__codelineno-11-1" name="__codelineno-11-1"></a><span class="c1"># Maintained during stream, not stored on instance</span>
-<a href="#__codelineno-11-2" id="__codelineno-11-2" name="__codelineno-11-2"></a><span class="n">accumulated_content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
-<a href="#__codelineno-11-3" id="__codelineno-11-3" name="__codelineno-11-3"></a><span class="n">accumulated_tool_calls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-<a href="#__codelineno-11-4" id="__codelineno-11-4" name="__codelineno-11-4"></a><span class="n">current_chunk</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
-<a href="#__codelineno-11-5" id="__codelineno-11-5" name="__codelineno-11-5"></a><span class="n">done</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-</code></pre></div>
+<p>```python notest</p>
+<h1 id="created-fresh-for-each-call-not-stored"><a class="toclink" href="#created-fresh-for-each-call-not-stored">Created fresh for each call, not stored</a><a class="headerlink" href="#created-fresh-for-each-call-not-stored" title="Permanent link">#</a></h1>
+<p>request_dict = {
+    "model": self.model,
+    "messages": [...],
+    "options": {"temperature": self.temperature, ...},
+    "stream": False,
+    "format": "json" if self.json_mode else None,
+    "tools": [...] if tools else None,
+    "keep_alive": self.keep_alive
+}
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a>### Streaming State (Per-stream, transient)
+<a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a>```python notest
+<a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a># Maintained during stream, not stored on instance
+<a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a>accumulated_content: str = ""
+<a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a>accumulated_tool_calls: list[dict] = []
+<a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a>current_chunk: dict = {}
+<a href="#__codelineno-6-7" id="__codelineno-6-7" name="__codelineno-6-7"></a>done: bool = False
+</code></pre></div></p>
 <h3 id="response-state-per-call-returned"><a class="toclink" href="#response-state-per-call-returned">Response State (Per-call, returned)</a><a class="headerlink" href="#response-state-per-call-returned" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-12-1" id="__codelineno-12-1" name="__codelineno-12-1"></a><span class="c1"># Created and returned, not stored</span>
-<a href="#__codelineno-12-2" id="__codelineno-12-2" name="__codelineno-12-2"></a><span class="n">chat_response</span> <span class="o">=</span> <span class="n">ChatResponse</span><span class="p">(</span>
-<a href="#__codelineno-12-3" id="__codelineno-12-3" name="__codelineno-12-3"></a>    <span class="n">message</span><span class="o">=</span><span class="n">Message</span><span class="p">(</span>
-<a href="#__codelineno-12-4" id="__codelineno-12-4" name="__codelineno-12-4"></a>        <span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">ASSISTANT</span><span class="p">,</span>
-<a href="#__codelineno-12-5" id="__codelineno-12-5" name="__codelineno-12-5"></a>        <span class="n">content</span><span class="o">=</span><span class="s2">"..."</span><span class="p">,</span>
-<a href="#__codelineno-12-6" id="__codelineno-12-6" name="__codelineno-12-6"></a>        <span class="n">additional_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"tool_calls"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]}</span>
-<a href="#__codelineno-12-7" id="__codelineno-12-7" name="__codelineno-12-7"></a>    <span class="p">),</span>
-<a href="#__codelineno-12-8" id="__codelineno-12-8" name="__codelineno-12-8"></a>    <span class="n">raw</span><span class="o">=</span><span class="p">{</span><span class="o">...</span><span class="p">},</span>
-<a href="#__codelineno-12-9" id="__codelineno-12-9" name="__codelineno-12-9"></a>    <span class="n">additional_kwargs</span><span class="o">=</span><span class="p">{</span><span class="o">...</span><span class="p">}</span>
-<a href="#__codelineno-12-10" id="__codelineno-12-10" name="__codelineno-12-10"></a><span class="p">)</span>
-</code></pre></div>
-<h2 id="lifecycle-diagram"><a class="toclink" href="#lifecycle-diagram">Lifecycle Diagram</a><a class="headerlink" href="#lifecycle-diagram" title="Permanent link">#</a></h2>
-<div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
-<div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
-Hold "Ctrl" to enable pan &amp; zoom
-</div>
-<nav class="panzoom-nav panzoom-top-nav">
-<button class="panzoom-info panzoom-button">
-<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-<path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
-</svg>
-</button><button class="panzoom-reset panzoom-button">
-<svg class="panzoom-icon" viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-<path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
-</svg>
-</button><button class="panzoom-max panzoom-button">
-<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
-<path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
-</svg>
-</button><button class="panzoom-min panzoom-button panzoom-hidden">
-<svg class="panzoom-icon" viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
-<path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
-</svg>
-</button>
-</nav>
-<pre class="mermaid"><code>graph LR
-    A[Create Instance] --&gt; B[Configured State]
-    B --&gt; C{First Call?}
-    C --&gt;|Yes| D[Initialize Client]
-    C --&gt;|No| E[Use Existing Client]
-    D --&gt; E
-    E --&gt; F[Process Request]
-    F --&gt; G{Success?}
-    G --&gt;|Yes| H[Return Response]
-    G --&gt;|No| I[Handle Error]
-    H --&gt; J{More Calls?}
-    I --&gt; J
-    J --&gt;|Yes| E
-    J --&gt;|No| K[Delete Instance]
-
-    style A fill:#e1f5ff
-    style B fill:#fff9c4
-    style D fill:#f3e5f5
-    style F fill:#e0f2f1
-    style H fill:#c8e6c9
-    style I fill:#ffcdd2
-    style K fill:#efebe9</code></pre>
-</div>
+<p>```python notest</p>
+<h1 id="created-and-returned-not-stored"><a class="toclink" href="#created-and-returned-not-stored">Created and returned, not stored</a><a class="headerlink" href="#created-and-returned-not-stored" title="Permanent link">#</a></h1>
+<p>chat_response = ChatResponse(
+    message=Message(
+        role=MessageRole.ASSISTANT,
+        content="...",
+        additional_kwargs={"tool_calls": [...]}
+    ),
+    raw={...},
+    additional_kwargs={...}
+)
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a>## Lifecycle Diagram
+<a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a>
+<a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a>```mermaid
+<a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a>graph LR
+<a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a>    A[Create Instance] --&gt; B[Configured State]
+<a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a>    B --&gt; C{First Call?}
+<a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a>    C --&gt;|Yes| D[Initialize Client]
+<a href="#__codelineno-7-8" id="__codelineno-7-8" name="__codelineno-7-8"></a>    C --&gt;|No| E[Use Existing Client]
+<a href="#__codelineno-7-9" id="__codelineno-7-9" name="__codelineno-7-9"></a>    D --&gt; E
+<a href="#__codelineno-7-10" id="__codelineno-7-10" name="__codelineno-7-10"></a>    E --&gt; F[Process Request]
+<a href="#__codelineno-7-11" id="__codelineno-7-11" name="__codelineno-7-11"></a>    F --&gt; G{Success?}
+<a href="#__codelineno-7-12" id="__codelineno-7-12" name="__codelineno-7-12"></a>    G --&gt;|Yes| H[Return Response]
+<a href="#__codelineno-7-13" id="__codelineno-7-13" name="__codelineno-7-13"></a>    G --&gt;|No| I[Handle Error]
+<a href="#__codelineno-7-14" id="__codelineno-7-14" name="__codelineno-7-14"></a>    H --&gt; J{More Calls?}
+<a href="#__codelineno-7-15" id="__codelineno-7-15" name="__codelineno-7-15"></a>    I --&gt; J
+<a href="#__codelineno-7-16" id="__codelineno-7-16" name="__codelineno-7-16"></a>    J --&gt;|Yes| E
+<a href="#__codelineno-7-17" id="__codelineno-7-17" name="__codelineno-7-17"></a>    J --&gt;|No| K[Delete Instance]
+<a href="#__codelineno-7-18" id="__codelineno-7-18" name="__codelineno-7-18"></a>
+<a href="#__codelineno-7-19" id="__codelineno-7-19" name="__codelineno-7-19"></a>    style A fill:#e1f5ff
+<a href="#__codelineno-7-20" id="__codelineno-7-20" name="__codelineno-7-20"></a>    style B fill:#fff9c4
+<a href="#__codelineno-7-21" id="__codelineno-7-21" name="__codelineno-7-21"></a>    style D fill:#f3e5f5
+<a href="#__codelineno-7-22" id="__codelineno-7-22" name="__codelineno-7-22"></a>    style F fill:#e0f2f1
+<a href="#__codelineno-7-23" id="__codelineno-7-23" name="__codelineno-7-23"></a>    style H fill:#c8e6c9
+<a href="#__codelineno-7-24" id="__codelineno-7-24" name="__codelineno-7-24"></a>    style I fill:#ffcdd2
+<a href="#__codelineno-7-25" id="__codelineno-7-25" name="__codelineno-7-25"></a>    style K fill:#efebe9
+</code></pre></div></p>
 <h2 id="concurrency-considerations"><a class="toclink" href="#concurrency-considerations">Concurrency Considerations</a><a class="headerlink" href="#concurrency-considerations" title="Permanent link">#</a></h2>
 <h3 id="thread-safety"><a class="toclink" href="#thread-safety">Thread Safety</a><a class="headerlink" href="#thread-safety" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-13-1" id="__codelineno-13-1" name="__codelineno-13-1"></a>Ollama instance is NOT thread-safe by default:
-<a href="#__codelineno-13-2" id="__codelineno-13-2" name="__codelineno-13-2"></a>  - _client and _async_client are shared state
-<a href="#__codelineno-13-3" id="__codelineno-13-3" name="__codelineno-13-3"></a>  - Lazy initialization is not synchronized
-<a href="#__codelineno-13-4" id="__codelineno-13-4" name="__codelineno-13-4"></a>
-<a href="#__codelineno-13-5" id="__codelineno-13-5" name="__codelineno-13-5"></a>Recommendation:
-<a href="#__codelineno-13-6" id="__codelineno-13-6" name="__codelineno-13-6"></a>  - Use separate Ollama instance per thread
-<a href="#__codelineno-13-7" id="__codelineno-13-7" name="__codelineno-13-7"></a>  - Or use locks around lazy initialization
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a>Ollama instance is NOT thread-safe by default:
+<a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a>  - _client and _async_client are shared state
+<a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a>  - Lazy initialization is not synchronized
+<a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a>
+<a href="#__codelineno-8-5" id="__codelineno-8-5" name="__codelineno-8-5"></a>Recommendation:
+<a href="#__codelineno-8-6" id="__codelineno-8-6" name="__codelineno-8-6"></a>  - Use separate Ollama instance per thread
+<a href="#__codelineno-8-7" id="__codelineno-8-7" name="__codelineno-8-7"></a>  - Or use locks around lazy initialization
 </code></pre></div>
 <h3 id="async-safety"><a class="toclink" href="#async-safety">Async Safety</a><a class="headerlink" href="#async-safety" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-14-1" id="__codelineno-14-1" name="__codelineno-14-1"></a>Ollama async methods are event-loop safe:
-<a href="#__codelineno-14-2" id="__codelineno-14-2" name="__codelineno-14-2"></a>  - Uses separate _async_client per event loop
-<a href="#__codelineno-14-3" id="__codelineno-14-3" name="__codelineno-14-3"></a>  - No shared mutable state in async methods
-<a href="#__codelineno-14-4" id="__codelineno-14-4" name="__codelineno-14-4"></a>
-<a href="#__codelineno-14-5" id="__codelineno-14-5" name="__codelineno-14-5"></a>Safe to use:
-<a href="#__codelineno-14-6" id="__codelineno-14-6" name="__codelineno-14-6"></a>  - Multiple concurrent achat() calls in same loop
-<a href="#__codelineno-14-7" id="__codelineno-14-7" name="__codelineno-14-7"></a>  - Multiple event loops with same instance (separate clients)
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-9-1" id="__codelineno-9-1" name="__codelineno-9-1"></a>Ollama async methods are event-loop safe:
+<a href="#__codelineno-9-2" id="__codelineno-9-2" name="__codelineno-9-2"></a>  - Uses separate _async_client per event loop
+<a href="#__codelineno-9-3" id="__codelineno-9-3" name="__codelineno-9-3"></a>  - No shared mutable state in async methods
+<a href="#__codelineno-9-4" id="__codelineno-9-4" name="__codelineno-9-4"></a>
+<a href="#__codelineno-9-5" id="__codelineno-9-5" name="__codelineno-9-5"></a>Safe to use:
+<a href="#__codelineno-9-6" id="__codelineno-9-6" name="__codelineno-9-6"></a>  - Multiple concurrent achat() calls in same loop
+<a href="#__codelineno-9-7" id="__codelineno-9-7" name="__codelineno-9-7"></a>  - Multiple event loops with same instance (separate clients)
 </code></pre></div>
 <h3 id="streaming-state"><a class="toclink" href="#streaming-state">Streaming State</a><a class="headerlink" href="#streaming-state" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-15-1" id="__codelineno-15-1" name="__codelineno-15-1"></a>Each stream maintains its own state:
-<a href="#__codelineno-15-2" id="__codelineno-15-2" name="__codelineno-15-2"></a>  - Generator/async generator has local variables
-<a href="#__codelineno-15-3" id="__codelineno-15-3" name="__codelineno-15-3"></a>  - No shared state between streams
-<a href="#__codelineno-15-4" id="__codelineno-15-4" name="__codelineno-15-4"></a>
-<a href="#__codelineno-15-5" id="__codelineno-15-5" name="__codelineno-15-5"></a>Safe to have:
-<a href="#__codelineno-15-6" id="__codelineno-15-6" name="__codelineno-15-6"></a>  - Multiple concurrent streams from same instance
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a>Each stream maintains its own state:
+<a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a>  - Generator/async generator has local variables
+<a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a>  - No shared state between streams
+<a href="#__codelineno-10-4" id="__codelineno-10-4" name="__codelineno-10-4"></a>
+<a href="#__codelineno-10-5" id="__codelineno-10-5" name="__codelineno-10-5"></a>Safe to have:
+<a href="#__codelineno-10-6" id="__codelineno-10-6" name="__codelineno-10-6"></a>  - Multiple concurrent streams from same instance
 </code></pre></div>
 <h2 id="state-management-best-practices"><a class="toclink" href="#state-management-best-practices">State Management Best Practices</a><a class="headerlink" href="#state-management-best-practices" title="Permanent link">#</a></h2>
 <h3 id="1-initialization"><a class="toclink" href="#1-initialization">1. Initialization</a><a class="headerlink" href="#1-initialization" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-16-1" id="__codelineno-16-1" name="__codelineno-16-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a href="#__codelineno-16-2" id="__codelineno-16-2" name="__codelineno-16-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a href="#__codelineno-16-3" id="__codelineno-16-3" name="__codelineno-16-3"></a><span class="c1"># ✓ Good: Initialize once, reuse</span>
-<a href="#__codelineno-16-4" id="__codelineno-16-4" name="__codelineno-16-4"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">"llama3.1"</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"OLLAMA_API_KEY"</span><span class="p">),</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
-<a href="#__codelineno-16-5" id="__codelineno-16-5" name="__codelineno-16-5"></a>
-<a href="#__codelineno-16-6" id="__codelineno-16-6" name="__codelineno-16-6"></a><span class="c1"># ✗ Bad: Create new instance per call</span>
-<a href="#__codelineno-16-7" id="__codelineno-16-7" name="__codelineno-16-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_response</span><span class="p">(</span><span class="n">prompt</span><span class="p">):</span>
-<a href="#__codelineno-16-8" id="__codelineno-16-8" name="__codelineno-16-8"></a>    <span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">"llama3.1"</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"OLLAMA_API_KEY"</span><span class="p">))</span>  <span class="c1"># Inefficient</span>
-<a href="#__codelineno-16-9" id="__codelineno-16-9" name="__codelineno-16-9"></a>    <span class="k">return</span> <span class="n">llm</span><span class="o">.</span><span class="n">complete</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
-</code></pre></div>
-<h3 id="2-client-reuse"><a class="toclink" href="#2-client-reuse">2. Client Reuse</a><a class="headerlink" href="#2-client-reuse" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-17-1" id="__codelineno-17-1" name="__codelineno-17-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a href="#__codelineno-17-2" id="__codelineno-17-2" name="__codelineno-17-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a href="#__codelineno-17-3" id="__codelineno-17-3" name="__codelineno-17-3"></a><span class="c1"># ✓ Good: Client automatically reused</span>
-<a href="#__codelineno-17-4" id="__codelineno-17-4" name="__codelineno-17-4"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">"llama3.1"</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"OLLAMA_API_KEY"</span><span class="p">))</span>
-<a href="#__codelineno-17-5" id="__codelineno-17-5" name="__codelineno-17-5"></a><span class="n">response1</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages1</span><span class="p">)</span>  <span class="c1"># Creates client</span>
-<a href="#__codelineno-17-6" id="__codelineno-17-6" name="__codelineno-17-6"></a><span class="n">response2</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages2</span><span class="p">)</span>  <span class="c1"># Reuses client</span>
-<a href="#__codelineno-17-7" id="__codelineno-17-7" name="__codelineno-17-7"></a>
-<a href="#__codelineno-17-8" id="__codelineno-17-8" name="__codelineno-17-8"></a><span class="c1"># ✗ Bad: Don't access _client directly</span>
-<a href="#__codelineno-17-9" id="__codelineno-17-9" name="__codelineno-17-9"></a><span class="n">llm</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Don't do this</span>
-</code></pre></div>
+<p>```python notest
+import os
+from serapeum.ollama import Ollama</p>
+<h1 id="good-initialize-once-reuse"><a class="toclink" href="#good-initialize-once-reuse">✓ Good: Initialize once, reuse</a><a class="headerlink" href="#good-initialize-once-reuse" title="Permanent link">#</a></h1>
+<p>llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)</p>
+<h1 id="bad-create-new-instance-per-call"><a class="toclink" href="#bad-create-new-instance-per-call">✗ Bad: Create new instance per call</a><a class="headerlink" href="#bad-create-new-instance-per-call" title="Permanent link">#</a></h1>
+<p>def get_response(prompt):
+    llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"))  # Inefficient
+    return llm.complete(prompt)
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-11-1" id="__codelineno-11-1" name="__codelineno-11-1"></a>### 2. Client Reuse
+<a href="#__codelineno-11-2" id="__codelineno-11-2" name="__codelineno-11-2"></a>```python notest
+<a href="#__codelineno-11-3" id="__codelineno-11-3" name="__codelineno-11-3"></a>import os
+<a href="#__codelineno-11-4" id="__codelineno-11-4" name="__codelineno-11-4"></a>from serapeum.ollama import Ollama
+<a href="#__codelineno-11-5" id="__codelineno-11-5" name="__codelineno-11-5"></a># ✓ Good: Client automatically reused
+<a href="#__codelineno-11-6" id="__codelineno-11-6" name="__codelineno-11-6"></a>llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"))
+<a href="#__codelineno-11-7" id="__codelineno-11-7" name="__codelineno-11-7"></a>response1 = llm.chat(messages1)  # Creates client
+<a href="#__codelineno-11-8" id="__codelineno-11-8" name="__codelineno-11-8"></a>response2 = llm.chat(messages2)  # Reuses client
+<a href="#__codelineno-11-9" id="__codelineno-11-9" name="__codelineno-11-9"></a>
+<a href="#__codelineno-11-10" id="__codelineno-11-10" name="__codelineno-11-10"></a># ✗ Bad: Don't access _client directly
+<a href="#__codelineno-11-11" id="__codelineno-11-11" name="__codelineno-11-11"></a>llm._client = None  # Don't do this
+</code></pre></div></p>
 <h3 id="3-configuration"><a class="toclink" href="#3-configuration">3. Configuration</a><a class="headerlink" href="#3-configuration" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-18-1" id="__codelineno-18-1" name="__codelineno-18-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a href="#__codelineno-18-2" id="__codelineno-18-2" name="__codelineno-18-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a href="#__codelineno-18-3" id="__codelineno-18-3" name="__codelineno-18-3"></a><span class="c1"># ✓ Good: Set configuration at init</span>
-<a href="#__codelineno-18-4" id="__codelineno-18-4" name="__codelineno-18-4"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">"llama3.1"</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"OLLAMA_API_KEY"</span><span class="p">),</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">json_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a href="#__codelineno-18-5" id="__codelineno-18-5" name="__codelineno-18-5"></a>
-<a href="#__codelineno-18-6" id="__codelineno-18-6" name="__codelineno-18-6"></a><span class="c1"># ✗ Bad: Don't modify config after init</span>
-<a href="#__codelineno-18-7" id="__codelineno-18-7" name="__codelineno-18-7"></a><span class="n">llm</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># Config is immutable</span>
-</code></pre></div>
-<h3 id="4-error-handling"><a class="toclink" href="#4-error-handling">4. Error Handling</a><a class="headerlink" href="#4-error-handling" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-19-1" id="__codelineno-19-1" name="__codelineno-19-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a href="#__codelineno-19-2" id="__codelineno-19-2" name="__codelineno-19-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a href="#__codelineno-19-3" id="__codelineno-19-3" name="__codelineno-19-3"></a><span class="c1"># ✓ Good: Instance remains usable after error</span>
-<a href="#__codelineno-19-4" id="__codelineno-19-4" name="__codelineno-19-4"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">"llama3.1"</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"OLLAMA_API_KEY"</span><span class="p">))</span>
-<a href="#__codelineno-19-5" id="__codelineno-19-5" name="__codelineno-19-5"></a><span class="k">try</span><span class="p">:</span>
-<a href="#__codelineno-19-6" id="__codelineno-19-6" name="__codelineno-19-6"></a>    <span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
-<a href="#__codelineno-19-7" id="__codelineno-19-7" name="__codelineno-19-7"></a><span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
-<a href="#__codelineno-19-8" id="__codelineno-19-8" name="__codelineno-19-8"></a>    <span class="c1"># Can still use llm for next call</span>
-<a href="#__codelineno-19-9" id="__codelineno-19-9" name="__codelineno-19-9"></a>    <span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
-<a href="#__codelineno-19-10" id="__codelineno-19-10" name="__codelineno-19-10"></a>
-<a href="#__codelineno-19-11" id="__codelineno-19-11" name="__codelineno-19-11"></a><span class="c1"># ✓ Good: Instance is reusable</span>
-</code></pre></div>
+<p>```python notest
+import os
+from serapeum.ollama import Ollama</p>
+<h1 id="good-set-configuration-at-init"><a class="toclink" href="#good-set-configuration-at-init">✓ Good: Set configuration at init</a><a class="headerlink" href="#good-set-configuration-at-init" title="Permanent link">#</a></h1>
+<p>llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"), temperature=0.8, json_mode=True)</p>
+<h1 id="bad-dont-modify-config-after-init"><a class="toclink" href="#bad-dont-modify-config-after-init">✗ Bad: Don't modify config after init</a><a class="headerlink" href="#bad-dont-modify-config-after-init" title="Permanent link">#</a></h1>
+<p>llm.temperature = 0.5  # Config is immutable
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-12-1" id="__codelineno-12-1" name="__codelineno-12-1"></a>### 4. Error Handling
+<a href="#__codelineno-12-2" id="__codelineno-12-2" name="__codelineno-12-2"></a>```python notest
+<a href="#__codelineno-12-3" id="__codelineno-12-3" name="__codelineno-12-3"></a>import os
+<a href="#__codelineno-12-4" id="__codelineno-12-4" name="__codelineno-12-4"></a>from serapeum.ollama import Ollama
+<a href="#__codelineno-12-5" id="__codelineno-12-5" name="__codelineno-12-5"></a># ✓ Good: Instance remains usable after error
+<a href="#__codelineno-12-6" id="__codelineno-12-6" name="__codelineno-12-6"></a>llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"))
+<a href="#__codelineno-12-7" id="__codelineno-12-7" name="__codelineno-12-7"></a>try:
+<a href="#__codelineno-12-8" id="__codelineno-12-8" name="__codelineno-12-8"></a>    response = llm.chat(messages)
+<a href="#__codelineno-12-9" id="__codelineno-12-9" name="__codelineno-12-9"></a>except TimeoutError:
+<a href="#__codelineno-12-10" id="__codelineno-12-10" name="__codelineno-12-10"></a>    # Can still use llm for next call
+<a href="#__codelineno-12-11" id="__codelineno-12-11" name="__codelineno-12-11"></a>    response = llm.chat(messages, temperature=0.2)
+<a href="#__codelineno-12-12" id="__codelineno-12-12" name="__codelineno-12-12"></a>
+<a href="#__codelineno-12-13" id="__codelineno-12-13" name="__codelineno-12-13"></a># ✓ Good: Instance is reusable
+</code></pre></div></p>
 <h3 id="5-streaming"><a class="toclink" href="#5-streaming">5. Streaming</a><a class="headerlink" href="#5-streaming" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-20-1" id="__codelineno-20-1" name="__codelineno-20-1"></a><span class="c1"># ✓ Good: Complete stream before next call</span>
-<a href="#__codelineno-20-2" id="__codelineno-20-2" name="__codelineno-20-2"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages1</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<a href="#__codelineno-20-3" id="__codelineno-20-3" name="__codelineno-20-3"></a>    <span class="n">process</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
-<a href="#__codelineno-20-4" id="__codelineno-20-4" name="__codelineno-20-4"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages2</span><span class="p">)</span>  <span class="c1"># Safe</span>
-<a href="#__codelineno-20-5" id="__codelineno-20-5" name="__codelineno-20-5"></a>
-<a href="#__codelineno-20-6" id="__codelineno-20-6" name="__codelineno-20-6"></a><span class="c1"># ⚠ Warning: Interleaving streams</span>
-<a href="#__codelineno-20-7" id="__codelineno-20-7" name="__codelineno-20-7"></a><span class="n">stream1</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages1</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a href="#__codelineno-20-8" id="__codelineno-20-8" name="__codelineno-20-8"></a><span class="n">stream2</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages2</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Both use same client</span>
-</code></pre></div>
+<p>```python notest</p>
+<h1 id="good-complete-stream-before-next-call"><a class="toclink" href="#good-complete-stream-before-next-call">✓ Good: Complete stream before next call</a><a class="headerlink" href="#good-complete-stream-before-next-call" title="Permanent link">#</a></h1>
+<p>for chunk in llm.chat(messages1, stream=True):
+    process(chunk)
+response = llm.chat(messages2)  # Safe</p>
+<h1 id="warning-interleaving-streams"><a class="toclink" href="#warning-interleaving-streams">⚠ Warning: Interleaving streams</a><a class="headerlink" href="#warning-interleaving-streams" title="Permanent link">#</a></h1>
+<p>stream1 = llm.chat(messages1, stream=True)
+stream2 = llm.chat(messages2, stream=True)  # Both use same client
+```</p>
 </article>
 </div>
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>

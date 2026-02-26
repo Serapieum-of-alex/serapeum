@@ -1,12 +1,11 @@
 [project]
-name = "serapeum-ollama"
-version = "0.4.0"
-description = "Ollama integration for Serapeum"
+name = "serapeum-azure-openai"
+version = "0.1.0"
+description = "serapeum azure openai integration"
+authors = [{name = "Mostafa Farrag", email = "moah.farrag@gmail.com"}]
 readme = "README.md"
 license = {text = "GNU General Public License v3"}
-authors = [
-    {name = "Mostafa Farrag", email = "moah.farrag@gmail.com"}
-]
+
 keywords = ["llm", "generativeai", "chatbot", "rag", "natural language processing"]
 
 classifiers = [
@@ -26,8 +25,10 @@ classifiers = [
 
 requires-python = ">=3.11,<4.0"
 dependencies = [
-    "ollama>=0.5.4",
-    "serapeum-core>=0.3.0",
+    "serapeum-openai",
+    "azure-identity>=1.15.0,<2",
+    "httpx",
+    "serapeum-core>=0.1.0",
 ]
 
 
@@ -42,44 +43,24 @@ dev = [
     "nbval>=0.11.0",
     "mypy>=1.13.0",
     "pytest-xdist>=3.8.0",
-    "pytest-benchmark",
-    "pytest-markdown-docs>=0.9.1",
-    "pytest-mock>=3.14.0"
+    "pytest-benchmark"
 ]
 
 [project.urls]
 homepage = "https://github.com/Serapieum-of-alex/serapeum"
 repository = "https://github.com/Serapieum-of-alex/serapeum"
-documentation = "https://serapieum-of-alex.github.io/serapeum"
+documentation = "https://serapieum-of-alex.github.io"
 Changelog = "https://serapieum-of-alex.github.io/serapeum/latest/change-log"
 
+[tool.hatch.build.targets.sdist]
+include = ["src/serapeum/"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/serapeum"]
-include =  ["src/serapeum"]
-
-[tool.hatch.build.targets.sdist]
-include =  ["src/serapeum"]
+include = ["src/serapeum/"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
-
-[tool.commitizen]
-name = "cz_customize"
-version_provider = "pep621"
-tag_format = "serapeum-ollama-$version"
-changelog_file = "change-log.md"
-changelog_incremental = true
-changelog_merge_prerelease = true
-update_changelog_on_bump = true
-
-[tool.commitizen.customize]
-message_template = "{{change_type}}:{% if show_message %} {{message}}{% endif %}"
-example = "feature: this feature enables customize through config file"
-schema = "<type>: <body>"
-schema_pattern = "(feat|fix|refactor|perf|build|ci|chore)(\\(.+\\))?: (.+)"
-changelog_pattern = "^(feat|fix|refactor|perf|build|ci|chore)(\\(.+\\))?(!)?:"
-change_type_order = ["BREAKING CHANGE", "feat", "fix", "refactor", "perf", "build", "ci", "chore"]
 
 [tool.flake8]
 ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]

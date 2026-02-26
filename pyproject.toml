@@ -25,6 +25,8 @@ requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core",
     "serapeum-ollama",
+    "serapeum-openai",
+    "serapeum-azure-openai"
 ]
 
 
@@ -161,6 +163,8 @@ members = [
 [tool.uv.sources]
 serapeum-core = { workspace = true }
 serapeum-ollama = { workspace = true }
+serapeum-openai = { workspace = true }
+serapeum-azure-openai = { workspace = true }
 
 
 [build-system]

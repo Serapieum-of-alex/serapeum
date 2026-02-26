@@ -5,13 +5,15 @@ from __future__ import annotations
 import base64
 from collections.abc import Sequence as ABCSequence
 from enum import Enum
-from io import BytesIO
+from io import BytesIO, IOBase
+from binascii import Error as BinasciiError
 from pathlib import Path
 from typing import Annotated, Any, AsyncGenerator, Generator, Iterator, Literal
 from urllib.parse import urlparse
 
 import requests
 from filetype import guess as filetype_guess
+from filetype import get_type
 from pydantic import (
     AnyUrl,
     BaseModel,
@@ -192,6 +194,139 @@ class Audio(Chunk):
 
 
 ChunkType = Annotated[TextChunk | Image | Audio, Field(discriminator="type")]
+
+
+class DocumentBlock(BaseModel):
+    """A representation of a document to directly pass to the LLM."""
+
+    type: Literal["document"] = "document"
+    data: bytes | IOBase | None = None
+    path: FilePath | str | None = None
+    url: str | None = None
+    title: str | None = None
+    document_mimetype: str | None = None
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @model_validator(mode="after")
+    def document_validation(self) -> Self:
+        self.document_mimetype = self.document_mimetype or self._guess_mimetype()
+
+        if not self.title:
+            self.title = "input_document"
+
+        # skip data validation if no byte is provided
+        if not self.data or not isinstance(self.data, bytes):
+            return self
+
+        try:
+            decoded_document = base64.b64decode(self.data, validate=True)
+        except BinasciiError:
+            self.data = base64.b64encode(self.data)
+
+        return self
+
+    @field_serializer("data")
+    def serialize_data(self, data: bytes | IOBase | None) -> bytes | None:
+        """Serialize the data field."""
+        if isinstance(data, bytes):
+            return data
+        if isinstance(data, IOBase):
+            data.seek(0)
+            return data.read()
+        return None
+
+    def resolve_document(self) -> IOBase:
+        """
+        Resolve a document such that it is represented by a BufferIO object.
+        """
+        data_buffer = (
+            self.data
+            if isinstance(self.data, IOBase)
+            else resolve_binary(
+                raw_bytes=self.data,
+                path=self.path,
+                url=str(self.url) if self.url else None,
+                as_base64=False,
+            )
+        )
+        # Check size by seeking to end and getting position
+        data_buffer.seek(0, 2)  # Seek to end
+        size = data_buffer.tell()
+        data_buffer.seek(0)  # Reset to beginning
+
+        if size == 0:
+            raise ValueError("resolve_document returned zero bytes")
+        return data_buffer
+
+    def _get_b64_string(self, data_buffer: IOBase) -> str:
+        """
+        Get base64-encoded string from a IOBase buffer.
+        """
+        data = data_buffer.read()
+        return base64.b64encode(data).decode("utf-8")
+
+    def _get_b64_bytes(self, data_buffer: IOBase) -> bytes:
+        """
+        Get base64-encoded bytes from a IOBase buffer.
+        """
+        data = data_buffer.read()
+        return base64.b64encode(data)
+
+    def guess_format(self) -> str | None:
+        path = self.path or self.url
+        if not path:
+            return None
+
+        return Path(str(path)).suffix.replace(".", "")
+
+    def _guess_mimetype(self) -> str | None:
+        if self.data:
+            guess = filetype_guess(self.data)
+            return str(guess.mime) if guess else None
+
+        suffix = self.guess_format()
+        if not suffix:
+            return None
+
+        guess = get_type(ext=suffix)
+        return str(guess.mime) if guess else None
+
+
+class ToolCallBlock(BaseModel):
+    type: Literal["tool_call"] = "tool_call"
+    tool_call_id: str | None = Field(
+        default=None, description="ID of the tool call, if provided"
+    )
+    tool_name: str = Field(description="Name of the called tool")
+    tool_kwargs: dict[str, Any] | str = Field(
+        default_factory=dict,  # type: ignore
+        description="Arguments provided to the tool, if available",
+    )
+
+
+class ThinkingBlock(BaseModel):
+    """A representation of the content streamed from reasoning/thinking processes by LLMs"""
+
+    type: Literal["thinking"] = "thinking"
+    content: str | None = Field(
+        description="Content of the reasoning/thinking process, if available",
+        default=None,
+    )
+    num_tokens: int | None = Field(
+        description="Number of token used for reasoning/thinking, if available",
+        default=None,
+    )
+    additional_information: dict[str, Any] = Field(
+        description="Additional information related to the thinking/reasoning process, if available",
+        default_factory=dict,
+    )
+
+
+ChunkType = Annotated[
+    TextChunk | Image | Audio | DocumentBlock | ToolCallBlock | ThinkingBlock,
+    Field(discriminator="type")
+]
 
 
 class Message(BaseModel):
@@ -444,6 +579,57 @@ class CompletionResponse(BaseResponse):
         """Return the textual content of the completion response."""
         return self.text
 
+    def to_chat_response(self) -> ChatResponse:
+        return ChatResponse(
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                content=self.text,
+                additional_kwargs=self.additional_kwargs,
+            ),
+            raw=self.raw,
+        )
+
+    @staticmethod
+    def stream_to_chat_response(
+        completion_response_gen: CompletionResponseGen,
+    ) -> ChatResponseGen:
+        """Convert a stream completion response to a stream chat response."""
+
+        def gen() -> ChatResponseGen:
+            for response in completion_response_gen:
+                yield ChatResponse(
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        content=response.text,
+                        additional_kwargs=response.additional_kwargs,
+                    ),
+                    delta=response.delta,
+                    raw=response.raw,
+                )
+
+        return gen()
+
+    @staticmethod
+    def astream_to_chat_response(
+        completion_response_gen: CompletionResponseAsyncGen,
+    ) -> ChatResponseAsyncGen:
+        """Convert an async stream completion to an async stream chat response."""
+
+        async def gen() -> ChatResponseAsyncGen:
+            async for response in completion_response_gen:
+                yield ChatResponse(
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        content=response.text,
+                        additional_kwargs=response.additional_kwargs,
+                    ),
+                    delta=response.delta,
+                    raw=response.raw,
+                )
+
+        return gen()
+
+
 
 CompletionResponseGen = Generator[CompletionResponse, None, None]
 CompletionResponseAsyncGen = AsyncGenerator[CompletionResponse, None]
@@ -622,3 +808,18 @@ def resolve_binary(
 
     # Return the buffer created in one of the branches above
     return buffer
+
+
+
+ContentBlock = Annotated[
+    TextChunk | Image | Audio | ThinkingBlock | ToolCallBlock,
+    Field(discriminator="block_type"),
+]
+
+
+class LogProb(BaseModel):
+    """LogProb of a token."""
+
+    token: str = Field(default_factory=str)
+    logprob: float = Field(default_factory=float)
+    bytes: list[int] = Field(default_factory=list)

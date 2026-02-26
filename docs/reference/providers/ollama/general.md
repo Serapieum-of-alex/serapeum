@@ -53,7 +53,7 @@ llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), req
 # Create structured completion runner
 text_llm = TextCompletionLLM(
     output_parser=PydanticParser(output_cls=DummyModel),
-    prompt="Value: {value}",
+    prompt="Generate any value: {value}",
     llm=llm,
 )
 
@@ -82,7 +82,7 @@ llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), req
 
 # Create tool orchestrator
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Album,
+    schema=Album,
     prompt="Create an album about {topic} with two random songs",
     llm=llm,
 )
@@ -243,7 +243,7 @@ Non-blocking execution:
 
 ### 1. **Lazy Initialization**
 Clients are created on first use, not during `__init__`:
-```python
+```python notest
 @property
 def client(self) -> Client:
     if self._client is None:
@@ -390,19 +390,44 @@ messages1 = [Message(role=MessageRole.USER, content="Hi!")]
 messages2 = [Message(role=MessageRole.USER, content="How are you?")]
 response1 = llm.chat(messages1)
 response2 = llm.chat(messages2)
+print(response1.message.content)  # "Hi!"
+print(response2.message.content)  # "How are you?"
 ```
 
 ### Pattern 2: Streaming for Long Responses
 ```python
 import os
+from serapeum.core.llms import Message, MessageRole
 from serapeum.ollama import Ollama
 llm = Ollama(
   model="qwen3.5:397b",
   api_key=os.environ.get("OLLAMA_API_KEY"),
   request_timeout=180
 )
+messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
 for chunk in llm.chat(messages, stream=True):
-    print(chunk.message.content, end="", flush=True)
+    print(f"{chunk.message.content}\n", end="", flush=True)
+
+# I
+# I'm
+# I'm reading
+# I'm reading a
+# I'm reading a book
+# I'm reading a book on
+# I'm reading a book on anti
+# I'm reading a book on anti-gr
+# I'm reading a book on anti-gravity
+# I'm reading a book on anti-gravity.
+# I'm reading a book on anti-gravity. It
+# I'm reading a book on anti-gravity. It's
+# I'm reading a book on anti-gravity. It's impossible
+# I'm reading a book on anti-gravity. It's impossible to
+# I'm reading a book on anti-gravity. It's impossible to put
+# I'm reading a book on anti-gravity. It's impossible to put down
+# I'm reading a book on anti-gravity. It's impossible to put down!
+# I'm reading a book on anti-gravity. It's impossible to put down! 📚
+# I'm reading a book on anti-gravity. It's impossible to put down! 📚
+# I'm reading a book on anti-gravity. It's impossible to put down! 📚
 ```
 
 ### Pattern 3: Tool Calling for Structured Outputs
@@ -414,6 +439,16 @@ from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
 
 
+# Define your output schema
+class Song(BaseModel):
+    title: str
+    duration: int  # in seconds
+
+class Album(BaseModel):
+    title: str
+    artist: str
+    songs: list[Song]
+    
 llm = Ollama(
   model="qwen3.5:397b",
   api_key=os.environ.get("OLLAMA_API_KEY"),
@@ -421,10 +456,32 @@ llm = Ollama(
 )
 
 # Define tool from Pydantic model
-tool = CallableTool.from_model(MyModel)
+tool = CallableTool.from_model(Album)
 
 # Get structured output via tool calling
-response = llm.generate_tool_calls(messages, tools=[tool])
+response = llm.generate_tool_calls(tools=[tool], user_msg="Create an album about rock")
+
+# print(response.message.additional_kwargs["tool_calls"])
+# [
+#   ToolCall(
+#       function=Function(
+#           name='Album', 
+#           arguments={'title': 'Thunder & Lightning', 'artist': 'The Rock Legends', 
+#           'songs': [
+#               {'duration': 245, 'title': 'Electric Storm'}, 
+#               {'duration': 312, 'title': 'Midnight Rider'}, 
+#               {'duration': 278, 'title': 'Breaking Chains'}, 
+#               {'duration': 295, 'title': 'Highway to Glory'}, 
+#               {'duration': 267, 'title': 'Rebel Heart'}, 
+#               {'duration': 334, 'title': 'Stone Cold Blues'}, 
+#               {'duration': 289, 'title': 'Rise Up'}, 
+#               {'duration': 356, 'title': 'Last Stand'}
+#           ]
+#        }
+#       )
+#     )
+#  ]
+
 ```
 
 ### Pattern 4: Async for Concurrency

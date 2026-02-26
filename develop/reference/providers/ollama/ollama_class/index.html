@@ -21,7 +21,7 @@
 <link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1565,8 +1565,8 @@ Hold "Ctrl" to enable pan &amp; zoom
 
     class FunctionCallingLLM {
         &lt;&lt;abstract&gt;&gt;
-        +chat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
-        +achat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +generate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +agenerate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         +get_tool_calls_from_response(response, error_on_no_tool_call) List[ToolSelection]
         #_prepare_chat_with_tools(messages, tools, **kwargs) dict
         #_validate_chat_with_tools_response(response, tools, **kwargs) ChatResponse
@@ -1593,8 +1593,8 @@ Hold "Ctrl" to enable pan &amp; zoom
         +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
         +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
-        +chat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
-        +achat_with_tools(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +generate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +agenerate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         -_chat(messages, stream, **kwargs) ChatResponse
         -_achat(messages, stream, **kwargs) ChatResponse
         -_prepare_chat_with_tools(messages, tools, **kwargs) dict
@@ -1823,7 +1823,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 </code></pre></div>
 <h3 id="3-template-method-pattern"><a class="toclink" href="#3-template-method-pattern">3. Template Method Pattern</a><a class="headerlink" href="#3-template-method-pattern" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="c1"># FunctionCallingLLM defines workflow</span>
-<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">chat_with_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_tool_calls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>    <span class="n">prepared</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_chat_with_tools</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># Subclass implements</span>
 <a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a>    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">prepared</span><span class="p">)</span>
 <a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a>    <span class="n">validated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_chat_with_tools_response</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">tools</span><span class="p">)</span>  <span class="c1"># Subclass implements</span>
@@ -1844,7 +1844,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <h3 id="with-toolorchestratingllm"><a class="toclink" href="#with-toolorchestratingllm">With ToolOrchestratingLLM</a><a class="headerlink" href="#with-toolorchestratingllm" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a>ToolOrchestratingLLM uses Ollama for:
 <a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a>  - Tool-calling capabilities
-<a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a>  - chat_with_tools() method
+<a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a>  - generate_tool_calls() method
 <a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a>  - Tool call extraction from responses
 </code></pre></div>
 <h3 id="with-external-packages"><a class="toclink" href="#with-external-packages">With External Packages</a><a class="headerlink" href="#with-external-packages" title="Permanent link">#</a></h3>

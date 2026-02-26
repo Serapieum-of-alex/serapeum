@@ -21,7 +21,7 @@
 <link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1677,7 +1677,7 @@ Hold "Ctrl" to enable pan &amp; zoom
             Idle --&gt; ProcessingComplete: complete(prompt)
             Idle --&gt; ProcessingStream: chat(messages, stream=True)
             Idle --&gt; ProcessingAsync: achat(messages)
-            Idle --&gt; ProcessingTools: chat_with_tools(messages, tools)
+            Idle --&gt; ProcessingTools: generate_tool_calls(messages, tools)
 
             state ProcessingChat {
                 [*] --&gt; BuildingRequest
@@ -1885,7 +1885,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 </code></pre></div>
 <h3 id="7-idle-processingtools-idle"><a class="toclink" href="#7-idle-processingtools-idle">7. Idle → ProcessingTools → Idle</a><a class="headerlink" href="#7-idle-processingtools-idle" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="c1"># Tool calling adds preparation and validation steps</span>
-<a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat_with_tools</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="p">)</span>
+<a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate_tool_calls</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="p">)</span>
 <a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a>
 <a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a><span class="c1"># Transition to ProcessingTools:</span>
 <a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a><span class="c1"># 1. PreparingTools: _prepare_chat_with_tools(messages, tools)</span>

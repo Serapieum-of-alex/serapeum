@@ -44,7 +44,7 @@ class MockLLM(ChatToCompletionMixin):
             message=Message(role=MessageRole.ASSISTANT, content="OK"), delta="K"
         )
 
-    async def achat(self, messages: MessageList, stream, **kwargs):
+    async def achat(self, messages: MessageList, *, stream, **kwargs):
         """Mock async chat implementation."""
         if not stream:
             self.last_messages = messages

@@ -181,7 +181,7 @@ response = llm.chat([Message(role=MessageRole.USER, content="Hello")])
 ```
 
 ### 3. Idle → ProcessingChat → Idle
-```python
+```python notest
 # Idle state: Ready for requests
 response = llm.chat(messages)
 
@@ -200,7 +200,7 @@ response = llm.chat(messages)
 ```
 
 ### 4. Idle → ProcessingComplete → Idle
-```python
+```python notest
 # Complete uses decorator pattern
 response = llm.complete(prompt)
 
@@ -217,7 +217,7 @@ response = llm.complete(prompt)
 ```
 
 ### 5. Idle → ProcessingStream → Idle
-```python
+```python notest
 # Streaming maintains state across multiple yields
 for chunk in llm.chat(messages, stream=True):
     print(chunk.message.content)
@@ -240,7 +240,7 @@ for chunk in llm.chat(messages, stream=True):
 ```
 
 ### 6. Idle → ProcessingAsync → Idle
-```python
+```python notest
 # Async uses separate client and event loop
 response = await llm.achat(messages)
 
@@ -259,7 +259,7 @@ response = await llm.achat(messages)
 
 ### 7. Idle → ProcessingTools → Idle
 
-```python
+```python notest
 # Tool calling adds preparation and validation steps
 response = llm.generate_tool_calls(messages, tools)
 
@@ -281,7 +281,7 @@ response = llm.generate_tool_calls(messages, tools)
 ```
 
 ### 8. Any State → Error → Idle
-```python
+```python notest
 try:
     response = llm.chat(messages)
 except Exception as e:
@@ -310,7 +310,7 @@ except Exception as e:
 ## State Variables
 
 ### Configuration State (Immutable after init)
-```python
+```python notest
 # Set during __init__, never change
 self.model: str = "llama3.1"
 self.base_url: str = "http://localhost:11434"
@@ -325,10 +325,10 @@ self._is_function_calling_model: bool = True
 ```
 
 ### Client State (Mutable, lazy-initialized)
-```python
+```python notest
 # None until first use
-self._client: Optional[Client] = None
-self._async_client: Optional[AsyncClient] = None
+self._client: Client | None = None
+self._async_client: AsyncClient | None = None
 
 # After first sync call
 self._client: Client = Client(host=self.base_url, timeout=self.request_timeout)
@@ -338,7 +338,7 @@ self._async_client: AsyncClient = AsyncClient(host=self.base_url, timeout=self.r
 ```
 
 ### Request State (Per-call, transient)
-```python
+```python notest
 # Created fresh for each call, not stored
 request_dict = {
     "model": self.model,
@@ -352,7 +352,7 @@ request_dict = {
 ```
 
 ### Streaming State (Per-stream, transient)
-```python
+```python notest
 # Maintained during stream, not stored on instance
 accumulated_content: str = ""
 accumulated_tool_calls: list[dict] = []
@@ -361,7 +361,7 @@ done: bool = False
 ```
 
 ### Response State (Per-call, returned)
-```python
+```python notest
 # Created and returned, not stored
 chat_response = ChatResponse(
     message=Message(
@@ -438,7 +438,7 @@ Safe to have:
 ## State Management Best Practices
 
 ### 1. Initialization
-```python
+```python notest
 import os
 from serapeum.ollama import Ollama
 # ✓ Good: Initialize once, reuse
@@ -451,7 +451,7 @@ def get_response(prompt):
 ```
 
 ### 2. Client Reuse
-```python
+```python notest
 import os
 from serapeum.ollama import Ollama
 # ✓ Good: Client automatically reused
@@ -464,7 +464,7 @@ llm._client = None  # Don't do this
 ```
 
 ### 3. Configuration
-```python
+```python notest
 import os
 from serapeum.ollama import Ollama
 # ✓ Good: Set configuration at init
@@ -475,7 +475,7 @@ llm.temperature = 0.5  # Config is immutable
 ```
 
 ### 4. Error Handling
-```python
+```python notest
 import os
 from serapeum.ollama import Ollama
 # ✓ Good: Instance remains usable after error
@@ -490,7 +490,7 @@ except TimeoutError:
 ```
 
 ### 5. Streaming
-```python
+```python notest
 # ✓ Good: Complete stream before next call
 for chunk in llm.chat(messages1, stream=True):
     process(chunk)

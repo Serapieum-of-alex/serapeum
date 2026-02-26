@@ -291,7 +291,7 @@ BaseLLM (abstract)
 ## Design Patterns
 
 ### 1. Lazy Initialization
-```python
+```python notest
 @property
 def client(self) -> Client:
     if self._client is None:
@@ -299,16 +299,8 @@ def client(self) -> Client:
     return self._client
 ```
 
-### 2. Decorator Pattern (Completion via Chat)
-```python
-@chat_to_completion_decorator
-def complete(self, prompt: str, **kwargs) -> CompletionResponse:
-    # Decorator handles conversion
-    pass
-```
-
-### 3. Template Method Pattern
-```python
+### 2. Template Method Pattern
+```python notest
 # FunctionCallingLLM defines workflow
 def generate_tool_calls(self, messages, tools, **kwargs):
     prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass implements
@@ -317,8 +309,8 @@ def generate_tool_calls(self, messages, tools, **kwargs):
     return validated
 ```
 
-### 4. Protocol-Based Tools
-```python
+### 3. Protocol-Based Tools
+```python notest
 # BaseTool is a protocol, not a base class
 class BaseTool(Protocol):
     def call(self, **kwargs) -> ToolOutput: ...

@@ -129,7 +129,7 @@ flowchart TD
 ## Data Transformation Examples
 
 ### 1. Initialization
-```python
+```python notest
 Input:
   Ollama(model="llama3.1", base_url="http://localhost:11434", request_timeout=180)
 
@@ -153,7 +153,7 @@ Output:
 ```
 
 ### 2. Chat Request
-```python
+```python notest
 Input:
   messages = [Message(role=MessageRole.USER, content="Say 'pong'.")]
   kwargs = {"temperature": 0.2}
@@ -209,7 +209,7 @@ Output:
 ```
 
 ### 3. Complete Request (via Decorator)
-```python
+```python notest
 Input:
   prompt = "Say 'pong'."
   kwargs = {}
@@ -236,7 +236,7 @@ Output:
 ```
 
 ### 4. Chat with Tools
-```python
+```python notest
 Input:
   messages = [Message(role=MessageRole.USER, content="Create album about rock")]
   tools = [CallableTool(fn=create_album, metadata=ToolMetadata(...))]
@@ -316,7 +316,7 @@ Output:
 ```
 
 ### 5. Streaming Chat
-```python
+```python notest
 Input:
   messages = [Message(role=MessageRole.USER, content="Count to 3")]
   stream = True

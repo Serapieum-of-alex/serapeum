@@ -1,3 +1,50 @@
+## serapeum-core-0.3.0 (2026-02-26)
+
+
+- refactor(core,ollama)!: unify streaming API and rename methods for consistency (#31)
+- refactor(core,ollama)!: unify streaming API and rename methods for consistency
+- BREAKING CHANGE: Major API refactoring consolidating streaming methods and
+renaming public APIs for improved consistency and developer experience.
+- ## Key Changes
+- ### Stream Parameter Unification
+- Merge `stream_chat()`/`astream_chat()` into `chat(stream=True)`/`achat(stream=True)`
+- Merge `stream_complete()`/`astream_complete()` into `complete(stream=True)`/`acomplete(stream=True)`
+- Remove all separate `stream_*` methods from `BaseLLM` and subclasses
+- Add `stream: bool = False` parameter to all primary methods
+- ### Method Renaming
+- Rename `structured_predict()` → `parse()` for concise terminology
+- Rename `chat_with_tools()` → `generate_tool_calls()` for clearer intent
+- Rename `predict_and_call()` → `invoke_callable()` for clarity
+- Rename `stream_structured_predict()` → `parse(stream=True)`
+- Rename `stream_call()`/`astream_call()` → `__call__(stream=True)`/`acall(stream=True)`
+- ### Parameter Renaming
+- Rename `output_tool` → `schema` in `ToolOrchestratingLLM` (more accurate naming)
+- Rename `output_cls` → `schema` in `LLM.parse()` for consistency
+- ### Signature Alignment
+- Align `BaseLLM.chat()` abstract method signature with subclass implementations
+- Add `ABC` inheritance to `BaseLLM` for proper abstract base class behavior
+- Update return types to `ChatResponse | ChatResponseGen` for stream support
+- ### Documentation & Tests
+- Update 24 documentation files with new API examples
+- Add comprehensive tests: `test_ollama_structured_predict.py` (1148 lines)
+- Add unit tests: `test_parse_unit.py` (876 lines)
+- Update all existing tests to use new API
+- Update README files for core and ollama packages
+- ## Migration Guide
+- ```python
+# Streaming methods
+llm.stream_chat(messages)          → llm.chat(messages, stream=True)
+llm.astream_chat(messages)         → llm.achat(messages, stream=True)
+llm.stream_complete(prompt)        → llm.complete(prompt, stream=True)
+- # Method renames
+llm.structured_predict(output_cls=Model)  → llm.parse(schema=Model)
+llm.chat_with_tools(tools)                → llm.generate_tool_calls(tools)
+llm.predict_and_call(tools)               → llm.invoke_callable(tools)
+- # Orchestrator
+ToolOrchestratingLLM(output_tool=Model)   → ToolOrchestratingLLM(schema=Model)
+orchestrator.stream_call(**kwargs)        → orchestrator(**kwargs, stream=True)
+- ref: #32
+
 ## serapeum-core-0.2.0 (2026-02-23)
 
 

@@ -488,16 +488,71 @@ response = llm.generate_tool_calls(tools=[tool], user_msg="Create an album about
 ```python
 import os
 import asyncio
+from serapeum.core.llms import Message, MessageRole
 from serapeum.ollama import Ollama
-llm = Ollama(
-  model="qwen3.5:397b",
-  api_key=os.environ.get("OLLAMA_API_KEY"),
-  request_timeout=180
-)
 
-# Process multiple requests concurrently
-tasks = [llm.achat(messages) for messages in message_list]
-responses = await asyncio.gather(*tasks)
+
+async def main():
+    llm = Ollama(
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
+        request_timeout=180
+    )
+
+    # Prepare multiple message lists
+    message_list = [
+        [Message(role=MessageRole.USER, content="What is 2+2?")],
+        [Message(role=MessageRole.USER, content="What is the capital of France?")],
+        [Message(role=MessageRole.USER, content="What is Python?")],
+    ]
+
+    # Process multiple requests concurrently
+    tasks = [llm.achat(messages) for messages in message_list]
+    responses = await asyncio.gather(*tasks)
+
+    # Print results
+    for i, response in enumerate(responses):
+        print(f"Response {i+1}: {response.message.content}")
+
+
+# Run the async function
+asyncio.run(main())
+
+# Response 1: 2 + 2 equals **4**.
+# Response 2: The capital of France is **Paris**.
+# Response 3: **Python** is a high-level, interpreted, general-purpose programming language. It is one of the most popular and widely used languages in the world today.
+# Here is a breakdown of what makes Python unique:
+# ### 1. Key Characteristics
+# *   **Readable Syntax:** Python was designed to be easy to read and write. It uses English keywords frequently and uses indentation (whitespace) to define blocks of code, rather than curly braces `{}`.
+# *   **Interpreted:** Code is executed line-by-line, which makes debugging easier and allows for interactive programming.
+# *   **Dynamic Typing:** You do not need to declare the type of a variable (e.g., integer, string) explicitly; Python figures it out automatically.
+# *   **Cross-Platform:** It works on Windows, macOS, Linux, and many other operating systems.
+# ### 2. Common Use Cases
+# Python is versatile and is used in many different fields:
+# *   **Web Development:** Building websites and backends (using frameworks like Django and Flask).
+# *   **Data Science & Analysis:** Analyzing large datasets (using libraries like Pandas and NumPy).
+# *   **Artificial Intelligence & Machine Learning:** Creating AI models (using TensorFlow, PyTorch, and scikit-learn).
+# *   **Automation & Scripting:** Automating repetitive tasks, file management, and system administration.
+# *   **Software Development:** Building desktop applications and testing software.
+# ### 3. Why Is It So Popular?
+# *   **Ease of Learning:** It is often recommended as the first language for beginners because the syntax looks close to plain English.
+# *   **Huge Ecosystem:** It has a massive standard library and thousands of third-party packages (managed by **pip**) that allow you to do almost anything without starting from scratch.
+# *   **Strong Community:** There is a vast community of developers who contribute to documentation, tutorials, and support forums.
+# ### 4. A Simple Example
+# Here is what a simple Python program looks like. It prints text to the screen and performs a calculation:
+# ```python
+# # This is a comment
+# print("Hello, World!")
+# name = "Alice"
+# age = 30
+# print(f"{name} is {age} years old.")
+# ```
+# ### 5. History
+# *   **Creator:** Guido van Rossum.
+# *   **Released:** First released in **1991**.
+# *   **Name:** It was named after the British comedy troupe *Monty Python*, not the snake.
+# In summary, Python is a powerful tool that balances ease of use with robust capabilities, making it suitable for both beginners and expert engineers.
+
 ```
 
 ## Troubleshooting

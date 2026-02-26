@@ -7,14 +7,10 @@ classDiagram
     class BaseLLM {
         <<abstract>>
         +metadata: Metadata
-        +chat(messages, **kwargs) ChatResponse
-        +stream_chat(messages, **kwargs) ChatResponseGen
-        +achat(messages, **kwargs) ChatResponse
-        +astream_chat(messages, **kwargs) ChatResponseAsyncGen
-        +complete(prompt, **kwargs) CompletionResponse
-        +stream_complete(prompt, **kwargs) CompletionResponseGen
-        +acomplete(prompt, **kwargs) CompletionResponse
-        +astream_complete(prompt, **kwargs) CompletionResponseAsyncGen
+        +chat(messages, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
+        +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
     }
 
     class LLM {
@@ -22,7 +18,7 @@ classDiagram
         +messages_to_prompt: Callable
         +completion_to_prompt: Callable
         +output_parser: Optional[BaseParser]
-        +pydantic_program_mode: StructuredLLMMode
+        +structured_output_mode: StructuredOutputMode
         +_get_prompt(prompt, **kwargs) str
         +_get_messages(prompt, **kwargs) List[Message]
         +_parse_output(output) str
@@ -32,15 +28,13 @@ classDiagram
         +stream(prompt, **kwargs) TokenGen
         +apredict(prompt, **kwargs) str
         +astream(prompt, **kwargs) TokenAsyncGen
-        +structured_predict(output_cls, prompt, **kwargs) Model
+        +parse(output_cls, prompt, **kwargs) Model
     }
 
     class FunctionCallingLLM {
         <<abstract>>
-        +chat_with_tools(messages, tools, **kwargs) ChatResponse
-        +achat_with_tools(messages, tools, **kwargs) ChatResponse
-        +stream_chat_with_tools(messages, tools, **kwargs) ChatResponseGen
-        +astream_chat_with_tools(messages, tools, **kwargs) ChatResponseAsyncGen
+        +generate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +agenerate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         +get_tool_calls_from_response(response, error_on_no_tool_call) List[ToolSelection]
         #_prepare_chat_with_tools(messages, tools, **kwargs) dict
         #_validate_chat_with_tools_response(response, tools, **kwargs) ChatResponse
@@ -63,18 +57,12 @@ classDiagram
         +metadata: Metadata
         +client: Client
         +async_client: AsyncClient
-        +chat(messages, **kwargs) ChatResponse
-        +stream_chat(messages, **kwargs) ChatResponseGen
-        +achat(messages, **kwargs) ChatResponse
-        +astream_chat(messages, **kwargs) ChatResponseAsyncGen
-        +complete(prompt, **kwargs) CompletionResponse
-        +stream_complete(prompt, **kwargs) CompletionResponseGen
-        +acomplete(prompt, **kwargs) CompletionResponse
-        +astream_complete(prompt, **kwargs) CompletionResponseAsyncGen
-        +chat_with_tools(messages, tools, **kwargs) ChatResponse
-        +stream_chat_with_tools(messages, tools, **kwargs) ChatResponseGen
-        +achat_with_tools(messages, tools, **kwargs) ChatResponse
-        +astream_chat_with_tools(messages, tools, **kwargs) ChatResponseAsyncGen
+        +chat(messages, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
+        +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
+        +generate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +agenerate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         -_chat(messages, stream, **kwargs) ChatResponse
         -_achat(messages, stream, **kwargs) ChatResponse
         -_prepare_chat_with_tools(messages, tools, **kwargs) dict
@@ -176,10 +164,8 @@ classDiagram
         -_output_cls: Type[BaseModel]
         -_tools: List[BaseTool]
         -_allow_parallel_tool_calls: bool
-        +__call__(**kwargs) BaseModel | List[BaseModel]
-        +acall(**kwargs) BaseModel | List[BaseModel]
-        +stream_call(**kwargs) Generator[BaseModel]
-        +astream_call(**kwargs) AsyncGenerator[BaseModel]
+        +__call__(**kwargs, stream=False) BaseModel | List[BaseModel] | Generator[BaseModel]
+        +acall(**kwargs, stream=False) BaseModel | List[BaseModel] | AsyncGenerator[BaseModel]
     }
 
     class BaseModel {
@@ -269,7 +255,7 @@ BaseLLM (abstract)
 **High-Level Orchestration**
 - **Prompt Management**: Extends prompts with system messages
 - **Message Formatting**: Converts between formats
-- **Structured Outputs**: Forces Pydantic model outputs via `structured_predict`
+- **Structured Outputs**: Forces Pydantic model outputs via `parse`
 - **Parser Integration**: Applies output parsers to responses
 
 ### BaseLLM (Root Class)
@@ -305,7 +291,7 @@ BaseLLM (abstract)
 ## Design Patterns
 
 ### 1. Lazy Initialization
-```python
+```python notest
 @property
 def client(self) -> Client:
     if self._client is None:
@@ -313,26 +299,18 @@ def client(self) -> Client:
     return self._client
 ```
 
-### 2. Decorator Pattern (Completion via Chat)
-```python
-@chat_to_completion_decorator
-def complete(self, prompt: str, **kwargs) -> CompletionResponse:
-    # Decorator handles conversion
-    pass
-```
-
-### 3. Template Method Pattern
-```python
+### 2. Template Method Pattern
+```python notest
 # FunctionCallingLLM defines workflow
-def chat_with_tools(self, messages, tools, **kwargs):
+def generate_tool_calls(self, messages, tools, **kwargs):
     prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass implements
     response = self.chat(prepared)
     validated = self._validate_chat_with_tools_response(response, tools)  # Subclass implements
     return validated
 ```
 
-### 4. Protocol-Based Tools
-```python
+### 3. Protocol-Based Tools
+```python notest
 # BaseTool is a protocol, not a base class
 class BaseTool(Protocol):
     def call(self, **kwargs) -> ToolOutput: ...
@@ -352,7 +330,7 @@ TextCompletionLLM uses Ollama for:
 ```
 ToolOrchestratingLLM uses Ollama for:
   - Tool-calling capabilities
-  - chat_with_tools() method
+  - generate_tool_calls() method
   - Tool call extraction from responses
 ```
 

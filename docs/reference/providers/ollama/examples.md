@@ -2,6 +2,49 @@
 
 This guide provides comprehensive examples covering all possible ways to use the `Ollama` LLM class based on real test cases from the codebase.
 
+## Prerequisites: Ollama Cloud API Key
+
+The examples in this guide use the [Ollama Cloud](https://ollama.com/cloud) inference API, which requires an API key.
+
+**Steps to create your API key:**
+
+1. Create an account at [ollama.com](https://ollama.com) (or sign in if you already have one)
+2. Navigate to [ollama.com/settings/keys](https://ollama.com/settings/keys)
+3. Click **Generate** to create a new API key
+4. Copy the key immediately — it will not be shown again
+
+**Set the environment variable:**
+
+```bash
+export OLLAMA_API_KEY=your_api_key_here
+```
+
+Or add it to your `.env` file:
+
+```
+OLLAMA_API_KEY=your_api_key_here
+```
+
+**Loading the `.env` file in Python:**
+
+Install [`python-dotenv`](https://pypi.org/project/python-dotenv/):
+
+```bash
+pip install python-dotenv
+```
+
+Then load it at the top of your script:
+
+```python notest
+from dotenv import load_dotenv
+
+load_dotenv()  # loads variables from .env into os.environ
+```
+
+All examples below read the key via `os.environ.get("OLLAMA_API_KEY")`.
+
+---
+
 ## Table of Contents
 
 1. [Basic Usage](#basic-usage)
@@ -22,12 +65,14 @@ This guide provides comprehensive examples covering all possible ways to use the
 The most straightforward way to use `Ollama`:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
 # Initialize Ollama LLM
 llm = Ollama(
-    model="llama3.1",
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180,
 )
 
@@ -44,11 +89,13 @@ print(response.message.content)  # "Pong!"
 Using the completion API:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
 # Initialize Ollama LLM
 llm = Ollama(
-    model="llama3.1",
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180,
 )
 
@@ -66,9 +113,13 @@ print(response.text)  # "Pong!"
 Minimal configuration:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama3.1")
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY")
+)
 ```
 
 ### 2. Full Configuration
@@ -76,11 +127,12 @@ llm = Ollama(model="llama3.1")
 With all common parameters:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="llama3.1",
-    base_url="http://localhost:11434",
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     temperature=0.8,
     context_window=4096,
     request_timeout=180.0,
@@ -95,15 +147,17 @@ llm = Ollama(
 Pre-configured Ollama client:
 
 ```python
+import os
 from ollama import Client
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 # Create custom client
 client = Client(host="http://localhost:11434", timeout=300)
 
 # Pass to Ollama
 llm = Ollama(
-    model="llama3.1",
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     client=client,
 )
 ```
@@ -113,10 +167,12 @@ llm = Ollama(
 Enable JSON formatting:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="llama3.1",
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     json_mode=True,  # Forces JSON output
     request_timeout=180,
 )
@@ -131,10 +187,15 @@ llm = Ollama(
 Basic conversation:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 messages = [
     Message(role=MessageRole.USER, content="What is 2+2?")
@@ -149,10 +210,15 @@ print(response.message.content)  # "4"
 With conversation history:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 messages = [
     Message(role=MessageRole.SYSTEM, content="You are a helpful math tutor."),
@@ -170,10 +236,15 @@ print(response.message.content)  # "3+3 equals 6."
 Passing custom parameters:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 messages = [Message(role=MessageRole.USER, content="Write a creative story.")]
 
@@ -191,18 +262,27 @@ response = llm.chat(
 Multi-modal input (if supported by model):
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole, Image
-from serapeum.llms.ollama import Ollama
+import os
+from pathlib import Path
+from serapeum.core.llms import Message, MessageRole, Image
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama4", request_timeout=180)  # Vision model
+llm = Ollama(
+    model="qwen3-vl:235b-instruct",     # Vision model
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 # Create message with image
-image = Image(path="docs/reference/integrations/llms/ollama/images/baharia-oasis.jpg")
+image = Image(path=Path("docs/reference/providers/ollama/images/baharia-oasis.jpg"))
+
 messages = [
     Message(
         role=MessageRole.USER,
         content="What's in this image?",
-        images=[image]
+    ),
+    Message(
+        chunks=[image],
     )
 ]
 
@@ -219,9 +299,14 @@ print(response.message.content)
 Simple text completion:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 prompt = "The capital of France is"
 response = llm.complete(prompt)
@@ -233,9 +318,14 @@ print(response.text)  # "Paris"
 Custom generation settings:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 response = llm.complete(
     "Once upon a time",
@@ -250,10 +340,12 @@ print(response.text)
 Force JSON output:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
 llm = Ollama(
-    model="llama3.1",
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     json_mode=True,
     request_timeout=180,
 )
@@ -272,15 +364,20 @@ print(response.text)  # {"name": "John", "age": 30}
 Real-time streaming chat:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 messages = [Message(role=MessageRole.USER, content="Count from 1 to 5.")]
 
 # Stream responses
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     print(chunk.message.content, end="", flush=True)
     # Outputs: "1" " 2" " 3" " 4" " 5"
 ```
@@ -290,14 +387,19 @@ for chunk in llm.stream_chat(messages):
 Real-time streaming completion:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 prompt = "Write a haiku about coding:"
 
 # Stream completion
-for chunk in llm.stream_complete(prompt):
+for chunk in llm.complete(prompt, stream=True):
     print(chunk.text, end="", flush=True)
 ```
 
@@ -306,15 +408,20 @@ for chunk in llm.stream_complete(prompt):
 Access incremental content:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
 
 full_response = ""
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     delta = chunk.delta  # Incremental content
     if delta:
         full_response += delta
@@ -332,10 +439,11 @@ print(f"\n\nFull response: {full_response}")
 Using tools with Ollama:
 
 ```python
+import os
 from pydantic import BaseModel
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 from serapeum.core.tools import CallableTool
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -349,18 +457,22 @@ def create_album(title: str, artist: str, songs: list[str]) -> Album:
     return Album(title=title, artist=artist, songs=songs)
 
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 # Create tool from function
 tool = CallableTool.from_function(create_album)
 
-message =  Message(
+message = Message(
     role=MessageRole.USER,
     content="Create a rock album with two songs"
 )
 
 # Call with tools
-response = llm.chat_with_tools(tools=[tool], user_msg=message)
+response = llm.generate_tool_calls(tools=[tool], user_msg=message)
 
 # Extract tool calls
 tool_calls = llm.get_tool_calls_from_response(response)
@@ -372,10 +484,11 @@ print(tool_calls)
 Create tools from Pydantic models:
 
 ```python
+import os
 from pydantic import BaseModel, Field
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 from serapeum.core.tools import CallableTool
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -385,7 +498,11 @@ class Album(BaseModel):
     songs: list[str] = Field(description="List of song titles")
 
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 # Create tool from Pydantic model
 tool = CallableTool.from_model(Album)
@@ -395,7 +512,7 @@ message = Message(
     content="Create a jazz album with title 'Blue Notes' by Miles Davis with 3 songs"
 )
 
-response = llm.chat_with_tools(tools=[tool], user_msg=message)
+response = llm.generate_tool_calls(tools=[tool], user_msg=message)
 
 # Extract and execute tool call
 tool_calls = llm.get_tool_calls_from_response(response)
@@ -410,10 +527,11 @@ for tool_call in tool_calls:
 Force single tool call:
 
 ```python
+import os
 from pydantic import BaseModel
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 from serapeum.core.tools import CallableTool
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -422,7 +540,11 @@ class Album(BaseModel):
     songs: list[str]
 
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 tool = CallableTool.from_model(Album)
 
@@ -432,7 +554,7 @@ message = Message(
 )
 
 # Force single tool call
-response = llm.chat_with_tools(
+response = llm.generate_tool_calls(
     tools=[tool],
     user_msg=message,
     allow_parallel_tool_calls=False,  # Only one tool call allowed
@@ -447,10 +569,11 @@ print(len(tool_calls))  # 1 (even if model tried to return multiple)
 Allow multiple tool calls:
 
 ```python
+import os
 from pydantic import BaseModel
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 from serapeum.core.tools import CallableTool
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -459,7 +582,11 @@ class Album(BaseModel):
     songs: list[str]
 
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 tool = CallableTool.from_model(Album)
 
@@ -469,7 +596,7 @@ message = Message(
 )
 
 # Allow parallel tool calls
-response = llm.chat_with_tools(
+response = llm.generate_tool_calls(
     tools=[tool],
     user_msg=message,
     allow_parallel_tool_calls=True,
@@ -488,10 +615,11 @@ for tool_call in tool_calls:
 Stream tool calls:
 
 ```python
+import os
 from pydantic import BaseModel
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 from serapeum.core.tools import CallableTool
-from serapeum.llms.ollama import Ollama
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -500,7 +628,11 @@ class Album(BaseModel):
     songs: list[str]
 
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 tool = CallableTool.from_model(Album)
 
@@ -510,7 +642,7 @@ message = Message(
 )
 
 # Stream with tools
-for chunk in llm.stream_chat_with_tools(tools=[tool], user_msg=message):
+for chunk in llm.generate_tool_calls(tools=[tool], user_msg=message, stream=True):
     # Process streaming tool calls
     if chunk.message.additional_kwargs.get("tool_calls"):
         print(f"Tool call chunk: {chunk.message.additional_kwargs['tool_calls']}")
@@ -525,10 +657,11 @@ for chunk in llm.stream_chat_with_tools(tools=[tool], user_msg=message):
 Use Ollama with `TextCompletionLLM` for structured outputs:
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.core.llms import TextCompletionLLM
+from serapeum.ollama import Ollama
 
 
 class DummyModel(BaseModel):
@@ -536,7 +669,11 @@ class DummyModel(BaseModel):
 
 
 # Initialize Ollama
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 # Create parser
 parser = PydanticParser(output_cls=DummyModel)
@@ -558,9 +695,10 @@ print(result.value)  # "input"
 Use Ollama with `ToolOrchestratingLLM` for tool-based workflows:
 
 ```python
+import os
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.core.llms import ToolOrchestratingLLM
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -570,11 +708,15 @@ class Album(BaseModel):
 
 
 # Initialize Ollama
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 # Create ToolOrchestratingLLM
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Album,
+    schema=Album,
     prompt="Create an album about {topic} with two random songs",
     llm=llm,
 )
@@ -591,9 +733,10 @@ print(result.songs)
 Using `ToolOrchestratingLLM` with parallel tools:
 
 ```python
+import os
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.core.llms import ToolOrchestratingLLM
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -602,11 +745,15 @@ class Album(BaseModel):
     songs: list[str]
 
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 # Enable parallel tool calls
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Album,
+    schema=Album,
     prompt="Create albums about {topic}",
     llm=llm,
     allow_parallel_tool_calls=True,
@@ -624,9 +771,10 @@ for album in results:
 Stream tool execution results:
 
 ```python
+import os
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.core.llms import ToolOrchestratingLLM
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -635,17 +783,21 @@ class Album(BaseModel):
     songs: list[str]
 
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Album,
+    schema=Album,
     prompt="Create albums about {topic}",
     llm=llm,
     allow_parallel_tool_calls=False,
 )
 
 # Stream results
-for album in tools_llm.stream_call(topic="rock"):
+for album in tools_llm(topic="rock", stream=True):
     print(f"Received: {album.title}")
 ```
 
@@ -659,12 +811,17 @@ Non-blocking chat:
 
 ```python
 import asyncio
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
 
 async def async_chat_example():
-    llm = Ollama(model="llama3.1", request_timeout=180)
+    llm = Ollama(
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
+        request_timeout=180
+    )
 
     messages = [Message(role=MessageRole.USER, content="Hello!")]
 
@@ -681,11 +838,16 @@ Non-blocking completion:
 
 ```python
 import asyncio
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
 
 async def async_complete_example():
-    llm = Ollama(model="llama3.1", request_timeout=180)
+    llm = Ollama(
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
+        request_timeout=180
+    )
 
     response = await llm.acomplete("Say hello")
     print(response.text)
@@ -700,16 +862,21 @@ Non-blocking streaming:
 
 ```python
 import asyncio
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
 
 async def async_stream_example():
-    llm = Ollama(model="llama3.1", request_timeout=180)
+    llm = Ollama(
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
+        request_timeout=180
+    )
 
     messages = [Message(role=MessageRole.USER, content="Count to 5")]
 
-    async for chunk in await llm.astream_chat(messages):
+    async for chunk in await llm.achat(messages, stream=True):
         print(chunk.message.content, end="", flush=True)
 
 
@@ -722,12 +889,17 @@ Process multiple requests concurrently:
 
 ```python
 import asyncio
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
 
 async def process_multiple():
-    llm = Ollama(model="llama3.1", request_timeout=180)
+    llm = Ollama(
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
+        request_timeout=180
+    )
 
     prompts = ["What is 2+2?", "What is 3+3?", "What is 4+4?"]
 
@@ -753,9 +925,10 @@ Async tool orchestration:
 
 ```python
 import asyncio
+import os
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.core.llms import ToolOrchestratingLLM
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -765,10 +938,14 @@ class Album(BaseModel):
 
 
 async def async_tool_example():
-    llm = Ollama(model="llama3.1", request_timeout=180)
+    llm = Ollama(
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
+        request_timeout=180
+    )
 
     tools_llm = ToolOrchestratingLLM(
-        output_cls=Album,
+        schema=Album,
         prompt="Create an album about {topic}",
         llm=llm,
     )
@@ -786,9 +963,10 @@ Async streaming tool execution:
 
 ```python
 import asyncio
+import os
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.core.llms import ToolOrchestratingLLM
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -798,16 +976,20 @@ class Album(BaseModel):
 
 
 async def async_stream_tool_example():
-    llm = Ollama(model="llama3.1", request_timeout=180)
+    llm = Ollama(
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
+        request_timeout=180
+    )
 
     tools_llm = ToolOrchestratingLLM(
-        output_cls=Album,
+        schema=Album,
         prompt="Create albums about {topic}",
         llm=llm,
         allow_parallel_tool_calls=False,
     )
 
-    stream = await tools_llm.astream_call(topic="rock")
+    stream = await tools_llm.acall(topic="rock", stream=True)
     async for album in stream:
         print(f"Received: {album.title}")
 
@@ -824,18 +1006,28 @@ asyncio.run(async_stream_tool_example())
 Create once, use many times:
 
 ```python
-from serapeum.llms.ollama import Ollama
-
+import os
+from serapeum.ollama import Ollama
+from serapeum.core.llms import Message, MessageRole
 # ✓ Good: Create once
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 # Reuse for multiple calls
-response1 = llm.chat(messages1)
-response2 = llm.chat(messages2)
+message_1 = Message(role=MessageRole.USER, content="hi")
+message_2 = Message(role=MessageRole.USER, content="How are you?")
+response1 = llm.chat([message_1])
+response2 = llm.chat([message_2])
 
 # ✗ Bad: Don't recreate for each call
 def process(messages):
-    llm = Ollama(model="llama3.1")  # Inefficient
+    llm = Ollama(
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY")
+    )  # Inefficient
     return llm.chat(messages)
 ```
 
@@ -844,13 +1036,22 @@ def process(messages):
 Set timeout based on expected response time:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
 # Short timeout for simple queries
-quick_llm = Ollama(model="llama3.1", request_timeout=30)
+quick_llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=30
+)
 
 # Longer timeout for complex queries
-complex_llm = Ollama(model="llama3.1", request_timeout=300)
+complex_llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=300
+)
 ```
 
 ### 3. Handle Errors Gracefully
@@ -858,10 +1059,15 @@ complex_llm = Ollama(model="llama3.1", request_timeout=300)
 Always handle potential errors:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 try:
     response = llm.chat([Message(role=MessageRole.USER, content="Hello")])
@@ -878,11 +1084,13 @@ except Exception as e:
 Enable when expecting JSON:
 
 ```python
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.ollama import Ollama
 
 # Enable JSON mode
 llm = Ollama(
-    model="llama3.1",
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     json_mode=True,
     request_timeout=180,
 )
@@ -895,10 +1103,15 @@ llm = Ollama(
 Use metadata for monitoring:
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 
 response = llm.chat([Message(role=MessageRole.USER, content="Hello")])
 

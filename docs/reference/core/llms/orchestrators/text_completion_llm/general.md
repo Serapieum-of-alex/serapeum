@@ -12,10 +12,11 @@ The `TextCompletionLLM` is a structured text completion runner that orchestrates
 ## Example Usage
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.core.llms import TextCompletionLLM
+from serapeum.ollama import Ollama
 
 
 # Define the output schema
@@ -23,7 +24,11 @@ class ModelTest(BaseModel):
     hello: str
 
 # Initialize components
-LLM = Ollama(model="llama3.1", request_timeout=180)
+LLM = Ollama(
+    model="ministral-3:14b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
+    request_timeout=180
+)
 output_parser = PydanticParser(output_cls=ModelTest)
 
 # Create TextCompletionLLM instance

@@ -16,12 +16,14 @@ The `Ollama` class is a production-ready LLM integration that provides:
 ### Basic Chat
 
 ```python
-from serapeum.core.base.llms.models import Message, MessageRole
-from serapeum.llms.ollama import Ollama
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
 # Initialize Ollama
 llm = Ollama(
-    model="llama3.1",
+    model="qwen3.5:397b",
+    api_key=os.environ.get("OLLAMA_API_KEY"),
     request_timeout=180,
 )
 
@@ -34,10 +36,11 @@ print(response.message.content)  # "Pong!"
 ### With TextCompletionLLM
 
 ```python
+import os
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
-from serapeum.core.structured_tools.text_completion_llm import TextCompletionLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.core.llms import TextCompletionLLM
+from serapeum.ollama import Ollama
 
 
 class DummyModel(BaseModel):
@@ -45,12 +48,12 @@ class DummyModel(BaseModel):
 
 
 # Initialize Ollama
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 # Create structured completion runner
 text_llm = TextCompletionLLM(
     output_parser=PydanticParser(output_cls=DummyModel),
-    prompt="Value: {value}",
+    prompt="Generate any value: {value}",
     llm=llm,
 )
 
@@ -62,9 +65,10 @@ result = text_llm(value="input")
 ### With ToolOrchestratingLLM
 
 ```python
+import os
 from pydantic import BaseModel
-from serapeum.core.structured_tools.tools_llm import ToolOrchestratingLLM
-from serapeum.llms.ollama import Ollama
+from serapeum.core.llms import ToolOrchestratingLLM
+from serapeum.ollama import Ollama
 
 
 class Album(BaseModel):
@@ -74,11 +78,11 @@ class Album(BaseModel):
 
 
 # Initialize Ollama
-llm = Ollama(model="llama3.1", request_timeout=180)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 # Create tool orchestrator
 tools_llm = ToolOrchestratingLLM(
-    output_cls=Album,
+    schema=Album,
     prompt="Create an album about {topic} with two random songs",
     llm=llm,
 )
@@ -239,7 +243,7 @@ Non-blocking execution:
 
 ### 1. **Lazy Initialization**
 Clients are created on first use, not during `__init__`:
-```python
+```python notest
 @property
 def client(self) -> Client:
     if self._client is None:
@@ -247,26 +251,17 @@ def client(self) -> Client:
     return self._client
 ```
 
-### 2. **Decorator Pattern**
-Completion API wraps chat API for code reuse:
-```python
-@chat_to_completion_decorator
-def complete(self, prompt: str, **kwargs) -> CompletionResponse:
-    # Decorator handles conversion
-    pass
-```
-
-### 3. **Template Method Pattern**
+### 2. **Template Method Pattern**
 FunctionCallingLLM defines workflow, Ollama implements specifics:
 ```python
-def chat_with_tools(self, messages, tools, **kwargs):
+def generate_tool_calls(self, messages, tools, **kwargs):
     prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass
     response = self.chat(prepared)
     validated = self._validate_chat_with_tools_response(response, tools)  # Subclass
     return validated
 ```
 
-### 4. **Adapter Pattern**
+### 3. **Adapter Pattern**
 Ollama adapts between internal types and Ollama server format:
 - `Message` → Ollama message dict
 - `BaseTool` → Ollama tool schema
@@ -301,7 +296,7 @@ Model Runtime (llama3.1, etc.)
 ```
 1. Converts output_cls to CallableTool
 2. Formats prompt with variables
-3. Calls Ollama.chat_with_tools()
+3. Calls Ollama.generate_tool_calls()
 4. Ollama converts tool to schema
 5. Server returns tool_calls
 6. Executes tool to create instance
@@ -319,7 +314,7 @@ Model Runtime (llama3.1, etc.)
 ## Configuration Options
 
 ### Essential
-- `model`: Model name (e.g., "llama3.1")
+- `model`: Model name (e.g., "qwen3.5:397b")
 - `base_url`: Ollama server URL (default: "http://localhost:11434")
 - `request_timeout`: Timeout in seconds (default: 60.0)
 
@@ -374,10 +369,10 @@ ollama serve
 ### Python Requirements
 ```bash
 # Install serapeum-ollama
-uv pip install serapeum-ollama
+pip install serapeum-ollama
 
 # Or install from source
-uv pip install -e serapeum-integrations/llms/serapeum-ollama
+uv pip install -e libs/providers/serapeum-ollama
 ```
 
 ## Common Patterns
@@ -385,39 +380,179 @@ uv pip install -e serapeum-integrations/llms/serapeum-ollama
 ### Pattern 1: Reusable Instance
 ```python
 # Create once
-llm = Ollama(model="llama3.1", request_timeout=180)
+import os
+from serapeum.ollama import Ollama
+from serapeum.core.llms import Message, MessageRole
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
 
 # Reuse many times
+messages1 = [Message(role=MessageRole.USER, content="Hi!")]
+messages2 = [Message(role=MessageRole.USER, content="How are you?")]
 response1 = llm.chat(messages1)
 response2 = llm.chat(messages2)
+print(response1.message.content)  # "Hi!"
+print(response2.message.content)  # "How are you?"
 ```
 
 ### Pattern 2: Streaming for Long Responses
 ```python
-llm = Ollama(model="llama3.1", request_timeout=180)
+import os
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
+llm = Ollama(
+  model="qwen3.5:397b",
+  api_key=os.environ.get("OLLAMA_API_KEY"),
+  request_timeout=180
+)
+messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
+for chunk in llm.chat(messages, stream=True):
+    print(f"{chunk.message.content}\n", end="", flush=True)
 
-for chunk in llm.stream_chat(messages):
-    print(chunk.message.content, end="", flush=True)
+# I
+# I'm
+# I'm reading
+# I'm reading a
+# I'm reading a book
+# I'm reading a book on
+# I'm reading a book on anti
+# I'm reading a book on anti-gr
+# I'm reading a book on anti-gravity
+# I'm reading a book on anti-gravity.
+# I'm reading a book on anti-gravity. It
+# I'm reading a book on anti-gravity. It's
+# I'm reading a book on anti-gravity. It's impossible
+# I'm reading a book on anti-gravity. It's impossible to
+# I'm reading a book on anti-gravity. It's impossible to put
+# I'm reading a book on anti-gravity. It's impossible to put down
+# I'm reading a book on anti-gravity. It's impossible to put down!
+# I'm reading a book on anti-gravity. It's impossible to put down! 📚
+# I'm reading a book on anti-gravity. It's impossible to put down! 📚
+# I'm reading a book on anti-gravity. It's impossible to put down! 📚
 ```
 
 ### Pattern 3: Tool Calling for Structured Outputs
+
 ```python
-llm = Ollama(model="llama3.1", request_timeout=180)
+import os
+from pydantic import BaseModel
+from serapeum.core.tools import CallableTool
+from serapeum.ollama import Ollama
+
+
+# Define your output schema
+class Song(BaseModel):
+    title: str
+    duration: int  # in seconds
+
+class Album(BaseModel):
+    title: str
+    artist: str
+    songs: list[Song]
+    
+llm = Ollama(
+  model="qwen3.5:397b",
+  api_key=os.environ.get("OLLAMA_API_KEY"),
+  request_timeout=180
+)
 
 # Define tool from Pydantic model
-tool = CallableTool.from_model(MyModel)
+tool = CallableTool.from_model(Album)
 
 # Get structured output via tool calling
-response = llm.chat_with_tools(messages, tools=[tool])
+response = llm.generate_tool_calls(tools=[tool], user_msg="Create an album about rock")
+
+# print(response.message.additional_kwargs["tool_calls"])
+# [
+#   ToolCall(
+#       function=Function(
+#           name='Album', 
+#           arguments={'title': 'Thunder & Lightning', 'artist': 'The Rock Legends', 
+#           'songs': [
+#               {'duration': 245, 'title': 'Electric Storm'}, 
+#               {'duration': 312, 'title': 'Midnight Rider'}, 
+#               {'duration': 278, 'title': 'Breaking Chains'}, 
+#               {'duration': 295, 'title': 'Highway to Glory'}, 
+#               {'duration': 267, 'title': 'Rebel Heart'}, 
+#               {'duration': 334, 'title': 'Stone Cold Blues'}, 
+#               {'duration': 289, 'title': 'Rise Up'}, 
+#               {'duration': 356, 'title': 'Last Stand'}
+#           ]
+#        }
+#       )
+#     )
+#  ]
+
 ```
 
 ### Pattern 4: Async for Concurrency
 ```python
-llm = Ollama(model="llama3.1", request_timeout=180)
+import os
+import asyncio
+from serapeum.core.llms import Message, MessageRole
+from serapeum.ollama import Ollama
 
-# Process multiple requests concurrently
-tasks = [llm.achat(messages) for messages in message_list]
-responses = await asyncio.gather(*tasks)
+
+async def main():
+    llm = Ollama(
+        model="qwen3.5:397b",
+        api_key=os.environ.get("OLLAMA_API_KEY"),
+        request_timeout=180
+    )
+
+    # Prepare multiple message lists
+    message_list = [
+        [Message(role=MessageRole.USER, content="What is 2+2?")],
+        [Message(role=MessageRole.USER, content="What is the capital of France?")],
+        [Message(role=MessageRole.USER, content="What is Python?")],
+    ]
+
+    # Process multiple requests concurrently
+    tasks = [llm.achat(messages) for messages in message_list]
+    responses = await asyncio.gather(*tasks)
+
+    # Print results
+    for i, response in enumerate(responses):
+        print(f"Response {i+1}: {response.message.content}")
+
+
+# Run the async function
+asyncio.run(main())
+
+# Response 1: 2 + 2 equals **4**.
+# Response 2: The capital of France is **Paris**.
+# Response 3: **Python** is a high-level, interpreted, general-purpose programming language. It is one of the most popular and widely used languages in the world today.
+# Here is a breakdown of what makes Python unique:
+# ### 1. Key Characteristics
+# *   **Readable Syntax:** Python was designed to be easy to read and write. It uses English keywords frequently and uses indentation (whitespace) to define blocks of code, rather than curly braces `{}`.
+# *   **Interpreted:** Code is executed line-by-line, which makes debugging easier and allows for interactive programming.
+# *   **Dynamic Typing:** You do not need to declare the type of a variable (e.g., integer, string) explicitly; Python figures it out automatically.
+# *   **Cross-Platform:** It works on Windows, macOS, Linux, and many other operating systems.
+# ### 2. Common Use Cases
+# Python is versatile and is used in many different fields:
+# *   **Web Development:** Building websites and backends (using frameworks like Django and Flask).
+# *   **Data Science & Analysis:** Analyzing large datasets (using libraries like Pandas and NumPy).
+# *   **Artificial Intelligence & Machine Learning:** Creating AI models (using TensorFlow, PyTorch, and scikit-learn).
+# *   **Automation & Scripting:** Automating repetitive tasks, file management, and system administration.
+# *   **Software Development:** Building desktop applications and testing software.
+# ### 3. Why Is It So Popular?
+# *   **Ease of Learning:** It is often recommended as the first language for beginners because the syntax looks close to plain English.
+# *   **Huge Ecosystem:** It has a massive standard library and thousands of third-party packages (managed by **pip**) that allow you to do almost anything without starting from scratch.
+# *   **Strong Community:** There is a vast community of developers who contribute to documentation, tutorials, and support forums.
+# ### 4. A Simple Example
+# Here is what a simple Python program looks like. It prints text to the screen and performs a calculation:
+# ```python
+# # This is a comment
+# print("Hello, World!")
+# name = "Alice"
+# age = 30
+# print(f"{name} is {age} years old.")
+# ```
+# ### 5. History
+# *   **Creator:** Guido van Rossum.
+# *   **Released:** First released in **1991**.
+# *   **Name:** It was named after the British comedy troupe *Monty Python*, not the snake.
+# In summary, Python is a powerful tool that balances ease of use with robust capabilities, making it suitable for both beginners and expert engineers.
+
 ```
 
 ## Troubleshooting
@@ -437,13 +572,13 @@ Solution: Pull the model first
 ### Issue: Timeout
 ```
 Solution: Increase request_timeout
-  llm = Ollama(model="llama3.1", request_timeout=300)
+  llm = Ollama(model="qwen3.5:397b", request_timeout=300)
 ```
 
 ### Issue: Invalid JSON Response
 ```
 Solution: Enable json_mode
-  llm = Ollama(model="llama3.1", json_mode=True)
+  llm = Ollama(model="qwen3.5:397b", json_mode=True)
 ```
 
 ## Next Steps
@@ -456,6 +591,7 @@ Solution: Enable json_mode
 
 ## See Also
 
-- [TextCompletionLLM](../../../core/structured_tools/text_completion_llm/general.md) - Structured completion orchestrator
-- [ToolOrchestratingLLM](../../../core/structured_tools/tool_orchestrating_llm/general.md) - Tool-based orchestrator
+- [TextCompletionLLM](../../core/llms/orchestrators/text_completion_llm/general.md) - Structured completion
+  orchestrator
+- [ToolOrchestratingLLM](../../core/llms/orchestrators/tool_orchestrating_llm/general.md) - Tool-based orchestrator
 - [Ollama Official Documentation](https://ollama.com/docs) - Ollama server documentation

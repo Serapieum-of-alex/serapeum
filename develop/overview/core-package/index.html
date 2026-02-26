@@ -2122,9 +2122,9 @@
 </ul>
 <h3 id="functioncallingllm"><a class="toclink" href="#functioncallingllm">FunctionCallingLLM</a><a class="headerlink" href="#functioncallingllm" title="Permanent link">#</a></h3>
 <ul>
-<li><code>chat_with_tools(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseGen</code></li>
-<li><code>achat_with_tools(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseAsyncGen</code> (async)</li>
-<li><code>predict_and_call(tools, user_msg=None, chat_history=None, **kwargs) → AgentChatResponse</code></li>
+<li><code>generate_tool_calls(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseGen</code></li>
+<li><code>agenerate_tool_calls(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseAsyncGen</code> (async)</li>
+<li><code>invoke_callable(tools, user_msg=None, chat_history=None, **kwargs) → AgentChatResponse</code></li>
 <li><code>get_tool_calls_from_response(response, error_on_no_tool_call=True) → list[ToolCallArguments]</code></li>
 </ul>
 <h3 id="callabletool"><a class="toclink" href="#callabletool">CallableTool</a><a class="headerlink" href="#callabletool" title="Permanent link">#</a></h3>
@@ -2163,7 +2163,7 @@
 </code></pre></div>
 <h3 id="tool-calling-flow"><a class="toclink" href="#tool-calling-flow">Tool-Calling Flow</a><a class="headerlink" href="#tool-calling-flow" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>User message
-<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>  → FunctionCallingLLM.predict_and_call(tools=[...])
+<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>  → FunctionCallingLLM.invoke_callable(tools=[...])
 <a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>  → LLM predicts tool calls
 <a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>  → Tools executed (BaseTool/CallableTool)
 <a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>  → ToolOutput aggregated
@@ -2221,7 +2221,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 
     subgraph "LLM Abstraction Layer"
         L1[LLM&lt;br/&gt;predict, parse]
-        L2[FunctionCallingLLM&lt;br/&gt;chat_with_tools, predict_and_call]
+        L2[FunctionCallingLLM&lt;br/&gt;generate_tool_calls, invoke_callable]
         L3[StructuredOutputLLM&lt;br/&gt;Force structured outputs]
     end
 
@@ -2325,9 +2325,9 @@ Hold "Ctrl" to enable pan &amp; zoom
     }
 
     class FunctionCallingLLM {
-        +chat_with_tools(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseGen
-        +achat_with_tools(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseAsyncGen
-        +predict_and_call(tools, user_msg, chat_history) AgentChatResponse
+        +generate_tool_calls(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseGen
+        +agenerate_tool_calls(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseAsyncGen
+        +invoke_callable(tools, user_msg, chat_history) AgentChatResponse
         +get_tool_calls_from_response(response) List~ToolCallArguments~
     }
 
@@ -2495,7 +2495,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     User-&gt;&gt;Orch: orchestrator(query="What's 5+3?")
     Orch-&gt;&gt;Prompt: format(query="What's 5+3?")
     Prompt--&gt;&gt;Orch: formatted messages
-    Orch-&gt;&gt;LLM: chat_with_tools(messages, tools)
+    Orch-&gt;&gt;LLM: generate_tool_calls(messages, tools)
     LLM--&gt;&gt;Orch: ChatResponse (tool call)
     Orch-&gt;&gt;Orch: get_tool_calls_from_response()
     Orch-&gt;&gt;Tool: call(operation="add", a=5, b=3)

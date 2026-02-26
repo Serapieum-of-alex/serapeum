@@ -1404,10 +1404,10 @@ Hold "Ctrl" to enable pan &amp; zoom
 
     class FunctionCallingLLM {
         &lt;&lt;abstract&gt;&gt;
-        +predict_and_call(tools, chat_history, ...) AgentChatResponse
-        +apredict_and_call(tools, chat_history, ...) AgentChatResponse
-        +chat_with_tools(tools, chat_history, stream, ...) ChatResponse | Generator
-        +achat_with_tools(tools, chat_history, stream, ...) ChatResponse | AsyncGenerator
+        +invoke_callable(tools, chat_history, ...) AgentChatResponse
+        +ainvoke_callable(tools, chat_history, ...) AgentChatResponse
+        +generate_tool_calls(tools, chat_history, stream, ...) ChatResponse | Generator
+        +agenerate_tool_calls(tools, chat_history, stream, ...) ChatResponse | AsyncGenerator
         -_prepare_chat_with_tools(tools, chat_history, ...) Tuple
         -_validate_chat_with_tools_response(...) AgentChatResponse
     }
@@ -1423,10 +1423,10 @@ Hold "Ctrl" to enable pan &amp; zoom
         +achat(messages, **kwargs) ChatResponse
         +complete(prompt, **kwargs) CompletionResponse
         +acomplete(prompt, **kwargs) CompletionResponse
-        +predict_and_call(tools, ...) AgentChatResponse
-        +apredict_and_call(tools, ...) AgentChatResponse
-        +chat_with_tools(tools, stream, ...) ChatResponse | Generator
-        +achat_with_tools(tools, stream, ...) ChatResponse | AsyncGenerator
+        +invoke_callable(tools, ...) AgentChatResponse
+        +ainvoke_callable(tools, ...) AgentChatResponse
+        +generate_tool_calls(tools, stream, ...) ChatResponse | Generator
+        +agenerate_tool_calls(tools, stream, ...) ChatResponse | AsyncGenerator
         -_chat_request(messages, stream, **kwargs) dict
         -_complete_request(prompt, stream, **kwargs) dict
         -_prepare_tools_schema(tools) List[Dict]
@@ -1510,7 +1510,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <li><strong>Orchestrates</strong> the complete function-calling workflow</li>
 <li><strong>Validates</strong> LLM supports function calling during initialization</li>
 <li><strong>Converts</strong> Pydantic models to callable tools</li>
-<li><strong>Routes</strong> execution through predict_and_call</li>
+<li><strong>Routes</strong> execution through invoke_callable</li>
 <li><strong>Supports</strong> single or parallel tool calls</li>
 <li><strong>Handles</strong> sync, async, and streaming modes</li>
 </ul>
@@ -1524,7 +1524,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <h3 id="functioncallingllm-abstract"><a class="toclink" href="#functioncallingllm-abstract">FunctionCallingLLM (Abstract)</a><a class="headerlink" href="#functioncallingllm-abstract" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>Defines</strong> interface for function-calling LLMs</li>
-<li><strong>Provides</strong> predict_and_call abstraction</li>
+<li><strong>Provides</strong> invoke_callable abstraction</li>
 <li><strong>Handles</strong> tool schema preparation</li>
 <li><strong>Manages</strong> tool execution orchestration</li>
 </ul>

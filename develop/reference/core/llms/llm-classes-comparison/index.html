@@ -3493,10 +3493,10 @@
 <ul>
 <li>Extends the base <code>LLM</code> class with tool-calling capabilities</li>
 <li>Provides convenience methods for tool workflows:</li>
-<li><code>chat_with_tools(stream=False)</code> - Chat with function calling; pass <code>stream=True</code> for streaming (sync)</li>
-<li><code>achat_with_tools(stream=False)</code> - Chat with function calling; pass <code>stream=True</code> for streaming (async)</li>
-<li><code>predict_and_call()</code> - Predict and execute tool (sync)</li>
-<li><code>apredict_and_call()</code> - Predict and execute tool (async)</li>
+<li><code>generate_tool_calls(stream=False)</code> - Chat with function calling; pass <code>stream=True</code> for streaming (sync)</li>
+<li><code>agenerate_tool_calls(stream=False)</code> - Chat with function calling; pass <code>stream=True</code> for streaming (async)</li>
+<li><code>invoke_callable()</code> - Predict and execute tool (sync)</li>
+<li><code>ainvoke_callable()</code> - Predict and execute tool (async)</li>
 <li><code>get_tool_calls_from_response()</code> - Extract tool calls from response</li>
 <li>Abstract method <code>_prepare_chat_with_tools()</code> that providers must implement</li>
 </ul>

@@ -3379,7 +3379,7 @@ signature is used to auto-generate the JSON schema for the tool call.</p>
 <p><strong>Key Sections</strong>:
 - Initialization phase (validation and component setup)
 - Tool creation (CallableTool.from_model)
-- Execution phase (predict_and_call with tools)
+- Execution phase (invoke_callable with tools)
 - Tool execution and output parsing</p>
 <h3 id="2-architecture-and-class-relationships"><a class="toclink" href="#2-architecture-and-class-relationships">2. <a href="../tool_orchestrating_llm_class/">Architecture and Class Relationships</a></a><a class="headerlink" href="#2-architecture-and-class-relationships" title="Permanent link">#</a></h3>
 <p>Illustrates the static structure and relationships between classes.</p>
@@ -3461,7 +3461,7 @@ signature is used to auto-generate the JSON schema for the tool call.</p>
 <a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
 <a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>4. Execute function calling:
 <a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>   a. Prepare request with tool schemas
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>   b. Call predict_and_call([tool], messages, ...)
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>   b. Call invoke_callable([tool], messages, ...)
 <a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>   c. HTTP POST to Ollama server with tools parameter
 <a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>   d. LLM generates tool_calls in response
 <a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>

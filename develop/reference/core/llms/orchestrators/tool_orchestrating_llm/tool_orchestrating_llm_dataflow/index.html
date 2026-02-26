@@ -1290,7 +1290,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     ApplyVars --&gt; CreateMessages[Create Message list]
     CreateMessages --&gt; ExtendMessages[Extend with system prompts]
 
-    ExtendMessages --&gt; PredictAndCall[Call predict_and_call]
+    ExtendMessages --&gt; PredictAndCall[Call invoke_callable]
     PredictAndCall --&gt; PrepareRequest[Prepare chat request with tools]
 
     PrepareRequest --&gt; AddToolSchemas[Add tool schemas to request]
@@ -1381,7 +1381,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-1-27" id="__codelineno-1-27" name="__codelineno-1-27"></a>  4. _extend_messages(messages)
 <a href="#__codelineno-1-28" id="__codelineno-1-28" name="__codelineno-1-28"></a>     → [Message(role=SYSTEM, ...), Message(role=USER, ...)]
 <a href="#__codelineno-1-29" id="__codelineno-1-29" name="__codelineno-1-29"></a>
-<a href="#__codelineno-1-30" id="__codelineno-1-30" name="__codelineno-1-30"></a>  5. predict_and_call([tool], messages, ...)
+<a href="#__codelineno-1-30" id="__codelineno-1-30" name="__codelineno-1-30"></a>  5. invoke_callable([tool], messages, ...)
 <a href="#__codelineno-1-31" id="__codelineno-1-31" name="__codelineno-1-31"></a>     → HTTP request:
 <a href="#__codelineno-1-32" id="__codelineno-1-32" name="__codelineno-1-32"></a>     {
 <a href="#__codelineno-1-33" id="__codelineno-1-33" name="__codelineno-1-33"></a>       "model": "llama3.1",
@@ -1524,7 +1524,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <pre class="mermaid"><code>flowchart TD
     StreamStart(["__call__(stream=True) called"]) --&gt; CreateTool[Create CallableTool]
     CreateTool --&gt; FormatMsgs[Format messages]
-    FormatMsgs --&gt; StreamChat[chat_with_tools(stream=True)]
+    FormatMsgs --&gt; StreamChat[generate_tool_calls(stream=True)]
 
     StreamChat --&gt; ReceiveChunk{Receive chunk}
     ReceiveChunk --&gt; ProcessChunk[StreamingObjectProcessor.process]

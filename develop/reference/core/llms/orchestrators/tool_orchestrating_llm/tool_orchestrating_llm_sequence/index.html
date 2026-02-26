@@ -1266,7 +1266,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     Ollama--&gt;&gt;ToolOrchestratingLLM: extended messages
     deactivate Ollama
 
-    ToolOrchestratingLLM-&gt;&gt;Ollama: predict_and_call(tools=[tool], messages, ...)
+    ToolOrchestratingLLM-&gt;&gt;Ollama: invoke_callable(tools=[tool], messages, ...)
     activate Ollama
     Note over Ollama: Prepare function calling request&lt;br/&gt;with tool schemas
 
@@ -1308,7 +1308,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <li><strong>Initialization validates all components</strong> before storing them - LLM must support function calling</li>
 <li><strong>Tool creation</strong> converts Pydantic model to CallableTool with JSON schema</li>
 <li><strong>Prompt formatting</strong> applies template variables to create messages</li>
-<li><strong>predict_and_call</strong> orchestrates the function calling flow with the LLM</li>
+<li><strong>invoke_callable</strong> orchestrates the function calling flow with the LLM</li>
 <li><strong>Tool execution</strong> happens automatically after LLM generates tool calls</li>
 <li><strong>Response parsing</strong> extracts structured Pydantic instances from ToolOutput</li>
 </ol>
@@ -1346,7 +1346,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     User-&gt;&gt;ToolOrchestratingLLM: __call__(allow_parallel_tool_calls=True)
     activate ToolOrchestratingLLM
 
-    ToolOrchestratingLLM-&gt;&gt;Ollama: predict_and_call(..., allow_parallel=True)
+    ToolOrchestratingLLM-&gt;&gt;Ollama: invoke_callable(..., allow_parallel=True)
     activate Ollama
     Note over Ollama: LLM generates multiple tool calls
 
@@ -1367,12 +1367,12 @@ Hold "Ctrl" to enable pan &amp; zoom
 </div>
 <h2 id="async-execution-flow"><a class="toclink" href="#async-execution-flow">Async Execution Flow</a><a class="headerlink" href="#async-execution-flow" title="Permanent link">#</a></h2>
 <p>The async flow (<code>acall</code>) follows the same pattern but uses:
-- <code>apredict_and_call</code> instead of <code>predict_and_call</code>
+- <code>ainvoke_callable</code> instead of <code>invoke_callable</code>
 - Async tool execution
 - All operations are awaited</p>
 <h2 id="streaming-execution-flow"><a class="toclink" href="#streaming-execution-flow">Streaming Execution Flow</a><a class="headerlink" href="#streaming-execution-flow" title="Permanent link">#</a></h2>
 <p>For <code>__call__(stream=True)</code>:
-1. Uses <code>chat_with_tools(stream=True)</code> instead of <code>predict_and_call</code>
+1. Uses <code>generate_tool_calls(stream=True)</code> instead of <code>invoke_callable</code>
 2. Yields partial responses as <code>StreamingObjectProcessor</code> parses incremental tool calls
 3. Maintains <code>cur_objects</code> state across chunks
 4. Each yield contains progressively updated Pydantic instances</p>

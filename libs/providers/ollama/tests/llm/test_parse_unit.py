@@ -333,7 +333,7 @@ class TestStreamParseDefault:
         """
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         objects = [Simple(value="a"), Simple(value="b")]
-        mocker.patch.object(llm, "_stream_chat", return_value=iter(chunks))
+        mocker.patch.object(llm, "chat", return_value=iter(chunks))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = objects
         results = list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))

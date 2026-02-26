@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -4003,7 +4003,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>        <span class="n">content</span><span class="o">=</span><span class="s2">&quot;What&#39;s in this image?&quot;</span><span class="p">,</span>
 <a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>    <span class="p">),</span>
 <a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>    <span class="n">Message</span><span class="p">(</span>
-<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>        <span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">image</span><span class="p">],</span>  <span class="c1"># Alternative to images</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>        <span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">image</span><span class="p">],</span>
 <a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>    <span class="p">)</span>
 <a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a><span class="p">]</span>
 <a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>
@@ -4078,7 +4078,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Count from 1 to 5.&quot;</span><span class="p">)]</span>
 <a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>
 <a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="c1"># Stream responses</span>
-<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">stream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>    <span class="c1"># Outputs: &quot;1&quot; &quot; 2&quot; &quot; 3&quot; &quot; 4&quot; &quot; 5&quot;</span>
 </code></pre></div>
@@ -4096,7 +4096,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot;Write a haiku about coding:&quot;</span>
 <a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>
 <a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="c1"># Stream completion</span>
-<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">stream_complete</span><span class="p">(</span><span class="n">prompt</span><span class="p">):</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">complete</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="3-processing-stream-with-delta"><a class="toclink" href="#3-processing-stream-with-delta">3. Processing Stream with Delta</a><a class="headerlink" href="#3-processing-stream-with-delta" title="Permanent link">#</a></h3>
@@ -4114,7 +4114,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Tell me a joke.&quot;</span><span class="p">)]</span>
 <a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>
 <a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="n">full_response</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">stream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>    <span class="n">delta</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">delta</span>  <span class="c1"># Incremental content</span>
 <a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>    <span class="k">if</span> <span class="n">delta</span><span class="p">:</span>
 <a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>        <span class="n">full_response</span> <span class="o">+=</span> <span class="n">delta</span>
@@ -4153,13 +4153,13 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-19-25" name="__codelineno-19-25" href="#__codelineno-19-25"></a><span class="c1"># Create tool from function</span>
 <a id="__codelineno-19-26" name="__codelineno-19-26" href="#__codelineno-19-26"></a><span class="n">tool</span> <span class="o">=</span> <span class="n">CallableTool</span><span class="o">.</span><span class="n">from_function</span><span class="p">(</span><span class="n">create_album</span><span class="p">)</span>
 <a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a>
-<a id="__codelineno-19-28" name="__codelineno-19-28" href="#__codelineno-19-28"></a><span class="n">message</span> <span class="o">=</span>  <span class="n">Message</span><span class="p">(</span>
+<a id="__codelineno-19-28" name="__codelineno-19-28" href="#__codelineno-19-28"></a><span class="n">message</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span>
 <a id="__codelineno-19-29" name="__codelineno-19-29" href="#__codelineno-19-29"></a>    <span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span>
 <a id="__codelineno-19-30" name="__codelineno-19-30" href="#__codelineno-19-30"></a>    <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Create a rock album with two songs&quot;</span>
 <a id="__codelineno-19-31" name="__codelineno-19-31" href="#__codelineno-19-31"></a><span class="p">)</span>
 <a id="__codelineno-19-32" name="__codelineno-19-32" href="#__codelineno-19-32"></a>
 <a id="__codelineno-19-33" name="__codelineno-19-33" href="#__codelineno-19-33"></a><span class="c1"># Call with tools</span>
-<a id="__codelineno-19-34" name="__codelineno-19-34" href="#__codelineno-19-34"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat_with_tools</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span> <span class="n">user_msg</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+<a id="__codelineno-19-34" name="__codelineno-19-34" href="#__codelineno-19-34"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate_tool_calls</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span> <span class="n">user_msg</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
 <a id="__codelineno-19-35" name="__codelineno-19-35" href="#__codelineno-19-35"></a>
 <a id="__codelineno-19-36" name="__codelineno-19-36" href="#__codelineno-19-36"></a><span class="c1"># Extract tool calls</span>
 <a id="__codelineno-19-37" name="__codelineno-19-37" href="#__codelineno-19-37"></a><span class="n">tool_calls</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">get_tool_calls_from_response</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
@@ -4195,7 +4195,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-20-26" name="__codelineno-20-26" href="#__codelineno-20-26"></a>    <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Create a jazz album with title &#39;Blue Notes&#39; by Miles Davis with 3 songs&quot;</span>
 <a id="__codelineno-20-27" name="__codelineno-20-27" href="#__codelineno-20-27"></a><span class="p">)</span>
 <a id="__codelineno-20-28" name="__codelineno-20-28" href="#__codelineno-20-28"></a>
-<a id="__codelineno-20-29" name="__codelineno-20-29" href="#__codelineno-20-29"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat_with_tools</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span> <span class="n">user_msg</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+<a id="__codelineno-20-29" name="__codelineno-20-29" href="#__codelineno-20-29"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate_tool_calls</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span> <span class="n">user_msg</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
 <a id="__codelineno-20-30" name="__codelineno-20-30" href="#__codelineno-20-30"></a>
 <a id="__codelineno-20-31" name="__codelineno-20-31" href="#__codelineno-20-31"></a><span class="c1"># Extract and execute tool call</span>
 <a id="__codelineno-20-32" name="__codelineno-20-32" href="#__codelineno-20-32"></a><span class="n">tool_calls</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">get_tool_calls_from_response</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
@@ -4233,7 +4233,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-21-25" name="__codelineno-21-25" href="#__codelineno-21-25"></a><span class="p">)</span>
 <a id="__codelineno-21-26" name="__codelineno-21-26" href="#__codelineno-21-26"></a>
 <a id="__codelineno-21-27" name="__codelineno-21-27" href="#__codelineno-21-27"></a><span class="c1"># Force single tool call</span>
-<a id="__codelineno-21-28" name="__codelineno-21-28" href="#__codelineno-21-28"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat_with_tools</span><span class="p">(</span>
+<a id="__codelineno-21-28" name="__codelineno-21-28" href="#__codelineno-21-28"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate_tool_calls</span><span class="p">(</span>
 <a id="__codelineno-21-29" name="__codelineno-21-29" href="#__codelineno-21-29"></a>    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span>
 <a id="__codelineno-21-30" name="__codelineno-21-30" href="#__codelineno-21-30"></a>    <span class="n">user_msg</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
 <a id="__codelineno-21-31" name="__codelineno-21-31" href="#__codelineno-21-31"></a>    <span class="n">allow_parallel_tool_calls</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Only one tool call allowed</span>
@@ -4271,7 +4271,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-22-25" name="__codelineno-22-25" href="#__codelineno-22-25"></a><span class="p">)</span>
 <a id="__codelineno-22-26" name="__codelineno-22-26" href="#__codelineno-22-26"></a>
 <a id="__codelineno-22-27" name="__codelineno-22-27" href="#__codelineno-22-27"></a><span class="c1"># Allow parallel tool calls</span>
-<a id="__codelineno-22-28" name="__codelineno-22-28" href="#__codelineno-22-28"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat_with_tools</span><span class="p">(</span>
+<a id="__codelineno-22-28" name="__codelineno-22-28" href="#__codelineno-22-28"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate_tool_calls</span><span class="p">(</span>
 <a id="__codelineno-22-29" name="__codelineno-22-29" href="#__codelineno-22-29"></a>    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span>
 <a id="__codelineno-22-30" name="__codelineno-22-30" href="#__codelineno-22-30"></a>    <span class="n">user_msg</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
 <a id="__codelineno-22-31" name="__codelineno-22-31" href="#__codelineno-22-31"></a>    <span class="n">allow_parallel_tool_calls</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -4313,7 +4313,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-23-25" name="__codelineno-23-25" href="#__codelineno-23-25"></a><span class="p">)</span>
 <a id="__codelineno-23-26" name="__codelineno-23-26" href="#__codelineno-23-26"></a>
 <a id="__codelineno-23-27" name="__codelineno-23-27" href="#__codelineno-23-27"></a><span class="c1"># Stream with tools</span>
-<a id="__codelineno-23-28" name="__codelineno-23-28" href="#__codelineno-23-28"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">stream_chat_with_tools</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span> <span class="n">user_msg</span><span class="o">=</span><span class="n">message</span><span class="p">):</span>
+<a id="__codelineno-23-28" name="__codelineno-23-28" href="#__codelineno-23-28"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate_tool_calls</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span> <span class="n">user_msg</span><span class="o">=</span><span class="n">message</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <a id="__codelineno-23-29" name="__codelineno-23-29" href="#__codelineno-23-29"></a>    <span class="c1"># Process streaming tool calls</span>
 <a id="__codelineno-23-30" name="__codelineno-23-30" href="#__codelineno-23-30"></a>    <span class="k">if</span> <span class="n">chunk</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">additional_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tool_calls&quot;</span><span class="p">):</span>
 <a id="__codelineno-23-31" name="__codelineno-23-31" href="#__codelineno-23-31"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tool call chunk: </span><span class="si">{</span><span class="n">chunk</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">additional_kwargs</span><span class="p">[</span><span class="s1">&#39;tool_calls&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -4377,7 +4377,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-25-19" name="__codelineno-25-19" href="#__codelineno-25-19"></a>
 <a id="__codelineno-25-20" name="__codelineno-25-20" href="#__codelineno-25-20"></a><span class="c1"># Create ToolOrchestratingLLM</span>
 <a id="__codelineno-25-21" name="__codelineno-25-21" href="#__codelineno-25-21"></a><span class="n">tools_llm</span> <span class="o">=</span> <span class="n">ToolOrchestratingLLM</span><span class="p">(</span>
-<a id="__codelineno-25-22" name="__codelineno-25-22" href="#__codelineno-25-22"></a>    <span class="n">output_tool</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
+<a id="__codelineno-25-22" name="__codelineno-25-22" href="#__codelineno-25-22"></a>    <span class="n">schema</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
 <a id="__codelineno-25-23" name="__codelineno-25-23" href="#__codelineno-25-23"></a>    <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Create an album about </span><span class="si">{topic}</span><span class="s2"> with two random songs&quot;</span><span class="p">,</span>
 <a id="__codelineno-25-24" name="__codelineno-25-24" href="#__codelineno-25-24"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
 <a id="__codelineno-25-25" name="__codelineno-25-25" href="#__codelineno-25-25"></a><span class="p">)</span>
@@ -4410,7 +4410,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a>
 <a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a><span class="c1"># Enable parallel tool calls</span>
 <a id="__codelineno-26-20" name="__codelineno-26-20" href="#__codelineno-26-20"></a><span class="n">tools_llm</span> <span class="o">=</span> <span class="n">ToolOrchestratingLLM</span><span class="p">(</span>
-<a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a>    <span class="n">output_tool</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
+<a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a>    <span class="n">schema</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
 <a id="__codelineno-26-22" name="__codelineno-26-22" href="#__codelineno-26-22"></a>    <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Create albums about </span><span class="si">{topic}</span><span class="s2">&quot;</span><span class="p">,</span>
 <a id="__codelineno-26-23" name="__codelineno-26-23" href="#__codelineno-26-23"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
 <a id="__codelineno-26-24" name="__codelineno-26-24" href="#__codelineno-26-24"></a>    <span class="n">allow_parallel_tool_calls</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -4443,14 +4443,14 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-27-17" name="__codelineno-27-17" href="#__codelineno-27-17"></a><span class="p">)</span>
 <a id="__codelineno-27-18" name="__codelineno-27-18" href="#__codelineno-27-18"></a>
 <a id="__codelineno-27-19" name="__codelineno-27-19" href="#__codelineno-27-19"></a><span class="n">tools_llm</span> <span class="o">=</span> <span class="n">ToolOrchestratingLLM</span><span class="p">(</span>
-<a id="__codelineno-27-20" name="__codelineno-27-20" href="#__codelineno-27-20"></a>    <span class="n">output_tool</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
+<a id="__codelineno-27-20" name="__codelineno-27-20" href="#__codelineno-27-20"></a>    <span class="n">schema</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
 <a id="__codelineno-27-21" name="__codelineno-27-21" href="#__codelineno-27-21"></a>    <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Create albums about </span><span class="si">{topic}</span><span class="s2">&quot;</span><span class="p">,</span>
 <a id="__codelineno-27-22" name="__codelineno-27-22" href="#__codelineno-27-22"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
 <a id="__codelineno-27-23" name="__codelineno-27-23" href="#__codelineno-27-23"></a>    <span class="n">allow_parallel_tool_calls</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <a id="__codelineno-27-24" name="__codelineno-27-24" href="#__codelineno-27-24"></a><span class="p">)</span>
 <a id="__codelineno-27-25" name="__codelineno-27-25" href="#__codelineno-27-25"></a>
 <a id="__codelineno-27-26" name="__codelineno-27-26" href="#__codelineno-27-26"></a><span class="c1"># Stream results</span>
-<a id="__codelineno-27-27" name="__codelineno-27-27" href="#__codelineno-27-27"></a><span class="k">for</span> <span class="n">album</span> <span class="ow">in</span> <span class="n">tools_llm</span><span class="o">.</span><span class="n">stream_call</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="s2">&quot;rock&quot;</span><span class="p">):</span>
+<a id="__codelineno-27-27" name="__codelineno-27-27" href="#__codelineno-27-27"></a><span class="k">for</span> <span class="n">album</span> <span class="ow">in</span> <span class="n">tools_llm</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="s2">&quot;rock&quot;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <a id="__codelineno-27-28" name="__codelineno-27-28" href="#__codelineno-27-28"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received: </span><span class="si">{</span><span class="n">album</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
@@ -4515,7 +4515,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a>
 <a id="__codelineno-30-14" name="__codelineno-30-14" href="#__codelineno-30-14"></a>    <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Count to 5&quot;</span><span class="p">)]</span>
 <a id="__codelineno-30-15" name="__codelineno-30-15" href="#__codelineno-30-15"></a>
-<a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a>    <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">llm</span><span class="o">.</span><span class="n">astream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+<a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a>    <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">llm</span><span class="o">.</span><span class="n">achat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <a id="__codelineno-30-17" name="__codelineno-30-17" href="#__codelineno-30-17"></a>        <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <a id="__codelineno-30-18" name="__codelineno-30-18" href="#__codelineno-30-18"></a>
 <a id="__codelineno-30-19" name="__codelineno-30-19" href="#__codelineno-30-19"></a>
@@ -4576,7 +4576,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-32-19" name="__codelineno-32-19" href="#__codelineno-32-19"></a>    <span class="p">)</span>
 <a id="__codelineno-32-20" name="__codelineno-32-20" href="#__codelineno-32-20"></a>
 <a id="__codelineno-32-21" name="__codelineno-32-21" href="#__codelineno-32-21"></a>    <span class="n">tools_llm</span> <span class="o">=</span> <span class="n">ToolOrchestratingLLM</span><span class="p">(</span>
-<a id="__codelineno-32-22" name="__codelineno-32-22" href="#__codelineno-32-22"></a>        <span class="n">output_tool</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
+<a id="__codelineno-32-22" name="__codelineno-32-22" href="#__codelineno-32-22"></a>        <span class="n">schema</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
 <a id="__codelineno-32-23" name="__codelineno-32-23" href="#__codelineno-32-23"></a>        <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Create an album about </span><span class="si">{topic}</span><span class="s2">&quot;</span><span class="p">,</span>
 <a id="__codelineno-32-24" name="__codelineno-32-24" href="#__codelineno-32-24"></a>        <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
 <a id="__codelineno-32-25" name="__codelineno-32-25" href="#__codelineno-32-25"></a>    <span class="p">)</span>
@@ -4610,13 +4610,13 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-33-19" name="__codelineno-33-19" href="#__codelineno-33-19"></a>    <span class="p">)</span>
 <a id="__codelineno-33-20" name="__codelineno-33-20" href="#__codelineno-33-20"></a>
 <a id="__codelineno-33-21" name="__codelineno-33-21" href="#__codelineno-33-21"></a>    <span class="n">tools_llm</span> <span class="o">=</span> <span class="n">ToolOrchestratingLLM</span><span class="p">(</span>
-<a id="__codelineno-33-22" name="__codelineno-33-22" href="#__codelineno-33-22"></a>        <span class="n">output_tool</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
+<a id="__codelineno-33-22" name="__codelineno-33-22" href="#__codelineno-33-22"></a>        <span class="n">schema</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
 <a id="__codelineno-33-23" name="__codelineno-33-23" href="#__codelineno-33-23"></a>        <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Create albums about </span><span class="si">{topic}</span><span class="s2">&quot;</span><span class="p">,</span>
 <a id="__codelineno-33-24" name="__codelineno-33-24" href="#__codelineno-33-24"></a>        <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
 <a id="__codelineno-33-25" name="__codelineno-33-25" href="#__codelineno-33-25"></a>        <span class="n">allow_parallel_tool_calls</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <a id="__codelineno-33-26" name="__codelineno-33-26" href="#__codelineno-33-26"></a>    <span class="p">)</span>
 <a id="__codelineno-33-27" name="__codelineno-33-27" href="#__codelineno-33-27"></a>
-<a id="__codelineno-33-28" name="__codelineno-33-28" href="#__codelineno-33-28"></a>    <span class="n">stream</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tools_llm</span><span class="o">.</span><span class="n">astream_call</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="s2">&quot;rock&quot;</span><span class="p">)</span>
+<a id="__codelineno-33-28" name="__codelineno-33-28" href="#__codelineno-33-28"></a>    <span class="n">stream</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tools_llm</span><span class="o">.</span><span class="n">acall</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="s2">&quot;rock&quot;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <a id="__codelineno-33-29" name="__codelineno-33-29" href="#__codelineno-33-29"></a>    <span class="k">async</span> <span class="k">for</span> <span class="n">album</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
 <a id="__codelineno-33-30" name="__codelineno-33-30" href="#__codelineno-33-30"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received: </span><span class="si">{</span><span class="n">album</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-33-31" name="__codelineno-33-31" href="#__codelineno-33-31"></a>

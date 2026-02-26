@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -2213,17 +2213,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-template-method-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Template Method Pattern
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#3-adapter-pattern" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3485,17 +3474,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-template-method-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Template Method Pattern
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#3-adapter-pattern" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3922,7 +3900,7 @@
 <a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1"># Create structured completion runner</span>
 <a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">text_llm</span> <span class="o">=</span> <span class="n">TextCompletionLLM</span><span class="p">(</span>
 <a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">output_parser</span><span class="o">=</span><span class="n">PydanticParser</span><span class="p">(</span><span class="n">output_cls</span><span class="o">=</span><span class="n">DummyModel</span><span class="p">),</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Value: </span><span class="si">{value}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Generate any value: </span><span class="si">{value}</span><span class="s2">&quot;</span><span class="p">,</span>
 <a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
 <a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="p">)</span>
 <a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
@@ -3948,7 +3926,7 @@
 <a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
 <a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="c1"># Create tool orchestrator</span>
 <a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="n">tools_llm</span> <span class="o">=</span> <span class="n">ToolOrchestratingLLM</span><span class="p">(</span>
-<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="n">output_cls</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="n">schema</span><span class="o">=</span><span class="n">Album</span><span class="p">,</span>
 <a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Create an album about </span><span class="si">{topic}</span><span class="s2"> with two random songs&quot;</span><span class="p">,</span>
 <a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
 <a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="p">)</span>
@@ -4077,19 +4055,20 @@
 <h2 id="key-design-patterns"><a class="toclink" href="#key-design-patterns">Key Design Patterns</a><a class="headerlink" href="#key-design-patterns" title="Permanent link">#</a></h2>
 <h3 id="1-lazy-initialization"><a class="toclink" href="#1-lazy-initialization">1. <strong>Lazy Initialization</strong></a><a class="headerlink" href="#1-lazy-initialization" title="Permanent link">#</a></h3>
 <p>Clients are created on first use, not during <code>__init__</code>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nd">@property</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Client</span><span class="p">:</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request_timeout</span><span class="p">)</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span>
-</code></pre></div></p>
-<h3 id="2-template-method-pattern"><a class="toclink" href="#2-template-method-pattern">2. <strong>Template Method Pattern</strong></a><a class="headerlink" href="#2-template-method-pattern" title="Permanent link">#</a></h3>
-<p>FunctionCallingLLM defines workflow, Ollama implements specifics:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">chat_with_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">prepared</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_chat_with_tools</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># Subclass</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">prepared</span><span class="p">)</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">validated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_chat_with_tools_response</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">tools</span><span class="p">)</span>  <span class="c1"># Subclass</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="k">return</span> <span class="n">validated</span>
+```python notest
+@property
+def client(self) -&gt; Client:
+    if self._client is None:
+        self._client = Client(host=self.base_url, timeout=self.request_timeout)
+    return self._client
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>### 2. **Template Method Pattern**
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>FunctionCallingLLM defines workflow, Ollama implements specifics:
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>```python
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>def generate_tool_calls(self, messages, tools, **kwargs):
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    response = self.chat(prepared)
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    validated = self._validate_chat_with_tools_response(response, tools)  # Subclass
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    return validated
 </code></pre></div></p>
 <h3 id="3-adapter-pattern"><a class="toclink" href="#3-adapter-pattern">3. <strong>Adapter Pattern</strong></a><a class="headerlink" href="#3-adapter-pattern" title="Permanent link">#</a></h3>
 <p>Ollama adapts between internal types and Ollama server format:
@@ -4097,33 +4076,33 @@
 - <code>BaseTool</code> → Ollama tool schema
 - Raw response dict → <code>ChatResponse</code>/<code>CompletionResponse</code></p>
 <h2 id="integration-architecture"><a class="toclink" href="#integration-architecture">Integration Architecture</a><a class="headerlink" href="#integration-architecture" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>User Application
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    ↓
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>ToolOrchestratingLLM / TextCompletionLLM
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    ↓
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>Ollama
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    ↓
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>Client / AsyncClient
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    ↓
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>Ollama Server (HTTP)
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>    ↓
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>Model Runtime (llama3.1, etc.)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>User Application
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    ↓
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>ToolOrchestratingLLM / TextCompletionLLM
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    ↓
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>Ollama
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    ↓
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>Client / AsyncClient
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    ↓
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>Ollama Server (HTTP)
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    ↓
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>Model Runtime (llama3.1, etc.)
 </code></pre></div>
 <h3 id="textcompletionllm-integration"><a class="toclink" href="#textcompletionllm-integration">TextCompletionLLM Integration</a><a class="headerlink" href="#textcompletionllm-integration" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>1. Formats prompt with variables
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>2. Checks is_chat_model → True
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>3. Calls Ollama.chat()
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>4. Parses response with PydanticParser
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>5. Returns validated model instance
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>1. Formats prompt with variables
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>2. Checks is_chat_model → True
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>3. Calls Ollama.chat()
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>4. Parses response with PydanticParser
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>5. Returns validated model instance
 </code></pre></div>
 <h3 id="toolorchestratingllm-integration"><a class="toclink" href="#toolorchestratingllm-integration">ToolOrchestratingLLM Integration</a><a class="headerlink" href="#toolorchestratingllm-integration" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>1. Converts output_cls to CallableTool
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>2. Formats prompt with variables
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>3. Calls Ollama.chat_with_tools()
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>4. Ollama converts tool to schema
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>5. Server returns tool_calls
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>6. Executes tool to create instance
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>7. Returns model instance(s)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>1. Converts output_cls to CallableTool
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>2. Formats prompt with variables
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>3. Calls Ollama.generate_tool_calls()
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>4. Ollama converts tool to schema
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>5. Server returns tool_calls
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>6. Executes tool to create instance
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>7. Returns model instance(s)
 </code></pre></div>
 <h2 id="performance-considerations"><a class="toclink" href="#performance-considerations">Performance Considerations</a><a class="headerlink" href="#performance-considerations" title="Permanent link">#</a></h2>
 <ol>
@@ -4155,110 +4134,222 @@
 </ul>
 <h2 id="error-handling"><a class="toclink" href="#error-handling">Error Handling</a><a class="headerlink" href="#error-handling" title="Permanent link">#</a></h2>
 <h3 id="network-errors"><a class="toclink" href="#network-errors">Network Errors</a><a class="headerlink" href="#network-errors" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>TimeoutError: Request timeout exceeded
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>ConnectionError: Cannot reach Ollama server
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>HTTPError: Server returned error status
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>TimeoutError: Request timeout exceeded
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>ConnectionError: Cannot reach Ollama server
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>HTTPError: Server returned error status
 </code></pre></div>
 <h3 id="parsing-errors"><a class="toclink" href="#parsing-errors">Parsing Errors</a><a class="headerlink" href="#parsing-errors" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>JSONDecodeError: Invalid JSON response
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>KeyError: Missing required field in response
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>ValueError: Invalid response format
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>JSONDecodeError: Invalid JSON response
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>KeyError: Missing required field in response
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>ValueError: Invalid response format
 </code></pre></div>
 <h3 id="configuration-errors"><a class="toclink" href="#configuration-errors">Configuration Errors</a><a class="headerlink" href="#configuration-errors" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>ValueError: Invalid model or URL
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>TypeError: Missing required field
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>AssertionError: Invalid parameter value
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>ValueError: Invalid model or URL
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>TypeError: Missing required field
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>AssertionError: Invalid parameter value
 </code></pre></div>
 <h2 id="prerequisites"><a class="toclink" href="#prerequisites">Prerequisites</a><a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
 <h3 id="server-requirements"><a class="toclink" href="#server-requirements">Server Requirements</a><a class="headerlink" href="#server-requirements" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Install Ollama</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://ollama.com/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Pull model</span>
-<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>ollama<span class="w"> </span>pull<span class="w"> </span>llama3.1
-<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
-<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="c1"># Start server (runs on port 11434 by default)</span>
-<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>ollama<span class="w"> </span>serve
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Install Ollama</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://ollama.com/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="c1"># Pull model</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>ollama<span class="w"> </span>pull<span class="w"> </span>llama3.1
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="c1"># Start server (runs on port 11434 by default)</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>ollama<span class="w"> </span>serve
 </code></pre></div>
 <h3 id="python-requirements"><a class="toclink" href="#python-requirements">Python Requirements</a><a class="headerlink" href="#python-requirements" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Install serapeum-ollama</span>
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>pip<span class="w"> </span>install<span class="w"> </span>serapeum-ollama
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="c1"># Or install from source</span>
-<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>libs/providers/serapeum-ollama
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Install serapeum-ollama</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>pip<span class="w"> </span>install<span class="w"> </span>serapeum-ollama
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Or install from source</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>libs/providers/serapeum-ollama
 </code></pre></div>
 <h2 id="common-patterns"><a class="toclink" href="#common-patterns">Common Patterns</a><a class="headerlink" href="#common-patterns" title="Permanent link">#</a></h2>
 <h3 id="pattern-1-reusable-instance"><a class="toclink" href="#pattern-1-reusable-instance">Pattern 1: Reusable Instance</a><a class="headerlink" href="#pattern-1-reusable-instance" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Create once</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
-<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen3.5:397b&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OLLAMA_API_KEY&quot;</span><span class="p">),</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
-<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
-<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="c1"># Reuse many times</span>
-<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="n">messages1</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Hi!&quot;</span><span class="p">)]</span>
-<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="n">messages2</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;How are you?&quot;</span><span class="p">)]</span>
-<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="n">response1</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages1</span><span class="p">)</span>
-<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="n">response2</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages2</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Create once</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen3.5:397b&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OLLAMA_API_KEY&quot;</span><span class="p">),</span> <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="c1"># Reuse many times</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="n">messages1</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Hi!&quot;</span><span class="p">)]</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="n">messages2</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;How are you?&quot;</span><span class="p">)]</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="n">response1</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages1</span><span class="p">)</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="n">response2</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages2</span><span class="p">)</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="nb">print</span><span class="p">(</span><span class="n">response1</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>  <span class="c1"># &quot;Hi!&quot;</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="nb">print</span><span class="p">(</span><span class="n">response2</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>  <span class="c1"># &quot;How are you?&quot;</span>
 </code></pre></div>
 <h3 id="pattern-2-streaming-for-long-responses"><a class="toclink" href="#pattern-2-streaming-for-long-responses">Pattern 2: Streaming for Long Responses</a><a class="headerlink" href="#pattern-2-streaming-for-long-responses" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>  <span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen3.5:397b&quot;</span><span class="p">,</span>
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>  <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OLLAMA_API_KEY&quot;</span><span class="p">),</span>
-<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>  <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span>
-<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="p">)</span>
-<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">stream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
-<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>  <span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen3.5:397b&quot;</span><span class="p">,</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>  <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OLLAMA_API_KEY&quot;</span><span class="p">),</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>  <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="p">)</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Tell me a joke.&quot;</span><span class="p">)]</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">chunk</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="c1"># I</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="c1"># I&#39;m</span>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="c1"># I&#39;m reading</span>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="c1"># I&#39;m reading a</span>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a><span class="c1"># I&#39;m reading a book</span>
+<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a><span class="c1"># I&#39;m reading a book on</span>
+<a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a><span class="c1"># I&#39;m reading a book on anti</span>
+<a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a><span class="c1"># I&#39;m reading a book on anti-gr</span>
+<a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a><span class="c1"># I&#39;m reading a book on anti-gravity</span>
+<a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a><span class="c1"># I&#39;m reading a book on anti-gravity.</span>
+<a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a><span class="c1"># I&#39;m reading a book on anti-gravity. It</span>
+<a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a><span class="c1"># I&#39;m reading a book on anti-gravity. It&#39;s</span>
+<a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a><span class="c1"># I&#39;m reading a book on anti-gravity. It&#39;s impossible</span>
+<a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a><span class="c1"># I&#39;m reading a book on anti-gravity. It&#39;s impossible to</span>
+<a id="__codelineno-18-27" name="__codelineno-18-27" href="#__codelineno-18-27"></a><span class="c1"># I&#39;m reading a book on anti-gravity. It&#39;s impossible to put</span>
+<a id="__codelineno-18-28" name="__codelineno-18-28" href="#__codelineno-18-28"></a><span class="c1"># I&#39;m reading a book on anti-gravity. It&#39;s impossible to put down</span>
+<a id="__codelineno-18-29" name="__codelineno-18-29" href="#__codelineno-18-29"></a><span class="c1"># I&#39;m reading a book on anti-gravity. It&#39;s impossible to put down!</span>
+<a id="__codelineno-18-30" name="__codelineno-18-30" href="#__codelineno-18-30"></a><span class="c1"># I&#39;m reading a book on anti-gravity. It&#39;s impossible to put down! 📚</span>
+<a id="__codelineno-18-31" name="__codelineno-18-31" href="#__codelineno-18-31"></a><span class="c1"># I&#39;m reading a book on anti-gravity. It&#39;s impossible to put down! 📚</span>
+<a id="__codelineno-18-32" name="__codelineno-18-32" href="#__codelineno-18-32"></a><span class="c1"># I&#39;m reading a book on anti-gravity. It&#39;s impossible to put down! 📚</span>
 </code></pre></div>
 <h3 id="pattern-3-tool-calling-for-structured-outputs"><a class="toclink" href="#pattern-3-tool-calling-for-structured-outputs">Pattern 3: Tool Calling for Structured Outputs</a><a class="headerlink" href="#pattern-3-tool-calling-for-structured-outputs" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallableTool</span>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
-<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>  <span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen3.5:397b&quot;</span><span class="p">,</span>
-<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>  <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OLLAMA_API_KEY&quot;</span><span class="p">),</span>
-<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>  <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span>
-<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="p">)</span>
-<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>
-<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a><span class="c1"># Define tool from Pydantic model</span>
-<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a><span class="n">tool</span> <span class="o">=</span> <span class="n">CallableTool</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="n">MyModel</span><span class="p">)</span>
-<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>
-<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a><span class="c1"># Get structured output via tool calling</span>
-<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat_with_tools</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">])</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallableTool</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1"># Define your output schema</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">Song</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>    <span class="n">duration</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1"># in seconds</span>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="k">class</span><span class="w"> </span><span class="nc">Album</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>    <span class="n">artist</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>    <span class="n">songs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Song</span><span class="p">]</span>
+<a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a>
+<a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
+<a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a>  <span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen3.5:397b&quot;</span><span class="p">,</span>
+<a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a>  <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OLLAMA_API_KEY&quot;</span><span class="p">),</span>
+<a id="__codelineno-19-20" name="__codelineno-19-20" href="#__codelineno-19-20"></a>  <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span>
+<a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a><span class="p">)</span>
+<a id="__codelineno-19-22" name="__codelineno-19-22" href="#__codelineno-19-22"></a>
+<a id="__codelineno-19-23" name="__codelineno-19-23" href="#__codelineno-19-23"></a><span class="c1"># Define tool from Pydantic model</span>
+<a id="__codelineno-19-24" name="__codelineno-19-24" href="#__codelineno-19-24"></a><span class="n">tool</span> <span class="o">=</span> <span class="n">CallableTool</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="n">Album</span><span class="p">)</span>
+<a id="__codelineno-19-25" name="__codelineno-19-25" href="#__codelineno-19-25"></a>
+<a id="__codelineno-19-26" name="__codelineno-19-26" href="#__codelineno-19-26"></a><span class="c1"># Get structured output via tool calling</span>
+<a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate_tool_calls</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span> <span class="n">user_msg</span><span class="o">=</span><span class="s2">&quot;Create an album about rock&quot;</span><span class="p">)</span>
+<a id="__codelineno-19-28" name="__codelineno-19-28" href="#__codelineno-19-28"></a>
+<a id="__codelineno-19-29" name="__codelineno-19-29" href="#__codelineno-19-29"></a><span class="c1"># print(response.message.additional_kwargs[&quot;tool_calls&quot;])</span>
+<a id="__codelineno-19-30" name="__codelineno-19-30" href="#__codelineno-19-30"></a><span class="c1"># [</span>
+<a id="__codelineno-19-31" name="__codelineno-19-31" href="#__codelineno-19-31"></a><span class="c1">#   ToolCall(</span>
+<a id="__codelineno-19-32" name="__codelineno-19-32" href="#__codelineno-19-32"></a><span class="c1">#       function=Function(</span>
+<a id="__codelineno-19-33" name="__codelineno-19-33" href="#__codelineno-19-33"></a><span class="c1">#           name=&#39;Album&#39;, </span>
+<a id="__codelineno-19-34" name="__codelineno-19-34" href="#__codelineno-19-34"></a><span class="c1">#           arguments={&#39;title&#39;: &#39;Thunder &amp; Lightning&#39;, &#39;artist&#39;: &#39;The Rock Legends&#39;, </span>
+<a id="__codelineno-19-35" name="__codelineno-19-35" href="#__codelineno-19-35"></a><span class="c1">#           &#39;songs&#39;: [</span>
+<a id="__codelineno-19-36" name="__codelineno-19-36" href="#__codelineno-19-36"></a><span class="c1">#               {&#39;duration&#39;: 245, &#39;title&#39;: &#39;Electric Storm&#39;}, </span>
+<a id="__codelineno-19-37" name="__codelineno-19-37" href="#__codelineno-19-37"></a><span class="c1">#               {&#39;duration&#39;: 312, &#39;title&#39;: &#39;Midnight Rider&#39;}, </span>
+<a id="__codelineno-19-38" name="__codelineno-19-38" href="#__codelineno-19-38"></a><span class="c1">#               {&#39;duration&#39;: 278, &#39;title&#39;: &#39;Breaking Chains&#39;}, </span>
+<a id="__codelineno-19-39" name="__codelineno-19-39" href="#__codelineno-19-39"></a><span class="c1">#               {&#39;duration&#39;: 295, &#39;title&#39;: &#39;Highway to Glory&#39;}, </span>
+<a id="__codelineno-19-40" name="__codelineno-19-40" href="#__codelineno-19-40"></a><span class="c1">#               {&#39;duration&#39;: 267, &#39;title&#39;: &#39;Rebel Heart&#39;}, </span>
+<a id="__codelineno-19-41" name="__codelineno-19-41" href="#__codelineno-19-41"></a><span class="c1">#               {&#39;duration&#39;: 334, &#39;title&#39;: &#39;Stone Cold Blues&#39;}, </span>
+<a id="__codelineno-19-42" name="__codelineno-19-42" href="#__codelineno-19-42"></a><span class="c1">#               {&#39;duration&#39;: 289, &#39;title&#39;: &#39;Rise Up&#39;}, </span>
+<a id="__codelineno-19-43" name="__codelineno-19-43" href="#__codelineno-19-43"></a><span class="c1">#               {&#39;duration&#39;: 356, &#39;title&#39;: &#39;Last Stand&#39;}</span>
+<a id="__codelineno-19-44" name="__codelineno-19-44" href="#__codelineno-19-44"></a><span class="c1">#           ]</span>
+<a id="__codelineno-19-45" name="__codelineno-19-45" href="#__codelineno-19-45"></a><span class="c1">#        }</span>
+<a id="__codelineno-19-46" name="__codelineno-19-46" href="#__codelineno-19-46"></a><span class="c1">#       )</span>
+<a id="__codelineno-19-47" name="__codelineno-19-47" href="#__codelineno-19-47"></a><span class="c1">#     )</span>
+<a id="__codelineno-19-48" name="__codelineno-19-48" href="#__codelineno-19-48"></a><span class="c1">#  ]</span>
 </code></pre></div>
 <h3 id="pattern-4-async-for-concurrency"><a class="toclink" href="#pattern-4-async-for-concurrency">Pattern 4: Async for Concurrency</a><a class="headerlink" href="#pattern-4-async-for-concurrency" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>  <span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen3.5:397b&quot;</span><span class="p">,</span>
-<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>  <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OLLAMA_API_KEY&quot;</span><span class="p">),</span>
-<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a>  <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span>
-<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="p">)</span>
-<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a>
-<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="c1"># Process multiple requests concurrently</span>
-<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">llm</span><span class="o">.</span><span class="n">achat</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="k">for</span> <span class="n">messages</span> <span class="ow">in</span> <span class="n">message_list</span><span class="p">]</span>
-<a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="n">responses</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>    <span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen3.5:397b&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>        <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OLLAMA_API_KEY&quot;</span><span class="p">),</span>
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>        <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span>
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>    <span class="p">)</span>
+<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>
+<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>    <span class="c1"># Prepare multiple message lists</span>
+<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a>    <span class="n">message_list</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>        <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;What is 2+2?&quot;</span><span class="p">)],</span>
+<a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a>        <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;What is the capital of France?&quot;</span><span class="p">)],</span>
+<a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a>        <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;What is Python?&quot;</span><span class="p">)],</span>
+<a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a>    <span class="p">]</span>
+<a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a>
+<a id="__codelineno-20-21" name="__codelineno-20-21" href="#__codelineno-20-21"></a>    <span class="c1"># Process multiple requests concurrently</span>
+<a id="__codelineno-20-22" name="__codelineno-20-22" href="#__codelineno-20-22"></a>    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">llm</span><span class="o">.</span><span class="n">achat</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="k">for</span> <span class="n">messages</span> <span class="ow">in</span> <span class="n">message_list</span><span class="p">]</span>
+<a id="__codelineno-20-23" name="__codelineno-20-23" href="#__codelineno-20-23"></a>    <span class="n">responses</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+<a id="__codelineno-20-24" name="__codelineno-20-24" href="#__codelineno-20-24"></a>
+<a id="__codelineno-20-25" name="__codelineno-20-25" href="#__codelineno-20-25"></a>    <span class="c1"># Print results</span>
+<a id="__codelineno-20-26" name="__codelineno-20-26" href="#__codelineno-20-26"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">response</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">responses</span><span class="p">):</span>
+<a id="__codelineno-20-27" name="__codelineno-20-27" href="#__codelineno-20-27"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Response </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-28" name="__codelineno-20-28" href="#__codelineno-20-28"></a>
+<a id="__codelineno-20-29" name="__codelineno-20-29" href="#__codelineno-20-29"></a>
+<a id="__codelineno-20-30" name="__codelineno-20-30" href="#__codelineno-20-30"></a><span class="c1"># Run the async function</span>
+<a id="__codelineno-20-31" name="__codelineno-20-31" href="#__codelineno-20-31"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+<a id="__codelineno-20-32" name="__codelineno-20-32" href="#__codelineno-20-32"></a>
+<a id="__codelineno-20-33" name="__codelineno-20-33" href="#__codelineno-20-33"></a><span class="c1"># Response 1: 2 + 2 equals **4**.</span>
+<a id="__codelineno-20-34" name="__codelineno-20-34" href="#__codelineno-20-34"></a><span class="c1"># Response 2: The capital of France is **Paris**.</span>
+<a id="__codelineno-20-35" name="__codelineno-20-35" href="#__codelineno-20-35"></a><span class="c1"># Response 3: **Python** is a high-level, interpreted, general-purpose programming language. It is one of the most popular and widely used languages in the world today.</span>
+<a id="__codelineno-20-36" name="__codelineno-20-36" href="#__codelineno-20-36"></a><span class="c1"># Here is a breakdown of what makes Python unique:</span>
+<a id="__codelineno-20-37" name="__codelineno-20-37" href="#__codelineno-20-37"></a><span class="c1"># ### 1. Key Characteristics</span>
+<a id="__codelineno-20-38" name="__codelineno-20-38" href="#__codelineno-20-38"></a><span class="c1"># *   **Readable Syntax:** Python was designed to be easy to read and write. It uses English keywords frequently and uses indentation (whitespace) to define blocks of code, rather than curly braces `{}`.</span>
+<a id="__codelineno-20-39" name="__codelineno-20-39" href="#__codelineno-20-39"></a><span class="c1"># *   **Interpreted:** Code is executed line-by-line, which makes debugging easier and allows for interactive programming.</span>
+<a id="__codelineno-20-40" name="__codelineno-20-40" href="#__codelineno-20-40"></a><span class="c1"># *   **Dynamic Typing:** You do not need to declare the type of a variable (e.g., integer, string) explicitly; Python figures it out automatically.</span>
+<a id="__codelineno-20-41" name="__codelineno-20-41" href="#__codelineno-20-41"></a><span class="c1"># *   **Cross-Platform:** It works on Windows, macOS, Linux, and many other operating systems.</span>
+<a id="__codelineno-20-42" name="__codelineno-20-42" href="#__codelineno-20-42"></a><span class="c1"># ### 2. Common Use Cases</span>
+<a id="__codelineno-20-43" name="__codelineno-20-43" href="#__codelineno-20-43"></a><span class="c1"># Python is versatile and is used in many different fields:</span>
+<a id="__codelineno-20-44" name="__codelineno-20-44" href="#__codelineno-20-44"></a><span class="c1"># *   **Web Development:** Building websites and backends (using frameworks like Django and Flask).</span>
+<a id="__codelineno-20-45" name="__codelineno-20-45" href="#__codelineno-20-45"></a><span class="c1"># *   **Data Science &amp; Analysis:** Analyzing large datasets (using libraries like Pandas and NumPy).</span>
+<a id="__codelineno-20-46" name="__codelineno-20-46" href="#__codelineno-20-46"></a><span class="c1"># *   **Artificial Intelligence &amp; Machine Learning:** Creating AI models (using TensorFlow, PyTorch, and scikit-learn).</span>
+<a id="__codelineno-20-47" name="__codelineno-20-47" href="#__codelineno-20-47"></a><span class="c1"># *   **Automation &amp; Scripting:** Automating repetitive tasks, file management, and system administration.</span>
+<a id="__codelineno-20-48" name="__codelineno-20-48" href="#__codelineno-20-48"></a><span class="c1"># *   **Software Development:** Building desktop applications and testing software.</span>
+<a id="__codelineno-20-49" name="__codelineno-20-49" href="#__codelineno-20-49"></a><span class="c1"># ### 3. Why Is It So Popular?</span>
+<a id="__codelineno-20-50" name="__codelineno-20-50" href="#__codelineno-20-50"></a><span class="c1"># *   **Ease of Learning:** It is often recommended as the first language for beginners because the syntax looks close to plain English.</span>
+<a id="__codelineno-20-51" name="__codelineno-20-51" href="#__codelineno-20-51"></a><span class="c1"># *   **Huge Ecosystem:** It has a massive standard library and thousands of third-party packages (managed by **pip**) that allow you to do almost anything without starting from scratch.</span>
+<a id="__codelineno-20-52" name="__codelineno-20-52" href="#__codelineno-20-52"></a><span class="c1"># *   **Strong Community:** There is a vast community of developers who contribute to documentation, tutorials, and support forums.</span>
+<a id="__codelineno-20-53" name="__codelineno-20-53" href="#__codelineno-20-53"></a><span class="c1"># ### 4. A Simple Example</span>
+<a id="__codelineno-20-54" name="__codelineno-20-54" href="#__codelineno-20-54"></a><span class="c1"># Here is what a simple Python program looks like. It prints text to the screen and performs a calculation:</span>
+<a id="__codelineno-20-55" name="__codelineno-20-55" href="#__codelineno-20-55"></a><span class="c1"># ```python</span>
+<a id="__codelineno-20-56" name="__codelineno-20-56" href="#__codelineno-20-56"></a><span class="c1"># # This is a comment</span>
+<a id="__codelineno-20-57" name="__codelineno-20-57" href="#__codelineno-20-57"></a><span class="c1"># print(&quot;Hello, World!&quot;)</span>
+<a id="__codelineno-20-58" name="__codelineno-20-58" href="#__codelineno-20-58"></a><span class="c1"># name = &quot;Alice&quot;</span>
+<a id="__codelineno-20-59" name="__codelineno-20-59" href="#__codelineno-20-59"></a><span class="c1"># age = 30</span>
+<a id="__codelineno-20-60" name="__codelineno-20-60" href="#__codelineno-20-60"></a><span class="c1"># print(f&quot;{name} is {age} years old.&quot;)</span>
+<a id="__codelineno-20-61" name="__codelineno-20-61" href="#__codelineno-20-61"></a><span class="c1"># ```</span>
+<a id="__codelineno-20-62" name="__codelineno-20-62" href="#__codelineno-20-62"></a><span class="c1"># ### 5. History</span>
+<a id="__codelineno-20-63" name="__codelineno-20-63" href="#__codelineno-20-63"></a><span class="c1"># *   **Creator:** Guido van Rossum.</span>
+<a id="__codelineno-20-64" name="__codelineno-20-64" href="#__codelineno-20-64"></a><span class="c1"># *   **Released:** First released in **1991**.</span>
+<a id="__codelineno-20-65" name="__codelineno-20-65" href="#__codelineno-20-65"></a><span class="c1"># *   **Name:** It was named after the British comedy troupe *Monty Python*, not the snake.</span>
+<a id="__codelineno-20-66" name="__codelineno-20-66" href="#__codelineno-20-66"></a><span class="c1"># In summary, Python is a powerful tool that balances ease of use with robust capabilities, making it suitable for both beginners and expert engineers.</span>
 </code></pre></div>
 <h2 id="troubleshooting"><a class="toclink" href="#troubleshooting">Troubleshooting</a><a class="headerlink" href="#troubleshooting" title="Permanent link">#</a></h2>
 <h3 id="issue-connection-refused"><a class="toclink" href="#issue-connection-refused">Issue: Connection Refused</a><a class="headerlink" href="#issue-connection-refused" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>Solution: Ensure Ollama server is running
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>  $ ollama serve
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>Solution: Ensure Ollama server is running
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>  $ ollama serve
 </code></pre></div>
 <h3 id="issue-model-not-found"><a class="toclink" href="#issue-model-not-found">Issue: Model Not Found</a><a class="headerlink" href="#issue-model-not-found" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>Solution: Pull the model first
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>  $ ollama pull llama3.1
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>Solution: Pull the model first
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>  $ ollama pull llama3.1
 </code></pre></div>
 <h3 id="issue-timeout"><a class="toclink" href="#issue-timeout">Issue: Timeout</a><a class="headerlink" href="#issue-timeout" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>Solution: Increase request_timeout
-<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>  llm = Ollama(model=&quot;qwen3.5:397b&quot;, request_timeout=300)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>Solution: Increase request_timeout
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>  llm = Ollama(model=&quot;qwen3.5:397b&quot;, request_timeout=300)
 </code></pre></div>
 <h3 id="issue-invalid-json-response"><a class="toclink" href="#issue-invalid-json-response">Issue: Invalid JSON Response</a><a class="headerlink" href="#issue-invalid-json-response" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>Solution: Enable json_mode
-<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>  llm = Ollama(model=&quot;qwen3.5:397b&quot;, json_mode=True)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>Solution: Enable json_mode
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>  llm = Ollama(model=&quot;qwen3.5:397b&quot;, json_mode=True)
 </code></pre></div>
 <h2 id="next-steps"><a class="toclink" href="#next-steps">Next Steps</a><a class="headerlink" href="#next-steps" title="Permanent link">#</a></h2>
 <ol>

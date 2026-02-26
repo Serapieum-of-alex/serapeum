@@ -21,7 +21,7 @@
 <link href="../../../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1456,8 +1456,8 @@ Hold "Ctrl" to enable pan &amp; zoom
         subgraph Execution Methods
             CALL["__call__"]
             ACALL["acall"]
-            STREAM["stream_call"]
-            ASTREAM["astream_call"]
+            STREAM["__call__(stream=True)"]
+            ASTREAM["acall(stream=True)"]
         end
     end
 
@@ -1486,10 +1486,10 @@ Hold "Ctrl" to enable pan &amp; zoom
         OL[Ollama]
 
         subgraph Orchestration Methods
-            PAC[predict_and_call]
-            APAC[apredict_and_call]
-            SCT[stream_chat_with_tools]
-            ASCT[astream_chat_with_tools]
+            PAC[invoke_callable]
+            APAC[ainvoke_callable]
+            SCT[generate_tool_calls(stream=True)]
+            ASCT[agenerate_tool_calls(stream=True)]
         end
 
         subgraph Message Processing
@@ -1667,7 +1667,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <tr>
 <td><strong>ToolOrchestratingLLM</strong></td>
 <td>Validates &amp; stores components</td>
-<td>Routes to predict_and_call</td>
+<td>Routes to invoke_callable</td>
 <td>Extracts from AgentChatResponse</td>
 <td>Processes with StreamingObjectProcessor</td>
 </tr>
@@ -1688,9 +1688,9 @@ Hold "Ctrl" to enable pan &amp; zoom
 <tr>
 <td><strong>Ollama</strong></td>
 <td>Validated for function calling</td>
-<td>Executes predict_and_call</td>
+<td>Executes invoke_callable</td>
 <td>-</td>
-<td>Streams chat_with_tools</td>
+<td>Streams generate_tool_calls</td>
 </tr>
 <tr>
 <td><strong>AgentChatResponse</strong></td>
@@ -1748,7 +1748,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a>  │   └─→ Return List[Message]
 <a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a>  ├─→ Ollama._extend_messages(messages)
 <a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a>  │   └─→ Add system prompts if configured
-<a href="#__codelineno-1-10" id="__codelineno-1-10" name="__codelineno-1-10"></a>  ├─→ Ollama.predict_and_call([tool], messages, ...)
+<a href="#__codelineno-1-10" id="__codelineno-1-10" name="__codelineno-1-10"></a>  ├─→ Ollama.invoke_callable([tool], messages, ...)
 <a href="#__codelineno-1-11" id="__codelineno-1-11" name="__codelineno-1-11"></a>  │   ├─→ Prepare chat request with tool schemas
 <a href="#__codelineno-1-12" id="__codelineno-1-12" name="__codelineno-1-12"></a>  │   ├─→ HTTP POST to /api/chat
 <a href="#__codelineno-1-13" id="__codelineno-1-13" name="__codelineno-1-13"></a>  │   ├─→ Parse tool_calls from response
@@ -1764,7 +1764,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <h3 id="3-parallel-execution-pattern"><a class="toclink" href="#3-parallel-execution-pattern">3. Parallel Execution Pattern</a><a class="headerlink" href="#3-parallel-execution-pattern" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>User → ToolOrchestratingLLM.__call__(..., allow_parallel_tool_calls=True)
 <a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>  ├─→ [Same tool creation and message formatting]
-<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>  ├─→ Ollama.predict_and_call([tool], ..., allow_parallel=True)
+<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>  ├─→ Ollama.invoke_callable([tool], ..., allow_parallel=True)
 <a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>  │   ├─→ LLM generates multiple tool_calls
 <a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>  │   ├─→ Execute each tool.call(args)
 <a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a>  │   │   ├─→ ToolOutput 1: MockAlbum(title="hello", ...)
@@ -1777,7 +1777,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <h3 id="4-async-execution-pattern"><a class="toclink" href="#4-async-execution-pattern">4. Async Execution Pattern</a><a class="headerlink" href="#4-async-execution-pattern" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a>User → await ToolOrchestratingLLM.acall(...)
 <a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a>  ├─→ [Same tool creation and message formatting]
-<a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>  ├─→ await Ollama.apredict_and_call([tool], messages, ...)
+<a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>  ├─→ await Ollama.ainvoke_callable([tool], messages, ...)
 <a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a>  │   ├─→ Async HTTP request
 <a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a>  │   ├─→ Async tool execution
 <a href="#__codelineno-3-6" id="__codelineno-3-6" name="__codelineno-3-6"></a>  │   └─→ Return AgentChatResponse
@@ -1785,9 +1785,9 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-3-8" id="__codelineno-3-8" name="__codelineno-3-8"></a>      └─→ Return MockAlbum or List[MockAlbum]
 </code></pre></div>
 <h3 id="5-streaming-execution-pattern-sync"><a class="toclink" href="#5-streaming-execution-pattern-sync">5. Streaming Execution Pattern (Sync)</a><a class="headerlink" href="#5-streaming-execution-pattern-sync" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>User → for obj in ToolOrchestratingLLM.stream_call(...):
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>User → for obj in ToolOrchestratingLLM(stream=True, ...):
 <a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a>  ├─→ [Same tool creation and message formatting]
-<a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>  ├─→ Ollama.stream_chat_with_tools([tool], messages, ...)
+<a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>  ├─→ Ollama.generate_tool_calls([tool], messages, stream=True, ...)
 <a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a>  │   └─→ Yields partial ChatResponse chunks
 <a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a>  └─→ For each chunk:
 <a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a>      ├─→ StreamingObjectProcessor.process(chunk, cur_objects)
@@ -1798,9 +1798,9 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-4-11" id="__codelineno-4-11" name="__codelineno-4-11"></a>      └─→ Yield MockAlbum (partial or complete)
 </code></pre></div>
 <h3 id="6-async-streaming-pattern"><a class="toclink" href="#6-async-streaming-pattern">6. Async Streaming Pattern</a><a class="headerlink" href="#6-async-streaming-pattern" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>User → async for obj in await ToolOrchestratingLLM.astream_call(...):
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>User → async for obj in await ToolOrchestratingLLM.acall(stream=True, ...):
 <a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a>  ├─→ [Same tool creation and message formatting]
-<a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>  ├─→ await Ollama.astream_chat_with_tools([tool], messages, ...)
+<a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>  ├─→ await Ollama.agenerate_tool_calls([tool], messages, stream=True, ...)
 <a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a>  │   └─→ Async yields partial ChatResponse chunks
 <a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a>  └─→ For each chunk:
 <a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a>      ├─→ StreamingObjectProcessor.process(chunk, cur_objects)
@@ -1870,7 +1870,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <li><strong>Initialization</strong>: validate_llm, validate_prompt</li>
 <li><strong>Tool Creation</strong>: CallableTool.from_model - schema extraction</li>
 <li><strong>Prompt Formatting</strong>: format_messages - template variable errors</li>
-<li><strong>LLM Execution</strong>: predict_and_call - network errors, timeout</li>
+<li><strong>LLM Execution</strong>: invoke_callable - network errors, timeout</li>
 <li><strong>Tool Parsing</strong>: Parse tool_calls - missing/malformed data</li>
 <li><strong>Tool Execution</strong>: Validate args - Pydantic ValidationError</li>
 <li><strong>Output Extraction</strong>: parse_tool_outputs - missing raw_output</li>

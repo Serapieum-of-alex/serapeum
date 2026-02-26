@@ -21,7 +21,7 @@
 <link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1734,7 +1734,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     CORESP --&gt;|Return| UC
 
     %% Stream Flow
-    UC --&gt;|2c. stream_chat(messages)| OL
+    UC --&gt;|2c. chat(messages, stream=True)| OL
     OL --&gt;|stream=True| CLI
     CLI --&gt;|Streaming POST| EP_CHAT
     EP_CHAT -.-&gt;|Chunk 1| CLI
@@ -1746,7 +1746,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     CLI -.-&gt;|Chunk N| STRM
 
     %% Tool calling flow
-    UC --&gt;|2d. chat_with_tools(messages, tools)| OL
+    UC --&gt;|2d. generate_tool_calls(messages, tools)| OL
     OL --&gt;|Prepare| PREP
     PREP --&gt;|Convert to schema| BCRQ_TOOL
     OL --&gt;|Call chat| CLI
@@ -1781,7 +1781,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     PTMP --&gt;|Messages| OL
     TOL --&gt;|Pass tools| CTOOL
     CTOOL --&gt;|Convert| OL
-    OL --&gt;|chat_with_tools| CRESP
+    OL --&gt;|generate_tool_calls| CRESP
     CRESP --&gt;|tool_calls| TOL
     TOL --&gt;|Execute tool| CTOOL
     CTOOL --&gt;|Create| PM
@@ -1855,7 +1855,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-3-7" id="__codelineno-3-7" name="__codelineno-3-7"></a>      └─→ Return CompletionResponse(text=text, raw=response.raw, ...)
 </code></pre></div>
 <h3 id="5-streaming-pattern"><a class="toclink" href="#5-streaming-pattern">5. Streaming Pattern</a><a class="headerlink" href="#5-streaming-pattern" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>User → Ollama.stream_chat(messages, **kwargs)
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>User → Ollama.chat(messages, stream=True, **kwargs)
 <a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a>  └─→ _chat(messages, stream=True, **kwargs)
 <a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>      ├─→ Build request with stream=True
 <a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a>      ├─→ client.chat(**request) returns iterator
@@ -1867,7 +1867,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-4-10" id="__codelineno-4-10" name="__codelineno-4-10"></a>          └─→ Yield ChatResponse
 </code></pre></div>
 <h3 id="6-tool-calling-pattern"><a class="toclink" href="#6-tool-calling-pattern">6. Tool Calling Pattern</a><a class="headerlink" href="#6-tool-calling-pattern" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>User → Ollama.chat_with_tools(messages, tools, **kwargs)
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>User → Ollama.generate_tool_calls(messages, tools, **kwargs)
 <a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a>  ├─→ _prepare_chat_with_tools(messages, tools, **kwargs)
 <a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>  │   └─→ For each tool in tools:
 <a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a>  │       ├─→ Get tool.metadata.fn_schema
@@ -1900,7 +1900,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a>User → tools_llm(topic="rock")
 <a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a>  ├─→ Format prompt with topic → List[Message]
 <a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a>  ├─→ CallableTool.metadata.fn_schema → Album JSON schema
-<a href="#__codelineno-7-8" id="__codelineno-7-8" name="__codelineno-7-8"></a>  ├─→ Ollama.chat_with_tools(messages, tools=[album_tool])
+<a href="#__codelineno-7-8" id="__codelineno-7-8" name="__codelineno-7-8"></a>  ├─→ Ollama.generate_tool_calls(messages, tools=[album_tool])
 <a href="#__codelineno-7-9" id="__codelineno-7-9" name="__codelineno-7-9"></a>  │   ├─→ _prepare_chat_with_tools converts tool to Ollama format
 <a href="#__codelineno-7-10" id="__codelineno-7-10" name="__codelineno-7-10"></a>  │   ├─→ Server returns tool_calls with arguments
 <a href="#__codelineno-7-11" id="__codelineno-7-11" name="__codelineno-7-11"></a>  │   └─→ Return ChatResponse with tool_calls

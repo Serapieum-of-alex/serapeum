@@ -21,7 +21,7 @@
 <link href="../../../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1290,7 +1290,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     ApplyVars --&gt; CreateMessages[Create Message list]
     CreateMessages --&gt; ExtendMessages[Extend with system prompts]
 
-    ExtendMessages --&gt; PredictAndCall[Call predict_and_call]
+    ExtendMessages --&gt; PredictAndCall[Call invoke_callable]
     PredictAndCall --&gt; PrepareRequest[Prepare chat request with tools]
 
     PrepareRequest --&gt; AddToolSchemas[Add tool schemas to request]
@@ -1381,7 +1381,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-1-27" id="__codelineno-1-27" name="__codelineno-1-27"></a>  4. _extend_messages(messages)
 <a href="#__codelineno-1-28" id="__codelineno-1-28" name="__codelineno-1-28"></a>     → [Message(role=SYSTEM, ...), Message(role=USER, ...)]
 <a href="#__codelineno-1-29" id="__codelineno-1-29" name="__codelineno-1-29"></a>
-<a href="#__codelineno-1-30" id="__codelineno-1-30" name="__codelineno-1-30"></a>  5. predict_and_call([tool], messages, ...)
+<a href="#__codelineno-1-30" id="__codelineno-1-30" name="__codelineno-1-30"></a>  5. invoke_callable([tool], messages, ...)
 <a href="#__codelineno-1-31" id="__codelineno-1-31" name="__codelineno-1-31"></a>     → HTTP request:
 <a href="#__codelineno-1-32" id="__codelineno-1-32" name="__codelineno-1-32"></a>     {
 <a href="#__codelineno-1-33" id="__codelineno-1-33" name="__codelineno-1-33"></a>       "model": "llama3.1",
@@ -1522,9 +1522,9 @@ Hold "Ctrl" to enable pan &amp; zoom
 </button>
 </nav>
 <pre class="mermaid"><code>flowchart TD
-    StreamStart([stream_call called]) --&gt; CreateTool[Create CallableTool]
+    StreamStart(["__call__(stream=True) called"]) --&gt; CreateTool[Create CallableTool]
     CreateTool --&gt; FormatMsgs[Format messages]
-    FormatMsgs --&gt; StreamChat[stream_chat_with_tools]
+    FormatMsgs --&gt; StreamChat[generate_tool_calls(stream=True)]
 
     StreamChat --&gt; ReceiveChunk{Receive chunk}
     ReceiveChunk --&gt; ProcessChunk[StreamingObjectProcessor.process]

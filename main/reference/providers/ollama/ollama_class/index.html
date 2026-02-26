@@ -21,7 +21,7 @@
 <link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -987,68 +987,10 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#2-decorator-pattern-completion-via-chat">
+<a class="md-nav__link" href="#3-protocol-based-tools">
 <span class="md-ellipsis">
       
-        2. Decorator Pattern (Completion via Chat)
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#3-template-method-pattern">
-<span class="md-ellipsis">
-      
-        3. Template Method Pattern
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#4-protocol-based-tools">
-<span class="md-ellipsis">
-      
-        4. Protocol-Based Tools
-      
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#integration-points">
-<span class="md-ellipsis">
-      
-        Integration Points
-      
-    </span>
-</a>
-<nav aria-label="Integration Points" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#with-textcompletionllm">
-<span class="md-ellipsis">
-      
-        With TextCompletionLLM
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#with-toolorchestratingllm">
-<span class="md-ellipsis">
-      
-        With ToolOrchestratingLLM
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#with-external-packages">
-<span class="md-ellipsis">
-      
-        With External Packages
+        3. Protocol-Based Tools
       
     </span>
 </a>
@@ -1428,68 +1370,10 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#2-decorator-pattern-completion-via-chat">
+<a class="md-nav__link" href="#3-protocol-based-tools">
 <span class="md-ellipsis">
       
-        2. Decorator Pattern (Completion via Chat)
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#3-template-method-pattern">
-<span class="md-ellipsis">
-      
-        3. Template Method Pattern
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#4-protocol-based-tools">
-<span class="md-ellipsis">
-      
-        4. Protocol-Based Tools
-      
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#integration-points">
-<span class="md-ellipsis">
-      
-        Integration Points
-      
-    </span>
-</a>
-<nav aria-label="Integration Points" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#with-textcompletionllm">
-<span class="md-ellipsis">
-      
-        With TextCompletionLLM
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#with-toolorchestratingllm">
-<span class="md-ellipsis">
-      
-        With ToolOrchestratingLLM
-      
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#with-external-packages">
-<span class="md-ellipsis">
-      
-        With External Packages
+        3. Protocol-Based Tools
       
     </span>
 </a>
@@ -1539,14 +1423,10 @@ Hold "Ctrl" to enable pan &amp; zoom
     class BaseLLM {
         &lt;&lt;abstract&gt;&gt;
         +metadata: Metadata
-        +chat(messages, **kwargs) ChatResponse
-        +stream_chat(messages, **kwargs) ChatResponseGen
-        +achat(messages, **kwargs) ChatResponse
-        +astream_chat(messages, **kwargs) ChatResponseAsyncGen
-        +complete(prompt, **kwargs) CompletionResponse
-        +stream_complete(prompt, **kwargs) CompletionResponseGen
-        +acomplete(prompt, **kwargs) CompletionResponse
-        +astream_complete(prompt, **kwargs) CompletionResponseAsyncGen
+        +chat(messages, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
+        +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
     }
 
     class LLM {
@@ -1554,7 +1434,7 @@ Hold "Ctrl" to enable pan &amp; zoom
         +messages_to_prompt: Callable
         +completion_to_prompt: Callable
         +output_parser: Optional[BaseParser]
-        +pydantic_program_mode: StructuredLLMMode
+        +structured_output_mode: StructuredOutputMode
         +_get_prompt(prompt, **kwargs) str
         +_get_messages(prompt, **kwargs) List[Message]
         +_parse_output(output) str
@@ -1564,15 +1444,13 @@ Hold "Ctrl" to enable pan &amp; zoom
         +stream(prompt, **kwargs) TokenGen
         +apredict(prompt, **kwargs) str
         +astream(prompt, **kwargs) TokenAsyncGen
-        +structured_predict(output_cls, prompt, **kwargs) Model
+        +parse(output_cls, prompt, **kwargs) Model
     }
 
     class FunctionCallingLLM {
         &lt;&lt;abstract&gt;&gt;
-        +chat_with_tools(messages, tools, **kwargs) ChatResponse
-        +achat_with_tools(messages, tools, **kwargs) ChatResponse
-        +stream_chat_with_tools(messages, tools, **kwargs) ChatResponseGen
-        +astream_chat_with_tools(messages, tools, **kwargs) ChatResponseAsyncGen
+        +generate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +agenerate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         +get_tool_calls_from_response(response, error_on_no_tool_call) List[ToolSelection]
         #_prepare_chat_with_tools(messages, tools, **kwargs) dict
         #_validate_chat_with_tools_response(response, tools, **kwargs) ChatResponse
@@ -1595,18 +1473,12 @@ Hold "Ctrl" to enable pan &amp; zoom
         +metadata: Metadata
         +client: Client
         +async_client: AsyncClient
-        +chat(messages, **kwargs) ChatResponse
-        +stream_chat(messages, **kwargs) ChatResponseGen
-        +achat(messages, **kwargs) ChatResponse
-        +astream_chat(messages, **kwargs) ChatResponseAsyncGen
-        +complete(prompt, **kwargs) CompletionResponse
-        +stream_complete(prompt, **kwargs) CompletionResponseGen
-        +acomplete(prompt, **kwargs) CompletionResponse
-        +astream_complete(prompt, **kwargs) CompletionResponseAsyncGen
-        +chat_with_tools(messages, tools, **kwargs) ChatResponse
-        +stream_chat_with_tools(messages, tools, **kwargs) ChatResponseGen
-        +achat_with_tools(messages, tools, **kwargs) ChatResponse
-        +astream_chat_with_tools(messages, tools, **kwargs) ChatResponseAsyncGen
+        +chat(messages, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
+        +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
+        +generate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +agenerate_tool_calls(messages, tools, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
         -_chat(messages, stream, **kwargs) ChatResponse
         -_achat(messages, stream, **kwargs) ChatResponse
         -_prepare_chat_with_tools(messages, tools, **kwargs) dict
@@ -1708,10 +1580,8 @@ Hold "Ctrl" to enable pan &amp; zoom
         -_output_cls: Type[BaseModel]
         -_tools: List[BaseTool]
         -_allow_parallel_tool_calls: bool
-        +__call__(**kwargs) BaseModel | List[BaseModel]
-        +acall(**kwargs) BaseModel | List[BaseModel]
-        +stream_call(**kwargs) Generator[BaseModel]
-        +astream_call(**kwargs) AsyncGenerator[BaseModel]
+        +__call__(**kwargs, stream=False) BaseModel | List[BaseModel] | Generator[BaseModel]
+        +acall(**kwargs, stream=False) BaseModel | List[BaseModel] | AsyncGenerator[BaseModel]
     }
 
     class BaseModel {
@@ -1794,7 +1664,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <p><strong>High-Level Orchestration</strong>
 - <strong>Prompt Management</strong>: Extends prompts with system messages
 - <strong>Message Formatting</strong>: Converts between formats
-- <strong>Structured Outputs</strong>: Forces Pydantic model outputs via <code>structured_predict</code>
+- <strong>Structured Outputs</strong>: Forces Pydantic model outputs via <code>parse</code>
 - <strong>Parser Integration</strong>: Applies output parsers to responses</p>
 <h3 id="basellm-root-class"><a class="toclink" href="#basellm-root-class">BaseLLM (Root Class)</a><a class="headerlink" href="#basellm-root-class" title="Permanent link">#</a></h3>
 <p><strong>Core Interface</strong>
@@ -1823,50 +1693,47 @@ Hold "Ctrl" to enable pan &amp; zoom
 - <strong>ToolOrchestratingLLM</strong>: Formats prompts → calls LLM with tools → executes tools → returns instances</p>
 <h2 id="design-patterns"><a class="toclink" href="#design-patterns">Design Patterns</a><a class="headerlink" href="#design-patterns" title="Permanent link">#</a></h2>
 <h3 id="1-lazy-initialization"><a class="toclink" href="#1-lazy-initialization">1. Lazy Initialization</a><a class="headerlink" href="#1-lazy-initialization" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="nd">@property</span>
-<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Client</span><span class="p">:</span>
-<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request_timeout</span><span class="p">)</span>
-<a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span>
+<p>```python notest
+@property
+def client(self) -&gt; Client:
+    if self._client is None:
+        self._client = Client(host=self.base_url, timeout=self.request_timeout)
+    return self._client
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>### 2. Template Method Pattern
+<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>```python notest
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a># FunctionCallingLLM defines workflow
+<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>def generate_tool_calls(self, messages, tools, **kwargs):
+<a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>    prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass implements
+<a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a>    response = self.chat(prepared)
+<a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a>    validated = self._validate_chat_with_tools_response(response, tools)  # Subclass implements
+<a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a>    return validated
+</code></pre></div></p>
+<h3 id="3-protocol-based-tools"><a class="toclink" href="#3-protocol-based-tools">3. Protocol-Based Tools</a><a class="headerlink" href="#3-protocol-based-tools" title="Permanent link">#</a></h3>
+<p>```python notest</p>
+<h1 id="basetool-is-a-protocol-not-a-base-class"><a class="toclink" href="#basetool-is-a-protocol-not-a-base-class">BaseTool is a protocol, not a base class</a><a class="headerlink" href="#basetool-is-a-protocol-not-a-base-class" title="Permanent link">#</a></h1>
+<p>class BaseTool(Protocol):
+    def call(self, **kwargs) -&gt; ToolOutput: ...
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>## Integration Points
+<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>
+<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>### With TextCompletionLLM
 </code></pre></div>
-<h3 id="2-decorator-pattern-completion-via-chat"><a class="toclink" href="#2-decorator-pattern-completion-via-chat">2. Decorator Pattern (Completion via Chat)</a><a class="headerlink" href="#2-decorator-pattern-completion-via-chat" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="nd">@chat_to_completion_decorator</span>
-<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompletionResponse</span><span class="p">:</span>
-<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>    <span class="c1"># Decorator handles conversion</span>
-<a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>    <span class="k">pass</span>
+TextCompletionLLM uses Ollama for:
+  - Checking is_chat_model via metadata
+  - Calling chat() or complete()
+  - Getting raw text responses for parsing
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a>### With ToolOrchestratingLLM
 </code></pre></div>
-<h3 id="3-template-method-pattern"><a class="toclink" href="#3-template-method-pattern">3. Template Method Pattern</a><a class="headerlink" href="#3-template-method-pattern" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="c1"># FunctionCallingLLM defines workflow</span>
-<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">chat_with_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>    <span class="n">prepared</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_chat_with_tools</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># Subclass implements</span>
-<a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a>    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">prepared</span><span class="p">)</span>
-<a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a>    <span class="n">validated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_chat_with_tools_response</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">tools</span><span class="p">)</span>  <span class="c1"># Subclass implements</span>
-<a href="#__codelineno-3-6" id="__codelineno-3-6" name="__codelineno-3-6"></a>    <span class="k">return</span> <span class="n">validated</span>
+ToolOrchestratingLLM uses Ollama for:
+  - Tool-calling capabilities
+  - generate_tool_calls() method
+  - Tool call extraction from responses
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>### With External Packages
 </code></pre></div>
-<h3 id="4-protocol-based-tools"><a class="toclink" href="#4-protocol-based-tools">4. Protocol-Based Tools</a><a class="headerlink" href="#4-protocol-based-tools" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="c1"># BaseTool is a protocol, not a base class</span>
-<a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">BaseTool</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolOutput</span><span class="p">:</span> <span class="o">...</span>
-</code></pre></div>
-<h2 id="integration-points"><a class="toclink" href="#integration-points">Integration Points</a><a class="headerlink" href="#integration-points" title="Permanent link">#</a></h2>
-<h3 id="with-textcompletionllm"><a class="toclink" href="#with-textcompletionllm">With TextCompletionLLM</a><a class="headerlink" href="#with-textcompletionllm" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>TextCompletionLLM uses Ollama for:
-<a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a>  - Checking is_chat_model via metadata
-<a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>  - Calling chat() or complete()
-<a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a>  - Getting raw text responses for parsing
-</code></pre></div>
-<h3 id="with-toolorchestratingllm"><a class="toclink" href="#with-toolorchestratingllm">With ToolOrchestratingLLM</a><a class="headerlink" href="#with-toolorchestratingllm" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a>ToolOrchestratingLLM uses Ollama for:
-<a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a>  - Tool-calling capabilities
-<a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a>  - chat_with_tools() method
-<a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a>  - Tool call extraction from responses
-</code></pre></div>
-<h3 id="with-external-packages"><a class="toclink" href="#with-external-packages">With External Packages</a><a class="headerlink" href="#with-external-packages" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a>Ollama depends on:
-<a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a>  - ollama package (Client, AsyncClient)
-<a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a>  - pydantic (for configuration and models)
-<a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a>  - serapeum.core (for base classes and types)
-</code></pre></div>
+Ollama depends on:
+  - ollama package (Client, AsyncClient)
+  - pydantic (for configuration and models)
+  - serapeum.core (for base classes and types)
+```</p>
 </article>
 </div>
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>

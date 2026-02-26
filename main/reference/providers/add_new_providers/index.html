@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -3517,7 +3517,7 @@
 <a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a>
 <a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a><span class="sd">        Streaming chat:</span>
 <a id="__codelineno-3-44" name="__codelineno-3-44" href="#__codelineno-3-44"></a><span class="sd">        ```python</span>
-<a id="__codelineno-3-45" name="__codelineno-3-45" href="#__codelineno-3-45"></a><span class="sd">        for chunk in llm.stream_chat([Message(role=MessageRole.USER, content=&quot;Hi&quot;)]):</span>
+<a id="__codelineno-3-45" name="__codelineno-3-45" href="#__codelineno-3-45"></a><span class="sd">        for chunk in llm.chat([Message(role=MessageRole.USER, content=&quot;Hi&quot;)], stream=True):</span>
 <a id="__codelineno-3-46" name="__codelineno-3-46" href="#__codelineno-3-46"></a><span class="sd">            print(chunk.delta, end=&quot;&quot;, flush=True)</span>
 <a id="__codelineno-3-47" name="__codelineno-3-47" href="#__codelineno-3-47"></a><span class="sd">        ```</span>
 <a id="__codelineno-3-48" name="__codelineno-3-48" href="#__codelineno-3-48"></a>
@@ -3620,199 +3620,200 @@
 <a id="__codelineno-3-145" name="__codelineno-3-145" href="#__codelineno-3-145"></a>            <span class="p">})</span>
 <a id="__codelineno-3-146" name="__codelineno-3-146" href="#__codelineno-3-146"></a>        <span class="k">return</span> <span class="n">provider_messages</span>
 <a id="__codelineno-3-147" name="__codelineno-3-147" href="#__codelineno-3-147"></a>
-<a id="__codelineno-3-148" name="__codelineno-3-148" href="#__codelineno-3-148"></a>    <span class="c1"># ===== REQUIRED: Implement these 4 chat methods =====</span>
-<a id="__codelineno-3-149" name="__codelineno-3-149" href="#__codelineno-3-149"></a>
-<a id="__codelineno-3-150" name="__codelineno-3-150" href="#__codelineno-3-150"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">MessageList</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponse</span><span class="p">:</span>
-<a id="__codelineno-3-151" name="__codelineno-3-151" href="#__codelineno-3-151"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a chat request.</span>
-<a id="__codelineno-3-152" name="__codelineno-3-152" href="#__codelineno-3-152"></a>
-<a id="__codelineno-3-153" name="__codelineno-3-153" href="#__codelineno-3-153"></a><span class="sd">        Args:</span>
-<a id="__codelineno-3-154" name="__codelineno-3-154" href="#__codelineno-3-154"></a><span class="sd">            messages: List of messages in the conversation</span>
-<a id="__codelineno-3-155" name="__codelineno-3-155" href="#__codelineno-3-155"></a><span class="sd">            **kwargs: Provider-specific options</span>
-<a id="__codelineno-3-156" name="__codelineno-3-156" href="#__codelineno-3-156"></a>
-<a id="__codelineno-3-157" name="__codelineno-3-157" href="#__codelineno-3-157"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-3-158" name="__codelineno-3-158" href="#__codelineno-3-158"></a><span class="sd">            ChatResponse with the assistant&#39;s message</span>
-<a id="__codelineno-3-159" name="__codelineno-3-159" href="#__codelineno-3-159"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-3-160" name="__codelineno-3-160" href="#__codelineno-3-160"></a>        <span class="n">provider_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_messages</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
-<a id="__codelineno-3-161" name="__codelineno-3-161" href="#__codelineno-3-161"></a>
-<a id="__codelineno-3-162" name="__codelineno-3-162" href="#__codelineno-3-162"></a>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-<a id="__codelineno-3-163" name="__codelineno-3-163" href="#__codelineno-3-163"></a>            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-<a id="__codelineno-3-164" name="__codelineno-3-164" href="#__codelineno-3-164"></a>            <span class="n">messages</span><span class="o">=</span><span class="n">provider_messages</span><span class="p">,</span>
-<a id="__codelineno-3-165" name="__codelineno-3-165" href="#__codelineno-3-165"></a>            <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
-<a id="__codelineno-3-166" name="__codelineno-3-166" href="#__codelineno-3-166"></a>            <span class="n">max_tokens</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_tokens</span><span class="p">,</span>
-<a id="__codelineno-3-167" name="__codelineno-3-167" href="#__codelineno-3-167"></a>            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<a id="__codelineno-3-168" name="__codelineno-3-168" href="#__codelineno-3-168"></a>        <span class="p">)</span>
-<a id="__codelineno-3-169" name="__codelineno-3-169" href="#__codelineno-3-169"></a>
-<a id="__codelineno-3-170" name="__codelineno-3-170" href="#__codelineno-3-170"></a>        <span class="k">return</span> <span class="n">ChatResponse</span><span class="p">(</span>
-<a id="__codelineno-3-171" name="__codelineno-3-171" href="#__codelineno-3-171"></a>            <span class="n">message</span><span class="o">=</span><span class="n">Message</span><span class="p">(</span>
-<a id="__codelineno-3-172" name="__codelineno-3-172" href="#__codelineno-3-172"></a>                <span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">ASSISTANT</span><span class="p">,</span>
-<a id="__codelineno-3-173" name="__codelineno-3-173" href="#__codelineno-3-173"></a>                <span class="n">content</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">,</span>
-<a id="__codelineno-3-174" name="__codelineno-3-174" href="#__codelineno-3-174"></a>            <span class="p">),</span>
-<a id="__codelineno-3-175" name="__codelineno-3-175" href="#__codelineno-3-175"></a>            <span class="n">raw</span><span class="o">=</span><span class="n">response</span><span class="p">,</span>
-<a id="__codelineno-3-176" name="__codelineno-3-176" href="#__codelineno-3-176"></a>        <span class="p">)</span>
-<a id="__codelineno-3-177" name="__codelineno-3-177" href="#__codelineno-3-177"></a>
-<a id="__codelineno-3-178" name="__codelineno-3-178" href="#__codelineno-3-178"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">stream_chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">MessageList</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponseGen</span><span class="p">:</span>
-<a id="__codelineno-3-179" name="__codelineno-3-179" href="#__codelineno-3-179"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Stream chat responses.</span>
-<a id="__codelineno-3-180" name="__codelineno-3-180" href="#__codelineno-3-180"></a>
-<a id="__codelineno-3-181" name="__codelineno-3-181" href="#__codelineno-3-181"></a><span class="sd">        Args:</span>
-<a id="__codelineno-3-182" name="__codelineno-3-182" href="#__codelineno-3-182"></a><span class="sd">            messages: List of messages in the conversation</span>
-<a id="__codelineno-3-183" name="__codelineno-3-183" href="#__codelineno-3-183"></a><span class="sd">            **kwargs: Provider-specific options</span>
-<a id="__codelineno-3-184" name="__codelineno-3-184" href="#__codelineno-3-184"></a>
-<a id="__codelineno-3-185" name="__codelineno-3-185" href="#__codelineno-3-185"></a><span class="sd">        Yields:</span>
-<a id="__codelineno-3-186" name="__codelineno-3-186" href="#__codelineno-3-186"></a><span class="sd">            ChatResponse chunks with delta content</span>
-<a id="__codelineno-3-187" name="__codelineno-3-187" href="#__codelineno-3-187"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-3-188" name="__codelineno-3-188" href="#__codelineno-3-188"></a>        <span class="n">provider_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_messages</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
-<a id="__codelineno-3-189" name="__codelineno-3-189" href="#__codelineno-3-189"></a>
-<a id="__codelineno-3-190" name="__codelineno-3-190" href="#__codelineno-3-190"></a>        <span class="k">def</span><span class="w"> </span><span class="nf">gen</span><span class="p">():</span>
-<a id="__codelineno-3-191" name="__codelineno-3-191" href="#__codelineno-3-191"></a>            <span class="n">response_stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-<a id="__codelineno-3-192" name="__codelineno-3-192" href="#__codelineno-3-192"></a>                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-<a id="__codelineno-3-193" name="__codelineno-3-193" href="#__codelineno-3-193"></a>                <span class="n">messages</span><span class="o">=</span><span class="n">provider_messages</span><span class="p">,</span>
-<a id="__codelineno-3-194" name="__codelineno-3-194" href="#__codelineno-3-194"></a>                <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
-<a id="__codelineno-3-195" name="__codelineno-3-195" href="#__codelineno-3-195"></a>                <span class="n">max_tokens</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_tokens</span><span class="p">,</span>
-<a id="__codelineno-3-196" name="__codelineno-3-196" href="#__codelineno-3-196"></a>                <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-3-197" name="__codelineno-3-197" href="#__codelineno-3-197"></a>                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<a id="__codelineno-3-198" name="__codelineno-3-198" href="#__codelineno-3-198"></a>            <span class="p">)</span>
-<a id="__codelineno-3-199" name="__codelineno-3-199" href="#__codelineno-3-199"></a>
-<a id="__codelineno-3-200" name="__codelineno-3-200" href="#__codelineno-3-200"></a>            <span class="n">full_content</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-3-201" name="__codelineno-3-201" href="#__codelineno-3-201"></a>            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response_stream</span><span class="p">:</span>
-<a id="__codelineno-3-202" name="__codelineno-3-202" href="#__codelineno-3-202"></a>                <span class="n">delta</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">content</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-3-203" name="__codelineno-3-203" href="#__codelineno-3-203"></a>                <span class="n">full_content</span> <span class="o">+=</span> <span class="n">delta</span>
-<a id="__codelineno-3-204" name="__codelineno-3-204" href="#__codelineno-3-204"></a>
-<a id="__codelineno-3-205" name="__codelineno-3-205" href="#__codelineno-3-205"></a>                <span class="k">yield</span> <span class="n">ChatResponse</span><span class="p">(</span>
-<a id="__codelineno-3-206" name="__codelineno-3-206" href="#__codelineno-3-206"></a>                    <span class="n">message</span><span class="o">=</span><span class="n">Message</span><span class="p">(</span>
-<a id="__codelineno-3-207" name="__codelineno-3-207" href="#__codelineno-3-207"></a>                        <span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">ASSISTANT</span><span class="p">,</span>
-<a id="__codelineno-3-208" name="__codelineno-3-208" href="#__codelineno-3-208"></a>                        <span class="n">content</span><span class="o">=</span><span class="n">full_content</span><span class="p">,</span>
-<a id="__codelineno-3-209" name="__codelineno-3-209" href="#__codelineno-3-209"></a>                    <span class="p">),</span>
-<a id="__codelineno-3-210" name="__codelineno-3-210" href="#__codelineno-3-210"></a>                    <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span>
-<a id="__codelineno-3-211" name="__codelineno-3-211" href="#__codelineno-3-211"></a>                    <span class="n">raw</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span>
-<a id="__codelineno-3-212" name="__codelineno-3-212" href="#__codelineno-3-212"></a>                <span class="p">)</span>
-<a id="__codelineno-3-213" name="__codelineno-3-213" href="#__codelineno-3-213"></a>
-<a id="__codelineno-3-214" name="__codelineno-3-214" href="#__codelineno-3-214"></a>        <span class="k">return</span> <span class="n">gen</span><span class="p">()</span>
-<a id="__codelineno-3-215" name="__codelineno-3-215" href="#__codelineno-3-215"></a>
-<a id="__codelineno-3-216" name="__codelineno-3-216" href="#__codelineno-3-216"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">achat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">MessageList</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponse</span><span class="p">:</span>
-<a id="__codelineno-3-217" name="__codelineno-3-217" href="#__codelineno-3-217"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Async chat request.</span>
-<a id="__codelineno-3-218" name="__codelineno-3-218" href="#__codelineno-3-218"></a>
-<a id="__codelineno-3-219" name="__codelineno-3-219" href="#__codelineno-3-219"></a><span class="sd">        Args:</span>
-<a id="__codelineno-3-220" name="__codelineno-3-220" href="#__codelineno-3-220"></a><span class="sd">            messages: List of messages in the conversation</span>
-<a id="__codelineno-3-221" name="__codelineno-3-221" href="#__codelineno-3-221"></a><span class="sd">            **kwargs: Provider-specific options</span>
-<a id="__codelineno-3-222" name="__codelineno-3-222" href="#__codelineno-3-222"></a>
-<a id="__codelineno-3-223" name="__codelineno-3-223" href="#__codelineno-3-223"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-3-224" name="__codelineno-3-224" href="#__codelineno-3-224"></a><span class="sd">            ChatResponse with the assistant&#39;s message</span>
-<a id="__codelineno-3-225" name="__codelineno-3-225" href="#__codelineno-3-225"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-3-226" name="__codelineno-3-226" href="#__codelineno-3-226"></a>        <span class="n">provider_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_messages</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
-<a id="__codelineno-3-227" name="__codelineno-3-227" href="#__codelineno-3-227"></a>
-<a id="__codelineno-3-228" name="__codelineno-3-228" href="#__codelineno-3-228"></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-<a id="__codelineno-3-229" name="__codelineno-3-229" href="#__codelineno-3-229"></a>            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-<a id="__codelineno-3-230" name="__codelineno-3-230" href="#__codelineno-3-230"></a>            <span class="n">messages</span><span class="o">=</span><span class="n">provider_messages</span><span class="p">,</span>
-<a id="__codelineno-3-231" name="__codelineno-3-231" href="#__codelineno-3-231"></a>            <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
-<a id="__codelineno-3-232" name="__codelineno-3-232" href="#__codelineno-3-232"></a>            <span class="n">max_tokens</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_tokens</span><span class="p">,</span>
-<a id="__codelineno-3-233" name="__codelineno-3-233" href="#__codelineno-3-233"></a>            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<a id="__codelineno-3-234" name="__codelineno-3-234" href="#__codelineno-3-234"></a>        <span class="p">)</span>
-<a id="__codelineno-3-235" name="__codelineno-3-235" href="#__codelineno-3-235"></a>
-<a id="__codelineno-3-236" name="__codelineno-3-236" href="#__codelineno-3-236"></a>        <span class="k">return</span> <span class="n">ChatResponse</span><span class="p">(</span>
-<a id="__codelineno-3-237" name="__codelineno-3-237" href="#__codelineno-3-237"></a>            <span class="n">message</span><span class="o">=</span><span class="n">Message</span><span class="p">(</span>
-<a id="__codelineno-3-238" name="__codelineno-3-238" href="#__codelineno-3-238"></a>                <span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">ASSISTANT</span><span class="p">,</span>
-<a id="__codelineno-3-239" name="__codelineno-3-239" href="#__codelineno-3-239"></a>                <span class="n">content</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">,</span>
-<a id="__codelineno-3-240" name="__codelineno-3-240" href="#__codelineno-3-240"></a>            <span class="p">),</span>
-<a id="__codelineno-3-241" name="__codelineno-3-241" href="#__codelineno-3-241"></a>            <span class="n">raw</span><span class="o">=</span><span class="n">response</span><span class="p">,</span>
-<a id="__codelineno-3-242" name="__codelineno-3-242" href="#__codelineno-3-242"></a>        <span class="p">)</span>
-<a id="__codelineno-3-243" name="__codelineno-3-243" href="#__codelineno-3-243"></a>
-<a id="__codelineno-3-244" name="__codelineno-3-244" href="#__codelineno-3-244"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">astream_chat</span><span class="p">(</span>
-<a id="__codelineno-3-245" name="__codelineno-3-245" href="#__codelineno-3-245"></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">MessageList</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
-<a id="__codelineno-3-246" name="__codelineno-3-246" href="#__codelineno-3-246"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponseAsyncGen</span><span class="p">:</span>
-<a id="__codelineno-3-247" name="__codelineno-3-247" href="#__codelineno-3-247"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Async streaming chat.</span>
+<a id="__codelineno-3-148" name="__codelineno-3-148" href="#__codelineno-3-148"></a>    <span class="c1"># ===== REQUIRED: Implement these 2 chat methods =====</span>
+<a id="__codelineno-3-149" name="__codelineno-3-149" href="#__codelineno-3-149"></a>    <span class="c1"># Each accepts stream: bool and handles both modes internally.</span>
+<a id="__codelineno-3-150" name="__codelineno-3-150" href="#__codelineno-3-150"></a>
+<a id="__codelineno-3-151" name="__codelineno-3-151" href="#__codelineno-3-151"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">MessageList</span><span class="p">,</span> <span class="n">stream</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponse</span> <span class="o">|</span> <span class="n">ChatResponseGen</span><span class="p">:</span>
+<a id="__codelineno-3-152" name="__codelineno-3-152" href="#__codelineno-3-152"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a chat request (or streaming if stream=True).</span>
+<a id="__codelineno-3-153" name="__codelineno-3-153" href="#__codelineno-3-153"></a>
+<a id="__codelineno-3-154" name="__codelineno-3-154" href="#__codelineno-3-154"></a><span class="sd">        Args:</span>
+<a id="__codelineno-3-155" name="__codelineno-3-155" href="#__codelineno-3-155"></a><span class="sd">            messages: List of messages in the conversation</span>
+<a id="__codelineno-3-156" name="__codelineno-3-156" href="#__codelineno-3-156"></a><span class="sd">            stream: If True, return a generator yielding incremental chunks</span>
+<a id="__codelineno-3-157" name="__codelineno-3-157" href="#__codelineno-3-157"></a><span class="sd">            **kwargs: Provider-specific options</span>
+<a id="__codelineno-3-158" name="__codelineno-3-158" href="#__codelineno-3-158"></a>
+<a id="__codelineno-3-159" name="__codelineno-3-159" href="#__codelineno-3-159"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-3-160" name="__codelineno-3-160" href="#__codelineno-3-160"></a><span class="sd">            ChatResponse when stream=False, ChatResponseGen when stream=True</span>
+<a id="__codelineno-3-161" name="__codelineno-3-161" href="#__codelineno-3-161"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-3-162" name="__codelineno-3-162" href="#__codelineno-3-162"></a>        <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-3-163" name="__codelineno-3-163" href="#__codelineno-3-163"></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-3-164" name="__codelineno-3-164" href="#__codelineno-3-164"></a>
+<a id="__codelineno-3-165" name="__codelineno-3-165" href="#__codelineno-3-165"></a>        <span class="n">provider_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_messages</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+<a id="__codelineno-3-166" name="__codelineno-3-166" href="#__codelineno-3-166"></a>
+<a id="__codelineno-3-167" name="__codelineno-3-167" href="#__codelineno-3-167"></a>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+<a id="__codelineno-3-168" name="__codelineno-3-168" href="#__codelineno-3-168"></a>            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+<a id="__codelineno-3-169" name="__codelineno-3-169" href="#__codelineno-3-169"></a>            <span class="n">messages</span><span class="o">=</span><span class="n">provider_messages</span><span class="p">,</span>
+<a id="__codelineno-3-170" name="__codelineno-3-170" href="#__codelineno-3-170"></a>            <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
+<a id="__codelineno-3-171" name="__codelineno-3-171" href="#__codelineno-3-171"></a>            <span class="n">max_tokens</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_tokens</span><span class="p">,</span>
+<a id="__codelineno-3-172" name="__codelineno-3-172" href="#__codelineno-3-172"></a>            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<a id="__codelineno-3-173" name="__codelineno-3-173" href="#__codelineno-3-173"></a>        <span class="p">)</span>
+<a id="__codelineno-3-174" name="__codelineno-3-174" href="#__codelineno-3-174"></a>
+<a id="__codelineno-3-175" name="__codelineno-3-175" href="#__codelineno-3-175"></a>        <span class="k">return</span> <span class="n">ChatResponse</span><span class="p">(</span>
+<a id="__codelineno-3-176" name="__codelineno-3-176" href="#__codelineno-3-176"></a>            <span class="n">message</span><span class="o">=</span><span class="n">Message</span><span class="p">(</span>
+<a id="__codelineno-3-177" name="__codelineno-3-177" href="#__codelineno-3-177"></a>                <span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">ASSISTANT</span><span class="p">,</span>
+<a id="__codelineno-3-178" name="__codelineno-3-178" href="#__codelineno-3-178"></a>                <span class="n">content</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">,</span>
+<a id="__codelineno-3-179" name="__codelineno-3-179" href="#__codelineno-3-179"></a>            <span class="p">),</span>
+<a id="__codelineno-3-180" name="__codelineno-3-180" href="#__codelineno-3-180"></a>            <span class="n">raw</span><span class="o">=</span><span class="n">response</span><span class="p">,</span>
+<a id="__codelineno-3-181" name="__codelineno-3-181" href="#__codelineno-3-181"></a>        <span class="p">)</span>
+<a id="__codelineno-3-182" name="__codelineno-3-182" href="#__codelineno-3-182"></a>
+<a id="__codelineno-3-183" name="__codelineno-3-183" href="#__codelineno-3-183"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_stream_chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">MessageList</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponseGen</span><span class="p">:</span>
+<a id="__codelineno-3-184" name="__codelineno-3-184" href="#__codelineno-3-184"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal streaming chat helper.</span>
+<a id="__codelineno-3-185" name="__codelineno-3-185" href="#__codelineno-3-185"></a>
+<a id="__codelineno-3-186" name="__codelineno-3-186" href="#__codelineno-3-186"></a><span class="sd">        Yields:</span>
+<a id="__codelineno-3-187" name="__codelineno-3-187" href="#__codelineno-3-187"></a><span class="sd">            ChatResponse chunks with delta content</span>
+<a id="__codelineno-3-188" name="__codelineno-3-188" href="#__codelineno-3-188"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-3-189" name="__codelineno-3-189" href="#__codelineno-3-189"></a>        <span class="n">provider_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_messages</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+<a id="__codelineno-3-190" name="__codelineno-3-190" href="#__codelineno-3-190"></a>
+<a id="__codelineno-3-191" name="__codelineno-3-191" href="#__codelineno-3-191"></a>        <span class="k">def</span><span class="w"> </span><span class="nf">gen</span><span class="p">():</span>
+<a id="__codelineno-3-192" name="__codelineno-3-192" href="#__codelineno-3-192"></a>            <span class="n">response_stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+<a id="__codelineno-3-193" name="__codelineno-3-193" href="#__codelineno-3-193"></a>                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+<a id="__codelineno-3-194" name="__codelineno-3-194" href="#__codelineno-3-194"></a>                <span class="n">messages</span><span class="o">=</span><span class="n">provider_messages</span><span class="p">,</span>
+<a id="__codelineno-3-195" name="__codelineno-3-195" href="#__codelineno-3-195"></a>                <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
+<a id="__codelineno-3-196" name="__codelineno-3-196" href="#__codelineno-3-196"></a>                <span class="n">max_tokens</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_tokens</span><span class="p">,</span>
+<a id="__codelineno-3-197" name="__codelineno-3-197" href="#__codelineno-3-197"></a>                <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-3-198" name="__codelineno-3-198" href="#__codelineno-3-198"></a>                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<a id="__codelineno-3-199" name="__codelineno-3-199" href="#__codelineno-3-199"></a>            <span class="p">)</span>
+<a id="__codelineno-3-200" name="__codelineno-3-200" href="#__codelineno-3-200"></a>
+<a id="__codelineno-3-201" name="__codelineno-3-201" href="#__codelineno-3-201"></a>            <span class="n">full_content</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-3-202" name="__codelineno-3-202" href="#__codelineno-3-202"></a>            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response_stream</span><span class="p">:</span>
+<a id="__codelineno-3-203" name="__codelineno-3-203" href="#__codelineno-3-203"></a>                <span class="n">delta</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">content</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-3-204" name="__codelineno-3-204" href="#__codelineno-3-204"></a>                <span class="n">full_content</span> <span class="o">+=</span> <span class="n">delta</span>
+<a id="__codelineno-3-205" name="__codelineno-3-205" href="#__codelineno-3-205"></a>
+<a id="__codelineno-3-206" name="__codelineno-3-206" href="#__codelineno-3-206"></a>                <span class="k">yield</span> <span class="n">ChatResponse</span><span class="p">(</span>
+<a id="__codelineno-3-207" name="__codelineno-3-207" href="#__codelineno-3-207"></a>                    <span class="n">message</span><span class="o">=</span><span class="n">Message</span><span class="p">(</span>
+<a id="__codelineno-3-208" name="__codelineno-3-208" href="#__codelineno-3-208"></a>                        <span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">ASSISTANT</span><span class="p">,</span>
+<a id="__codelineno-3-209" name="__codelineno-3-209" href="#__codelineno-3-209"></a>                        <span class="n">content</span><span class="o">=</span><span class="n">full_content</span><span class="p">,</span>
+<a id="__codelineno-3-210" name="__codelineno-3-210" href="#__codelineno-3-210"></a>                    <span class="p">),</span>
+<a id="__codelineno-3-211" name="__codelineno-3-211" href="#__codelineno-3-211"></a>                    <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span>
+<a id="__codelineno-3-212" name="__codelineno-3-212" href="#__codelineno-3-212"></a>                    <span class="n">raw</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span>
+<a id="__codelineno-3-213" name="__codelineno-3-213" href="#__codelineno-3-213"></a>                <span class="p">)</span>
+<a id="__codelineno-3-214" name="__codelineno-3-214" href="#__codelineno-3-214"></a>
+<a id="__codelineno-3-215" name="__codelineno-3-215" href="#__codelineno-3-215"></a>        <span class="k">return</span> <span class="n">gen</span><span class="p">()</span>
+<a id="__codelineno-3-216" name="__codelineno-3-216" href="#__codelineno-3-216"></a>
+<a id="__codelineno-3-217" name="__codelineno-3-217" href="#__codelineno-3-217"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">achat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">MessageList</span><span class="p">,</span> <span class="n">stream</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponse</span> <span class="o">|</span> <span class="n">ChatResponseAsyncGen</span><span class="p">:</span>
+<a id="__codelineno-3-218" name="__codelineno-3-218" href="#__codelineno-3-218"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Async chat request (or streaming if stream=True).</span>
+<a id="__codelineno-3-219" name="__codelineno-3-219" href="#__codelineno-3-219"></a>
+<a id="__codelineno-3-220" name="__codelineno-3-220" href="#__codelineno-3-220"></a><span class="sd">        Args:</span>
+<a id="__codelineno-3-221" name="__codelineno-3-221" href="#__codelineno-3-221"></a><span class="sd">            messages: List of messages in the conversation</span>
+<a id="__codelineno-3-222" name="__codelineno-3-222" href="#__codelineno-3-222"></a><span class="sd">            stream: If True, return an async generator yielding incremental chunks</span>
+<a id="__codelineno-3-223" name="__codelineno-3-223" href="#__codelineno-3-223"></a><span class="sd">            **kwargs: Provider-specific options</span>
+<a id="__codelineno-3-224" name="__codelineno-3-224" href="#__codelineno-3-224"></a>
+<a id="__codelineno-3-225" name="__codelineno-3-225" href="#__codelineno-3-225"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-3-226" name="__codelineno-3-226" href="#__codelineno-3-226"></a><span class="sd">            ChatResponse when stream=False, ChatResponseAsyncGen when stream=True</span>
+<a id="__codelineno-3-227" name="__codelineno-3-227" href="#__codelineno-3-227"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-3-228" name="__codelineno-3-228" href="#__codelineno-3-228"></a>        <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-3-229" name="__codelineno-3-229" href="#__codelineno-3-229"></a>            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-3-230" name="__codelineno-3-230" href="#__codelineno-3-230"></a>
+<a id="__codelineno-3-231" name="__codelineno-3-231" href="#__codelineno-3-231"></a>        <span class="n">provider_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_messages</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+<a id="__codelineno-3-232" name="__codelineno-3-232" href="#__codelineno-3-232"></a>
+<a id="__codelineno-3-233" name="__codelineno-3-233" href="#__codelineno-3-233"></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+<a id="__codelineno-3-234" name="__codelineno-3-234" href="#__codelineno-3-234"></a>            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+<a id="__codelineno-3-235" name="__codelineno-3-235" href="#__codelineno-3-235"></a>            <span class="n">messages</span><span class="o">=</span><span class="n">provider_messages</span><span class="p">,</span>
+<a id="__codelineno-3-236" name="__codelineno-3-236" href="#__codelineno-3-236"></a>            <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
+<a id="__codelineno-3-237" name="__codelineno-3-237" href="#__codelineno-3-237"></a>            <span class="n">max_tokens</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_tokens</span><span class="p">,</span>
+<a id="__codelineno-3-238" name="__codelineno-3-238" href="#__codelineno-3-238"></a>            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<a id="__codelineno-3-239" name="__codelineno-3-239" href="#__codelineno-3-239"></a>        <span class="p">)</span>
+<a id="__codelineno-3-240" name="__codelineno-3-240" href="#__codelineno-3-240"></a>
+<a id="__codelineno-3-241" name="__codelineno-3-241" href="#__codelineno-3-241"></a>        <span class="k">return</span> <span class="n">ChatResponse</span><span class="p">(</span>
+<a id="__codelineno-3-242" name="__codelineno-3-242" href="#__codelineno-3-242"></a>            <span class="n">message</span><span class="o">=</span><span class="n">Message</span><span class="p">(</span>
+<a id="__codelineno-3-243" name="__codelineno-3-243" href="#__codelineno-3-243"></a>                <span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">ASSISTANT</span><span class="p">,</span>
+<a id="__codelineno-3-244" name="__codelineno-3-244" href="#__codelineno-3-244"></a>                <span class="n">content</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">,</span>
+<a id="__codelineno-3-245" name="__codelineno-3-245" href="#__codelineno-3-245"></a>            <span class="p">),</span>
+<a id="__codelineno-3-246" name="__codelineno-3-246" href="#__codelineno-3-246"></a>            <span class="n">raw</span><span class="o">=</span><span class="n">response</span><span class="p">,</span>
+<a id="__codelineno-3-247" name="__codelineno-3-247" href="#__codelineno-3-247"></a>        <span class="p">)</span>
 <a id="__codelineno-3-248" name="__codelineno-3-248" href="#__codelineno-3-248"></a>
-<a id="__codelineno-3-249" name="__codelineno-3-249" href="#__codelineno-3-249"></a><span class="sd">        Args:</span>
-<a id="__codelineno-3-250" name="__codelineno-3-250" href="#__codelineno-3-250"></a><span class="sd">            messages: List of messages in the conversation</span>
-<a id="__codelineno-3-251" name="__codelineno-3-251" href="#__codelineno-3-251"></a><span class="sd">            **kwargs: Provider-specific options</span>
-<a id="__codelineno-3-252" name="__codelineno-3-252" href="#__codelineno-3-252"></a>
-<a id="__codelineno-3-253" name="__codelineno-3-253" href="#__codelineno-3-253"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-3-254" name="__codelineno-3-254" href="#__codelineno-3-254"></a><span class="sd">            Async generator yielding ChatResponse chunks</span>
-<a id="__codelineno-3-255" name="__codelineno-3-255" href="#__codelineno-3-255"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-3-256" name="__codelineno-3-256" href="#__codelineno-3-256"></a>        <span class="n">provider_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_messages</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
-<a id="__codelineno-3-257" name="__codelineno-3-257" href="#__codelineno-3-257"></a>
-<a id="__codelineno-3-258" name="__codelineno-3-258" href="#__codelineno-3-258"></a>        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">gen</span><span class="p">():</span>
-<a id="__codelineno-3-259" name="__codelineno-3-259" href="#__codelineno-3-259"></a>            <span class="n">response_stream</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-<a id="__codelineno-3-260" name="__codelineno-3-260" href="#__codelineno-3-260"></a>                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-<a id="__codelineno-3-261" name="__codelineno-3-261" href="#__codelineno-3-261"></a>                <span class="n">messages</span><span class="o">=</span><span class="n">provider_messages</span><span class="p">,</span>
-<a id="__codelineno-3-262" name="__codelineno-3-262" href="#__codelineno-3-262"></a>                <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
-<a id="__codelineno-3-263" name="__codelineno-3-263" href="#__codelineno-3-263"></a>                <span class="n">max_tokens</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_tokens</span><span class="p">,</span>
-<a id="__codelineno-3-264" name="__codelineno-3-264" href="#__codelineno-3-264"></a>                <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-3-265" name="__codelineno-3-265" href="#__codelineno-3-265"></a>                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<a id="__codelineno-3-266" name="__codelineno-3-266" href="#__codelineno-3-266"></a>            <span class="p">)</span>
-<a id="__codelineno-3-267" name="__codelineno-3-267" href="#__codelineno-3-267"></a>
-<a id="__codelineno-3-268" name="__codelineno-3-268" href="#__codelineno-3-268"></a>            <span class="n">full_content</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-3-269" name="__codelineno-3-269" href="#__codelineno-3-269"></a>            <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response_stream</span><span class="p">:</span>
-<a id="__codelineno-3-270" name="__codelineno-3-270" href="#__codelineno-3-270"></a>                <span class="n">delta</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">content</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-3-271" name="__codelineno-3-271" href="#__codelineno-3-271"></a>                <span class="n">full_content</span> <span class="o">+=</span> <span class="n">delta</span>
-<a id="__codelineno-3-272" name="__codelineno-3-272" href="#__codelineno-3-272"></a>
-<a id="__codelineno-3-273" name="__codelineno-3-273" href="#__codelineno-3-273"></a>                <span class="k">yield</span> <span class="n">ChatResponse</span><span class="p">(</span>
-<a id="__codelineno-3-274" name="__codelineno-3-274" href="#__codelineno-3-274"></a>                    <span class="n">message</span><span class="o">=</span><span class="n">Message</span><span class="p">(</span>
-<a id="__codelineno-3-275" name="__codelineno-3-275" href="#__codelineno-3-275"></a>                        <span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">ASSISTANT</span><span class="p">,</span>
-<a id="__codelineno-3-276" name="__codelineno-3-276" href="#__codelineno-3-276"></a>                        <span class="n">content</span><span class="o">=</span><span class="n">full_content</span><span class="p">,</span>
-<a id="__codelineno-3-277" name="__codelineno-3-277" href="#__codelineno-3-277"></a>                    <span class="p">),</span>
-<a id="__codelineno-3-278" name="__codelineno-3-278" href="#__codelineno-3-278"></a>                    <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span>
-<a id="__codelineno-3-279" name="__codelineno-3-279" href="#__codelineno-3-279"></a>                    <span class="n">raw</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span>
-<a id="__codelineno-3-280" name="__codelineno-3-280" href="#__codelineno-3-280"></a>                <span class="p">)</span>
-<a id="__codelineno-3-281" name="__codelineno-3-281" href="#__codelineno-3-281"></a>
-<a id="__codelineno-3-282" name="__codelineno-3-282" href="#__codelineno-3-282"></a>        <span class="k">return</span> <span class="n">gen</span><span class="p">()</span>
-<a id="__codelineno-3-283" name="__codelineno-3-283" href="#__codelineno-3-283"></a>
-<a id="__codelineno-3-284" name="__codelineno-3-284" href="#__codelineno-3-284"></a>    <span class="c1"># ===== COMPLETION METHODS =====</span>
-<a id="__codelineno-3-285" name="__codelineno-3-285" href="#__codelineno-3-285"></a>    <span class="c1"># complete(), stream_complete(), acomplete(), astream_complete()</span>
-<a id="__codelineno-3-286" name="__codelineno-3-286" href="#__codelineno-3-286"></a>    <span class="c1"># are automatically provided by ChatToCompletionMixin!</span>
-<a id="__codelineno-3-287" name="__codelineno-3-287" href="#__codelineno-3-287"></a>
-<a id="__codelineno-3-288" name="__codelineno-3-288" href="#__codelineno-3-288"></a>    <span class="c1"># ===== FUNCTION CALLING (Optional) =====</span>
-<a id="__codelineno-3-289" name="__codelineno-3-289" href="#__codelineno-3-289"></a>
-<a id="__codelineno-3-290" name="__codelineno-3-290" href="#__codelineno-3-290"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_chat_with_tools</span><span class="p">(</span>
-<a id="__codelineno-3-291" name="__codelineno-3-291" href="#__codelineno-3-291"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-3-292" name="__codelineno-3-292" href="#__codelineno-3-292"></a>        <span class="n">tools</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="s2">&quot;BaseTool&quot;</span><span class="p">],</span>
-<a id="__codelineno-3-293" name="__codelineno-3-293" href="#__codelineno-3-293"></a>        <span class="n">user_msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Message</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-3-294" name="__codelineno-3-294" href="#__codelineno-3-294"></a>        <span class="n">chat_history</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Message</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-3-295" name="__codelineno-3-295" href="#__codelineno-3-295"></a>        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-3-296" name="__codelineno-3-296" href="#__codelineno-3-296"></a>        <span class="n">allow_parallel_tool_calls</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-3-297" name="__codelineno-3-297" href="#__codelineno-3-297"></a>        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<a id="__codelineno-3-298" name="__codelineno-3-298" href="#__codelineno-3-298"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-3-299" name="__codelineno-3-299" href="#__codelineno-3-299"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare chat request with tools.&quot;&quot;&quot;</span>
-<a id="__codelineno-3-300" name="__codelineno-3-300" href="#__codelineno-3-300"></a>        <span class="n">tool_specs</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-3-301" name="__codelineno-3-301" href="#__codelineno-3-301"></a>            <span class="n">tool</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">to_openai_tool</span><span class="p">(</span><span class="n">skip_length_check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">tools</span>
-<a id="__codelineno-3-302" name="__codelineno-3-302" href="#__codelineno-3-302"></a>        <span class="p">]</span>
-<a id="__codelineno-3-303" name="__codelineno-3-303" href="#__codelineno-3-303"></a>
-<a id="__codelineno-3-304" name="__codelineno-3-304" href="#__codelineno-3-304"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">user_msg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-3-305" name="__codelineno-3-305" href="#__codelineno-3-305"></a>            <span class="n">user_msg</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">user_msg</span><span class="p">)</span>
-<a id="__codelineno-3-306" name="__codelineno-3-306" href="#__codelineno-3-306"></a>
-<a id="__codelineno-3-307" name="__codelineno-3-307" href="#__codelineno-3-307"></a>        <span class="n">messages</span> <span class="o">=</span> <span class="n">chat_history</span> <span class="ow">or</span> <span class="p">[]</span>
-<a id="__codelineno-3-308" name="__codelineno-3-308" href="#__codelineno-3-308"></a>        <span class="k">if</span> <span class="n">user_msg</span><span class="p">:</span>
-<a id="__codelineno-3-309" name="__codelineno-3-309" href="#__codelineno-3-309"></a>            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">user_msg</span><span class="p">)</span>
-<a id="__codelineno-3-310" name="__codelineno-3-310" href="#__codelineno-3-310"></a>
-<a id="__codelineno-3-311" name="__codelineno-3-311" href="#__codelineno-3-311"></a>        <span class="k">return</span> <span class="p">{</span>
-<a id="__codelineno-3-312" name="__codelineno-3-312" href="#__codelineno-3-312"></a>            <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="n">messages</span><span class="p">,</span>
-<a id="__codelineno-3-313" name="__codelineno-3-313" href="#__codelineno-3-313"></a>            <span class="s2">&quot;tools&quot;</span><span class="p">:</span> <span class="n">tool_specs</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-3-314" name="__codelineno-3-314" href="#__codelineno-3-314"></a>        <span class="p">}</span>
-<a id="__codelineno-3-315" name="__codelineno-3-315" href="#__codelineno-3-315"></a>
-<a id="__codelineno-3-316" name="__codelineno-3-316" href="#__codelineno-3-316"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_tool_calls_from_response</span><span class="p">(</span>
-<a id="__codelineno-3-317" name="__codelineno-3-317" href="#__codelineno-3-317"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-3-318" name="__codelineno-3-318" href="#__codelineno-3-318"></a>        <span class="n">response</span><span class="p">:</span> <span class="n">ChatResponse</span><span class="p">,</span>
-<a id="__codelineno-3-319" name="__codelineno-3-319" href="#__codelineno-3-319"></a>        <span class="n">error_on_no_tool_call</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-3-320" name="__codelineno-3-320" href="#__codelineno-3-320"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolCallArguments</span><span class="p">]:</span>
-<a id="__codelineno-3-321" name="__codelineno-3-321" href="#__codelineno-3-321"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract tool calls from response.&quot;&quot;&quot;</span>
-<a id="__codelineno-3-322" name="__codelineno-3-322" href="#__codelineno-3-322"></a>        <span class="n">tool_calls</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">additional_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tool_calls&quot;</span><span class="p">,</span> <span class="p">[])</span>
-<a id="__codelineno-3-323" name="__codelineno-3-323" href="#__codelineno-3-323"></a>
-<a id="__codelineno-3-324" name="__codelineno-3-324" href="#__codelineno-3-324"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">tool_calls</span><span class="p">:</span>
-<a id="__codelineno-3-325" name="__codelineno-3-325" href="#__codelineno-3-325"></a>            <span class="k">if</span> <span class="n">error_on_no_tool_call</span><span class="p">:</span>
-<a id="__codelineno-3-326" name="__codelineno-3-326" href="#__codelineno-3-326"></a>                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No tool calls found in response&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-327" name="__codelineno-3-327" href="#__codelineno-3-327"></a>            <span class="k">return</span> <span class="p">[]</span>
-<a id="__codelineno-3-328" name="__codelineno-3-328" href="#__codelineno-3-328"></a>
-<a id="__codelineno-3-329" name="__codelineno-3-329" href="#__codelineno-3-329"></a>        <span class="c1"># Parse tool calls into ToolCallArguments</span>
-<a id="__codelineno-3-330" name="__codelineno-3-330" href="#__codelineno-3-330"></a>        <span class="n">selections</span> <span class="o">=</span> <span class="p">[]</span>
-<a id="__codelineno-3-331" name="__codelineno-3-331" href="#__codelineno-3-331"></a>        <span class="k">for</span> <span class="n">tool_call</span> <span class="ow">in</span> <span class="n">tool_calls</span><span class="p">:</span>
-<a id="__codelineno-3-332" name="__codelineno-3-332" href="#__codelineno-3-332"></a>            <span class="n">selections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-<a id="__codelineno-3-333" name="__codelineno-3-333" href="#__codelineno-3-333"></a>                <span class="n">ToolCallArguments</span><span class="p">(</span>
-<a id="__codelineno-3-334" name="__codelineno-3-334" href="#__codelineno-3-334"></a>                    <span class="n">tool_id</span><span class="o">=</span><span class="n">tool_call</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]),</span>
-<a id="__codelineno-3-335" name="__codelineno-3-335" href="#__codelineno-3-335"></a>                    <span class="n">tool_name</span><span class="o">=</span><span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
-<a id="__codelineno-3-336" name="__codelineno-3-336" href="#__codelineno-3-336"></a>                    <span class="n">tool_kwargs</span><span class="o">=</span><span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">][</span><span class="s2">&quot;arguments&quot;</span><span class="p">],</span>
-<a id="__codelineno-3-337" name="__codelineno-3-337" href="#__codelineno-3-337"></a>                <span class="p">)</span>
-<a id="__codelineno-3-338" name="__codelineno-3-338" href="#__codelineno-3-338"></a>            <span class="p">)</span>
-<a id="__codelineno-3-339" name="__codelineno-3-339" href="#__codelineno-3-339"></a>
-<a id="__codelineno-3-340" name="__codelineno-3-340" href="#__codelineno-3-340"></a>        <span class="k">return</span> <span class="n">selections</span>
+<a id="__codelineno-3-249" name="__codelineno-3-249" href="#__codelineno-3-249"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_astream_chat</span><span class="p">(</span>
+<a id="__codelineno-3-250" name="__codelineno-3-250" href="#__codelineno-3-250"></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">MessageList</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<a id="__codelineno-3-251" name="__codelineno-3-251" href="#__codelineno-3-251"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponseAsyncGen</span><span class="p">:</span>
+<a id="__codelineno-3-252" name="__codelineno-3-252" href="#__codelineno-3-252"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal async streaming chat helper.</span>
+<a id="__codelineno-3-253" name="__codelineno-3-253" href="#__codelineno-3-253"></a>
+<a id="__codelineno-3-254" name="__codelineno-3-254" href="#__codelineno-3-254"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-3-255" name="__codelineno-3-255" href="#__codelineno-3-255"></a><span class="sd">            Async generator yielding ChatResponse chunks</span>
+<a id="__codelineno-3-256" name="__codelineno-3-256" href="#__codelineno-3-256"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-3-257" name="__codelineno-3-257" href="#__codelineno-3-257"></a>        <span class="n">provider_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_messages</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+<a id="__codelineno-3-258" name="__codelineno-3-258" href="#__codelineno-3-258"></a>
+<a id="__codelineno-3-259" name="__codelineno-3-259" href="#__codelineno-3-259"></a>        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">gen</span><span class="p">():</span>
+<a id="__codelineno-3-260" name="__codelineno-3-260" href="#__codelineno-3-260"></a>            <span class="n">response_stream</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+<a id="__codelineno-3-261" name="__codelineno-3-261" href="#__codelineno-3-261"></a>                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+<a id="__codelineno-3-262" name="__codelineno-3-262" href="#__codelineno-3-262"></a>                <span class="n">messages</span><span class="o">=</span><span class="n">provider_messages</span><span class="p">,</span>
+<a id="__codelineno-3-263" name="__codelineno-3-263" href="#__codelineno-3-263"></a>                <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
+<a id="__codelineno-3-264" name="__codelineno-3-264" href="#__codelineno-3-264"></a>                <span class="n">max_tokens</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_tokens</span><span class="p">,</span>
+<a id="__codelineno-3-265" name="__codelineno-3-265" href="#__codelineno-3-265"></a>                <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-3-266" name="__codelineno-3-266" href="#__codelineno-3-266"></a>                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<a id="__codelineno-3-267" name="__codelineno-3-267" href="#__codelineno-3-267"></a>            <span class="p">)</span>
+<a id="__codelineno-3-268" name="__codelineno-3-268" href="#__codelineno-3-268"></a>
+<a id="__codelineno-3-269" name="__codelineno-3-269" href="#__codelineno-3-269"></a>            <span class="n">full_content</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-3-270" name="__codelineno-3-270" href="#__codelineno-3-270"></a>            <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response_stream</span><span class="p">:</span>
+<a id="__codelineno-3-271" name="__codelineno-3-271" href="#__codelineno-3-271"></a>                <span class="n">delta</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">content</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-3-272" name="__codelineno-3-272" href="#__codelineno-3-272"></a>                <span class="n">full_content</span> <span class="o">+=</span> <span class="n">delta</span>
+<a id="__codelineno-3-273" name="__codelineno-3-273" href="#__codelineno-3-273"></a>
+<a id="__codelineno-3-274" name="__codelineno-3-274" href="#__codelineno-3-274"></a>                <span class="k">yield</span> <span class="n">ChatResponse</span><span class="p">(</span>
+<a id="__codelineno-3-275" name="__codelineno-3-275" href="#__codelineno-3-275"></a>                    <span class="n">message</span><span class="o">=</span><span class="n">Message</span><span class="p">(</span>
+<a id="__codelineno-3-276" name="__codelineno-3-276" href="#__codelineno-3-276"></a>                        <span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">ASSISTANT</span><span class="p">,</span>
+<a id="__codelineno-3-277" name="__codelineno-3-277" href="#__codelineno-3-277"></a>                        <span class="n">content</span><span class="o">=</span><span class="n">full_content</span><span class="p">,</span>
+<a id="__codelineno-3-278" name="__codelineno-3-278" href="#__codelineno-3-278"></a>                    <span class="p">),</span>
+<a id="__codelineno-3-279" name="__codelineno-3-279" href="#__codelineno-3-279"></a>                    <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span>
+<a id="__codelineno-3-280" name="__codelineno-3-280" href="#__codelineno-3-280"></a>                    <span class="n">raw</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span>
+<a id="__codelineno-3-281" name="__codelineno-3-281" href="#__codelineno-3-281"></a>                <span class="p">)</span>
+<a id="__codelineno-3-282" name="__codelineno-3-282" href="#__codelineno-3-282"></a>
+<a id="__codelineno-3-283" name="__codelineno-3-283" href="#__codelineno-3-283"></a>        <span class="k">return</span> <span class="n">gen</span><span class="p">()</span>
+<a id="__codelineno-3-284" name="__codelineno-3-284" href="#__codelineno-3-284"></a>
+<a id="__codelineno-3-285" name="__codelineno-3-285" href="#__codelineno-3-285"></a>    <span class="c1"># ===== COMPLETION METHODS =====</span>
+<a id="__codelineno-3-286" name="__codelineno-3-286" href="#__codelineno-3-286"></a>    <span class="c1"># complete(stream=False), acomplete(stream=False)</span>
+<a id="__codelineno-3-287" name="__codelineno-3-287" href="#__codelineno-3-287"></a>    <span class="c1"># are automatically provided by ChatToCompletionMixin!</span>
+<a id="__codelineno-3-288" name="__codelineno-3-288" href="#__codelineno-3-288"></a>
+<a id="__codelineno-3-289" name="__codelineno-3-289" href="#__codelineno-3-289"></a>    <span class="c1"># ===== FUNCTION CALLING (Optional) =====</span>
+<a id="__codelineno-3-290" name="__codelineno-3-290" href="#__codelineno-3-290"></a>
+<a id="__codelineno-3-291" name="__codelineno-3-291" href="#__codelineno-3-291"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_chat_with_tools</span><span class="p">(</span>
+<a id="__codelineno-3-292" name="__codelineno-3-292" href="#__codelineno-3-292"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-3-293" name="__codelineno-3-293" href="#__codelineno-3-293"></a>        <span class="n">tools</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="s2">&quot;BaseTool&quot;</span><span class="p">],</span>
+<a id="__codelineno-3-294" name="__codelineno-3-294" href="#__codelineno-3-294"></a>        <span class="n">user_msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Message</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-3-295" name="__codelineno-3-295" href="#__codelineno-3-295"></a>        <span class="n">chat_history</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Message</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-3-296" name="__codelineno-3-296" href="#__codelineno-3-296"></a>        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-3-297" name="__codelineno-3-297" href="#__codelineno-3-297"></a>        <span class="n">allow_parallel_tool_calls</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-3-298" name="__codelineno-3-298" href="#__codelineno-3-298"></a>        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<a id="__codelineno-3-299" name="__codelineno-3-299" href="#__codelineno-3-299"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<a id="__codelineno-3-300" name="__codelineno-3-300" href="#__codelineno-3-300"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare chat request with tools.&quot;&quot;&quot;</span>
+<a id="__codelineno-3-301" name="__codelineno-3-301" href="#__codelineno-3-301"></a>        <span class="n">tool_specs</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-3-302" name="__codelineno-3-302" href="#__codelineno-3-302"></a>            <span class="n">tool</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">to_openai_tool</span><span class="p">(</span><span class="n">skip_length_check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">tools</span>
+<a id="__codelineno-3-303" name="__codelineno-3-303" href="#__codelineno-3-303"></a>        <span class="p">]</span>
+<a id="__codelineno-3-304" name="__codelineno-3-304" href="#__codelineno-3-304"></a>
+<a id="__codelineno-3-305" name="__codelineno-3-305" href="#__codelineno-3-305"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">user_msg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-3-306" name="__codelineno-3-306" href="#__codelineno-3-306"></a>            <span class="n">user_msg</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">user_msg</span><span class="p">)</span>
+<a id="__codelineno-3-307" name="__codelineno-3-307" href="#__codelineno-3-307"></a>
+<a id="__codelineno-3-308" name="__codelineno-3-308" href="#__codelineno-3-308"></a>        <span class="n">messages</span> <span class="o">=</span> <span class="n">chat_history</span> <span class="ow">or</span> <span class="p">[]</span>
+<a id="__codelineno-3-309" name="__codelineno-3-309" href="#__codelineno-3-309"></a>        <span class="k">if</span> <span class="n">user_msg</span><span class="p">:</span>
+<a id="__codelineno-3-310" name="__codelineno-3-310" href="#__codelineno-3-310"></a>            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">user_msg</span><span class="p">)</span>
+<a id="__codelineno-3-311" name="__codelineno-3-311" href="#__codelineno-3-311"></a>
+<a id="__codelineno-3-312" name="__codelineno-3-312" href="#__codelineno-3-312"></a>        <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-3-313" name="__codelineno-3-313" href="#__codelineno-3-313"></a>            <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="n">messages</span><span class="p">,</span>
+<a id="__codelineno-3-314" name="__codelineno-3-314" href="#__codelineno-3-314"></a>            <span class="s2">&quot;tools&quot;</span><span class="p">:</span> <span class="n">tool_specs</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-3-315" name="__codelineno-3-315" href="#__codelineno-3-315"></a>        <span class="p">}</span>
+<a id="__codelineno-3-316" name="__codelineno-3-316" href="#__codelineno-3-316"></a>
+<a id="__codelineno-3-317" name="__codelineno-3-317" href="#__codelineno-3-317"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_tool_calls_from_response</span><span class="p">(</span>
+<a id="__codelineno-3-318" name="__codelineno-3-318" href="#__codelineno-3-318"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-3-319" name="__codelineno-3-319" href="#__codelineno-3-319"></a>        <span class="n">response</span><span class="p">:</span> <span class="n">ChatResponse</span><span class="p">,</span>
+<a id="__codelineno-3-320" name="__codelineno-3-320" href="#__codelineno-3-320"></a>        <span class="n">error_on_no_tool_call</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-3-321" name="__codelineno-3-321" href="#__codelineno-3-321"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolCallArguments</span><span class="p">]:</span>
+<a id="__codelineno-3-322" name="__codelineno-3-322" href="#__codelineno-3-322"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract tool calls from response.&quot;&quot;&quot;</span>
+<a id="__codelineno-3-323" name="__codelineno-3-323" href="#__codelineno-3-323"></a>        <span class="n">tool_calls</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">additional_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tool_calls&quot;</span><span class="p">,</span> <span class="p">[])</span>
+<a id="__codelineno-3-324" name="__codelineno-3-324" href="#__codelineno-3-324"></a>
+<a id="__codelineno-3-325" name="__codelineno-3-325" href="#__codelineno-3-325"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">tool_calls</span><span class="p">:</span>
+<a id="__codelineno-3-326" name="__codelineno-3-326" href="#__codelineno-3-326"></a>            <span class="k">if</span> <span class="n">error_on_no_tool_call</span><span class="p">:</span>
+<a id="__codelineno-3-327" name="__codelineno-3-327" href="#__codelineno-3-327"></a>                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No tool calls found in response&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-328" name="__codelineno-3-328" href="#__codelineno-3-328"></a>            <span class="k">return</span> <span class="p">[]</span>
+<a id="__codelineno-3-329" name="__codelineno-3-329" href="#__codelineno-3-329"></a>
+<a id="__codelineno-3-330" name="__codelineno-3-330" href="#__codelineno-3-330"></a>        <span class="c1"># Parse tool calls into ToolCallArguments</span>
+<a id="__codelineno-3-331" name="__codelineno-3-331" href="#__codelineno-3-331"></a>        <span class="n">selections</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-3-332" name="__codelineno-3-332" href="#__codelineno-3-332"></a>        <span class="k">for</span> <span class="n">tool_call</span> <span class="ow">in</span> <span class="n">tool_calls</span><span class="p">:</span>
+<a id="__codelineno-3-333" name="__codelineno-3-333" href="#__codelineno-3-333"></a>            <span class="n">selections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+<a id="__codelineno-3-334" name="__codelineno-3-334" href="#__codelineno-3-334"></a>                <span class="n">ToolCallArguments</span><span class="p">(</span>
+<a id="__codelineno-3-335" name="__codelineno-3-335" href="#__codelineno-3-335"></a>                    <span class="n">tool_id</span><span class="o">=</span><span class="n">tool_call</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]),</span>
+<a id="__codelineno-3-336" name="__codelineno-3-336" href="#__codelineno-3-336"></a>                    <span class="n">tool_name</span><span class="o">=</span><span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+<a id="__codelineno-3-337" name="__codelineno-3-337" href="#__codelineno-3-337"></a>                    <span class="n">tool_kwargs</span><span class="o">=</span><span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">][</span><span class="s2">&quot;arguments&quot;</span><span class="p">],</span>
+<a id="__codelineno-3-338" name="__codelineno-3-338" href="#__codelineno-3-338"></a>                <span class="p">)</span>
+<a id="__codelineno-3-339" name="__codelineno-3-339" href="#__codelineno-3-339"></a>            <span class="p">)</span>
+<a id="__codelineno-3-340" name="__codelineno-3-340" href="#__codelineno-3-340"></a>
+<a id="__codelineno-3-341" name="__codelineno-3-341" href="#__codelineno-3-341"></a>        <span class="k">return</span> <span class="n">selections</span>
 </code></pre></div>
 <h3 id="5-implement-package-__init__py"><a class="toclink" href="#5-implement-package-__init__py">5. Implement Package <code>__init__.py</code></a><a class="headerlink" href="#5-implement-package-__init__py" title="Permanent link">#</a></h3>
 <p><strong>File</strong>: <code>libs/providers/{provider}/src/serapeum/providers/{provider}/__init__.py</code></p>
@@ -3874,7 +3875,7 @@
 <a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a>        <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">MessageRole</span><span class="o">.</span><span class="n">ASSISTANT</span>
 <a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a>
 <a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_stream_chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">llm</span><span class="p">,</span> <span class="n">mock_client</span><span class="p">):</span>
-<a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Test streaming chat.&quot;&quot;&quot;</span>
+<a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Test streaming chat via chat(stream=True).&quot;&quot;&quot;</span>
 <a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a>        <span class="c1"># Mock streaming response</span>
 <a id="__codelineno-5-47" name="__codelineno-5-47" href="#__codelineno-5-47"></a>        <span class="n">mock_chunks</span> <span class="o">=</span> <span class="p">[</span>
 <a id="__codelineno-5-48" name="__codelineno-5-48" href="#__codelineno-5-48"></a>            <span class="n">Mock</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="n">Mock</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="n">Mock</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;Hel&quot;</span><span class="p">))]),</span>
@@ -3887,7 +3888,7 @@
 <a id="__codelineno-5-55" name="__codelineno-5-55" href="#__codelineno-5-55"></a>        <span class="n">messages</span> <span class="o">=</span> <span class="n">MessageList</span><span class="o">.</span><span class="n">from_list</span><span class="p">([</span>
 <a id="__codelineno-5-56" name="__codelineno-5-56" href="#__codelineno-5-56"></a>            <span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Hi&quot;</span><span class="p">)</span>
 <a id="__codelineno-5-57" name="__codelineno-5-57" href="#__codelineno-5-57"></a>        <span class="p">])</span>
-<a id="__codelineno-5-58" name="__codelineno-5-58" href="#__codelineno-5-58"></a>        <span class="n">chunks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">llm</span><span class="o">.</span><span class="n">stream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">))</span>
+<a id="__codelineno-5-58" name="__codelineno-5-58" href="#__codelineno-5-58"></a>        <span class="n">chunks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 <a id="__codelineno-5-59" name="__codelineno-5-59" href="#__codelineno-5-59"></a>
 <a id="__codelineno-5-60" name="__codelineno-5-60" href="#__codelineno-5-60"></a>        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
 <a id="__codelineno-5-61" name="__codelineno-5-61" href="#__codelineno-5-61"></a>        <span class="k">assert</span> <span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">delta</span> <span class="o">==</span> <span class="s2">&quot;Hel&quot;</span>
@@ -3979,9 +3980,9 @@
 <a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="streaming"><a class="toclink" href="#streaming">Streaming</a><a class="headerlink" href="#streaming" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">stream_chat</span><span class="p">([</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">([</span>
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Tell me a story&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">]):</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">delta</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="completion-interface"><a class="toclink" href="#completion-interface">Completion Interface</a><a class="headerlink" href="#completion-interface" title="Permanent link">#</a></h3>
@@ -4062,13 +4063,11 @@
    Order matters for Method Resolution Order (MRO)!</p>
 </li>
 <li>
-<p><strong>Implement 4 chat methods only</strong>:</p>
+<p><strong>Implement 2 chat methods</strong> (each accepts <code>stream: bool</code> and handles both modes):</p>
 </li>
-<li><code>chat(messages, **kwargs)</code></li>
-<li><code>stream_chat(messages, **kwargs)</code></li>
-<li><code>achat(messages, **kwargs)</code></li>
+<li><code>chat(messages, stream=False, **kwargs)</code></li>
 <li>
-<p><code>astream_chat(messages, **kwargs)</code></p>
+<p><code>achat(messages, stream=False, **kwargs)</code></p>
 </li>
 <li>
 <p><strong>Get completion methods for free</strong> from the mixin</p>
@@ -4104,25 +4103,28 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatToCompletionMixin</span><span class="p">,</span> <span class="n">FunctionCallingLLM</span>
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
 <a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MinimalLLM</span><span class="p">(</span><span class="n">ChatToCompletionMixin</span><span class="p">,</span> <span class="n">FunctionCallingLLM</span><span class="p">):</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>        <span class="c1"># Call your provider&#39;s API</span>
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>        <span class="k">return</span> <span class="n">ChatResponse</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">stream_chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>        <span class="c1"># Stream from provider</span>
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>        <span class="k">yield</span> <span class="n">ChatResponse</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>
-<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">achat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>        <span class="c1"># Async call</span>
-<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>        <span class="k">return</span> <span class="n">ChatResponse</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>
-<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">astream_chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>        <span class="c1"># Async stream</span>
-<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">gen</span><span class="p">():</span>
-<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>            <span class="k">yield</span> <span class="n">ChatResponse</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>        <span class="k">return</span> <span class="n">gen</span><span class="p">()</span>
-<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>
-<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>    <span class="c1"># That&#39;s it! Completion methods come from ChatToCompletionMixin</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>        <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>        <span class="c1"># Call your provider&#39;s API</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>        <span class="k">return</span> <span class="n">ChatResponse</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_stream_chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>        <span class="c1"># Stream from provider</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>        <span class="k">yield</span> <span class="n">ChatResponse</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">achat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>        <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astream_chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>        <span class="c1"># Async call</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>        <span class="k">return</span> <span class="n">ChatResponse</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_astream_chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">gen</span><span class="p">():</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>            <span class="k">yield</span> <span class="n">ChatResponse</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>        <span class="k">return</span> <span class="n">gen</span><span class="p">()</span>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>    <span class="c1"># That&#39;s it! Completion methods come from ChatToCompletionMixin</span>
 </code></pre></div>
 <hr />
 <h2 id="checklist"><a class="toclink" href="#checklist">Checklist</a><a class="headerlink" href="#checklist" title="Permanent link">#</a></h2>

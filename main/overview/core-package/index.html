@@ -21,7 +21,7 @@
 <link href="../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -2036,7 +2036,7 @@
 <li><code>SerializableModel</code>: Base model with JSON/pickle serialization helpers</li>
 <li><code>Model</code>: Pydantic model base</li>
 <li>
-<p><code>StructuredLLMMode</code>: Enum for structured output modes</p>
+<p><code>StructuredOutputMode</code>: Enum for structured output modes</p>
 </li>
 <li>
 <p><strong>serapeum.core.utils</strong></p>
@@ -2104,14 +2104,10 @@
 <h2 id="representative-public-methods"><a class="toclink" href="#representative-public-methods">Representative Public Methods</a><a class="headerlink" href="#representative-public-methods" title="Permanent link">#</a></h2>
 <h3 id="basellm"><a class="toclink" href="#basellm">BaseLLM</a><a class="headerlink" href="#basellm" title="Permanent link">#</a></h3>
 <ul>
-<li><code>chat(messages, **kwargs) → ChatResponse</code></li>
-<li><code>complete(prompt, formatted=False, **kwargs) → CompletionResponse</code></li>
-<li><code>stream_chat(...) → ChatResponseGen</code></li>
-<li><code>stream_complete(...) → CompletionResponseGen</code></li>
-<li><code>achat(...) → ChatResponse</code> (async)</li>
-<li><code>acomplete(...) → CompletionResponse</code> (async)</li>
-<li><code>astream_chat(...) → ChatResponseAsyncGen</code> (async)</li>
-<li><code>astream_complete(...) → CompletionResponseAsyncGen</code> (async)</li>
+<li><code>chat(messages, stream=False, **kwargs) → ChatResponse | ChatResponseGen</code></li>
+<li><code>complete(prompt, formatted=False, stream=False, **kwargs) → CompletionResponse | CompletionResponseGen</code></li>
+<li><code>achat(messages, stream=False, **kwargs) → ChatResponse | ChatResponseAsyncGen</code> (async)</li>
+<li><code>acomplete(prompt, formatted=False, stream=False, **kwargs) → CompletionResponse | CompletionResponseAsyncGen</code> (async)</li>
 </ul>
 <h3 id="llm"><a class="toclink" href="#llm">LLM</a><a class="headerlink" href="#llm" title="Permanent link">#</a></h3>
 <ul>
@@ -2119,18 +2115,17 @@
 <li><code>stream(prompt, **kwargs) → CompletionResponseGen</code></li>
 <li><code>apredict(...) → str</code> (async)</li>
 <li><code>astream(...) → CompletionResponseAsyncGen</code> (async)</li>
-<li><code>structured_predict(output_cls: type[BaseModel], prompt, **kwargs) → BaseModel</code></li>
-<li><code>stream_structured_predict(...) → Generator[BaseModel, None, None]</code></li>
-<li><code>astructured_predict(...) → BaseModel</code> (async)</li>
-<li><code>astream_structured_predict(...) → AsyncGenerator[BaseModel, None]</code> (async)</li>
+<li><code>parse(output_cls: type[BaseModel], prompt, **kwargs) → BaseModel</code></li>
+<li><code>stream_parse(...) → Generator[BaseModel, None, None]</code></li>
+<li><code>aparse(...) → BaseModel</code> (async)</li>
+<li><code>astream_parse(...) → AsyncGenerator[BaseModel, None]</code> (async)</li>
 </ul>
 <h3 id="functioncallingllm"><a class="toclink" href="#functioncallingllm">FunctionCallingLLM</a><a class="headerlink" href="#functioncallingllm" title="Permanent link">#</a></h3>
 <ul>
-<li><code>chat_with_tools(tools, user_msg=None, chat_history=None, **kwargs) → ChatResponse</code></li>
-<li><code>predict_and_call(tools, user_msg=None, chat_history=None, **kwargs) → AgentChatResponse</code></li>
+<li><code>generate_tool_calls(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseGen</code></li>
+<li><code>agenerate_tool_calls(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseAsyncGen</code> (async)</li>
+<li><code>invoke_callable(tools, user_msg=None, chat_history=None, **kwargs) → AgentChatResponse</code></li>
 <li><code>get_tool_calls_from_response(response, error_on_no_tool_call=True) → list[ToolCallArguments]</code></li>
-<li><code>stream_chat_with_tools(...) → ChatResponseGen</code></li>
-<li><code>astream_chat_with_tools(...) → ChatResponseAsyncGen</code> (async)</li>
 </ul>
 <h3 id="callabletool"><a class="toclink" href="#callabletool">CallableTool</a><a class="headerlink" href="#callabletool" title="Permanent link">#</a></h3>
 <ul>
@@ -2141,10 +2136,8 @@
 </ul>
 <h3 id="toolorchestratingllm"><a class="toclink" href="#toolorchestratingllm">ToolOrchestratingLLM</a><a class="headerlink" href="#toolorchestratingllm" title="Permanent link">#</a></h3>
 <ul>
-<li><code>__call__(**prompt_args, llm_kwargs=None) → BaseModel | Any</code></li>
-<li><code>acall(**prompt_args, llm_kwargs=None) → BaseModel | Any</code> (async)</li>
-<li><code>stream_call(**prompt_args, llm_kwargs=None) → Generator</code></li>
-<li><code>astream_call(**prompt_args, llm_kwargs=None) → AsyncGenerator</code> (async)</li>
+<li><code>__call__(**prompt_args, stream=False, llm_kwargs=None) → BaseModel | Generator</code></li>
+<li><code>acall(**prompt_args, stream=False, llm_kwargs=None) → BaseModel | AsyncGenerator</code> (async)</li>
 </ul>
 <h3 id="baseembedding"><a class="toclink" href="#baseembedding">BaseEmbedding</a><a class="headerlink" href="#baseembedding" title="Permanent link">#</a></h3>
 <ul>
@@ -2165,12 +2158,12 @@
 <h3 id="structured-output-flow"><a class="toclink" href="#structured-output-flow">Structured Output Flow</a><a class="headerlink" href="#structured-output-flow" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>User input
 <a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>  → PromptTemplate
-<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>  → LLM.structured_predict(output_cls=MyModel, ...)
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>  → LLM.parse(output_cls=MyModel, ...)
 <a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>  → Pydantic BaseModel instance
 </code></pre></div>
 <h3 id="tool-calling-flow"><a class="toclink" href="#tool-calling-flow">Tool-Calling Flow</a><a class="headerlink" href="#tool-calling-flow" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>User message
-<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>  → FunctionCallingLLM.predict_and_call(tools=[...])
+<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>  → FunctionCallingLLM.invoke_callable(tools=[...])
 <a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>  → LLM predicts tool calls
 <a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>  → Tools executed (BaseTool/CallableTool)
 <a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>  → ToolOutput aggregated
@@ -2227,13 +2220,13 @@ Hold "Ctrl" to enable pan &amp; zoom
     end
 
     subgraph "LLM Abstraction Layer"
-        L1[LLM&lt;br/&gt;predict, structured_predict]
-        L2[FunctionCallingLLM&lt;br/&gt;chat_with_tools, predict_and_call]
+        L1[LLM&lt;br/&gt;predict, parse]
+        L2[FunctionCallingLLM&lt;br/&gt;generate_tool_calls, invoke_callable]
         L3[StructuredOutputLLM&lt;br/&gt;Force structured outputs]
     end
 
     subgraph "Base Protocol Layer"
-        B1[BaseLLM&lt;br/&gt;chat, complete, stream_chat]
+        B1[BaseLLM&lt;br/&gt;chat(stream), complete(stream)]
         B2[BaseEmbedding&lt;br/&gt;get_text_embedding]
     end
 
@@ -2314,14 +2307,10 @@ Hold "Ctrl" to enable pan &amp; zoom
 <pre class="mermaid"><code>classDiagram
     class BaseLLM {
         &lt;&lt;abstract&gt;&gt;
-        +chat(messages) ChatResponse
-        +complete(prompt) CompletionResponse
-        +stream_chat(messages) Generator
-        +stream_complete(prompt) Generator
-        +achat(messages) ChatResponse
-        +acomplete(prompt) CompletionResponse
-        +astream_chat(messages) AsyncGen
-        +astream_complete(prompt) AsyncGen
+        +chat(messages, stream=false) ChatResponse | Generator
+        +complete(prompt, stream=false) CompletionResponse | Generator
+        +achat(messages, stream=false) ChatResponse | AsyncGen
+        +acomplete(prompt, stream=false) CompletionResponse | AsyncGen
     }
 
     class LLM {
@@ -2329,28 +2318,25 @@ Hold "Ctrl" to enable pan &amp; zoom
         +stream(prompt, **kwargs) Generator
         +apredict(prompt, **kwargs) str
         +astream(prompt, **kwargs) AsyncGen
-        +structured_predict(output_cls, prompt, **kwargs) BaseModel
-        +stream_structured_predict(...) Generator
-        +astructured_predict(...) BaseModel
-        +astream_structured_predict(...) AsyncGen
+        +parse(output_cls, prompt, **kwargs) BaseModel
+        +stream_parse(...) Generator
+        +aparse(...) BaseModel
+        +astream_parse(...) AsyncGen
     }
 
     class FunctionCallingLLM {
-        +chat_with_tools(tools, user_msg, chat_history) ChatResponse
-        +predict_and_call(tools, user_msg, chat_history) AgentChatResponse
+        +generate_tool_calls(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseGen
+        +agenerate_tool_calls(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseAsyncGen
+        +invoke_callable(tools, user_msg, chat_history) AgentChatResponse
         +get_tool_calls_from_response(response) List~ToolCallArguments~
-        +stream_chat_with_tools(tools, ...) Generator
-        +astream_chat_with_tools(tools, ...) AsyncGen
     }
 
     class ToolOrchestratingLLM {
         -llm: FunctionCallingLLM
         -tools: List~BaseTool~
         -prompt: PromptTemplate
-        +__call__(**prompt_args) Any
-        +acall(**prompt_args) Any
-        +stream_call(**prompt_args) Generator
-        +astream_call(**prompt_args) AsyncGen
+        +__call__(**prompt_args, stream=False) Any | Generator
+        +acall(**prompt_args, stream=False) Any | AsyncGen
     }
 
     class CallableTool {
@@ -2425,10 +2411,8 @@ Hold "Ctrl" to enable pan &amp; zoom
 <pre class="mermaid"><code>classDiagram
     class FunctionCallingLLM {
         &lt;&lt;abstract&gt;&gt;
-        +_chat(messages) ChatResponse*
-        +_complete(prompt) CompletionResponse*
-        +_stream_chat(messages) Generator*
-        +_stream_complete(prompt) Generator*
+        +chat(messages, stream=false) ChatResponse | Generator*
+        +achat(messages, stream=false) ChatResponse | AsyncGen*
     }
 
     class BaseEmbedding {
@@ -2511,7 +2495,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     User-&gt;&gt;Orch: orchestrator(query="What's 5+3?")
     Orch-&gt;&gt;Prompt: format(query="What's 5+3?")
     Prompt--&gt;&gt;Orch: formatted messages
-    Orch-&gt;&gt;LLM: chat_with_tools(messages, tools)
+    Orch-&gt;&gt;LLM: generate_tool_calls(messages, tools)
     LLM--&gt;&gt;Orch: ChatResponse (tool call)
     Orch-&gt;&gt;Orch: get_tool_calls_from_response()
     Orch-&gt;&gt;Tool: call(operation="add", a=5, b=3)
@@ -2656,7 +2640,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 - Orchestrators automatically handle tool calling
 - All tool operations return <code>ToolOutput</code></p>
 <p><strong>Structured Outputs:</strong>
-- Use <code>structured_predict()</code> with Pydantic models
+- Use <code>parse()</code> with Pydantic models
 - Works with both streaming and non-streaming
 - Automatic validation and parsing</p>
 <hr/>

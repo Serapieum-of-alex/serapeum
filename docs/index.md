@@ -84,6 +84,7 @@ import os
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
 
+
 # Initialize LLM
 llm = Ollama(model="gpt-oss:20b", api_key=os.environ.get("OLLAMA_API_KEY"))
 
@@ -95,7 +96,7 @@ def get_weather(city: str) -> str:
 weather_tool = CallableTool.from_function(get_weather)
 
 # Chat with tool calling
-response = llm.chat_with_tools(
+response = llm.generate_tool_calls(
     tools=[weather_tool],
     user_msg="What's the weather in San Francisco?"
 )

@@ -160,7 +160,7 @@ graph TB
     CLI -.->|Chunk N| STRM
 
     %% Tool calling flow
-    UC -->|2d. chat_with_tools(messages, tools)| OL
+    UC -->|2d. generate_tool_calls(messages, tools)| OL
     OL -->|Prepare| PREP
     PREP -->|Convert to schema| BCRQ_TOOL
     OL -->|Call chat| CLI
@@ -195,7 +195,7 @@ graph TB
     PTMP -->|Messages| OL
     TOL -->|Pass tools| CTOOL
     CTOOL -->|Convert| OL
-    OL -->|chat_with_tools| CRESP
+    OL -->|generate_tool_calls| CRESP
     CRESP -->|tool_calls| TOL
     TOL -->|Execute tool| CTOOL
     CTOOL -->|Create| PM
@@ -294,7 +294,7 @@ User → Ollama.chat(messages, stream=True, **kwargs)
 
 ### 6. Tool Calling Pattern
 ```
-User → Ollama.chat_with_tools(messages, tools, **kwargs)
+User → Ollama.generate_tool_calls(messages, tools, **kwargs)
   ├─→ _prepare_chat_with_tools(messages, tools, **kwargs)
   │   └─→ For each tool in tools:
   │       ├─→ Get tool.metadata.fn_schema
@@ -331,7 +331,7 @@ User → ToolOrchestratingLLM(output_cls=Album, prompt=prompt, llm=Ollama(...))
 User → tools_llm(topic="rock")
   ├─→ Format prompt with topic → List[Message]
   ├─→ CallableTool.metadata.fn_schema → Album JSON schema
-  ├─→ Ollama.chat_with_tools(messages, tools=[album_tool])
+  ├─→ Ollama.generate_tool_calls(messages, tools=[album_tool])
   │   ├─→ _prepare_chat_with_tools converts tool to Ollama format
   │   ├─→ Server returns tool_calls with arguments
   │   └─→ Return ChatResponse with tool_calls

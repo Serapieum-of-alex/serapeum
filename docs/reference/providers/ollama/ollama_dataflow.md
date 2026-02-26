@@ -24,7 +24,7 @@ flowchart TD
 
     CallType -->|chat| ChatPath[Chat Path]
     CallType -->|complete| CompletePath[Complete Path]
-    CallType -->|chat_with_tools| ToolsPath[Tools Path]
+    CallType -->|generate_tool_calls| ToolsPath[Tools Path]
     CallType -->|stream_chat| StreamPath[Stream Path]
 
     %% Chat Path

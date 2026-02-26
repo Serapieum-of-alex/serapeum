@@ -245,41 +245,41 @@ from serapeum.core.tools import CallableTool
 from serapeum.core.llms.orchestrators import ToolOrchestratingLLM
 from serapeum.core.prompts import PromptTemplate
 
+
 # Define tools
 
 def get_weather(location: str, unit: str = "celsius") -> str:
-    """Get current weather for a location."""
-    # Simulated weather data
-    return f"The weather in {location} is 72°{unit[0].upper()} and sunny."
+  """Get current weather for a location."""
+  # Simulated weather data
+  return f"The weather in {location} is 72°{unit[0].upper()} and sunny."
 
 def calculate(operation: str, a: float, b: float) -> float:
-    """Perform basic math operations."""
-    ops = {
-        "add": a + b,
-        "subtract": a - b,
-        "multiply": a * b,
-        "divide": a / b if b != 0 else float('inf')
-    }
-    return ops.get(operation, 0)
+  """Perform basic math operations."""
+  ops = {
+    "add": a + b,
+    "subtract": a - b,
+    "multiply": a * b,
+    "divide": a / b if b != 0 else float('inf')
+  }
+  return ops.get(operation, 0)
 
 # Create orchestrator with tools
 llm = Ollama(model="llama3.1", request_timeout=120, json_mode=True)
 
 orchestrator = ToolOrchestratingLLM(
-    llm=llm,
-    prompt=PromptTemplate("Answer the user's question: {query}"),
-    schema=calculate,
+  llm=llm,
+  prompt=PromptTemplate("Answer the user's question: {query}"),
+  schema=calculate,
 )
 
 # Use tools via natural language
 result = orchestrator(query="What's 15 multiplied by 8?")
 print(result)  # Uses calculator_tool automatically
 
-
 orchestrator = ToolOrchestratingLLM(
-    llm=llm,
-    prompt=PromptTemplate("Answer the user's question: {query}"),
-    schema=get_weather,
+  llm=llm,
+  prompt=PromptTemplate("Answer the user's question: {query}"),
+  schema=get_weather,
 )
 result = orchestrator(query="What's the weather in Paris?")
 print(result)  # Uses weather_tool automatically
@@ -288,24 +288,25 @@ print(result)  # Uses weather_tool automatically
 from serapeum.core.llms import Message, MessageRole
 from serapeum.core.tools import CallableTool
 
+
 calculator_tool = CallableTool.from_function(calculate)
 messages = [Message(role=MessageRole.USER, content="What's 25 + 17?")]
-response = llm.chat_with_tools(
-    tools=[calculator_tool],
-    chat_history=messages,
+response = llm.generate_tool_calls(
+  tools=[calculator_tool],
+  chat_history=messages,
 )
 
 # Check if model wants to call a tool
 tool_calls = llm.get_tool_calls_from_response(response, error_on_no_tool_call=False)
 if tool_calls:
-    for call in tool_calls:
-        print(f"Tool: {call.tool_name}")
-        print(f"Arguments: {call.tool_kwargs}")
+  for call in tool_calls:
+    print(f"Tool: {call.tool_name}")
+    print(f"Arguments: {call.tool_kwargs}")
 
-        # Execute the tool
-        if call.tool_name == "calculate":
-            result = calculate(**call.tool_kwargs)
-            print(f"Result: {result}")
+    # Execute the tool
+    if call.tool_name == "calculate":
+      result = calculate(**call.tool_kwargs)
+      print(f"Result: {result}")
 ```
 
 ### Completion Style Usage

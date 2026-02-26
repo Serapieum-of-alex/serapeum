@@ -205,14 +205,14 @@ async def test_ollama_acomplete_streaming(llm_model) -> None:
 @pytest.mark.mock
 @patch.object(Ollama, "client")
 def test_chat_with_tools(mock_ollama_client, model_name) -> None:
-    """Test chat_with_tools method with mock client.
+    """Test generate_tool_calls method with mock client.
 
     Inputs: mock_ollama_client with chat returning response_for_tool_call.
     Expected: Tool call is detected and tool result is correct type.
     """
     mock_ollama_client.chat = MagicMock(return_value=response_for_tool_call)
     llm = Ollama(model=model_name, request_timeout=80)
-    response = llm.chat_with_tools([tool], user_msg="Hello!")
+    response = llm.generate_tool_calls([tool], user_msg="Hello!")
     tool_calls = llm.get_tool_calls_from_response(response)
     assert len(tool_calls) == 1
     assert tool_calls[0].tool_name == tool.metadata.name
@@ -226,7 +226,7 @@ def test_chat_with_tools(mock_ollama_client, model_name) -> None:
 @pytest.mark.asyncio()
 @patch.object(Ollama, "async_client", new_callable=PropertyMock)
 async def test_async_chat_with_tools(mock_ollama_async_prop, model_name) -> None:
-    """Test async chat_with_tools method with mock client.
+    """Test async generate_tool_calls method with mock client.
 
     Inputs: mock_ollama_async_client with chat returning response_for_tool_call.
     Expected: Tool call is detected and tool result is correct type.
@@ -235,7 +235,7 @@ async def test_async_chat_with_tools(mock_ollama_async_prop, model_name) -> None
     mock_ollama_async_client.chat = AsyncMock(return_value=response_for_tool_call)
     mock_ollama_async_prop.return_value = mock_ollama_async_client
     llm = Ollama(model=model_name)
-    response = await llm.achat_with_tools([tool], user_msg="Hello!")
+    response = await llm.agenerate_tool_calls([tool], user_msg="Hello!")
     tool_calls = llm.get_tool_calls_from_response(response)
     assert len(tool_calls) == 1
     assert tool_calls[0].tool_name == tool.metadata.name

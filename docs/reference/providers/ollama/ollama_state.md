@@ -37,7 +37,7 @@ stateDiagram-v2
             Idle --> ProcessingComplete: complete(prompt)
             Idle --> ProcessingStream: chat(messages, stream=True)
             Idle --> ProcessingAsync: achat(messages)
-            Idle --> ProcessingTools: chat_with_tools(messages, tools)
+            Idle --> ProcessingTools: generate_tool_calls(messages, tools)
 
             state ProcessingChat {
                 [*] --> BuildingRequest
@@ -258,9 +258,10 @@ response = await llm.achat(messages)
 ```
 
 ### 7. Idle → ProcessingTools → Idle
+
 ```python
 # Tool calling adds preparation and validation steps
-response = llm.chat_with_tools(messages, tools)
+response = llm.generate_tool_calls(messages, tools)
 
 # Transition to ProcessingTools:
 # 1. PreparingTools: _prepare_chat_with_tools(messages, tools)

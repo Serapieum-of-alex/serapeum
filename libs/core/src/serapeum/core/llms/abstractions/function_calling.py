@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 import asyncio
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Literal, Sequence, overload
 
 from serapeum.core.base.llms.types import (
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from serapeum.core.tools.types import BaseTool
 
 
-class FunctionCallingLLM(LLM):
+class FunctionCallingLLM(LLM, ABC):
     """LLM base with convenience helpers for tool/function calling flows."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

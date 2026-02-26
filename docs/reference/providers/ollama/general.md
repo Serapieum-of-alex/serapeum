@@ -254,7 +254,7 @@ def client(self) -> Client:
 ### 2. **Template Method Pattern**
 FunctionCallingLLM defines workflow, Ollama implements specifics:
 ```python
-def chat_with_tools(self, messages, tools, **kwargs):
+def generate_tool_calls(self, messages, tools, **kwargs):
     prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass
     response = self.chat(prepared)
     validated = self._validate_chat_with_tools_response(response, tools)  # Subclass
@@ -296,7 +296,7 @@ Model Runtime (llama3.1, etc.)
 ```
 1. Converts output_cls to CallableTool
 2. Formats prompt with variables
-3. Calls Ollama.chat_with_tools()
+3. Calls Ollama.generate_tool_calls()
 4. Ollama converts tool to schema
 5. Server returns tool_calls
 6. Executes tool to create instance
@@ -406,11 +406,14 @@ for chunk in llm.chat(messages, stream=True):
 ```
 
 ### Pattern 3: Tool Calling for Structured Outputs
+
 ```python
 import os
 from pydantic import BaseModel
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
+
+
 llm = Ollama(
   model="qwen3.5:397b",
   api_key=os.environ.get("OLLAMA_API_KEY"),
@@ -421,7 +424,7 @@ llm = Ollama(
 tool = CallableTool.from_model(MyModel)
 
 # Get structured output via tool calling
-response = llm.chat_with_tools(messages, tools=[tool])
+response = llm.generate_tool_calls(messages, tools=[tool])
 ```
 
 ### Pattern 4: Async for Concurrency

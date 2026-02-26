@@ -72,7 +72,7 @@ Shows the chronological flow of method calls and interactions.
 **Key Sections**:
 - Initialization phase (validation and component setup)
 - Tool creation (CallableTool.from_model)
-- Execution phase (predict_and_call with tools)
+- Execution phase (invoke_callable with tools)
 - Tool execution and output parsing
 
 ### 2. [Architecture and Class Relationships](./tool_orchestrating_llm_class.md)
@@ -171,7 +171,7 @@ Depicts the lifecycle states and transitions.
 
 4. Execute function calling:
    a. Prepare request with tool schemas
-   b. Call predict_and_call([tool], messages, ...)
+   b. Call invoke_callable([tool], messages, ...)
    c. HTTP POST to Ollama server with tools parameter
    d. LLM generates tool_calls in response
 

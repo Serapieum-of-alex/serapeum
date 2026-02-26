@@ -41,7 +41,7 @@ def _get_mock_album_response(
 class MockLLM(MagicMock):
     """Mock LLM that returns predefined responses."""
 
-    def predict_and_call(
+    def invoke_callable(
         self,
         tools: List["BaseTool"],
         user_msg: Optional[Union[str, Message]] = None,
@@ -55,7 +55,7 @@ class MockLLM(MagicMock):
             allow_parallel_tool_calls=allow_parallel_tool_calls
         )
 
-    async def apredict_and_call(
+    async def ainvoke_callable(
         self,
         tools: List["BaseTool"],
         user_msg: Optional[Union[str, Message]] = None,

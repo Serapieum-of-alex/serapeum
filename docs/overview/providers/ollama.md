@@ -312,6 +312,7 @@ import os
 from serapeum.ollama import Ollama
 from serapeum.core.tools import CallableTool
 
+
 def search_flights(origin: str, destination: str) -> dict:
     """Return estimated round-trip flight cost between two cities."""
     # Mock data
@@ -351,7 +352,7 @@ llm = Ollama(
     request_timeout=120,
 )
 
-response = llm.predict_and_call(
+response = llm.invoke_callable(
     tools=tools,
     user_msg="I'm planning a 7-night trip from London to Tokyo. What are the flight and hotel costs?",
     allow_parallel_tool_calls=True,
@@ -369,6 +370,7 @@ from pydantic import BaseModel, Field
 from serapeum.core.llms import Message, MessageRole
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
+
 
 class CalculatorInput(BaseModel):
     """CalculatorInput data(operation, a, b)"""
@@ -397,7 +399,7 @@ llm = Ollama(
     request_timeout=120,
 )
 
-response = llm.chat_with_tools(
+response = llm.generate_tool_calls(
     tools=[calculator_tool],
     chat_history=messages,
 )

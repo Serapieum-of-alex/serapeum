@@ -475,7 +475,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         if self._tool_choice is not None:
             llm_kwargs.setdefault("tool_choice", self._tool_choice)
 
-        agent_response: AgentChatResponse = self._llm.predict_and_call(
+        agent_response: AgentChatResponse = self._llm.invoke_callable(
             [tool],
             chat_history=messages,
             verbose=self._verbose,
@@ -502,7 +502,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
-        chat_response_gen = self._llm.chat_with_tools(
+        chat_response_gen = self._llm.generate_tool_calls(
             [tool],
             chat_history=messages,
             verbose=self._verbose,
@@ -580,7 +580,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         if self._tool_choice is not None:
             llm_kwargs.setdefault("tool_choice", self._tool_choice)
 
-        agent_response = await self._llm.apredict_and_call(
+        agent_response = await self._llm.ainvoke_callable(
             [tool],
             chat_history=self._prompt.format_messages(**kwargs),
             verbose=self._verbose,
@@ -607,7 +607,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
         messages = self._prompt.format_messages(**kwargs)
         messages = self._llm._extend_messages(messages)
 
-        chat_response_gen = await self._llm.achat_with_tools(
+        chat_response_gen = await self._llm.agenerate_tool_calls(
             [tool],
             chat_history=messages,
             verbose=self._verbose,

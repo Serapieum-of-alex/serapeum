@@ -156,7 +156,7 @@ class MockLLM(MagicMock):
         """Extend messages with system prompts."""
         return messages
 
-    def predict_and_call(
+    def invoke_callable(
         self,
         tools: List["BaseTool"],
         user_msg: Optional[Union[str, Message]] = None,
@@ -191,7 +191,7 @@ class MockLLM(MagicMock):
             sources=tool_outputs,
         )
 
-    async def apredict_and_call(
+    async def ainvoke_callable(
         self,
         tools: List["BaseTool"],
         user_msg: Optional[Union[str, Message]] = None,
@@ -200,8 +200,8 @@ class MockLLM(MagicMock):
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
     ) -> AgentChatResponse:
-        """Async version of predict_and_call."""
-        return self.predict_and_call(
+        """Async version of invoke_callable."""
+        return self.invoke_callable(
             tools, user_msg, chat_history, verbose, allow_parallel_tool_calls, **kwargs
         )
 

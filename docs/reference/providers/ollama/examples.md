@@ -282,7 +282,7 @@ messages = [
         content="What's in this image?",
     ),
     Message(
-        chunks=[image],  # Alternative to images
+        chunks=[image],
     )
 ]
 
@@ -466,13 +466,13 @@ llm = Ollama(
 # Create tool from function
 tool = CallableTool.from_function(create_album)
 
-message =  Message(
+message = Message(
     role=MessageRole.USER,
     content="Create a rock album with two songs"
 )
 
 # Call with tools
-response = llm.chat_with_tools(tools=[tool], user_msg=message)
+response = llm.generate_tool_calls(tools=[tool], user_msg=message)
 
 # Extract tool calls
 tool_calls = llm.get_tool_calls_from_response(response)
@@ -512,7 +512,7 @@ message = Message(
     content="Create a jazz album with title 'Blue Notes' by Miles Davis with 3 songs"
 )
 
-response = llm.chat_with_tools(tools=[tool], user_msg=message)
+response = llm.generate_tool_calls(tools=[tool], user_msg=message)
 
 # Extract and execute tool call
 tool_calls = llm.get_tool_calls_from_response(response)
@@ -554,7 +554,7 @@ message = Message(
 )
 
 # Force single tool call
-response = llm.chat_with_tools(
+response = llm.generate_tool_calls(
     tools=[tool],
     user_msg=message,
     allow_parallel_tool_calls=False,  # Only one tool call allowed
@@ -596,7 +596,7 @@ message = Message(
 )
 
 # Allow parallel tool calls
-response = llm.chat_with_tools(
+response = llm.generate_tool_calls(
     tools=[tool],
     user_msg=message,
     allow_parallel_tool_calls=True,
@@ -642,7 +642,7 @@ message = Message(
 )
 
 # Stream with tools
-for chunk in llm.chat_with_tools(tools=[tool], user_msg=message, stream=True):
+for chunk in llm.generate_tool_calls(tools=[tool], user_msg=message, stream=True):
     # Process streaming tool calls
     if chunk.message.additional_kwargs.get("tool_calls"):
         print(f"Tool call chunk: {chunk.message.additional_kwargs['tool_calls']}")

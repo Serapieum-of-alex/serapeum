@@ -112,10 +112,10 @@ classDiagram
 
     class FunctionCallingLLM {
         <<abstract>>
-        +predict_and_call(tools, chat_history, ...) AgentChatResponse
-        +apredict_and_call(tools, chat_history, ...) AgentChatResponse
-        +chat_with_tools(tools, chat_history, stream, ...) ChatResponse | Generator
-        +achat_with_tools(tools, chat_history, stream, ...) ChatResponse | AsyncGenerator
+        +invoke_callable(tools, chat_history, ...) AgentChatResponse
+        +ainvoke_callable(tools, chat_history, ...) AgentChatResponse
+        +generate_tool_calls(tools, chat_history, stream, ...) ChatResponse | Generator
+        +agenerate_tool_calls(tools, chat_history, stream, ...) ChatResponse | AsyncGenerator
         -_prepare_chat_with_tools(tools, chat_history, ...) Tuple
         -_validate_chat_with_tools_response(...) AgentChatResponse
     }
@@ -131,10 +131,10 @@ classDiagram
         +achat(messages, **kwargs) ChatResponse
         +complete(prompt, **kwargs) CompletionResponse
         +acomplete(prompt, **kwargs) CompletionResponse
-        +predict_and_call(tools, ...) AgentChatResponse
-        +apredict_and_call(tools, ...) AgentChatResponse
-        +chat_with_tools(tools, stream, ...) ChatResponse | Generator
-        +achat_with_tools(tools, stream, ...) ChatResponse | AsyncGenerator
+        +invoke_callable(tools, ...) AgentChatResponse
+        +ainvoke_callable(tools, ...) AgentChatResponse
+        +generate_tool_calls(tools, stream, ...) ChatResponse | Generator
+        +agenerate_tool_calls(tools, stream, ...) ChatResponse | AsyncGenerator
         -_chat_request(messages, stream, **kwargs) dict
         -_complete_request(prompt, stream, **kwargs) dict
         -_prepare_tools_schema(tools) List[Dict]
@@ -219,7 +219,7 @@ classDiagram
 - **Orchestrates** the complete function-calling workflow
 - **Validates** LLM supports function calling during initialization
 - **Converts** Pydantic models to callable tools
-- **Routes** execution through predict_and_call
+- **Routes** execution through invoke_callable
 - **Supports** single or parallel tool calls
 - **Handles** sync, async, and streaming modes
 
@@ -231,7 +231,7 @@ classDiagram
 
 ### FunctionCallingLLM (Abstract)
 - **Defines** interface for function-calling LLMs
-- **Provides** predict_and_call abstraction
+- **Provides** invoke_callable abstraction
 - **Handles** tool schema preparation
 - **Manages** tool execution orchestration
 

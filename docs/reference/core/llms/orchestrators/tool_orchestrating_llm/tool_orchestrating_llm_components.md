@@ -60,10 +60,10 @@ graph TB
         OL[Ollama]
 
         subgraph Orchestration Methods
-            PAC[predict_and_call]
-            APAC[apredict_and_call]
-            SCT[chat_with_tools(stream=True)]
-            ASCT[achat_with_tools(stream=True)]
+            PAC[invoke_callable]
+            APAC[ainvoke_callable]
+            SCT[generate_tool_calls(stream=True)]
+            ASCT[agenerate_tool_calls(stream=True)]
         end
 
         subgraph Message Processing
@@ -231,10 +231,10 @@ graph TB
 
 | Component | Initialization | Execution | Parsing | Streaming |
 |-----------|---------------|-----------|---------|-----------|
-| **ToolOrchestratingLLM** | Validates & stores components | Routes to predict_and_call | Extracts from AgentChatResponse | Processes with StreamingObjectProcessor |
+| **ToolOrchestratingLLM** | Validates & stores components | Routes to invoke_callable | Extracts from AgentChatResponse | Processes with StreamingObjectProcessor |
 | **CallableTool** | - | Created from Pydantic model | Validates tool arguments | - |
 | **PromptTemplate** | Created/validated | Formats with variables | - | - |
-| **Ollama** | Validated for function calling | Executes predict_and_call | - | Streams chat_with_tools |
+| **Ollama** | Validated for function calling | Executes invoke_callable | - | Streams generate_tool_calls |
 | **AgentChatResponse** | - | Created by LLM | Contains ToolOutputs | - |
 | **ToolOutput** | - | Created by tool execution | Contains raw_output (Pydantic) | - |
 | **MockAlbum** | Defines schema | - | Validates parsed data | Progressively built |
@@ -270,7 +270,7 @@ User → ToolOrchestratingLLM.__call__(topic="songs")
   │   └─→ Return List[Message]
   ├─→ Ollama._extend_messages(messages)
   │   └─→ Add system prompts if configured
-  ├─→ Ollama.predict_and_call([tool], messages, ...)
+  ├─→ Ollama.invoke_callable([tool], messages, ...)
   │   ├─→ Prepare chat request with tool schemas
   │   ├─→ HTTP POST to /api/chat
   │   ├─→ Parse tool_calls from response
@@ -288,7 +288,7 @@ User → ToolOrchestratingLLM.__call__(topic="songs")
 ```
 User → ToolOrchestratingLLM.__call__(..., allow_parallel_tool_calls=True)
   ├─→ [Same tool creation and message formatting]
-  ├─→ Ollama.predict_and_call([tool], ..., allow_parallel=True)
+  ├─→ Ollama.invoke_callable([tool], ..., allow_parallel=True)
   │   ├─→ LLM generates multiple tool_calls
   │   ├─→ Execute each tool.call(args)
   │   │   ├─→ ToolOutput 1: MockAlbum(title="hello", ...)
@@ -303,7 +303,7 @@ User → ToolOrchestratingLLM.__call__(..., allow_parallel_tool_calls=True)
 ```
 User → await ToolOrchestratingLLM.acall(...)
   ├─→ [Same tool creation and message formatting]
-  ├─→ await Ollama.apredict_and_call([tool], messages, ...)
+  ├─→ await Ollama.ainvoke_callable([tool], messages, ...)
   │   ├─→ Async HTTP request
   │   ├─→ Async tool execution
   │   └─→ Return AgentChatResponse
@@ -315,7 +315,7 @@ User → await ToolOrchestratingLLM.acall(...)
 ```
 User → for obj in ToolOrchestratingLLM(stream=True, ...):
   ├─→ [Same tool creation and message formatting]
-  ├─→ Ollama.chat_with_tools([tool], messages, stream=True, ...)
+  ├─→ Ollama.generate_tool_calls([tool], messages, stream=True, ...)
   │   └─→ Yields partial ChatResponse chunks
   └─→ For each chunk:
       ├─→ StreamingObjectProcessor.process(chunk, cur_objects)
@@ -330,7 +330,7 @@ User → for obj in ToolOrchestratingLLM(stream=True, ...):
 ```
 User → async for obj in await ToolOrchestratingLLM.acall(stream=True, ...):
   ├─→ [Same tool creation and message formatting]
-  ├─→ await Ollama.achat_with_tools([tool], messages, stream=True, ...)
+  ├─→ await Ollama.agenerate_tool_calls([tool], messages, stream=True, ...)
   │   └─→ Async yields partial ChatResponse chunks
   └─→ For each chunk:
       ├─→ StreamingObjectProcessor.process(chunk, cur_objects)
@@ -401,7 +401,7 @@ User Output
 1. **Initialization**: validate_llm, validate_prompt
 2. **Tool Creation**: CallableTool.from_model - schema extraction
 3. **Prompt Formatting**: format_messages - template variable errors
-4. **LLM Execution**: predict_and_call - network errors, timeout
+4. **LLM Execution**: invoke_callable - network errors, timeout
 5. **Tool Parsing**: Parse tool_calls - missing/malformed data
 6. **Tool Execution**: Validate args - Pydantic ValidationError
 7. **Output Extraction**: parse_tool_outputs - missing raw_output

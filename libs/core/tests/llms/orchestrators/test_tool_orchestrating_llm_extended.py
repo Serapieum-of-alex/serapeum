@@ -89,7 +89,7 @@ class NonFunctionCallingMockLLM(MagicMock):
         return Metadata(is_function_calling_model=True, model_name="non_fc_mock")
 
     # The following two are used by ToolOrchestratingLLM.__call__/acall tests
-    def predict_and_call(
+    def invoke_callable(
         self,
         tools: List["BaseTool"],
         user_msg: Optional[Union[str, Message]] = None,
@@ -105,7 +105,7 @@ class NonFunctionCallingMockLLM(MagicMock):
         )
         return make_agent_response_from_models(models)
 
-    async def apredict_and_call(
+    async def ainvoke_callable(
         self,
         tools: List["BaseTool"],
         user_msg: Optional[Union[str, Message]] = None,

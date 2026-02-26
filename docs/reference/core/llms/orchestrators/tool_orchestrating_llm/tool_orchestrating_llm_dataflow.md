@@ -34,7 +34,7 @@ flowchart TD
     ApplyVars --> CreateMessages[Create Message list]
     CreateMessages --> ExtendMessages[Extend with system prompts]
 
-    ExtendMessages --> PredictAndCall[Call predict_and_call]
+    ExtendMessages --> PredictAndCall[Call invoke_callable]
     PredictAndCall --> PrepareRequest[Prepare chat request with tools]
 
     PrepareRequest --> AddToolSchemas[Add tool schemas to request]
@@ -130,7 +130,7 @@ Transformations:
   4. _extend_messages(messages)
      → [Message(role=SYSTEM, ...), Message(role=USER, ...)]
 
-  5. predict_and_call([tool], messages, ...)
+  5. invoke_callable([tool], messages, ...)
      → HTTP request:
      {
        "model": "llama3.1",
@@ -240,7 +240,7 @@ Output:
 flowchart TD
     StreamStart(["__call__(stream=True) called"]) --> CreateTool[Create CallableTool]
     CreateTool --> FormatMsgs[Format messages]
-    FormatMsgs --> StreamChat[chat_with_tools(stream=True)]
+    FormatMsgs --> StreamChat[generate_tool_calls(stream=True)]
 
     StreamChat --> ReceiveChunk{Receive chunk}
     ReceiveChunk --> ProcessChunk[StreamingObjectProcessor.process]

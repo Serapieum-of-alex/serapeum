@@ -159,9 +159,9 @@ See the [Provider Integrations Guide](providers.md) for complete documentation o
 - `astream_parse(...) → AsyncGenerator[BaseModel, None]` (async)
 
 ### FunctionCallingLLM
-- `chat_with_tools(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseGen`
-- `achat_with_tools(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseAsyncGen` (async)
-- `predict_and_call(tools, user_msg=None, chat_history=None, **kwargs) → AgentChatResponse`
+- `generate_tool_calls(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseGen`
+- `agenerate_tool_calls(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseAsyncGen` (async)
+- `invoke_callable(tools, user_msg=None, chat_history=None, **kwargs) → AgentChatResponse`
 - `get_tool_calls_from_response(response, error_on_no_tool_call=True) → list[ToolCallArguments]`
 
 ### CallableTool
@@ -203,7 +203,7 @@ User input
 ### Tool-Calling Flow
 ```
 User message
-  → FunctionCallingLLM.predict_and_call(tools=[...])
+  → FunctionCallingLLM.invoke_callable(tools=[...])
   → LLM predicts tool calls
   → Tools executed (BaseTool/CallableTool)
   → ToolOutput aggregated
@@ -249,7 +249,7 @@ graph TB
 
     subgraph "LLM Abstraction Layer"
         L1[LLM<br/>predict, parse]
-        L2[FunctionCallingLLM<br/>chat_with_tools, predict_and_call]
+        L2[FunctionCallingLLM<br/>generate_tool_calls, invoke_callable]
         L3[StructuredOutputLLM<br/>Force structured outputs]
     end
 
@@ -334,9 +334,9 @@ classDiagram
     }
 
     class FunctionCallingLLM {
-        +chat_with_tools(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseGen
-        +achat_with_tools(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseAsyncGen
-        +predict_and_call(tools, user_msg, chat_history) AgentChatResponse
+        +generate_tool_calls(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseGen
+        +agenerate_tool_calls(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseAsyncGen
+        +invoke_callable(tools, user_msg, chat_history) AgentChatResponse
         +get_tool_calls_from_response(response) List~ToolCallArguments~
     }
 
@@ -466,7 +466,7 @@ sequenceDiagram
     User->>Orch: orchestrator(query="What's 5+3?")
     Orch->>Prompt: format(query="What's 5+3?")
     Prompt-->>Orch: formatted messages
-    Orch->>LLM: chat_with_tools(messages, tools)
+    Orch->>LLM: generate_tool_calls(messages, tools)
     LLM-->>Orch: ChatResponse (tool call)
     Orch->>Orch: get_tool_calls_from_response()
     Orch->>Tool: call(operation="add", a=5, b=3)

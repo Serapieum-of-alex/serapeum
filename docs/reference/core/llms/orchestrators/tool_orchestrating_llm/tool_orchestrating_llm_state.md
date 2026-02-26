@@ -156,7 +156,7 @@ stateDiagram-v2
   1. `CreatingTool`: CallableTool.from_model(output_cls)
   2. `FormattingPrompt`: format_messages(**kwargs)
   3. `ExtendingMessages`: _extend_messages(messages)
-  4. `CallingLLM`: predict_and_call(tools, messages, ...)
+  4. `CallingLLM`: invoke_callable(tools, messages, ...)
   5. `ParsingToolCalls`: Extract tool_calls from response
   6. `ExecutingTools`: Validate args and create Pydantic instances
   7. `CreatingResponse`: Build AgentChatResponse
@@ -175,7 +175,7 @@ stateDiagram-v2
 - **Substates**:
   1. `CreatingToolStream`: Create CallableTool
   2. `FormattingPromptStream`: Format messages
-  3. `InitiatingStream`: Start chat_with_tools(stream=True)
+  3. `InitiatingStream`: Start generate_tool_calls(stream=True)
   4. `StreamingChunks`: Process chunks loop
      - `ReceivingChunk`: Get next chunk from generator
      - `ProcessingChunk`: Initialize StreamingObjectProcessor

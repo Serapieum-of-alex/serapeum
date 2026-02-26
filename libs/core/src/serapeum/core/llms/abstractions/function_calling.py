@@ -31,7 +31,7 @@ class FunctionCallingLLM(LLM):
         super().__init__(*args, **kwargs)
 
     @overload
-    def chat_with_tools(
+    def generate_tool_calls(
         self,
         tools: Sequence[BaseTool],
         user_msg: str | Message | None = ...,
@@ -44,7 +44,7 @@ class FunctionCallingLLM(LLM):
     ) -> ChatResponse: ...
 
     @overload
-    def chat_with_tools(
+    def generate_tool_calls(
         self,
         tools: Sequence[BaseTool],
         user_msg: str | Message | None = ...,
@@ -56,7 +56,7 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> ChatResponseGen: ...
 
-    def chat_with_tools(
+    def generate_tool_calls(
         self,
         tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
@@ -89,7 +89,7 @@ class FunctionCallingLLM(LLM):
         return result
 
     @overload
-    async def achat_with_tools(
+    async def agenerate_tool_calls(
         self,
         tools: Sequence[BaseTool],
         user_msg: str | Message | None = ...,
@@ -102,7 +102,7 @@ class FunctionCallingLLM(LLM):
     ) -> ChatResponse: ...
 
     @overload
-    async def achat_with_tools(
+    async def agenerate_tool_calls(
         self,
         tools: Sequence[BaseTool],
         user_msg: str | Message | None = ...,
@@ -114,7 +114,7 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> ChatResponseAsyncGen: ...
 
-    async def achat_with_tools(
+    async def agenerate_tool_calls(
         self,
         tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
@@ -165,7 +165,7 @@ class FunctionCallingLLM(LLM):
         allow_parallel_tool_calls: bool = False,
         **kwargs: Any,
     ) -> ChatResponse:
-        """Validate the response from chat_with_tools."""
+        """Validate the response from generate_tool_calls."""
         return response
 
     def get_tool_calls_from_response(
@@ -179,7 +179,7 @@ class FunctionCallingLLM(LLM):
             "get_tool_calls_from_response is not supported by default."
         )
 
-    def predict_and_call(
+    def invoke_callable(
         self,
         tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
@@ -191,7 +191,7 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> AgentChatResponse:
         """Predict and call the tool."""
-        response = self.chat_with_tools(
+        response = self.generate_tool_calls(
             tools,
             user_msg=user_msg,
             chat_history=chat_history,
@@ -212,7 +212,7 @@ class FunctionCallingLLM(LLM):
             tool_outputs, response, error_on_tool_error, allow_parallel_tool_calls
         )
 
-    async def apredict_and_call(
+    async def ainvoke_callable(
         self,
         tools: Sequence[BaseTool],
         user_msg: str | Message | None = None,
@@ -224,7 +224,7 @@ class FunctionCallingLLM(LLM):
         **kwargs: Any,
     ) -> AgentChatResponse:
         """Predict and call the tool."""
-        response = await self.achat_with_tools(
+        response = await self.agenerate_tool_calls(
             tools,
             user_msg=user_msg,
             chat_history=chat_history,

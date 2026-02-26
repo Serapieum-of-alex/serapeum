@@ -91,28 +91,28 @@ def person_tool_selection(person_tool: CallableTool) -> ToolCallArguments:
 def test_predict_and_call(
     person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
-    """Test predict_and_call will return ToolOutput with error rather than raising one."""
+    """Test invoke_callable will return ToolOutput with error rather than raising one."""
     llm = MockFunctionCallingLLM([person_tool_selection])
-    response = llm.predict_and_call(tools=[person_tool])
+    response = llm.invoke_callable(tools=[person_tool])
     assert all(tool_output.is_error for tool_output in response.sources)
 
 
 def test_predict_and_call_throws_if_error_on_tool(
     person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
-    """Test predict_and_call will raise an error."""
+    """Test invoke_callable will raise an error."""
     llm = MockFunctionCallingLLM([person_tool_selection])
     with pytest.raises(ValueError):
-        llm.predict_and_call(tools=[person_tool], error_on_tool_error=True)
+        llm.invoke_callable(tools=[person_tool], error_on_tool_error=True)
 
 
 @pytest.mark.asyncio()
 async def test_apredict_and_call(
     person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
-    """Test apredict_and_call will return ToolOutput with error rather than raising one."""
+    """Test ainvoke_callable will return ToolOutput with error rather than raising one."""
     llm = MockFunctionCallingLLM([person_tool_selection])
-    response = await llm.apredict_and_call(tools=[person_tool])
+    response = await llm.ainvoke_callable(tools=[person_tool])
     assert all(tool_output.is_error for tool_output in response.sources)
 
 
@@ -120,7 +120,7 @@ async def test_apredict_and_call(
 async def test_apredict_and_call_throws_if_error_on_tool(
     person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
-    """Test apredict_and_call will raise an error."""
+    """Test ainvoke_callable will raise an error."""
     llm = MockFunctionCallingLLM([person_tool_selection])
     with pytest.raises(ValueError):
-        await llm.apredict_and_call(tools=[person_tool], error_on_tool_error=True)
+        await llm.ainvoke_callable(tools=[person_tool], error_on_tool_error=True)

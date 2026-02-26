@@ -71,7 +71,14 @@ class BaseLLM(SerializableModel, ABC):
         pass
 
     @abstractmethod
-    async def achat(self, messages: Sequence[Message], stream: bool, **kwargs: Any) -> (ChatResponse | ChatResponseAsyncGen):
+    async def achat(
+            self,
+            messages: Sequence[Message],
+            *,
+            stream: bool = False,
+            **kwargs: Any
+    ) -> (ChatResponse |
+                                                                                         ChatResponseAsyncGen):
         pass
 
     @abstractmethod

@@ -299,7 +299,7 @@ class TestStreamParseDefault:
         Expected: chat(..., stream=True) called with format=Simple.model_json_schema().
         Checks: format key present with correct schema value.
         """
-        mock_sc = mocker.patch.object(llm, "_stream_chat", return_value=iter([mocker.MagicMock()]))
+        mock_sc = mocker.patch.object(llm, "chat", return_value=iter([mocker.MagicMock()]))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.return_value = Simple(value="partial")
         list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))

@@ -1377,6 +1377,10 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
     ) -> BaseModel:
         llm_kwargs = llm_kwargs or {}
         llm_kwargs["format"] = schema.model_json_schema()
+
+        # Explicitly remove 'stream' to prevent override of non-streaming behavior
+        llm_kwargs.pop("stream", None)
+
         messages = prompt.format_messages(**prompt_args)
         response = self.chat(messages, **llm_kwargs)
         return schema.model_validate_json(response.message.content or "")
@@ -1533,6 +1537,10 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
     ) -> BaseModel:
         llm_kwargs = llm_kwargs or {}
         llm_kwargs["format"] = schema.model_json_schema()
+
+        # Explicitly remove 'stream' to prevent override of non-streaming behavior
+        llm_kwargs.pop("stream", None)
+
         messages = prompt.format_messages(**prompt_args)
         response = await self.achat(messages, **llm_kwargs)
         return schema.model_validate_json(response.message.content or "")

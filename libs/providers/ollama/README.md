@@ -75,7 +75,7 @@ ollama list
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 # Initialize the model
 llm = Ollama(model="llama3.1", request_timeout=120)
@@ -94,7 +94,7 @@ The `Ollama` class provides a complete chat interface:
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole, MessageList
+from serapeum.core.llms import Message, MessageRole, MessageList
 
 llm = Ollama(
     model="llama3.1",
@@ -130,7 +130,7 @@ Stream responses token-by-token for real-time feedback:
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 llm = Ollama(model="llama3.1")
 
@@ -138,7 +138,7 @@ messages = [Message(role=MessageRole.USER, content="Write a haiku about coding."
 
 # Synchronous streaming
 print("Streaming response: ", end="")
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     print(chunk.delta, end="", flush=True)
 print()  # newline
 
@@ -153,7 +153,7 @@ Full async support for concurrent operations:
 ```python
 import asyncio
 from serapeum.ollama import Ollama
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 async def main():
     llm = Ollama(model="llama3.1")
@@ -166,7 +166,7 @@ async def main():
 
     # Async streaming
     messages = [Message(role=MessageRole.USER, content="Count to 5.")]
-    stream = await llm.astream_chat(messages)
+    stream = await llm.achat(messages, stream=True)
 
     async for chunk in stream:
         print(chunk.delta, end="", flush=True)
@@ -184,48 +184,52 @@ from pydantic import BaseModel, Field
 from serapeum.ollama import Ollama
 from serapeum.core.prompts import PromptTemplate
 
+
 class Person(BaseModel):
-    name: str = Field(description="Person's full name")
-    age: int = Field(description="Person's age in years")
-    occupation: str = Field(description="Person's job title")
+  name: str = Field(description="Person's full name")
+  age: int = Field(description="Person's age in years")
+  occupation: str = Field(description="Person's job title")
 
 llm = Ollama(model="llama3.1", json_mode=True)
 
 prompt = PromptTemplate(
-    "Extract person information from: {text}\n"
-    "Return a JSON object with name, age, and occupation."
+  "Extract person information from: {text}\n"
+  "Return a JSON object with name, age, and occupation."
 )
 
 # Synchronous structured prediction
-person = llm.structured_predict(
-    output_cls=Person,
-    prompt=prompt,
-    text="John Doe is a 32-year-old software engineer at Tech Corp."
+person = llm.parse(
+  schema=Person,
+  prompt=prompt,
+  text="John Doe is a 32-year-old software engineer at Tech Corp."
 )
 
 print(f"{person.name}, {person.age}, works as {person.occupation}")
 # Output: John Doe, 32, works as software engineer
 
 # Streaming structured outputs
-for partial in llm.stream_structured_predict(
-    output_cls=Person,
-    prompt=prompt,
-    text="Jane Smith, age 28, data scientist"
+for partial in llm.parse(
+        schema=Person,
+        prompt=prompt,
+        text="Jane Smith, age 28, data scientist",
+        stream=True
 ):
-    if isinstance(partial, list):
-        partial = partial[0]
-    print(f"Partial: {partial}")
+  if isinstance(partial, list):
+    partial = partial[0]
+  print(f"Partial: {partial}")
 
 # Async structured prediction
 async def get_structured():
-    person = await llm.astructured_predict(
-        output_cls=Person,
-        prompt=prompt,
-        text="Alice Johnson is 45 and works as a CEO."
-    )
-    return person
+  person = await llm.aparse(
+    schema=Person,
+    prompt=prompt,
+    text="Alice Johnson is 45 and works as a CEO."
+  )
+  return person
 
 import asyncio
+
+
 result = asyncio.run(get_structured())
 print(result)
 ```
@@ -241,82 +245,68 @@ from serapeum.core.tools import CallableTool
 from serapeum.core.llms.orchestrators import ToolOrchestratingLLM
 from serapeum.core.prompts import PromptTemplate
 
-# Define tools using Pydantic models
-class WeatherInput(BaseModel):
-    location: str = Field(description="City name, e.g., 'San Francisco'")
-    unit: str = Field(description="Temperature unit: 'celsius' or 'fahrenheit'")
+
+# Define tools
 
 def get_weather(location: str, unit: str = "celsius") -> str:
-    """Get current weather for a location."""
-    # Simulated weather data
-    return f"The weather in {location} is 72°{unit[0].upper()} and sunny."
-
-class CalculatorInput(BaseModel):
-    operation: str = Field(description="Math operation: add, subtract, multiply, divide")
-    a: float = Field(description="First number")
-    b: float = Field(description="Second number")
+  """Get current weather for a location."""
+  # Simulated weather data
+  return f"The weather in {location} is 72°{unit[0].upper()} and sunny."
 
 def calculate(operation: str, a: float, b: float) -> float:
-    """Perform basic math operations."""
-    ops = {
-        "add": a + b,
-        "subtract": a - b,
-        "multiply": a * b,
-        "divide": a / b if b != 0 else float('inf')
-    }
-    return ops.get(operation, 0)
-
-# Create tools
-weather_tool = CallableTool.from_model(
-    WeatherInput,
-    get_weather,
-    name="get_weather",
-    description="Get current weather for a location"
-)
-
-calculator_tool = CallableTool.from_model(
-    CalculatorInput,
-    calculate,
-    name="calculate",
-    description="Perform basic arithmetic operations"
-)
+  """Perform basic math operations."""
+  ops = {
+    "add": a + b,
+    "subtract": a - b,
+    "multiply": a * b,
+    "divide": a / b if b != 0 else float('inf')
+  }
+  return ops.get(operation, 0)
 
 # Create orchestrator with tools
 llm = Ollama(model="llama3.1", request_timeout=120, json_mode=True)
 
 orchestrator = ToolOrchestratingLLM(
-    llm=llm,
-    prompt=PromptTemplate("Answer the user's question: {query}"),
-    tools=[weather_tool, calculator_tool],
+  llm=llm,
+  prompt=PromptTemplate("Answer the user's question: {query}"),
+  schema=calculate,
 )
 
 # Use tools via natural language
 result = orchestrator(query="What's 15 multiplied by 8?")
 print(result)  # Uses calculator_tool automatically
 
+orchestrator = ToolOrchestratingLLM(
+  llm=llm,
+  prompt=PromptTemplate("Answer the user's question: {query}"),
+  schema=get_weather,
+)
 result = orchestrator(query="What's the weather in Paris?")
 print(result)  # Uses weather_tool automatically
 
 # You can also use tools directly with the base LLM
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
+from serapeum.core.tools import CallableTool
 
+
+calculator_tool = CallableTool.from_function(calculate)
 messages = [Message(role=MessageRole.USER, content="What's 25 + 17?")]
-response = llm.chat_with_tools(
-    tools=[calculator_tool],
-    chat_history=messages,
+response = llm.generate_tool_calls(
+  tools=[calculator_tool],
+  chat_history=messages,
 )
 
 # Check if model wants to call a tool
 tool_calls = llm.get_tool_calls_from_response(response, error_on_no_tool_call=False)
 if tool_calls:
-    for call in tool_calls:
-        print(f"Tool: {call.tool_name}")
-        print(f"Arguments: {call.tool_kwargs}")
+  for call in tool_calls:
+    print(f"Tool: {call.tool_name}")
+    print(f"Arguments: {call.tool_kwargs}")
 
-        # Execute the tool
-        if call.tool_name == "calculate":
-            result = calculate(**call.tool_kwargs)
-            print(f"Result: {result}")
+    # Execute the tool
+    if call.tool_name == "calculate":
+      result = calculate(**call.tool_kwargs)
+      print(f"Result: {result}")
 ```
 
 ### Completion Style Usage
@@ -514,7 +504,7 @@ Combine embeddings with LLMs for RAG (Retrieval-Augmented Generation):
 
 ```python
 from serapeum.ollama import Ollama, OllamaEmbedding
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 # Initialize both LLM and embeddings
 llm = Ollama(model="llama3.1")

@@ -1,13 +1,12 @@
 """Tests for FunctionCallingLLM."""
 
-from typing import Any, AsyncGenerator, Coroutine, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import pytest
 from pydantic import BaseModel, Field
 
 from serapeum.core.base.llms.types import (
     ChatResponse,
-    ChatResponseGen,
     CompletionResponse,
     Message,
     Metadata,
@@ -25,26 +24,6 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         super().__init__()
         self._tool_selection = tool_selection
 
-    async def achat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> Coroutine[Any, Any, ChatResponse]:
-        return ChatResponse(message=Message(role="user", content=""))
-
-    def acomplete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> Coroutine[Any, Any, CompletionResponse]:
-        pass
-
-    def astream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> Coroutine[Any, Any, AsyncGenerator[ChatResponse, None]]:
-        pass
-
-    def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> Coroutine[Any, Any, AsyncGenerator[CompletionResponse, None]]:
-        pass
-
     def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         return ChatResponse(message=Message(role="user", content=""))
 
@@ -53,14 +32,14 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     ) -> CompletionResponse:
         pass
 
-    def stream_chat(
+    async def achat(
         self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseGen:
-        pass
+    ) -> ChatResponse:
+        return ChatResponse(message=Message(role="user", content=""))
 
-    def stream_complete(
+    async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> ChatResponseGen:
+    ) -> CompletionResponse:
         pass
 
     @property
@@ -112,28 +91,28 @@ def person_tool_selection(person_tool: CallableTool) -> ToolCallArguments:
 def test_predict_and_call(
     person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
-    """Test predict_and_call will return ToolOutput with error rather than raising one."""
+    """Test invoke_callable will return ToolOutput with error rather than raising one."""
     llm = MockFunctionCallingLLM([person_tool_selection])
-    response = llm.predict_and_call(tools=[person_tool])
+    response = llm.invoke_callable(tools=[person_tool])
     assert all(tool_output.is_error for tool_output in response.sources)
 
 
 def test_predict_and_call_throws_if_error_on_tool(
     person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
-    """Test predict_and_call will raise an error."""
+    """Test invoke_callable will raise an error."""
     llm = MockFunctionCallingLLM([person_tool_selection])
     with pytest.raises(ValueError):
-        llm.predict_and_call(tools=[person_tool], error_on_tool_error=True)
+        llm.invoke_callable(tools=[person_tool], error_on_tool_error=True)
 
 
 @pytest.mark.asyncio()
 async def test_apredict_and_call(
     person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
-    """Test apredict_and_call will return ToolOutput with error rather than raising one."""
+    """Test ainvoke_callable will return ToolOutput with error rather than raising one."""
     llm = MockFunctionCallingLLM([person_tool_selection])
-    response = await llm.apredict_and_call(tools=[person_tool])
+    response = await llm.ainvoke_callable(tools=[person_tool])
     assert all(tool_output.is_error for tool_output in response.sources)
 
 
@@ -141,7 +120,7 @@ async def test_apredict_and_call(
 async def test_apredict_and_call_throws_if_error_on_tool(
     person_tool: CallableTool, person_tool_selection: ToolCallArguments
 ) -> None:
-    """Test apredict_and_call will raise an error."""
+    """Test ainvoke_callable will raise an error."""
     llm = MockFunctionCallingLLM([person_tool_selection])
     with pytest.raises(ValueError):
-        await llm.apredict_and_call(tools=[person_tool], error_on_tool_error=True)
+        await llm.ainvoke_callable(tools=[person_tool], error_on_tool_error=True)

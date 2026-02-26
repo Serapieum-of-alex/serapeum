@@ -212,7 +212,7 @@ messages = [Message(role=MessageRole.USER, content="Write a haiku about coding."
 
 # Synchronous streaming
 print("Streaming response: ", end="")
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     print(chunk.delta, end="", flush=True)
 print()
 
@@ -232,7 +232,7 @@ async def stream_example():
     llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"))
     messages = [Message(role=MessageRole.USER, content="Count to 5.")]
 
-    stream = await llm.astream_chat(messages)
+    stream = await llm.achat(messages, stream=True)
     async for chunk in stream:
         print(chunk.delta, end="", flush=True)
     print()
@@ -252,6 +252,7 @@ from pydantic import BaseModel, Field
 from serapeum.ollama import Ollama
 from serapeum.core.prompts import PromptTemplate
 
+
 class Person(BaseModel):
     name: str = Field(description="Person's full name")
     age: int = Field(description="Person's age in years")
@@ -265,8 +266,8 @@ prompt = PromptTemplate(
 )
 
 # Synchronous structured prediction
-person = llm.structured_predict(
-    output_cls=Person,
+person = llm.parse(
+    schema=Person,
     prompt=prompt,
     text="John Doe is a 32-year-old software engineer at Tech Corp."
 )
@@ -275,10 +276,10 @@ print(f"{person.name}, {person.age}, works as {person.occupation}")
 # Output: John Doe, 32, works as software engineer
 
 # Streaming structured outputs
-for partial in llm.stream_structured_predict(
-    output_cls=Person,
-    prompt=prompt,
-    text="Jane Smith, age 28, data scientist"
+for partial in llm.stream_parse(
+        schema=Person,
+        prompt=prompt,
+        text="Jane Smith, age 28, data scientist"
 ):
     if isinstance(partial, list):
         partial = partial[0]
@@ -286,14 +287,16 @@ for partial in llm.stream_structured_predict(
 
 # Async structured prediction
 async def get_structured():
-    person = await llm.astructured_predict(
-        output_cls=Person,
+    person = await llm.aparse(
+        schema=Person,
         prompt=prompt,
         text="Alice Johnson is 45 and works as a CEO."
     )
     return person
 
 import asyncio
+
+
 result = asyncio.run(get_structured())
 print(result)
 ```
@@ -308,6 +311,7 @@ Create tools from functions or Pydantic models and let the LLM use them:
 import os
 from serapeum.ollama import Ollama
 from serapeum.core.tools import CallableTool
+
 
 def search_flights(origin: str, destination: str) -> dict:
     """Return estimated round-trip flight cost between two cities."""
@@ -348,7 +352,7 @@ llm = Ollama(
     request_timeout=120,
 )
 
-response = llm.predict_and_call(
+response = llm.invoke_callable(
     tools=tools,
     user_msg="I'm planning a 7-night trip from London to Tokyo. What are the flight and hotel costs?",
     allow_parallel_tool_calls=True,
@@ -366,6 +370,7 @@ from pydantic import BaseModel, Field
 from serapeum.core.llms import Message, MessageRole
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
+
 
 class CalculatorInput(BaseModel):
     """CalculatorInput data(operation, a, b)"""
@@ -394,7 +399,7 @@ llm = Ollama(
     request_timeout=120,
 )
 
-response = llm.chat_with_tools(
+response = llm.generate_tool_calls(
     tools=[calculator_tool],
     chat_history=messages,
 )
@@ -702,7 +707,7 @@ async def main():
 
     # Async streaming
     messages = [Message(role=MessageRole.USER, content="Count to 5.")]
-    stream = await llm.astream_chat(messages)
+    stream = await llm.achat(messages, stream=True)
 
     async for chunk in stream:
         print(chunk.delta, end="", flush=True)

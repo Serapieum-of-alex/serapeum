@@ -282,7 +282,7 @@ messages = [
         content="What's in this image?",
     ),
     Message(
-        chunks=[image],  # Alternative to images
+        chunks=[image],
     )
 ]
 
@@ -377,7 +377,7 @@ llm = Ollama(
 messages = [Message(role=MessageRole.USER, content="Count from 1 to 5.")]
 
 # Stream responses
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     print(chunk.message.content, end="", flush=True)
     # Outputs: "1" " 2" " 3" " 4" " 5"
 ```
@@ -399,7 +399,7 @@ llm = Ollama(
 prompt = "Write a haiku about coding:"
 
 # Stream completion
-for chunk in llm.stream_complete(prompt):
+for chunk in llm.complete(prompt, stream=True):
     print(chunk.text, end="", flush=True)
 ```
 
@@ -421,7 +421,7 @@ llm = Ollama(
 messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
 
 full_response = ""
-for chunk in llm.stream_chat(messages):
+for chunk in llm.chat(messages, stream=True):
     delta = chunk.delta  # Incremental content
     if delta:
         full_response += delta
@@ -466,13 +466,13 @@ llm = Ollama(
 # Create tool from function
 tool = CallableTool.from_function(create_album)
 
-message =  Message(
+message = Message(
     role=MessageRole.USER,
     content="Create a rock album with two songs"
 )
 
 # Call with tools
-response = llm.chat_with_tools(tools=[tool], user_msg=message)
+response = llm.generate_tool_calls(tools=[tool], user_msg=message)
 
 # Extract tool calls
 tool_calls = llm.get_tool_calls_from_response(response)
@@ -512,7 +512,7 @@ message = Message(
     content="Create a jazz album with title 'Blue Notes' by Miles Davis with 3 songs"
 )
 
-response = llm.chat_with_tools(tools=[tool], user_msg=message)
+response = llm.generate_tool_calls(tools=[tool], user_msg=message)
 
 # Extract and execute tool call
 tool_calls = llm.get_tool_calls_from_response(response)
@@ -554,7 +554,7 @@ message = Message(
 )
 
 # Force single tool call
-response = llm.chat_with_tools(
+response = llm.generate_tool_calls(
     tools=[tool],
     user_msg=message,
     allow_parallel_tool_calls=False,  # Only one tool call allowed
@@ -596,7 +596,7 @@ message = Message(
 )
 
 # Allow parallel tool calls
-response = llm.chat_with_tools(
+response = llm.generate_tool_calls(
     tools=[tool],
     user_msg=message,
     allow_parallel_tool_calls=True,
@@ -642,7 +642,7 @@ message = Message(
 )
 
 # Stream with tools
-for chunk in llm.stream_chat_with_tools(tools=[tool], user_msg=message):
+for chunk in llm.generate_tool_calls(tools=[tool], user_msg=message, stream=True):
     # Process streaming tool calls
     if chunk.message.additional_kwargs.get("tool_calls"):
         print(f"Tool call chunk: {chunk.message.additional_kwargs['tool_calls']}")
@@ -716,7 +716,7 @@ llm = Ollama(
 
 # Create ToolOrchestratingLLM
 tools_llm = ToolOrchestratingLLM(
-    output_tool=Album,
+    schema=Album,
     prompt="Create an album about {topic} with two random songs",
     llm=llm,
 )
@@ -753,7 +753,7 @@ llm = Ollama(
 
 # Enable parallel tool calls
 tools_llm = ToolOrchestratingLLM(
-    output_tool=Album,
+    schema=Album,
     prompt="Create albums about {topic}",
     llm=llm,
     allow_parallel_tool_calls=True,
@@ -790,14 +790,14 @@ llm = Ollama(
 )
 
 tools_llm = ToolOrchestratingLLM(
-    output_tool=Album,
+    schema=Album,
     prompt="Create albums about {topic}",
     llm=llm,
     allow_parallel_tool_calls=False,
 )
 
 # Stream results
-for album in tools_llm.stream_call(topic="rock"):
+for album in tools_llm(topic="rock", stream=True):
     print(f"Received: {album.title}")
 ```
 
@@ -876,7 +876,7 @@ async def async_stream_example():
 
     messages = [Message(role=MessageRole.USER, content="Count to 5")]
 
-    async for chunk in await llm.astream_chat(messages):
+    async for chunk in await llm.achat(messages, stream=True):
         print(chunk.message.content, end="", flush=True)
 
 
@@ -945,7 +945,7 @@ async def async_tool_example():
     )
 
     tools_llm = ToolOrchestratingLLM(
-        output_tool=Album,
+        schema=Album,
         prompt="Create an album about {topic}",
         llm=llm,
     )
@@ -983,13 +983,13 @@ async def async_stream_tool_example():
     )
 
     tools_llm = ToolOrchestratingLLM(
-        output_tool=Album,
+        schema=Album,
         prompt="Create albums about {topic}",
         llm=llm,
         allow_parallel_tool_calls=False,
     )
 
-    stream = await tools_llm.astream_call(topic="rock")
+    stream = await tools_llm.acall(topic="rock", stream=True)
     async for album in stream:
         print(f"Received: {album.title}")
 

@@ -605,7 +605,7 @@ def test_streaming():
     llm = ProviderLLM(model="test-model")
     messages = [Message(role=MessageRole.USER, content="Count to 3")]
 
-    chunks = list(llm.stream_chat(messages))
+    chunks = list(llm.chat(messages, stream=True))
     assert len(chunks) > 0
     assert chunks[-1].message.content
 

@@ -82,14 +82,10 @@ classDiagram
     class BaseLLM {
         <<abstract>>
         +metadata: Metadata
-        +chat(messages, **kwargs) ChatResponse
-        +stream_chat(messages, **kwargs) ChatResponseGen
-        +achat(messages, **kwargs) ChatResponse
-        +astream_chat(messages, **kwargs) ChatResponseAsyncGen
-        +complete(prompt, **kwargs) CompletionResponse
-        +stream_complete(prompt, **kwargs) CompletionResponseGen
-        +acomplete(prompt, **kwargs) CompletionResponse
-        +astream_complete(prompt, **kwargs) CompletionResponseAsyncGen
+        +chat(messages, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
+        +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
     }
 
     class LLM {
@@ -97,7 +93,7 @@ classDiagram
         +messages_to_prompt: MessagesToPromptCallable
         +completion_to_prompt: CompletionToPromptCallable
         +output_parser: Optional[BaseParser]
-        +pydantic_program_mode: StructuredLLMMode
+        +structured_output_mode: StructuredOutputMode
         +_get_prompt(prompt, **kwargs) str
         +_get_messages(prompt, **kwargs) List[Message]
         +_parse_output(output) str
@@ -107,7 +103,7 @@ classDiagram
         +stream(prompt, **kwargs) TokenGen
         +apredict(prompt, **kwargs) str
         +astream(prompt, **kwargs) TokenAsyncGen
-        +structured_predict(output_cls, prompt, **kwargs) Model
+        +parse(output_cls, prompt, **kwargs) Model
     }
 
     class Ollama {

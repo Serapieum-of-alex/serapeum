@@ -22,7 +22,7 @@ from serapeum.core.llms.base import (
 )
 from serapeum.core.output_parsers import BaseParser
 from serapeum.core.prompts import ChatPromptTemplate, PromptTemplate
-from serapeum.core.types import StructuredLLMMode
+from serapeum.core.types import StructuredOutputMode
 
 
 class _FormatParser(BaseParser):
@@ -63,48 +63,38 @@ class _RecordingLLM(LLM):
     def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         raise NotImplementedError()
 
-    def stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator:
-        raise NotImplementedError()
-
     def complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
+        self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs: Any
+    ) -> CompletionResponse | Generator[CompletionResponse, None, None]:
+        if stream:
+            self.last_stream_complete = (prompt, formatted, kwargs)
+
+            def gen() -> Generator[CompletionResponse, None, None]:
+                yield CompletionResponse(text=prompt, delta="a")
+                yield CompletionResponse(text=prompt, delta="b")
+
+            return gen()
+
         self.last_complete = (prompt, formatted, kwargs)
         return CompletionResponse(text=prompt, delta=prompt)
-
-    def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> Generator[CompletionResponse, None, None]:
-        self.last_stream_complete = (prompt, formatted, kwargs)
-
-        def gen() -> Generator[CompletionResponse, None, None]:
-            yield CompletionResponse(text=prompt, delta="a")
-            yield CompletionResponse(text=prompt, delta="b")
-
-        return gen()
 
     async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         raise NotImplementedError()
 
-    async def astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Any:
-        raise NotImplementedError()
-
     async def acomplete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
+        self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs: Any
+    ) -> CompletionResponse | AsyncGenerator[CompletionResponse, None]:
+        if stream:
+            self.last_astream_complete = (prompt, formatted, kwargs)
+
+            async def gen() -> AsyncGenerator[CompletionResponse, None]:
+                yield CompletionResponse(text=prompt, delta="x")
+                yield CompletionResponse(text=prompt, delta="y")
+
+            return gen()
+
         self.last_acomplete = (prompt, formatted, kwargs)
         return CompletionResponse(text=prompt[::-1], delta=prompt[::-1])
-
-    async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> AsyncGenerator[CompletionResponse, None]:
-        self.last_astream_complete = (prompt, formatted, kwargs)
-
-        async def gen() -> AsyncGenerator[CompletionResponse, None]:
-            yield CompletionResponse(text=prompt, delta="x")
-            yield CompletionResponse(text=prompt, delta="y")
-
-        return gen()
 
 
 class _ChatLLM(LLM):
@@ -121,68 +111,62 @@ class _ChatLLM(LLM):
     def _log_template_data(self, prompt: Any, **kwargs: Any) -> None:
         self.logged = (prompt, kwargs)
 
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+    def chat(
+        self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
+    ) -> ChatResponse | Generator[ChatResponse, None, None]:
+        if stream:
+            self.last_stream_chat = (messages, kwargs)
+
+            def gen() -> Generator[ChatResponse, None, None]:
+                yield ChatResponse(
+                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    delta="o",
+                )
+                yield ChatResponse(
+                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    delta="k",
+                )
+
+            return gen()
+
         self.last_chat = (messages, kwargs)
         return ChatResponse(
             message=Message(role=MessageRole.ASSISTANT, content="pong"),
             delta=None,
         )
 
-    def stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator:
-        self.last_stream_chat = (messages, kwargs)
-
-        def gen() -> Generator[ChatResponse, None, None]:
-            yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="ok"),
-                delta="o",
-            )
-            yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="ok"),
-                delta="k",
-            )
-
-        return gen()
-
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
         raise NotImplementedError()
 
-    def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> Generator:
-        raise NotImplementedError()
+    async def achat(
+        self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
+    ) -> ChatResponse | AsyncGenerator[ChatResponse, None]:
+        if stream:
+            self.last_astream_chat = (messages, kwargs)
 
-    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+            async def gen() -> AsyncGenerator[ChatResponse, None]:
+                yield ChatResponse(
+                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    delta="o",
+                )
+                yield ChatResponse(
+                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    delta="k",
+                )
+
+            return gen()
+
         self.last_achat = (messages, kwargs)
         return ChatResponse(
             message=Message(role=MessageRole.ASSISTANT, content="pong"),
             delta=None,
         )
 
-    async def astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Any:
-        self.last_astream_chat = (messages, kwargs)
-
-        async def gen() -> AsyncGenerator[ChatResponse, None]:
-            yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="ok"),
-                delta="o",
-            )
-            yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="ok"),
-                delta="k",
-            )
-
-        return gen()
-
     async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
-        raise NotImplementedError()
-
-    async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> Any:
         raise NotImplementedError()
 
 
@@ -593,7 +577,7 @@ class TestGetProgram:
         prompt = PromptTemplate("{name}")
 
         # act
-        program = llm._get_program(_OutputModel, prompt)
+        program = llm._get_structured_output_tool(_OutputModel, prompt)
 
         # assert
         assert isinstance(program, ToolOrchestratingLLM)
@@ -609,7 +593,7 @@ class TestGetProgram:
         prompt = PromptTemplate("{name}")
 
         # act
-        program = llm._get_program(_OutputModel, prompt)
+        program = llm._get_structured_output_tool(_OutputModel, prompt)
 
         # assert
         assert isinstance(program, TextCompletionLLM)
@@ -621,11 +605,11 @@ class TestGetProgram:
         Checks: returned instance type.
         """
         # arrange
-        llm = _FunctionCallingLLM(pydantic_program_mode=StructuredLLMMode.FUNCTION)
+        llm = _FunctionCallingLLM(structured_output_mode=StructuredOutputMode.FUNCTION)
         prompt = PromptTemplate("{name}")
 
         # act
-        program = llm._get_program(_OutputModel, prompt)
+        program = llm._get_structured_output_tool(_OutputModel, prompt)
 
         # assert
         assert isinstance(program, ToolOrchestratingLLM)
@@ -637,11 +621,11 @@ class TestGetProgram:
         Checks: returned instance type.
         """
         # arrange
-        llm = _RecordingLLM(pydantic_program_mode=StructuredLLMMode.LLM)
+        llm = _RecordingLLM(structured_output_mode=StructuredOutputMode.LLM)
         prompt = PromptTemplate("{name}")
 
         # act
-        program = llm._get_program(_OutputModel, prompt)
+        program = llm._get_structured_output_tool(_OutputModel, prompt)
 
         # assert
         assert isinstance(program, TextCompletionLLM)
@@ -653,12 +637,12 @@ class TestGetProgram:
         Checks: exception message includes mode string.
         """
         # arrange
-        llm = _RecordingLLM(pydantic_program_mode=StructuredLLMMode.GUIDANCE)
+        llm = _RecordingLLM(structured_output_mode=StructuredOutputMode.GUIDANCE)
         prompt = PromptTemplate("{name}")
 
         # act
         with pytest.raises(ValueError, match="Unsupported pydantic program mode"):
-            llm._get_program(_OutputModel, prompt)
+            llm._get_structured_output_tool(_OutputModel, prompt)
 
 
 class TestStructuredPredict:
@@ -666,7 +650,7 @@ class TestStructuredPredict:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """
-        Inputs: fake program callable and llm_kwargs passed to structured_predict.
+        Inputs: fake program callable and llm_kwargs passed to parse.
         Expected result: program is invoked with llm_kwargs and prompt args.
         Checks: returned model uses forwarded llm_kwargs.
         """
@@ -677,10 +661,10 @@ class TestStructuredPredict:
         def fake_program(llm_kwargs: dict | None = None, **kwargs: Any) -> _OutputModel:
             return _OutputModel(name=f"{kwargs['name']}:{llm_kwargs['temp']}")
 
-        monkeypatch.setattr(llm, "_get_program", lambda *args, **kwargs: fake_program)
+        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: fake_program)
 
         # act
-        result = llm.structured_predict(
+        result = llm.parse(
             _OutputModel, prompt, llm_kwargs={"temp": 0.3}, name="ada"
         )
 
@@ -706,10 +690,10 @@ class TestAStructuredPredict:
             ) -> _OutputModel:
                 return _OutputModel(name=f"{kwargs['name']}:{llm_kwargs['seed']}")
 
-        monkeypatch.setattr(llm, "_get_program", lambda *args, **kwargs: FakeProgram())
+        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
 
         # act
-        result = await llm.astructured_predict(
+        result = await llm.aparse(
             _OutputModel, prompt, llm_kwargs={"seed": 7}, name="ada"
         )
 
@@ -729,16 +713,19 @@ class TestStreamStructuredPredict:
         prompt = PromptTemplate("{name}")
 
         class FakeProgram:
-            def stream_call(self, llm_kwargs: dict | None = None, **kwargs: Any):
-                yield _OutputModel(name=kwargs["name"])
-                yield _OutputModel(name=kwargs["name"].upper())
+            def __call__(self, *args: Any, stream: bool = False, llm_kwargs: dict | None = None, **kwargs: Any):
+                def _gen():
+                    yield _OutputModel(name=kwargs["name"])
+                    yield _OutputModel(name=kwargs["name"].upper())
 
-        monkeypatch.setattr(llm, "_get_program", lambda *args, **kwargs: FakeProgram())
+                return _gen()
+
+        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
 
         # act
         results = [
             item.name
-            for item in llm.stream_structured_predict(_OutputModel, prompt, name="flow")
+            for item in llm.stream_parse(_OutputModel, prompt, name="flow")
         ]
 
         # assert
@@ -760,14 +747,14 @@ class TestStructuredAstreamCall:
         prompt = PromptTemplate("{name}")
 
         class FakeProgram:
-            async def astream_call(self, llm_kwargs: dict | None = None, **kwargs: Any):
+            async def acall(self, *args: Any, stream: bool = False, llm_kwargs: dict | None = None, **kwargs: Any):
                 async def gen() -> AsyncGenerator[_OutputModel, None]:
                     yield _OutputModel(name=kwargs["name"])
                     yield _OutputModel(name=kwargs["name"].upper())
 
                 return gen()
 
-        monkeypatch.setattr(llm, "_get_program", lambda *args, **kwargs: FakeProgram())
+        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
 
         # act
         stream = await llm._structured_astream_call(_OutputModel, prompt, name="ada")
@@ -784,7 +771,7 @@ class TestAstreamStructuredPredict:
     ) -> None:
         """
         Inputs: fake program with async stream results.
-        Expected result: astream_structured_predict yields values from program.
+        Expected result: astream_parse yields values from program.
         Checks: async iteration returns expected names.
         """
         # arrange
@@ -792,17 +779,17 @@ class TestAstreamStructuredPredict:
         prompt = PromptTemplate("{name}")
 
         class FakeProgram:
-            async def astream_call(self, llm_kwargs: dict | None = None, **kwargs: Any):
+            async def acall(self, *args: Any, stream: bool = False, llm_kwargs: dict | None = None, **kwargs: Any):
                 async def gen() -> AsyncGenerator[_OutputModel, None]:
                     yield _OutputModel(name=kwargs["name"])
                     yield _OutputModel(name=kwargs["name"].upper())
 
                 return gen()
 
-        monkeypatch.setattr(llm, "_get_program", lambda *args, **kwargs: FakeProgram())
+        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
 
         # act
-        stream = await llm.astream_structured_predict(_OutputModel, prompt, name="eta")
+        stream = await llm.astream_parse(_OutputModel, prompt, name="eta")
         collected = [item.name async for item in stream]
 
         # assert

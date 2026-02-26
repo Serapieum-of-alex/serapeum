@@ -15,10 +15,8 @@ classDiagram
         +__init__(output_cls, prompt, llm, tool_choice, allow_parallel, verbose)
         +output_cls: Type[Model]
         +prompt: BasePromptTemplate
-        +__call__(llm_kwargs, **kwargs) Union[Model, List[Model]]
-        +acall(llm_kwargs, **kwargs) Union[Model, List[Model]]
-        +stream_call(llm_kwargs, **kwargs) Generator[Model, None, None]
-        +astream_call(llm_kwargs, **kwargs) AsyncGenerator[Model, None]
+        +__call__(stream, llm_kwargs, **kwargs) Union[Model, List[Model]] | Generator[Model, None, None]
+        +acall(stream, llm_kwargs, **kwargs) Union[Model, List[Model]] | AsyncGenerator[Model, None]
         -_output_cls: Type[Model]
         -_llm: FunctionCallingLLM
         -_prompt: BasePromptTemplate
@@ -88,14 +86,10 @@ classDiagram
     class BaseLLM {
         <<abstract>>
         +metadata: Metadata
-        +chat(messages, **kwargs) ChatResponse
-        +stream_chat(messages, **kwargs) ChatResponseGen
-        +achat(messages, **kwargs) ChatResponse
-        +astream_chat(messages, **kwargs) ChatResponseAsyncGen
-        +complete(prompt, **kwargs) CompletionResponse
-        +stream_complete(prompt, **kwargs) CompletionResponseGen
-        +acomplete(prompt, **kwargs) CompletionResponse
-        +astream_complete(prompt, **kwargs) CompletionResponseAsyncGen
+        +chat(messages, stream=false, **kwargs) ChatResponse | ChatResponseGen
+        +achat(messages, stream=false, **kwargs) ChatResponse | ChatResponseAsyncGen
+        +complete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseGen
+        +acomplete(prompt, stream=false, **kwargs) CompletionResponse | CompletionResponseAsyncGen
     }
 
     class LLM {
@@ -103,7 +97,7 @@ classDiagram
         +messages_to_prompt: MessagesToPromptCallable
         +completion_to_prompt: CompletionToPromptCallable
         +output_parser: Optional[BaseParser]
-        +pydantic_program_mode: StructuredLLMMode
+        +structured_output_mode: StructuredOutputMode
         +_get_prompt(prompt, **kwargs) str
         +_get_messages(prompt, **kwargs) List[Message]
         +_parse_output(output) str
@@ -113,17 +107,15 @@ classDiagram
         +stream(prompt, **kwargs) TokenGen
         +apredict(prompt, **kwargs) str
         +astream(prompt, **kwargs) TokenAsyncGen
-        +structured_predict(output_cls, prompt, **kwargs) Model
+        +parse(output_cls, prompt, **kwargs) Model
     }
 
     class FunctionCallingLLM {
         <<abstract>>
-        +predict_and_call(tools, chat_history, ...) AgentChatResponse
-        +apredict_and_call(tools, chat_history, ...) AgentChatResponse
-        +stream_chat_with_tools(tools, chat_history, ...) Generator
-        +astream_chat_with_tools(tools, chat_history, ...) AsyncGenerator
-        +chat_with_tools(tools, chat_history, ...) AgentChatResponse
-        +achat_with_tools(tools, chat_history, ...) AgentChatResponse
+        +invoke_callable(tools, chat_history, ...) AgentChatResponse
+        +ainvoke_callable(tools, chat_history, ...) AgentChatResponse
+        +generate_tool_calls(tools, chat_history, stream, ...) ChatResponse | Generator
+        +agenerate_tool_calls(tools, chat_history, stream, ...) ChatResponse | AsyncGenerator
         -_prepare_chat_with_tools(tools, chat_history, ...) Tuple
         -_validate_chat_with_tools_response(...) AgentChatResponse
     }
@@ -139,10 +131,10 @@ classDiagram
         +achat(messages, **kwargs) ChatResponse
         +complete(prompt, **kwargs) CompletionResponse
         +acomplete(prompt, **kwargs) CompletionResponse
-        +predict_and_call(tools, ...) AgentChatResponse
-        +apredict_and_call(tools, ...) AgentChatResponse
-        +stream_chat_with_tools(tools, ...) Generator
-        +astream_chat_with_tools(tools, ...) AsyncGenerator
+        +invoke_callable(tools, ...) AgentChatResponse
+        +ainvoke_callable(tools, ...) AgentChatResponse
+        +generate_tool_calls(tools, stream, ...) ChatResponse | Generator
+        +agenerate_tool_calls(tools, stream, ...) ChatResponse | AsyncGenerator
         -_chat_request(messages, stream, **kwargs) dict
         -_complete_request(prompt, stream, **kwargs) dict
         -_prepare_tools_schema(tools) List[Dict]
@@ -227,7 +219,7 @@ classDiagram
 - **Orchestrates** the complete function-calling workflow
 - **Validates** LLM supports function calling during initialization
 - **Converts** Pydantic models to callable tools
-- **Routes** execution through predict_and_call
+- **Routes** execution through invoke_callable
 - **Supports** single or parallel tool calls
 - **Handles** sync, async, and streaming modes
 
@@ -239,7 +231,7 @@ classDiagram
 
 ### FunctionCallingLLM (Abstract)
 - **Defines** interface for function-calling LLMs
-- **Provides** predict_and_call abstraction
+- **Provides** invoke_callable abstraction
 - **Handles** tool schema preparation
 - **Manages** tool execution orchestration
 

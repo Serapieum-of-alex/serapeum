@@ -279,15 +279,16 @@ The system handles:
 
 ### Structured Outputs
 
-Use `LLM.structured_predict()` to force structured outputs:
+Use `LLM.parse()` to force structured outputs:
 
 ```python
 from pydantic import BaseModel
 
+
 class Output(BaseModel):
     field: str
 
-result = llm.structured_predict("prompt", output_schema=Output)
+result = llm.parse("prompt", output_schema=Output)
 ```
 
 Supports:

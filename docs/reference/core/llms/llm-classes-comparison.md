@@ -44,12 +44,10 @@ Provides the foundation for LLM providers that support function/tool calling. Th
 #### Key Features
 - Extends the base `LLM` class with tool-calling capabilities
 - Provides convenience methods for tool workflows:
-  - `chat_with_tools()` - Chat with function calling (sync)
-  - `achat_with_tools()` - Chat with function calling (async)
-  - `stream_chat_with_tools()` - Streaming chat with tools (sync)
-  - `astream_chat_with_tools()` - Streaming chat with tools (async)
-  - `predict_and_call()` - Predict and execute tool (sync)
-  - `apredict_and_call()` - Predict and execute tool (async)
+  - `generate_tool_calls(stream=False)` - Chat with function calling; pass `stream=True` for streaming (sync)
+  - `agenerate_tool_calls(stream=False)` - Chat with function calling; pass `stream=True` for streaming (async)
+  - `invoke_callable()` - Predict and execute tool (sync)
+  - `ainvoke_callable()` - Predict and execute tool (async)
   - `get_tool_calls_from_response()` - Extract tool calls from response
 - Abstract method `_prepare_chat_with_tools()` that providers must implement
 
@@ -93,9 +91,9 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 - Takes two inputs:
   - `llm`: Any LLM instance (base LLM, function-calling LLM, etc.)
   - `output_cls`: A Pydantic model class defining the output structure
-- Delegates to the underlying LLM's `structured_predict()` method
+- Delegates to the underlying LLM's `parse()` method
 - Converts all responses to JSON representations of the output model
-- Maintains the same interface as the base LLM (chat, stream_chat, etc.)
+- Maintains the same interface as the base LLM (`chat(stream=...)`, etc.)
 - Supports streaming structured outputs
 
 #### When to Use
@@ -154,7 +152,7 @@ High-level orchestrator that converts Pydantic models or Python functions into t
   - `prompt`: Template string or `BasePromptTemplate`
   - `llm`: A `FunctionCallingLLM` instance
 - **Advanced capabilities**:
-  - Streaming support via `stream_call()` and `astream_call()`
+  - Streaming support via `__call__(stream=True)` and `acall(stream=True)`
   - Parallel tool calls with `allow_parallel_tool_calls=True`
   - Custom tool selection with `tool_choice` parameter
 - **Sync and async**: Both `__call__()` and `acall()` methods
@@ -167,11 +165,13 @@ High-level orchestrator that converts Pydantic models or Python functions into t
 - You're using modern LLMs with function-calling support (GPT-4, Claude, Llama 3.1+)
 
 #### Example with Pydantic Model
+
 ```python
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
+
 
 class WeatherInfo(BaseModel):
     """Weather information for a location."""
@@ -185,7 +185,7 @@ llm = Ollama(
 )
 # Create orchestrator
 weather_extractor = ToolOrchestratingLLM(
-    output_tool=WeatherInfo,
+    schema=WeatherInfo,
     prompt="Extract weather information from: {text}",
     llm=llm,
 )
@@ -199,10 +199,12 @@ print(result)
 ```
 
 #### Example with Function
+
 ```python
 import os
 from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
+
 
 def calculate_sum(a: int, b: int) -> dict:
     """Calculate the sum of two numbers."""
@@ -211,7 +213,7 @@ def calculate_sum(a: int, b: int) -> dict:
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"))
 # Create orchestrator with function
 calculator = ToolOrchestratingLLM(
-    output_tool=calculate_sum,
+    schema=calculate_sum,
     prompt="Calculate the sum of {x} and {y}",
     llm=llm,
 )
@@ -222,11 +224,13 @@ print(result)
 ```
 
 #### Example with Streaming
+
 ```python
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
+
 
 class Story(BaseModel):
     title: str
@@ -234,13 +238,13 @@ class Story(BaseModel):
     genre: str
 
 story_generator = ToolOrchestratingLLM(
-    output_tool=Story,
+    schema=Story,
     prompt="Generate a short {genre} story",
     llm=Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=90),
 )
 
 # Stream partial results
-for partial_story in story_generator.stream_call(genre="sci-fi"):
+for partial_story in story_generator(genre="sci-fi", stream=True):
     print(partial_story)  # Progressively complete Story objects
 ```
 

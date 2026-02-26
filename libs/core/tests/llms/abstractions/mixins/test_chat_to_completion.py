@@ -23,14 +23,17 @@ class MockLLM(ChatToCompletionMixin):
         self.response_text = response_text
         self.last_messages = None
 
-    def chat(self, messages: MessageList, **kwargs):
+    def chat(self, messages: MessageList, *, stream: bool = False, **kwargs):
         """Mock chat implementation."""
-        self.last_messages = messages
-        return ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content=self.response_text)
-        )
+        if not stream:
+            self.last_messages = messages
+            return ChatResponse(
+                message=Message(role=MessageRole.ASSISTANT, content=self.response_text)
+            )
+        else:
+            return self._stream_chat(messages, **kwargs)
 
-    def stream_chat(self, messages: MessageList, **kwargs):
+    def _stream_chat(self, messages: MessageList, **kwargs):
         """Mock streaming chat implementation."""
         self.last_messages = messages
         # Yield two chunks
@@ -41,14 +44,17 @@ class MockLLM(ChatToCompletionMixin):
             message=Message(role=MessageRole.ASSISTANT, content="OK"), delta="K"
         )
 
-    async def achat(self, messages: MessageList, **kwargs):
+    async def achat(self, messages: MessageList, *, stream, **kwargs):
         """Mock async chat implementation."""
-        self.last_messages = messages
-        return ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content=self.response_text)
-        )
+        if not stream:
+            self.last_messages = messages
+            return ChatResponse(
+                message=Message(role=MessageRole.ASSISTANT, content=self.response_text)
+            )
+        else:
+            return await self._astream_chat(messages, **kwargs)
 
-    async def astream_chat(self, messages: MessageList, **kwargs):
+    async def _astream_chat(self, messages: MessageList, **kwargs):
         """Mock async streaming chat implementation."""
         self.last_messages = messages
 
@@ -85,15 +91,15 @@ class TestChatToCompletionMixin:
         assert llm.last_messages[0].role == MessageRole.USER
         assert llm.last_messages[0].content == "Test prompt"
 
-    def test_stream_complete_delegates_to_stream_chat(self):
-        """Test that stream_complete() delegates to stream_chat().
+    def test_complete_streaming(self):
+        """Test that complete(stream=True) returns a streaming generator.
 
-        Inputs: Call stream_complete() with a prompt string.
+        Inputs: Call complete() with stream=True.
         Expected: Returns a generator yielding CompletionResponse chunks.
         Checks: Chunks match the chat stream chunks.
         """
         llm = MockLLM()
-        chunks = list(llm.stream_complete("Stream test"))
+        chunks = list(llm.complete("Stream test", stream=True))
 
         # Check we got chunks
         assert len(chunks) == 2
@@ -125,15 +131,15 @@ class TestChatToCompletionMixin:
         assert llm.last_messages[0].content == "Async test"
 
     @pytest.mark.asyncio
-    async def test_astream_complete_delegates_to_astream_chat(self):
-        """Test that astream_complete() delegates to astream_chat().
+    async def test_acomplete_streaming(self):
+        """Test that acomplete(stream=True) returns an async streaming generator.
 
-        Inputs: Call astream_complete() with a prompt string.
+        Inputs: Call acomplete() with stream=True.
         Expected: Returns async generator yielding CompletionResponse chunks.
         Checks: Chunks match async chat stream.
         """
         llm = MockLLM()
-        gen = await llm.astream_complete("Async stream test")
+        gen = await llm.acomplete("Async stream test", stream=True)
 
         chunks = []
         async for chunk in gen:
@@ -181,4 +187,4 @@ class TestChatToCompletionMixin:
         llm = KwargsCapturingLLM()
         llm.complete("Test", temperature=0.7, max_tokens=100)
 
-        assert llm.captured_kwargs == {"temperature": 0.7, "max_tokens": 100}
+        assert llm.captured_kwargs == {"stream": False, "temperature": 0.7, "max_tokens": 100}

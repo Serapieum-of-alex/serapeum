@@ -426,7 +426,7 @@ class CallableTool(AsyncBaseTool):
         )
 
     @classmethod
-    def from_model(cls, output_cls: Type[Model]) -> "CallableTool":
+    def from_model(cls, schema: Type[Model]) -> "CallableTool":
         """Create a callable tool from a Pydantic model class.
 
         Converts a Pydantic BaseModel class into a CallableTool that can be used
@@ -434,7 +434,7 @@ class CallableTool(AsyncBaseTool):
         is extracted from the model's JSON schema.
 
         Args:
-            output_cls (Type[Model]):
+            schema (Type[Model]):
                 A Pydantic BaseModel subclass that defines the structure of the tool's output.
                 The model's schema will be used to generate the tool's metadata and validation.
 
@@ -516,29 +516,29 @@ class CallableTool(AsyncBaseTool):
             - ToolOrchestratingLLM: Uses this function to create tools for LLM calls
             - _parse_tool_outputs: Parses outputs from tools created by this function
         """
-        schema = output_cls.model_json_schema()
-        schema_description = schema.get("description", None)
-        model_doc = (output_cls.__doc__ or "").strip()
+        json_schema = schema.model_json_schema()
+        schema_description = json_schema.get("description", None)
+        model_doc = (schema.__doc__ or "").strip()
         # Prefer the model's own description/docstring; fall back to a concise default
         description = (
             schema_description
             or model_doc
-            or f"Create an instance of {schema['title']}."
+            or f"Create an instance of {json_schema['title']}."
         )
 
         # NOTE: this does not specify the schema in the function signature,
         # so instead we'll directly provide it in the tool_schema in the ToolMetadata
         def model_fn(**kwargs: Any) -> BaseModel:
             """Model function."""
-            coercer = ArgumentCoercer(tool_schema=output_cls)
+            coercer = ArgumentCoercer(tool_schema=schema)
             coerced_kwargs = coercer.coerce(kwargs)
-            return output_cls(**coerced_kwargs)
+            return schema(**coerced_kwargs)
 
         return cls.from_function(
             func=model_fn,
-            name=schema["title"],
+            name=json_schema["title"],
             description=description,
-            tool_schema=output_cls,
+            tool_schema=schema,
         )
 
     @property

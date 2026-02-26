@@ -80,7 +80,7 @@ This page summarizes the main modules, key classes, and the public API surface o
 - **serapeum.core.types**
   - `SerializableModel`: Base model with JSON/pickle serialization helpers
   - `Model`: Pydantic model base
-  - `StructuredLLMMode`: Enum for structured output modes
+  - `StructuredOutputMode`: Enum for structured output modes
 
 - **serapeum.core.utils**
   - Common utilities: sync/async helpers, base utilities
@@ -143,31 +143,26 @@ See the [Provider Integrations Guide](providers.md) for complete documentation o
 ## Representative Public Methods
 
 ### BaseLLM
-- `chat(messages, **kwargs) → ChatResponse`
-- `complete(prompt, formatted=False, **kwargs) → CompletionResponse`
-- `stream_chat(...) → ChatResponseGen`
-- `stream_complete(...) → CompletionResponseGen`
-- `achat(...) → ChatResponse` (async)
-- `acomplete(...) → CompletionResponse` (async)
-- `astream_chat(...) → ChatResponseAsyncGen` (async)
-- `astream_complete(...) → CompletionResponseAsyncGen` (async)
+- `chat(messages, stream=False, **kwargs) → ChatResponse | ChatResponseGen`
+- `complete(prompt, formatted=False, stream=False, **kwargs) → CompletionResponse | CompletionResponseGen`
+- `achat(messages, stream=False, **kwargs) → ChatResponse | ChatResponseAsyncGen` (async)
+- `acomplete(prompt, formatted=False, stream=False, **kwargs) → CompletionResponse | CompletionResponseAsyncGen` (async)
 
 ### LLM
 - `predict(prompt: PromptTemplate, **kwargs) → str`
 - `stream(prompt, **kwargs) → CompletionResponseGen`
 - `apredict(...) → str` (async)
 - `astream(...) → CompletionResponseAsyncGen` (async)
-- `structured_predict(output_cls: type[BaseModel], prompt, **kwargs) → BaseModel`
-- `stream_structured_predict(...) → Generator[BaseModel, None, None]`
-- `astructured_predict(...) → BaseModel` (async)
-- `astream_structured_predict(...) → AsyncGenerator[BaseModel, None]` (async)
+- `parse(output_cls: type[BaseModel], prompt, **kwargs) → BaseModel`
+- `stream_parse(...) → Generator[BaseModel, None, None]`
+- `aparse(...) → BaseModel` (async)
+- `astream_parse(...) → AsyncGenerator[BaseModel, None]` (async)
 
 ### FunctionCallingLLM
-- `chat_with_tools(tools, user_msg=None, chat_history=None, **kwargs) → ChatResponse`
-- `predict_and_call(tools, user_msg=None, chat_history=None, **kwargs) → AgentChatResponse`
+- `generate_tool_calls(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseGen`
+- `agenerate_tool_calls(tools, user_msg=None, chat_history=None, *, stream=False, **kwargs) → ChatResponse | ChatResponseAsyncGen` (async)
+- `invoke_callable(tools, user_msg=None, chat_history=None, **kwargs) → AgentChatResponse`
 - `get_tool_calls_from_response(response, error_on_no_tool_call=True) → list[ToolCallArguments]`
-- `stream_chat_with_tools(...) → ChatResponseGen`
-- `astream_chat_with_tools(...) → ChatResponseAsyncGen` (async)
 
 ### CallableTool
 - `from_function(func, name=None, description=None, **kwargs) → CallableTool` (class method)
@@ -176,10 +171,8 @@ See the [Provider Integrations Guide](providers.md) for complete documentation o
 - `acall(input, **kwargs) → ToolOutput` (async)
 
 ### ToolOrchestratingLLM
-- `__call__(**prompt_args, llm_kwargs=None) → BaseModel | Any`
-- `acall(**prompt_args, llm_kwargs=None) → BaseModel | Any` (async)
-- `stream_call(**prompt_args, llm_kwargs=None) → Generator`
-- `astream_call(**prompt_args, llm_kwargs=None) → AsyncGenerator` (async)
+- `__call__(**prompt_args, stream=False, llm_kwargs=None) → BaseModel | Generator`
+- `acall(**prompt_args, stream=False, llm_kwargs=None) → BaseModel | AsyncGenerator` (async)
 
 ### BaseEmbedding
 - `get_text_embedding(text: str) → list[float]`
@@ -203,14 +196,14 @@ User input/messages
 ```
 User input
   → PromptTemplate
-  → LLM.structured_predict(output_cls=MyModel, ...)
+  → LLM.parse(output_cls=MyModel, ...)
   → Pydantic BaseModel instance
 ```
 
 ### Tool-Calling Flow
 ```
 User message
-  → FunctionCallingLLM.predict_and_call(tools=[...])
+  → FunctionCallingLLM.invoke_callable(tools=[...])
   → LLM predicts tool calls
   → Tools executed (BaseTool/CallableTool)
   → ToolOutput aggregated
@@ -255,13 +248,13 @@ graph TB
     end
 
     subgraph "LLM Abstraction Layer"
-        L1[LLM<br/>predict, structured_predict]
-        L2[FunctionCallingLLM<br/>chat_with_tools, predict_and_call]
+        L1[LLM<br/>predict, parse]
+        L2[FunctionCallingLLM<br/>generate_tool_calls, invoke_callable]
         L3[StructuredOutputLLM<br/>Force structured outputs]
     end
 
     subgraph "Base Protocol Layer"
-        B1[BaseLLM<br/>chat, complete, stream_chat]
+        B1[BaseLLM<br/>chat(stream), complete(stream)]
         B2[BaseEmbedding<br/>get_text_embedding]
     end
 
@@ -323,14 +316,10 @@ Key classes and their primary methods:
 classDiagram
     class BaseLLM {
         <<abstract>>
-        +chat(messages) ChatResponse
-        +complete(prompt) CompletionResponse
-        +stream_chat(messages) Generator
-        +stream_complete(prompt) Generator
-        +achat(messages) ChatResponse
-        +acomplete(prompt) CompletionResponse
-        +astream_chat(messages) AsyncGen
-        +astream_complete(prompt) AsyncGen
+        +chat(messages, stream=false) ChatResponse | Generator
+        +complete(prompt, stream=false) CompletionResponse | Generator
+        +achat(messages, stream=false) ChatResponse | AsyncGen
+        +acomplete(prompt, stream=false) CompletionResponse | AsyncGen
     }
 
     class LLM {
@@ -338,28 +327,25 @@ classDiagram
         +stream(prompt, **kwargs) Generator
         +apredict(prompt, **kwargs) str
         +astream(prompt, **kwargs) AsyncGen
-        +structured_predict(output_cls, prompt, **kwargs) BaseModel
-        +stream_structured_predict(...) Generator
-        +astructured_predict(...) BaseModel
-        +astream_structured_predict(...) AsyncGen
+        +parse(output_cls, prompt, **kwargs) BaseModel
+        +stream_parse(...) Generator
+        +aparse(...) BaseModel
+        +astream_parse(...) AsyncGen
     }
 
     class FunctionCallingLLM {
-        +chat_with_tools(tools, user_msg, chat_history) ChatResponse
-        +predict_and_call(tools, user_msg, chat_history) AgentChatResponse
+        +generate_tool_calls(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseGen
+        +agenerate_tool_calls(tools, user_msg, chat_history, stream) ChatResponse|ChatResponseAsyncGen
+        +invoke_callable(tools, user_msg, chat_history) AgentChatResponse
         +get_tool_calls_from_response(response) List~ToolCallArguments~
-        +stream_chat_with_tools(tools, ...) Generator
-        +astream_chat_with_tools(tools, ...) AsyncGen
     }
 
     class ToolOrchestratingLLM {
         -llm: FunctionCallingLLM
         -tools: List~BaseTool~
         -prompt: PromptTemplate
-        +__call__(**prompt_args) Any
-        +acall(**prompt_args) Any
-        +stream_call(**prompt_args) Generator
-        +astream_call(**prompt_args) AsyncGen
+        +__call__(**prompt_args, stream=False) Any | Generator
+        +acall(**prompt_args, stream=False) Any | AsyncGen
     }
 
     class CallableTool {
@@ -415,10 +401,8 @@ How providers implement the core abstractions:
 classDiagram
     class FunctionCallingLLM {
         <<abstract>>
-        +_chat(messages) ChatResponse*
-        +_complete(prompt) CompletionResponse*
-        +_stream_chat(messages) Generator*
-        +_stream_complete(prompt) Generator*
+        +chat(messages, stream=false) ChatResponse | Generator*
+        +achat(messages, stream=false) ChatResponse | AsyncGen*
     }
 
     class BaseEmbedding {
@@ -482,7 +466,7 @@ sequenceDiagram
     User->>Orch: orchestrator(query="What's 5+3?")
     Orch->>Prompt: format(query="What's 5+3?")
     Prompt-->>Orch: formatted messages
-    Orch->>LLM: chat_with_tools(messages, tools)
+    Orch->>LLM: generate_tool_calls(messages, tools)
     LLM-->>Orch: ChatResponse (tool call)
     Orch->>Orch: get_tool_calls_from_response()
     Orch->>Tool: call(operation="add", a=5, b=3)
@@ -620,7 +604,7 @@ classDiagram
 - All tool operations return `ToolOutput`
 
 **Structured Outputs:**
-- Use `structured_predict()` with Pydantic models
+- Use `parse()` with Pydantic models
 - Works with both streaming and non-streaming
 - Automatic validation and parsing
 

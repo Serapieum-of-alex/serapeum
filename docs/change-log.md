@@ -8,7 +8,7 @@
     - Step-by-step implementation guide for adding new providers with ready-to-use code templates
 - **Enhanced Architecture Diagrams**: Added mermaid diagrams showing layered architecture, public API, component interactions, and data type hierarchy
 - **Improved Navigation**: Reorganized documentation structure with provider subsections
-- **Fixed Examples**: Corrected all code examples to use proper public API (chat_with_tools, structured_predict)
+- **Fixed Examples**: Corrected all code examples to use proper public API (generate_tool_calls, parse)
 
 ### Embedding Support (#11)
 - **BaseEmbedding Abstraction**: New core abstraction with sync/async interfaces

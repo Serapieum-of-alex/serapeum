@@ -6,7 +6,7 @@ implement to support chat/completion, streaming, and async variants.
 
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any, Sequence
 
 from pydantic import ConfigDict
@@ -25,7 +25,7 @@ from serapeum.core.base.llms.types import (
 from serapeum.core.types import SerializableModel
 
 
-class BaseLLM(SerializableModel):
+class BaseLLM(SerializableModel, ABC):
     """BaseLLM interface."""
 
     # Allow subclasses/tests to attach auxiliary attributes (e.g., test doubles)
@@ -61,7 +61,13 @@ class BaseLLM(SerializableModel):
         return converted_messages
 
     @abstractmethod
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+    def chat(
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: bool = False,
+        **kwargs: Any
+    ) -> ChatResponse | ChatResponseGen:
         pass
 
     @abstractmethod
@@ -71,35 +77,18 @@ class BaseLLM(SerializableModel):
         pass
 
     @abstractmethod
-    def stream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseGen:
-        pass
-
-    @abstractmethod
-    def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseGen:
-        pass
-
-    @abstractmethod
-    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+    async def achat(
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: bool = False,
+        **kwargs: Any
+    ) -> (ChatResponse |
+                                                                                         ChatResponseAsyncGen):
         pass
 
     @abstractmethod
     async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
-        pass
-
-    @abstractmethod
-    async def astream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseAsyncGen:
-        pass
-
-    @abstractmethod
-    async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseAsyncGen:
         pass

@@ -54,7 +54,7 @@ sequenceDiagram
     Ollama-->>ToolOrchestratingLLM: extended messages
     deactivate Ollama
 
-    ToolOrchestratingLLM->>Ollama: predict_and_call(tools=[tool], messages, ...)
+    ToolOrchestratingLLM->>Ollama: invoke_callable(tools=[tool], messages, ...)
     activate Ollama
     Note over Ollama: Prepare function calling request<br/>with tool schemas
 
@@ -97,7 +97,7 @@ sequenceDiagram
 1. **Initialization validates all components** before storing them - LLM must support function calling
 2. **Tool creation** converts Pydantic model to CallableTool with JSON schema
 3. **Prompt formatting** applies template variables to create messages
-4. **predict_and_call** orchestrates the function calling flow with the LLM
+4. **invoke_callable** orchestrates the function calling flow with the LLM
 5. **Tool execution** happens automatically after LLM generates tool calls
 6. **Response parsing** extracts structured Pydantic instances from ToolOutput
 
@@ -115,7 +115,7 @@ sequenceDiagram
     User->>ToolOrchestratingLLM: __call__(allow_parallel_tool_calls=True)
     activate ToolOrchestratingLLM
 
-    ToolOrchestratingLLM->>Ollama: predict_and_call(..., allow_parallel=True)
+    ToolOrchestratingLLM->>Ollama: invoke_callable(..., allow_parallel=True)
     activate Ollama
     Note over Ollama: LLM generates multiple tool calls
 
@@ -138,14 +138,14 @@ sequenceDiagram
 ## Async Execution Flow
 
 The async flow (`acall`) follows the same pattern but uses:
-- `apredict_and_call` instead of `predict_and_call`
+- `ainvoke_callable` instead of `invoke_callable`
 - Async tool execution
 - All operations are awaited
 
 ## Streaming Execution Flow
 
-For `stream_call`:
-1. Uses `stream_chat_with_tools` instead of `predict_and_call`
+For `__call__(stream=True)`:
+1. Uses `generate_tool_calls(stream=True)` instead of `invoke_callable`
 2. Yields partial responses as `StreamingObjectProcessor` parses incremental tool calls
 3. Maintains `cur_objects` state across chunks
 4. Each yield contains progressively updated Pydantic instances

@@ -41,7 +41,7 @@ def _get_mock_album_response(
 class MockLLM(MagicMock):
     """Mock LLM that returns predefined responses."""
 
-    def predict_and_call(
+    def invoke_callable(
         self,
         tools: List["BaseTool"],
         user_msg: Optional[Union[str, Message]] = None,
@@ -55,7 +55,7 @@ class MockLLM(MagicMock):
             allow_parallel_tool_calls=allow_parallel_tool_calls
         )
 
-    async def apredict_and_call(
+    async def ainvoke_callable(
         self,
         tools: List["BaseTool"],
         user_msg: Optional[Union[str, Message]] = None,
@@ -84,7 +84,7 @@ class TestToolOrchestratingLLM:
         # from serapeum.ollama import Ollama
         # llm = Ollama(model="llama3.1:latest", request_timeout=80)
         tools_llm = ToolOrchestratingLLM(
-            output_tool=MockAlbum,
+            schema=MockAlbum,
             prompt=prompt_template_str,
             llm=llm,
         )
@@ -101,7 +101,7 @@ class TestToolOrchestratingLLM:
         # llm = Ollama(model="llama3.1:latest", request_timeout=80)
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM(
-            output_tool=MockAlbum,
+            schema=MockAlbum,
             prompt=prompt_template_str,
             llm=llm,
             allow_parallel_tool_calls=True,
@@ -125,7 +125,7 @@ class TestToolOrchestratingLLM:
         # same as above but async
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM(
-            output_tool=MockAlbum,
+            schema=MockAlbum,
             prompt=prompt_template_str,
             llm=llm,
         )

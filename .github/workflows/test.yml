@@ -5,6 +5,9 @@ permissions:
 
 on:
   push:
+    paths:
+      - "libs/core/**"
+      - "libs/providers/ollama/**"
   workflow_dispatch:
 
 jobs:

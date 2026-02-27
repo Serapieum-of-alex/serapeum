@@ -398,7 +398,6 @@ class TestCompletionResponse:
         """
         return CompletionResponse(text="Hello world")
 
-
     class TestInit:
         @pytest.mark.unit
         def test_init_text_is_required(self):

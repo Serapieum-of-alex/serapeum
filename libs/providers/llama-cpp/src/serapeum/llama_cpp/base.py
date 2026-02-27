@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 from typing import Any, Literal, overload
 from importlib.metadata import version as get_version
@@ -7,6 +8,7 @@ from serapeum.core.llms import (
     LLM,
     CompletionToChatMixin,
     CompletionResponse,
+    CompletionResponseAsyncGen,
     CompletionResponseGen,
     Metadata,
 )
@@ -267,6 +269,53 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         if stream:
             return self._stream_complete(prompt, **kwargs)
         return self._complete(prompt, **kwargs)
+
+    @overload
+    async def acomplete(
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
+    ) -> CompletionResponse: ...
+
+    @overload
+    async def acomplete(
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
+    ) -> CompletionResponseAsyncGen: ...
+
+    async def acomplete(
+        self,
+        prompt: str,
+        formatted: bool = False,
+        *,
+        stream: bool = False,
+        **kwargs: Any,
+    ) -> CompletionResponse | CompletionResponseAsyncGen:
+        """Async completion: offloads CPU-bound llama.cpp inference to a thread pool.
+
+        Overrides the mixin's thin sync shim so inference does not block the
+        running event loop. The streaming variant collects all chunks in the
+        worker thread, then re-yields them as an async generator.
+        """
+        if stream:
+            chunks: list[CompletionResponse] = await asyncio.to_thread(
+                lambda: list(self.complete(prompt, formatted=formatted, stream=True, **kwargs))
+            )
+
+            async def gen() -> CompletionResponseAsyncGen:
+                for chunk in chunks:
+                    yield chunk
+
+            return gen()
+
+        return await asyncio.to_thread(self.complete, prompt, formatted, stream=False, **kwargs)
 
     def _complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
         call_kwargs = {

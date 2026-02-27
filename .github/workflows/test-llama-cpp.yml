@@ -43,3 +43,53 @@ jobs:
         shell: bash
         run: |
           uv run pytest --nbval --nbval-lax docs/ --verbose --continue-on-collection-errors || echo "No notebooks found or collection errors occurred"
+
+  e2e:
+    # Run on a single OS/Python to keep CI fast — the e2e job validates the
+    # full inference pipeline, not cross-platform compatibility.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
+        with:
+          python-version: "3.12"
+          install-groups: dev
+          verify-lock: true
+
+      # stories260K.gguf: 1.19 MB LLaMA model trained on TinyStories.
+      # Small enough to cache in CI, real enough to exercise streaming.
+      # Source: https://huggingface.co/ggml-org/models/tree/main/tinyllamas
+      - name: Cache GGUF test model
+        id: cache-model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/serapeum/models/stories260K.gguf
+          key: gguf-stories260K
+
+      - name: Download GGUF test model
+        if: steps.cache-model.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.cache/serapeum/models
+          curl -L \
+            "https://huggingface.co/ggml-org/models/resolve/main/tinyllamas/stories260K.gguf" \
+            -o ~/.cache/serapeum/models/stories260K.gguf
+
+      - name: Resolve model path
+        id: model
+        run: echo "path=$HOME/.cache/serapeum/models/stories260K.gguf" >> "$GITHUB_OUTPUT"
+
+      - name: Run e2e tests
+        env:
+          LLAMA_CPP_MODEL_PATH: ${{ steps.model.outputs.path }}
+        run: |
+          uv run pytest libs/providers/llama-cpp/tests/test_llama_cpp_e2e.py \
+            -sv -m e2e \
+            --cov=libs/providers/llama-cpp/src \
+            --cov-report=xml
+
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v3

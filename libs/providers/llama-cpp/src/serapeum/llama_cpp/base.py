@@ -1,7 +1,6 @@
 import asyncio
 from pathlib import Path
 from typing import Any, Literal, overload
-from importlib.metadata import version as get_version
 
 import requests
 from serapeum.core.llms import (
@@ -167,7 +166,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             model = Llama(model_path=str(model_path), **self.model_kwargs)
         else:
             cache_dir = Path(get_cache_dir())
-            model_url = self.model_url or self._get_model_path_for_version()
+            model_url = self.model_url or DEFAULT_LLAMA_CPP_GGUF_MODEL
             model_path = cache_dir / "models" / model_url.rsplit("/", 1)[-1]
             if not model_path.exists():
                 model_path.parent.mkdir(parents=True, exist_ok=True)
@@ -194,18 +193,6 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             num_output=self.max_new_tokens,
             model_name=self.model_path,
         )
-
-    def _get_model_path_for_version(self) -> str:
-        """Get model path for the current llama-cpp version."""
-        version = get_version("llama-cpp-python")
-
-        major, minor, patch = version.split(".")
-
-        # NOTE: llama-cpp-python<=0.1.78 supports GGML, newer support GGUF
-        if int(major) <= 0 and int(minor) <= 1 and int(patch) <= 78:
-            return DEFAULT_LLAMA_CPP_GGML_MODEL
-        else:
-            return DEFAULT_LLAMA_CPP_GGUF_MODEL
 
     def _download_url(self, model_url: str, model_path: Path) -> None:
         completed = False

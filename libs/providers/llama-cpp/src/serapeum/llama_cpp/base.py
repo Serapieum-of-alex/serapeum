@@ -4,9 +4,9 @@ from importlib.metadata import version as get_version
 
 import requests
 from serapeum.core.llms import (
+    LLM,
+    CompletionToChatMixin,
     Message,
-    ChatResponse,
-    ChatResponseGen,
     CompletionResponse,
     CompletionResponseGen,
     Metadata,
@@ -18,7 +18,6 @@ from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
 )
 
-from serapeum.core.llms import CustomLLM
 from serapeum.core.output_parsers import BaseParser
 from serapeum.core.types import StructuredOutputMode
 from serapeum.core.utils.base import get_cache_dir
@@ -37,7 +36,7 @@ DEFAULT_LLAMA_CPP_GGUF_MODEL = (
 DEFAULT_LLAMA_CPP_MODEL_VERBOSITY = True
 
 
-class LlamaCPP(CustomLLM):
+class LlamaCPP(CompletionToChatMixin, LLM):
     r"""
     LlamaCPP LLM.
 
@@ -45,10 +44,10 @@ class LlamaCPP(CustomLLM):
         Install llama-cpp-python following instructions:
         https://github.com/abetlen/llama-cpp-python
 
-        Then `pip install serapeum-llms-llama-cpp`
+        Then `pip install serapeum-llama-cpp`
 
         ```python
-        from serapeum.llms.llama_cpp import LlamaCPP
+        from serapeum.llama_cpp import LlamaCPP
 
         def messages_to_prompt(messages):
             prompt = ""
@@ -195,7 +194,7 @@ class LlamaCPP(CustomLLM):
 
     @classmethod
     def class_name(cls) -> str:
-        return "LlamaCPP_llm"
+        return "LlamaCPP"
 
     @property
     def metadata(self) -> Metadata:
@@ -247,18 +246,6 @@ class LlamaCPP(CustomLLM):
                 print("Download incomplete.", "Removing partially downloaded file.")
                 os.remove(model_path)
                 raise ValueError("Download incomplete.")
-
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
-        prompt = self.messages_to_prompt(messages)
-        completion_response = self.complete(prompt, formatted=True, **kwargs)
-        return completion_response.to_chat_response()
-
-    def stream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseGen:
-        prompt = self.messages_to_prompt(messages)
-        completion_response = self.stream_complete(prompt, formatted=True, **kwargs)
-        return CompletionResponse.stream_to_chat_response(completion_response)
 
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any

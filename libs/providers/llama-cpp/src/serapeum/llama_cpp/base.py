@@ -154,11 +154,6 @@ class LlamaCPP(CompletionToChatMixin, LLM):
 
     def model_post_init(self, __context: Any) -> None:
         """Load or download the Llama model after all fields are validated."""
-        generate_kwargs = self.generate_kwargs
-        generate_kwargs.update(
-            {"temperature": self.temperature, "max_tokens": self.max_new_tokens}
-        )
-
         # check if model is cached
         if self.model_path is not None:
             if not os.path.exists(self.model_path):
@@ -272,13 +267,25 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         return self._complete(prompt, **kwargs)
 
     def _complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
-        self.generate_kwargs.update({"stream": False})
-        response = self._model(prompt=prompt, **self.generate_kwargs)
+        call_kwargs = {
+            **self.generate_kwargs,
+            "temperature": self.temperature,
+            "max_tokens": self.max_new_tokens,
+            "stream": False,
+            **kwargs,
+        }
+        response = self._model(prompt=prompt, **call_kwargs)
         return CompletionResponse(text=response["choices"][0]["text"], raw=response)
 
     def _stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
-        self.generate_kwargs.update({"stream": True})
-        response_iter = self._model(prompt=prompt, **self.generate_kwargs)
+        call_kwargs = {
+            **self.generate_kwargs,
+            "temperature": self.temperature,
+            "max_tokens": self.max_new_tokens,
+            "stream": True,
+            **kwargs,
+        }
+        response_iter = self._model(prompt=prompt, **call_kwargs)
 
         def gen() -> CompletionResponseGen:
             text = ""

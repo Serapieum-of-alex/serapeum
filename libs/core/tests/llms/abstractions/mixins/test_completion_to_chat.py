@@ -14,10 +14,9 @@ from serapeum.core.llms.abstractions.mixins import CompletionToChatMixin
 class ConcreteCompletionLLM(CompletionToChatMixin):
     """Minimal concrete class that satisfies CompletionToChatMixin's duck-typed contract.
 
-    Implements the three methods the mixin requires:
+    Implements the two methods the mixin requires:
     - ``messages_to_prompt`` (callable attribute)
-    - ``complete``
-    - ``stream_complete``
+    - ``complete(prompt, formatted=False, *, stream=False, **kwargs)``
 
     All calls are recorded so tests can assert on forwarded arguments.
     """
@@ -32,8 +31,8 @@ class ConcreteCompletionLLM(CompletionToChatMixin):
         self.last_prompt: str | None = None
         self.last_formatted: bool | None = None
         self.last_kwargs: dict = {}
-        self.complete_call_count = 0
-        self.stream_complete_call_count = 0
+        self.complete_call_count = 0   # tracks complete(stream=False) calls
+        self.stream_call_count = 0     # tracks complete(stream=True) calls
         self.messages_to_prompt_call_count = 0
 
     def messages_to_prompt(self, messages) -> str:
@@ -48,40 +47,33 @@ class ConcreteCompletionLLM(CompletionToChatMixin):
         self.messages_to_prompt_call_count += 1
         return " ".join(m.content or "" for m in messages)
 
-    def complete(self, prompt: str, formatted: bool = False, **kwargs) -> CompletionResponse:
-        """Return a fixed CompletionResponse, recording arguments.
+    def complete(self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs):
+        """Return a CompletionResponse or streaming generator, recording arguments.
 
         Args:
             prompt: The prompt string.
             formatted: Whether the prompt is already formatted.
+            stream: If True, returns a generator yielding two CompletionResponse chunks.
             **kwargs: Extra keyword arguments forwarded by the mixin.
 
         Returns:
-            A CompletionResponse with the configured response text.
+            A CompletionResponse when stream=False, or a generator of
+            CompletionResponse objects when stream=True.
         """
-        self.complete_call_count += 1
         self.last_prompt = prompt
         self.last_formatted = formatted
         self.last_kwargs = kwargs
-        return CompletionResponse(text=self.response_text)
+        if stream:
+            self.stream_call_count += 1
 
-    def stream_complete(self, prompt: str, formatted: bool = False, **kwargs):
-        """Yield two CompletionResponse chunks, recording arguments.
+            def gen():
+                yield CompletionResponse(text="He", delta="He")
+                yield CompletionResponse(text="Hello", delta="llo")
 
-        Args:
-            prompt: The prompt string.
-            formatted: Whether the prompt is already formatted.
-            **kwargs: Extra keyword arguments forwarded by the mixin.
-
-        Yields:
-            Two CompletionResponse objects simulating a streaming response.
-        """
-        self.stream_complete_call_count += 1
-        self.last_prompt = prompt
-        self.last_formatted = formatted
-        self.last_kwargs = kwargs
-        yield CompletionResponse(text="He", delta="He")
-        yield CompletionResponse(text="Hello", delta="llo")
+            return gen()
+        else:
+            self.complete_call_count += 1
+            return CompletionResponse(text=self.response_text)
 
 
 def _make_messages(*contents: str) -> list[Message]:
@@ -229,7 +221,7 @@ class TestCompletionToChatMixinChat:
     def test_chat_stream_yields_chat_response_instances(self):
         """chat(stream=True) must yield ChatResponse objects.
 
-        Inputs: Two-chunk stream from stream_complete.
+        Inputs: Two-chunk stream from complete(stream=True).
         Expected: Each yielded item is a ChatResponse.
         Checks: Type of every chunk.
         """
@@ -245,7 +237,7 @@ class TestCompletionToChatMixinChat:
     def test_chat_stream_chunk_contents(self):
         """chat(stream=True) chunks must carry the completion deltas.
 
-        Inputs: stream_complete yields ("He", delta="He") and ("Hello", delta="llo").
+        Inputs: complete(stream=True) yields ("He", delta="He") and ("Hello", delta="llo").
         Expected: Chunks have matching content and delta values.
         Checks: content and delta on each chunk.
         """
@@ -265,25 +257,25 @@ class TestCompletionToChatMixinChat:
             f"Second chunk delta: {chunks[1].delta!r}"
         )
 
-    def test_chat_stream_calls_stream_complete_with_formatted_true(self):
-        """chat(stream=True) must call stream_complete with formatted=True.
+    def test_chat_stream_calls_complete_with_formatted_true(self):
+        """chat(stream=True) must call complete(stream=True) with formatted=True.
 
         Inputs: Any message, stream=True.
-        Expected: stream_complete receives formatted=True.
+        Expected: complete receives formatted=True.
         Checks: self.last_formatted after consuming the generator.
         """
         llm = ConcreteCompletionLLM()
         list(llm.chat(_make_messages("x"), stream=True))
 
         assert llm.last_formatted is True, (
-            f"Expected formatted=True forwarded to stream_complete, got {llm.last_formatted}"
+            f"Expected formatted=True forwarded to complete(stream=True), got {llm.last_formatted}"
         )
 
-    def test_chat_stream_forwards_kwargs_to_stream_complete(self):
-        """chat(stream=True) must forward extra kwargs to stream_complete().
+    def test_chat_stream_forwards_kwargs_to_complete(self):
+        """chat(stream=True) must forward extra kwargs to complete(stream=True).
 
         Inputs: Extra kwargs top_p=0.9 and stop=["<|end|>"].
-        Expected: stream_complete() receives these exact kwargs.
+        Expected: complete() receives these exact kwargs.
         Checks: self.last_kwargs matches after consuming the generator.
         """
         llm = ConcreteCompletionLLM()
@@ -436,7 +428,7 @@ class TestCompletionToChatMixinAchat:
     async def test_achat_stream_yields_chat_response_instances(self):
         """achat(stream=True) must yield ChatResponse objects when iterated.
 
-        Inputs: stream_complete yields two chunks.
+        Inputs: complete(stream=True) yields two chunks.
         Expected: Each async chunk is a ChatResponse.
         Checks: Type of every yielded item.
         """
@@ -457,7 +449,7 @@ class TestCompletionToChatMixinAchat:
     async def test_achat_stream_chunk_contents_and_deltas(self):
         """achat(stream=True) chunks must carry the completion text and delta.
 
-        Inputs: stream_complete yields ("He", delta="He") and ("Hello", delta="llo").
+        Inputs: complete(stream=True) yields ("He", delta="He") and ("Hello", delta="llo").
         Expected: Yielded ChatResponses reflect those values.
         Checks: message.content and delta on each chunk.
         """
@@ -482,11 +474,11 @@ class TestCompletionToChatMixinAchat:
         )
 
     @pytest.mark.asyncio
-    async def test_achat_stream_forwards_kwargs_to_stream_complete(self):
-        """achat(stream=True) must forward extra kwargs through to stream_complete.
+    async def test_achat_stream_forwards_kwargs_to_complete(self):
+        """achat(stream=True) must forward extra kwargs to complete(stream=True).
 
         Inputs: Extra kwargs repeat=3.
-        Expected: stream_complete receives repeat=3 in its kwargs.
+        Expected: complete receives repeat=3 in its kwargs.
         Checks: self.last_kwargs after consuming the async generator.
         """
         llm = ConcreteCompletionLLM()
@@ -618,7 +610,7 @@ class TestCompletionToChatMixinAcomplete:
     async def test_acomplete_stream_yields_completion_response_instances(self):
         """acomplete(stream=True) must yield CompletionResponse objects.
 
-        Inputs: stream_complete produces two chunks.
+        Inputs: complete(stream=True) produces two chunks.
         Expected: Each yielded item is a CompletionResponse.
         Checks: Type of every chunk.
         """
@@ -637,9 +629,9 @@ class TestCompletionToChatMixinAcomplete:
 
     @pytest.mark.asyncio
     async def test_acomplete_stream_chunk_text_and_delta(self):
-        """acomplete(stream=True) chunks must carry the text and delta from stream_complete.
+        """acomplete(stream=True) chunks must carry the text and delta from complete(stream=True).
 
-        Inputs: stream_complete yields text="He",delta="He" then text="Hello",delta="llo".
+        Inputs: complete(stream=True) yields text="He",delta="He" then text="Hello",delta="llo".
         Expected: Async iteration yields matching CompletionResponse values.
         Checks: text and delta on each chunk.
         """
@@ -656,11 +648,11 @@ class TestCompletionToChatMixinAcomplete:
         assert chunks[1].delta == "llo", f"Second chunk delta: {chunks[1].delta!r}"
 
     @pytest.mark.asyncio
-    async def test_acomplete_stream_calls_stream_complete_not_complete(self):
-        """acomplete(stream=True) must use stream_complete, not complete.
+    async def test_acomplete_stream_calls_complete_stream_not_non_stream(self):
+        """acomplete(stream=True) must call complete(stream=True), not complete(stream=False).
 
         Inputs: stream=True.
-        Expected: stream_complete_call_count == 1, complete_call_count == 0.
+        Expected: stream_call_count == 1, complete_call_count == 0.
         Checks: Both counters after consuming the generator.
         """
         llm = ConcreteCompletionLLM()
@@ -668,42 +660,43 @@ class TestCompletionToChatMixinAcomplete:
         async for _ in gen:
             pass
 
-        assert llm.stream_complete_call_count == 1, (
-            f"Expected stream_complete called once, got {llm.stream_complete_call_count}"
+        assert llm.stream_call_count == 1, (
+            f"Expected complete(stream=True) called once, got {llm.stream_call_count}"
         )
         assert llm.complete_call_count == 0, (
-            f"Expected complete NOT called, but was called {llm.complete_call_count} time(s)"
+            f"Expected complete(stream=False) NOT called, "
+            f"but was called {llm.complete_call_count} time(s)"
         )
 
     @pytest.mark.asyncio
-    async def test_acomplete_non_stream_calls_complete_not_stream_complete(self):
-        """acomplete(stream=False) must use complete, not stream_complete.
+    async def test_acomplete_non_stream_calls_complete_not_stream(self):
+        """acomplete(stream=False) must call complete(stream=False), not complete(stream=True).
 
         Inputs: stream=False (default).
-        Expected: complete_call_count == 1, stream_complete_call_count == 0.
+        Expected: complete_call_count == 1, stream_call_count == 0.
         Checks: Both counters after the await.
         """
         llm = ConcreteCompletionLLM()
         await llm.acomplete("dispatch check non-stream")
 
         assert llm.complete_call_count == 1, (
-            f"Expected complete called once, got {llm.complete_call_count}"
+            f"Expected complete(stream=False) called once, got {llm.complete_call_count}"
         )
-        assert llm.stream_complete_call_count == 0, (
-            f"Expected stream_complete NOT called, "
-            f"but was called {llm.stream_complete_call_count} time(s)"
+        assert llm.stream_call_count == 0, (
+            f"Expected complete(stream=True) NOT called, "
+            f"but was called {llm.stream_call_count} time(s)"
         )
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("formatted", [False, True], ids=["unformatted", "formatted"])
     async def test_acomplete_stream_forwards_formatted_flag(self, formatted: bool):
-        """acomplete(stream=True) must forward the formatted flag to stream_complete.
+        """acomplete(stream=True) must forward the formatted flag to complete(stream=True).
 
         Args:
             formatted: The formatted flag value to test.
 
         Inputs: formatted=False and formatted=True, stream=True.
-        Expected: stream_complete receives the same formatted value.
+        Expected: complete receives the same formatted value.
         Checks: self.last_formatted after consuming the generator.
         """
         llm = ConcreteCompletionLLM()
@@ -712,16 +705,16 @@ class TestCompletionToChatMixinAcomplete:
             pass
 
         assert llm.last_formatted == formatted, (
-            f"Expected formatted={formatted} forwarded to stream_complete, "
+            f"Expected formatted={formatted} forwarded to complete(stream=True), "
             f"got {llm.last_formatted}"
         )
 
     @pytest.mark.asyncio
-    async def test_acomplete_stream_forwards_kwargs_to_stream_complete(self):
-        """acomplete(stream=True) must forward extra kwargs to stream_complete.
+    async def test_acomplete_stream_forwards_kwargs_to_complete(self):
+        """acomplete(stream=True) must forward extra kwargs to complete(stream=True).
 
         Inputs: Extra kwargs verbose=True.
-        Expected: stream_complete receives verbose=True in its kwargs.
+        Expected: complete receives verbose=True in its kwargs.
         Checks: self.last_kwargs after consuming the generator.
         """
         llm = ConcreteCompletionLLM()

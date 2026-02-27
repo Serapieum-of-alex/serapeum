@@ -5,11 +5,12 @@ or use to build specialized LLM implementations.
 """
 
 from serapeum.core.llms.abstractions.function_calling import FunctionCallingLLM
-from serapeum.core.llms.abstractions.mixins import ChatToCompletionMixin
+from serapeum.core.llms.abstractions.mixins import ChatToCompletionMixin, CompletionToChatMixin
 from serapeum.core.llms.abstractions.structured_output_llm import StructuredOutputLLM
 
 __all__ = [
     "FunctionCallingLLM",
     "StructuredOutputLLM",
     "ChatToCompletionMixin",
+    "CompletionToChatMixin",
 ]

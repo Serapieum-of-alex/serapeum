@@ -30,15 +30,14 @@ class CompletionToChatMixin:
 
     The class it is mixed into must implement:
 
-    - ``complete(prompt, formatted=False, **kwargs) -> CompletionResponse``
-    - ``stream_complete(prompt, formatted=False, **kwargs) -> CompletionResponseGen``
+    - ``complete(prompt, formatted=False, *, stream=False, **kwargs)`` → ``CompletionResponse | CompletionResponseGen``
     - ``messages_to_prompt`` callable attribute (provided by :class:`~serapeum.core.llms.base.LLM`)
 
     The mixin provides implementations for:
 
     - ``chat(messages, *, stream=False, **kwargs)``
     - ``achat(messages, *, stream=False, **kwargs)``
-    - ``acomplete(prompt, formatted=False, *, stream=False, **kwargs)`` — async shim over ``complete`` / ``stream_complete``
+    - ``acomplete(prompt, formatted=False, *, stream=False, **kwargs)`` — async shim over ``complete``
 
     Examples:
         Basic usage with a completion-first provider:
@@ -51,12 +50,12 @@ class CompletionToChatMixin:
         ...     @property
         ...     def metadata(self):
         ...         return Metadata(is_chat_model=False)
-        ...     def complete(self, prompt, formatted=False, **kwargs):
+        ...     def complete(self, prompt, formatted=False, *, stream=False, **kwargs):
+        ...         if stream:
+        ...             def gen():
+        ...                 yield CompletionResponse(text="Hello", delta="Hello")
+        ...             return gen()
         ...         return CompletionResponse(text="Hello")
-        ...     def stream_complete(self, prompt, formatted=False, **kwargs):
-        ...         def gen():
-        ...             yield CompletionResponse(text="Hello", delta="Hello")
-        ...         return gen()
         ...
         >>> llm = MyCompletionLLM(model="example")
         ```
@@ -106,8 +105,8 @@ class CompletionToChatMixin:
         """
         prompt = self.messages_to_prompt(messages)  # type: ignore[attr-defined]
         if stream:
-            completion_gen: CompletionResponseGen = self.stream_complete(  # type: ignore[attr-defined]
-                prompt, formatted=True, **kwargs
+            completion_gen: CompletionResponseGen = self.complete(  # type: ignore[attr-defined]
+                prompt, formatted=True, stream=True, **kwargs
             )
             result: ChatResponse | ChatResponseGen = CompletionResponse.stream_to_chat_response(completion_gen)
         else:
@@ -188,7 +187,7 @@ class CompletionToChatMixin:
     async def acomplete(
         self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs: Any
     ) -> CompletionResponse | CompletionResponseAsyncGen:
-        """Async shim: delegates to the synchronous ``complete`` or ``stream_complete`` method.
+        """Async shim: delegates to the synchronous ``complete`` method.
 
         Args:
             prompt: The prompt string to complete.
@@ -201,8 +200,8 @@ class CompletionToChatMixin:
         """
         if stream:
             async def gen() -> CompletionResponseAsyncGen:
-                for chunk in self.stream_complete(  # type: ignore[attr-defined]
-                    prompt, formatted=formatted, **kwargs
+                for chunk in self.complete(  # type: ignore[attr-defined]
+                    prompt, formatted=formatted, stream=True, **kwargs
                 ):
                     yield chunk
 

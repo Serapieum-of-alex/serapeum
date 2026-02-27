@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, Literal, overload
 from importlib.metadata import version as get_version
 
 import requests
@@ -237,26 +237,47 @@ class LlamaCPP(CompletionToChatMixin, LLM):
                 os.remove(model_path)
                 raise ValueError("Download incomplete.")
 
+    @overload
     def complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
-        self.generate_kwargs.update({"stream": False})
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
+    ) -> CompletionResponse: ...
 
+    @overload
+    def complete(
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
+    ) -> CompletionResponseGen: ...
+
+    def complete(
+        self,
+        prompt: str,
+        formatted: bool = False,
+        *,
+        stream: bool = False,
+        **kwargs: Any,
+    ) -> CompletionResponse | CompletionResponseGen:
         if not formatted:
             prompt = self.completion_to_prompt(prompt)
+        if stream:
+            return self._stream_complete(prompt, **kwargs)
+        return self._complete(prompt, **kwargs)
 
+    def _complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
+        self.generate_kwargs.update({"stream": False})
         response = self._model(prompt=prompt, **self.generate_kwargs)
-
         return CompletionResponse(text=response["choices"][0]["text"], raw=response)
 
-    def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseGen:
+    def _stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
         self.generate_kwargs.update({"stream": True})
-
-        if not formatted:
-            prompt = self.completion_to_prompt(prompt)
-
         response_iter = self._model(prompt=prompt, **self.generate_kwargs)
 
         def gen() -> CompletionResponseGen:

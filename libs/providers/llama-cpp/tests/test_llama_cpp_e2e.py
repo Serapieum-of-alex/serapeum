@@ -210,17 +210,17 @@ class TestLlamaCPPComplete:
 # ---------------------------------------------------------------------------
 
 class TestLlamaCPPStreamComplete:
-    """Tests for LlamaCPP.stream_complete() — synchronous streaming completion."""
+    """Tests for LlamaCPP.complete(stream=True) — synchronous streaming completion."""
 
     @skip_no_model
     def test_returns_generator(self, llm: LlamaCPP):
-        """Test stream_complete() returns an iterable generator.
+        """Test complete(stream=True) returns an iterable generator.
 
         Test scenario:
             The return value should be iterable — consuming one chunk should
             not raise.
         """
-        gen = llm.stream_complete("Say hello.")
+        gen = llm.complete("Say hello.", stream=True)
         first_chunk = next(iter(gen))
         assert isinstance(first_chunk, CompletionResponse), (
             f"Expected CompletionResponse chunk, got {type(first_chunk)}"
@@ -228,13 +228,13 @@ class TestLlamaCPPStreamComplete:
 
     @skip_no_model
     def test_chunks_have_delta(self, llm: LlamaCPP):
-        """Test each chunk from stream_complete() carries a delta string.
+        """Test each chunk from complete(stream=True) carries a delta string.
 
         Test scenario:
             Every yielded CompletionResponse should have a non-None delta
             representing the incremental token text.
         """
-        for chunk in llm.stream_complete("Count: 1, 2, 3"):
+        for chunk in llm.complete("Count: 1, 2, 3", stream=True):
             assert chunk.delta is not None, (
                 f"Chunk delta should not be None, got chunk: {chunk}"
             )
@@ -251,7 +251,7 @@ class TestLlamaCPPStreamComplete:
             previous one, since text is the cumulative concatenation of deltas.
         """
         prev_len = 0
-        for chunk in llm.stream_complete("Count: 1, 2, 3"):
+        for chunk in llm.complete("Count: 1, 2, 3", stream=True):
             assert len(chunk.text) >= prev_len, (
                 f"Text length decreased: {prev_len} -> {len(chunk.text)}"
             )
@@ -265,7 +265,7 @@ class TestLlamaCPPStreamComplete:
             Streaming is consistent: joining every delta should reproduce the
             text field of the last chunk.
         """
-        chunks = list(llm.stream_complete("Say hello."))
+        chunks = list(llm.complete("Say hello.", stream=True))
         joined = "".join(c.delta for c in chunks if c.delta)
         final_text = chunks[-1].text
         assert joined == final_text, (

@@ -8,6 +8,8 @@ on:
     paths:
       - "libs/core/**"
       - "libs/providers/ollama/**"
+      - "pyproject.toml"
+      - "uv.lock"
   workflow_dispatch:
 
 jobs:

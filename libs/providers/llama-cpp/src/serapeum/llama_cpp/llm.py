@@ -2,7 +2,7 @@ import asyncio
 from pathlib import Path
 from typing import Any, Literal, overload
 
-import requests
+
 from serapeum.core.llms import (
     LLM,
     CompletionToChatMixin,
@@ -17,9 +17,8 @@ from serapeum.core.configs.defaults import (
     DEFAULT_NUM_OUTPUTS,
     DEFAULT_TEMPERATURE,
 )
-
+from serapeum.llama_cpp.utils import _download_url
 from serapeum.core.utils.base import get_cache_dir
-from tqdm import tqdm
 
 from llama_cpp import Llama
 
@@ -170,7 +169,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             model_path = cache_dir / "models" / model_url.rsplit("/", 1)[-1]
             if not model_path.exists():
                 model_path.parent.mkdir(parents=True, exist_ok=True)
-                self._download_url(model_url, model_path)
+                _download_url(model_url, model_path)
                 if not model_path.exists():
                     raise RuntimeError(
                         f"Download appeared to succeed but model not found at {model_path!r}"
@@ -193,35 +192,6 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             num_output=self.max_new_tokens,
             model_name=self.model_path,
         )
-
-    def _download_url(self, model_url: str, model_path: Path) -> None:
-        completed = False
-        try:
-            print("Downloading url", model_url, "to path", model_path)
-            with requests.get(model_url, stream=True) as r:
-                with model_path.open("wb") as file:
-                    total_size = int(r.headers.get("Content-Length") or "0")
-                    if total_size < 1000 * 1000:
-                        raise ValueError(
-                            f"Content should be at least 1 MB, but is only "
-                            f"{r.headers.get('Content-Length')} bytes"
-                        )
-                    print("total size (MB):", round(total_size / 1000 / 1000, 2))
-                    chunk_size = 1024 * 1024  # 1 MB
-                    for chunk in tqdm(
-                        r.iter_content(chunk_size=chunk_size),
-                        total=int(total_size / chunk_size),
-                        unit="MB",
-                    ):
-                        file.write(chunk)
-            completed = True
-        except Exception as e:
-            print("Error downloading model:", e)
-        finally:
-            if not completed:
-                print("Download incomplete.", "Removing partially downloaded file.")
-                model_path.unlink(missing_ok=True)
-                raise ValueError("Download incomplete.")
 
     @overload
     def complete(

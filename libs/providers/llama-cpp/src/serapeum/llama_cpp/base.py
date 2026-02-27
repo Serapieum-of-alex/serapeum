@@ -1,8 +1,9 @@
 import os
 from typing import Any, Callable, Dict, Optional, Sequence
+from importlib.metadata import version as get_version
 
 import requests
-from serapeum.core.base.llms.models import (
+from serapeum.core.llms import (
     Message,
     ChatResponse,
     ChatResponseGen,
@@ -17,12 +18,9 @@ from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
 )
 
-from serapeum.core.llms.base import CustomLLM
-from serapeum.core.base.llms.models import (
-    stream_completion_response_to_chat_response,
-)
-from serapeum.core.output_parsers.models import BaseParser
-from serapeum.core.base.models import PydanticProgramMode
+from serapeum.core.llms import CustomLLM
+from serapeum.core.output_parsers import BaseParser
+from serapeum.core.types import StructuredOutputMode
 from serapeum.core.utils.base import get_cache_dir
 from tqdm import tqdm
 
@@ -47,7 +45,7 @@ class LlamaCPP(CustomLLM):
         Install llama-cpp-python following instructions:
         https://github.com/abetlen/llama-cpp-python
 
-        Then `pip install llama-index-llms-llama-cpp`
+        Then `pip install serapeum-llms-llama-cpp`
 
         ```python
         from serapeum.llms.llama_cpp import LlamaCPP
@@ -143,7 +141,7 @@ class LlamaCPP(CustomLLM):
         system_prompt: Optional[str] = None,
         messages_to_prompt: Optional[Callable[[Sequence[Message]], str]] = None,
         completion_to_prompt: Optional[Callable[[str], str]] = None,
-        pydantic_program_mode: PydanticProgramMode = PydanticProgramMode.DEFAULT,
+        pydantic_program_mode: StructuredOutputMode = StructuredOutputMode.DEFAULT,
         output_parser: Optional[BaseParser] = None,
     ) -> None:
         model_kwargs = {
@@ -210,9 +208,8 @@ class LlamaCPP(CustomLLM):
 
     def _get_model_path_for_version(self) -> str:
         """Get model path for the current llama-cpp version."""
-        import pkg_resources
+        version = get_version("llama-cpp-python")
 
-        version = pkg_resources.get_distribution("llama-cpp-python").version
         major, minor, patch = version.split(".")
 
         # NOTE: llama-cpp-python<=0.1.78 supports GGML, newer support GGUF
@@ -261,7 +258,7 @@ class LlamaCPP(CustomLLM):
     ) -> ChatResponseGen:
         prompt = self.messages_to_prompt(messages)
         completion_response = self.stream_complete(prompt, formatted=True, **kwargs)
-        return stream_completion_response_to_chat_response(completion_response)
+        return CompletionResponse.stream_to_chat_response(completion_response)
 
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any

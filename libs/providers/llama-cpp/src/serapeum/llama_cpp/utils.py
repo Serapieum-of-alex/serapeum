@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List, Optional, Sequence
 
-from serapeum.core.base.llms.models import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole
 
 BOS, EOS = "<s>", "</s>"
 B_INST, E_INST = "[INST]", "[/INST]"

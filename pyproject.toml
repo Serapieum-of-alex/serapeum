@@ -1,6 +1,6 @@
 [project]
 name = "serapeum"
-version = "0.1.0"
+version = "0.3.0"
 description = "llm utility package"
 readme = "README.md"
 license = {text = "GNU General Public License v3"}
@@ -20,11 +20,12 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
 ]
+
 requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core",
-    "serapeum-llms-ollama",
-    "serapeum-llms-llama-cpp"
+    "serapeum-ollama",
+    "serapeum-llama-cpp",
 ]
 
 
@@ -38,6 +39,11 @@ dev = [
     "nest-asyncio>=1.6.0",
     "nbval>=0.11.0",
     "mypy>=1.13.0",
+    "pytest-xdist>=3.8.0",
+    "pytest-benchmark",
+    "pytest-markdown-docs>=0.9.1",
+    "pytest-mock>=3.14.0",
+    "python-dotenv",
 ]
 
 docs = [
@@ -61,12 +67,29 @@ docs = [
 [project.urls]
 homepage = "https://github.com/Serapieum-of-alex/serapeum"
 repository = "https://github.com/Serapieum-of-alex/serapeum"
-documentation = "https://serapeum.readthedocs.io/"
-Changelog = "https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst"
+documentation = "https://serapieum-of-alex.github.io/serapeum"
+Changelog = "https://serapieum-of-alex.github.io/serapeum/latest/change-log"
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/serapeum"]
+packages = ["libs/core/src/serapeum"]
+
+
+[tool.commitizen]
+name = "cz_customize"
+version_provider = "pep621"
+tag_format = "$version"
+changelog_file = "docs/change-log.md"
+changelog_incremental = true
+changelog_merge_prerelease = true
+
+[tool.commitizen.customize]
+message_template = "{{change_type}}:{% if show_message %} {{message}}{% endif %}"
+example = "feature: this feature enables customize through config file"
+schema = "<type>: <body>"
+schema_pattern = "(feat|fix|refactor|perf|build|ci|chore)(\\(.+\\))?: (.+)"
+changelog_pattern = "^(feat|fix|refactor|perf|build|ci|chore)(\\(.+\\))?(!)?:"
+change_type_order = ["BREAKING CHANGE", "feat", "fix", "refactor", "perf", "build", "ci", "chore"]
 
 [tool.flake8]
 ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
@@ -82,7 +105,10 @@ profile = "black"
 line_length = 88
 
 [tool.pytest.ini_options]
-
+testpaths = [
+    "libs/core/tests",
+    "libs/providers/ollama/tests",
+]
 norecursedirs = ["docs"]
 markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
@@ -111,36 +137,33 @@ module = "serapeum.core.base.*"
 strict = true
 
 [[tool.mypy.overrides]]
-module = "serapeum.core.llm.*"
+module = "serapeum.core.llms.*"
 strict = true
 
 [[tool.mypy.overrides]]
 module = "serapeum.core.tools.*"
 strict = true
 
-[[tool.mypy.overrides]]
-module = "serapeum.core.structured_tools.*"
-strict = true
 
 [[tool.mypy.overrides]]
-module = "serapeum.llms.ollama.*"
+module = "serapeum.ollama.*"
 strict = true
 
 
 [tool.uv.workspace]
 members = [
-    "serapeum-core",
-    "serapeum-integrations/llms/serapeum-llms-ollama",
-    "serapeum-integrations/llms/serapeum-llms-llama-cpp",
+    "libs/core",
+    "libs/providers/*",
 ]
-
-[tool.uv.sources]
-serapeum-core = { workspace = true }
-serapeum-llms-ollama = { workspace = true }
-serapeum-llms-llama-cpp = { workspace = true }
 
 #[tool.uv]
 #managed = false
+
+[tool.uv.sources]
+serapeum-core = { workspace = true }
+serapeum-ollama = { workspace = true }
+serapeum-llama-cpp = { workspace = true }
+
 
 [build-system]
 requires = ["hatchling"]

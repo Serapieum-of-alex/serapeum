@@ -11,7 +11,7 @@ theme:
   features:
     - navigation.instant
     - navigation.tracking
-    - navigation.expand
+    # - navigation.expand  # Disabled: keep sections collapsed by default
     - navigation.indexes
     - navigation.footer
     - navigation.sections
@@ -110,45 +110,55 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Overview:
+    - Core package: overview/core-package.md
+    - Provider Integrations:
+        - Overview: overview/providers.md
+        - Ollama: overview/providers/ollama.md
+        - Adding New Providers: overview/providers/adding-new-providers.md
+  - Reference:
+    - Core:
+        - llms:
+            - LLM Classes Comparison: reference/core/llms/llm-classes-comparison.md
+            - orchestrators:
+                - Text Completion LLM:
+                    - Overview: reference/core/llms/orchestrators/text_completion_llm/general.md
+                    - Examples: reference/core/llms/orchestrators/text_completion_llm/examples.md
+                    - Execution Flow: reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_sequence.md
+                    - Architecture: reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_class.md
+                    - Data Flow: reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_dataflow.md
+                    - Components: reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_components.md
+                    - Lifecycle: reference/core/llms/orchestrators/text_completion_llm/text_completion_llm_state.md
+                - Tool Orchestrating LLM:
+                    - Overview: reference/core/llms/orchestrators/tool_orchestrating_llm/general.md
+                    - Examples: reference/core/llms/orchestrators/tool_orchestrating_llm/examples.md
+                    - Execution Flow: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_sequence.md
+                    - Architecture: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_class.md
+                    - Data Flow: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_dataflow.md
+                    - Components: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_components.md
+                    - Lifecycle: reference/core/llms/orchestrators/tool_orchestrating_llm/tool_orchestrating_llm_state.md
+        - embeddings:
+            - reference/core/embeddings/module.md
+        - tools:
+            - Overview: reference/core/tools/tools.md
+            - CallableTools: reference/core/tools/callable_tools.md
+  - Providers:
+      - Ollama:
+          - Overview: reference/providers/ollama/general.md
+          - Examples: reference/providers/ollama/examples.md
+          - Execution Flow: reference/providers/ollama/ollama_sequence.md
+          - Architecture: reference/providers/ollama/ollama_class.md
+          - Data Flow: reference/providers/ollama/ollama_dataflow.md
+          - Components: reference/providers/ollama/ollama_components.md
+          - Lifecycle: reference/providers/ollama/ollama_state.md
+          - API-Reference: reference/providers/ollama/api_reference.md
+      - Add New Providers:
+          - Instructions: reference/providers/add_new_providers.md
   - Developer Guide:
       - Installation: developer-guide/installation.md
       - contributing: developer-guide/contributing.md
-  - Overview:
-    - Codebase Map: overview/codebase-map.md
-  - Architecture:
-    - Diagrams: architecture/diagrams.md
-  - Reference:
-    - Core:
-        - structured_tools:
-            - Text Completion LLM:
-                - Overview: reference/core/structured_tools/text_completion_llm/general.md
-                - Examples: reference/core/structured_tools/text_completion_llm/examples.md
-                - Execution Flow: reference/core/structured_tools/text_completion_llm/text_completion_llm_sequence.md
-                - Architecture: reference/core/structured_tools/text_completion_llm/text_completion_llm_class.md
-                - Data Flow: reference/core/structured_tools/text_completion_llm/text_completion_llm_dataflow.md
-                - Components: reference/core/structured_tools/text_completion_llm/text_completion_llm_components.md
-                - Lifecycle: reference/core/structured_tools/text_completion_llm/text_completion_llm_state.md
-            - Tool Orchestrating LLM:
-                - Overview: reference/core/structured_tools/tool_orchestrating_llm/general.md
-                - Examples: reference/core/structured_tools/tool_orchestrating_llm/examples.md
-                - Execution Flow: reference/core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_sequence.md
-                - Architecture: reference/core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_class.md
-                - Data Flow: reference/core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_dataflow.md
-                - Components: reference/core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_components.md
-                - Lifecycle: reference/core/structured_tools/tool_orchestrating_llm/tool_orchestrating_llm_state.md
-        - tools:
-            - reference/core/tools/tools.md
-            - reference/core/tools/callable_tools.md
-    - Integrations:
-        - LLMs:
-            - Ollama:
-                - Overview: reference/integrations/llms/ollama/general.md
-                - Examples: reference/integrations/llms/ollama/examples.md
-                - Execution Flow: reference/integrations/llms/ollama/ollama_sequence.md
-                - Architecture: reference/integrations/llms/ollama/ollama_class.md
-                - Data Flow: reference/integrations/llms/ollama/ollama_dataflow.md
-                - Components: reference/integrations/llms/ollama/ollama_components.md
-                - Lifecycle: reference/integrations/llms/ollama/ollama_state.md
+      - Taskfile: developer-guide/taskfile.md
+      - testing-documentation: developer-guide/testing-docs.md
   - About:
     - Change-log: change-log.md
     - Contributing: contributing.md

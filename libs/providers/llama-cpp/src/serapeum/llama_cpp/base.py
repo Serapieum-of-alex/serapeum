@@ -1,25 +1,22 @@
 import os
-from typing import Any, Callable, Dict, Optional, Sequence
+from typing import Any
 from importlib.metadata import version as get_version
 
 import requests
 from serapeum.core.llms import (
     LLM,
     CompletionToChatMixin,
-    Message,
     CompletionResponse,
     CompletionResponseGen,
     Metadata,
 )
-from pydantic import Field, PrivateAttr
+from pydantic import Field, PrivateAttr, model_validator
 from serapeum.core.configs.defaults import (
     DEFAULT_CONTEXT_WINDOW,
     DEFAULT_NUM_OUTPUTS,
     DEFAULT_TEMPERATURE,
 )
 
-from serapeum.core.output_parsers import BaseParser
-from serapeum.core.types import StructuredOutputMode
 from serapeum.core.utils.base import get_cache_dir
 from tqdm import tqdm
 
@@ -92,10 +89,12 @@ class LlamaCPP(CompletionToChatMixin, LLM):
 
     """
 
-    model_url: Optional[str] = Field(
+    model_url: str | None = Field(
+        default=None,
         description="The URL llama-cpp model to download and use."
     )
-    model_path: Optional[str] = Field(
+    model_path: str | None = Field(
+        default=None,
         description="The path to the llama-cpp model to use."
     )
     temperature: float = Field(
@@ -114,10 +113,10 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         description="The maximum number of context tokens for the model.",
         gt=0,
     )
-    generate_kwargs: Dict[str, Any] = Field(
+    generate_kwargs: dict[str, Any] = Field(
         default_factory=dict, description="Kwargs used for generation."
     )
-    model_kwargs: Dict[str, Any] = Field(
+    model_kwargs: dict[str, Any] = Field(
         default_factory=dict, description="Kwargs used for model initialization."
     )
     verbose: bool = Field(
@@ -125,41 +124,52 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         description="Whether to print verbose output.",
     )
 
-    _model: Any = PrivateAttr()
+    _model: Any = PrivateAttr(default=None)
 
-    def __init__(
-        self,
-        model_url: Optional[str] = None,
-        model_path: Optional[str] = None,
-        temperature: float = DEFAULT_TEMPERATURE,
-        max_new_tokens: int = DEFAULT_NUM_OUTPUTS,
-        context_window: int = DEFAULT_CONTEXT_WINDOW,
-        generate_kwargs: Optional[Dict[str, Any]] = None,
-        model_kwargs: Optional[Dict[str, Any]] = None,
-        verbose: bool = DEFAULT_LLAMA_CPP_MODEL_VERBOSITY,
-        system_prompt: Optional[str] = None,
-        messages_to_prompt: Optional[Callable[[Sequence[Message]], str]] = None,
-        completion_to_prompt: Optional[Callable[[str], str]] = None,
-        pydantic_program_mode: StructuredOutputMode = StructuredOutputMode.DEFAULT,
-        output_parser: Optional[BaseParser] = None,
-    ) -> None:
-        model_kwargs = {
-            **{"n_ctx": context_window, "verbose": verbose},
-            **(model_kwargs or {}),  # Override defaults via model_kwargs
-        }
+    @model_validator(mode="after")
+    def _check_model_source(self) -> "LlamaCPP":
+        """Ensure at least one of model_path or model_url is provided."""
+        if self.model_path is None and self.model_url is None:
+            raise ValueError(
+                "Either model_path or model_url must be provided. "
+                "Set model_path to a local GGUF file, or model_url to download one."
+            )
+        return self
+
+    @model_validator(mode="before")
+    @classmethod
+    def _prepare_kwargs(cls, data: Any) -> Any:
+        """Merge n_ctx/verbose defaults into model_kwargs before field validation.
+
+        User-supplied model_kwargs take precedence over these defaults.
+        """
+        if isinstance(data, dict):
+            context_window = data.get("context_window", DEFAULT_CONTEXT_WINDOW)
+            verbose = data.get("verbose", DEFAULT_LLAMA_CPP_MODEL_VERBOSITY)
+            model_kwargs = dict(data.get("model_kwargs") or {})
+            model_kwargs.setdefault("n_ctx", context_window)
+            model_kwargs.setdefault("verbose", verbose)
+            data = {**data, "model_kwargs": model_kwargs}
+        return data
+
+    def model_post_init(self, __context: Any) -> None:
+        """Load or download the Llama model after all fields are validated."""
+        generate_kwargs = self.generate_kwargs
+        generate_kwargs.update(
+            {"temperature": self.temperature, "max_tokens": self.max_new_tokens}
+        )
 
         # check if model is cached
-        if model_path is not None:
-            if not os.path.exists(model_path):
+        if self.model_path is not None:
+            if not os.path.exists(self.model_path):
                 raise ValueError(
                     "Provided model path does not exist. "
                     "Please check the path or provide a model_url to download."
                 )
-            else:
-                model = Llama(model_path=model_path, **model_kwargs)
+            model = Llama(model_path=self.model_path, **self.model_kwargs)
         else:
             cache_dir = get_cache_dir()
-            model_url = model_url or self._get_model_path_for_version()
+            model_url = self.model_url or self._get_model_path_for_version()
             model_name = os.path.basename(model_url)
             model_path = os.path.join(cache_dir, "models", model_name)
             if not os.path.exists(model_path):
@@ -167,29 +177,9 @@ class LlamaCPP(CompletionToChatMixin, LLM):
                 self._download_url(model_url, model_path)
                 assert os.path.exists(model_path)
 
-            model = Llama(model_path=model_path, **model_kwargs)
+            model = Llama(model_path=model_path, **self.model_kwargs)
+            self.model_path = model_path
 
-        model_path = model_path
-        generate_kwargs = generate_kwargs or {}
-        generate_kwargs.update(
-            {"temperature": temperature, "max_tokens": max_new_tokens}
-        )
-
-        super().__init__(
-            model_path=model_path,
-            model_url=model_url,
-            temperature=temperature,
-            context_window=context_window,
-            max_new_tokens=max_new_tokens,
-            generate_kwargs=generate_kwargs,
-            model_kwargs=model_kwargs,
-            verbose=verbose,
-            system_prompt=system_prompt,
-            messages_to_prompt=messages_to_prompt,
-            completion_to_prompt=completion_to_prompt,
-            pydantic_program_mode=pydantic_program_mode,
-            output_parser=output_parser,
-        )
         self._model = model
 
     @classmethod

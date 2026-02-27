@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from typing import Any, Literal, overload
 from importlib.metadata import version as get_version
 
@@ -156,24 +156,27 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         """Load or download the Llama model after all fields are validated."""
         # check if model is cached
         if self.model_path is not None:
-            if not os.path.exists(self.model_path):
+            model_path = Path(self.model_path)
+            if not model_path.exists():
                 raise ValueError(
                     "Provided model path does not exist. "
                     "Please check the path or provide a model_url to download."
                 )
-            model = Llama(model_path=self.model_path, **self.model_kwargs)
+            model = Llama(model_path=str(model_path), **self.model_kwargs)
         else:
-            cache_dir = get_cache_dir()
+            cache_dir = Path(get_cache_dir())
             model_url = self.model_url or self._get_model_path_for_version()
-            model_name = os.path.basename(model_url)
-            model_path = os.path.join(cache_dir, "models", model_name)
-            if not os.path.exists(model_path):
-                os.makedirs(os.path.dirname(model_path), exist_ok=True)
+            model_path = cache_dir / "models" / model_url.rsplit("/", 1)[-1]
+            if not model_path.exists():
+                model_path.parent.mkdir(parents=True, exist_ok=True)
                 self._download_url(model_url, model_path)
-                assert os.path.exists(model_path)
+                if not model_path.exists():
+                    raise RuntimeError(
+                        f"Download appeared to succeed but model not found at {model_path!r}"
+                    )
 
-            model = Llama(model_path=model_path, **self.model_kwargs)
-            self.model_path = model_path
+            model = Llama(model_path=str(model_path), **self.model_kwargs)
+            self.model_path = str(model_path)
 
         self._model = model
 
@@ -202,18 +205,17 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         else:
             return DEFAULT_LLAMA_CPP_GGUF_MODEL
 
-    def _download_url(self, model_url: str, model_path: str) -> None:
+    def _download_url(self, model_url: str, model_path: Path) -> None:
         completed = False
         try:
             print("Downloading url", model_url, "to path", model_path)
             with requests.get(model_url, stream=True) as r:
-                with open(model_path, "wb") as file:
+                with model_path.open("wb") as file:
                     total_size = int(r.headers.get("Content-Length") or "0")
                     if total_size < 1000 * 1000:
                         raise ValueError(
-                            "Content should be at least 1 MB, but is only",
-                            r.headers.get("Content-Length"),
-                            "bytes",
+                            f"Content should be at least 1 MB, but is only "
+                            f"{r.headers.get('Content-Length')} bytes"
                         )
                     print("total size (MB):", round(total_size / 1000 / 1000, 2))
                     chunk_size = 1024 * 1024  # 1 MB
@@ -229,7 +231,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         finally:
             if not completed:
                 print("Download incomplete.", "Removing partially downloaded file.")
-                os.remove(model_path)
+                model_path.unlink(missing_ok=True)
                 raise ValueError("Download incomplete.")
 
     @overload

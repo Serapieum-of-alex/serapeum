@@ -13,7 +13,7 @@ from serapeum.core.llms import (
     CompletionResponseGen,
     Metadata,
 )
-from pydantic import Field, PrivateAttr, model_validator
+from pydantic import Field, PrivateAttr, field_validator, model_validator
 from serapeum.core.configs.defaults import (
     DEFAULT_CONTEXT_WINDOW,
     DEFAULT_NUM_OUTPUTS,
@@ -33,7 +33,7 @@ DEFAULT_MODEL_VERBOSITY = False
 
 # Module-level model cache.  WeakValues mean the Llama instance is released
 # automatically when the last LlamaCPP referencing it is garbage-collected.
-_MODEL_CACHE: weakref.WeakValueDictionary[str, Llama] = weakref.WeakValueDictionary()
+_MODEL_CACHE: weakref.WeakValueDictionary[tuple[str, str], Llama] = weakref.WeakValueDictionary()
 _MODEL_CACHE_LOCK = threading.Lock()
 
 
@@ -166,10 +166,26 @@ class LlamaCPP(CompletionToChatMixin, LLM):
     )
 
     _model: Any = PrivateAttr(default=None)
+    # Serializes concurrent model calls: llama_cpp releases the GIL during
+    # C-level inference, so two asyncio.to_thread calls on the same Llama
+    # instance can race and abort().  One lock per LlamaCPP instance is
+    # sufficient for the common "one model, many callers" pattern.
+    _model_lock: threading.Lock = PrivateAttr(default_factory=threading.Lock)
+
+    @field_validator("model_path")
+    @classmethod
+    def _validate_model_path_exists(cls, v: str | None) -> str | None:
+        """Validate that model_path points to an existing file when provided."""
+        if v is not None and not Path(v).exists():
+            raise ValueError(
+                "Provided model path does not exist. "
+                "Please check the path or provide a model_url to download."
+            )
+        return v
 
     @model_validator(mode="after")
     def _check_model_source(self) -> "LlamaCPP":
-        """Ensure exactly one model source is provided and is fully specified."""
+        """Ensure the cross-field model source combination is valid."""
         if (
             self.model_path is None
             and self.model_url is None
@@ -184,6 +200,31 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             raise ValueError(
                 "hf_filename is required when hf_model_id is provided. "
                 "Example: hf_filename='llama-2-13b-chat.Q4_0.gguf'."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _check_formatters(self) -> "LlamaCPP":
+        """Ensure both prompt formatters were explicitly provided by the caller.
+
+        The base LLM silently falls back to a generic lambda when
+        messages_to_prompt / completion_to_prompt are omitted, producing no
+        instruct template and therefore garbage output from any GGUF instruct
+        model.  model_fields_set contains only the fields the caller explicitly
+        passed, so omitted fields are detected even if they have a default.
+        """
+        missing = [
+            name
+            for name in ("messages_to_prompt", "completion_to_prompt")
+            if name not in self.model_fields_set
+        ]
+        if missing:
+            raise ValueError(
+                f"LlamaCPP requires explicit prompt formatters: {', '.join(missing)}.\n"
+                "Pass a formatter that matches your model's chat template.\n"
+                "Ready-made formatters are available in serapeum.llama_cpp.formatters:\n"
+                "  Llama 2 / Mistral:  messages_to_prompt, completion_to_prompt\n"
+                "  Llama 3:            messages_to_prompt_v3_instruct, completion_to_prompt_v3_instruct"
             )
         return self
 
@@ -206,32 +247,14 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         return data
 
     def model_post_init(self, __context: Any) -> None:
-        """Validate formatters, resolve the model path, and load the model."""
-        # Fail fast if the caller omitted a formatter.  The base LLM silently
-        # falls back to a generic lambda that produces no instruct template,
-        # which causes garbage output from any GGUF instruct model.
-        missing = [
-            name
-            for name in ("messages_to_prompt", "completion_to_prompt")
-            if name not in self.model_fields_set
-        ]
-        if missing:
-            raise ValueError(
-                f"LlamaCPP requires explicit prompt formatters: {', '.join(missing)}.\n"
-                "Pass a formatter that matches your model's chat template.\n"
-                "Ready-made formatters are available in serapeum.llama_cpp.formatters:\n"
-                "  Llama 2 / Mistral:  messages_to_prompt, completion_to_prompt\n"
-                "  Llama 3:            messages_to_prompt_v3_instruct, completion_to_prompt_v3_instruct"
-            )
+        """Download if needed, then load the model."""
+        model_path = self._resolve_model_path()
+        self._model = self._load_model(model_path)
 
-        # Resolve the model path from whichever source was provided.
+    def _resolve_model_path(self) -> Path:
+        """Return the local Path to the GGUF file, downloading it if required."""
         if self.model_path is not None:
             model_path = Path(self.model_path)
-            if not model_path.exists():
-                raise ValueError(
-                    "Provided model path does not exist. "
-                    "Please check the path or provide a model_url to download."
-                )
         elif self.hf_model_id is not None:
             # hf_filename is guaranteed non-None by _check_model_source.
             cache_dir = Path(get_cache_dir()) / "models"
@@ -243,9 +266,8 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             )
             self.model_path = str(model_path)
         else:
-            cache_dir = Path(get_cache_dir())
             model_url = self.model_url or DEFAULT_LLAMA_CPP_GGUF_MODEL
-            model_path = cache_dir / "models" / model_url.rsplit("/", 1)[-1]
+            model_path = Path(get_cache_dir()) / "models" / model_url.rsplit("/", 1)[-1]
             if not model_path.exists():
                 model_path.parent.mkdir(parents=True, exist_ok=True)
                 _fetch_model_file(model_url, model_path)
@@ -254,27 +276,28 @@ class LlamaCPP(CompletionToChatMixin, LLM):
                         f"Download appeared to succeed but model not found at {model_path!r}"
                     )
             self.model_path = str(model_path)
+        return model_path
 
-        # Check the module-level cache before loading.  Double-checked locking:
-        # load outside the lock so threads with different models don't serialise.
+    def _load_model(self, model_path: Path) -> Llama:
+        """Return a Llama instance for *model_path*, reusing the cache if possible.
+
+        Uses double-checked locking so threads loading different models do not
+        serialise on a single lock, while still preventing duplicate loads of
+        the same model.
+        """
         cache_key = (str(model_path), json.dumps(self.model_kwargs, sort_keys=True))
-        with _MODEL_CACHE_LOCK:
-            cached = _MODEL_CACHE.get(cache_key)
-            if cached is not None:
-                self._model = cached
-                return
-
-        model = Llama(model_path=str(model_path), **self.model_kwargs)
 
         with _MODEL_CACHE_LOCK:
-            cached = _MODEL_CACHE.get(cache_key)
-            if cached is not None:
-                # Another thread loaded the same model while we were loading.
-                self._model = cached
-                return
-            _MODEL_CACHE[cache_key] = model
+            result = _MODEL_CACHE.get(cache_key)
 
-        self._model = model
+        if result is None:
+            loaded = Llama(model_path=str(model_path), **self.model_kwargs)
+            with _MODEL_CACHE_LOCK:
+                if _MODEL_CACHE.get(cache_key) is None:
+                    _MODEL_CACHE[cache_key] = loaded
+                result = _MODEL_CACHE[cache_key]
+
+        return result
 
     @classmethod
     def class_name(cls) -> str:
@@ -401,7 +424,8 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             **kwargs,
         }
         call_kwargs.setdefault("stop", self.stop or None)
-        response = self._model(prompt=prompt, **call_kwargs)
+        with self._model_lock:
+            response = self._model(prompt=prompt, **call_kwargs)
         return CompletionResponse(text=response["choices"][0]["text"], raw=response)
 
     def _stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
@@ -414,13 +438,13 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             **kwargs,
         }
         call_kwargs.setdefault("stop", self.stop or None)
-        response_iter = self._model(prompt=prompt, **call_kwargs)
 
         def gen() -> CompletionResponseGen:
             text = ""
-            for response in response_iter:
-                delta = response["choices"][0]["text"]
-                text += delta
-                yield CompletionResponse(delta=delta, text=text, raw=response)
+            with self._model_lock:
+                for response in self._model(prompt=prompt, **call_kwargs):
+                    delta = response["choices"][0]["text"]
+                    text += delta
+                    yield CompletionResponse(delta=delta, text=text, raw=response)
 
         return gen()

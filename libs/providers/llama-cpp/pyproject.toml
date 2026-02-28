@@ -25,7 +25,7 @@ requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core>=0.3.0",
     "llama-cpp-python>=0.3.0",
-    "huggingface-hub"
+    "huggingface-hub>=1.5.0"
 ]
 
 [dependency-groups]

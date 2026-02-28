@@ -1,4 +1,4 @@
-name: Test llama-cpp
+name: Test Suite - llama-cpp
 
 permissions:
     contents: read
@@ -86,7 +86,7 @@ jobs:
         env:
           LLAMA_CPP_MODEL_PATH: ${{ steps.model.outputs.path }}
         run: |
-          uv run pytest libs/providers/llama-cpp/tests/test_llama_cpp_e2e.py \
+          uv run pytest libs/providers/llama-cpp/tests \
             -sv -m e2e \
             --cov=libs/providers/llama-cpp/src \
             --cov-report=xml

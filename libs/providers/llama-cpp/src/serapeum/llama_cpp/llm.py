@@ -22,10 +22,7 @@ from serapeum.core.utils.base import get_cache_dir
 
 from llama_cpp import Llama
 
-DEFAULT_LLAMA_CPP_GGML_MODEL = (
-    "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGML/resolve"
-    "/main/llama-2-13b-chat.ggmlv3.q4_0.bin"
-)
+
 DEFAULT_LLAMA_CPP_GGUF_MODEL = (
     "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve"
     "/main/llama-2-13b-chat.Q4_0.gguf"

@@ -102,7 +102,7 @@ serapeum-core = { workspace = true }
 
 [tool.uv]
 find-links = ["https://abetlen.github.io/llama-cpp-python/whl/cpu"]
-managed = false
+#managed = false
 
 [build-system]
 requires = ["hatchling"]

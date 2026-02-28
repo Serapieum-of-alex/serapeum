@@ -291,14 +291,17 @@ class TestLlamaCPP:
         )
 
     @pytest.mark.unit
-    def test_model_post_init_raises_when_both_formatters_missing(self) -> None:
+    def test_model_post_init_raises_when_both_formatters_missing(self, mocker: Any) -> None:
         """Test _check_formatters raises when neither formatter is in model_fields_set.
 
         Test scenario:
             Both formatters are required. _check_formatters must raise ValueError
             naming both missing formatters when model_fields_set contains neither.
             Uses model_construct with empty _fields_set to call the validator directly.
+            model_post_init is patched to prevent model_construct from triggering
+            a real model download.
         """
+        mocker.patch.object(LlamaCPP, "model_post_init")
         instance = LlamaCPP.model_construct(_fields_set=set())
         with pytest.raises(ValueError, match="requires explicit prompt formatters") as exc_info:
             instance._check_formatters()
@@ -321,6 +324,7 @@ class TestLlamaCPP:
     )
     def test_model_post_init_raises_when_one_formatter_missing(
         self,
+        mocker: Any,
         missing_formatter: str,
         fields_set: set,
     ) -> None:
@@ -333,7 +337,10 @@ class TestLlamaCPP:
         Test scenario:
             When only one formatter is in model_fields_set, _check_formatters must
             raise ValueError that names the missing formatter specifically.
+            model_post_init is patched to prevent model_construct from triggering
+            a real model download.
         """
+        mocker.patch.object(LlamaCPP, "model_post_init")
         instance = LlamaCPP.model_construct(_fields_set=fields_set)
         with pytest.raises(ValueError, match=missing_formatter) as exc_info:
             instance._check_formatters()

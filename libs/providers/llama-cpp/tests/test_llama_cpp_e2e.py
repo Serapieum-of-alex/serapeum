@@ -21,7 +21,7 @@ import pytest
 
 from serapeum.core.llms import Message, MessageRole, ChatResponse, CompletionResponse
 from serapeum.llama_cpp import LlamaCPP
-from serapeum.core.llms import MessageList
+
 from serapeum.llama_cpp.utils import (
     messages_to_prompt_v3_instruct,
     completion_to_prompt_v3_instruct,

@@ -1,9 +1,13 @@
 from __future__ import annotations
 from typing import List, Optional, Sequence
 from pathlib import Path
+import logging
+import math
 import requests
 from tqdm import tqdm
 from serapeum.core.llms import Message, MessageRole
+
+logger = logging.getLogger(__name__)
 
 
 BOS, EOS = "<s>", "</s>"
@@ -134,31 +138,26 @@ def completion_to_prompt_v3_instruct(
     )
 
 
-def _download_url(model_url: str, model_path: Path) -> None:
-    completed = False
+def _fetch_model_file(model_url: str, model_path: Path) -> None:
+    logger.info("Downloading %s to %s", model_url, model_path)
     try:
-        print("Downloading url", model_url, "to path", model_path)
         with requests.get(model_url, stream=True) as r:
+            r.raise_for_status()
+            total_size = int(r.headers.get("Content-Length") or 0)
+            if total_size < 1_000_000:
+                raise ValueError(
+                    f"Content-Length is {total_size} bytes; expected at least 1 MB"
+                )
+            logger.info("Total size: %.2f MB", total_size / 1_000_000)
+            chunk_size = 1024 * 1024  # 1 MB
             with model_path.open("wb") as file:
-                total_size = int(r.headers.get("Content-Length") or "0")
-                if total_size < 1000 * 1000:
-                    raise ValueError(
-                        f"Content should be at least 1 MB, but is only "
-                        f"{r.headers.get('Content-Length')} bytes"
-                    )
-                print("total size (MB):", round(total_size / 1000 / 1000, 2))
-                chunk_size = 1024 * 1024  # 1 MB
                 for chunk in tqdm(
                     r.iter_content(chunk_size=chunk_size),
-                    total=int(total_size / chunk_size),
+                    total=math.ceil(total_size / chunk_size),
                     unit="MB",
                 ):
                     file.write(chunk)
-        completed = True
-    except Exception as e:
-        print("Error downloading model:", e)
-    finally:
-        if not completed:
-            print("Download incomplete.", "Removing partially downloaded file.")
-            model_path.unlink(missing_ok=True)
-            raise ValueError("Download incomplete.")
+    except Exception:
+        logger.exception("Download failed, removing partial file at %s", model_path)
+        model_path.unlink(missing_ok=True)
+        raise

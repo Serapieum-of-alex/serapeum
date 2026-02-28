@@ -37,15 +37,17 @@ All examples below use a local model path. Replace it with your own.
 
 The most straightforward way to use `LlamaCPP`:
 
-```python notest
+```python 
+import os 
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
     completion_to_prompt_v3_instruct,
 )
 
+model_path = os.environ.get("LLAMA_MODEL_PATH")
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=model_path,
     temperature=0.1,
     max_new_tokens=256,
     context_window=8192,
@@ -61,7 +63,8 @@ print(response.text)  # "Hello! How are you?"
 
 Using the chat API (via CompletionToChatMixin):
 
-```python notest
+```python 
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.core.llms import Message, MessageRole
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -70,7 +73,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -88,7 +91,8 @@ print(response.message.content)  # "4"
 
 Load a GGUF file already on disk:
 
-```python notest
+```python 
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -96,7 +100,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -106,7 +110,7 @@ llm = LlamaCPP(
 
 Download and cache a GGUF model from a direct URL:
 
-```python notest
+```python 
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama2 import (
     messages_to_prompt,
@@ -124,7 +128,7 @@ llm = LlamaCPP(
 
 Download from HuggingFace Hub using `huggingface_hub`:
 
-```python notest
+```python 
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama2 import (
     messages_to_prompt,
@@ -143,7 +147,8 @@ llm = LlamaCPP(
 
 With all common parameters:
 
-```python notest
+```python 
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -151,7 +156,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     temperature=0.2,
     max_new_tokens=512,
     context_window=8192,
@@ -169,7 +174,7 @@ llm = LlamaCPP(
 
 Using Llama 2 / Mistral-style prompt templates:
 
-```python notest
+```python 
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama2 import (
     messages_to_prompt,
@@ -194,7 +199,8 @@ llm = LlamaCPP(
 
 Simple text completion:
 
-```python notest
+```python 
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -202,7 +208,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -215,7 +221,8 @@ print(response.text)  # "Paris"
 
 Override default generation settings:
 
-```python notest
+```python
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -223,7 +230,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -240,7 +247,8 @@ print(response.text)
 
 Pass an already-formatted prompt:
 
-```python notest
+```python
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -248,7 +256,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -265,7 +273,8 @@ print(response.text)
 
 Stop generation at specific tokens:
 
-```python notest
+```python 
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -273,7 +282,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     stop=["</s>", "<|eot_id|>", "<|end|>"],
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
@@ -287,7 +296,8 @@ response = llm.complete("Say hello.")
 
 Access the underlying llama-cpp-python response:
 
-```python notest
+```python 
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -295,7 +305,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -317,7 +327,8 @@ Chat is provided by `CompletionToChatMixin`, which formats messages using
 
 Basic conversation:
 
-```python notest
+```python 
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.core.llms import Message, MessageRole
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -326,7 +337,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -341,7 +352,8 @@ print(response.message.role)     # MessageRole.ASSISTANT
 
 With conversation history:
 
-```python notest
+```python 
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.core.llms import Message, MessageRole
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -350,7 +362,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -369,7 +381,8 @@ print(response.message.content)  # Should mention "Alex"
 
 System message for context:
 
-```python notest
+```python 
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.core.llms import Message, MessageRole
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -378,7 +391,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -400,7 +413,8 @@ print(response.message.content)  # "12"
 
 Real-time streaming completion:
 
-```python notest
+```python 
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -408,7 +422,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -422,7 +436,8 @@ for chunk in llm.complete("Count from 1 to 5.", stream=True):
 
 Real-time streaming chat:
 
-```python notest
+```python
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.core.llms import Message, MessageRole
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -431,7 +446,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -445,7 +460,8 @@ for chunk in llm.chat(messages, stream=True):
 
 Access incremental content:
 
-```python notest
+```python
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -453,7 +469,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -483,7 +499,8 @@ so async calls do not block the event loop.
 
 Non-blocking completion:
 
-```python notest
+```python
+import os
 import asyncio
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -495,7 +512,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 async def main():
     llm = await asyncio.to_thread(
         LlamaCPP,
-        model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+        model_path=os.environ.get("LLAMA_MODEL_PATH"),
         messages_to_prompt=messages_to_prompt_v3_instruct,
         completion_to_prompt=completion_to_prompt_v3_instruct,
     )
@@ -511,7 +528,8 @@ asyncio.run(main())
 
 Non-blocking chat:
 
-```python notest
+```python
+import os
 import asyncio
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.core.llms import Message, MessageRole
@@ -524,7 +542,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 async def main():
     llm = await asyncio.to_thread(
         LlamaCPP,
-        model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+        model_path=os.environ.get("LLAMA_MODEL_PATH"),
         messages_to_prompt=messages_to_prompt_v3_instruct,
         completion_to_prompt=completion_to_prompt_v3_instruct,
     )
@@ -541,7 +559,8 @@ asyncio.run(main())
 
 Non-blocking streaming completion:
 
-```python notest
+```python
+import os
 import asyncio
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -553,7 +572,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 async def main():
     llm = await asyncio.to_thread(
         LlamaCPP,
-        model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+        model_path=os.environ.get("LLAMA_MODEL_PATH"),
         messages_to_prompt=messages_to_prompt_v3_instruct,
         completion_to_prompt=completion_to_prompt_v3_instruct,
     )
@@ -570,7 +589,8 @@ asyncio.run(main())
 
 Process multiple requests concurrently:
 
-```python notest
+```python 
+import os
 import asyncio
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -582,7 +602,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 async def main():
     llm = await asyncio.to_thread(
         LlamaCPP,
-        model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+        model_path=os.environ.get("LLAMA_MODEL_PATH"),
         messages_to_prompt=messages_to_prompt_v3_instruct,
         completion_to_prompt=completion_to_prompt_v3_instruct,
     )
@@ -607,7 +627,8 @@ asyncio.run(main())
 
 Use LlamaCPP with `TextCompletionLLM` for structured outputs:
 
-```python notest
+```python
+import os
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.llms import TextCompletionLLM
@@ -623,7 +644,7 @@ class DummyModel(BaseModel):
 
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -651,7 +672,7 @@ for your model produces garbage output.
 
 #### Llama 2 / Mistral
 
-```python notest
+```python 
 from serapeum.llama_cpp.formatters.llama2 import (
     messages_to_prompt,
     completion_to_prompt,
@@ -665,7 +686,7 @@ Uses the `[INST]...[/INST]` format:
 
 #### Llama 3 Instruct
 
-```python notest
+```python 
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
     completion_to_prompt_v3_instruct,
@@ -693,7 +714,7 @@ with a default system prompt.
 
 You can write your own formatters for other model families:
 
-```python notest
+```python 
 from collections.abc import Sequence
 from serapeum.core.llms import Message, MessageRole
 from serapeum.llama_cpp import LlamaCPP
@@ -731,7 +752,8 @@ llm = LlamaCPP(
 
 LlamaCPP exposes the model's tokenizer for prompt length checking:
 
-```python notest
+```python
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -739,7 +761,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -761,7 +783,8 @@ print(count)  # 5
 
 Create once, use many times — model loading is expensive:
 
-```python notest
+```python
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -770,7 +793,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 
 # Good: Create once
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -789,7 +812,7 @@ def process(prompt):
 
 Always use the correct formatter for your model family:
 
-```python notest
+```python 
 from serapeum.llama_cpp import LlamaCPP
 # Llama 2 / Mistral models
 from serapeum.llama_cpp.formatters.llama2 import messages_to_prompt, completion_to_prompt
@@ -802,7 +825,8 @@ from serapeum.llama_cpp.formatters.llama3 import (
 
 ### 3. Handle Errors Gracefully
 
-```python notest
+```python
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -810,7 +834,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 )
 
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
@@ -825,7 +849,8 @@ except RuntimeError as e:
 
 ### 4. Use GPU for Performance
 
-```python notest
+```python
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -834,7 +859,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 
 # Offload all layers to GPU
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     n_gpu_layers=-1,
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
@@ -843,7 +868,8 @@ llm = LlamaCPP(
 
 ### 5. Use Temperature=0 for Deterministic Output
 
-```python notest
+```python 
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -852,7 +878,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 
 # Greedy decoding for reproducible results
 llm = LlamaCPP(
-    model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+    model_path=os.environ.get("LLAMA_MODEL_PATH"),
     temperature=0.0,
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,

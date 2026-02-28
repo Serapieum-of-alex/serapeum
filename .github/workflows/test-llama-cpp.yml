@@ -93,3 +93,26 @@ jobs:
 
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
+
+  examples:
+    # check examples in the docstring and the markdown files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
+        with:
+          python-version: "3.12"
+          install-groups: dev
+          verify-lock: true
+
+      - name: Test llama-cpp doctests
+        run: |
+          uv run pytest --doctest-modules libs/providers/llama-cpp/src/ -v
+
+      - name: Test markdown docs examples
+        run: |
+          uv run pytest -v --markdown-docs docs/reference/providers/llama-cpp

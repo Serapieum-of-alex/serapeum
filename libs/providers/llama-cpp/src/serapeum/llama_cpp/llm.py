@@ -31,59 +31,71 @@ DEFAULT_LLAMA_CPP_MODEL_VERBOSITY = True
 
 
 class LlamaCPP(CompletionToChatMixin, LLM):
-    r"""
-    LlamaCPP LLM.
+    """LlamaCPP LLM — local inference via llama-cpp-python.
+
+    Runs GGUF models locally using the llama-cpp-python backend.  The model is
+    loaded (or downloaded) once at construction time.
+
+    ``messages_to_prompt`` and ``completion_to_prompt`` are **required**.
+    GGUF models each have a specific chat template; using the wrong one
+    produces garbage output.  Pass the formatter that matches the model family
+    you are loading.  Ready-made formatters live in
+    ``serapeum.llama_cpp.formatters``.
+
+    Warning:
+        Construction is **blocking**. Loading a large GGUF file can take
+        10-30 seconds. To construct inside an async context without blocking
+        the event loop wrap the call in ``asyncio.to_thread``::
+
+            llm = await asyncio.to_thread(LlamaCPP, model_path="...", ...)
 
     Examples:
         Install llama-cpp-python following instructions:
         https://github.com/abetlen/llama-cpp-python
 
-        Then `pip install serapeum-llama-cpp`
+        Then ``pip install serapeum-llama-cpp``
+
+        Llama 3 / Mistral instruct model:
 
         ```python
         from serapeum.llama_cpp import LlamaCPP
-
-        def messages_to_prompt(messages):
-            prompt = ""
-            for message in messages:
-                if message.role == 'system':
-                prompt += f"<|system|>\n{message.content}</s>\n"
-                elif message.role == 'user':
-                prompt += f"<|user|>\n{message.content}</s>\n"
-                elif message.role == 'assistant':
-                prompt += f"<|assistant|>\n{message.content}</s>\n"
-
-            # ensure we start with a system prompt, insert blank if needed
-            if not prompt.startswith("<|system|>\n"):
-                prompt = "<|system|>\n</s>\n" + prompt
-
-            # add final assistant prompt
-            prompt = prompt + "<|assistant|>\n"
-
-            return prompt
-
-        def completion_to_prompt(completion):
-            return f"<|system|>\n</s>\n<|user|>\n{completion}</s>\n<|assistant|>\n"
-
-        model_url = "https://huggingface.co/TheBloke/zephyr-7B-beta-GGUF/resolve/main/zephyr-7b-beta.Q4_0.gguf"
-
-        llm = LlamaCPP(
-            model_url=model_url,
-            model_path=None,
-            temperature=0.1,
-            max_new_tokens=256,
-            context_window=3900,
-            generate_kwargs={},
-            model_kwargs={"n_gpu_layers": -1},  # if compiled to use GPU
-            messages_to_prompt=messages_to_prompt,
-            completion_to_prompt=completion_to_prompt,
-            verbose=True,
+        from serapeum.llama_cpp.formatters import (
+            messages_to_prompt_v3_instruct,
+            completion_to_prompt_v3_instruct,
         )
 
+        llm = LlamaCPP(
+            model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+            temperature=0.1,
+            max_new_tokens=256,
+            context_window=8192,
+            messages_to_prompt=messages_to_prompt_v3_instruct,
+            completion_to_prompt=completion_to_prompt_v3_instruct,
+        )
         response = llm.complete("Hello, how are you?")
         print(str(response))
         ```
 
+        Llama 2 model:
+
+        ```python
+        from serapeum.llama_cpp import LlamaCPP
+        from serapeum.llama_cpp.formatters import (
+            messages_to_prompt,
+            completion_to_prompt,
+        )
+
+        llm = LlamaCPP(
+            model_path="/models/llama-2-13b-chat.Q4_0.gguf",
+            temperature=0.1,
+            max_new_tokens=256,
+            context_window=4096,
+            messages_to_prompt=messages_to_prompt,
+            completion_to_prompt=completion_to_prompt,
+        )
+        response = llm.complete("Hello, how are you?")
+        print(str(response))
+        ```
     """
 
     model_url: str | None = Field(
@@ -151,6 +163,27 @@ class LlamaCPP(CompletionToChatMixin, LLM):
 
     def model_post_init(self, __context: Any) -> None:
         """Load or download the Llama model after all fields are validated."""
+        # The LLM base silently falls back to a generic adapter when
+        # messages_to_prompt / completion_to_prompt are not provided.  That
+        # generic adapter produces no instruct template, so the output of any
+        # GGUF instruct model will be garbage.  We use model_fields_set (the
+        # set of fields the caller explicitly passed) to detect omissions and
+        # fail fast with an actionable message instead of silently producing
+        # bad output.
+        missing = [
+            name
+            for name in ("messages_to_prompt", "completion_to_prompt")
+            if name not in self.model_fields_set
+        ]
+        if missing:
+            raise ValueError(
+                f"LlamaCPP requires explicit prompt formatters: {', '.join(missing)}.\n"
+                "Pass a formatter that matches your model's chat template.\n"
+                "Ready-made formatters are available in serapeum.llama_cpp.formatters:\n"
+                "  Llama 2 / Mistral:  messages_to_prompt, completion_to_prompt\n"
+                "  Llama 3:            messages_to_prompt_v3_instruct, completion_to_prompt_v3_instruct"
+            )
+
         # check if model is cached
         if self.model_path is not None:
             model_path = Path(self.model_path)

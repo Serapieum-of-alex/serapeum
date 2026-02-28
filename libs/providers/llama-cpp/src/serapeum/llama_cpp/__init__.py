@@ -27,7 +27,16 @@ See Also:
     serapeum.llama_cpp.formatters.llama3: Prompt formatters for Llama 3 Instruct models.
 """
 
-from serapeum.llama_cpp.llm import LlamaCPP
+def __getattr__(name: str) -> object:
+    """Lazily import heavy symbols to avoid triggering llama_cpp at collection time."""
+    if name == "LlamaCPP":
+        from serapeum.llama_cpp.llm import LlamaCPP  # noqa: N811
+
+        result: object = LlamaCPP
+    else:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    return result
+
 
 __all__ = [
     "LlamaCPP",

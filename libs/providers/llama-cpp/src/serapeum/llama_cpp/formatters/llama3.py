@@ -64,6 +64,46 @@ def messages_to_prompt_v3_instruct(
     Raises:
         ValueError: If a USER or ASSISTANT message appears in the wrong
             position in the alternating sequence.
+
+    Examples:
+        - Single user message with the default system prompt
+            ```python
+            >>> from serapeum.llama_cpp.formatters.llama3 import messages_to_prompt_v3_instruct
+            >>> from serapeum.core.llms import Message, MessageRole
+            >>> messages = [Message(role=MessageRole.USER, content="Hello!")]
+            >>> prompt = messages_to_prompt_v3_instruct(messages)
+            >>> "<|start_header_id|>user<|end_header_id|>" in prompt
+            True
+            >>> "Hello!" in prompt
+            True
+
+            ```
+        - Multi-turn conversation; prompt ends with the assistant header
+            ```python
+            >>> messages = [
+            ...     Message(role=MessageRole.USER, content="What is 2+2?"),
+            ...     Message(role=MessageRole.ASSISTANT, content="4"),
+            ...     Message(role=MessageRole.USER, content="And 3+3?"),
+            ... ]
+            >>> prompt = messages_to_prompt_v3_instruct(messages)
+            >>> "What is 2+2?" in prompt
+            True
+            >>> prompt.strip().endswith("<|start_header_id|>assistant<|end_header_id|>")
+            True
+
+            ```
+        - Custom system prompt overrides the default
+            ```python
+            >>> messages = [Message(role=MessageRole.USER, content="Hi!")]
+            >>> prompt = messages_to_prompt_v3_instruct(messages, system_prompt="You are terse.")
+            >>> "You are terse." in prompt
+            True
+
+            ```
+
+    See Also:
+        completion_to_prompt_v3_instruct: Single-turn variant for the same model family.
+        DEFAULT_SYSTEM_PROMPT: Default system instruction used when system_prompt is None.
     """
     string_messages: list[str] = []
     if messages[0].role == MessageRole.SYSTEM:

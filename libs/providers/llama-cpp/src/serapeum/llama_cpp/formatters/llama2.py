@@ -57,6 +57,46 @@ def messages_to_prompt(
     Raises:
         ValueError: If a USER or ASSISTANT message appears in the wrong
             position in the alternating sequence.
+
+    Examples:
+        - Single user message with the default system prompt
+            ```python
+            >>> from serapeum.llama_cpp.formatters.llama2 import messages_to_prompt
+            >>> from serapeum.core.llms import Message, MessageRole
+            >>> messages = [Message(role=MessageRole.USER, content="Hello!")]
+            >>> prompt = messages_to_prompt(messages)
+            >>> prompt.startswith("<s> [INST]")
+            True
+            >>> "Hello!" in prompt
+            True
+
+            ```
+        - Multi-turn conversation with alternating user and assistant turns
+            ```python
+            >>> messages = [
+            ...     Message(role=MessageRole.USER, content="What is 2+2?"),
+            ...     Message(role=MessageRole.ASSISTANT, content="4"),
+            ...     Message(role=MessageRole.USER, content="And 3+3?"),
+            ... ]
+            >>> prompt = messages_to_prompt(messages)
+            >>> "What is 2+2?" in prompt
+            True
+            >>> "And 3+3?" in prompt
+            True
+
+            ```
+        - Custom system prompt overrides the default
+            ```python
+            >>> messages = [Message(role=MessageRole.USER, content="Hi!")]
+            >>> prompt = messages_to_prompt(messages, system_prompt="You are terse.")
+            >>> "You are terse." in prompt
+            True
+
+            ```
+
+    See Also:
+        completion_to_prompt: Single-turn variant for the same model family.
+        DEFAULT_SYSTEM_PROMPT: Default system instruction used when system_prompt is None.
     """
     string_messages: list[str] = []
     if messages[0].role == MessageRole.SYSTEM:

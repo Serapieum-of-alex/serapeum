@@ -6,12 +6,12 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="LLM package" name="description"/>
-<link href="https://serapieum-of-alex.github.io/Serapeum/develop/reference/providers/ollama/ollama_dataflow/" rel="canonical"/>
-<link href="../ollama_class/" rel="prev"/>
-<link href="../ollama_components/" rel="next"/>
+<link href="https://serapieum-of-alex.github.io/Serapeum/develop/reference/providers/llama-cpp/llama_cpp_components/" rel="canonical"/>
+<link href="../llama_cpp_dataflow/" rel="prev"/>
+<link href="../llama_cpp_state/" rel="next"/>
 <link href="../../../../assets/images/favicon.png" rel="icon"/>
 <meta content="mkdocs-1.6.1, mkdocs-material-9.7.3" name="generator"/>
-<title>Data Flow - Serapeum</title>
+<title>Components - Serapeum</title>
 <link href="../../../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
 <link href="../../../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -27,7 +27,7 @@
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
 <label class="md-overlay" for="__drawer"></label>
 <div data-md-component="skip">
-<a class="md-skip" href="#data-transformations-and-validation">
+<a class="md-skip" href="#component-boundaries-and-interactions">
           Skip to content
         </a>
 </div>
@@ -53,7 +53,7 @@
 <div class="md-header__topic" data-md-component="header-topic">
 <span class="md-ellipsis">
             
-              Data Flow
+              Components
             
           </span>
 </div>
@@ -153,7 +153,7 @@
         </a>
 </li>
 <li class="md-tabs__item md-tabs__item--active">
-<a class="md-tabs__link" href="../general/">
+<a class="md-tabs__link" href="../../ollama/general/">
           
   
   
@@ -772,8 +772,8 @@
 
           </label>
 <ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-<input checked="" class="md-nav__toggle md-toggle" id="__nav_4_1" type="checkbox"/>
+<li class="md-nav__item md-nav__item--section md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_4_1" type="checkbox"/>
 <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="">
 <span class="md-ellipsis">
     
@@ -785,12 +785,134 @@
   </span>
 <span class="md-nav__icon md-icon"></span>
 </label>
-<nav aria-expanded="true" aria-labelledby="__nav_4_1_label" class="md-nav" data-md-level="2">
+<nav aria-expanded="false" aria-labelledby="__nav_4_1_label" class="md-nav" data-md-level="2">
 <label class="md-nav__title" for="__nav_4_1">
 <span class="md-nav__icon md-icon"></span>
             
   
     Ollama
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../ollama/general/">
+<span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../ollama/examples/">
+<span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../ollama/ollama_sequence/">
+<span class="md-ellipsis">
+    
+  
+    Execution Flow
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../ollama/ollama_class/">
+<span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../ollama/ollama_dataflow/">
+<span class="md-ellipsis">
+    
+  
+    Data Flow
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../ollama/ollama_components/">
+<span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../ollama/ollama_state/">
+<span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../ollama/api_reference/">
+<span class="md-ellipsis">
+    
+  
+    API-Reference
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_4_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
+<span class="md-ellipsis">
+    
+  
+    LlamaCPP
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="true" aria-labelledby="__nav_4_2_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_4_2">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    LlamaCPP
   
 
           </label>
@@ -820,7 +942,7 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../ollama_sequence/">
+<a class="md-nav__link" href="../llama_cpp_sequence/">
 <span class="md-ellipsis">
     
   
@@ -832,11 +954,23 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../ollama_class/">
+<a class="md-nav__link" href="../llama_cpp_class/">
 <span class="md-ellipsis">
     
   
     Architecture
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../llama_cpp_dataflow/">
+<span class="md-ellipsis">
+    
+  
+    Data Flow
   
 
     
@@ -849,7 +983,7 @@
 <span class="md-ellipsis">
     
   
-    Data Flow
+    Components
   
 
     
@@ -860,7 +994,7 @@
 <span class="md-ellipsis">
     
   
-    Data Flow
+    Components
   
 
     
@@ -873,38 +1007,194 @@
     </label>
 <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="#data-transformation-examples">
+<a class="md-nav__link" href="#component-interaction-patterns">
 <span class="md-ellipsis">
       
-        Data Transformation Examples
+        Component Interaction Patterns
       
     </span>
 </a>
-<nav aria-label="Data Transformation Examples" class="md-nav">
+<nav aria-label="Component Interaction Patterns" class="md-nav">
 <ul class="md-nav__list">
 <li class="md-nav__item">
-<a class="md-nav__link" href="#1-initialization">
+<a class="md-nav__link" href="#1-initialization-pattern">
 <span class="md-ellipsis">
       
-        1. Initialization
+        1. Initialization Pattern
       
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#3-complete-request-via-decorator">
+<a class="md-nav__link" href="#2-model-resolution-pattern">
 <span class="md-ellipsis">
       
-        3. Complete Request (via Decorator)
+        2. Model Resolution Pattern
       
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#5-streaming-chat">
+<a class="md-nav__link" href="#3-model-loading-pattern-with-cache">
 <span class="md-ellipsis">
       
-        5. Streaming Chat
+        3. Model Loading Pattern (with Cache)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-completion-request-pattern">
+<span class="md-ellipsis">
+      
+        4. Completion Request Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#5-chat-via-mixin-pattern">
+<span class="md-ellipsis">
+      
+        5. Chat via Mixin Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#6-async-pattern">
+<span class="md-ellipsis">
+      
+        6. Async Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#7-textcompletionllm-integration-pattern">
+<span class="md-ellipsis">
+      
+        7. TextCompletionLLM Integration Pattern
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-state-management">
+<span class="md-ellipsis">
+      
+        Component State Management
+      
+    </span>
+</a>
+<nav aria-label="Component State Management" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#llamacpp-instance-state">
+<span class="md-ellipsis">
+      
+        LlamaCPP Instance State
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#model-cache-state-module-level">
+<span class="md-ellipsis">
+      
+        Model Cache State (Module-level)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#request-state-per-call">
+<span class="md-ellipsis">
+      
+        Request State (Per Call)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-boundaries">
+<span class="md-ellipsis">
+      
+        Error Boundaries
+      
+    </span>
+</a>
+<nav aria-label="Error Boundaries" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-configuration-errors-initialization">
+<span class="md-ellipsis">
+      
+        1. Configuration Errors (Initialization)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-model-resolution-errors-model_post_init">
+<span class="md-ellipsis">
+      
+        2. Model Resolution Errors (model_post_init)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-inference-errors-during-call">
+<span class="md-ellipsis">
+      
+        3. Inference Errors (During Call)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-dependencies">
+<span class="md-ellipsis">
+      
+        Component Dependencies
+      
+    </span>
+</a>
+<nav aria-label="Component Dependencies" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#llamacpp-depends-on">
+<span class="md-ellipsis">
+      
+        LlamaCPP Depends On:
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#llamacpp-is-used-by">
+<span class="md-ellipsis">
+      
+        LlamaCPP Is Used By:
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#external-dependencies">
+<span class="md-ellipsis">
+      
+        External Dependencies:
       
     </span>
 </a>
@@ -916,19 +1206,7 @@
 </nav>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../ollama_components/">
-<span class="md-ellipsis">
-    
-  
-    Components
-  
-
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../ollama_state/">
+<a class="md-nav__link" href="../llama_cpp_state/">
 <span class="md-ellipsis">
     
   
@@ -941,128 +1219,6 @@
 </li>
 <li class="md-nav__item">
 <a class="md-nav__link" href="../api_reference/">
-<span class="md-ellipsis">
-    
-  
-    API-Reference
-  
-
-    
-  </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item md-nav__item--section md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" id="__nav_4_2" type="checkbox"/>
-<label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
-<span class="md-ellipsis">
-    
-  
-    LlamaCPP
-  
-
-    
-  </span>
-<span class="md-nav__icon md-icon"></span>
-</label>
-<nav aria-expanded="false" aria-labelledby="__nav_4_2_label" class="md-nav" data-md-level="2">
-<label class="md-nav__title" for="__nav_4_2">
-<span class="md-nav__icon md-icon"></span>
-            
-  
-    LlamaCPP
-  
-
-          </label>
-<ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../llama-cpp/general/">
-<span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../llama-cpp/examples/">
-<span class="md-ellipsis">
-    
-  
-    Examples
-  
-
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../llama-cpp/llama_cpp_sequence/">
-<span class="md-ellipsis">
-    
-  
-    Execution Flow
-  
-
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../llama-cpp/llama_cpp_class/">
-<span class="md-ellipsis">
-    
-  
-    Architecture
-  
-
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../llama-cpp/llama_cpp_dataflow/">
-<span class="md-ellipsis">
-    
-  
-    Data Flow
-  
-
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../llama-cpp/llama_cpp_components/">
-<span class="md-ellipsis">
-    
-  
-    Components
-  
-
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../llama-cpp/llama_cpp_state/">
-<span class="md-ellipsis">
-    
-  
-    Lifecycle
-  
-
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../llama-cpp/api_reference/">
 <span class="md-ellipsis">
     
   
@@ -1268,38 +1424,194 @@
     </label>
 <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="#data-transformation-examples">
+<a class="md-nav__link" href="#component-interaction-patterns">
 <span class="md-ellipsis">
       
-        Data Transformation Examples
+        Component Interaction Patterns
       
     </span>
 </a>
-<nav aria-label="Data Transformation Examples" class="md-nav">
+<nav aria-label="Component Interaction Patterns" class="md-nav">
 <ul class="md-nav__list">
 <li class="md-nav__item">
-<a class="md-nav__link" href="#1-initialization">
+<a class="md-nav__link" href="#1-initialization-pattern">
 <span class="md-ellipsis">
       
-        1. Initialization
+        1. Initialization Pattern
       
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#3-complete-request-via-decorator">
+<a class="md-nav__link" href="#2-model-resolution-pattern">
 <span class="md-ellipsis">
       
-        3. Complete Request (via Decorator)
+        2. Model Resolution Pattern
       
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#5-streaming-chat">
+<a class="md-nav__link" href="#3-model-loading-pattern-with-cache">
 <span class="md-ellipsis">
       
-        5. Streaming Chat
+        3. Model Loading Pattern (with Cache)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-completion-request-pattern">
+<span class="md-ellipsis">
+      
+        4. Completion Request Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#5-chat-via-mixin-pattern">
+<span class="md-ellipsis">
+      
+        5. Chat via Mixin Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#6-async-pattern">
+<span class="md-ellipsis">
+      
+        6. Async Pattern
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#7-textcompletionllm-integration-pattern">
+<span class="md-ellipsis">
+      
+        7. TextCompletionLLM Integration Pattern
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-state-management">
+<span class="md-ellipsis">
+      
+        Component State Management
+      
+    </span>
+</a>
+<nav aria-label="Component State Management" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#llamacpp-instance-state">
+<span class="md-ellipsis">
+      
+        LlamaCPP Instance State
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#model-cache-state-module-level">
+<span class="md-ellipsis">
+      
+        Model Cache State (Module-level)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#request-state-per-call">
+<span class="md-ellipsis">
+      
+        Request State (Per Call)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#error-boundaries">
+<span class="md-ellipsis">
+      
+        Error Boundaries
+      
+    </span>
+</a>
+<nav aria-label="Error Boundaries" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-configuration-errors-initialization">
+<span class="md-ellipsis">
+      
+        1. Configuration Errors (Initialization)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-model-resolution-errors-model_post_init">
+<span class="md-ellipsis">
+      
+        2. Model Resolution Errors (model_post_init)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-inference-errors-during-call">
+<span class="md-ellipsis">
+      
+        3. Inference Errors (During Call)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#component-dependencies">
+<span class="md-ellipsis">
+      
+        Component Dependencies
+      
+    </span>
+</a>
+<nav aria-label="Component Dependencies" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#llamacpp-depends-on">
+<span class="md-ellipsis">
+      
+        LlamaCPP Depends On:
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#llamacpp-is-used-by">
+<span class="md-ellipsis">
+      
+        LlamaCPP Is Used By:
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#external-dependencies">
+<span class="md-ellipsis">
+      
+        External Dependencies:
       
     </span>
 </a>
@@ -1314,14 +1626,14 @@
 </div>
 <div class="md-content" data-md-component="content">
 <article class="md-content__inner md-typeset">
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/providers/ollama/ollama_dataflow.md" rel="edit" title="Edit this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/edit/master/docs/reference/providers/llama-cpp/llama_cpp_components.md" rel="edit" title="Edit this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
 </a>
-<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/providers/ollama/ollama_dataflow.md" title="View source of this page">
+<a class="md-content__button md-icon" href="https://github.com/Serapieum-of-alex/Serapeum/raw/master/docs/reference/providers/llama-cpp/llama_cpp_components.md" title="View source of this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
 </a>
-<h1 id="data-transformations-and-validation"><a class="toclink" href="#data-transformations-and-validation">Data Transformations and Validation</a><a class="headerlink" href="#data-transformations-and-validation" title="Permanent link">#</a></h1>
-<p>This diagram shows how data flows and transforms through the Ollama LLM system.</p>
+<h1 id="component-boundaries-and-interactions"><a class="toclink" href="#component-boundaries-and-interactions">Component Boundaries and Interactions</a><a class="headerlink" href="#component-boundaries-and-interactions" title="Permanent link">#</a></h1>
+<p>This diagram shows how components interact during the complete lifecycle of the LlamaCPP LLM.</p>
 <div class="panzoom-box" data-key="ctrl" id="panzoom0" oncontextmenu="return false;">
 <div class="panzoom-info-box panzoom-info-box-top panzoom-hidden">
 Hold "Ctrl" to enable pan &amp; zoom
@@ -1345,403 +1657,387 @@ Hold "Ctrl" to enable pan &amp; zoom
 </svg>
 </button>
 </nav>
-<pre class="mermaid"><code>flowchart TD
-    Start([User Code]) --&gt; Init{Initialize Ollama}
+<pre class="mermaid"><code>graph TB
+    subgraph User Space
+        UC[User Code]
+        PM[Pydantic Models]
+    end
 
-    Init --&gt; SetConfig[Set Configuration]
-    SetConfig --&gt; StoreModel[Store model name]
-    StoreModel --&gt; StoreURL[Store base_url]
-    StoreURL --&gt; StoreTimeout[Store request_timeout]
-    StoreTimeout --&gt; StoreTemp[Store temperature]
-    StoreTemp --&gt; StoreJSON[Store json_mode flag]
-    StoreJSON --&gt; StoreKwargs[Store additional_kwargs]
+    subgraph LlamaCPP Core
+        LC[LlamaCPP Instance]
 
-    StoreKwargs --&gt; CreateMetadata[Create Metadata]
-    CreateMetadata --&gt; SetChatFlag[Set is_chat_model=True]
-    SetChatFlag --&gt; SetFnCallFlag[Set is_function_calling_model]
-    SetFnCallFlag --&gt; SetContext[Set context_window]
-    SetContext --&gt; Ready([Ollama Instance Ready])
+        subgraph Configuration
+            CFG[Configuration Fields]
+            MD[Metadata]
+        end
 
-    Ready --&gt; CallType{Call Type?}
+        subgraph Validation
+            VMP[_validate_model_path_exists]
+            VMS[_check_model_source]
+            VFM[_check_formatters]
+            VPK[_prepare_kwargs]
+        end
 
-    CallType --&gt;|chat| ChatPath[Chat Path]
-    CallType --&gt;|complete| CompletePath[Complete Path]
-    CallType --&gt;|generate_tool_calls| ToolsPath[Tools Path]
-    CallType --&gt;|stream_chat| StreamPath[Stream Path]
+        subgraph Model Resolution
+            RES[_resolve_model_path]
+            FURL[_fetch_model_file]
+            FHF[_fetch_model_file_hf]
+        end
 
-    %% Chat Path
-    ChatPath --&gt; ValidateMessages{Messages Valid?}
-    ValidateMessages --&gt;|No| Error1[Raise ValueError]
-    ValidateMessages --&gt;|Yes| BuildChatReq[Build Chat Request]
+        subgraph Model Loading
+            LOAD[_load_model]
+            CACHE[_MODEL_CACHE]
+            LOCK[_MODEL_CACHE_LOCK]
+        end
 
-    BuildChatReq --&gt; AddModel[Add model name]
-    AddModel --&gt; ConvertMessages[Convert Messages to dicts]
-    ConvertMessages --&gt; AddOptions[Add options: temperature, etc.]
-    AddOptions --&gt; CheckJSON{json_mode?}
-    CheckJSON --&gt;|True| AddFormat[Add format: json]
-    CheckJSON --&gt;|False| AddKeepAlive
-    AddFormat --&gt; AddKeepAlive[Add keep_alive]
+        subgraph Context Guard
+            GUARD[_guard_context]
+            TOK[tokenize / count_tokens]
+        end
 
-    AddKeepAlive --&gt; EnsureClient[Ensure client initialized]
-    EnsureClient --&gt; CheckClient{Client exists?}
-    CheckClient --&gt;|No| CreateClient[Create Client with base_url, timeout]
-    CheckClient --&gt;|Yes| SendRequest
-    CreateClient --&gt; SendRequest[Send HTTP POST /api/chat]
+        subgraph Completion Engine
+            COMP[_complete]
+            SCOMP[_stream_complete]
+            KWARGS[generate_kwargs builder]
+        end
 
-    SendRequest --&gt; ReceiveRaw[Receive raw dict response]
-    ReceiveRaw --&gt; ParseResponse[_chat_from_response]
+        subgraph Chat Bridge
+            MIXIN[CompletionToChatMixin]
+            M2P[messages_to_prompt]
+            C2P[completion_to_prompt]
+        end
 
-    ParseResponse --&gt; ExtractMsg[Extract message dict]
-    ExtractMsg --&gt; ParseRole[Parse role: assistant]
-    ParseRole --&gt; ParseContent[Parse content: str]
-    ParseContent --&gt; CheckTools{tool_calls present?}
-    CheckTools --&gt;|Yes| ParseToolCalls[Parse tool_calls array]
-    CheckTools --&gt;|No| CreateMessage1
-    ParseToolCalls --&gt; CreateMessage1[Create Message object]
+        subgraph Async Bridge
+            ACOMP[acomplete]
+            TOTHREAD[asyncio.to_thread]
+        end
+    end
 
-    CreateMessage1 --&gt; ExtractMeta[Extract metadata: model, times, tokens]
-    ExtractMeta --&gt; CreateChatResp[Create ChatResponse]
-    CreateChatResp --&gt; ReturnChat([Return ChatResponse])
+    subgraph Formatter Layer
+        subgraph Llama 2 Formatter
+            L2M[messages_to_prompt]
+            L2C[completion_to_prompt]
+        end
 
-    %% Complete Path
-    CompletePath --&gt; Decorator[@chat_to_completion_decorator]
-    Decorator --&gt; WrapPrompt[Wrap prompt in Message]
-    WrapPrompt --&gt; SetRole[role=USER, content=prompt]
-    SetRole --&gt; CallChat[Delegate to chat method]
-    CallChat --&gt; ChatPath
-    ReturnChat --&gt; UnwrapDecorator[Decorator unwraps response]
-    UnwrapDecorator --&gt; ExtractText[Extract message.content as text]
-    ExtractText --&gt; CreateCompleteResp[Create CompletionResponse]
-    CreateCompleteResp --&gt; ReturnComplete([Return CompletionResponse])
+        subgraph Llama 3 Formatter
+            L3M[messages_to_prompt_v3_instruct]
+            L3C[completion_to_prompt_v3_instruct]
+        end
+    end
 
-    %% Tools Path
-    ToolsPath --&gt; PrepareTools[_prepare_chat_with_tools]
-    PrepareTools --&gt; ConvertToolsLoop[For each tool in tools]
-    ConvertToolsLoop --&gt; ExtractToolMeta[Extract tool.metadata]
-    ExtractToolMeta --&gt; GetSchema[Get fn_schema from metadata]
-    GetSchema --&gt; BuildToolDict[Build Ollama tool dict]
-    BuildToolDict --&gt; AddToolType[Add type: function]
-    AddToolType --&gt; AddToolFunc[Add function: name, description, parameters]
+    subgraph Model Layer
+        LLAMA[Llama Instance]
 
-    AddToolFunc --&gt; MergeKwargs[Merge tools into kwargs]
-    MergeKwargs --&gt; CallChatWithTools[Call chat with tools kwarg]
-    CallChatWithTools --&gt; SendRequestTools[HTTP POST with tools array]
-    SendRequestTools --&gt; ReceiveToolResp[Receive response with tool_calls]
-    ReceiveToolResp --&gt; ValidateTools[_validate_chat_with_tools_response]
-    ValidateTools --&gt; CheckParallel{allow_parallel?}
-    CheckParallel --&gt;|No| ForceSingle[force_single_tool_call]
-    CheckParallel --&gt;|Yes| ReturnToolResp
-    ForceSingle --&gt; ReturnToolResp([Return ChatResponse with tools])
+        subgraph Inference
+            GEN[__call__ / generate]
+            VOCAB[Tokenizer / Vocabulary]
+            CTX[Context Window]
+        end
+    end
 
-    %% Stream Path
-    StreamPath --&gt; BuildStreamReq[Build chat request with stream=True]
-    BuildStreamReq --&gt; SendStreamReq[HTTP POST /api/chat streaming]
-    SendStreamReq --&gt; StreamLoop{For each chunk}
+    subgraph External Sources
+        LOCAL[Local GGUF File]
+        URL[Remote URL]
+        HF[HuggingFace Hub]
+    end
 
-    StreamLoop --&gt; ReceiveChunk[Receive chunk dict]
-    ReceiveChunk --&gt; ParseChunk[_chat_stream_from_response]
-    ParseChunk --&gt; ExtractDelta[Extract message delta]
-    ExtractDelta --&gt; AccumContent[Accumulate content]
-    AccumContent --&gt; CheckToolChunk{tool_calls in chunk?}
-    CheckToolChunk --&gt;|Yes| AccumTools[Accumulate tool_calls]
-    CheckToolChunk --&gt;|No| CreateStreamResp
-    AccumTools --&gt; CreateStreamResp[Create ChatResponse with delta]
-    CreateStreamResp --&gt; YieldResp[Yield ChatResponse]
-    YieldResp --&gt; CheckDone{done=True?}
-    CheckDone --&gt;|No| StreamLoop
-    CheckDone --&gt;|Yes| EndStream([Stream Complete])
+    subgraph Orchestrator Layer
+        TCL[TextCompletionLLM]
 
-    %% Error paths
-    Error1 --&gt; ErrorEnd([Raise Exception])
+        subgraph Orchestrator Components
+            PRS[PydanticParser]
+            PTMP[PromptTemplate]
+        end
+    end
+
+    subgraph Response Models
+        CRESP[ChatResponse]
+        CORESP[CompletionResponse]
+        MSG[Message]
+    end
+
+    %% Initialization Flow
+    UC --&gt;|1. Initialize| LC
+    LC --&gt;|Validate fields| VMP
+    VMP --&gt;|Validate cross-field| VMS
+    VMS --&gt;|Validate formatters| VFM
+    VFM --&gt;|Merge defaults| VPK
+    VPK --&gt;|Store config| CFG
+    CFG --&gt;|Create| MD
+
+    %% Model Resolution
+    LC --&gt;|model_post_init| RES
+    RES --&gt;|model_path set| LOCAL
+    RES --&gt;|model_url set| FURL
+    RES --&gt;|hf_model_id set| FHF
+    FURL --&gt;|Download from| URL
+    FHF --&gt;|Download from| HF
+    FURL --&gt;|Save to| LOCAL
+    FHF --&gt;|Save to| LOCAL
+
+    %% Model Loading
+    RES --&gt;|Path resolved| LOAD
+    LOAD --&gt;|Check cache| CACHE
+    CACHE -.-&gt;|Thread-safe| LOCK
+    LOAD --&gt;|Cache miss| LLAMA
+    LLAMA --&gt;|Store in cache| CACHE
+
+    %% Completion Flow
+    UC --&gt;|2a. complete(prompt)| LC
+    LC --&gt;|Format prompt| C2P
+    C2P -.-&gt;|Uses| L2C
+    C2P -.-&gt;|Uses| L3C
+    LC --&gt;|Check length| GUARD
+    GUARD --&gt;|Count tokens| TOK
+    TOK --&gt;|Use vocabulary| VOCAB
+    LC --&gt;|Build kwargs| KWARGS
+    KWARGS --&gt;|Non-stream| COMP
+    KWARGS --&gt;|Stream| SCOMP
+
+    COMP --&gt;|Acquire lock| LOCK
+    COMP --&gt;|Call| GEN
+    GEN --&gt;|Use| CTX
+    GEN --&gt;|Return dict| COMP
+    COMP --&gt;|Create| CORESP
+    CORESP --&gt;|Return| UC
+
+    SCOMP --&gt;|Acquire lock| LOCK
+    SCOMP --&gt;|Stream call| GEN
+    GEN -.-&gt;|Yield chunks| SCOMP
+    SCOMP -.-&gt;|Yield| CORESP
+    CORESP -.-&gt;|Yield| UC
+
+    %% Chat Flow (via mixin)
+    UC --&gt;|2b. chat(messages)| MIXIN
+    MIXIN --&gt;|Format messages| M2P
+    M2P -.-&gt;|Uses| L2M
+    M2P -.-&gt;|Uses| L3M
+    M2P --&gt;|Formatted string| LC
+    LC --&gt;|Delegate to complete| COMP
+    COMP --&gt;|CompletionResponse| MIXIN
+    MIXIN --&gt;|Wrap in| CRESP
+    CRESP --&gt;|Contains| MSG
+    CRESP --&gt;|Return| UC
+
+    %% Async Flow
+    UC --&gt;|2c. acomplete(prompt)| ACOMP
+    ACOMP --&gt;|Offload to| TOTHREAD
+    TOTHREAD --&gt;|Call sync| COMP
+    COMP --&gt;|Return| TOTHREAD
+    TOTHREAD --&gt;|Return| ACOMP
+    ACOMP --&gt;|Return| UC
+
+    %% TextCompletionLLM Integration
+    UC --&gt;|3. TextCompletionLLM(llm=LlamaCPP)| TCL
+    TCL --&gt;|Store| LC
+    TCL --&gt;|Use| PTMP
+    TCL --&gt;|Use| PRS
+    UC --&gt;|Call| TCL
+    TCL --&gt;|Format prompt| PTMP
+    PTMP --&gt;|Messages| LC
+    LC --&gt;|chat| CRESP
+    CRESP --&gt;|message.content| PRS
+    PRS --&gt;|Parse JSON| PM
+    PM --&gt;|Return| UC
 
     %% Styling
-    style Start fill:#e1f5ff
-    style Ready fill:#e1f5ff
-    style ReturnChat fill:#c8e6c9
-    style ReturnComplete fill:#c8e6c9
-    style ReturnToolResp fill:#c8e6c9
-    style EndStream fill:#c8e6c9
-    style Error1 fill:#ffcdd2
-    style ErrorEnd fill:#ffcdd2
-    style SendRequest fill:#fff9c4
-    style SendRequestTools fill:#fff9c4
-    style SendStreamReq fill:#fff9c4</code></pre>
+    classDef userClass fill:#e1f5ff,stroke:#01579b
+    classDef llamaClass fill:#e0f2f1,stroke:#004d40
+    classDef configClass fill:#fff9c4,stroke:#f57f17
+    classDef modelClass fill:#f3e5f5,stroke:#4a148c
+    classDef formatterClass fill:#e8f5e9,stroke:#1b5e20
+    classDef sourceClass fill:#efebe9,stroke:#3e2723
+    classDef orchestratorClass fill:#fce4ec,stroke:#880e4f
+    classDef responseClass fill:#fff3e0,stroke:#e65100
+
+    class UC,PM userClass
+    class LC llamaClass
+    class CFG,MD,VMP,VMS,VFM,VPK,GUARD,TOK,COMP,SCOMP,KWARGS,MIXIN,M2P,C2P,ACOMP,TOTHREAD configClass
+    class LLAMA,GEN,VOCAB,CTX modelClass
+    class RES,LOAD,CACHE,LOCK,FURL,FHF formatterClass
+    class LOCAL,URL,HF sourceClass
+    class TCL,PRS,PTMP orchestratorClass
+    class CRESP,CORESP,MSG responseClass
+    class L2M,L2C,L3M,L3C formatterClass</code></pre>
 </div>
-<h2 id="data-transformation-examples"><a class="toclink" href="#data-transformation-examples">Data Transformation Examples</a><a class="headerlink" href="#data-transformation-examples" title="Permanent link">#</a></h2>
-<h3 id="1-initialization"><a class="toclink" href="#1-initialization">1. Initialization</a><a class="headerlink" href="#1-initialization" title="Permanent link">#</a></h3>
-<p>```python notest
-Input:
-  Ollama(model="llama3.1", base_url="http://localhost:11434", request_timeout=180)</p>
-<p>Transformations:
-  1. Store configuration:
-     - model = "llama3.1"
-     - base_url = "http://localhost:11434"
-     - request_timeout = 180
-     - temperature = 0.75 (default)
-     - json_mode = False (default)</p>
-<ol>
-<li>Create metadata:<ul>
-<li>model_name = "llama3.1"</li>
-<li>is_chat_model = True</li>
-<li>is_function_calling_model = True</li>
-<li>context_window = 3900</li>
-<li>num_output = 256</li>
+<h2 id="component-interaction-patterns"><a class="toclink" href="#component-interaction-patterns">Component Interaction Patterns</a><a class="headerlink" href="#component-interaction-patterns" title="Permanent link">#</a></h2>
+<h3 id="1-initialization-pattern"><a class="toclink" href="#1-initialization-pattern">1. Initialization Pattern</a><a class="headerlink" href="#1-initialization-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>User Code
+<a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a>  └─→ LlamaCPP.__init__
+<a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>      ├─→ Validators (field_validator, model_validator):
+<a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a>      │   ├─→ _validate_model_path_exists: Check local file exists
+<a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a>      │   ├─→ _check_model_source: Ensure one source is set
+<a href="#__codelineno-0-6" id="__codelineno-0-6" name="__codelineno-0-6"></a>      │   ├─→ _check_formatters: Ensure formatters are provided
+<a href="#__codelineno-0-7" id="__codelineno-0-7" name="__codelineno-0-7"></a>      │   └─→ _prepare_kwargs: Merge n_ctx, verbose, n_gpu_layers into model_kwargs
+<a href="#__codelineno-0-8" id="__codelineno-0-8" name="__codelineno-0-8"></a>      ├─→ Store: model_path, model_url, temperature, max_new_tokens, etc.
+<a href="#__codelineno-0-9" id="__codelineno-0-9" name="__codelineno-0-9"></a>      ├─→ Create Metadata: is_chat_model=True, is_function_calling_model=False
+<a href="#__codelineno-0-10" id="__codelineno-0-10" name="__codelineno-0-10"></a>      └─→ model_post_init:
+<a href="#__codelineno-0-11" id="__codelineno-0-11" name="__codelineno-0-11"></a>          ├─→ _resolve_model_path: Download if needed, return local Path
+<a href="#__codelineno-0-12" id="__codelineno-0-12" name="__codelineno-0-12"></a>          └─→ _load_model: Load Llama with caching
+</code></pre></div>
+<h3 id="2-model-resolution-pattern"><a class="toclink" href="#2-model-resolution-pattern">2. Model Resolution Pattern</a><a class="headerlink" href="#2-model-resolution-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>_resolve_model_path()
+<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>  ├─→ If model_path is set:
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>  │   └─→ Return Path(model_path)
+<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>  ├─→ If hf_model_id is set:
+<a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>  │   ├─→ Create cache directory
+<a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a>  │   ├─→ Call _fetch_model_file_hf(repo_id, filename, cache_dir)
+<a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a>  │   │   └─→ hf_hub_download → Path
+<a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a>  │   └─→ Update self.model_path, return Path
+<a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a>  └─→ Else (model_url or default):
+<a href="#__codelineno-1-10" id="__codelineno-1-10" name="__codelineno-1-10"></a>      ├─→ Compute cache path from URL filename
+<a href="#__codelineno-1-11" id="__codelineno-1-11" name="__codelineno-1-11"></a>      ├─→ If not cached:
+<a href="#__codelineno-1-12" id="__codelineno-1-12" name="__codelineno-1-12"></a>      │   └─→ Call _fetch_model_file(url, path)
+<a href="#__codelineno-1-13" id="__codelineno-1-13" name="__codelineno-1-13"></a>      │       └─→ requests.get(stream=True) with progress bar
+<a href="#__codelineno-1-14" id="__codelineno-1-14" name="__codelineno-1-14"></a>      └─→ Update self.model_path, return Path
+</code></pre></div>
+<h3 id="3-model-loading-pattern-with-cache"><a class="toclink" href="#3-model-loading-pattern-with-cache">3. Model Loading Pattern (with Cache)</a><a class="headerlink" href="#3-model-loading-pattern-with-cache" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>_load_model(model_path)
+<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>  ├─→ Compute cache_key = (str(path), json(model_kwargs))
+<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>  ├─→ With _MODEL_CACHE_LOCK: check cache
+<a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>  │   └─→ result = _MODEL_CACHE.get(cache_key)
+<a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>  ├─→ If cache miss:
+<a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a>  │   ├─→ loaded = Llama(model_path, **model_kwargs)
+<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>  │   └─→ With _MODEL_CACHE_LOCK: store if still missing
+<a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a>  └─→ Return result
+</code></pre></div>
+<h3 id="4-completion-request-pattern"><a class="toclink" href="#4-completion-request-pattern">4. Completion Request Pattern</a><a class="headerlink" href="#4-completion-request-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a>User → LlamaCPP.complete(prompt, formatted, stream, **kwargs)
+<a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a>  ├─→ If not formatted:
+<a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>  │   └─→ prompt = self.completion_to_prompt(prompt)
+<a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a>  ├─→ If stream:
+<a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a>  │   └─→ _stream_complete(prompt, **kwargs)
+<a href="#__codelineno-3-6" id="__codelineno-3-6" name="__codelineno-3-6"></a>  │       ├─→ _guard_context(prompt) → count tokens, raise if too long
+<a href="#__codelineno-3-7" id="__codelineno-3-7" name="__codelineno-3-7"></a>  │       ├─→ Build call_kwargs from generate_kwargs + defaults
+<a href="#__codelineno-3-8" id="__codelineno-3-8" name="__codelineno-3-8"></a>  │       ├─→ Acquire _model_lock
+<a href="#__codelineno-3-9" id="__codelineno-3-9" name="__codelineno-3-9"></a>  │       └─→ Yield CompletionResponse per chunk
+<a href="#__codelineno-3-10" id="__codelineno-3-10" name="__codelineno-3-10"></a>  └─→ Else:
+<a href="#__codelineno-3-11" id="__codelineno-3-11" name="__codelineno-3-11"></a>      └─→ _complete(prompt, **kwargs)
+<a href="#__codelineno-3-12" id="__codelineno-3-12" name="__codelineno-3-12"></a>          ├─→ _guard_context(prompt)
+<a href="#__codelineno-3-13" id="__codelineno-3-13" name="__codelineno-3-13"></a>          ├─→ Build call_kwargs
+<a href="#__codelineno-3-14" id="__codelineno-3-14" name="__codelineno-3-14"></a>          ├─→ Acquire _model_lock
+<a href="#__codelineno-3-15" id="__codelineno-3-15" name="__codelineno-3-15"></a>          ├─→ self._model(prompt=prompt, **call_kwargs)
+<a href="#__codelineno-3-16" id="__codelineno-3-16" name="__codelineno-3-16"></a>          └─→ Return CompletionResponse(text=choices[0]["text"])
+</code></pre></div>
+<h3 id="5-chat-via-mixin-pattern"><a class="toclink" href="#5-chat-via-mixin-pattern">5. Chat via Mixin Pattern</a><a class="headerlink" href="#5-chat-via-mixin-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>User → LlamaCPP.chat(messages, stream, **kwargs)
+<a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a>  └─→ CompletionToChatMixin.chat(messages, stream, **kwargs)
+<a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>      ├─→ formatted = self.messages_to_prompt(messages)
+<a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a>      ├─→ result = self.complete(formatted, formatted=True, stream, **kwargs)
+<a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a>      └─→ If stream:
+<a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a>      │   └─→ Convert each CompletionResponse chunk → ChatResponse chunk
+<a href="#__codelineno-4-7" id="__codelineno-4-7" name="__codelineno-4-7"></a>      └─→ Else:
+<a href="#__codelineno-4-8" id="__codelineno-4-8" name="__codelineno-4-8"></a>          └─→ Wrap CompletionResponse → ChatResponse
+</code></pre></div>
+<h3 id="6-async-pattern"><a class="toclink" href="#6-async-pattern">6. Async Pattern</a><a class="headerlink" href="#6-async-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>User → LlamaCPP.acomplete(prompt, formatted, stream, **kwargs)
+<a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a>  ├─→ If stream:
+<a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>  │   ├─→ chunks = await asyncio.to_thread(lambda: list(self.complete(..., stream=True)))
+<a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a>  │   └─→ Return async generator yielding chunks
+<a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a>  └─→ Else:
+<a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a>      └─→ await asyncio.to_thread(self.complete, prompt, formatted, stream=False, **kwargs)
+</code></pre></div>
+<h3 id="7-textcompletionllm-integration-pattern"><a class="toclink" href="#7-textcompletionllm-integration-pattern">7. TextCompletionLLM Integration Pattern</a><a class="headerlink" href="#7-textcompletionllm-integration-pattern" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a>User → TextCompletionLLM(output_parser=parser, prompt=prompt, llm=LlamaCPP(...))
+<a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a>  └─→ TextCompletionLLM stores LlamaCPP instance
+<a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a>
+<a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a>User → text_llm(key="value")
+<a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a>  ├─→ Check llm.metadata.is_chat_model → True
+<a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a>  ├─→ Format prompt with variables → List[Message]
+<a href="#__codelineno-6-7" id="__codelineno-6-7" name="__codelineno-6-7"></a>  ├─→ LlamaCPP.chat(messages) → ChatResponse
+<a href="#__codelineno-6-8" id="__codelineno-6-8" name="__codelineno-6-8"></a>  ├─→ Extract response.message.content
+<a href="#__codelineno-6-9" id="__codelineno-6-9" name="__codelineno-6-9"></a>  ├─→ PydanticParser.parse(content) → Model instance
+<a href="#__codelineno-6-10" id="__codelineno-6-10" name="__codelineno-6-10"></a>  └─→ Return Model instance
+</code></pre></div>
+<h2 id="component-state-management"><a class="toclink" href="#component-state-management">Component State Management</a><a class="headerlink" href="#component-state-management" title="Permanent link">#</a></h2>
+<h3 id="llamacpp-instance-state"><a class="toclink" href="#llamacpp-instance-state">LlamaCPP Instance State</a><a class="headerlink" href="#llamacpp-instance-state" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a>Initialization:
+<a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a>  - model_path: str (set during init or model_post_init)
+<a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a>  - model_url: Optional[str] (immutable after init)
+<a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a>  - hf_model_id: Optional[str] (immutable after init)
+<a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a>  - temperature: float (immutable after init)
+<a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a>  - max_new_tokens: int (immutable after init)
+<a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a>  - context_window: int (immutable after init)
+<a href="#__codelineno-7-8" id="__codelineno-7-8" name="__codelineno-7-8"></a>  - n_gpu_layers: int (immutable after init)
+<a href="#__codelineno-7-9" id="__codelineno-7-9" name="__codelineno-7-9"></a>  - stop: list[str] (immutable after init)
+<a href="#__codelineno-7-10" id="__codelineno-7-10" name="__codelineno-7-10"></a>  - generate_kwargs: dict (immutable after init)
+<a href="#__codelineno-7-11" id="__codelineno-7-11" name="__codelineno-7-11"></a>  - model_kwargs: dict (immutable after init)
+<a href="#__codelineno-7-12" id="__codelineno-7-12" name="__codelineno-7-12"></a>  - _model: Llama (loaded during model_post_init)
+<a href="#__codelineno-7-13" id="__codelineno-7-13" name="__codelineno-7-13"></a>  - _model_lock: threading.Lock (per-instance)
+<a href="#__codelineno-7-14" id="__codelineno-7-14" name="__codelineno-7-14"></a>
+<a href="#__codelineno-7-15" id="__codelineno-7-15" name="__codelineno-7-15"></a>Runtime:
+<a href="#__codelineno-7-16" id="__codelineno-7-16" name="__codelineno-7-16"></a>  - _model: Llama instance (loaded, never changes)
+<a href="#__codelineno-7-17" id="__codelineno-7-17" name="__codelineno-7-17"></a>  - _model_lock: Acquired during each inference call
+</code></pre></div>
+<h3 id="model-cache-state-module-level"><a class="toclink" href="#model-cache-state-module-level">Model Cache State (Module-level)</a><a class="headerlink" href="#model-cache-state-module-level" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a>_MODEL_CACHE: WeakValueDictionary
+<a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a>  - Keys: (model_path_str, model_kwargs_json)
+<a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a>  - Values: Llama instances (weak references)
+<a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a>  - Entries auto-removed when all LlamaCPP refs are GC'd
+<a href="#__codelineno-8-5" id="__codelineno-8-5" name="__codelineno-8-5"></a>
+<a href="#__codelineno-8-6" id="__codelineno-8-6" name="__codelineno-8-6"></a>_MODEL_CACHE_LOCK: threading.Lock
+<a href="#__codelineno-8-7" id="__codelineno-8-7" name="__codelineno-8-7"></a>  - Protects read/write to _MODEL_CACHE
+</code></pre></div>
+<h3 id="request-state-per-call"><a class="toclink" href="#request-state-per-call">Request State (Per Call)</a><a class="headerlink" href="#request-state-per-call" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-9-1" id="__codelineno-9-1" name="__codelineno-9-1"></a>Input:
+<a href="#__codelineno-9-2" id="__codelineno-9-2" name="__codelineno-9-2"></a>  - prompt: str
+<a href="#__codelineno-9-3" id="__codelineno-9-3" name="__codelineno-9-3"></a>  - formatted: bool
+<a href="#__codelineno-9-4" id="__codelineno-9-4" name="__codelineno-9-4"></a>  - stream: bool
+<a href="#__codelineno-9-5" id="__codelineno-9-5" name="__codelineno-9-5"></a>  - **kwargs: Additional generation options
+<a href="#__codelineno-9-6" id="__codelineno-9-6" name="__codelineno-9-6"></a>
+<a href="#__codelineno-9-7" id="__codelineno-9-7" name="__codelineno-9-7"></a>Processing:
+<a href="#__codelineno-9-8" id="__codelineno-9-8" name="__codelineno-9-8"></a>  - formatted_prompt: str (after completion_to_prompt if needed)
+<a href="#__codelineno-9-9" id="__codelineno-9-9" name="__codelineno-9-9"></a>  - call_kwargs: dict (merged generate_kwargs + defaults + overrides)
+<a href="#__codelineno-9-10" id="__codelineno-9-10" name="__codelineno-9-10"></a>  - raw_response: dict from Llama backend
+<a href="#__codelineno-9-11" id="__codelineno-9-11" name="__codelineno-9-11"></a>
+<a href="#__codelineno-9-12" id="__codelineno-9-12" name="__codelineno-9-12"></a>Output:
+<a href="#__codelineno-9-13" id="__codelineno-9-13" name="__codelineno-9-13"></a>  - CompletionResponse or CompletionResponseGen
+</code></pre></div>
+<h2 id="error-boundaries"><a class="toclink" href="#error-boundaries">Error Boundaries</a><a class="headerlink" href="#error-boundaries" title="Permanent link">#</a></h2>
+<h3 id="1-configuration-errors-initialization"><a class="toclink" href="#1-configuration-errors-initialization">1. Configuration Errors (Initialization)</a><a class="headerlink" href="#1-configuration-errors-initialization" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a>Validators:
+<a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a>  ├─→ _validate_model_path_exists: ValueError if path doesn't exist
+<a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a>  ├─→ _check_model_source: ValueError if no source specified
+<a href="#__codelineno-10-4" id="__codelineno-10-4" name="__codelineno-10-4"></a>  ├─→ _check_model_source: ValueError if hf_model_id without hf_filename
+<a href="#__codelineno-10-5" id="__codelineno-10-5" name="__codelineno-10-5"></a>  └─→ _check_formatters: ValueError if formatters missing
+</code></pre></div>
+<h3 id="2-model-resolution-errors-model_post_init"><a class="toclink" href="#2-model-resolution-errors-model_post_init">2. Model Resolution Errors (model_post_init)</a><a class="headerlink" href="#2-model-resolution-errors-model_post_init" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-11-1" id="__codelineno-11-1" name="__codelineno-11-1"></a>_resolve_model_path:
+<a href="#__codelineno-11-2" id="__codelineno-11-2" name="__codelineno-11-2"></a>  ├─→ _fetch_model_file: ValueError (Content-Length &lt; 1 MB)
+<a href="#__codelineno-11-3" id="__codelineno-11-3" name="__codelineno-11-3"></a>  ├─→ _fetch_model_file: requests.ConnectionError
+<a href="#__codelineno-11-4" id="__codelineno-11-4" name="__codelineno-11-4"></a>  ├─→ _fetch_model_file: RuntimeError (download succeeded but file missing)
+<a href="#__codelineno-11-5" id="__codelineno-11-5" name="__codelineno-11-5"></a>  ├─→ _fetch_model_file_hf: ImportError (huggingface-hub not installed)
+<a href="#__codelineno-11-6" id="__codelineno-11-6" name="__codelineno-11-6"></a>  └─→ _fetch_model_file_hf: Network/auth errors from hf_hub_download
+</code></pre></div>
+<h3 id="3-inference-errors-during-call"><a class="toclink" href="#3-inference-errors-during-call">3. Inference Errors (During Call)</a><a class="headerlink" href="#3-inference-errors-during-call" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-12-1" id="__codelineno-12-1" name="__codelineno-12-1"></a>_guard_context:
+<a href="#__codelineno-12-2" id="__codelineno-12-2" name="__codelineno-12-2"></a>  └─→ ValueError if prompt tokens exceed context_window
+<a href="#__codelineno-12-3" id="__codelineno-12-3" name="__codelineno-12-3"></a>
+<a href="#__codelineno-12-4" id="__codelineno-12-4" name="__codelineno-12-4"></a>_complete / _stream_complete:
+<a href="#__codelineno-12-5" id="__codelineno-12-5" name="__codelineno-12-5"></a>  └─→ RuntimeError from llama-cpp-python backend
+</code></pre></div>
+<h2 id="component-dependencies"><a class="toclink" href="#component-dependencies">Component Dependencies</a><a class="headerlink" href="#component-dependencies" title="Permanent link">#</a></h2>
+<h3 id="llamacpp-depends-on"><a class="toclink" href="#llamacpp-depends-on">LlamaCPP Depends On:</a><a class="headerlink" href="#llamacpp-depends-on" title="Permanent link">#</a></h3>
+<ul>
+<li><code>llama_cpp.Llama</code> (external package — model runtime)</li>
+<li><code>serapeum.core.llms.LLM</code> (base class)</li>
+<li><code>serapeum.core.llms.CompletionToChatMixin</code> (chat bridge)</li>
+<li><code>serapeum.core.llms</code> types (Message, CompletionResponse, ChatResponse, Metadata)</li>
+<li><code>serapeum.core.utils.base.get_cache_dir</code> (cache directory)</li>
+<li><code>pydantic</code> (for configuration and validation)</li>
+<li><code>requests</code> (for URL downloads)</li>
+<li><code>huggingface_hub</code> (optional, for HF downloads)</li>
 </ul>
-</li>
-</ol>
-<p>Output:
-  Ollama instance with lazy-initialized client
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>### 2. Chat Request
-<a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a>```python notest
-<a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>Input:
-<a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a>  messages = [Message(role=MessageRole.USER, content="Say 'pong'.")]
-<a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a>  kwargs = {"temperature": 0.2}
-<a href="#__codelineno-0-6" id="__codelineno-0-6" name="__codelineno-0-6"></a>
-<a href="#__codelineno-0-7" id="__codelineno-0-7" name="__codelineno-0-7"></a>Transformations:
-<a href="#__codelineno-0-8" id="__codelineno-0-8" name="__codelineno-0-8"></a>  1. Convert messages to dicts:
-<a href="#__codelineno-0-9" id="__codelineno-0-9" name="__codelineno-0-9"></a>     [{"role": "user", "content": "Say 'pong'."}]
-<a href="#__codelineno-0-10" id="__codelineno-0-10" name="__codelineno-0-10"></a>
-<a href="#__codelineno-0-11" id="__codelineno-0-11" name="__codelineno-0-11"></a>  2. Build request payload:
-<a href="#__codelineno-0-12" id="__codelineno-0-12" name="__codelineno-0-12"></a>     {
-<a href="#__codelineno-0-13" id="__codelineno-0-13" name="__codelineno-0-13"></a>       "model": "llama3.1",
-<a href="#__codelineno-0-14" id="__codelineno-0-14" name="__codelineno-0-14"></a>       "messages": [{"role": "user", "content": "Say 'pong'."}],
-<a href="#__codelineno-0-15" id="__codelineno-0-15" name="__codelineno-0-15"></a>       "options": {"temperature": 0.2},
-<a href="#__codelineno-0-16" id="__codelineno-0-16" name="__codelineno-0-16"></a>       "stream": False,
-<a href="#__codelineno-0-17" id="__codelineno-0-17" name="__codelineno-0-17"></a>       "keep_alive": None
-<a href="#__codelineno-0-18" id="__codelineno-0-18" name="__codelineno-0-18"></a>     }
-<a href="#__codelineno-0-19" id="__codelineno-0-19" name="__codelineno-0-19"></a>
-<a href="#__codelineno-0-20" id="__codelineno-0-20" name="__codelineno-0-20"></a>  3. HTTP POST to /api/chat
-<a href="#__codelineno-0-21" id="__codelineno-0-21" name="__codelineno-0-21"></a>
-<a href="#__codelineno-0-22" id="__codelineno-0-22" name="__codelineno-0-22"></a>  4. Raw response:
-<a href="#__codelineno-0-23" id="__codelineno-0-23" name="__codelineno-0-23"></a>     {
-<a href="#__codelineno-0-24" id="__codelineno-0-24" name="__codelineno-0-24"></a>       "model": "llama3.1",
-<a href="#__codelineno-0-25" id="__codelineno-0-25" name="__codelineno-0-25"></a>       "created_at": "2025-01-22T...",
-<a href="#__codelineno-0-26" id="__codelineno-0-26" name="__codelineno-0-26"></a>       "message": {
-<a href="#__codelineno-0-27" id="__codelineno-0-27" name="__codelineno-0-27"></a>         "role": "assistant",
-<a href="#__codelineno-0-28" id="__codelineno-0-28" name="__codelineno-0-28"></a>         "content": "Pong!"
-<a href="#__codelineno-0-29" id="__codelineno-0-29" name="__codelineno-0-29"></a>       },
-<a href="#__codelineno-0-30" id="__codelineno-0-30" name="__codelineno-0-30"></a>       "done": True,
-<a href="#__codelineno-0-31" id="__codelineno-0-31" name="__codelineno-0-31"></a>       "total_duration": 1234567890,
-<a href="#__codelineno-0-32" id="__codelineno-0-32" name="__codelineno-0-32"></a>       "prompt_eval_count": 10,
-<a href="#__codelineno-0-33" id="__codelineno-0-33" name="__codelineno-0-33"></a>       "eval_count": 2
-<a href="#__codelineno-0-34" id="__codelineno-0-34" name="__codelineno-0-34"></a>     }
-<a href="#__codelineno-0-35" id="__codelineno-0-35" name="__codelineno-0-35"></a>
-<a href="#__codelineno-0-36" id="__codelineno-0-36" name="__codelineno-0-36"></a>  5. Parse to ChatResponse:
-<a href="#__codelineno-0-37" id="__codelineno-0-37" name="__codelineno-0-37"></a>     ChatResponse(
-<a href="#__codelineno-0-38" id="__codelineno-0-38" name="__codelineno-0-38"></a>       message=Message(
-<a href="#__codelineno-0-39" id="__codelineno-0-39" name="__codelineno-0-39"></a>         role=MessageRole.ASSISTANT,
-<a href="#__codelineno-0-40" id="__codelineno-0-40" name="__codelineno-0-40"></a>         content="Pong!",
-<a href="#__codelineno-0-41" id="__codelineno-0-41" name="__codelineno-0-41"></a>         additional_kwargs={}
-<a href="#__codelineno-0-42" id="__codelineno-0-42" name="__codelineno-0-42"></a>       ),
-<a href="#__codelineno-0-43" id="__codelineno-0-43" name="__codelineno-0-43"></a>       raw={...},
-<a href="#__codelineno-0-44" id="__codelineno-0-44" name="__codelineno-0-44"></a>       additional_kwargs={
-<a href="#__codelineno-0-45" id="__codelineno-0-45" name="__codelineno-0-45"></a>         "model": "llama3.1",
-<a href="#__codelineno-0-46" id="__codelineno-0-46" name="__codelineno-0-46"></a>         "created_at": "...",
-<a href="#__codelineno-0-47" id="__codelineno-0-47" name="__codelineno-0-47"></a>         "total_duration": 1234567890,
-<a href="#__codelineno-0-48" id="__codelineno-0-48" name="__codelineno-0-48"></a>         "prompt_eval_count": 10,
-<a href="#__codelineno-0-49" id="__codelineno-0-49" name="__codelineno-0-49"></a>         "eval_count": 2
-<a href="#__codelineno-0-50" id="__codelineno-0-50" name="__codelineno-0-50"></a>       }
-<a href="#__codelineno-0-51" id="__codelineno-0-51" name="__codelineno-0-51"></a>     )
-<a href="#__codelineno-0-52" id="__codelineno-0-52" name="__codelineno-0-52"></a>
-<a href="#__codelineno-0-53" id="__codelineno-0-53" name="__codelineno-0-53"></a>Output:
-<a href="#__codelineno-0-54" id="__codelineno-0-54" name="__codelineno-0-54"></a>  ChatResponse with assistant message
-</code></pre></div></p>
-<h3 id="3-complete-request-via-decorator"><a class="toclink" href="#3-complete-request-via-decorator">3. Complete Request (via Decorator)</a><a class="headerlink" href="#3-complete-request-via-decorator" title="Permanent link">#</a></h3>
-<p>```python notest
-Input:
-  prompt = "Say 'pong'."
-  kwargs = {}</p>
-<p>Transformations:
-  1. Decorator wraps prompt:
-     Message(role=MessageRole.USER, content="Say 'pong'.")</p>
-<ol>
-<li>
-<p>Delegates to chat([message], **kwargs)
-     [Follows Chat Request flow above]</p>
-</li>
-<li>
-<p>Decorator extracts text:
-     text = chat_response.message.content  # "Pong!"</p>
-</li>
-<li>
-<p>Creates CompletionResponse:
-     CompletionResponse(
-       text="Pong!",
-       raw={...},
-       additional_kwargs={...}
-     )</p>
-</li>
-</ol>
-<p>Output:
-  CompletionResponse with text
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>### 4. Chat with Tools
-<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>```python notest
-<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>Input:
-<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>  messages = [Message(role=MessageRole.USER, content="Create album about rock")]
-<a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>  tools = [CallableTool(fn=create_album, metadata=ToolMetadata(...))]
-<a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a>  kwargs = {}
-<a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a>
-<a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a>Transformations:
-<a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a>  1. Convert each tool to Ollama format:
-<a href="#__codelineno-1-10" id="__codelineno-1-10" name="__codelineno-1-10"></a>     {
-<a href="#__codelineno-1-11" id="__codelineno-1-11" name="__codelineno-1-11"></a>       "type": "function",
-<a href="#__codelineno-1-12" id="__codelineno-1-12" name="__codelineno-1-12"></a>       "function": {
-<a href="#__codelineno-1-13" id="__codelineno-1-13" name="__codelineno-1-13"></a>         "name": "create_album",
-<a href="#__codelineno-1-14" id="__codelineno-1-14" name="__codelineno-1-14"></a>         "description": "Create an album with title and songs",
-<a href="#__codelineno-1-15" id="__codelineno-1-15" name="__codelineno-1-15"></a>         "parameters": {
-<a href="#__codelineno-1-16" id="__codelineno-1-16" name="__codelineno-1-16"></a>           "type": "object",
-<a href="#__codelineno-1-17" id="__codelineno-1-17" name="__codelineno-1-17"></a>           "properties": {
-<a href="#__codelineno-1-18" id="__codelineno-1-18" name="__codelineno-1-18"></a>             "title": {"type": "string"},
-<a href="#__codelineno-1-19" id="__codelineno-1-19" name="__codelineno-1-19"></a>             "artist": {"type": "string"},
-<a href="#__codelineno-1-20" id="__codelineno-1-20" name="__codelineno-1-20"></a>             "songs": {"type": "array", "items": {"type": "string"}}
-<a href="#__codelineno-1-21" id="__codelineno-1-21" name="__codelineno-1-21"></a>           },
-<a href="#__codelineno-1-22" id="__codelineno-1-22" name="__codelineno-1-22"></a>           "required": ["title", "artist", "songs"]
-<a href="#__codelineno-1-23" id="__codelineno-1-23" name="__codelineno-1-23"></a>         }
-<a href="#__codelineno-1-24" id="__codelineno-1-24" name="__codelineno-1-24"></a>       }
-<a href="#__codelineno-1-25" id="__codelineno-1-25" name="__codelineno-1-25"></a>     }
-<a href="#__codelineno-1-26" id="__codelineno-1-26" name="__codelineno-1-26"></a>
-<a href="#__codelineno-1-27" id="__codelineno-1-27" name="__codelineno-1-27"></a>  2. Build request with tools:
-<a href="#__codelineno-1-28" id="__codelineno-1-28" name="__codelineno-1-28"></a>     {
-<a href="#__codelineno-1-29" id="__codelineno-1-29" name="__codelineno-1-29"></a>       "model": "llama3.1",
-<a href="#__codelineno-1-30" id="__codelineno-1-30" name="__codelineno-1-30"></a>       "messages": [...],
-<a href="#__codelineno-1-31" id="__codelineno-1-31" name="__codelineno-1-31"></a>       "tools": [&lt;converted tool dicts&gt;],
-<a href="#__codelineno-1-32" id="__codelineno-1-32" name="__codelineno-1-32"></a>       "stream": False
-<a href="#__codelineno-1-33" id="__codelineno-1-33" name="__codelineno-1-33"></a>     }
-<a href="#__codelineno-1-34" id="__codelineno-1-34" name="__codelineno-1-34"></a>
-<a href="#__codelineno-1-35" id="__codelineno-1-35" name="__codelineno-1-35"></a>  3. HTTP POST to /api/chat
-<a href="#__codelineno-1-36" id="__codelineno-1-36" name="__codelineno-1-36"></a>
-<a href="#__codelineno-1-37" id="__codelineno-1-37" name="__codelineno-1-37"></a>  4. Raw response with tool_calls:
-<a href="#__codelineno-1-38" id="__codelineno-1-38" name="__codelineno-1-38"></a>     {
-<a href="#__codelineno-1-39" id="__codelineno-1-39" name="__codelineno-1-39"></a>       "message": {
-<a href="#__codelineno-1-40" id="__codelineno-1-40" name="__codelineno-1-40"></a>         "role": "assistant",
-<a href="#__codelineno-1-41" id="__codelineno-1-41" name="__codelineno-1-41"></a>         "content": "",
-<a href="#__codelineno-1-42" id="__codelineno-1-42" name="__codelineno-1-42"></a>         "tool_calls": [
-<a href="#__codelineno-1-43" id="__codelineno-1-43" name="__codelineno-1-43"></a>           {
-<a href="#__codelineno-1-44" id="__codelineno-1-44" name="__codelineno-1-44"></a>             "function": {
-<a href="#__codelineno-1-45" id="__codelineno-1-45" name="__codelineno-1-45"></a>               "name": "create_album",
-<a href="#__codelineno-1-46" id="__codelineno-1-46" name="__codelineno-1-46"></a>               "arguments": {
-<a href="#__codelineno-1-47" id="__codelineno-1-47" name="__codelineno-1-47"></a>                 "title": "Rock Legends",
-<a href="#__codelineno-1-48" id="__codelineno-1-48" name="__codelineno-1-48"></a>                 "artist": "Various Artists",
-<a href="#__codelineno-1-49" id="__codelineno-1-49" name="__codelineno-1-49"></a>                 "songs": ["Song 1", "Song 2"]
-<a href="#__codelineno-1-50" id="__codelineno-1-50" name="__codelineno-1-50"></a>               }
-<a href="#__codelineno-1-51" id="__codelineno-1-51" name="__codelineno-1-51"></a>             }
-<a href="#__codelineno-1-52" id="__codelineno-1-52" name="__codelineno-1-52"></a>           }
-<a href="#__codelineno-1-53" id="__codelineno-1-53" name="__codelineno-1-53"></a>         ]
-<a href="#__codelineno-1-54" id="__codelineno-1-54" name="__codelineno-1-54"></a>       },
-<a href="#__codelineno-1-55" id="__codelineno-1-55" name="__codelineno-1-55"></a>       ...
-<a href="#__codelineno-1-56" id="__codelineno-1-56" name="__codelineno-1-56"></a>     }
-<a href="#__codelineno-1-57" id="__codelineno-1-57" name="__codelineno-1-57"></a>
-<a href="#__codelineno-1-58" id="__codelineno-1-58" name="__codelineno-1-58"></a>  5. Parse tool_calls in message:
-<a href="#__codelineno-1-59" id="__codelineno-1-59" name="__codelineno-1-59"></a>     Message(
-<a href="#__codelineno-1-60" id="__codelineno-1-60" name="__codelineno-1-60"></a>       role=MessageRole.ASSISTANT,
-<a href="#__codelineno-1-61" id="__codelineno-1-61" name="__codelineno-1-61"></a>       content="",
-<a href="#__codelineno-1-62" id="__codelineno-1-62" name="__codelineno-1-62"></a>       additional_kwargs={
-<a href="#__codelineno-1-63" id="__codelineno-1-63" name="__codelineno-1-63"></a>         "tool_calls": [
-<a href="#__codelineno-1-64" id="__codelineno-1-64" name="__codelineno-1-64"></a>           {
-<a href="#__codelineno-1-65" id="__codelineno-1-65" name="__codelineno-1-65"></a>             "function": {
-<a href="#__codelineno-1-66" id="__codelineno-1-66" name="__codelineno-1-66"></a>               "name": "create_album",
-<a href="#__codelineno-1-67" id="__codelineno-1-67" name="__codelineno-1-67"></a>               "arguments": {...}
-<a href="#__codelineno-1-68" id="__codelineno-1-68" name="__codelineno-1-68"></a>             }
-<a href="#__codelineno-1-69" id="__codelineno-1-69" name="__codelineno-1-69"></a>           }
-<a href="#__codelineno-1-70" id="__codelineno-1-70" name="__codelineno-1-70"></a>         ]
-<a href="#__codelineno-1-71" id="__codelineno-1-71" name="__codelineno-1-71"></a>       }
-<a href="#__codelineno-1-72" id="__codelineno-1-72" name="__codelineno-1-72"></a>     )
-<a href="#__codelineno-1-73" id="__codelineno-1-73" name="__codelineno-1-73"></a>
-<a href="#__codelineno-1-74" id="__codelineno-1-74" name="__codelineno-1-74"></a>  6. If not allow_parallel, force_single_tool_call:
-<a href="#__codelineno-1-75" id="__codelineno-1-75" name="__codelineno-1-75"></a>     Keep only first tool call
-<a href="#__codelineno-1-76" id="__codelineno-1-76" name="__codelineno-1-76"></a>
-<a href="#__codelineno-1-77" id="__codelineno-1-77" name="__codelineno-1-77"></a>Output:
-<a href="#__codelineno-1-78" id="__codelineno-1-78" name="__codelineno-1-78"></a>  ChatResponse with tool_calls in message.additional_kwargs
-</code></pre></div></p>
-<h3 id="5-streaming-chat"><a class="toclink" href="#5-streaming-chat">5. Streaming Chat</a><a class="headerlink" href="#5-streaming-chat" title="Permanent link">#</a></h3>
-<p>```python notest
-Input:
-  messages = [Message(role=MessageRole.USER, content="Count to 3")]
-  stream = True</p>
-<p>Transformations:
-  1. Build request with stream=True</p>
-<ol>
-<li>
-<p>HTTP POST returns chunk iterator</p>
-</li>
-<li>
-<p>For each chunk:
-     Chunk 1: {"message": {"content": "1"}, "done": False}
-       → ChatResponse(message=Message(content="1"), delta="1")
-       → Yield</p>
-<p>Chunk 2: {"message": {"content": ", 2"}, "done": False}
-   → ChatResponse(message=Message(content=", 2"), delta=", 2")
-   → Yield</p>
-<p>Chunk 3: {"message": {"content": ", 3"}, "done": True}
-   → ChatResponse(message=Message(content=", 3"), delta=", 3")
-   → Yield</p>
-</li>
-</ol>
-<p>Output:
-  Generator yielding ChatResponse objects
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a>## Validation Points
-<a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a>
-<a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>### 1. Configuration Validation
-<a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>- **model**: Must be non-empty string
-<a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>- **base_url**: Must be valid URL format
-<a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a>- **temperature**: Must be float in range [0.0, 1.0]
-<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>- **request_timeout**: Must be positive float
-<a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a>
-<a href="#__codelineno-2-9" id="__codelineno-2-9" name="__codelineno-2-9"></a>### 2. Message Validation
-<a href="#__codelineno-2-10" id="__codelineno-2-10" name="__codelineno-2-10"></a>- **messages**: Must be non-empty list
-<a href="#__codelineno-2-11" id="__codelineno-2-11" name="__codelineno-2-11"></a>- **role**: Must be valid MessageRole enum
-<a href="#__codelineno-2-12" id="__codelineno-2-12" name="__codelineno-2-12"></a>- **content**: Must be string (can be empty for tool calls)
-<a href="#__codelineno-2-13" id="__codelineno-2-13" name="__codelineno-2-13"></a>
-<a href="#__codelineno-2-14" id="__codelineno-2-14" name="__codelineno-2-14"></a>### 3. Tool Validation
-<a href="#__codelineno-2-15" id="__codelineno-2-15" name="__codelineno-2-15"></a>- **tools**: Must be list of BaseTool
-<a href="#__codelineno-2-16" id="__codelineno-2-16" name="__codelineno-2-16"></a>- **tool.metadata**: Must have name, description, fn_schema
-<a href="#__codelineno-2-17" id="__codelineno-2-17" name="__codelineno-2-17"></a>- **fn_schema**: Must be valid JSON schema dict
-<a href="#__codelineno-2-18" id="__codelineno-2-18" name="__codelineno-2-18"></a>
-<a href="#__codelineno-2-19" id="__codelineno-2-19" name="__codelineno-2-19"></a>### 4. Response Validation
-<a href="#__codelineno-2-20" id="__codelineno-2-20" name="__codelineno-2-20"></a>- **HTTP status**: Must be 200, else raise error
-<a href="#__codelineno-2-21" id="__codelineno-2-21" name="__codelineno-2-21"></a>- **JSON parsing**: Must be valid JSON
-<a href="#__codelineno-2-22" id="__codelineno-2-22" name="__codelineno-2-22"></a>- **Required fields**: Must have message/text in response
-<a href="#__codelineno-2-23" id="__codelineno-2-23" name="__codelineno-2-23"></a>- **tool_calls format**: Must match expected structure
-<a href="#__codelineno-2-24" id="__codelineno-2-24" name="__codelineno-2-24"></a>
-<a href="#__codelineno-2-25" id="__codelineno-2-25" name="__codelineno-2-25"></a>## Error Handling
-<a href="#__codelineno-2-26" id="__codelineno-2-26" name="__codelineno-2-26"></a>
-<a href="#__codelineno-2-27" id="__codelineno-2-27" name="__codelineno-2-27"></a>### Network Errors
-</code></pre></div>
-Request → Timeout → Raise RequestException with timeout info
-Request → Connection Error → Raise ConnectionError with URL
-Request → HTTP Error → Raise HTTPError with status code
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a>### Parsing Errors
-</code></pre></div>
-Response → Invalid JSON → Raise JSONDecodeError
-Response → Missing fields → Raise KeyError
-Response → Invalid tool_calls → Log warning, return empty list
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a>### Configuration Errors
-</code></pre></div>
-Invalid model → Raise ValueError
-Invalid URL → Raise ValueError
-Missing required field → Raise TypeError
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a>## Data Flow Summary
-</code></pre></div>
-User Input
-  ↓
-Configuration/Validation
-  ↓
-Request Building (convert to Ollama format)
-  ↓
-Client Initialization (lazy)
-  ↓
-HTTP Request (sync/async)
-  ↓
-Raw Response (dict)
-  ↓
-Response Parsing (to typed models)
-  ↓
-Validation/Post-processing
-  ↓
-Typed Response (ChatResponse/CompletionResponse)
-  ↓
-User Output
-```</p>
+<h3 id="llamacpp-is-used-by"><a class="toclink" href="#llamacpp-is-used-by">LlamaCPP Is Used By:</a><a class="headerlink" href="#llamacpp-is-used-by" title="Permanent link">#</a></h3>
+<ul>
+<li><code>TextCompletionLLM</code> (as the LLM engine)</li>
+<li>Direct user code (standalone usage)</li>
+</ul>
+<h3 id="external-dependencies"><a class="toclink" href="#external-dependencies">External Dependencies:</a><a class="headerlink" href="#external-dependencies" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>GGUF Model File</strong>: Must be available locally or downloadable</li>
+<li><strong>llama-cpp-python</strong>: Must be compiled for the target platform (CPU/CUDA/Metal)</li>
+</ul>
 </article>
 </div>
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
@@ -1753,7 +2049,7 @@ User Output
 </main>
 <footer class="md-footer">
 <nav aria-label="Footer" class="md-footer__inner md-grid">
-<a aria-label="Previous: Architecture" class="md-footer__link md-footer__link--prev" href="../ollama_class/">
+<a aria-label="Previous: Data Flow" class="md-footer__link md-footer__link--prev" href="../llama_cpp_dataflow/">
 <div class="md-footer__button md-icon">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
 </div>
@@ -1762,17 +2058,17 @@ User Output
                 Previous
               </span>
 <div class="md-ellipsis">
-                Architecture
+                Data Flow
               </div>
 </div>
 </a>
-<a aria-label="Next: Components" class="md-footer__link md-footer__link--next" href="../ollama_components/">
+<a aria-label="Next: Lifecycle" class="md-footer__link md-footer__link--next" href="../llama_cpp_state/">
 <div class="md-footer__title">
 <span class="md-footer__direction">
                 Next
               </span>
 <div class="md-ellipsis">
-                Components
+                Lifecycle
               </div>
 </div>
 <div class="md-footer__button md-icon">

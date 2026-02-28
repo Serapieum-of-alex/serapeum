@@ -87,7 +87,7 @@ count = true
 [tool.pytest.ini_options]
 testpaths = "tests"
 norecursedirs = "docs"
-importmode = "importlib"
+addopts = "--import-mode=importlib"
 markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
     "mock: marks tests as mock (deselect with '-m \"not mock\"')",
@@ -102,7 +102,7 @@ serapeum-core = { workspace = true }
 
 [tool.uv]
 find-links = ["https://abetlen.github.io/llama-cpp-python/whl/cpu"]
-#managed = false
+managed = false
 
 [build-system]
 requires = ["hatchling"]

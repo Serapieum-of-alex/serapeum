@@ -1,17 +1,20 @@
+import pytest
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.core.llms import Message, MessageRole
-from serapeum.llama_cpp.formatters import (
+from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
     completion_to_prompt_v3_instruct,
 )
 
 
+@pytest.mark.unit
 def test_embedding_class():
     names_of_base_classes = [b.__name__ for b in LlamaCPP.__mro__]
     assert BaseLLM.__name__ in names_of_base_classes
 
 
+@pytest.mark.unit
 def test_completion_to_prompt_v3_instruct():
     output = (
         "<|start_header_id|>system<|end_header_id|>\n\nSYSTEM PROMPT<|eot_id|>\n"
@@ -21,6 +24,7 @@ def test_completion_to_prompt_v3_instruct():
     assert completion_to_prompt_v3_instruct("USER MESSAGE", "SYSTEM PROMPT") == output
 
 
+@pytest.mark.unit
 def test_messages_to_prompt_v3_instruct():
     messages = [
         Message(

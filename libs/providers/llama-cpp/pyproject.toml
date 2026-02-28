@@ -25,6 +25,7 @@ requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core>=0.3.0",
     "llama-cpp-python>=0.3.0",
+    "huggingface-hub"
 ]
 
 [dependency-groups]
@@ -86,6 +87,7 @@ count = true
 [tool.pytest.ini_options]
 testpaths = "tests"
 norecursedirs = "docs"
+importmode = "importlib"
 markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
     "mock: marks tests as mock (deselect with '-m \"not mock\"')",
@@ -100,8 +102,6 @@ serapeum-core = { workspace = true }
 
 [tool.uv]
 find-links = ["https://abetlen.github.io/llama-cpp-python/whl/cpu"]
-
-#[tool.uv]
 #managed = false
 
 [build-system]

@@ -353,73 +353,61 @@ class TestCompletionToPromptV3Instruct:
 
 @pytest.mark.unit
 class TestFormattersPackageExports:
-    """Tests that serapeum.llama_cpp.formatters re-exports all public formatters."""
+    """Tests that serapeum.llama_cpp.formatters exposes llama2 and llama3 submodules."""
 
-    def test_messages_to_prompt_importable(self) -> None:
-        """Test messages_to_prompt is importable from the formatters package.
+    def test_llama2_submodule_importable(self) -> None:
+        """Test llama2 submodule is importable from the formatters package.
 
         Test scenario:
-            The top-level ``from serapeum.llama_cpp.formatters import
-            messages_to_prompt`` must succeed and resolve to the llama2 implementation.
+            ``from serapeum.llama_cpp.formatters import llama2`` must succeed
+            and be the same module as ``serapeum.llama_cpp.formatters.llama2``.
         """
-        from serapeum.llama_cpp.formatters import messages_to_prompt as pkg_fn
-        from serapeum.llama_cpp.formatters.llama2 import messages_to_prompt as direct_fn
-        assert pkg_fn is direct_fn, (
-            "formatters.messages_to_prompt should be the same object as "
-            "formatters.llama2.messages_to_prompt"
-        )
+        from serapeum.llama_cpp.formatters import llama2 as pkg_mod
+        import serapeum.llama_cpp.formatters.llama2 as direct_mod
+        assert pkg_mod is direct_mod
 
-    def test_completion_to_prompt_importable(self) -> None:
-        """Test completion_to_prompt is importable from the formatters package.
+    def test_llama3_submodule_importable(self) -> None:
+        """Test llama3 submodule is importable from the formatters package.
 
         Test scenario:
-            The re-exported ``completion_to_prompt`` must be the llama2 version.
+            ``from serapeum.llama_cpp.formatters import llama3`` must succeed
+            and be the same module as ``serapeum.llama_cpp.formatters.llama3``.
         """
-        from serapeum.llama_cpp.formatters import completion_to_prompt as pkg_fn
-        from serapeum.llama_cpp.formatters.llama2 import completion_to_prompt as direct_fn
-        assert pkg_fn is direct_fn, (
-            "formatters.completion_to_prompt should be the same object as "
-            "formatters.llama2.completion_to_prompt"
-        )
+        from serapeum.llama_cpp.formatters import llama3 as pkg_mod
+        import serapeum.llama_cpp.formatters.llama3 as direct_mod
+        assert pkg_mod is direct_mod
 
-    def test_messages_to_prompt_v3_instruct_importable(self) -> None:
-        """Test messages_to_prompt_v3_instruct is importable from the formatters package.
+    def test_llama2_functions_accessible(self) -> None:
+        """Test llama2 formatter functions are accessible via the submodule.
 
         Test scenario:
-            The re-exported function must be the llama3 implementation.
+            ``llama2.messages_to_prompt`` and ``llama2.completion_to_prompt``
+            must be callable.
         """
-        from serapeum.llama_cpp.formatters import messages_to_prompt_v3_instruct as pkg_fn
-        from serapeum.llama_cpp.formatters.llama3 import messages_to_prompt_v3_instruct as direct_fn
-        assert pkg_fn is direct_fn, (
-            "formatters.messages_to_prompt_v3_instruct should be the llama3 version"
-        )
+        from serapeum.llama_cpp.formatters import llama2
+        assert callable(llama2.messages_to_prompt)
+        assert callable(llama2.completion_to_prompt)
 
-    def test_completion_to_prompt_v3_instruct_importable(self) -> None:
-        """Test completion_to_prompt_v3_instruct is importable from the formatters package.
+    def test_llama3_functions_accessible(self) -> None:
+        """Test llama3 formatter functions are accessible via the submodule.
 
         Test scenario:
-            The re-exported function must be the llama3 implementation.
+            ``llama3.messages_to_prompt_v3_instruct`` and
+            ``llama3.completion_to_prompt_v3_instruct`` must be callable.
         """
-        from serapeum.llama_cpp.formatters import completion_to_prompt_v3_instruct as pkg_fn
-        from serapeum.llama_cpp.formatters.llama3 import completion_to_prompt_v3_instruct as direct_fn
-        assert pkg_fn is direct_fn, (
-            "formatters.completion_to_prompt_v3_instruct should be the llama3 version"
-        )
+        from serapeum.llama_cpp.formatters import llama3
+        assert callable(llama3.messages_to_prompt_v3_instruct)
+        assert callable(llama3.completion_to_prompt_v3_instruct)
 
-    def test_all_defines_four_public_names(self) -> None:
-        """Test that __all__ exposes exactly the four public formatter names.
+    def test_all_defines_submodule_names(self) -> None:
+        """Test that __all__ exposes exactly the two submodule names.
 
         Test scenario:
-            The package's ``__all__`` list must contain all four formatter
-            names and nothing else, to keep the public API minimal and explicit.
+            The package's ``__all__`` list must contain ``llama2`` and
+            ``llama3`` and nothing else.
         """
         import serapeum.llama_cpp.formatters as pkg
-        expected = {
-            "messages_to_prompt",
-            "completion_to_prompt",
-            "messages_to_prompt_v3_instruct",
-            "completion_to_prompt_v3_instruct",
-        }
+        expected = {"llama2", "llama3"}
         assert set(pkg.__all__) == expected, (
             f"formatters.__all__ mismatch.\n"
             f"Got:      {set(pkg.__all__)}\nExpected: {expected}"

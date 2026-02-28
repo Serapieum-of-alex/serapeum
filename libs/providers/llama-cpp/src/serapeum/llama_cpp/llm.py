@@ -66,7 +66,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
 
         ```python
         from serapeum.llama_cpp import LlamaCPP
-        from serapeum.llama_cpp.formatters import (
+        from serapeum.llama_cpp.formatters.llama3 import (
             messages_to_prompt_v3_instruct,
             completion_to_prompt_v3_instruct,
         )
@@ -87,7 +87,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
 
         ```python
         from serapeum.llama_cpp import LlamaCPP
-        from serapeum.llama_cpp.formatters import (
+        from serapeum.llama_cpp.formatters.llama2 import (
             messages_to_prompt,
             completion_to_prompt,
         )

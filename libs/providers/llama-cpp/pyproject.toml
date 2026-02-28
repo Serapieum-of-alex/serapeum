@@ -64,7 +64,7 @@ allow-direct-references = true
 [tool.commitizen]
 name = "cz_customize"
 version_provider = "pep621"
-tag_format = "serapeum-ollama-$version"
+tag_format = "serapeum-llama-cpp-$version"
 changelog_file = "change-log.md"
 changelog_incremental = true
 changelog_merge_prerelease = true

@@ -155,9 +155,11 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         if isinstance(data, dict):
             context_window = data.get("context_window", DEFAULT_CONTEXT_WINDOW)
             verbose = data.get("verbose", DEFAULT_MODEL_VERBOSITY)
+            n_gpu_layers = data.get("n_gpu_layers", 0)
             model_kwargs = dict(data.get("model_kwargs") or {})
             model_kwargs.setdefault("n_ctx", context_window)
             model_kwargs.setdefault("verbose", verbose)
+            model_kwargs.setdefault("n_gpu_layers", n_gpu_layers)
             data = {**data, "model_kwargs": model_kwargs}
         return data
 
@@ -222,6 +224,23 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             num_output=self.max_new_tokens,
             model_name=self.model_path,
         )
+
+    def tokenize(self, text: str) -> list[int]:
+        """Return the token IDs for *text* using the loaded model's vocabulary."""
+        return self._model.tokenize(text.encode())
+
+    def count_tokens(self, text: str) -> int:
+        """Return the number of tokens *text* encodes to."""
+        return len(self.tokenize(text))
+
+    def _guard_context(self, prompt: str) -> None:
+        """Raise ValueError if *prompt* exceeds the model's context window."""
+        n = self.count_tokens(prompt)
+        if n > self.context_window:
+            raise ValueError(
+                f"Prompt is {n} tokens but context_window is {self.context_window}. "
+                "Shorten the prompt or increase context_window."
+            )
 
     @overload
     def complete(
@@ -310,6 +329,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         return result
 
     def _complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
+        self._guard_context(prompt)
         call_kwargs = {
             **self.generate_kwargs,
             "temperature": self.temperature,
@@ -317,10 +337,12 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             "stream": False,
             **kwargs,
         }
+        call_kwargs.setdefault("stop", self.stop or None)
         response = self._model(prompt=prompt, **call_kwargs)
         return CompletionResponse(text=response["choices"][0]["text"], raw=response)
 
     def _stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
+        self._guard_context(prompt)
         call_kwargs = {
             **self.generate_kwargs,
             "temperature": self.temperature,
@@ -328,6 +350,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             "stream": True,
             **kwargs,
         }
+        call_kwargs.setdefault("stop", self.stop or None)
         response_iter = self._model(prompt=prompt, **call_kwargs)
 
         def gen() -> CompletionResponseGen:

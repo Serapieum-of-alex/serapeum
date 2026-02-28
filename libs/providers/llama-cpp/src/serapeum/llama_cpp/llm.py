@@ -17,7 +17,7 @@ from serapeum.core.configs.defaults import (
     DEFAULT_NUM_OUTPUTS,
     DEFAULT_TEMPERATURE,
 )
-from serapeum.llama_cpp.utils import _download_url
+from serapeum.llama_cpp.utils import _fetch_model_file
 from serapeum.core.utils.base import get_cache_dir
 
 from llama_cpp import Llama
@@ -166,7 +166,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             model_path = cache_dir / "models" / model_url.rsplit("/", 1)[-1]
             if not model_path.exists():
                 model_path.parent.mkdir(parents=True, exist_ok=True)
-                _download_url(model_url, model_path)
+                _fetch_model_file(model_url, model_path)
                 if not model_path.exists():
                     raise RuntimeError(
                         f"Download appeared to succeed but model not found at {model_path!r}"

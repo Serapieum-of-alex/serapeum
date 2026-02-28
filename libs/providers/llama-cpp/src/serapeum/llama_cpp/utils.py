@@ -21,6 +21,8 @@ import logging
 import math
 import requests
 from tqdm import tqdm
+from huggingface_hub import hf_hub_download
+
 
 logger = logging.getLogger(__name__)
 
@@ -158,14 +160,6 @@ def _fetch_model_file_hf(repo_id: str, filename: str, cache_dir: Path) -> Path:
         _fetch_model_file: Direct-URL download alternative.
         huggingface_hub.hf_hub_download: Underlying download function.
     """
-    try:
-        from huggingface_hub import hf_hub_download
-    except ImportError:
-        raise ImportError(
-            "Install huggingface-hub to download from HuggingFace Hub: "
-            "pip install huggingface-hub"
-        ) from None
-
     logger.info("Downloading %s/%s from HuggingFace Hub", repo_id, filename)
     local_path = hf_hub_download(
         repo_id=repo_id,

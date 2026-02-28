@@ -99,7 +99,7 @@ class TestFetchModelFile:
 
         _fetch_model_file("http://example.com/model.gguf", model_path)
 
-        mock_get.assert_called_once_with("http://example.com/model.gguf", stream=True)
+        mock_get.assert_called_once_with("http://example.com/model.gguf", stream=True, timeout=(10, None))
 
     def test_iter_content_chunk_size_is_1mb(self, tmp_path: Path, mocker) -> None:
         """Test that iter_content is called with chunk_size equal to 1 MiB.

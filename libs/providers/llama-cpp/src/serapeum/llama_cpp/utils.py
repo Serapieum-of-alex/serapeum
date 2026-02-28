@@ -66,7 +66,7 @@ def _fetch_model_file(model_url: str, model_path: Path) -> None:
     """
     logger.info("Downloading %s to %s", model_url, model_path)
     try:
-        with requests.get(model_url, stream=True) as r:
+        with requests.get(model_url, stream=True, timeout=(10, None)) as r:
             r.raise_for_status()
             total_size = int(r.headers.get("Content-Length") or 0)
             if total_size < 1_000_000:

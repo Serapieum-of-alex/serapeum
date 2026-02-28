@@ -27,7 +27,7 @@ DEFAULT_LLAMA_CPP_GGUF_MODEL = (
     "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve"
     "/main/llama-2-13b-chat.Q4_0.gguf"
 )
-DEFAULT_LLAMA_CPP_MODEL_VERBOSITY = True
+DEFAULT_MODEL_VERBOSITY = False
 
 
 class LlamaCPP(CompletionToChatMixin, LLM):
@@ -129,7 +129,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         default_factory=dict, description="Kwargs used for model initialization."
     )
     verbose: bool = Field(
-        default=DEFAULT_LLAMA_CPP_MODEL_VERBOSITY,
+        default=DEFAULT_MODEL_VERBOSITY,
         description="Whether to print verbose output.",
     )
 
@@ -154,7 +154,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         """
         if isinstance(data, dict):
             context_window = data.get("context_window", DEFAULT_CONTEXT_WINDOW)
-            verbose = data.get("verbose", DEFAULT_LLAMA_CPP_MODEL_VERBOSITY)
+            verbose = data.get("verbose", DEFAULT_MODEL_VERBOSITY)
             model_kwargs = dict(data.get("model_kwargs") or {})
             model_kwargs.setdefault("n_ctx", context_window)
             model_kwargs.setdefault("verbose", verbose)

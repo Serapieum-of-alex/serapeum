@@ -122,6 +122,17 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         description="The maximum number of context tokens for the model.",
         gt=0,
     )
+    n_gpu_layers: int = Field(
+        default=0,
+        description=(
+            "Number of model layers to offload to GPU. "
+            "Set to -1 to offload all layers."
+        ),
+    )
+    stop: list[str] = Field(
+        default_factory=list,
+        description="Token sequences that stop generation (e.g. ['</s>', '<|eot_id|>']).",
+    )
     generate_kwargs: dict[str, Any] = Field(
         default_factory=dict, description="Kwargs used for generation."
     )
@@ -148,7 +159,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
     @model_validator(mode="before")
     @classmethod
     def _prepare_kwargs(cls, data: Any) -> Any:
-        """Merge n_ctx/verbose defaults into model_kwargs before field validation.
+        """Merge n_ctx, verbose, and n_gpu_layers defaults into model_kwargs.
 
         User-supplied model_kwargs take precedence over these defaults.
         """
@@ -164,14 +175,10 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         return data
 
     def model_post_init(self, __context: Any) -> None:
-        """Load or download the Llama model after all fields are validated."""
-        # The LLM base silently falls back to a generic adapter when
-        # messages_to_prompt / completion_to_prompt are not provided.  That
-        # generic adapter produces no instruct template, so the output of any
-        # GGUF instruct model will be garbage.  We use model_fields_set (the
-        # set of fields the caller explicitly passed) to detect omissions and
-        # fail fast with an actionable message instead of silently producing
-        # bad output.
+        """Validate formatters, resolve the model path, and load the model."""
+        # Fail fast if the caller omitted a formatter.  The base LLM silently
+        # falls back to a generic lambda that produces no instruct template,
+        # which causes garbage output from any GGUF instruct model.
         missing = [
             name
             for name in ("messages_to_prompt", "completion_to_prompt")
@@ -272,7 +279,6 @@ class LlamaCPP(CompletionToChatMixin, LLM):
     ) -> CompletionResponse | CompletionResponseGen:
         if not formatted:
             prompt = self.completion_to_prompt(prompt)
-
         result: CompletionResponse | CompletionResponseGen = (
             self._stream_complete(prompt, **kwargs)
             if stream

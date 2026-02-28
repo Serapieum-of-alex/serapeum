@@ -1,7 +1,9 @@
 import asyncio
+import json
+import threading
+import weakref
 from pathlib import Path
 from typing import Any, Literal, overload
-
 
 from serapeum.core.llms import (
     LLM,
@@ -28,6 +30,11 @@ DEFAULT_LLAMA_CPP_GGUF_MODEL = (
     "/main/llama-2-13b-chat.Q4_0.gguf"
 )
 DEFAULT_MODEL_VERBOSITY = False
+
+# Module-level model cache.  WeakValues mean the Llama instance is released
+# automatically when the last LlamaCPP referencing it is garbage-collected.
+_MODEL_CACHE: weakref.WeakValueDictionary[str, Llama] = weakref.WeakValueDictionary()
+_MODEL_CACHE_LOCK = threading.Lock()
 
 
 class LlamaCPP(CompletionToChatMixin, LLM):
@@ -193,7 +200,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
                 "  Llama 3:            messages_to_prompt_v3_instruct, completion_to_prompt_v3_instruct"
             )
 
-        # check if model is cached
+        # Resolve the model path from whichever source was provided.
         if self.model_path is not None:
             model_path = Path(self.model_path)
             if not model_path.exists():
@@ -201,7 +208,16 @@ class LlamaCPP(CompletionToChatMixin, LLM):
                     "Provided model path does not exist. "
                     "Please check the path or provide a model_url to download."
                 )
-            model = Llama(model_path=str(model_path), **self.model_kwargs)
+        elif self.hf_model_id is not None:
+            # hf_filename is guaranteed non-None by _check_model_source.
+            cache_dir = Path(get_cache_dir()) / "models"
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            model_path = _fetch_model_file_hf(
+                self.hf_model_id,
+                self.hf_filename,  # type: ignore[arg-type]
+                cache_dir,
+            )
+            self.model_path = str(model_path)
         else:
             cache_dir = Path(get_cache_dir())
             model_url = self.model_url or DEFAULT_LLAMA_CPP_GGUF_MODEL
@@ -213,9 +229,26 @@ class LlamaCPP(CompletionToChatMixin, LLM):
                     raise RuntimeError(
                         f"Download appeared to succeed but model not found at {model_path!r}"
                     )
-
-            model = Llama(model_path=str(model_path), **self.model_kwargs)
             self.model_path = str(model_path)
+
+        # Check the module-level cache before loading.  Double-checked locking:
+        # load outside the lock so threads with different models don't serialise.
+        cache_key = (str(model_path), json.dumps(self.model_kwargs, sort_keys=True))
+        with _MODEL_CACHE_LOCK:
+            cached = _MODEL_CACHE.get(cache_key)
+            if cached is not None:
+                self._model = cached
+                return
+
+        model = Llama(model_path=str(model_path), **self.model_kwargs)
+
+        with _MODEL_CACHE_LOCK:
+            cached = _MODEL_CACHE.get(cache_key)
+            if cached is not None:
+                # Another thread loaded the same model while we were loading.
+                self._model = cached
+                return
+            _MODEL_CACHE[cache_key] = model
 
         self._model = model
 

@@ -19,7 +19,7 @@ from serapeum.core.configs.defaults import (
     DEFAULT_NUM_OUTPUTS,
     DEFAULT_TEMPERATURE,
 )
-from serapeum.llama_cpp.utils import _fetch_model_file
+from serapeum.llama_cpp.utils import _fetch_model_file, _fetch_model_file_hf
 from serapeum.core.utils.base import get_cache_dir
 
 from llama_cpp import Llama
@@ -107,11 +107,25 @@ class LlamaCPP(CompletionToChatMixin, LLM):
 
     model_url: str | None = Field(
         default=None,
-        description="The URL llama-cpp model to download and use."
+        description="URL of a GGUF model to download and cache locally.",
     )
     model_path: str | None = Field(
         default=None,
-        description="The path to the llama-cpp model to use."
+        description="Path to a local GGUF model file.",
+    )
+    hf_model_id: str | None = Field(
+        default=None,
+        description=(
+            "HuggingFace Hub repo ID (e.g. 'TheBloke/Llama-2-13B-chat-GGUF'). "
+            "Requires ``pip install huggingface-hub``."
+        ),
+    )
+    hf_filename: str | None = Field(
+        default=None,
+        description=(
+            "Filename within the HuggingFace Hub repo "
+            "(e.g. 'llama-2-13b-chat.Q4_0.gguf'). Required when hf_model_id is set."
+        ),
     )
     temperature: float = Field(
         default=DEFAULT_TEMPERATURE,
@@ -155,11 +169,21 @@ class LlamaCPP(CompletionToChatMixin, LLM):
 
     @model_validator(mode="after")
     def _check_model_source(self) -> "LlamaCPP":
-        """Ensure at least one of model_path or model_url is provided."""
-        if self.model_path is None and self.model_url is None:
+        """Ensure exactly one model source is provided and is fully specified."""
+        if (
+            self.model_path is None
+            and self.model_url is None
+            and self.hf_model_id is None
+        ):
             raise ValueError(
-                "Either model_path or model_url must be provided. "
-                "Set model_path to a local GGUF file, or model_url to download one."
+                "One of model_path, model_url, or hf_model_id must be provided. "
+                "Set model_path to a local GGUF file, model_url to download one, "
+                "or hf_model_id + hf_filename to download from HuggingFace Hub."
+            )
+        if self.hf_model_id is not None and self.hf_filename is None:
+            raise ValueError(
+                "hf_filename is required when hf_model_id is provided. "
+                "Example: hf_filename='llama-2-13b-chat.Q4_0.gguf'."
             )
         return self
 

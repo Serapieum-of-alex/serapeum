@@ -86,3 +86,44 @@ def _fetch_model_file(model_url: str, model_path: Path) -> None:
         logger.exception("Download failed, removing partial file at %s", model_path)
         model_path.unlink(missing_ok=True)
         raise
+
+
+def _fetch_model_file_hf(repo_id: str, filename: str, cache_dir: Path) -> Path:
+    """Download a GGUF model from HuggingFace Hub to a local cache directory.
+
+    Uses the ``huggingface_hub`` library for authenticated downloads, automatic
+    caching, and SHA-256 verification.  ``huggingface_hub`` is an optional
+    dependency and must be installed separately (``pip install huggingface-hub``).
+
+    Args:
+        repo_id: HuggingFace Hub repository ID
+            (e.g. ``'TheBloke/Llama-2-13B-chat-GGUF'``).
+        filename: File name within the repository
+            (e.g. ``'llama-2-13b-chat.Q4_0.gguf'``).
+        cache_dir: Local directory passed to ``hf_hub_download`` as its cache
+            root.  The library manages the exact subdirectory layout.
+
+    Returns:
+        Path to the downloaded (or already-cached) model file.
+
+    Raises:
+        ImportError: If ``huggingface_hub`` is not installed.
+        Exception: Any exception raised by ``hf_hub_download`` — network
+            errors, authentication failures, missing files, etc.
+    """
+    try:
+        from huggingface_hub import hf_hub_download
+    except ImportError:
+        raise ImportError(
+            "Install huggingface-hub to download from HuggingFace Hub: "
+            "pip install huggingface-hub"
+        ) from None
+
+    logger.info("Downloading %s/%s from HuggingFace Hub", repo_id, filename)
+    local_path = hf_hub_download(
+        repo_id=repo_id,
+        filename=filename,
+        cache_dir=str(cache_dir),
+    )
+    logger.info("Model cached at %s", local_path)
+    return Path(local_path)

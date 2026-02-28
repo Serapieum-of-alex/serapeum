@@ -1,3 +1,20 @@
+"""Internal utilities for downloading GGUF model files.
+
+This module provides two private helpers used by
+:class:`~serapeum.llama_cpp.LlamaCPP` to resolve a model path before loading:
+
+- :func:`_fetch_model_file` — streams a GGUF file from an arbitrary URL with
+  progress reporting and automatic cleanup on failure.
+- :func:`_fetch_model_file_hf` — downloads from HuggingFace Hub using the
+  ``huggingface_hub`` library (optional dependency).
+
+These functions are **internal** — they are not part of the public API.
+External callers should use :class:`~serapeum.llama_cpp.LlamaCPP` directly.
+
+See Also:
+    serapeum.llama_cpp.llm: The LlamaCPP class that consumes these helpers.
+"""
+
 from __future__ import annotations
 from pathlib import Path
 import logging
@@ -110,6 +127,36 @@ def _fetch_model_file_hf(repo_id: str, filename: str, cache_dir: Path) -> Path:
         ImportError: If ``huggingface_hub`` is not installed.
         Exception: Any exception raised by ``hf_hub_download`` — network
             errors, authentication failures, missing files, etc.
+
+    Examples:
+        - Download a model file from HuggingFace Hub
+            ```python
+            >>> from pathlib import Path
+            >>> _fetch_model_file_hf(  # doctest: +SKIP
+            ...     "TheBloke/Llama-2-13B-chat-GGUF",
+            ...     "llama-2-13b-chat.Q4_0.gguf",
+            ...     Path("/tmp/hf_cache"),
+            ... )
+            PosixPath('/tmp/hf_cache/.../llama-2-13b-chat.Q4_0.gguf')
+
+            ```
+        - Raises ImportError when huggingface-hub is not installed
+            ```python
+            >>> import sys
+            >>> from unittest.mock import patch
+            >>> from pathlib import Path
+            >>> with patch.dict(sys.modules, {"huggingface_hub": None}):
+            ...     try:
+            ...         _fetch_model_file_hf("a/b", "f.gguf", Path("/tmp"))
+            ...     except ImportError as exc:
+            ...         print("ImportError raised")
+            ImportError raised
+
+            ```
+
+    See Also:
+        _fetch_model_file: Direct-URL download alternative.
+        huggingface_hub.hf_hub_download: Underlying download function.
     """
     try:
         from huggingface_hub import hf_hub_download

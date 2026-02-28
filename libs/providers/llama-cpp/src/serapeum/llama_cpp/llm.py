@@ -1,3 +1,28 @@
+"""LlamaCPP provider — local GGUF inference via llama-cpp-python.
+
+Contains the :class:`LlamaCPP` class, a concrete
+:class:`~serapeum.core.llms.LLM` implementation that runs quantised GGUF
+models on-device using the
+`llama-cpp-python <https://github.com/abetlen/llama-cpp-python>`_ backend.
+
+Key capabilities:
+
+- **Model sources**: local path, direct URL download, or HuggingFace Hub.
+- **Prompt formatters**: pluggable ``messages_to_prompt`` /
+  ``completion_to_prompt`` per model family (Llama 2, Llama 3, …).
+- **GPU offloading**: ``n_gpu_layers`` controls layer offloading via
+  cuBLAS / Metal / Vulkan.
+- **Model caching**: a module-level :class:`weakref.WeakValueDictionary`
+  reuses loaded ``Llama`` instances across :class:`LlamaCPP` objects with
+  identical model path and kwargs.
+- **Async-safe**: :meth:`~LlamaCPP.acomplete` offloads CPU-bound inference
+  to a thread pool so the event loop is never blocked.
+
+See Also:
+    serapeum.llama_cpp.formatters: Ready-made prompt formatters.
+    serapeum.llama_cpp.utils: Internal download helpers.
+"""
+
 import asyncio
 import json
 import threading
@@ -301,6 +326,11 @@ class LlamaCPP(CompletionToChatMixin, LLM):
 
     @classmethod
     def class_name(cls) -> str:
+        """Return the canonical class identifier used in serialisation.
+
+        Returns:
+            The string ``"LlamaCPP"``.
+        """
         return "LlamaCPP"
 
     @property
@@ -357,6 +387,47 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         stream: bool = False,
         **kwargs: Any,
     ) -> CompletionResponse | CompletionResponseGen:
+        """Run text completion, optionally streaming token-by-token.
+
+        Args:
+            prompt: The input text to complete.
+            formatted: When ``True``, *prompt* is passed to the model as-is.
+                When ``False`` (default) it is first wrapped by
+                :attr:`completion_to_prompt` to apply the model's chat template.
+            stream: When ``True`` returns a :class:`CompletionResponseGen`
+                generator that yields one :class:`CompletionResponse` per
+                token delta.  When ``False`` (default) returns a single
+                :class:`CompletionResponse` with the full completion.
+            **kwargs: Additional keyword arguments forwarded to the underlying
+                ``Llama.__call__`` (e.g. ``top_p``, ``repeat_penalty``).
+
+        Returns:
+            A :class:`CompletionResponse` when ``stream=False``, or a
+            :class:`CompletionResponseGen` generator when ``stream=True``.
+
+        Raises:
+            ValueError: If *prompt* exceeds :attr:`context_window` tokens.
+
+        Examples:
+            - Non-streaming completion
+                ```python
+                >>> response = llm.complete("The capital of France is")  # doctest: +SKIP
+                >>> print(response.text)  # doctest: +SKIP
+                Paris.
+
+                ```
+            - Streaming completion
+                ```python
+                >>> for chunk in llm.complete("Hello", stream=True):  # doctest: +SKIP
+                ...     print(chunk.delta, end="", flush=True)
+
+                ```
+
+        See Also:
+            acomplete: Async variant that offloads inference to a thread pool.
+            _complete: Non-streaming implementation.
+            _stream_complete: Streaming implementation.
+        """
         if not formatted:
             prompt = self.completion_to_prompt(prompt)
         result: CompletionResponse | CompletionResponseGen = (
@@ -415,6 +486,25 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         return result
 
     def _complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
+        """Run a single non-streaming inference pass and return the full completion.
+
+        Args:
+            prompt: Already-formatted prompt string to send to the model.
+            **kwargs: Additional keyword arguments forwarded to the underlying
+                ``Llama.__call__`` (e.g. ``top_p``, ``repeat_penalty``).
+
+        Returns:
+            :class:`CompletionResponse` with the full generated text in
+            ``.text`` and the raw llama-cpp-python response dict in ``.raw``.
+
+        Raises:
+            ValueError: If *prompt* exceeds :attr:`context_window` tokens
+                (checked via :meth:`_guard_context`).
+
+        See Also:
+            _stream_complete: Streaming variant.
+            _guard_context: Context-window overflow check.
+        """
         self._guard_context(prompt)
         call_kwargs = {
             **self.generate_kwargs,
@@ -429,6 +519,30 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         return CompletionResponse(text=response["choices"][0]["text"], raw=response)
 
     def _stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
+        """Run a streaming inference pass and yield one response per token delta.
+
+        The underlying ``Llama.__call__`` is called with ``stream=True`` inside
+        a local generator so the model lock is held for the entire streaming
+        session, preventing concurrent calls from corrupting state.
+
+        Args:
+            prompt: Already-formatted prompt string to send to the model.
+            **kwargs: Additional keyword arguments forwarded to the underlying
+                ``Llama.__call__``.
+
+        Yields:
+            :class:`CompletionResponse` objects — one per generated token —
+            where ``.delta`` contains the incremental text and ``.text`` the
+            cumulative completion so far.
+
+        Raises:
+            ValueError: If *prompt* exceeds :attr:`context_window` tokens
+                (checked via :meth:`_guard_context`).
+
+        See Also:
+            _complete: Non-streaming variant.
+            _guard_context: Context-window overflow check.
+        """
         self._guard_context(prompt)
         call_kwargs = {
             **self.generate_kwargs,

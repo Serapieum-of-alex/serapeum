@@ -1,3 +1,30 @@
+"""Prompt formatters for Llama 3 Instruct models.
+
+Implements the ``<|start_header_id|>…<|end_header_id|>…<|eot_id|>`` template
+described in the official Meta Llama 3 documentation:
+https://llama.meta.com/docs/model-cards-and-prompt-formats/meta-llama-3/
+
+This format is compatible with:
+
+- **Meta-Llama-3-8B-Instruct**
+- **Meta-Llama-3-70B-Instruct**
+- Any other model trained on the Llama 3 chat template
+
+Note:
+    ``<|begin_of_text|>`` is intentionally omitted because llama-cpp-python
+    adds it automatically when loading the model.
+
+Typical usage::
+
+    from serapeum.llama_cpp.formatters.llama3 import (
+        messages_to_prompt_v3_instruct,
+        completion_to_prompt_v3_instruct,
+    )
+
+See Also:
+    serapeum.llama_cpp.formatters.llama2: Formatter for Llama 2 / Mistral models.
+"""
+
 from __future__ import annotations
 from collections.abc import Sequence
 from serapeum.core.llms import Message, MessageRole
@@ -76,12 +103,53 @@ def messages_to_prompt_v3_instruct(
 def completion_to_prompt_v3_instruct(
     completion: str, system_prompt: str | None = None
 ) -> str:
-    """
-    Convert completion instruction string to Llama 3 Instruct format.
+    """Convert a plain-text completion to Llama 3 Instruct single-turn prompt format.
 
-    Reference: https://llama.meta.com/docs/model-cards-and-prompt-formats/meta-llama-3/
+    Wraps *completion* in the ``<|start_header_id|>user<|end_header_id|>`` /
+    ``<|eot_id|>`` envelope expected by Llama 3 Instruct models for single-turn
+    (non-chat) text completion.
 
-    Note: `<|begin_of_text|>` is not needed as Llama.cpp appears to add it already.
+    Note:
+        ``<|begin_of_text|>`` is intentionally omitted; llama-cpp-python adds
+        it automatically during model loading.
+
+    Args:
+        completion: The user's instruction or question as plain text.
+        system_prompt: System-level instruction inserted in the system header
+            block.  Defaults to :data:`DEFAULT_SYSTEM_PROMPT` when ``None``.
+
+    Returns:
+        Prompt string ending with the
+        ``<|start_header_id|>assistant<|end_header_id|>\\n\\n`` header that
+        prompts the model to generate its reply.
+
+    Examples:
+        - Build a prompt with a custom system prompt and verify the exact output
+            ```python
+            >>> from serapeum.llama_cpp.formatters.llama3 import completion_to_prompt_v3_instruct
+            >>> prompt = completion_to_prompt_v3_instruct("USER MESSAGE", "SYSTEM PROMPT")
+            >>> expected = (
+            ...     "<|start_header_id|>system<|end_header_id|>\\n\\nSYSTEM PROMPT<|eot_id|>\\n"
+            ...     "<|start_header_id|>user<|end_header_id|>\\n\\nUSER MESSAGE<|eot_id|>\\n"
+            ...     "<|start_header_id|>assistant<|end_header_id|>\\n\\n"
+            ... )
+            >>> prompt == expected
+            True
+
+            ```
+        - Build a prompt with the default system prompt
+            ```python
+            >>> prompt = completion_to_prompt_v3_instruct("Hello!")
+            >>> prompt.startswith("<|start_header_id|>system<|end_header_id|>")
+            True
+            >>> "Hello!" in prompt
+            True
+
+            ```
+
+    See Also:
+        messages_to_prompt_v3_instruct: Multi-turn chat variant for the same model family.
+        DEFAULT_SYSTEM_PROMPT: Default system instruction used when system_prompt is None.
     """
     system_prompt_str = system_prompt or DEFAULT_SYSTEM_PROMPT
 

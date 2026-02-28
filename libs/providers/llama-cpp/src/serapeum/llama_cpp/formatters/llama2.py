@@ -1,3 +1,26 @@
+"""Prompt formatters for Llama 2 Chat and Mistral Instruct models.
+
+Implements the ``[INST] <<SYS>> … <</SYS>>`` template described in the
+official Llama 2 blog post:
+https://huggingface.co/blog/llama2#how-to-prompt-llama-2
+
+This format is compatible with:
+
+- **Llama 2 Chat** (7B, 13B, 70B)
+- **Mistral Instruct v0.1 / v0.2**
+- Any other model trained on the Llama 2 Chat template
+
+Typical usage::
+
+    from serapeum.llama_cpp.formatters.llama2 import (
+        messages_to_prompt,
+        completion_to_prompt,
+    )
+
+See Also:
+    serapeum.llama_cpp.formatters.llama3: Formatter for Llama 3 Instruct models.
+"""
+
 from __future__ import annotations
 from collections.abc import Sequence
 from serapeum.core.llms import Message, MessageRole
@@ -76,6 +99,45 @@ def messages_to_prompt(
 
 
 def completion_to_prompt(completion: str, system_prompt: str | None = None) -> str:
+    """Convert a plain-text completion to Llama 2 Chat single-turn prompt format.
+
+    Wraps *completion* in the ``[INST] <<SYS>> … <</SYS>> … [/INST]`` envelope
+    expected by Llama 2 Chat and Mistral Instruct models for single-turn
+    (non-chat) text completion.
+
+    Args:
+        completion: The user's instruction or question as plain text.
+        system_prompt: System-level instruction inserted inside
+            ``<<SYS>>…<</SYS>>``.  Defaults to :data:`DEFAULT_SYSTEM_PROMPT`
+            when ``None``.
+
+    Returns:
+        Prompt string in Llama 2 ``<s> [INST] <<SYS>> … <</SYS>> … [/INST]``
+        format, ready to be passed to a Llama 2 / Mistral GGUF model.
+
+    Examples:
+        - Build a prompt with the default system prompt
+            ```python
+            >>> from serapeum.llama_cpp.formatters.llama2 import completion_to_prompt
+            >>> prompt = completion_to_prompt("What is the capital of France?")
+            >>> prompt.startswith("<s> [INST]")
+            True
+            >>> "What is the capital of France?" in prompt
+            True
+
+            ```
+        - Build a prompt with a custom system prompt
+            ```python
+            >>> prompt = completion_to_prompt("Hello!", system_prompt="You are terse.")
+            >>> "You are terse." in prompt
+            True
+
+            ```
+
+    See Also:
+        messages_to_prompt: Multi-turn chat variant for the same model family.
+        DEFAULT_SYSTEM_PROMPT: Default system instruction used when system_prompt is None.
+    """
     system_prompt_str = system_prompt or DEFAULT_SYSTEM_PROMPT
 
     return (

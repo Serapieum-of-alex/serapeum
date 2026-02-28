@@ -253,9 +253,13 @@ class LlamaCPP(CompletionToChatMixin, LLM):
     ) -> CompletionResponse | CompletionResponseGen:
         if not formatted:
             prompt = self.completion_to_prompt(prompt)
-        if stream:
-            return self._stream_complete(prompt, **kwargs)
-        return self._complete(prompt, **kwargs)
+
+        result: CompletionResponse | CompletionResponseGen = (
+            self._stream_complete(prompt, **kwargs)
+            if stream
+            else self._complete(prompt, **kwargs)
+        )
+        return result
 
     @overload
     async def acomplete(
@@ -300,9 +304,10 @@ class LlamaCPP(CompletionToChatMixin, LLM):
                 for chunk in chunks:
                     yield chunk
 
-            return gen()
-
-        return await asyncio.to_thread(self.complete, prompt, formatted, stream=False, **kwargs)
+            result: CompletionResponse | CompletionResponseAsyncGen = gen()
+        else:
+            result = await asyncio.to_thread(self.complete, prompt, formatted, stream=False, **kwargs)
+        return result
 
     def _complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
         call_kwargs = {

@@ -28,8 +28,8 @@ from serapeum.llama_cpp.formatters.llama3 import (
 pytestmark = pytest.mark.e2e
 
 MODEL_PATH_ENV = "LLAMA_CPP_MODEL_PATH"
-_model_path = r"\\MYCLOUDEX2ULTRA\research\llm\models\gguf\mistral-7b-instruct-v0.2.Q2_K.gguf"
-# _model_path = os.environ.get(MODEL_PATH_ENV, "")
+# _model_path = r"\\MYCLOUDEX2ULTRA\research\llm\models\gguf\mistral-7b-instruct-v0.2.Q2_K.gguf"
+_model_path = os.environ.get(MODEL_PATH_ENV, "")
 
 skip_no_model = pytest.mark.skipif(
     not _model_path or not os.path.exists(_model_path),

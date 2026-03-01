@@ -96,9 +96,8 @@ def _fetch_model_file(model_url: str, model_path: Path) -> None:
 def _fetch_model_file_hf(repo_id: str, filename: str, cache_dir: Path) -> Path:
     """Download a GGUF model from HuggingFace Hub to a local cache directory.
 
-    Uses the ``huggingface_hub`` library for authenticated downloads, automatic
-    caching, and SHA-256 verification.  ``huggingface_hub`` is an optional
-    dependency and must be installed separately (``pip install huggingface-hub``).
+    Uses the ``huggingface_hub`` library (installed with ``serapeum-llama-cpp``)
+    for authenticated downloads, automatic caching, and SHA-256 verification.
 
     Args:
         repo_id: HuggingFace Hub repository ID
@@ -112,7 +111,6 @@ def _fetch_model_file_hf(repo_id: str, filename: str, cache_dir: Path) -> Path:
         Path to the downloaded (or already-cached) model file.
 
     Raises:
-        ImportError: If ``huggingface_hub`` is not installed.
         Exception: Any exception raised by ``hf_hub_download`` — network
             errors, authentication failures, missing files, etc.
 

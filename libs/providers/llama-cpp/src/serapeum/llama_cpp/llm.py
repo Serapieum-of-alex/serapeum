@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import threading
 import weakref
 from pathlib import Path
@@ -50,6 +51,8 @@ from serapeum.core.llms import (
 )
 from serapeum.core.utils.base import get_cache_dir
 from serapeum.llama_cpp.utils import _fetch_model_file, _fetch_model_file_hf
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_LLAMA_CPP_GGUF_MODEL = (
     "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve"
@@ -775,16 +778,23 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
         def gen() -> CompletionResponseGen:
             text = ""
             with self._model_lock:
-                for response in self._model(prompt=prompt, **call_kwargs):
-                    choices = response.get("choices", [])
-                    if not choices:
-                        raise RuntimeError(
-                            f"Model returned no choices in streaming response "
-                            f"after generating {len(text)} chars. "
-                            f"Raw response: {response!r}"
-                        )
-                    delta = choices[0]["text"]
-                    text += delta
-                    yield CompletionResponse(delta=delta, text=text, raw=response)
+                try:
+                    for response in self._model(prompt=prompt, **call_kwargs):
+                        choices = response.get("choices", [])
+                        if not choices:
+                            raise RuntimeError(
+                                f"Model returned no choices in streaming response "
+                                f"after generating {len(text)} chars. "
+                                f"Raw response: {response!r}"
+                            )
+                        delta = choices[0]["text"]
+                        text += delta
+                        yield CompletionResponse(delta=delta, text=text, raw=response)
+                except Exception:
+                    logger.exception(
+                        "Streaming inference failed after generating %d chars",
+                        len(text),
+                    )
+                    raise
 
         return gen()

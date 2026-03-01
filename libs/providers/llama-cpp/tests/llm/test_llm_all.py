@@ -6,6 +6,7 @@ Existing coverage in other test files (not duplicated here):
 
 All tests here mock ``serapeum.llama_cpp.llm.Llama`` so no real model is needed.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -17,7 +18,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from serapeum.core.llms import CompletionResponse
-from serapeum.llama_cpp.llm import DEFAULT_LLAMA_CPP_GGUF_MODEL, LlamaCPP, _MODEL_CACHE
+from serapeum.llama_cpp.llm import _MODEL_CACHE, LlamaCPP
 
 
 def _noop_messages_to_prompt(messages: Any, system_prompt: str | None = None) -> str:
@@ -25,7 +26,9 @@ def _noop_messages_to_prompt(messages: Any, system_prompt: str | None = None) ->
     return " ".join(m.content or "" for m in messages)
 
 
-def _noop_completion_to_prompt(completion: str, system_prompt: str | None = None) -> str:
+def _noop_completion_to_prompt(
+    completion: str, system_prompt: str | None = None
+) -> str:
     """Minimal completion formatter that returns the input unchanged."""
     return completion
 
@@ -121,12 +124,14 @@ class TestLlamaCPP:
             class_name() is a classmethod — it must not require construction
             and must return the exact string 'LlamaCPP'.
         """
-        assert LlamaCPP.class_name() == "LlamaCPP", (
-            f"Expected 'LlamaCPP', got {LlamaCPP.class_name()!r}"
-        )
+        assert (
+            LlamaCPP.class_name() == "LlamaCPP"
+        ), f"Expected 'LlamaCPP', got {LlamaCPP.class_name()!r}"
 
     @pytest.mark.unit
-    def test_check_model_source_raises_when_no_source_provided(self, mocker: Any) -> None:
+    def test_check_model_source_raises_when_no_source_provided(
+        self, mocker: Any
+    ) -> None:
         """Test _check_model_source raises when all three model sources are absent.
 
         Test scenario:
@@ -143,14 +148,18 @@ class TestLlamaCPP:
             hf_model_id=None,
             hf_filename=None,
         )
-        with pytest.raises(ValueError, match="One of model_path, model_url, or hf_model_id") as exc_info:
+        with pytest.raises(
+            ValueError, match="One of model_path, model_url, or hf_model_id"
+        ) as exc_info:
             instance._check_model_source()
-        assert "model_path" in str(exc_info.value), (
-            f"Error should mention model_path, got: {exc_info.value}"
-        )
+        assert "model_path" in str(
+            exc_info.value
+        ), f"Error should mention model_path, got: {exc_info.value}"
 
     @pytest.mark.unit
-    def test_check_model_source_raises_when_hf_model_id_without_hf_filename(self, mocker: Any) -> None:
+    def test_check_model_source_raises_when_hf_model_id_without_hf_filename(
+        self, mocker: Any
+    ) -> None:
         """Test _check_model_source raises when hf_model_id is given but hf_filename is absent.
 
         Test scenario:
@@ -169,9 +178,9 @@ class TestLlamaCPP:
         )
         with pytest.raises(ValueError, match="hf_filename is required") as exc_info:
             instance._check_model_source()
-        assert "hf_filename" in str(exc_info.value), (
-            f"Error should name hf_filename, got: {exc_info.value}"
-        )
+        assert "hf_filename" in str(
+            exc_info.value
+        ), f"Error should name hf_filename, got: {exc_info.value}"
 
     @pytest.mark.unit
     def test_prepare_kwargs_injects_n_ctx_from_context_window(
@@ -188,9 +197,9 @@ class TestLlamaCPP:
             context_window=2048,
             **_formatters(),
         )
-        assert llm.model_kwargs["n_ctx"] == 2048, (
-            f"Expected n_ctx=2048 in model_kwargs, got: {llm.model_kwargs}"
-        )
+        assert (
+            llm.model_kwargs["n_ctx"] == 2048
+        ), f"Expected n_ctx=2048 in model_kwargs, got: {llm.model_kwargs}"
 
     @pytest.mark.unit
     def test_prepare_kwargs_user_supplied_n_ctx_takes_precedence(
@@ -208,9 +217,9 @@ class TestLlamaCPP:
             model_kwargs={"n_ctx": 4096},
             **_formatters(),
         )
-        assert llm.model_kwargs["n_ctx"] == 4096, (
-            f"User-supplied n_ctx should take precedence, got: {llm.model_kwargs}"
-        )
+        assert (
+            llm.model_kwargs["n_ctx"] == 4096
+        ), f"User-supplied n_ctx should take precedence, got: {llm.model_kwargs}"
 
     @pytest.mark.unit
     def test_prepare_kwargs_injects_verbose_from_verbose_field(
@@ -227,9 +236,9 @@ class TestLlamaCPP:
             verbose=False,
             **_formatters(),
         )
-        assert llm.model_kwargs["verbose"] is False, (
-            f"Expected verbose=False in model_kwargs, got: {llm.model_kwargs}"
-        )
+        assert (
+            llm.model_kwargs["verbose"] is False
+        ), f"Expected verbose=False in model_kwargs, got: {llm.model_kwargs}"
 
     @pytest.mark.unit
     def test_prepare_kwargs_user_supplied_verbose_takes_precedence(
@@ -247,9 +256,9 @@ class TestLlamaCPP:
             model_kwargs={"verbose": True},
             **_formatters(),
         )
-        assert llm.model_kwargs["verbose"] is True, (
-            f"User model_kwargs.verbose should take precedence, got: {llm.model_kwargs}"
-        )
+        assert (
+            llm.model_kwargs["verbose"] is True
+        ), f"User model_kwargs.verbose should take precedence, got: {llm.model_kwargs}"
 
     @pytest.mark.unit
     def test_prepare_kwargs_injects_n_gpu_layers_from_field(
@@ -266,9 +275,9 @@ class TestLlamaCPP:
             n_gpu_layers=4,
             **_formatters(),
         )
-        assert llm.model_kwargs["n_gpu_layers"] == 4, (
-            f"Expected n_gpu_layers=4 in model_kwargs, got: {llm.model_kwargs}"
-        )
+        assert (
+            llm.model_kwargs["n_gpu_layers"] == 4
+        ), f"Expected n_gpu_layers=4 in model_kwargs, got: {llm.model_kwargs}"
 
     @pytest.mark.unit
     def test_prepare_kwargs_user_supplied_n_gpu_layers_takes_precedence(
@@ -287,12 +296,14 @@ class TestLlamaCPP:
             model_kwargs={"n_gpu_layers": 8},
             **_formatters(),
         )
-        assert llm.model_kwargs["n_gpu_layers"] == 8, (
-            f"User model_kwargs.n_gpu_layers should take precedence, got: {llm.model_kwargs}"
-        )
+        assert (
+            llm.model_kwargs["n_gpu_layers"] == 8
+        ), f"User model_kwargs.n_gpu_layers should take precedence, got: {llm.model_kwargs}"
 
     @pytest.mark.unit
-    def test_model_post_init_raises_when_both_formatters_missing(self, mocker: Any) -> None:
+    def test_model_post_init_raises_when_both_formatters_missing(
+        self, mocker: Any
+    ) -> None:
         """Test _check_formatters raises when neither formatter is in model_fields_set.
 
         Test scenario:
@@ -304,15 +315,17 @@ class TestLlamaCPP:
         """
         mocker.patch.object(LlamaCPP, "model_post_init")
         instance = LlamaCPP.model_construct(_fields_set=set())
-        with pytest.raises(ValueError, match="requires explicit prompt formatters") as exc_info:
+        with pytest.raises(
+            ValueError, match="requires explicit prompt formatters"
+        ) as exc_info:
             instance._check_formatters()
         error = str(exc_info.value)
-        assert "messages_to_prompt" in error, (
-            f"Error should name messages_to_prompt, got: {error}"
-        )
-        assert "completion_to_prompt" in error, (
-            f"Error should name completion_to_prompt, got: {error}"
-        )
+        assert (
+            "messages_to_prompt" in error
+        ), f"Error should name messages_to_prompt, got: {error}"
+        assert (
+            "completion_to_prompt" in error
+        ), f"Error should name completion_to_prompt, got: {error}"
 
     @pytest.mark.unit
     @pytest.mark.parametrize(
@@ -345,9 +358,9 @@ class TestLlamaCPP:
         instance = LlamaCPP.model_construct(_fields_set=fields_set)
         with pytest.raises(ValueError, match=missing_formatter) as exc_info:
             instance._check_formatters()
-        assert missing_formatter in str(exc_info.value), (
-            f"Error should identify {missing_formatter!r} as missing, got: {exc_info.value}"
-        )
+        assert missing_formatter in str(
+            exc_info.value
+        ), f"Error should identify {missing_formatter!r} as missing, got: {exc_info.value}"
 
     @pytest.mark.unit
     def test_model_post_init_raises_when_model_path_does_not_exist(self) -> None:
@@ -359,9 +372,9 @@ class TestLlamaCPP:
         """
         with pytest.raises(ValueError, match="does not exist") as exc_info:
             LlamaCPP(model_path="/this/path/does/not/exist.gguf", **_formatters())
-        assert "path" in str(exc_info.value).lower(), (
-            f"Error should reference the path issue, got: {exc_info.value}"
-        )
+        assert (
+            "path" in str(exc_info.value).lower()
+        ), f"Error should reference the path issue, got: {exc_info.value}"
 
     @pytest.mark.unit
     def test_model_post_init_calls_llama_with_model_path(
@@ -457,13 +470,15 @@ class TestLlamaCPP:
             raised with a descriptive message.
         """
         mocker.patch("serapeum.llama_cpp.llm.get_cache_dir", return_value=str(tmp_path))
-        mocker.patch("serapeum.llama_cpp.llm._fetch_model_file")  # no-op; file not created
+        mocker.patch(
+            "serapeum.llama_cpp.llm._fetch_model_file"
+        )  # no-op; file not created
 
         with pytest.raises(RuntimeError, match="model not found at") as exc_info:
             LlamaCPP(model_url="https://example.com/model.gguf", **_formatters())
-        assert "model not found" in str(exc_info.value).lower(), (
-            f"RuntimeError should describe the missing file, got: {exc_info.value}"
-        )
+        assert (
+            "model not found" in str(exc_info.value).lower()
+        ), f"RuntimeError should describe the missing file, got: {exc_info.value}"
 
     @pytest.mark.unit
     def test_model_post_init_updates_model_path_after_url_download(
@@ -486,9 +501,9 @@ class TestLlamaCPP:
         mocker.patch("serapeum.llama_cpp.llm._fetch_model_file", side_effect=_create)
         llm = LlamaCPP(model_url=model_url, **_formatters())
 
-        assert llm.model_path == str(expected), (
-            f"model_path should be updated to {str(expected)!r}, got {llm.model_path!r}"
-        )
+        assert llm.model_path == str(
+            expected
+        ), f"model_path should be updated to {str(expected)!r}, got {llm.model_path!r}"
 
     @pytest.mark.unit
     def test_model_post_init_downloads_from_hf_hub_when_hf_model_id_given(
@@ -532,13 +547,15 @@ class TestLlamaCPP:
         downloaded.parent.mkdir(parents=True, exist_ok=True)
         downloaded.write_bytes(b"fake")
         mocker.patch("serapeum.llama_cpp.llm.get_cache_dir", return_value=str(tmp_path))
-        mocker.patch("serapeum.llama_cpp.llm._fetch_model_file_hf", return_value=downloaded)
+        mocker.patch(
+            "serapeum.llama_cpp.llm._fetch_model_file_hf", return_value=downloaded
+        )
 
         llm = LlamaCPP(hf_model_id=repo_id, hf_filename=filename, **_formatters())
 
-        assert llm.model_path == str(downloaded), (
-            f"model_path should be set to {str(downloaded)!r}, got {llm.model_path!r}"
-        )
+        assert llm.model_path == str(
+            downloaded
+        ), f"model_path should be set to {str(downloaded)!r}, got {llm.model_path!r}"
 
     @pytest.mark.unit
     def test_model_cache_returns_cached_instance_on_second_construction(
@@ -558,9 +575,9 @@ class TestLlamaCPP:
             f"Llama() should only be called once when the cache hits, "
             f"got call_count={mock_llama_cls.call_count}"
         )
-        assert second._model is first._model, (
-            "Both instances should share the same underlying Llama object"
-        )
+        assert (
+            second._model is first._model
+        ), "Both instances should share the same underlying Llama object"
 
     @pytest.mark.unit
     def test_model_cache_creates_new_instance_for_different_path(
@@ -594,9 +611,9 @@ class TestLlamaCPP:
             f"Llama() should be called once per distinct path, "
             f"got call_count={mock_llama_cls.call_count}"
         )
-        assert second._model is not first._model, (
-            "Different paths must produce different Llama instances"
-        )
+        assert (
+            second._model is not first._model
+        ), "Different paths must produce different Llama instances"
 
     @pytest.mark.unit
     def test_metadata_context_window_reads_from_model(self, llm: LlamaCPP) -> None:
@@ -606,9 +623,9 @@ class TestLlamaCPP:
             The mock Llama instance has context_params.n_ctx = 512; the
             Metadata object must expose that same value.
         """
-        assert llm.metadata.context_window == 512, (
-            f"Expected context_window=512 from mock model, got {llm.metadata.context_window}"
-        )
+        assert (
+            llm.metadata.context_window == 512
+        ), f"Expected context_window=512 from mock model, got {llm.metadata.context_window}"
 
     @pytest.mark.unit
     def test_metadata_num_output_equals_max_new_tokens(self, llm: LlamaCPP) -> None:
@@ -618,9 +635,9 @@ class TestLlamaCPP:
             The fixture creates LlamaCPP with max_new_tokens=32; metadata
             must expose that value as num_output.
         """
-        assert llm.metadata.num_output == 32, (
-            f"Expected num_output=32, got {llm.metadata.num_output}"
-        )
+        assert (
+            llm.metadata.num_output == 32
+        ), f"Expected num_output=32, got {llm.metadata.num_output}"
 
     @pytest.mark.unit
     def test_metadata_model_name_is_model_path_string(
@@ -632,9 +649,9 @@ class TestLlamaCPP:
             model_name in Metadata should match the model_path string passed
             at construction time.
         """
-        assert llm.metadata.model_name == str(model_file), (
-            f"Expected model_name={str(model_file)!r}, got {llm.metadata.model_name!r}"
-        )
+        assert llm.metadata.model_name == str(
+            model_file
+        ), f"Expected model_name={str(model_file)!r}, got {llm.metadata.model_name!r}"
 
     @pytest.mark.unit
     def test_tokenize_delegates_to_model(
@@ -691,9 +708,9 @@ class TestLlamaCPP:
         mock_llama.tokenize.return_value = [0] * (llm.context_window + 1)
         with pytest.raises(ValueError, match="context_window") as exc_info:
             llm._guard_context("very long prompt")
-        assert str(llm.context_window) in str(exc_info.value), (
-            f"Error should cite context_window={llm.context_window}, got: {exc_info.value}"
-        )
+        assert str(llm.context_window) in str(
+            exc_info.value
+        ), f"Error should cite context_window={llm.context_window}, got: {exc_info.value}"
 
     @pytest.mark.unit
     def test_complete_non_stream_returns_completion_response(
@@ -707,9 +724,9 @@ class TestLlamaCPP:
         """
         mock_llama.return_value = {"choices": [{"text": "Hello!"}]}
         result = llm.complete("Say hello.", formatted=True)
-        assert isinstance(result, CompletionResponse), (
-            f"Expected CompletionResponse, got {type(result)}"
-        )
+        assert isinstance(
+            result, CompletionResponse
+        ), f"Expected CompletionResponse, got {type(result)}"
         assert result.text == "Hello!", f"Expected text 'Hello!', got {result.text!r}"
 
     @pytest.mark.unit
@@ -725,9 +742,9 @@ class TestLlamaCPP:
         raw = {"choices": [{"text": "Hi"}], "id": "abc123"}
         mock_llama.return_value = raw
         result = llm.complete("Say hi.", formatted=True)
-        assert result.raw == raw, (
-            f"raw should be the mock response dict, got: {result.raw}"
-        )
+        assert (
+            result.raw == raw
+        ), f"raw should be the mock response dict, got: {result.raw}"
 
     @pytest.mark.unit
     def test_complete_applies_completion_to_prompt_when_not_formatted(
@@ -743,16 +760,18 @@ class TestLlamaCPP:
         mock_llama.return_value = {"choices": [{"text": "ok"}]}
         called_with: list[str] = []
 
-        def tracking_formatter(completion: str, system_prompt: str | None = None) -> str:
+        def tracking_formatter(
+            completion: str, system_prompt: str | None = None
+        ) -> str:
             called_with.append(completion)
             return f"[FMT]{completion}"
 
         llm.completion_to_prompt = tracking_formatter
         llm.complete("raw input", formatted=False)
 
-        assert called_with == ["raw input"], (
-            f"Formatter should have been called with 'raw input', got: {called_with}"
-        )
+        assert called_with == [
+            "raw input"
+        ], f"Formatter should have been called with 'raw input', got: {called_with}"
         assert mock_llama.call_args.kwargs["prompt"] == "[FMT]raw input", (
             f"Model should receive the formatted prompt, "
             f"got: {mock_llama.call_args.kwargs.get('prompt')!r}"
@@ -790,12 +809,12 @@ class TestLlamaCPP:
         mock_llama.return_value = {"choices": [{"text": "ok"}]}
         llm.complete("hi", formatted=True)
         call_kw = mock_llama.call_args.kwargs
-        assert call_kw["temperature"] == llm.temperature, (
-            f"temperature should be forwarded, got: {call_kw.get('temperature')}"
-        )
-        assert call_kw["max_tokens"] == llm.max_new_tokens, (
-            f"max_tokens should equal max_new_tokens, got: {call_kw.get('max_tokens')}"
-        )
+        assert (
+            call_kw["temperature"] == llm.temperature
+        ), f"temperature should be forwarded, got: {call_kw.get('temperature')}"
+        assert (
+            call_kw["max_tokens"] == llm.max_new_tokens
+        ), f"max_tokens should equal max_new_tokens, got: {call_kw.get('max_tokens')}"
 
     @pytest.mark.unit
     def test_complete_non_stream_sets_stream_false_on_backend(
@@ -834,12 +853,12 @@ class TestLlamaCPP:
         mock_llama.return_value = {"choices": [{"text": "ok"}]}
         llm.complete("hi", formatted=True)
         call_kw = mock_llama.call_args.kwargs
-        assert call_kw["temperature"] == 0.1, (
-            f"Explicit temperature should override generate_kwargs, got: {call_kw.get('temperature')}"
-        )
-        assert call_kw.get("top_p") == 0.95, (
-            f"generate_kwargs.top_p should be forwarded, got: {call_kw}"
-        )
+        assert (
+            call_kw["temperature"] == 0.1
+        ), f"Explicit temperature should override generate_kwargs, got: {call_kw.get('temperature')}"
+        assert (
+            call_kw.get("top_p") == 0.95
+        ), f"generate_kwargs.top_p should be forwarded, got: {call_kw}"
 
     @pytest.mark.unit
     def test_complete_passes_extra_kwargs_to_backend(
@@ -853,9 +872,9 @@ class TestLlamaCPP:
         """
         mock_llama.return_value = {"choices": [{"text": "ok"}]}
         llm.complete("hi", formatted=True, stop=["END"])
-        assert mock_llama.call_args.kwargs.get("stop") == ["END"], (
-            f"extra stop kwarg should reach the backend, got: {mock_llama.call_args.kwargs}"
-        )
+        assert mock_llama.call_args.kwargs.get("stop") == [
+            "END"
+        ], f"extra stop kwarg should reach the backend, got: {mock_llama.call_args.kwargs}"
 
     @pytest.mark.unit
     def test_complete_passes_stop_field_to_backend(
@@ -906,9 +925,9 @@ class TestLlamaCPP:
         mock_llama.return_value = [{"choices": [{"text": "tok1"}]}]
         gen = llm.complete("hi", formatted=True, stream=True)
         first = next(iter(gen))
-        assert isinstance(first, CompletionResponse), (
-            f"Expected CompletionResponse chunk, got {type(first)}"
-        )
+        assert isinstance(
+            first, CompletionResponse
+        ), f"Expected CompletionResponse chunk, got {type(first)}"
 
     @pytest.mark.unit
     def test_complete_stream_sets_stream_true_on_backend(
@@ -942,12 +961,12 @@ class TestLlamaCPP:
             {"choices": [{"text": "tok2"}]},
         ]
         for chunk in llm.complete("hi", formatted=True, stream=True):
-            assert chunk.delta is not None, (
-                f"Chunk delta must not be None, got chunk: {chunk}"
-            )
-            assert isinstance(chunk.delta, str), (
-                f"Delta must be str, got {type(chunk.delta)}"
-            )
+            assert (
+                chunk.delta is not None
+            ), f"Chunk delta must not be None, got chunk: {chunk}"
+            assert isinstance(
+                chunk.delta, str
+            ), f"Delta must be str, got {type(chunk.delta)}"
 
     @pytest.mark.unit
     def test_complete_stream_text_accumulates_monotonically(
@@ -966,9 +985,9 @@ class TestLlamaCPP:
         ]
         prev_len = 0
         for chunk in llm.complete("hi", formatted=True, stream=True):
-            assert len(chunk.text) >= prev_len, (
-                f"Text length decreased: {prev_len} → {len(chunk.text)}"
-            )
+            assert (
+                len(chunk.text) >= prev_len
+            ), f"Text length decreased: {prev_len} → {len(chunk.text)}"
             prev_len = len(chunk.text)
 
     @pytest.mark.unit
@@ -987,9 +1006,9 @@ class TestLlamaCPP:
         ]
         chunks = list(llm.complete("hi", formatted=True, stream=True))
         joined = "".join(c.delta for c in chunks if c.delta)
-        assert joined == chunks[-1].text, (
-            f"Joined deltas {joined!r} != final text {chunks[-1].text!r}"
-        )
+        assert (
+            joined == chunks[-1].text
+        ), f"Joined deltas {joined!r} != final text {chunks[-1].text!r}"
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1004,12 +1023,12 @@ class TestLlamaCPP:
         """
         mock_llama.return_value = {"choices": [{"text": "async reply"}]}
         result = await llm.acomplete("Say hello.", formatted=True)
-        assert isinstance(result, CompletionResponse), (
-            f"Expected CompletionResponse, got {type(result)}"
-        )
-        assert result.text == "async reply", (
-            f"Expected text 'async reply', got {result.text!r}"
-        )
+        assert isinstance(
+            result, CompletionResponse
+        ), f"Expected CompletionResponse, got {type(result)}"
+        assert (
+            result.text == "async reply"
+        ), f"Expected text 'async reply', got {result.text!r}"
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1032,9 +1051,9 @@ class TestLlamaCPP:
             llm.acomplete("hi", formatted=True),
             side(),
         )
-        assert isinstance(result, CompletionResponse), (
-            f"acomplete should still return CompletionResponse, got {type(result)}"
-        )
+        assert isinstance(
+            result, CompletionResponse
+        ), f"acomplete should still return CompletionResponse, got {type(result)}"
         assert side_ran, "Side coroutine should have run concurrently"
 
     @pytest.mark.unit
@@ -1052,9 +1071,9 @@ class TestLlamaCPP:
         gen = await llm.acomplete("hi", formatted=True, stream=True)
         chunks = [chunk async for chunk in gen]
         assert len(chunks) > 0, "Async stream must yield at least one chunk"
-        assert isinstance(chunks[0], CompletionResponse), (
-            f"Expected CompletionResponse chunk, got {type(chunks[0])}"
-        )
+        assert isinstance(
+            chunks[0], CompletionResponse
+        ), f"Expected CompletionResponse chunk, got {type(chunks[0])}"
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1073,15 +1092,15 @@ class TestLlamaCPP:
         ]
         gen = await llm.acomplete("hi", formatted=True, stream=True)
         chunks = [chunk async for chunk in gen]
-        assert chunks[0].delta == "A", (
-            f"First chunk delta should be 'A', got {chunks[0].delta!r}"
-        )
-        assert chunks[1].delta == "B", (
-            f"Second chunk delta should be 'B', got {chunks[1].delta!r}"
-        )
-        assert chunks[1].text == "AB", (
-            f"Final accumulated text should be 'AB', got {chunks[1].text!r}"
-        )
+        assert (
+            chunks[0].delta == "A"
+        ), f"First chunk delta should be 'A', got {chunks[0].delta!r}"
+        assert (
+            chunks[1].delta == "B"
+        ), f"Second chunk delta should be 'B', got {chunks[1].delta!r}"
+        assert (
+            chunks[1].text == "AB"
+        ), f"Final accumulated text should be 'AB', got {chunks[1].text!r}"
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -1103,9 +1122,9 @@ class TestLlamaCPP:
 
         llm.completion_to_prompt = tracking
         await llm.acomplete("raw", formatted=True)
-        assert not called, (
-            f"Formatter must not be called when formatted=True, called with: {called}"
-        )
+        assert (
+            not called
+        ), f"Formatter must not be called when formatted=True, called with: {called}"
 
 
 @pytest.mark.unit
@@ -1120,9 +1139,10 @@ class TestLlamaCPPInheritance:
             LLM is the core abstract base; LlamaCPP must appear in its MRO.
         """
         from serapeum.core.llms import LLM
-        assert issubclass(LlamaCPP, LLM), (
-            f"LlamaCPP must be a subclass of LLM, MRO: {[c.__name__ for c in LlamaCPP.__mro__]}"
-        )
+
+        assert issubclass(
+            LlamaCPP, LLM
+        ), f"LlamaCPP must be a subclass of LLM, MRO: {[c.__name__ for c in LlamaCPP.__mro__]}"
 
     @pytest.mark.unit
     def test_has_completion_to_chat_mixin(self) -> None:
@@ -1133,6 +1153,7 @@ class TestLlamaCPPInheritance:
             is in the MRO confirms those methods are available.
         """
         from serapeum.core.llms import CompletionToChatMixin
+
         assert issubclass(LlamaCPP, CompletionToChatMixin), (
             f"LlamaCPP must include CompletionToChatMixin, "
             f"MRO: {[c.__name__ for c in LlamaCPP.__mro__]}"
@@ -1156,9 +1177,9 @@ class TestLlamaCPPBenchmarks:
         """
         mock_llama.return_value = {"choices": [{"text": "benchmark token"}]}
         result = benchmark(llm.complete, "benchmark prompt", True)
-        assert isinstance(result, CompletionResponse), (
-            f"Benchmark result should be CompletionResponse, got {type(result)}"
-        )
+        assert isinstance(
+            result, CompletionResponse
+        ), f"Benchmark result should be CompletionResponse, got {type(result)}"
 
     @pytest.mark.performance
     def test_complete_stream_collect_throughput(

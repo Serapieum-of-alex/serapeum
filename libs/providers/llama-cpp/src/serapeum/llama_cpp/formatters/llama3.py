@@ -26,7 +26,9 @@ See Also:
 """
 
 from __future__ import annotations
+
 from collections.abc import Sequence
+
 from serapeum.core.llms import Message, MessageRole
 
 HEADER_SYS = "<|start_header_id|>system<|end_header_id|>\n\n"
@@ -150,7 +152,7 @@ def messages_to_prompt_v3_instruct(
 def completion_to_prompt_v3_instruct(
     completion: str, system_prompt: str | None = None
 ) -> str:
-    """Convert a plain-text completion to Llama 3 Instruct single-turn prompt format.
+    r"""Convert a plain-text completion to Llama 3 Instruct single-turn prompt format.
 
     Wraps *completion* in the ``<|start_header_id|>user<|end_header_id|>`` /
     ``<|eot_id|>`` envelope expected by Llama 3 Instruct models for single-turn

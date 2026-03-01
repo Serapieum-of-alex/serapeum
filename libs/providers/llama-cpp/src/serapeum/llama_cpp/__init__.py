@@ -27,6 +27,7 @@ See Also:
     serapeum.llama_cpp.formatters.llama3: Prompt formatters for Llama 3 Instruct models.
 """
 
+
 def __getattr__(name: str) -> object:
     """Lazily import heavy symbols to avoid triggering llama_cpp at collection time."""
     if name == "LlamaCPP":

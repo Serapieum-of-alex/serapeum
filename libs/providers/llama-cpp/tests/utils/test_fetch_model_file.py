@@ -1,4 +1,5 @@
 """Unit tests for _fetch_model_file in serapeum.llama_cpp.utils."""
+
 from __future__ import annotations
 
 import math
@@ -49,7 +50,9 @@ def _make_mock_response(
 class TestFetchModelFile:
     """Tests for _fetch_model_file."""
 
-    def test_success_writes_file_content(self, tmp_path: Path, mocker: MockerFixture) -> None:
+    def test_success_writes_file_content(
+        self, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
         """Test that all downloaded chunks are written to model_path.
 
         Test scenario:
@@ -65,11 +68,13 @@ class TestFetchModelFile:
         _fetch_model_file("http://example.com/model.gguf", model_path)
 
         assert model_path.exists(), "model file should exist after successful download"
-        assert model_path.read_bytes() == chunk1 + chunk2, (
-            "file content should match all downloaded chunks in order"
-        )
+        assert (
+            model_path.read_bytes() == chunk1 + chunk2
+        ), "file content should match all downloaded chunks in order"
 
-    def test_success_does_not_delete_file(self, tmp_path: Path, mocker: MockerFixture) -> None:
+    def test_success_does_not_delete_file(
+        self, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
         """Test that model_path is not removed after a successful download.
 
         Test scenario:
@@ -84,7 +89,9 @@ class TestFetchModelFile:
 
         assert model_path.exists(), "model file must still exist after a clean download"
 
-    def test_requests_get_called_with_stream_true(self, tmp_path: Path, mocker: MockerFixture) -> None:
+    def test_requests_get_called_with_stream_true(
+        self, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
         """Test that requests.get is invoked with stream=True.
 
         Test scenario:
@@ -100,9 +107,13 @@ class TestFetchModelFile:
 
         _fetch_model_file("http://example.com/model.gguf", model_path)
 
-        mock_get.assert_called_once_with("http://example.com/model.gguf", stream=True, timeout=(10, None))
+        mock_get.assert_called_once_with(
+            "http://example.com/model.gguf", stream=True, timeout=(10, None)
+        )
 
-    def test_iter_content_chunk_size_is_1mb(self, tmp_path: Path, mocker: MockerFixture) -> None:
+    def test_iter_content_chunk_size_is_1mb(
+        self, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
         """Test that iter_content is called with chunk_size equal to 1 MiB.
 
         Test scenario:
@@ -139,9 +150,9 @@ class TestFetchModelFile:
         mock_tqdm.assert_called_once()
         _, kwargs = mock_tqdm.call_args
         expected = math.ceil(total_bytes / ONE_MB)
-        assert kwargs["total"] == expected, (
-            f"Expected tqdm total={expected} (ceil), got {kwargs['total']}"
-        )
+        assert (
+            kwargs["total"] == expected
+        ), f"Expected tqdm total={expected} (ceil), got {kwargs['total']}"
 
     def test_logs_download_start(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """Test that logger.info is called with the URL and destination path.
@@ -259,7 +270,9 @@ class TestFetchModelFile:
         with pytest.raises(requests.exceptions.HTTPError, match=str(status_code)):
             _fetch_model_file("http://example.com/model.gguf", model_path)
 
-    def test_http_error_cleans_up_partial_file(self, tmp_path: Path, mocker: MockerFixture) -> None:
+    def test_http_error_cleans_up_partial_file(
+        self, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
         """Test that model_path is removed when an HTTP error occurs.
 
         Test scenario:
@@ -274,9 +287,13 @@ class TestFetchModelFile:
         with pytest.raises(requests.exceptions.HTTPError):
             _fetch_model_file("http://example.com/model.gguf", model_path)
 
-        assert not model_path.exists(), "partial file should be removed after HTTP error"
+        assert (
+            not model_path.exists()
+        ), "partial file should be removed after HTTP error"
 
-    def test_partial_file_removed_on_value_error(self, tmp_path: Path, mocker: MockerFixture) -> None:
+    def test_partial_file_removed_on_value_error(
+        self, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
         """Test that a pre-existing partial file is deleted when ValueError is raised.
 
         Test scenario:
@@ -291,7 +308,9 @@ class TestFetchModelFile:
         with pytest.raises(ValueError):
             _fetch_model_file("http://example.com/model.gguf", model_path)
 
-        assert not model_path.exists(), "partial file should be removed after ValueError"
+        assert (
+            not model_path.exists()
+        ), "partial file should be removed after ValueError"
 
     def test_connection_error_cleans_up_and_reraises(
         self, tmp_path: Path, mocker: MockerFixture
@@ -308,12 +327,18 @@ class TestFetchModelFile:
             side_effect=requests.exceptions.ConnectionError("no route to host"),
         )
 
-        with pytest.raises(requests.exceptions.ConnectionError, match="no route to host"):
+        with pytest.raises(
+            requests.exceptions.ConnectionError, match="no route to host"
+        ):
             _fetch_model_file("http://example.com/model.gguf", model_path)
 
-        assert not model_path.exists(), "model_path should not exist after ConnectionError"
+        assert (
+            not model_path.exists()
+        ), "model_path should not exist after ConnectionError"
 
-    def test_failure_logs_exception(self, tmp_path: Path, mocker: MockerFixture) -> None:
+    def test_failure_logs_exception(
+        self, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
         """Test that logger.exception is called on any download failure.
 
         Test scenario:
@@ -333,7 +358,9 @@ class TestFetchModelFile:
             model_path,
         )
 
-    def test_original_exception_type_is_preserved(self, tmp_path: Path, mocker: MockerFixture) -> None:
+    def test_original_exception_type_is_preserved(
+        self, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
         """Test that the bare raise preserves the original exception type.
 
         Test scenario:
@@ -341,7 +368,9 @@ class TestFetchModelFile:
             should receive the exact type that was raised internally.
         """
         model_path = tmp_path / "model.gguf"
-        mock_resp = _make_mock_response(TWO_MB, [], http_error=TimeoutError("timed out"))
+        mock_resp = _make_mock_response(
+            TWO_MB, [], http_error=TimeoutError("timed out")
+        )
         mocker.patch("serapeum.llama_cpp.utils.requests.get", return_value=mock_resp)
 
         with pytest.raises(TimeoutError, match="timed out"):

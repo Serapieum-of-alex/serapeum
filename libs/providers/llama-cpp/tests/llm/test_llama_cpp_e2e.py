@@ -11,6 +11,7 @@ To run locally::
 Assertions are intentionally loose — they validate shape/type/contract,
 not exact generated text, because generative output is non-deterministic.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -65,7 +66,9 @@ def llm() -> LlamaCPP:
         )
     is_ci_model = os.path.basename(_model_path).startswith("stories")
     if is_ci_model:
-        _messages_to_prompt = lambda msgs: " ".join(m.content or "" for m in msgs)  # noqa: E731
+        _messages_to_prompt = lambda msgs: " ".join(
+            m.content or "" for m in msgs
+        )  # noqa: E731
         _completion_to_prompt = lambda p: p  # noqa: E731
     else:
         _messages_to_prompt = messages_to_prompt_v3_instruct
@@ -95,7 +98,9 @@ def llm_with_stop() -> LlamaCPP:
             f"Current value: {_model_path!r}"
         )
     is_ci_model = os.path.basename(_model_path).startswith("stories")
-    _completion_to_prompt = (lambda p: p) if is_ci_model else completion_to_prompt_v3_instruct
+    _completion_to_prompt = (
+        (lambda p: p) if is_ci_model else completion_to_prompt_v3_instruct
+    )
     _messages_to_prompt = (
         (lambda msgs: " ".join(m.content or "" for m in msgs))
         if is_ci_model
@@ -136,9 +141,9 @@ class TestLlamaCPPMetadata:
             The Metadata object must expose the n_ctx value configured at
             construction time (512 in the fixture).
         """
-        assert llm.metadata.context_window == 512, (
-            f"Expected context_window=512, got {llm.metadata.context_window}"
-        )
+        assert (
+            llm.metadata.context_window == 512
+        ), f"Expected context_window=512, got {llm.metadata.context_window}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -149,9 +154,9 @@ class TestLlamaCPPMetadata:
             num_output in Metadata must equal the max_new_tokens passed at
             construction time.
         """
-        assert llm.metadata.num_output == MAX_NEW_TOKENS, (
-            f"Expected num_output={MAX_NEW_TOKENS}, got {llm.metadata.num_output}"
-        )
+        assert (
+            llm.metadata.num_output == MAX_NEW_TOKENS
+        ), f"Expected num_output={MAX_NEW_TOKENS}, got {llm.metadata.num_output}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -163,9 +168,9 @@ class TestLlamaCPPMetadata:
             model file used for inference.
         """
         assert llm.metadata.model_name, "metadata.model_name should not be empty"
-        assert isinstance(llm.metadata.model_name, str), (
-            f"Expected str, got {type(llm.metadata.model_name)}"
-        )
+        assert isinstance(
+            llm.metadata.model_name, str
+        ), f"Expected str, got {type(llm.metadata.model_name)}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -176,9 +181,9 @@ class TestLlamaCPPMetadata:
             After loading a local model file, llm.model_path must equal the
             path passed at construction time.
         """
-        assert llm.model_path == _model_path, (
-            f"Expected model_path={_model_path!r}, got {llm.model_path!r}"
-        )
+        assert (
+            llm.model_path == _model_path
+        ), f"Expected model_path={_model_path!r}, got {llm.model_path!r}"
 
 
 class TestLlamaCPPTokenize:
@@ -194,13 +199,11 @@ class TestLlamaCPPTokenize:
             least one integer token ID.
         """
         tokens = llm.tokenize("hello world")
-        assert isinstance(tokens, list), (
-            f"Expected list, got {type(tokens)}"
-        )
+        assert isinstance(tokens, list), f"Expected list, got {type(tokens)}"
         assert len(tokens) > 0, "tokenize should return at least one token"
-        assert all(isinstance(t, int) for t in tokens), (
-            f"All token IDs must be ints, got: {tokens[:5]}"
-        )
+        assert all(
+            isinstance(t, int) for t in tokens
+        ), f"All token IDs must be ints, got: {tokens[:5]}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -212,9 +215,9 @@ class TestLlamaCPPTokenize:
             and must return a list (empty or containing only a BOS token).
         """
         tokens = llm.tokenize("")
-        assert isinstance(tokens, list), (
-            f"tokenize('') must return a list, got {type(tokens)}"
-        )
+        assert isinstance(
+            tokens, list
+        ), f"tokenize('') must return a list, got {type(tokens)}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -226,9 +229,9 @@ class TestLlamaCPPTokenize:
             on the token count for any input string.
         """
         text = "The quick brown fox jumps over the lazy dog."
-        assert llm.count_tokens(text) == len(llm.tokenize(text)), (
-            "count_tokens must equal len(tokenize) for the same text"
-        )
+        assert llm.count_tokens(text) == len(
+            llm.tokenize(text)
+        ), "count_tokens must equal len(tokenize) for the same text"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -263,7 +266,9 @@ class TestLlamaCPPContextGuard:
 
     @pytest.mark.e2e
     @skip_no_model
-    def test_complete_raises_when_prompt_exceeds_context_window(self, llm: LlamaCPP) -> None:
+    def test_complete_raises_when_prompt_exceeds_context_window(
+        self, llm: LlamaCPP
+    ) -> None:
         """Test complete() raises ValueError when the prompt token count exceeds context_window.
 
         Test scenario:
@@ -274,9 +279,9 @@ class TestLlamaCPPContextGuard:
         huge_prompt = "word " * 600  # ~600 tokens, exceeds 512
         with pytest.raises(ValueError, match="context_window") as exc_info:
             llm.complete(huge_prompt, formatted=True)
-        assert "512" in str(exc_info.value) or "context_window" in str(exc_info.value), (
-            f"Error should reference context limit, got: {exc_info.value}"
-        )
+        assert "512" in str(exc_info.value) or "context_window" in str(
+            exc_info.value
+        ), f"Error should reference context limit, got: {exc_info.value}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -307,9 +312,9 @@ class TestLlamaCPPContextGuard:
         with pytest.raises(ValueError) as exc_info:
             llm._guard_context(huge_prompt)
         error = str(exc_info.value)
-        assert any(char.isdigit() for char in error), (
-            f"Error should include the token count number, got: {error}"
-        )
+        assert any(
+            char.isdigit() for char in error
+        ), f"Error should include the token count number, got: {error}"
 
 
 class TestLlamaCPPComplete:
@@ -325,9 +330,9 @@ class TestLlamaCPPComplete:
             raising.
         """
         response = llm.complete("Say hello.")
-        assert isinstance(response, CompletionResponse), (
-            f"Expected CompletionResponse, got {type(response)}"
-        )
+        assert isinstance(
+            response, CompletionResponse
+        ), f"Expected CompletionResponse, got {type(response)}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -339,9 +344,9 @@ class TestLlamaCPPComplete:
             simple prompt within the token budget.
         """
         response = llm.complete("Say hello.")
-        assert isinstance(response.text, str), (
-            f"Expected str, got {type(response.text)}"
-        )
+        assert isinstance(
+            response.text, str
+        ), f"Expected str, got {type(response.text)}"
         assert len(response.text) > 0, "Response text should not be empty"
 
     @pytest.mark.e2e
@@ -355,9 +360,9 @@ class TestLlamaCPPComplete:
         """
         response = llm.complete("Say hello.")
         assert response.raw is not None, "raw response should not be None"
-        assert "choices" in response.raw, (
-            f"Expected 'choices' key in raw, got: {list(response.raw.keys())}"
-        )
+        assert (
+            "choices" in response.raw
+        ), f"Expected 'choices' key in raw, got: {list(response.raw.keys())}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -371,10 +376,12 @@ class TestLlamaCPPComplete:
         """
         prompt = completion_to_prompt_v3_instruct("Say hello.")
         response = llm.complete(prompt, formatted=True)
-        assert isinstance(response, CompletionResponse), (
-            f"Expected CompletionResponse, got {type(response)}"
-        )
-        assert len(response.text) > 0, "Pre-formatted prompt should produce non-empty output"
+        assert isinstance(
+            response, CompletionResponse
+        ), f"Expected CompletionResponse, got {type(response)}"
+        assert (
+            len(response.text) > 0
+        ), "Pre-formatted prompt should produce non-empty output"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -387,9 +394,9 @@ class TestLlamaCPPComplete:
         """
         response = llm_with_stop.complete("Say hello.")
         for token in llm_with_stop.stop:
-            assert token not in response.text, (
-                f"Stop token {token!r} should not appear in output: {response.text!r}"
-            )
+            assert (
+                token not in response.text
+            ), f"Stop token {token!r} should not appear in output: {response.text!r}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -440,9 +447,9 @@ class TestLlamaCPPStreamComplete:
         """
         gen = llm.complete("Say hello.", stream=True)
         first = next(iter(gen))
-        assert isinstance(first, CompletionResponse), (
-            f"Expected CompletionResponse chunk, got {type(first)}"
-        )
+        assert isinstance(
+            first, CompletionResponse
+        ), f"Expected CompletionResponse chunk, got {type(first)}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -454,12 +461,12 @@ class TestLlamaCPPStreamComplete:
             so callers can display incremental output.
         """
         for chunk in llm.complete("Count: 1, 2, 3", stream=True):
-            assert chunk.delta is not None, (
-                f"Chunk delta must not be None, got: {chunk}"
-            )
-            assert isinstance(chunk.delta, str), (
-                f"Delta must be str, got {type(chunk.delta)}"
-            )
+            assert (
+                chunk.delta is not None
+            ), f"Chunk delta must not be None, got: {chunk}"
+            assert isinstance(
+                chunk.delta, str
+            ), f"Delta must be str, got {type(chunk.delta)}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -472,9 +479,9 @@ class TestLlamaCPPStreamComplete:
         """
         prev_len = 0
         for chunk in llm.complete("Count: 1, 2, 3", stream=True):
-            assert len(chunk.text) >= prev_len, (
-                f"Text length decreased: {prev_len} → {len(chunk.text)}"
-            )
+            assert (
+                len(chunk.text) >= prev_len
+            ), f"Text length decreased: {prev_len} → {len(chunk.text)}"
             prev_len = len(chunk.text)
 
     @pytest.mark.e2e
@@ -488,9 +495,9 @@ class TestLlamaCPPStreamComplete:
         """
         chunks = list(llm.complete("Say hello.", stream=True))
         joined = "".join(c.delta for c in chunks if c.delta)
-        assert joined == chunks[-1].text, (
-            f"Joined deltas {joined!r} != final text {chunks[-1].text!r}"
-        )
+        assert (
+            joined == chunks[-1].text
+        ), f"Joined deltas {joined!r} != final text {chunks[-1].text!r}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -520,9 +527,9 @@ class TestLlamaCPPStreamComplete:
             multiple chunks, not returned all at once.
         """
         chunks = list(llm.complete("Count: 1, 2, 3, 4, 5", stream=True))
-        assert len(chunks) > 1, (
-            f"Expected multiple stream chunks, got only {len(chunks)}"
-        )
+        assert (
+            len(chunks) > 1
+        ), f"Expected multiple stream chunks, got only {len(chunks)}"
 
 
 class TestLlamaCPPChat:
@@ -538,9 +545,9 @@ class TestLlamaCPPChat:
             has ASSISTANT role.
         """
         response = llm.chat(_user_messages("Say hello."))
-        assert isinstance(response, ChatResponse), (
-            f"Expected ChatResponse, got {type(response)}"
-        )
+        assert isinstance(
+            response, ChatResponse
+        ), f"Expected ChatResponse, got {type(response)}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -552,9 +559,9 @@ class TestLlamaCPPChat:
             ASSISTANT role, not USER or SYSTEM.
         """
         response = llm.chat(_user_messages("Say hello."))
-        assert response.message.role == MessageRole.ASSISTANT, (
-            f"Expected ASSISTANT role, got {response.message.role}"
-        )
+        assert (
+            response.message.role == MessageRole.ASSISTANT
+        ), f"Expected ASSISTANT role, got {response.message.role}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -579,9 +586,9 @@ class TestLlamaCPPChat:
         chunks = list(llm.chat(_user_messages("Count to three."), stream=True))
         assert len(chunks) > 0, "Streaming chat produced no chunks"
         for chunk in chunks:
-            assert isinstance(chunk, ChatResponse), (
-                f"Expected ChatResponse chunk, got {type(chunk)}"
-            )
+            assert isinstance(
+                chunk, ChatResponse
+            ), f"Expected ChatResponse chunk, got {type(chunk)}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -593,9 +600,9 @@ class TestLlamaCPPChat:
             so callers can display incremental output.
         """
         for chunk in llm.chat(_user_messages("Count to three."), stream=True):
-            assert chunk.delta is not None, (
-                f"Chat chunk delta must not be None: {chunk}"
-            )
+            assert (
+                chunk.delta is not None
+            ), f"Chat chunk delta must not be None: {chunk}"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -612,10 +619,12 @@ class TestLlamaCPPChat:
             Message(role=MessageRole.USER, content="What is my name?"),
         ]
         response = llm.chat(messages)
-        assert isinstance(response, ChatResponse), (
-            f"Expected ChatResponse, got {type(response)}"
-        )
-        assert response.message.content, "Multi-turn response content should not be empty"
+        assert isinstance(
+            response, ChatResponse
+        ), f"Expected ChatResponse, got {type(response)}"
+        assert (
+            response.message.content
+        ), "Multi-turn response content should not be empty"
 
     @pytest.mark.e2e
     @skip_no_model
@@ -646,9 +655,9 @@ class TestLlamaCPPAcomplete:
             non-empty text, delegating via asyncio.to_thread.
         """
         response = await llm.acomplete("Say hello.")
-        assert isinstance(response, CompletionResponse), (
-            f"Expected CompletionResponse, got {type(response)}"
-        )
+        assert isinstance(
+            response, CompletionResponse
+        ), f"Expected CompletionResponse, got {type(response)}"
         assert len(response.text) > 0, "Async complete text should not be empty"
 
     @pytest.mark.e2e
@@ -685,9 +694,9 @@ class TestLlamaCPPAcomplete:
             side_ran.append(True)
 
         result, _ = await asyncio.gather(llm.acomplete("Say hello."), side())
-        assert isinstance(result, CompletionResponse), (
-            f"acomplete result should be CompletionResponse, got {type(result)}"
-        )
+        assert isinstance(
+            result, CompletionResponse
+        ), f"acomplete result should be CompletionResponse, got {type(result)}"
         assert side_ran, "Side coroutine must have run concurrently"
 
     @pytest.mark.e2e
@@ -705,12 +714,12 @@ class TestLlamaCPPAcomplete:
             llm.acomplete("Say hello."),
             llm.acomplete("Count to three."),
         )
-        assert isinstance(r1, CompletionResponse), (
-            f"First concurrent result should be CompletionResponse, got {type(r1)}"
-        )
-        assert isinstance(r2, CompletionResponse), (
-            f"Second concurrent result should be CompletionResponse, got {type(r2)}"
-        )
+        assert isinstance(
+            r1, CompletionResponse
+        ), f"First concurrent result should be CompletionResponse, got {type(r1)}"
+        assert isinstance(
+            r2, CompletionResponse
+        ), f"Second concurrent result should be CompletionResponse, got {type(r2)}"
         assert len(r1.text) > 0, "First concurrent response text must not be empty"
         assert len(r2.text) > 0, "Second concurrent response text must not be empty"
 
@@ -728,9 +737,9 @@ class TestLlamaCPPAcomplete:
         chunks = [chunk async for chunk in gen]
         assert len(chunks) > 0, "Async streaming complete produced no chunks"
         for chunk in chunks:
-            assert isinstance(chunk, CompletionResponse), (
-                f"Expected CompletionResponse chunk, got {type(chunk)}"
-            )
+            assert isinstance(
+                chunk, CompletionResponse
+            ), f"Expected CompletionResponse chunk, got {type(chunk)}"
             assert chunk.delta is not None, f"Chunk delta must not be None: {chunk}"
 
     @pytest.mark.e2e
@@ -746,9 +755,9 @@ class TestLlamaCPPAcomplete:
         gen = await llm.acomplete("Say hello.", stream=True)
         chunks = [chunk async for chunk in gen]
         joined = "".join(c.delta for c in chunks if c.delta)
-        assert joined == chunks[-1].text, (
-            f"Joined async deltas {joined!r} != final text {chunks[-1].text!r}"
-        )
+        assert (
+            joined == chunks[-1].text
+        ), f"Joined async deltas {joined!r} != final text {chunks[-1].text!r}"
 
     @pytest.mark.e2e
     @pytest.mark.asyncio
@@ -785,12 +794,12 @@ class TestLlamaCPPAchat:
             ChatResponse attributed to ASSISTANT.
         """
         response = await llm.achat(_user_messages("Say hello."))
-        assert isinstance(response, ChatResponse), (
-            f"Expected ChatResponse, got {type(response)}"
-        )
-        assert response.message.role == MessageRole.ASSISTANT, (
-            f"Expected ASSISTANT role, got {response.message.role}"
-        )
+        assert isinstance(
+            response, ChatResponse
+        ), f"Expected ChatResponse, got {type(response)}"
+        assert (
+            response.message.role == MessageRole.ASSISTANT
+        ), f"Expected ASSISTANT role, got {response.message.role}"
 
     @pytest.mark.e2e
     @pytest.mark.asyncio
@@ -818,9 +827,9 @@ class TestLlamaCPPAchat:
         chunks = [chunk async for chunk in gen]
         assert len(chunks) > 0, "Async streaming chat produced no chunks"
         for chunk in chunks:
-            assert isinstance(chunk, ChatResponse), (
-                f"Expected ChatResponse chunk, got {type(chunk)}"
-            )
+            assert isinstance(
+                chunk, ChatResponse
+            ), f"Expected ChatResponse chunk, got {type(chunk)}"
 
     @pytest.mark.e2e
     @pytest.mark.asyncio
@@ -836,11 +845,11 @@ class TestLlamaCPPAchat:
             llm.achat(_user_messages("Say hello.")),
             llm.achat(_user_messages("Count to three.")),
         )
-        assert isinstance(r1, ChatResponse), (
-            f"First concurrent achat result should be ChatResponse, got {type(r1)}"
-        )
-        assert isinstance(r2, ChatResponse), (
-            f"Second concurrent achat result should be ChatResponse, got {type(r2)}"
-        )
+        assert isinstance(
+            r1, ChatResponse
+        ), f"First concurrent achat result should be ChatResponse, got {type(r1)}"
+        assert isinstance(
+            r2, ChatResponse
+        ), f"Second concurrent achat result should be ChatResponse, got {type(r2)}"
         assert r1.message.content, "First concurrent achat content must not be empty"
         assert r2.message.content, "Second concurrent achat content must not be empty"

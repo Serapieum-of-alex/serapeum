@@ -23,6 +23,8 @@ See Also:
     serapeum.llama_cpp.utils: Internal download helpers.
 """
 
+from __future__ import annotations
+
 import asyncio
 import json
 import threading
@@ -30,25 +32,24 @@ import weakref
 from pathlib import Path
 from typing import Any, Literal, overload
 
-from serapeum.core.llms import (
-    LLM,
-    CompletionToChatMixin,
-    CompletionResponse,
-    CompletionResponseAsyncGen,
-    CompletionResponseGen,
-    Metadata,
-)
+from llama_cpp import Llama
 from pydantic import Field, PrivateAttr, field_validator, model_validator
+
 from serapeum.core.configs.defaults import (
     DEFAULT_CONTEXT_WINDOW,
     DEFAULT_NUM_OUTPUTS,
     DEFAULT_TEMPERATURE,
 )
-from serapeum.llama_cpp.utils import _fetch_model_file, _fetch_model_file_hf
+from serapeum.core.llms import (
+    LLM,
+    CompletionResponse,
+    CompletionResponseAsyncGen,
+    CompletionResponseGen,
+    CompletionToChatMixin,
+    Metadata,
+)
 from serapeum.core.utils.base import get_cache_dir
-
-from llama_cpp import Llama
-
+from serapeum.llama_cpp.utils import _fetch_model_file, _fetch_model_file_hf
 
 DEFAULT_LLAMA_CPP_GGUF_MODEL = (
     "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve"

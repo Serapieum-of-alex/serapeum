@@ -1,16 +1,18 @@
 """Unit tests for serapeum.llama_cpp.formatters.llama2."""
+
 from __future__ import annotations
 
 import pytest
+
 from serapeum.core.llms import Message, MessageRole
 from serapeum.llama_cpp.formatters.llama2 import (
-    BOS,
-    EOS,
     B_INST,
-    E_INST,
     B_SYS,
-    E_SYS,
+    BOS,
     DEFAULT_SYSTEM_PROMPT,
+    E_INST,
+    E_SYS,
+    EOS,
     completion_to_prompt,
     messages_to_prompt,
 )
@@ -162,9 +164,9 @@ class TestMessagesToPrompt:
         messages = [Message(role=MessageRole.ASSISTANT, content="wrong")]
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt(messages)
-        assert "Expected a USER message at position 0" in str(exc_info.value), (
-            f"Error message should reference position 0, got: {exc_info.value}"
-        )
+        assert "Expected a USER message at position 0" in str(
+            exc_info.value
+        ), f"Error message should reference position 0, got: {exc_info.value}"
 
     def test_raises_for_wrong_role_at_assistant_position(self) -> None:
         """Test ValueError when the second message is not ASSISTANT.
@@ -176,9 +178,9 @@ class TestMessagesToPrompt:
         messages = [_user("Hello"), _user("Also user")]
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt(messages)
-        assert "Expected an ASSISTANT message at position 1" in str(exc_info.value), (
-            f"Error message should reference position 1, got: {exc_info.value}"
-        )
+        assert "Expected an ASSISTANT message at position 1" in str(
+            exc_info.value
+        ), f"Error message should reference position 1, got: {exc_info.value}"
 
     def test_error_message_includes_actual_role(self) -> None:
         """Test that the ValueError names the role that was found.
@@ -192,9 +194,9 @@ class TestMessagesToPrompt:
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt(messages)
         error_text = str(exc_info.value)
-        assert "ASSISTANT" in error_text or "assistant" in error_text.lower(), (
-            f"Error message should name the unexpected role, got: {error_text}"
-        )
+        assert (
+            "ASSISTANT" in error_text or "assistant" in error_text.lower()
+        ), f"Error message should name the unexpected role, got: {error_text}"
 
     def test_bos_token_starts_each_turn(self) -> None:
         """Test that BOS ``<s>`` appears at the start of each conversation turn.
@@ -316,9 +318,9 @@ class TestCompletionToPrompt:
             Llama 2 requires ``<s>`` at the very start of every prompt.
         """
         result = completion_to_prompt("Hello", "sys")
-        assert result.startswith(BOS), (
-            f"Output must start with BOS '{BOS}', got: {result[:20]!r}"
-        )
+        assert result.startswith(
+            BOS
+        ), f"Output must start with BOS '{BOS}', got: {result[:20]!r}"
 
     def test_output_ends_with_e_inst(self) -> None:
         """Test that the output always ends with the E_INST token.
@@ -328,9 +330,9 @@ class TestCompletionToPrompt:
             to start generating the assistant reply.
         """
         result = completion_to_prompt("Hello", "sys")
-        assert result.endswith(E_INST), (
-            f"Output must end with E_INST '{E_INST}', got last chars: {result[-20:]!r}"
-        )
+        assert result.endswith(
+            E_INST
+        ), f"Output must end with E_INST '{E_INST}', got last chars: {result[-20:]!r}"
 
     def test_system_block_is_embedded_in_output(self) -> None:
         """Test that both B_SYS and E_SYS delimiters appear in the output.
@@ -342,6 +344,6 @@ class TestCompletionToPrompt:
         result = completion_to_prompt("Hello", "custom system")
         assert B_SYS in result, f"B_SYS token '{B_SYS!r}' missing from: {result!r}"
         assert E_SYS in result, f"E_SYS token '{E_SYS!r}' missing from: {result!r}"
-        assert "custom system" in result, (
-            f"System prompt text should appear in output: {result!r}"
-        )
+        assert (
+            "custom system" in result
+        ), f"System prompt text should appear in output: {result!r}"

@@ -1,13 +1,14 @@
 """Conftest for llama-cpp — loads .env and injects a shared doctest namespace."""
 
-# Pre-import the third-party llama_cpp BEFORE pytest's --doctest-modules
-# collection adds src/serapeum/ to sys.path.  Once cached in sys.modules,
-# llm.py's `from llama_cpp import Llama` will find the correct package.
-import llama_cpp as _llama_cpp_ext  # noqa: F401
+from __future__ import annotations
 
 import os
 from typing import Any
 
+# Pre-import the third-party llama_cpp BEFORE pytest's --doctest-modules
+# collection adds src/serapeum/ to sys.path.  Once cached in sys.modules,
+# llm.py's `from llama_cpp import Llama` will find the correct package.
+import llama_cpp as _llama_cpp_ext  # noqa: F401
 import pytest
 from dotenv import load_dotenv
 
@@ -33,7 +34,9 @@ def doctest_namespace(doctest_namespace: dict[str, Any]) -> dict[str, Any]:
     doctest_namespace["asyncio"] = asyncio
     doctest_namespace["LlamaCPP"] = LlamaCPP
     doctest_namespace["messages_to_prompt_v3_instruct"] = messages_to_prompt_v3_instruct
-    doctest_namespace["completion_to_prompt_v3_instruct"] = completion_to_prompt_v3_instruct
+    doctest_namespace["completion_to_prompt_v3_instruct"] = (
+        completion_to_prompt_v3_instruct
+    )
     doctest_namespace["messages_to_prompt"] = messages_to_prompt
     doctest_namespace["completion_to_prompt"] = completion_to_prompt
 

@@ -15,6 +15,7 @@ Override model choice via environment variables::
 Assertions are intentionally loose -- they validate shape/type/contract,
 not exact generated text, because generative output is non-deterministic.
 """
+
 from __future__ import annotations
 
 import os
@@ -41,14 +42,16 @@ TEMPERATURE = 0.0
 
 
 def _passthrough_messages_to_prompt(
-    messages: list[Message], system_prompt: str | None = None,
+    messages: list[Message],
+    system_prompt: str | None = None,
 ) -> str:
     """Join message contents into a single string (no chat template)."""
     return " ".join(m.content or "" for m in messages)
 
 
 def _passthrough_completion_to_prompt(
-    completion: str, system_prompt: str | None = None,
+    completion: str,
+    system_prompt: str | None = None,
 ) -> str:
     """Return the completion string unchanged."""
     return completion
@@ -65,7 +68,6 @@ def _formatters() -> dict[str, Any]:
         "messages_to_prompt": _passthrough_messages_to_prompt,
         "completion_to_prompt": _passthrough_completion_to_prompt,
     }
-
 
 
 @pytest.fixture(scope="module")
@@ -103,8 +105,6 @@ def hf_llm(tmp_path_factory: pytest.TempPathFactory) -> LlamaCPP:
     return llm
 
 
-# -- Tests --------------------------------------------------------------------
-
 class TestLlamaCPPHuggingFace:
     """E2E tests for LlamaCPP with models downloaded from HuggingFace Hub.
 
@@ -125,15 +125,15 @@ class TestLlamaCPPHuggingFace:
             be a non-None string pointing to an existing file with a .gguf
             extension.
         """
-        assert hf_llm.model_path is not None, "model_path should be set after HF download"
-        assert isinstance(hf_llm.model_path, str), (
-            f"Expected str, got {type(hf_llm.model_path)}"
-        )
+        assert (
+            hf_llm.model_path is not None
+        ), "model_path should be set after HF download"
+        assert isinstance(
+            hf_llm.model_path, str
+        ), f"Expected str, got {type(hf_llm.model_path)}"
         path = Path(hf_llm.model_path)
         assert path.exists(), f"model_path does not exist: {hf_llm.model_path}"
-        assert path.suffix == ".gguf", (
-            f"Expected .gguf extension, got {path.suffix!r}"
-        )
+        assert path.suffix == ".gguf", f"Expected .gguf extension, got {path.suffix!r}"
 
     @pytest.mark.e2e
     def test_hf_metadata_has_valid_context_window(self, hf_llm: LlamaCPP) -> None:
@@ -143,9 +143,9 @@ class TestLlamaCPPHuggingFace:
             A successfully loaded GGUF model must expose a positive context
             window size via its metadata.
         """
-        assert hf_llm.metadata.context_window > 0, (
-            f"Expected context_window > 0, got {hf_llm.metadata.context_window}"
-        )
+        assert (
+            hf_llm.metadata.context_window > 0
+        ), f"Expected context_window > 0, got {hf_llm.metadata.context_window}"
 
     @pytest.mark.e2e
     def test_hf_complete_returns_non_empty_text(self, hf_llm: LlamaCPP) -> None:
@@ -156,9 +156,9 @@ class TestLlamaCPPHuggingFace:
             one character of output.
         """
         response = hf_llm.complete("Once upon a time")
-        assert isinstance(response, CompletionResponse), (
-            f"Expected CompletionResponse, got {type(response)}"
-        )
+        assert isinstance(
+            response, CompletionResponse
+        ), f"Expected CompletionResponse, got {type(response)}"
         assert len(response.text) > 0, "HF model complete() text should not be empty"
 
     @pytest.mark.e2e
@@ -170,13 +170,11 @@ class TestLlamaCPPHuggingFace:
             each with a valid string delta.
         """
         chunks = list(hf_llm.complete("Once upon a time", stream=True))
-        assert len(chunks) > 1, (
-            f"Expected multiple stream chunks, got {len(chunks)}"
-        )
+        assert len(chunks) > 1, f"Expected multiple stream chunks, got {len(chunks)}"
         for chunk in chunks:
-            assert isinstance(chunk, CompletionResponse), (
-                f"Expected CompletionResponse chunk, got {type(chunk)}"
-            )
+            assert isinstance(
+                chunk, CompletionResponse
+            ), f"Expected CompletionResponse chunk, got {type(chunk)}"
             assert chunk.delta is not None, f"Chunk delta must not be None: {chunk}"
 
     @pytest.mark.e2e
@@ -188,12 +186,12 @@ class TestLlamaCPPHuggingFace:
             a ChatResponse attributed to ASSISTANT with non-empty content.
         """
         response = hf_llm.chat(_user_messages("Once upon a time"))
-        assert isinstance(response, ChatResponse), (
-            f"Expected ChatResponse, got {type(response)}"
-        )
-        assert response.message.role == MessageRole.ASSISTANT, (
-            f"Expected ASSISTANT role, got {response.message.role}"
-        )
+        assert isinstance(
+            response, ChatResponse
+        ), f"Expected ChatResponse, got {type(response)}"
+        assert (
+            response.message.role == MessageRole.ASSISTANT
+        ), f"Expected ASSISTANT role, got {response.message.role}"
         assert response.message.content, "HF model chat content should not be empty"
 
     @pytest.mark.e2e
@@ -209,9 +207,7 @@ class TestLlamaCPPHuggingFace:
             exists on disk -- model_path is set directly from the first run.
         """
         assert hf_llm.model_path is not None
-        with patch(
-            "serapeum.llama_cpp.utils.hf_hub_download"
-        ) as mock_download:
+        with patch("serapeum.llama_cpp.utils.hf_hub_download") as mock_download:
             second = LlamaCPP(
                 model_path=hf_llm.model_path,
                 temperature=TEMPERATURE,
@@ -221,6 +217,6 @@ class TestLlamaCPPHuggingFace:
                 **_formatters(),
             )
             mock_download.assert_not_called()
-        assert second.model_path == hf_llm.model_path, (
-            "Second instance should reuse the same model_path"
-        )
+        assert (
+            second.model_path == hf_llm.model_path
+        ), "Second instance should reuse the same model_path"

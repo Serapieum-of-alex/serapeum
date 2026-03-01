@@ -6,16 +6,18 @@ Note: test_llms_llama_cpp.py already covers:
 
 The tests below cover complementary scenarios to reach full branch coverage.
 """
+
 from __future__ import annotations
 
 import pytest
+
 from serapeum.core.llms import Message, MessageRole
 from serapeum.llama_cpp.formatters.llama3 import (
+    DEFAULT_SYSTEM_PROMPT,
     EOT,
     HEADER_ASSIST,
     HEADER_SYS,
     HEADER_USER,
-    DEFAULT_SYSTEM_PROMPT,
     completion_to_prompt_v3_instruct,
     messages_to_prompt_v3_instruct,
 )
@@ -46,11 +48,7 @@ class TestMessagesToPromptV3Instruct:
         """
         messages = [_user("Hello")]
         result = messages_to_prompt_v3_instruct(messages, system_prompt="sys")
-        expected = (
-            f"{HEADER_SYS}sys{EOT}"
-            f"{HEADER_USER}Hello{EOT}"
-            f"{HEADER_ASSIST}"
-        )
+        expected = f"{HEADER_SYS}sys{EOT}" f"{HEADER_USER}Hello{EOT}" f"{HEADER_ASSIST}"
         assert result == expected, (
             f"Single-turn Llama 3 prompt mismatch.\n"
             f"Got:      {result!r}\nExpected: {expected!r}"
@@ -65,11 +63,7 @@ class TestMessagesToPromptV3Instruct:
         """
         messages = [_system("sys"), _user("Hello")]
         result = messages_to_prompt_v3_instruct(messages)
-        expected = (
-            f"{HEADER_SYS}sys{EOT}"
-            f"{HEADER_USER}Hello{EOT}"
-            f"{HEADER_ASSIST}"
-        )
+        expected = f"{HEADER_SYS}sys{EOT}" f"{HEADER_USER}Hello{EOT}" f"{HEADER_ASSIST}"
         assert result == expected, (
             f"System-from-messages Llama 3 prompt mismatch.\n"
             f"Got:      {result!r}\nExpected: {expected!r}"
@@ -114,9 +108,9 @@ class TestMessagesToPromptV3Instruct:
             f"DEFAULT_SYSTEM_PROMPT must not appear when system_prompt is given.\n"
             f"Got: {result!r}"
         )
-        assert "Custom." in result, (
-            f"Custom system prompt should appear in output.\nGot: {result!r}"
-        )
+        assert (
+            "Custom." in result
+        ), f"Custom system prompt should appear in output.\nGot: {result!r}"
 
     def test_multi_turn_user_assistant_user(self) -> None:
         """Test three-message USER/ASSISTANT/USER conversation structure.
@@ -174,9 +168,9 @@ class TestMessagesToPromptV3Instruct:
             [_user("A"), _assist("B"), _user("C")],
         ):
             result = messages_to_prompt_v3_instruct(msgs, system_prompt="s")
-            assert result.endswith(HEADER_ASSIST), (
-                f"Prompt must end with HEADER_ASSIST.\nGot: {result!r}"
-            )
+            assert result.endswith(
+                HEADER_ASSIST
+            ), f"Prompt must end with HEADER_ASSIST.\nGot: {result!r}"
 
     def test_raises_for_wrong_role_at_user_position(self) -> None:
         """Test ValueError when ASSISTANT appears where USER is expected.
@@ -192,9 +186,9 @@ class TestMessagesToPromptV3Instruct:
         messages = [Message(role=MessageRole.ASSISTANT, content="wrong")]
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt_v3_instruct(messages)
-        assert "Expected a USER message at position 0" in str(exc_info.value), (
-            f"Error should mention position 0, got: {exc_info.value}"
-        )
+        assert "Expected a USER message at position 0" in str(
+            exc_info.value
+        ), f"Error should mention position 0, got: {exc_info.value}"
 
     def test_raises_for_wrong_role_at_assistant_position(self) -> None:
         """Test ValueError when the second message is not ASSISTANT.
@@ -206,9 +200,9 @@ class TestMessagesToPromptV3Instruct:
         messages = [_user("Hello"), _user("Also user")]
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt_v3_instruct(messages)
-        assert "Expected an ASSISTANT message at position 1" in str(exc_info.value), (
-            f"Error should mention position 1, got: {exc_info.value}"
-        )
+        assert "Expected an ASSISTANT message at position 1" in str(
+            exc_info.value
+        ), f"Error should mention position 1, got: {exc_info.value}"
 
     def test_error_message_includes_actual_role(self) -> None:
         """Test that the ValueError names the role that was found.
@@ -221,9 +215,9 @@ class TestMessagesToPromptV3Instruct:
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt_v3_instruct(messages)
         error = str(exc_info.value)
-        assert "ASSISTANT" in error or "assistant" in error.lower(), (
-            f"Error should name the unexpected role, got: {error}"
-        )
+        assert (
+            "ASSISTANT" in error or "assistant" in error.lower()
+        ), f"Error should name the unexpected role, got: {error}"
 
     def test_eot_appears_after_every_role_block(self) -> None:
         """Test that EOT terminates every role block in the output.
@@ -235,9 +229,9 @@ class TestMessagesToPromptV3Instruct:
         """
         messages = [_user("A"), _assist("B"), _user("C")]
         result = messages_to_prompt_v3_instruct(messages, system_prompt="s")
-        assert result.count(EOT) == 4, (
-            f"Expected 4 EOT tokens for sys+u+a+u, found {result.count(EOT)} in {result!r}"
-        )
+        assert (
+            result.count(EOT) == 4
+        ), f"Expected 4 EOT tokens for sys+u+a+u, found {result.count(EOT)} in {result!r}"
 
 
 @pytest.mark.unit
@@ -282,11 +276,7 @@ class TestCompletionToPromptV3Instruct:
             user block (``HEADER_USER + EOT``) rather than raise.
         """
         result = completion_to_prompt_v3_instruct("", "sys")
-        expected = (
-            f"{HEADER_SYS}sys{EOT}"
-            f"{HEADER_USER}{EOT}"
-            f"{HEADER_ASSIST}"
-        )
+        expected = f"{HEADER_SYS}sys{EOT}" f"{HEADER_USER}{EOT}" f"{HEADER_ASSIST}"
         assert result == expected, (
             f"Empty completion prompt mismatch.\n"
             f"Got:      {result!r}\nExpected: {expected!r}"
@@ -313,9 +303,9 @@ class TestCompletionToPromptV3Instruct:
             knows to continue from the assistant's perspective.
         """
         result = completion_to_prompt_v3_instruct("Hello", "sys")
-        assert result.endswith(HEADER_ASSIST), (
-            f"Output must end with HEADER_ASSIST.\nGot: {result!r}"
-        )
+        assert result.endswith(
+            HEADER_ASSIST
+        ), f"Output must end with HEADER_ASSIST.\nGot: {result!r}"
 
     def test_output_structure_is_sys_user_assist(self) -> None:
         """Test the canonical three-block structure: system → user → assistant.
@@ -346,9 +336,9 @@ class TestCompletionToPromptV3Instruct:
             f"{HEADER_USER}Prompt{EOT}"
             f"{HEADER_ASSIST}"
         )
-        assert result == expected, (
-            f"Exact output mismatch.\nGot:      {result!r}\nExpected: {expected!r}"
-        )
+        assert (
+            result == expected
+        ), f"Exact output mismatch.\nGot:      {result!r}\nExpected: {expected!r}"
 
 
 @pytest.mark.unit
@@ -362,8 +352,9 @@ class TestFormattersPackageExports:
             ``from serapeum.llama_cpp.formatters import llama2`` must succeed
             and be the same module as ``serapeum.llama_cpp.formatters.llama2``.
         """
-        from serapeum.llama_cpp.formatters import llama2 as pkg_mod
         import serapeum.llama_cpp.formatters.llama2 as direct_mod
+        from serapeum.llama_cpp.formatters import llama2 as pkg_mod
+
         assert pkg_mod is direct_mod
 
     def test_llama3_submodule_importable(self) -> None:
@@ -373,8 +364,9 @@ class TestFormattersPackageExports:
             ``from serapeum.llama_cpp.formatters import llama3`` must succeed
             and be the same module as ``serapeum.llama_cpp.formatters.llama3``.
         """
-        from serapeum.llama_cpp.formatters import llama3 as pkg_mod
         import serapeum.llama_cpp.formatters.llama3 as direct_mod
+        from serapeum.llama_cpp.formatters import llama3 as pkg_mod
+
         assert pkg_mod is direct_mod
 
     def test_llama2_functions_accessible(self) -> None:
@@ -385,6 +377,7 @@ class TestFormattersPackageExports:
             must be callable.
         """
         from serapeum.llama_cpp.formatters import llama2
+
         assert callable(llama2.messages_to_prompt)
         assert callable(llama2.completion_to_prompt)
 
@@ -396,6 +389,7 @@ class TestFormattersPackageExports:
             ``llama3.completion_to_prompt_v3_instruct`` must be callable.
         """
         from serapeum.llama_cpp.formatters import llama3
+
         assert callable(llama3.messages_to_prompt_v3_instruct)
         assert callable(llama3.completion_to_prompt_v3_instruct)
 
@@ -407,6 +401,7 @@ class TestFormattersPackageExports:
             ``llama3`` and nothing else.
         """
         import serapeum.llama_cpp.formatters as pkg
+
         expected = {"llama2", "llama3"}
         assert set(pkg.__all__) == expected, (
             f"formatters.__all__ mismatch.\n"

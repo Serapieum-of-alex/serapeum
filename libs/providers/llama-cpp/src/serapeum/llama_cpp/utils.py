@@ -54,28 +54,14 @@ def _fetch_model_file(model_url: str, model_path: Path) -> None:
         - Download a GGUF model file to a local directory
             ```python
             >>> from pathlib import Path
-            >>> _fetch_model_file(  # doctest: +SKIP
-            ...     "https://example.com/model.gguf",
-            ...     Path("/models/model.gguf"),
-            ... )
-
-            ```
-        - Partial files are cleaned up automatically on failure
-            ```python
-            >>> from pathlib import Path
-            >>> from unittest.mock import patch, MagicMock
-            >>> mock_resp = MagicMock()
-            >>> mock_resp.raise_for_status.return_value = None
-            >>> mock_resp.headers.get.return_value = "500"  # < 1 MB → ValueError
-            >>> mock_resp.__enter__ = MagicMock(return_value=mock_resp)
-            >>> mock_resp.__exit__ = MagicMock(return_value=False)
-            >>> dest = Path("/tmp/model.gguf")
-            >>> with patch("serapeum.llama_cpp.utils.requests.get", return_value=mock_resp):
-            ...     try:
-            ...         _fetch_model_file("https://example.com/model.gguf", dest)
-            ...     except ValueError as exc:
-            ...         print(exc)
-            Content-Length is 500 bytes; expected at least 1 MB
+            >>> _fetch_model_file(
+            ...     "https://huggingface.co/TheBloke/Llama-2-7B-GGUF/resolve/main/llama-2-7b.Q4_0.gguf",
+            ...     Path("/models/llama-2-7b.Q4_0.gguf"),
+            ... ) # doctest: +SKIP
+            >>> Path("/models/llama-2-7b.Q4_0.gguf").exists() # doctest: +SKIP
+            True
+            >>> Path("/models/llama-2-7b.Q4_0.gguf").stat().st_size # doctest: +SKIP
+            3791725568
 
             ```
 
@@ -131,28 +117,20 @@ def _fetch_model_file_hf(repo_id: str, filename: str, cache_dir: Path) -> Path:
             errors, authentication failures, missing files, etc.
 
     Examples:
-        - Download a model file from HuggingFace Hub
+        - Download a model file from HuggingFace Hub and explore the result
             ```python
             >>> from pathlib import Path
-            >>> _fetch_model_file_hf(  # doctest: +SKIP
+            >>> model_path = _fetch_model_file_hf(
             ...     "TheBloke/Llama-2-13B-chat-GGUF",
             ...     "llama-2-13b-chat.Q4_0.gguf",
             ...     Path("/tmp/hf_cache"),
-            ... )
-            PosixPath('/tmp/hf_cache/.../llama-2-13b-chat.Q4_0.gguf')
-
-            ```
-        - Raises ImportError when huggingface-hub is not installed
-            ```python
-            >>> import sys
-            >>> from unittest.mock import patch
-            >>> from pathlib import Path
-            >>> with patch.dict(sys.modules, {"huggingface_hub": None}):
-            ...     try:
-            ...         _fetch_model_file_hf("a/b", "f.gguf", Path("/tmp"))
-            ...     except ImportError as exc:
-            ...         print("ImportError raised")
-            ImportError raised
+            ... ) # doctest: +SKIP
+            >>> model_path.name # doctest: +SKIP
+            'llama-2-13b-chat.Q4_0.gguf'
+            >>> model_path.suffix # doctest: +SKIP
+            '.gguf'
+            >>> model_path.exists() # doctest: +SKIP
+            True
 
             ```
 

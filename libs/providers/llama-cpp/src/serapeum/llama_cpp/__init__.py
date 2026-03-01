@@ -7,20 +7,20 @@ or fetched from HuggingFace Hub.
 
 Typical usage:
 
-    ```python
-    from serapeum.llama_cpp import LlamaCPP
-    from serapeum.llama_cpp.formatters.llama3 import (
-        messages_to_prompt_v3_instruct,
-        completion_to_prompt_v3_instruct,
-    )
+```python
+>>> from serapeum.llama_cpp import LlamaCPP
+>>> from serapeum.llama_cpp.formatters.llama3 import (
+... messages_to_prompt_v3_instruct,
+... completion_to_prompt_v3_instruct,
+... )
 
-    llm = LlamaCPP(  # doctest: +SKIP
-        model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
-        messages_to_prompt=messages_to_prompt_v3_instruct,
-        completion_to_prompt=completion_to_prompt_v3_instruct,
-    )
-    response = llm.complete("Hello!")  # doctest: +SKIP
-    ```
+>>> llm = LlamaCPP(
+... model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
+... messages_to_prompt=messages_to_prompt_v3_instruct,
+... completion_to_prompt=completion_to_prompt_v3_instruct,
+... ) # doctest: +SKIP
+>>> response = llm.complete("Hello!")  # doctest: +SKIP
+```
 
 See Also:
     serapeum.llama_cpp.formatters.llama2: Prompt formatters for Llama 2 / Mistral models.

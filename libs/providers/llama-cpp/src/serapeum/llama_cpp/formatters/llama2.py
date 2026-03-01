@@ -59,38 +59,47 @@ def messages_to_prompt(
             position in the alternating sequence.
 
     Examples:
-        - Single user message with the default system prompt
+        - Single user message with a custom system prompt — explore the structure
             ```python
             >>> from serapeum.llama_cpp.formatters.llama2 import messages_to_prompt
             >>> from serapeum.core.llms import Message, MessageRole
             >>> messages = [Message(role=MessageRole.USER, content="Hello!")]
-            >>> prompt = messages_to_prompt(messages)
-            >>> prompt.startswith("<s> [INST]")
-            True
-            >>> "Hello!" in prompt
-            True
+            >>> prompt = messages_to_prompt(messages, system_prompt="Be brief.")
+            >>> prompt[:10]
+            '<s> [INST]'
+            >>> prompt.split("<</SYS>>")[0].split("<<SYS>>")[1].strip()
+            'Be brief.'
+            >>> prompt.split("[/INST]")[0].split("<</SYS>>")[1].strip()
+            'Hello!'
 
             ```
-        - Multi-turn conversation with alternating user and assistant turns
+        - Multi-turn conversation — each turn is wrapped in [INST]...[/INST]
             ```python
+            >>> from serapeum.llama_cpp.formatters.llama2 import messages_to_prompt
+            >>> from serapeum.core.llms import Message, MessageRole
             >>> messages = [
             ...     Message(role=MessageRole.USER, content="What is 2+2?"),
             ...     Message(role=MessageRole.ASSISTANT, content="4"),
             ...     Message(role=MessageRole.USER, content="And 3+3?"),
             ... ]
-            >>> prompt = messages_to_prompt(messages)
-            >>> "What is 2+2?" in prompt
-            True
-            >>> "And 3+3?" in prompt
-            True
+            >>> prompt = messages_to_prompt(messages, system_prompt="Be brief.")
+            >>> prompt.count("[INST]")
+            2
+            >>> prompt.count("[/INST]")
+            2
 
             ```
-        - Custom system prompt overrides the default
+        - Explicit SYSTEM message in the conversation is extracted as system prompt
             ```python
-            >>> messages = [Message(role=MessageRole.USER, content="Hi!")]
-            >>> prompt = messages_to_prompt(messages, system_prompt="You are terse.")
-            >>> "You are terse." in prompt
-            True
+            >>> from serapeum.llama_cpp.formatters.llama2 import messages_to_prompt
+            >>> from serapeum.core.llms import Message, MessageRole
+            >>> messages = [
+            ...     Message(role=MessageRole.SYSTEM, content="You are terse."),
+            ...     Message(role=MessageRole.USER, content="Hi!"),
+            ... ]
+            >>> prompt = messages_to_prompt(messages)
+            >>> prompt.split("<</SYS>>")[0].split("<<SYS>>")[1].strip()
+            'You are terse.'
 
             ```
 
@@ -156,21 +165,28 @@ def completion_to_prompt(completion: str, system_prompt: str | None = None) -> s
         format, ready to be passed to a Llama 2 / Mistral GGUF model.
 
     Examples:
-        - Build a prompt with the default system prompt
+        - Build a prompt with a custom system prompt — explore the template structure
             ```python
             >>> from serapeum.llama_cpp.formatters.llama2 import completion_to_prompt
-            >>> prompt = completion_to_prompt("What is the capital of France?")
-            >>> prompt.startswith("<s> [INST]")
-            True
-            >>> "What is the capital of France?" in prompt
-            True
+            >>> prompt = completion_to_prompt("What is 2+2?", system_prompt="Be brief.")
+            >>> prompt[:10]
+            '<s> [INST]'
+            >>> prompt.rstrip()[-7:]
+            '[/INST]'
+            >>> prompt.split("<</SYS>>")[0].split("<<SYS>>")[1].strip()
+            'Be brief.'
+            >>> prompt.split("<</SYS>>")[1].split("[/INST]")[0].strip()
+            'What is 2+2?'
 
             ```
-        - Build a prompt with a custom system prompt
+        - Build a prompt with the default system prompt
             ```python
-            >>> prompt = completion_to_prompt("Hello!", system_prompt="You are terse.")
-            >>> "You are terse." in prompt
+            >>> from serapeum.llama_cpp.formatters.llama2 import completion_to_prompt, DEFAULT_SYSTEM_PROMPT
+            >>> prompt = completion_to_prompt("Hello!")
+            >>> DEFAULT_SYSTEM_PROMPT.strip() in prompt
             True
+            >>> prompt.split("<</SYS>>")[1].split("[/INST]")[0].strip()
+            'Hello!'
 
             ```
 

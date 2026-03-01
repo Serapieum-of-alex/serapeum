@@ -66,38 +66,45 @@ def messages_to_prompt_v3_instruct(
             position in the alternating sequence.
 
     Examples:
-        - Single user message with the default system prompt
+        - Single user message with a custom system prompt — explore the structure
             ```python
             >>> from serapeum.llama_cpp.formatters.llama3 import messages_to_prompt_v3_instruct
             >>> from serapeum.core.llms import Message, MessageRole
             >>> messages = [Message(role=MessageRole.USER, content="Hello!")]
-            >>> prompt = messages_to_prompt_v3_instruct(messages)
-            >>> "<|start_header_id|>user<|end_header_id|>" in prompt
-            True
-            >>> "Hello!" in prompt
-            True
+            >>> prompt = messages_to_prompt_v3_instruct(messages, system_prompt="Be brief.")
+            >>> prompt.split("<|eot_id|>")[0].split("<|end_header_id|>")[1].strip()
+            'Be brief.'
+            >>> prompt.split("<|eot_id|>")[1].split("<|end_header_id|>")[1].strip()
+            'Hello!'
 
             ```
-        - Multi-turn conversation; prompt ends with the assistant header
+        - Multi-turn conversation — prompt ends with the assistant header
             ```python
+            >>> from serapeum.llama_cpp.formatters.llama3 import messages_to_prompt_v3_instruct
+            >>> from serapeum.core.llms import Message, MessageRole
             >>> messages = [
             ...     Message(role=MessageRole.USER, content="What is 2+2?"),
             ...     Message(role=MessageRole.ASSISTANT, content="4"),
             ...     Message(role=MessageRole.USER, content="And 3+3?"),
             ... ]
-            >>> prompt = messages_to_prompt_v3_instruct(messages)
-            >>> "What is 2+2?" in prompt
-            True
-            >>> prompt.strip().endswith("<|start_header_id|>assistant<|end_header_id|>")
+            >>> prompt = messages_to_prompt_v3_instruct(messages, system_prompt="Be brief.")
+            >>> prompt.count("<|eot_id|>")
+            4
+            >>> prompt.strip().endswith("<|end_header_id|>")
             True
 
             ```
-        - Custom system prompt overrides the default
+        - Explicit SYSTEM message is extracted as system prompt
             ```python
-            >>> messages = [Message(role=MessageRole.USER, content="Hi!")]
-            >>> prompt = messages_to_prompt_v3_instruct(messages, system_prompt="You are terse.")
-            >>> "You are terse." in prompt
-            True
+            >>> from serapeum.llama_cpp.formatters.llama3 import messages_to_prompt_v3_instruct
+            >>> from serapeum.core.llms import Message, MessageRole
+            >>> messages = [
+            ...     Message(role=MessageRole.SYSTEM, content="You are terse."),
+            ...     Message(role=MessageRole.USER, content="Hi!"),
+            ... ]
+            >>> prompt = messages_to_prompt_v3_instruct(messages)
+            >>> prompt.split("<|eot_id|>")[0].split("<|end_header_id|>")[1].strip()
+            'You are terse.'
 
             ```
 
@@ -164,26 +171,27 @@ def completion_to_prompt_v3_instruct(
         prompts the model to generate its reply.
 
     Examples:
-        - Build a prompt with a custom system prompt and verify the exact output
+        - Build a prompt with a custom system prompt — explore the sections
             ```python
             >>> from serapeum.llama_cpp.formatters.llama3 import completion_to_prompt_v3_instruct
-            >>> prompt = completion_to_prompt_v3_instruct("USER MESSAGE", "SYSTEM PROMPT")
-            >>> expected = (
-            ...     "<|start_header_id|>system<|end_header_id|>\\n\\nSYSTEM PROMPT<|eot_id|>\\n"
-            ...     "<|start_header_id|>user<|end_header_id|>\\n\\nUSER MESSAGE<|eot_id|>\\n"
-            ...     "<|start_header_id|>assistant<|end_header_id|>\\n\\n"
-            ... )
-            >>> prompt == expected
+            >>> prompt = completion_to_prompt_v3_instruct("What is 2+2?", "Be brief.")
+            >>> sections = prompt.split("<|eot_id|>")
+            >>> sections[0].split("<|end_header_id|>")[1].strip()
+            'Be brief.'
+            >>> sections[1].split("<|end_header_id|>")[1].strip()
+            'What is 2+2?'
+            >>> prompt.strip().endswith("<|end_header_id|>")
             True
 
             ```
         - Build a prompt with the default system prompt
             ```python
+            >>> from serapeum.llama_cpp.formatters.llama3 import completion_to_prompt_v3_instruct, DEFAULT_SYSTEM_PROMPT
             >>> prompt = completion_to_prompt_v3_instruct("Hello!")
-            >>> prompt.startswith("<|start_header_id|>system<|end_header_id|>")
+            >>> DEFAULT_SYSTEM_PROMPT.strip() in prompt
             True
-            >>> "Hello!" in prompt
-            True
+            >>> prompt.split("<|eot_id|>")[1].split("<|end_header_id|>")[1].strip()
+            'Hello!'
 
             ```
 

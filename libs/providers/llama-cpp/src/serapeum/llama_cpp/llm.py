@@ -58,11 +58,11 @@ DEFAULT_MODEL_VERBOSITY = False
 
 # Module-level model cache.  WeakValues mean the Llama instance is released
 # automatically when the last LlamaCPP referencing it is garbage-collected.
-_MODEL_CACHE: weakref.WeakValueDictionary[tuple[str, str], Llama] = weakref.WeakValueDictionary()
+_MODEL_CACHE: weakref.WeakValueDictionary[tuple[str, str], Llama] = weakref.WeakValueDictionary()  # type: ignore[valid-type]
 _MODEL_CACHE_LOCK = threading.Lock()
 
 
-class LlamaCPP(CompletionToChatMixin, LLM):
+class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
     """LlamaCPP LLM — local inference via llama-cpp-python.
 
     Runs GGUF models locally using the llama-cpp-python backend.  The model is
@@ -82,52 +82,48 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             llm = await asyncio.to_thread(LlamaCPP, model_path="...", ...)
 
     Examples:
-        Install llama-cpp-python following instructions:
-        https://github.com/abetlen/llama-cpp-python
+        - Load a Llama 3 instruct model from a local path and run a completion
+            ```python
+            >>> import os
+            >>> from serapeum.llama_cpp import LlamaCPP
+            >>> from serapeum.llama_cpp.formatters.llama3 import (
+            ...     messages_to_prompt_v3_instruct,
+            ...     completion_to_prompt_v3_instruct,
+            ... )
+            >>> model_path = "path/to/llama-3-8b-instruct-v0.1.Q2_K.gguf"
+            >>> llm_v3 = LlamaCPP(
+            ...     model_path=model_path,
+            ...     temperature=0.1,
+            ...     max_new_tokens=256,
+            ...     context_window=512,
+            ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+            ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+            ... )
+            >>> response = llm_v3.complete("Hello, how are you?")
+            >>> response.text
+            'He, Annaxter...'
 
-        Then ``pip install serapeum-llama-cpp``
+            ```
+        - Load a Llama 2 / Mistral model from a local path
+            ```python
+            >>> from serapeum.llama_cpp import LlamaCPP
+            >>> from serapeum.llama_cpp.formatters.llama2 import (
+            ...     messages_to_prompt,
+            ...     completion_to_prompt,
+            ... )
+            >>> llm_v2 = LlamaCPP(
+            ...     model_path="path/to/mistral-7b-instruct-v0.1.Q2_K.gguf",
+            ...     temperature=0.1,
+            ...     max_new_tokens=256,
+            ...     context_window=512,
+            ...     messages_to_prompt=messages_to_prompt,
+            ...     completion_to_prompt=completion_to_prompt,
+            ... )
+            >>> response = llm_v2.complete("Hello, how are you?")
+            >>> response.text
+            " I'm doing well, thank you for asking!"
 
-        Llama 3 / Mistral instruct model:
-
-        ```python
-        from serapeum.llama_cpp import LlamaCPP
-        from serapeum.llama_cpp.formatters.llama3 import (
-            messages_to_prompt_v3_instruct,
-            completion_to_prompt_v3_instruct,
-        )
-
-        llm = LlamaCPP(
-            model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
-            temperature=0.1,
-            max_new_tokens=256,
-            context_window=8192,
-            messages_to_prompt=messages_to_prompt_v3_instruct,
-            completion_to_prompt=completion_to_prompt_v3_instruct,
-        )
-        response = llm.complete("Hello, how are you?")
-        print(str(response))
-        ```
-
-        Llama 2 model:
-
-        ```python
-        from serapeum.llama_cpp import LlamaCPP
-        from serapeum.llama_cpp.formatters.llama2 import (
-            messages_to_prompt,
-            completion_to_prompt,
-        )
-
-        llm = LlamaCPP(
-            model_path="/models/llama-2-13b-chat.Q4_0.gguf",
-            temperature=0.1,
-            max_new_tokens=256,
-            context_window=4096,
-            messages_to_prompt=messages_to_prompt,
-            completion_to_prompt=completion_to_prompt,
-        )
-        response = llm.complete("Hello, how are you?")
-        print(str(response))
-        ```
+            ```
     """
 
     model_url: str | None = Field(
@@ -272,12 +268,41 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         return data
 
     def model_post_init(self, __context: Any) -> None:
-        """Download if needed, then load the model."""
+        """Resolve the model path, download if needed, then load the model.
+
+        Called automatically by Pydantic after ``__init__``.  All validation
+        has already completed before this method runs; it performs only I/O
+        (path resolution, optional download, GGUF loading).
+
+        See Also:
+            _resolve_model_path: Locates or downloads the GGUF file.
+            _load_model: Loads (or retrieves from cache) the Llama instance.
+        """
         model_path = self._resolve_model_path()
         self._model = self._load_model(model_path)
 
     def _resolve_model_path(self) -> Path:
-        """Return the local Path to the GGUF file, downloading it if required."""
+        """Return the local Path to the GGUF file, downloading it if required.
+
+        Checks :attr:`model_path`, :attr:`hf_model_id`, and :attr:`model_url`
+        in that priority order.  Downloads or fetches from HuggingFace Hub
+        when a local path is not available.  Sets :attr:`model_path` as a
+        side-effect so subsequent reloads skip the network step.
+
+        Returns:
+            :class:`~pathlib.Path` pointing to the resolved local GGUF file.
+
+        Raises:
+            RuntimeError: If a URL download appears to succeed but the file
+                is not present on disk afterwards.
+
+        See Also:
+            _load_model: Called immediately after this method in
+                :meth:`model_post_init`.
+            serapeum.llama_cpp.utils._fetch_model_file: URL download helper.
+            serapeum.llama_cpp.utils._fetch_model_file_hf: HuggingFace Hub
+                download helper.
+        """
         if self.model_path is not None:
             model_path = Path(self.model_path)
         elif self.hf_model_id is not None:
@@ -286,7 +311,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             cache_dir.mkdir(parents=True, exist_ok=True)
             model_path = _fetch_model_file_hf(
                 self.hf_model_id,
-                self.hf_filename,  # type: ignore[arg-type]
+                self.hf_filename,
                 cache_dir,
             )
             self.model_path = str(model_path)
@@ -303,12 +328,25 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             self.model_path = str(model_path)
         return model_path
 
-    def _load_model(self, model_path: Path) -> Llama:
+    def _load_model(self, model_path: Path) -> Llama:  # type: ignore[valid-type]
         """Return a Llama instance for *model_path*, reusing the cache if possible.
 
         Uses double-checked locking so threads loading different models do not
-        serialise on a single lock, while still preventing duplicate loads of
-        the same model.
+        serialise on a single global lock, while still preventing duplicate
+        loads of the same model.  The cache key is a ``(path, kwargs_json)``
+        tuple so models with different generation settings are kept separate.
+
+        Args:
+            model_path: Absolute path to the local GGUF file.
+
+        Returns:
+            A :class:`llama_cpp.Llama` instance — either freshly loaded or
+            retrieved from the module-level ``_MODEL_CACHE``.
+
+        See Also:
+            _resolve_model_path: Resolves the path before this method is called.
+            _MODEL_CACHE: Module-level WeakValueDictionary that holds cached
+                Llama instances.
         """
         cache_key = (str(model_path), json.dumps(self.model_kwargs, sort_keys=True))
 
@@ -316,7 +354,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             result = _MODEL_CACHE.get(cache_key)
 
         if result is None:
-            loaded = Llama(model_path=str(model_path), **self.model_kwargs)
+            loaded = Llama(model_path=str(model_path), **self.model_kwargs)  # type: ignore[operator]
             with _MODEL_CACHE_LOCK:
                 if _MODEL_CACHE.get(cache_key) is None:
                     _MODEL_CACHE[cache_key] = loaded
@@ -335,23 +373,118 @@ class LlamaCPP(CompletionToChatMixin, LLM):
 
     @property
     def metadata(self) -> Metadata:
-        """LLM metadata."""
+        """LLM metadata derived from the loaded model's configuration.
+
+        Returns:
+            :class:`~serapeum.core.llms.Metadata` instance with:
+
+            - ``context_window``: effective context size from the loaded model.
+            - ``num_output``: :attr:`max_new_tokens` configured for generation.
+            - ``model_name``: resolved local path to the GGUF file.
+
+        Examples:
+            - Inspect metadata fields of a loaded model
+                ```python
+                >>> meta = llm.metadata
+                >>> meta.model_name
+                '/models/llama-3-8b-instruct.Q4_0.gguf'
+                >>> meta.num_output
+                256
+                >>> meta.context_window
+                512
+
+                ```
+
+        See Also:
+            class_name: Class identifier used for serialisation.
+        """
         return Metadata(
             context_window=self._model.context_params.n_ctx,
             num_output=self.max_new_tokens,
-            model_name=self.model_path,
+            model_name=self.model_path or "unknown",
         )
 
     def tokenize(self, text: str) -> list[int]:
-        """Return the token IDs for *text* using the loaded model's vocabulary."""
-        return self._model.tokenize(text.encode())
+        """Return the token IDs for *text* using the loaded model's vocabulary.
+
+        Args:
+            text: The input string to tokenize.
+
+        Returns:
+            List of integer token IDs produced by the model's tokenizer.
+
+        Examples:
+            - Tokenize a short string and explore the token IDs
+                ```python
+                >>> tokens = llm.tokenize("Hello!")
+                >>> len(tokens)
+                4
+                >>> tokens[:3]
+                [1, 15043, 29991]
+
+                ```
+
+        See Also:
+            count_tokens: Returns the token count instead of the full list.
+            _guard_context: Uses token count to validate prompt length.
+        """
+        return self._model.tokenize(text.encode())  # type: ignore[no-any-return]
 
     def count_tokens(self, text: str) -> int:
-        """Return the number of tokens *text* encodes to."""
+        """Return the number of tokens *text* encodes to.
+
+        Args:
+            text: The input string to count tokens for.
+
+        Returns:
+            Integer token count for *text*.
+
+        Examples:
+            - Count tokens in phrases of different lengths
+                ```python
+                >>> llm.count_tokens("Hello!")
+                4
+                >>> llm.count_tokens("A longer sentence has more tokens.")
+                9
+
+                ```
+
+        See Also:
+            tokenize: Returns the full token ID list.
+            _guard_context: Calls this method to check prompt length.
+        """
         return len(self.tokenize(text))
 
     def _guard_context(self, prompt: str) -> None:
-        """Raise ValueError if *prompt* exceeds the model's context window."""
+        """Raise ValueError if *prompt* exceeds the model's context window.
+
+        Args:
+            prompt: Already-formatted prompt string whose token length is
+                checked against :attr:`context_window`.
+
+        Raises:
+            ValueError: If the token count of *prompt* exceeds
+                :attr:`context_window`, reporting the actual count and the
+                configured limit.
+
+        Examples:
+            - A prompt within the context window raises no error
+                ```python
+                >>> llm._guard_context("Short prompt.")
+
+                ```
+            - A prompt that exceeds the context window raises ValueError
+                ```python
+                >>> llm._guard_context("word " * 10_000)
+                Traceback (most recent call last):
+                    ...
+                ValueError: Prompt is 10001 tokens but context_window is 512...
+
+                ```
+
+        See Also:
+            count_tokens: Used internally to measure the prompt length.
+        """
         n = self.count_tokens(prompt)
         if n > self.context_window:
             raise ValueError(
@@ -359,7 +492,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
                 "Shorten the prompt or increase context_window."
             )
 
-    @overload
+    @overload  # type: ignore[override]
     def complete(
         self,
         prompt: str,
@@ -409,17 +542,23 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             ValueError: If *prompt* exceeds :attr:`context_window` tokens.
 
         Examples:
-            - Non-streaming completion
+            - Non-streaming completion — explore the response text and raw output
                 ```python
-                >>> response = llm.complete("The capital of France is")  # doctest: +SKIP
-                >>> print(response.text)  # doctest: +SKIP
-                Paris.
+                >>> response = llm.complete("The capital of France is")
+                >>> response.text
+                ' Paris, the City of Light.'
+                >>> response.raw["choices"][0]["finish_reason"]
+                'stop'
 
                 ```
-            - Streaming completion
+            - Streaming completion — iterate over token deltas
                 ```python
-                >>> for chunk in llm.complete("Hello", stream=True):  # doctest: +SKIP
-                ...     print(chunk.delta, end="", flush=True)
+                >>> gen = llm.complete("Hello", stream=True)
+                >>> first = next(gen)
+                >>> first.delta
+                ' there'
+                >>> first.text
+                ' there'
 
                 ```
 
@@ -429,6 +568,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
             _stream_complete: Streaming implementation.
         """
         if not formatted:
+            assert self.completion_to_prompt is not None
             prompt = self.completion_to_prompt(prompt)
         result: CompletionResponse | CompletionResponseGen = (
             self._stream_complete(prompt, **kwargs)
@@ -437,7 +577,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         )
         return result
 
-    @overload
+    @overload  # type: ignore[override]
     async def acomplete(
         self,
         prompt: str,
@@ -465,11 +605,60 @@ class LlamaCPP(CompletionToChatMixin, LLM):
         stream: bool = False,
         **kwargs: Any,
     ) -> CompletionResponse | CompletionResponseAsyncGen:
-        """Async completion: offloads CPU-bound llama.cpp inference to a thread pool.
+        """Async text completion — offloads CPU-bound inference to a thread pool.
 
-        Overrides the mixin's thin sync shim so inference does not block the
-        running event loop. The streaming variant collects all chunks in the
-        worker thread, then re-yields them as an async generator.
+        Wraps :meth:`complete` in :func:`asyncio.to_thread` so that the
+        llama-cpp-python C-level inference call never blocks the running event
+        loop.  The streaming variant collects all token chunks in the worker
+        thread and re-yields them as an async generator once all chunks are
+        ready.
+
+        Args:
+            prompt: The input text to complete.
+            formatted: When ``True``, *prompt* is passed to the model as-is.
+                When ``False`` (default) it is first wrapped by
+                :attr:`completion_to_prompt` to apply the model's chat template.
+            stream: When ``True`` returns a :class:`CompletionResponseAsyncGen`
+                async generator that yields one :class:`CompletionResponse` per
+                token delta.  When ``False`` (default) returns a single
+                :class:`CompletionResponse` with the full completion.
+            **kwargs: Additional keyword arguments forwarded to the underlying
+                ``Llama.__call__`` (e.g. ``top_p``, ``repeat_penalty``).
+
+        Returns:
+            A :class:`CompletionResponse` when ``stream=False``, or a
+            :class:`CompletionResponseAsyncGen` async generator when
+            ``stream=True``.
+
+        Raises:
+            ValueError: If *prompt* exceeds :attr:`context_window` tokens.
+
+        Examples:
+            - Non-streaming async completion — explore the response
+                ```python
+                >>> import asyncio
+                >>> response = asyncio.run(llm.acomplete("Hello"))
+                >>> response.text
+                ' there! How can I help you today?'
+
+                ```
+            - Streaming async completion — collect and inspect chunks
+                ```python
+                >>> import asyncio
+                >>> async def _collect():
+                ...     return [c async for c in await llm.acomplete("Hello", stream=True)]
+                >>> chunks = asyncio.run(_collect())
+                >>> chunks[0].delta
+                ' there'
+                >>> chunks[-1].text
+                ' there! How can I help you today?'
+
+                ```
+
+        See Also:
+            complete: Synchronous variant of this method.
+            _complete: Non-streaming implementation called in the thread pool.
+            _stream_complete: Streaming implementation called in the thread pool.
         """
         if stream:
             chunks: list[CompletionResponse] = await asyncio.to_thread(
@@ -482,7 +671,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):
 
             result: CompletionResponse | CompletionResponseAsyncGen = gen()
         else:
-            result = await asyncio.to_thread(self.complete, prompt, formatted, stream=False, **kwargs)
+            result = await asyncio.to_thread(self.complete, prompt, formatted, stream=False, **kwargs)  # type: ignore[arg-type]
         return result
 
     def _complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:

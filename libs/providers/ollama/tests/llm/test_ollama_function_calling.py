@@ -14,12 +14,19 @@ from typing import Sequence
 
 import pytest
 from pydantic import BaseModel
-
+import asyncio
 from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.tools import ToolOutput
 from serapeum.ollama import Ollama
+
+
+class SimpleOutput(BaseModel):
+    """Simple Pydantic model for testing."""
+
+    value: str
+    count: int = 0
 
 
 def make_agent_response_from_models(models: Sequence[BaseModel]) -> AgentChatResponse:
@@ -198,3 +205,87 @@ class TestToolOrchestratingLLMAStreamCall:
             results.append(item)
         assert len(results) == 2
         assert all(isinstance(obj, album) for obj in results)
+
+
+@pytest.mark.e2e
+class TestOllamaE2E:
+    """End-to-end tests with real Ollama server.
+
+    These tests require:
+    - Ollama server running
+    - llama3.1 model pulled
+    - serapeum-ollama package installed
+
+    Skip if not available using pytest markers.
+    """
+
+    def test_pydantic_model_with_real_ollama(self, llm_model: Ollama):
+        """Test Pydantic model with real Ollama server.
+
+        Expected: Should generate valid SimpleOutput from LLM.
+        """
+        tools_llm = ToolOrchestratingLLM(
+            schema=SimpleOutput,
+            prompt="Generate a simple output with value '{text}' and count the words",
+            llm=llm_model,
+        )
+
+        result = tools_llm(text="hello world")
+
+        assert isinstance(result, SimpleOutput)
+        assert isinstance(result.value, str)
+        assert isinstance(result.count, int)
+
+    def test_function_with_real_ollama(self, llm_model: Ollama):
+        """Test regular function with real Ollama server.
+
+        Expected: Should generate valid dict output from function via LLM.
+        """
+        def extract_info(name: str, age: int, city: str) -> dict:
+            """Extract person information."""
+            return {
+                "name": name,
+                "age": age,
+                "city": city,
+                "summary": f"{name} is {age} years old and lives in {city}",
+            }
+
+        tools_llm = ToolOrchestratingLLM(
+            schema=extract_info,
+            prompt="Extract information from: {text}",
+            llm=llm_model,
+        )
+
+        result = tools_llm(text="John is 30 years old and lives in New York")
+
+        assert isinstance(result, dict)
+        assert "name" in result
+        assert "age" in result
+        assert "city" in result
+
+    @pytest.mark.asyncio
+    async def test_async_function_with_real_ollama(self, llm_model: Ollama):
+        """Test async function with real Ollama server.
+
+        Expected: Should execute async function via LLM successfully.
+        """
+        async def async_processor(text: str, multiplier: int) -> dict:
+            """Process text asynchronously."""
+            await asyncio.sleep(0.01)
+            return {
+                "text": text,
+                "length": len(text),
+                "multiplied": len(text) * multiplier,
+            }
+
+        tools_llm = ToolOrchestratingLLM(
+            schema=async_processor,
+            prompt="Process this text: {text}",
+            llm=llm_model,
+        )
+
+        result = await tools_llm.acall(text="hello")
+
+        assert isinstance(result, dict)
+        assert "text" in result
+        assert "length" in result

@@ -109,6 +109,12 @@ def messages_to_prompt(
         completion_to_prompt: Single-turn variant for the same model family.
         DEFAULT_SYSTEM_PROMPT: Default system instruction used when system_prompt is None.
     """
+    if not messages:
+        raise ValueError(
+            "messages must contain at least one message. "
+            "Pass at least a USER message."
+        )
+
     string_messages: list[str] = []
     if messages[0].role == MessageRole.SYSTEM:
         system_message_str = messages[0].content or ""

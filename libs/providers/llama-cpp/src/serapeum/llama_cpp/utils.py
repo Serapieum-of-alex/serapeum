@@ -156,5 +156,5 @@ def _fetch_model_file_hf(repo_id: str, filename: str, cache_dir: Path) -> Path:
             f"Check that the repo ID and filename are correct and that you have "
             f"access. Original error: {exc}"
         ) from exc
-    logger.info("Model cached at %s", local_path)
+    logger.info(f"Model cached at {local_path}")
     return Path(local_path)

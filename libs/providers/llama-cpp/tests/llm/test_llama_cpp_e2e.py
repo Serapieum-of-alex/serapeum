@@ -118,6 +118,7 @@ def llm_with_stop() -> LlamaCPP:
     )
 
 
+@pytest.mark.e2e
 class TestLlamaCPPMetadata:
     """E2E tests for LlamaCPP class-level metadata and constructor fields."""
 
@@ -186,6 +187,7 @@ class TestLlamaCPPMetadata:
         ), f"Expected model_path={_model_path!r}, got {llm.model_path!r}"
 
 
+@pytest.mark.e2e
 class TestLlamaCPPTokenize:
     """E2E tests for tokenize() and count_tokens() against a real model vocabulary."""
 
@@ -250,6 +252,7 @@ class TestLlamaCPPTokenize:
         )
 
 
+@pytest.mark.e2e
 class TestLlamaCPPContextGuard:
     """E2E tests for _guard_context and context-window overflow detection."""
 
@@ -317,6 +320,7 @@ class TestLlamaCPPContextGuard:
         ), f"Error should include the token count number, got: {error}"
 
 
+@pytest.mark.e2e
 class TestLlamaCPPComplete:
     """E2E tests for LlamaCPP.complete() — synchronous non-streaming completion."""
 
@@ -433,6 +437,7 @@ class TestLlamaCPPComplete:
         )
 
 
+@pytest.mark.e2e
 class TestLlamaCPPStreamComplete:
     """E2E tests for LlamaCPP.complete(stream=True) — synchronous streaming."""
 
@@ -532,6 +537,7 @@ class TestLlamaCPPStreamComplete:
         ), f"Expected multiple stream chunks, got only {len(chunks)}"
 
 
+@pytest.mark.e2e
 class TestLlamaCPPChat:
     """E2E tests for LlamaCPP.chat() — provided by CompletionToChatMixin."""
 
@@ -641,6 +647,7 @@ class TestLlamaCPPChat:
         assert chat_resp.message.content, "chat() should produce content"
 
 
+@pytest.mark.e2e
 class TestLlamaCPPAcomplete:
     """E2E tests for LlamaCPP.acomplete() — async completion."""
 
@@ -780,6 +787,7 @@ class TestLlamaCPPAcomplete:
         )
 
 
+@pytest.mark.e2e
 class TestLlamaCPPAchat:
     """E2E tests for LlamaCPP.achat() — async chat via CompletionToChatMixin."""
 

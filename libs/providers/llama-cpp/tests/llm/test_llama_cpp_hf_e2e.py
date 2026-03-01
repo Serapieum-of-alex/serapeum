@@ -105,6 +105,7 @@ def hf_llm(tmp_path_factory: pytest.TempPathFactory) -> LlamaCPP:
     return llm
 
 
+@pytest.mark.e2e
 class TestLlamaCPPHuggingFace:
     """E2E tests for LlamaCPP with models downloaded from HuggingFace Hub.
 

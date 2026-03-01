@@ -108,7 +108,7 @@ class TestFetchModelFile:
         _fetch_model_file("http://example.com/model.gguf", model_path)
 
         mock_get.assert_called_once_with(
-            "http://example.com/model.gguf", stream=True, timeout=(10, None)
+            "http://example.com/model.gguf", stream=True, timeout=(10, 120)
         )
 
     def test_iter_content_chunk_size_is_1mb(
@@ -170,9 +170,7 @@ class TestFetchModelFile:
         _fetch_model_file("http://example.com/model.gguf", model_path)
 
         mock_logger.info.assert_any_call(
-            "Downloading %s to %s",
-            "http://example.com/model.gguf",
-            model_path,
+            f"Downloading http://example.com/model.gguf to {model_path}",
         )
 
     @pytest.mark.parametrize(
@@ -214,15 +212,15 @@ class TestFetchModelFile:
         """Test ValueError when Content-Length header is absent (returns None).
 
         Test scenario:
-            A missing Content-Length header evaluates to 0, which must raise
-            ValueError just like an explicit 0.
+            A missing Content-Length header must raise ValueError with a
+            message indicating the header was not returned.
         """
         model_path = tmp_path / "model.gguf"
         mock_resp = _make_mock_response(None, [])
         mock_resp.headers.get.return_value = None
         mocker.patch("serapeum.llama_cpp.utils.requests.get", return_value=mock_resp)
 
-        with pytest.raises(ValueError, match="expected at least 1 MB"):
+        with pytest.raises(ValueError, match="did not return a Content-Length header"):
             _fetch_model_file("http://example.com/model.gguf", model_path)
 
     def test_boundary_exactly_1_000_000_bytes_passes(
@@ -354,8 +352,7 @@ class TestFetchModelFile:
             _fetch_model_file("http://example.com/model.gguf", model_path)
 
         mock_logger.exception.assert_called_once_with(
-            "Download failed, removing partial file at %s",
-            model_path,
+            f"Download failed, removing partial file at {model_path}",
         )
 
     def test_original_exception_type_is_preserved(

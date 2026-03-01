@@ -74,7 +74,13 @@ def _fetch_model_file(model_url: str, model_path: Path) -> None:
     try:
         with requests.get(model_url, stream=True, timeout=(10, 120)) as r:
             r.raise_for_status()
-            total_size = int(r.headers.get("Content-Length") or 0)
+            content_length = r.headers.get("Content-Length")
+            if content_length is None:
+                raise ValueError(
+                    f"Server did not return a Content-Length header for {model_url}. "
+                    "The URL may be redirecting to an HTML page instead of a GGUF file."
+                )
+            total_size = int(content_length)
             if total_size < 1_000_000:
                 raise ValueError(
                     f"Content-Length is {total_size} bytes; expected at least 1 MB"

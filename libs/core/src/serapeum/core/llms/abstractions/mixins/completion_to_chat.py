@@ -5,7 +5,7 @@ delegating to completion methods. This is useful for LLM providers that
 primarily support a completion interface (e.g. llama.cpp) but need to
 implement the full chat interface as well.
 """
-
+from __future__ import annotations
 from typing import Any, Literal, Sequence, overload
 
 from serapeum.core.base.llms.types import (

@@ -437,7 +437,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):  # type: ignore[misc]
 
     async def _aget_text_embeddings(
         self, texts: list[str]
-    ) -> Sequence[Sequence[float]]:
+    ) -> list[list[float]]:
         """Asynchronously generate embedding vectors for multiple documents or text passages.
 
         Async batch version of _get_text_embedding. Formats all texts with the optional
@@ -473,7 +473,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):  # type: ignore[misc]
         formatted_texts = [self._format_text(text) for text in texts]
         return await self._a_embed_batch_raw(formatted_texts)
 
-    def _embed_batch_raw(self, texts: list[str]) -> Sequence[Sequence[float]]:
+    def _embed_batch_raw(self, texts: list[str]) -> list[list[float]]:
         """Generate raw embeddings for multiple texts using the Ollama API.
 
         Low-level private method that directly calls the Ollama embed API without any
@@ -496,9 +496,9 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):  # type: ignore[misc]
             options=self.ollama_additional_kwargs,
             keep_alive=self.keep_alive,
         )
-        return result.embeddings
+        return result.embeddings  # type: ignore[no-any-return]
 
-    async def _a_embed_batch_raw(self, texts: list[str]) -> Sequence[Sequence[float]]:
+    async def _a_embed_batch_raw(self, texts: list[str]) -> list[list[float]]:
         """Asynchronously generate raw embeddings for multiple texts using the Ollama API.
 
         Async low-level private method that directly calls the Ollama embed API without any
@@ -521,9 +521,9 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):  # type: ignore[misc]
             options=self.ollama_additional_kwargs,
             keep_alive=self.keep_alive,
         )
-        return result.embeddings
+        return result.embeddings  # type: ignore[no-any-return]
 
-    def _embed_raw(self, text: str) -> Sequence[float]:
+    def _embed_raw(self, text: str) -> list[float]:
         """Generate a raw embedding for a single text using the Ollama API.
 
         Low-level private method that directly calls the Ollama embed API without any

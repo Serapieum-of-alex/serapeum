@@ -305,8 +305,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
         """
         if self.model_path is not None:
             model_path = Path(self.model_path)
-        elif self.hf_model_id is not None:
-            # hf_filename is guaranteed non-None by _check_model_source.
+        elif self.hf_model_id is not None and self.hf_filename is not None:
             cache_dir = Path(get_cache_dir()) / "models"
             cache_dir.mkdir(parents=True, exist_ok=True)
             model_path = _fetch_model_file_hf(

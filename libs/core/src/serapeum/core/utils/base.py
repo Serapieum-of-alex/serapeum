@@ -1,5 +1,7 @@
 """Utilities functions."""
 
+from __future__ import annotations
+
 import os
 import asyncio
 import platformdirs

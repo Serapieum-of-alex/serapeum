@@ -1,5 +1,7 @@
 """Tests for CompletionToChatMixin."""
 
+from __future__ import annotations
+
 import pytest
 
 from serapeum.core.base.llms.types import (

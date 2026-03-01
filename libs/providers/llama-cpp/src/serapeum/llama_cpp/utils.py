@@ -70,7 +70,7 @@ def _fetch_model_file(model_url: str, model_path: Path) -> None:
         tqdm: Progress bar library used to display download progress.
         requests.Response.iter_content: Underlying streaming iterator.
     """
-    logger.info("Downloading %s to %s", model_url, model_path)
+    logger.info(f"Downloading {model_url} to {model_path}",)
     try:
         with requests.get(model_url, stream=True, timeout=(10, 120)) as r:
             r.raise_for_status()
@@ -79,7 +79,7 @@ def _fetch_model_file(model_url: str, model_path: Path) -> None:
                 raise ValueError(
                     f"Content-Length is {total_size} bytes; expected at least 1 MB"
                 )
-            logger.info("Total size: %.2f MB", total_size / 1_000_000)
+            logger.info(f"Total size: {total_size / 1_000_000:.2f} MB")
             chunk_size = 1024 * 1024  # 1 MB
             with model_path.open("wb") as file:
                 for chunk in tqdm(
@@ -89,7 +89,7 @@ def _fetch_model_file(model_url: str, model_path: Path) -> None:
                 ):
                     file.write(chunk)
     except Exception:
-        logger.exception("Download failed, removing partial file at %s", model_path)
+        logger.exception(f"Download failed, removing partial file at {model_path}")
         model_path.unlink(missing_ok=True)
         raise
 
@@ -137,7 +137,7 @@ def _fetch_model_file_hf(repo_id: str, filename: str, cache_dir: Path) -> Path:
         _fetch_model_file: Direct-URL download alternative.
         huggingface_hub.hf_hub_download: Underlying download function.
     """
-    logger.info("Downloading %s/%s from HuggingFace Hub", repo_id, filename)
+    logger.info(f"Downloading {repo_id}/{filename} from HuggingFace Hub")
     try:
         local_path = hf_hub_download(
             repo_id=repo_id,

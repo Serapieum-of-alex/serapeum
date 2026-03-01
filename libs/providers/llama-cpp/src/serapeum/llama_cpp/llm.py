@@ -361,7 +361,12 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
             _MODEL_CACHE: Module-level WeakValueDictionary that holds cached
                 Llama instances.
         """
-        cache_key = (str(model_path), json.dumps(self.model_kwargs, sort_keys=True))
+        try:
+            kwargs_key = json.dumps(self.model_kwargs, sort_keys=True)
+        except TypeError:
+            kwargs_key = repr(sorted(self.model_kwargs.items()))
+
+        cache_key = (str(model_path), kwargs_key)
 
         with _MODEL_CACHE_LOCK:
             result = _MODEL_CACHE.get(cache_key)

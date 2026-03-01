@@ -28,8 +28,6 @@ import pytest
 from serapeum.core.llms import ChatResponse, CompletionResponse, Message, MessageRole
 from serapeum.llama_cpp import LlamaCPP
 
-pytestmark = pytest.mark.e2e
-
 
 HF_MODEL_ID_ENV = "LLAMA_CPP_HF_MODEL_ID"
 HF_FILENAME_ENV = "LLAMA_CPP_HF_FILENAME"
@@ -117,7 +115,6 @@ class TestLlamaCPPHuggingFace:
         LLAMA_CPP_HF_E2E=1 pytest libs/providers/llama-cpp/tests/llm/test_llama_cpp_hf_e2e.py -v
     """
 
-    @pytest.mark.e2e
     def test_hf_construction_sets_model_path(self, hf_llm: LlamaCPP) -> None:
         """Test that HF download populates model_path with an existing .gguf file.
 
@@ -136,7 +133,6 @@ class TestLlamaCPPHuggingFace:
         assert path.exists(), f"model_path does not exist: {hf_llm.model_path}"
         assert path.suffix == ".gguf", f"Expected .gguf extension, got {path.suffix!r}"
 
-    @pytest.mark.e2e
     def test_hf_metadata_has_valid_context_window(self, hf_llm: LlamaCPP) -> None:
         """Test metadata.context_window is a positive integer after HF load.
 
@@ -148,7 +144,6 @@ class TestLlamaCPPHuggingFace:
             hf_llm.metadata.context_window > 0
         ), f"Expected context_window > 0, got {hf_llm.metadata.context_window}"
 
-    @pytest.mark.e2e
     def test_hf_complete_returns_non_empty_text(self, hf_llm: LlamaCPP) -> None:
         """Test complete() returns a CompletionResponse with non-empty text.
 
@@ -162,7 +157,6 @@ class TestLlamaCPPHuggingFace:
         ), f"Expected CompletionResponse, got {type(response)}"
         assert len(response.text) > 0, "HF model complete() text should not be empty"
 
-    @pytest.mark.e2e
     def test_hf_stream_complete_yields_chunks(self, hf_llm: LlamaCPP) -> None:
         """Test complete(stream=True) yields multiple CompletionResponse chunks.
 
@@ -178,7 +172,6 @@ class TestLlamaCPPHuggingFace:
             ), f"Expected CompletionResponse chunk, got {type(chunk)}"
             assert chunk.delta is not None, f"Chunk delta must not be None: {chunk}"
 
-    @pytest.mark.e2e
     def test_hf_chat_returns_assistant_response(self, hf_llm: LlamaCPP) -> None:
         """Test chat() returns a ChatResponse with ASSISTANT role and content.
 
@@ -195,7 +188,6 @@ class TestLlamaCPPHuggingFace:
         ), f"Expected ASSISTANT role, got {response.message.role}"
         assert response.message.content, "HF model chat content should not be empty"
 
-    @pytest.mark.e2e
     def test_hf_second_construction_reuses_cache(
         self, hf_llm: LlamaCPP, tmp_path_factory: pytest.TempPathFactory
     ) -> None:

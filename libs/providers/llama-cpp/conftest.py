@@ -6,6 +6,7 @@
 import llama_cpp as _llama_cpp_ext  # noqa: F401
 
 import os
+from typing import Any
 
 import pytest
 from dotenv import load_dotenv
@@ -14,7 +15,7 @@ load_dotenv()
 
 
 @pytest.fixture(autouse=True)
-def doctest_namespace(doctest_namespace):
+def doctest_namespace(doctest_namespace: dict[str, Any]) -> dict[str, Any]:
     """Inject pre-loaded LlamaCPP and common imports into every doctest."""
     import asyncio
 

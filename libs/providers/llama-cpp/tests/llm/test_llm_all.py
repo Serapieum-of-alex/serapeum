@@ -9,6 +9,7 @@ All tests here mock ``serapeum.llama_cpp.llm.Llama`` so no real model is needed.
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Generator
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
@@ -38,7 +39,7 @@ def _formatters() -> dict[str, Any]:
 
 
 @pytest.fixture(autouse=True)
-def clear_model_cache():
+def clear_model_cache() -> Generator[None, None, None]:
     """Clear the module-level model cache before and after each test.
 
     Prevents Llama instances cached by one test from interfering with another.
@@ -73,7 +74,7 @@ def mock_llama_cls(mocker: Any) -> MagicMock:
     mock_instance.context_params.n_ctx = 512
     mock_instance.tokenize.return_value = []
     mock_cls.return_value = mock_instance
-    return mock_cls
+    return mock_cls  # type: ignore[no-any-return]
 
 
 @pytest.fixture(scope="function")
@@ -86,7 +87,7 @@ def mock_llama(mock_llama_cls: MagicMock) -> MagicMock:
     Returns:
         MagicMock: The mock Llama instance (mock_llama_cls.return_value).
     """
-    return mock_llama_cls.return_value
+    return mock_llama_cls.return_value  # type: ignore[no-any-return]
 
 
 @pytest.fixture(scope="function")
@@ -326,7 +327,7 @@ class TestLlamaCPP:
         self,
         mocker: Any,
         missing_formatter: str,
-        fields_set: set,
+        fields_set: set[str],
     ) -> None:
         """Test _check_formatters raises naming the specific missing formatter.
 

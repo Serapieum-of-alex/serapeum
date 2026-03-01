@@ -9,13 +9,13 @@ from serapeum.llama_cpp.formatters.llama3 import (
 
 
 @pytest.mark.unit
-def test_embedding_class():
+def test_embedding_class() -> None:
     names_of_base_classes = [b.__name__ for b in LlamaCPP.__mro__]
     assert BaseLLM.__name__ in names_of_base_classes
 
 
 @pytest.mark.unit
-def test_completion_to_prompt_v3_instruct():
+def test_completion_to_prompt_v3_instruct() -> None:
     output = (
         "<|start_header_id|>system<|end_header_id|>\n\nSYSTEM PROMPT<|eot_id|>\n"
         "<|start_header_id|>user<|end_header_id|>\n\nUSER MESSAGE<|eot_id|>\n"
@@ -25,7 +25,7 @@ def test_completion_to_prompt_v3_instruct():
 
 
 @pytest.mark.unit
-def test_messages_to_prompt_v3_instruct():
+def test_messages_to_prompt_v3_instruct() -> None:
     messages = [
         Message(
             role=MessageRole.USER,

@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
+from pytest_mock import MockerFixture
 
 from serapeum.llama_cpp.utils import _fetch_model_file
 
@@ -48,7 +49,7 @@ def _make_mock_response(
 class TestFetchModelFile:
     """Tests for _fetch_model_file."""
 
-    def test_success_writes_file_content(self, tmp_path: Path, mocker) -> None:
+    def test_success_writes_file_content(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """Test that all downloaded chunks are written to model_path.
 
         Test scenario:
@@ -68,7 +69,7 @@ class TestFetchModelFile:
             "file content should match all downloaded chunks in order"
         )
 
-    def test_success_does_not_delete_file(self, tmp_path: Path, mocker) -> None:
+    def test_success_does_not_delete_file(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """Test that model_path is not removed after a successful download.
 
         Test scenario:
@@ -83,7 +84,7 @@ class TestFetchModelFile:
 
         assert model_path.exists(), "model file must still exist after a clean download"
 
-    def test_requests_get_called_with_stream_true(self, tmp_path: Path, mocker) -> None:
+    def test_requests_get_called_with_stream_true(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """Test that requests.get is invoked with stream=True.
 
         Test scenario:
@@ -101,7 +102,7 @@ class TestFetchModelFile:
 
         mock_get.assert_called_once_with("http://example.com/model.gguf", stream=True, timeout=(10, None))
 
-    def test_iter_content_chunk_size_is_1mb(self, tmp_path: Path, mocker) -> None:
+    def test_iter_content_chunk_size_is_1mb(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """Test that iter_content is called with chunk_size equal to 1 MiB.
 
         Test scenario:
@@ -117,7 +118,7 @@ class TestFetchModelFile:
 
         mock_resp.iter_content.assert_called_once_with(chunk_size=ONE_MB)
 
-    def test_tqdm_total_uses_ceil(self, tmp_path: Path, mocker) -> None:
+    def test_tqdm_total_uses_ceil(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """Test that tqdm receives math.ceil(total_size / chunk_size) as total.
 
         Test scenario:
@@ -142,7 +143,7 @@ class TestFetchModelFile:
             f"Expected tqdm total={expected} (ceil), got {kwargs['total']}"
         )
 
-    def test_logs_download_start(self, tmp_path: Path, mocker) -> None:
+    def test_logs_download_start(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """Test that logger.info is called with the URL and destination path.
 
         Test scenario:
@@ -172,7 +173,7 @@ class TestFetchModelFile:
         ],
     )
     def test_raises_for_small_content_length(
-        self, tmp_path: Path, mocker, content_length: int, label: str
+        self, tmp_path: Path, mocker: MockerFixture, content_length: int, label: str
     ) -> None:
         """Test ValueError is raised when Content-Length is below 1 MB.
 
@@ -197,7 +198,7 @@ class TestFetchModelFile:
         )
 
     def test_raises_when_content_length_header_missing(
-        self, tmp_path: Path, mocker
+        self, tmp_path: Path, mocker: MockerFixture
     ) -> None:
         """Test ValueError when Content-Length header is absent (returns None).
 
@@ -214,7 +215,7 @@ class TestFetchModelFile:
             _fetch_model_file("http://example.com/model.gguf", model_path)
 
     def test_boundary_exactly_1_000_000_bytes_passes(
-        self, tmp_path: Path, mocker
+        self, tmp_path: Path, mocker: MockerFixture
     ) -> None:
         """Test that Content-Length == 1_000_000 is accepted without error.
 
@@ -238,7 +239,7 @@ class TestFetchModelFile:
         ],
     )
     def test_http_error_is_reraised(
-        self, tmp_path: Path, mocker, status_code: int, message: str
+        self, tmp_path: Path, mocker: MockerFixture, status_code: int, message: str
     ) -> None:
         """Test that HTTP errors from raise_for_status() propagate to the caller.
 
@@ -258,7 +259,7 @@ class TestFetchModelFile:
         with pytest.raises(requests.exceptions.HTTPError, match=str(status_code)):
             _fetch_model_file("http://example.com/model.gguf", model_path)
 
-    def test_http_error_cleans_up_partial_file(self, tmp_path: Path, mocker) -> None:
+    def test_http_error_cleans_up_partial_file(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """Test that model_path is removed when an HTTP error occurs.
 
         Test scenario:
@@ -275,7 +276,7 @@ class TestFetchModelFile:
 
         assert not model_path.exists(), "partial file should be removed after HTTP error"
 
-    def test_partial_file_removed_on_value_error(self, tmp_path: Path, mocker) -> None:
+    def test_partial_file_removed_on_value_error(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """Test that a pre-existing partial file is deleted when ValueError is raised.
 
         Test scenario:
@@ -293,7 +294,7 @@ class TestFetchModelFile:
         assert not model_path.exists(), "partial file should be removed after ValueError"
 
     def test_connection_error_cleans_up_and_reraises(
-        self, tmp_path: Path, mocker
+        self, tmp_path: Path, mocker: MockerFixture
     ) -> None:
         """Test that a network-level error triggers cleanup and is re-raised.
 
@@ -312,7 +313,7 @@ class TestFetchModelFile:
 
         assert not model_path.exists(), "model_path should not exist after ConnectionError"
 
-    def test_failure_logs_exception(self, tmp_path: Path, mocker) -> None:
+    def test_failure_logs_exception(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """Test that logger.exception is called on any download failure.
 
         Test scenario:
@@ -332,7 +333,7 @@ class TestFetchModelFile:
             model_path,
         )
 
-    def test_original_exception_type_is_preserved(self, tmp_path: Path, mocker) -> None:
+    def test_original_exception_type_is_preserved(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """Test that the bare raise preserves the original exception type.
 
         Test scenario:

@@ -365,9 +365,12 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
                 ) from exc
 
             with _MODEL_CACHE_LOCK:
-                if _MODEL_CACHE.get(cache_key) is None:
+                existing = _MODEL_CACHE.get(cache_key)
+                if existing is None:
                     _MODEL_CACHE[cache_key] = loaded
-                result = _MODEL_CACHE[cache_key]
+                    result = loaded
+                else:
+                    result = existing
 
         return result
 

@@ -6,6 +6,8 @@ primarily support a completion interface (e.g. llama.cpp) but need to
 implement the full chat interface as well.
 """
 from __future__ import annotations
+
+import asyncio
 from typing import Any, Literal, Sequence, overload
 
 from serapeum.core.base.llms.types import (
@@ -187,7 +189,10 @@ class CompletionToChatMixin:
     async def acomplete(
         self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs: Any
     ) -> CompletionResponse | CompletionResponseAsyncGen:
-        """Async shim: delegates to the synchronous ``complete`` method.
+        """Async completion — offloads synchronous ``complete`` to a thread pool.
+
+        Uses :func:`asyncio.to_thread` so that CPU/GPU-bound inference in the
+        synchronous ``complete`` method never blocks the running event loop.
 
         Args:
             prompt: The prompt string to complete.
@@ -199,13 +204,21 @@ class CompletionToChatMixin:
             CompletionResponse when stream=False, CompletionResponseAsyncGen when stream=True.
         """
         if stream:
+            chunks: list[CompletionResponse] = await asyncio.to_thread(
+                lambda: list(
+                    self.complete(  # type: ignore[attr-defined]
+                        prompt, formatted=formatted, stream=True, **kwargs
+                    )
+                )
+            )
+
             async def gen() -> CompletionResponseAsyncGen:
-                for chunk in self.complete(  # type: ignore[attr-defined]
-                    prompt, formatted=formatted, stream=True, **kwargs
-                ):
+                for chunk in chunks:
                     yield chunk
 
             result: CompletionResponse | CompletionResponseAsyncGen = gen()
         else:
-            result = self.complete(prompt, formatted=formatted, **kwargs)  # type: ignore[attr-defined]
+            result = await asyncio.to_thread(
+                self.complete, prompt, formatted, stream=False, **kwargs  # type: ignore[attr-defined]
+            )
         return result

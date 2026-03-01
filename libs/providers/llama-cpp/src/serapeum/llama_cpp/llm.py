@@ -660,7 +660,9 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
         """
         if stream:
             chunks: list[CompletionResponse] = await asyncio.to_thread(
-                lambda: list(self.complete(prompt, formatted=formatted, stream=True, **kwargs))
+                lambda: list(
+                    self.complete(prompt, formatted=formatted, stream=True, **kwargs)
+                )
             )
 
             async def gen() -> CompletionResponseAsyncGen:

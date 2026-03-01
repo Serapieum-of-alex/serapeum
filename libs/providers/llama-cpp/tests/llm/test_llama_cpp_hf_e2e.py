@@ -29,21 +29,15 @@ from serapeum.llama_cpp import LlamaCPP
 
 pytestmark = pytest.mark.e2e
 
-# -- Configuration -----------------------------------------------------------
+
 HF_MODEL_ID_ENV = "LLAMA_CPP_HF_MODEL_ID"
 HF_FILENAME_ENV = "LLAMA_CPP_HF_FILENAME"
-HF_E2E_ENV = "LLAMA_CPP_HF_E2E"
 
 _hf_model_id = os.environ.get(HF_MODEL_ID_ENV, "ggml-org/models")
 _hf_filename = os.environ.get(HF_FILENAME_ENV, "tinyllamas/stories260K.gguf")
 
 MAX_NEW_TOKENS = 32
 TEMPERATURE = 0.0
-
-skip_no_hf_e2e = pytest.mark.skipif(
-    os.environ.get(HF_E2E_ENV) != "1",
-    reason=f"Set {HF_E2E_ENV}=1 to run HuggingFace download e2e tests",
-)
 
 
 def _passthrough_messages_to_prompt(
@@ -88,9 +82,6 @@ def hf_llm(tmp_path_factory: pytest.TempPathFactory) -> LlamaCPP:
     Returns:
         LlamaCPP: Instance loaded from HuggingFace Hub.
     """
-    if os.environ.get(HF_E2E_ENV) != "1":
-        pytest.skip(f"Set {HF_E2E_ENV}=1 to run HuggingFace download e2e tests")
-
     cache_dir = str(tmp_path_factory.mktemp("hf_cache"))
     old_cache = os.environ.get("SERAPEUM_CACHE_DIR")
     os.environ["SERAPEUM_CACHE_DIR"] = cache_dir
@@ -126,7 +117,6 @@ class TestLlamaCPPHuggingFace:
     """
 
     @pytest.mark.e2e
-    @skip_no_hf_e2e
     def test_hf_construction_sets_model_path(self, hf_llm: LlamaCPP) -> None:
         """Test that HF download populates model_path with an existing .gguf file.
 
@@ -146,7 +136,6 @@ class TestLlamaCPPHuggingFace:
         )
 
     @pytest.mark.e2e
-    @skip_no_hf_e2e
     def test_hf_metadata_has_valid_context_window(self, hf_llm: LlamaCPP) -> None:
         """Test metadata.context_window is a positive integer after HF load.
 
@@ -159,7 +148,6 @@ class TestLlamaCPPHuggingFace:
         )
 
     @pytest.mark.e2e
-    @skip_no_hf_e2e
     def test_hf_complete_returns_non_empty_text(self, hf_llm: LlamaCPP) -> None:
         """Test complete() returns a CompletionResponse with non-empty text.
 
@@ -174,7 +162,6 @@ class TestLlamaCPPHuggingFace:
         assert len(response.text) > 0, "HF model complete() text should not be empty"
 
     @pytest.mark.e2e
-    @skip_no_hf_e2e
     def test_hf_stream_complete_yields_chunks(self, hf_llm: LlamaCPP) -> None:
         """Test complete(stream=True) yields multiple CompletionResponse chunks.
 
@@ -193,7 +180,6 @@ class TestLlamaCPPHuggingFace:
             assert chunk.delta is not None, f"Chunk delta must not be None: {chunk}"
 
     @pytest.mark.e2e
-    @skip_no_hf_e2e
     def test_hf_chat_returns_assistant_response(self, hf_llm: LlamaCPP) -> None:
         """Test chat() returns a ChatResponse with ASSISTANT role and content.
 
@@ -211,7 +197,6 @@ class TestLlamaCPPHuggingFace:
         assert response.message.content, "HF model chat content should not be empty"
 
     @pytest.mark.e2e
-    @skip_no_hf_e2e
     def test_hf_second_construction_reuses_cache(
         self, hf_llm: LlamaCPP, tmp_path_factory: pytest.TempPathFactory
     ) -> None:

@@ -118,7 +118,7 @@ from serapeum.llama_cpp.formatters.llama2 import (
 )
 
 llm = LlamaCPP(
-    model_url="https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve/main/llama-2-13b-chat.Q4_0.gguf",
+    model_url="https://huggingface.co/ggml-org/models/resolve/main/tinyllamas/stories260K.gguf",
     messages_to_prompt=messages_to_prompt,
     completion_to_prompt=completion_to_prompt,
 )
@@ -136,8 +136,8 @@ from serapeum.llama_cpp.formatters.llama2 import (
 )
 
 llm = LlamaCPP(
-    hf_model_id="TheBloke/Llama-2-13B-chat-GGUF",
-    hf_filename="llama-2-13b-chat.Q4_0.gguf",
+    hf_model_id="ggml-org/models",
+    hf_filename="tinyllamas/stories260K.gguf",
     messages_to_prompt=messages_to_prompt,
     completion_to_prompt=completion_to_prompt,
 )
@@ -174,7 +174,7 @@ llm = LlamaCPP(
 
 Using Llama 2 / Mistral-style prompt templates:
 
-```python 
+```python notest
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama2 import (
     messages_to_prompt,

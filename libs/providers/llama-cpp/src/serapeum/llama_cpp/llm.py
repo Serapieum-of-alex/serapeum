@@ -194,6 +194,16 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
     # sufficient for the common "one model, many callers" pattern.
     _model_lock: threading.Lock = PrivateAttr(default_factory=threading.Lock)
 
+    @field_validator("model_url")
+    @classmethod
+    def _validate_model_url(cls, v: str | None) -> str | None:
+        """Reject empty-string model_url to prevent silent fallback to default."""
+        if v is not None and not v.strip():
+            raise ValueError(
+                "model_url must be a valid URL, not an empty string."
+            )
+        return v
+
     @field_validator("model_path")
     @classmethod
     def _validate_model_path_exists(cls, v: str | None) -> str | None:

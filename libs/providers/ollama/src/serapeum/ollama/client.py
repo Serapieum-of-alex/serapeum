@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-import ollama as ollama_sdk  # type: ignore[attr-defined]
+import ollama as ollama_sdk
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
 DEFAULT_BASE_URL = "http://localhost:11434"
@@ -42,8 +42,8 @@ class OllamaClientMixin(BaseModel):
         ),
     )
 
-    _client: ollama_sdk.Client | None = PrivateAttr(default=None)
-    _async_client: ollama_sdk.AsyncClient | None = PrivateAttr(default=None)
+    _client: ollama_sdk.Client | None = PrivateAttr(default=None)  # type: ignore[valid-type]
+    _async_client: ollama_sdk.AsyncClient | None = PrivateAttr(default=None)  # type: ignore[valid-type]
 
     @model_validator(mode="wrap")
     @classmethod
@@ -69,7 +69,7 @@ class OllamaClientMixin(BaseModel):
         if async_client is not None:
             instance._async_client = async_client
 
-        return instance
+        return instance  # type: ignore[no-any-return]
 
     @model_validator(mode="after")
     def _resolve_base_url(self) -> "OllamaClientMixin":
@@ -94,18 +94,18 @@ class OllamaClientMixin(BaseModel):
         return kwargs
 
     @property
-    def client(self) -> ollama_sdk.Client:
+    def client(self) -> ollama_sdk.Client:  # type: ignore[valid-type]
         """Synchronous Ollama client, lazily created on first access."""
         if self._client is None:
-            self._client = ollama_sdk.Client(**self._build_client_kwargs())
-        return self._client
+            self._client = ollama_sdk.Client(**self._build_client_kwargs())  # type: ignore[operator]
+        return self._client  # type: ignore[no-any-return]
 
     @property
-    def async_client(self) -> ollama_sdk.AsyncClient:
+    def async_client(self) -> ollama_sdk.AsyncClient:  # type: ignore[valid-type]
         """Asynchronous Ollama client, lazily created on first access."""
         if self._async_client is None:
-            self._async_client = ollama_sdk.AsyncClient(**self._build_client_kwargs())
-        return self._async_client
+            self._async_client = ollama_sdk.AsyncClient(**self._build_client_kwargs())  # type: ignore[operator]
+        return self._async_client  # type: ignore[no-any-return]
 
     def list_models(self) -> list[str]:
         """Return the names of all models available on the Ollama server.
@@ -124,7 +124,7 @@ class OllamaClientMixin(BaseModel):
 
                 ```
         """
-        return [m.model for m in self.client.list().models if m.model is not None]
+        return [m.model for m in self.client.list().models if m.model is not None]  # type: ignore[attr-defined]
 
     async def alist_models(self) -> list[str]:
         """Asynchronously return the names of all models available on the Ollama server.
@@ -145,5 +145,5 @@ class OllamaClientMixin(BaseModel):
 
                 ```
         """
-        response = await self.async_client.list()
+        response = await self.async_client.list()  # type: ignore[attr-defined]
         return [m.model for m in response.models if m.model is not None]

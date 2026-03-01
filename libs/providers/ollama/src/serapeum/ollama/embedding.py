@@ -15,7 +15,7 @@ from serapeum.core.embeddings import BaseEmbedding
 from serapeum.ollama.client import OllamaClientMixin
 
 
-class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
+class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):  # type: ignore[misc]
     """Ollama-based embedding model for generating text and query vector representations.
 
     Wraps the Ollama SDK embed API to produce dense float vectors from text. Inherits
@@ -225,7 +225,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
         description="Additional kwargs for the Ollama client initialization.",
     )
 
-    def _build_client_kwargs(self) -> dict:
+    def _build_client_kwargs(self) -> dict[str, Any]:
         """Extend base client kwargs with any extra client_kwargs for the embedding client.
 
         Headers are merged rather than replaced so that an Authorization header
@@ -256,7 +256,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
         """
         return "OllamaEmbedding"
 
-    def _get_query_embedding(self, query: str) -> Sequence[float]:
+    def _get_query_embedding(self, query: str) -> list[float]:
         """Generate an embedding vector for a search query.
 
         Formats the query with the optional query_instruction prefix (if configured)
@@ -293,7 +293,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
         formatted_query = self._format_query(query)
         return self._embed_raw(formatted_query)
 
-    async def _aget_query_embedding(self, query: str) -> Sequence[float]:
+    async def _aget_query_embedding(self, query: str) -> list[float]:
         """Asynchronously generate an embedding vector for a search query.
 
         Async version of _get_query_embedding. Formats the query with the optional
@@ -328,7 +328,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
         formatted_query = self._format_query(query)
         return await self._a_embed_raw(formatted_query)
 
-    def _get_text_embedding(self, text: str) -> Sequence[float]:
+    def _get_text_embedding(self, text: str) -> list[float]:
         """Generate an embedding vector for a document or text passage.
 
         Formats the text with the optional text_instruction prefix (if configured)
@@ -365,7 +365,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
         formatted_text = self._format_text(text)
         return self._embed_raw(formatted_text)
 
-    async def _aget_text_embedding(self, text: str) -> Sequence[float]:
+    async def _aget_text_embedding(self, text: str) -> list[float]:
         """Asynchronously generate an embedding vector for a document or text passage.
 
         Async version of _get_text_embedding. Formats the text with the optional
@@ -400,7 +400,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):
         formatted_text = self._format_text(text)
         return await self._a_embed_raw(formatted_text)
 
-    def _get_text_embeddings(self, texts: list[str]) -> Sequence[Sequence[float]]:
+    def _get_text_embeddings(self, texts: list[str]) -> list[list[float]]:
         """Generate embedding vectors for multiple documents or text passages.
 
         Batch version of _get_text_embedding. Formats all texts with the optional

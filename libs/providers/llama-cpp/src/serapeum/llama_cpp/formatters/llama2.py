@@ -22,7 +22,9 @@ See Also:
 """
 
 from __future__ import annotations
+
 from collections.abc import Sequence
+
 from serapeum.core.llms import Message, MessageRole
 
 BOS, EOS = "<s>", "</s>"

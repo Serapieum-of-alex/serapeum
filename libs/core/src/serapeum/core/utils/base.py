@@ -140,7 +140,5 @@ def get_cache_dir() -> str:
     else:
         path = Path(platformdirs.user_cache_dir("serapeum"))
 
-    # Pass exist_ok and call makedirs directly, so we avoid TOCTOU issues
     path.mkdir(parents=True, exist_ok=True)
-
     return str(path)

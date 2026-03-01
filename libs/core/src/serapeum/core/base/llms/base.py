@@ -16,6 +16,8 @@ from serapeum.core.base.llms.types import (
     ChatResponseAsyncGen,
     ChatResponseGen,
     CompletionResponse,
+    CompletionResponseAsyncGen,
+    CompletionResponseGen,
     Message,
     Metadata,
     TextChunk,
@@ -76,7 +78,7 @@ class BaseLLM(SerializableModel, ABC):
         *,
         stream: bool = False,
         **kwargs: Any
-    ) -> CompletionResponse:
+    ) -> CompletionResponse | CompletionResponseGen:
         pass
 
     @abstractmethod
@@ -98,5 +100,5 @@ class BaseLLM(SerializableModel, ABC):
         *,
         stream: bool = False,
         **kwargs: Any
-    ) -> CompletionResponse:
+    ) -> CompletionResponse | CompletionResponseAsyncGen:
         pass

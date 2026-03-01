@@ -424,6 +424,9 @@ class ChatResponse(BaseResponse):
 ChatResponseGen = Generator[ChatResponse, None, None]
 ChatResponseAsyncGen = AsyncGenerator[ChatResponse, None]
 
+CompletionResponseGen = Generator["CompletionResponse", None, None]
+CompletionResponseAsyncGen = AsyncGenerator["CompletionResponse", None]
+
 
 class CompletionResponse(BaseResponse):
     """Response from a text completion (non-chat) LLM call.
@@ -701,11 +704,6 @@ class CompletionResponse(BaseResponse):
                 )
 
         return gen()
-
-
-
-CompletionResponseGen = Generator[CompletionResponse, None, None]
-CompletionResponseAsyncGen = AsyncGenerator[CompletionResponse, None]
 
 
 class Metadata(BaseModel):

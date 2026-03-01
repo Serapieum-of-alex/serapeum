@@ -591,6 +591,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
         """
         if not formatted:
             prompt = self.completion_to_prompt(prompt)  # type: ignore[misc]
+
         result: CompletionResponse | CompletionResponseGen = (
             self._stream_complete(prompt, **kwargs)
             if stream

@@ -354,7 +354,16 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
             result = _MODEL_CACHE.get(cache_key)
 
         if result is None:
-            loaded = Llama(model_path=str(model_path), **self.model_kwargs)  # type: ignore[operator]
+            try:
+                loaded = Llama(model_path=str(model_path), **self.model_kwargs)  # type: ignore[operator]
+            except Exception as exc:
+                raise RuntimeError(
+                    f"Failed to load GGUF model from {model_path!s}. "
+                    f"model_kwargs={self.model_kwargs!r}. "
+                    "Ensure the file is a valid GGUF model and that you have "
+                    f"enough memory. Original error: {exc}"
+                ) from exc
+
             with _MODEL_CACHE_LOCK:
                 if _MODEL_CACHE.get(cache_key) is None:
                     _MODEL_CACHE[cache_key] = loaded

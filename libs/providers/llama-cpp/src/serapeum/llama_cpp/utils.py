@@ -138,10 +138,17 @@ def _fetch_model_file_hf(repo_id: str, filename: str, cache_dir: Path) -> Path:
         huggingface_hub.hf_hub_download: Underlying download function.
     """
     logger.info("Downloading %s/%s from HuggingFace Hub", repo_id, filename)
-    local_path = hf_hub_download(
-        repo_id=repo_id,
-        filename=filename,
-        cache_dir=str(cache_dir),
-    )
+    try:
+        local_path = hf_hub_download(
+            repo_id=repo_id,
+            filename=filename,
+            cache_dir=str(cache_dir),
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            f"Failed to download '{filename}' from HuggingFace repo '{repo_id}'. "
+            f"Check that the repo ID and filename are correct and that you have "
+            f"access. Original error: {exc}"
+        ) from exc
     logger.info("Model cached at %s", local_path)
     return Path(local_path)

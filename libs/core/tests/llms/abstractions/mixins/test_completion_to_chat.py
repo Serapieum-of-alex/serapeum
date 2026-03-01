@@ -88,6 +88,7 @@ def _make_messages(*contents: str) -> list[Message]:
     return [Message(role=MessageRole.USER, content=c) for c in contents]
 
 
+@pytest.mark.unit
 class TestCompletionToChatMixinChat:
     """Test CompletionToChatMixin.chat()."""
 
@@ -307,6 +308,7 @@ class TestCompletionToChatMixinChat:
         )
 
 
+@pytest.mark.unit
 class TestCompletionToChatMixinAchat:
     """Test CompletionToChatMixin.achat()."""
 
@@ -491,6 +493,7 @@ class TestCompletionToChatMixinAchat:
         )
 
 
+@pytest.mark.unit
 class TestCompletionToChatMixinAcomplete:
     """Test CompletionToChatMixin.acomplete()."""
 

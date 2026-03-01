@@ -385,6 +385,7 @@ def test_completion_response():
     assert str(cr) == "some text"
 
 
+@pytest.mark.unit
 class TestCompletionResponse:
     """Tests for CompletionResponse — __init__, __str__, to_chat_response,
     stream_to_chat_response, astream_to_chat_response, and Pydantic model methods."""

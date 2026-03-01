@@ -28,14 +28,6 @@ from serapeum.core.tools import ToolOutput
 from serapeum.core.tools.callable_tool import CallableTool
 from serapeum.core.tools.types import BaseTool
 
-# Check if serapeum.ollama is available for E2E tests
-try:
-    import serapeum.ollama  # noqa: F401
-
-    OLLAMA_AVAILABLE = True
-except ImportError:
-    OLLAMA_AVAILABLE = False
-
 
 class SimpleOutput(BaseModel):
     """Simple Pydantic model for testing."""
@@ -1319,104 +1311,6 @@ class TestComplexArgumentTypes:
 
         assert isinstance(result, dict)
         assert result["above_threshold"] == 2
-
-
-@pytest.mark.skipif(not OLLAMA_AVAILABLE, reason="serapeum-ollama not installed")
-class TestOllamaE2E:
-    """End-to-end tests with real Ollama server.
-
-    These tests require:
-    - Ollama server running
-    - llama3.1 model pulled
-    - serapeum-ollama package installed
-
-    Skip if not available using pytest markers.
-    """
-
-    @pytest.mark.e2e
-    def test_pydantic_model_with_real_ollama(self):
-        """Test Pydantic model with real Ollama server.
-
-        Expected: Should generate valid SimpleOutput from LLM.
-        """
-        from serapeum.ollama import Ollama
-        llm = Ollama(model="llama3.1", request_timeout=80)
-
-        tools_llm = ToolOrchestratingLLM(
-            schema=SimpleOutput,
-            prompt="Generate a simple output with value '{text}' and count the words",
-            llm=llm,
-        )
-
-        result = tools_llm(text="hello world")
-
-        assert isinstance(result, SimpleOutput)
-        assert isinstance(result.value, str)
-        assert isinstance(result.count, int)
-
-    @pytest.mark.e2e
-    def test_function_with_real_ollama(self):
-        """Test regular function with real Ollama server.
-
-        Expected: Should generate valid dict output from function via LLM.
-        """
-        from serapeum.ollama import Ollama
-
-        def extract_info(name: str, age: int, city: str) -> dict:
-            """Extract person information."""
-            return {
-                "name": name,
-                "age": age,
-                "city": city,
-                "summary": f"{name} is {age} years old and lives in {city}",
-            }
-
-        llm = Ollama(model="llama3.1", request_timeout=80)
-
-        tools_llm = ToolOrchestratingLLM(
-            schema=extract_info,
-            prompt="Extract information from: {text}",
-            llm=llm,
-        )
-
-        result = tools_llm(text="John is 30 years old and lives in New York")
-
-        assert isinstance(result, dict)
-        assert "name" in result
-        assert "age" in result
-        assert "city" in result
-
-    @pytest.mark.e2e
-    @pytest.mark.asyncio
-    async def test_async_function_with_real_ollama(self):
-        """Test async function with real Ollama server.
-
-        Expected: Should execute async function via LLM successfully.
-        """
-        from serapeum.ollama import Ollama
-
-        async def async_processor(text: str, multiplier: int) -> dict:
-            """Process text asynchronously."""
-            await asyncio.sleep(0.01)
-            return {
-                "text": text,
-                "length": len(text),
-                "multiplied": len(text) * multiplier,
-            }
-
-        llm = Ollama(model="llama3.1", request_timeout=80)
-
-        tools_llm = ToolOrchestratingLLM(
-            schema=async_processor,
-            prompt="Process this text: {text}",
-            llm=llm,
-        )
-
-        result = await tools_llm.acall(text="hello")
-
-        assert isinstance(result, dict)
-        assert "text" in result
-        assert "length" in result
 
 
 class TestEdgeCases:

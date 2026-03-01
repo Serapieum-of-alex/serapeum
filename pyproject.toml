@@ -92,7 +92,7 @@ changelog_pattern = "^(feat|fix|refactor|perf|build|ci|chore)(\\(.+\\))?(!)?:"
 change_type_order = ["BREAKING CHANGE", "feat", "fix", "refactor", "perf", "build", "ci", "chore"]
 
 [tool.flake8]
-ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
+ignore = ["E501", "W503", "E731", "E203", "E704", "D401", "D102"]
 max-line-length = 120
 count = true
 per-file-ignores = [

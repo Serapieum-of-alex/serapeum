@@ -26,8 +26,6 @@ from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
 )
 
-pytestmark = pytest.mark.e2e
-
 MODEL_PATH_ENV = "LLAMA_CPP_MODEL_PATH"
 # _model_path = r"\\MYCLOUDEX2ULTRA\research\llm\models\gguf\mistral-7b-instruct-v0.2.Q2_K.gguf"
 _model_path = os.environ.get(MODEL_PATH_ENV, "")
@@ -122,7 +120,6 @@ def llm_with_stop() -> LlamaCPP:
 class TestLlamaCPPMetadata:
     """E2E tests for LlamaCPP class-level metadata and constructor fields."""
 
-    @pytest.mark.e2e
     def test_class_name(self) -> None:
         """Test class_name() returns the expected string identifier.
 
@@ -133,7 +130,6 @@ class TestLlamaCPPMetadata:
         result = LlamaCPP.class_name()
         assert result == "LlamaCPP", f"Expected 'LlamaCPP', got {result!r}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_metadata_context_window(self, llm: LlamaCPP) -> None:
         """Test metadata.context_window matches the value passed to the constructor.
@@ -146,7 +142,6 @@ class TestLlamaCPPMetadata:
             llm.metadata.context_window == 512
         ), f"Expected context_window=512, got {llm.metadata.context_window}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_metadata_num_output(self, llm: LlamaCPP) -> None:
         """Test metadata.num_output matches max_new_tokens.
@@ -159,7 +154,6 @@ class TestLlamaCPPMetadata:
             llm.metadata.num_output == MAX_NEW_TOKENS
         ), f"Expected num_output={MAX_NEW_TOKENS}, got {llm.metadata.num_output}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_metadata_model_name_is_resolved_path(self, llm: LlamaCPP) -> None:
         """Test metadata.model_name is the resolved GGUF file path.
@@ -173,7 +167,6 @@ class TestLlamaCPPMetadata:
             llm.metadata.model_name, str
         ), f"Expected str, got {type(llm.metadata.model_name)}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_model_path_matches_constructed_value(self, llm: LlamaCPP) -> None:
         """Test llm.model_path is set to the file path after construction.
@@ -191,7 +184,6 @@ class TestLlamaCPPMetadata:
 class TestLlamaCPPTokenize:
     """E2E tests for tokenize() and count_tokens() against a real model vocabulary."""
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_tokenize_returns_list_of_ints(self, llm: LlamaCPP) -> None:
         """Test tokenize() returns a non-empty list of integer token IDs.
@@ -207,7 +199,6 @@ class TestLlamaCPPTokenize:
             isinstance(t, int) for t in tokens
         ), f"All token IDs must be ints, got: {tokens[:5]}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_tokenize_empty_string_returns_list(self, llm: LlamaCPP) -> None:
         """Test tokenize('') returns a list (may be empty or contain BOS only).
@@ -221,7 +212,6 @@ class TestLlamaCPPTokenize:
             tokens, list
         ), f"tokenize('') must return a list, got {type(tokens)}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_count_tokens_equals_len_of_tokenize(self, llm: LlamaCPP) -> None:
         """Test count_tokens() == len(tokenize()) for the same input.
@@ -235,7 +225,6 @@ class TestLlamaCPPTokenize:
             llm.tokenize(text)
         ), "count_tokens must equal len(tokenize) for the same text"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_count_tokens_increases_with_longer_text(self, llm: LlamaCPP) -> None:
         """Test count_tokens grows monotonically as text length increases.
@@ -256,7 +245,6 @@ class TestLlamaCPPTokenize:
 class TestLlamaCPPContextGuard:
     """E2E tests for _guard_context and context-window overflow detection."""
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_short_prompt_does_not_raise(self, llm: LlamaCPP) -> None:
         """Test _guard_context passes silently for a short prompt.
@@ -267,7 +255,6 @@ class TestLlamaCPPContextGuard:
         """
         llm._guard_context("Say hello.")  # must not raise
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_complete_raises_when_prompt_exceeds_context_window(
         self, llm: LlamaCPP
@@ -286,7 +273,6 @@ class TestLlamaCPPContextGuard:
             exc_info.value
         ), f"Error should reference context limit, got: {exc_info.value}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_stream_complete_raises_when_prompt_exceeds_context_window(
         self, llm: LlamaCPP
@@ -301,7 +287,6 @@ class TestLlamaCPPContextGuard:
         with pytest.raises(ValueError, match="context_window"):
             list(llm.complete(huge_prompt, formatted=True, stream=True))
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_guard_context_error_includes_token_count(self, llm: LlamaCPP) -> None:
         """Test the context-guard error message includes the actual token count.
@@ -324,7 +309,6 @@ class TestLlamaCPPContextGuard:
 class TestLlamaCPPComplete:
     """E2E tests for LlamaCPP.complete() — synchronous non-streaming completion."""
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_returns_completion_response(self, llm: LlamaCPP) -> None:
         """Test complete() returns a CompletionResponse instance.
@@ -338,7 +322,6 @@ class TestLlamaCPPComplete:
             response, CompletionResponse
         ), f"Expected CompletionResponse, got {type(response)}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_text_is_non_empty_string(self, llm: LlamaCPP) -> None:
         """Test complete() response text is a non-empty string.
@@ -353,7 +336,6 @@ class TestLlamaCPPComplete:
         ), f"Expected str, got {type(response.text)}"
         assert len(response.text) > 0, "Response text should not be empty"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_raw_response_has_choices_key(self, llm: LlamaCPP) -> None:
         """Test complete() attaches the raw llama-cpp response dict.
@@ -368,7 +350,6 @@ class TestLlamaCPPComplete:
             "choices" in response.raw
         ), f"Expected 'choices' key in raw, got: {list(response.raw.keys())}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_formatted_true_accepts_preformatted_prompt(self, llm: LlamaCPP) -> None:
         """Test complete(formatted=True) accepts an already-formatted prompt.
@@ -387,7 +368,6 @@ class TestLlamaCPPComplete:
             len(response.text) > 0
         ), "Pre-formatted prompt should produce non-empty output"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_stop_field_terminates_generation(self, llm_with_stop: LlamaCPP) -> None:
         """Test that the stop field prevents stop tokens from appearing in output.
@@ -402,7 +382,6 @@ class TestLlamaCPPComplete:
                 token not in response.text
             ), f"Stop token {token!r} should not appear in output: {response.text!r}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_temperature_zero_is_deterministic(self, llm: LlamaCPP) -> None:
         """Test that temperature=0.0 produces the same output on two calls.
@@ -419,7 +398,6 @@ class TestLlamaCPPComplete:
             f"  call 1: {r1.text!r}\n  call 2: {r2.text!r}"
         )
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_max_new_tokens_bounds_output_length(self, llm: LlamaCPP) -> None:
         """Test that output token count does not greatly exceed max_new_tokens.
@@ -441,7 +419,6 @@ class TestLlamaCPPComplete:
 class TestLlamaCPPStreamComplete:
     """E2E tests for LlamaCPP.complete(stream=True) — synchronous streaming."""
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_returns_iterable(self, llm: LlamaCPP) -> None:
         """Test complete(stream=True) returns an iterable generator.
@@ -456,7 +433,6 @@ class TestLlamaCPPStreamComplete:
             first, CompletionResponse
         ), f"Expected CompletionResponse chunk, got {type(first)}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_every_chunk_has_string_delta(self, llm: LlamaCPP) -> None:
         """Test every chunk from complete(stream=True) carries a string delta.
@@ -473,7 +449,6 @@ class TestLlamaCPPStreamComplete:
                 chunk.delta, str
             ), f"Delta must be str, got {type(chunk.delta)}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_text_accumulates_monotonically(self, llm: LlamaCPP) -> None:
         """Test chunk.text grows monotonically across the stream.
@@ -489,7 +464,6 @@ class TestLlamaCPPStreamComplete:
             ), f"Text length decreased: {prev_len} → {len(chunk.text)}"
             prev_len = len(chunk.text)
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_final_text_equals_joined_deltas(self, llm: LlamaCPP) -> None:
         """Test the last chunk's text equals all deltas concatenated.
@@ -504,7 +478,6 @@ class TestLlamaCPPStreamComplete:
             joined == chunks[-1].text
         ), f"Joined deltas {joined!r} != final text {chunks[-1].text!r}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_stream_and_non_stream_produce_same_text(self, llm: LlamaCPP) -> None:
         """Test that streaming and non-streaming complete() agree on the final text.
@@ -522,7 +495,6 @@ class TestLlamaCPPStreamComplete:
             f"  non-stream: {non_stream!r}\n  stream:     {stream_text!r}"
         )
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_yields_multiple_chunks(self, llm: LlamaCPP) -> None:
         """Test streaming produces more than one chunk for a non-trivial prompt.
@@ -541,7 +513,6 @@ class TestLlamaCPPStreamComplete:
 class TestLlamaCPPChat:
     """E2E tests for LlamaCPP.chat() — provided by CompletionToChatMixin."""
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_non_stream_returns_chat_response(self, llm: LlamaCPP) -> None:
         """Test chat(stream=False) returns a ChatResponse.
@@ -555,7 +526,6 @@ class TestLlamaCPPChat:
             response, ChatResponse
         ), f"Expected ChatResponse, got {type(response)}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_non_stream_assistant_role(self, llm: LlamaCPP) -> None:
         """Test chat() response message has ASSISTANT role.
@@ -569,7 +539,6 @@ class TestLlamaCPPChat:
             response.message.role == MessageRole.ASSISTANT
         ), f"Expected ASSISTANT role, got {response.message.role}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_non_stream_content_is_non_empty(self, llm: LlamaCPP) -> None:
         """Test chat() response has non-empty content.
@@ -580,7 +549,6 @@ class TestLlamaCPPChat:
         response = llm.chat(_user_messages("Say hello."))
         assert response.message.content, "Assistant content should not be empty"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_stream_yields_chat_responses(self, llm: LlamaCPP) -> None:
         """Test chat(stream=True) yields ChatResponse instances.
@@ -596,7 +564,6 @@ class TestLlamaCPPChat:
                 chunk, ChatResponse
             ), f"Expected ChatResponse chunk, got {type(chunk)}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_stream_every_chunk_has_delta(self, llm: LlamaCPP) -> None:
         """Test each streaming chat chunk carries a non-None delta.
@@ -610,7 +577,6 @@ class TestLlamaCPPChat:
                 chunk.delta is not None
             ), f"Chat chunk delta must not be None: {chunk}"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_multi_turn_conversation(self, llm: LlamaCPP) -> None:
         """Test chat() handles a USER / ASSISTANT / USER conversation.
@@ -632,7 +598,6 @@ class TestLlamaCPPChat:
             response.message.content
         ), "Multi-turn response content should not be empty"
 
-    @pytest.mark.e2e
     @skip_no_model
     def test_chat_and_complete_produce_equivalent_shapes(self, llm: LlamaCPP) -> None:
         """Test chat() and complete() both return responses with non-empty content.
@@ -651,7 +616,6 @@ class TestLlamaCPPChat:
 class TestLlamaCPPAcomplete:
     """E2E tests for LlamaCPP.acomplete() — async completion."""
 
-    @pytest.mark.e2e
     @pytest.mark.asyncio
     @skip_no_model
     async def test_non_stream_returns_completion_response(self, llm: LlamaCPP) -> None:
@@ -667,7 +631,6 @@ class TestLlamaCPPAcomplete:
         ), f"Expected CompletionResponse, got {type(response)}"
         assert len(response.text) > 0, "Async complete text should not be empty"
 
-    @pytest.mark.e2e
     @pytest.mark.asyncio
     @skip_no_model
     async def test_non_stream_result_matches_sync(self, llm: LlamaCPP) -> None:
@@ -685,7 +648,6 @@ class TestLlamaCPPAcomplete:
             f"  sync:  {sync_text!r}\n  async: {async_text!r}"
         )
 
-    @pytest.mark.e2e
     @pytest.mark.asyncio
     @skip_no_model
     async def test_non_stream_does_not_block_event_loop(self, llm: LlamaCPP) -> None:
@@ -706,7 +668,6 @@ class TestLlamaCPPAcomplete:
         ), f"acomplete result should be CompletionResponse, got {type(result)}"
         assert side_ran, "Side coroutine must have run concurrently"
 
-    @pytest.mark.e2e
     @pytest.mark.asyncio
     @skip_no_model
     async def test_two_concurrent_requests_both_complete(self, llm: LlamaCPP) -> None:
@@ -730,7 +691,6 @@ class TestLlamaCPPAcomplete:
         assert len(r1.text) > 0, "First concurrent response text must not be empty"
         assert len(r2.text) > 0, "Second concurrent response text must not be empty"
 
-    @pytest.mark.e2e
     @pytest.mark.asyncio
     @skip_no_model
     async def test_stream_yields_completion_responses(self, llm: LlamaCPP) -> None:
@@ -749,7 +709,6 @@ class TestLlamaCPPAcomplete:
             ), f"Expected CompletionResponse chunk, got {type(chunk)}"
             assert chunk.delta is not None, f"Chunk delta must not be None: {chunk}"
 
-    @pytest.mark.e2e
     @pytest.mark.asyncio
     @skip_no_model
     async def test_stream_final_text_equals_joined_deltas(self, llm: LlamaCPP) -> None:
@@ -766,7 +725,6 @@ class TestLlamaCPPAcomplete:
             joined == chunks[-1].text
         ), f"Joined async deltas {joined!r} != final text {chunks[-1].text!r}"
 
-    @pytest.mark.e2e
     @pytest.mark.asyncio
     @skip_no_model
     async def test_stream_matches_non_stream_text(self, llm: LlamaCPP) -> None:
@@ -791,7 +749,6 @@ class TestLlamaCPPAcomplete:
 class TestLlamaCPPAchat:
     """E2E tests for LlamaCPP.achat() — async chat via CompletionToChatMixin."""
 
-    @pytest.mark.e2e
     @pytest.mark.asyncio
     @skip_no_model
     async def test_non_stream_returns_chat_response(self, llm: LlamaCPP) -> None:
@@ -809,7 +766,6 @@ class TestLlamaCPPAchat:
             response.message.role == MessageRole.ASSISTANT
         ), f"Expected ASSISTANT role, got {response.message.role}"
 
-    @pytest.mark.e2e
     @pytest.mark.asyncio
     @skip_no_model
     async def test_non_stream_content_is_non_empty(self, llm: LlamaCPP) -> None:
@@ -821,7 +777,6 @@ class TestLlamaCPPAchat:
         response = await llm.achat(_user_messages("Say hello."))
         assert response.message.content, "Async chat content should not be empty"
 
-    @pytest.mark.e2e
     @pytest.mark.asyncio
     @skip_no_model
     async def test_stream_yields_chat_responses(self, llm: LlamaCPP) -> None:
@@ -839,7 +794,6 @@ class TestLlamaCPPAchat:
                 chunk, ChatResponse
             ), f"Expected ChatResponse chunk, got {type(chunk)}"
 
-    @pytest.mark.e2e
     @pytest.mark.asyncio
     @skip_no_model
     async def test_two_concurrent_achat_requests(self, llm: LlamaCPP) -> None:

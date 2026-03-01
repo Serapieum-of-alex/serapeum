@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import os
+import sys
 import asyncio
-import platformdirs
 from typing import Iterable, Any, Coroutine, TypeVar
 from pathlib import Path
 
@@ -140,7 +140,14 @@ def get_cache_dir() -> str:
     if "SERAPEUM_CACHE_DIR" in os.environ:
         path = Path(os.environ["SERAPEUM_CACHE_DIR"])
     else:
-        path = Path(platformdirs.user_cache_dir("serapeum"))
+        if sys.platform == "win32":
+            base = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+            path = base / "serapeum" / "Cache"
+        elif sys.platform == "darwin":
+            path = Path.home() / "Library" / "Caches" / "serapeum"
+        else:
+            base = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
+            path = base / "serapeum"
 
     path.mkdir(parents=True, exist_ok=True)
     return str(path)

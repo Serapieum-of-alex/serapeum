@@ -4,17 +4,40 @@ This guide provides comprehensive examples covering all possible ways to use the
 
 ## Prerequisites: Model File
 
-LlamaCPP requires a local GGUF model file. You can:
-- Download one manually from [HuggingFace](https://huggingface.co/models?search=gguf)
-- Let LlamaCPP download one automatically via `model_url` or `hf_model_id`
-
-**Example: set the model path via environment variable:**
+LlamaCPP requires a GGUF model file. For a quick test you can download the tiny
+**stories260K** model (~500 KB):
 
 ```bash
-export LLAMA_CPP_MODEL_PATH=/path/to/model.gguf
+curl -L -o stories260K.gguf \
+  https://huggingface.co/ggml-org/models/resolve/main/tinyllamas/stories260K.gguf
 ```
 
-All examples below use a local model path. Replace it with your own.
+Or just copy and paste the URL into your browser, and the download will start.
+
+Set the `LLAMA_MODEL_PATH` environment variable to the downloaded file:
+
+```bash
+export LLAMA_MODEL_PATH="/path/to/stories260K.gguf"
+```
+
+Or add it to a `.env` file in your project root:
+
+```bash
+# .env
+LLAMA_MODEL_PATH=/path/to/stories260K.gguf
+```
+
+If you use a `.env` file, load it before running:
+
+```python
+from dotenv import load_dotenv
+load_dotenv()  # loads LLAMA_MODEL_PATH from .env
+```
+
+All examples below read the model path from this environment variable.
+
+You can also let LlamaCPP download a model automatically via `model_url` or
+`hf_model_id` (see [Initialization Patterns](#initialization-patterns)).
 
 ---
 
@@ -627,7 +650,7 @@ asyncio.run(main())
 
 Use LlamaCPP with `TextCompletionLLM` for structured outputs:
 
-```python
+```python notest
 import os
 from pydantic import BaseModel
 from serapeum.core.output_parsers import PydanticParser
@@ -714,7 +737,7 @@ with a default system prompt.
 
 You can write your own formatters for other model families:
 
-```python 
+```python notest 
 from collections.abc import Sequence
 from serapeum.core.llms import Message, MessageRole
 from serapeum.llama_cpp import LlamaCPP
@@ -783,7 +806,7 @@ print(count)  # 5
 
 Create once, use many times — model loading is expensive:
 
-```python
+```python notest
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (

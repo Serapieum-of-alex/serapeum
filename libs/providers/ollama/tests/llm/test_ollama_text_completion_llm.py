@@ -2,6 +2,7 @@
 
 This module contains tests for the TextCompletionLLM class using the Ollama backend.
 """
+from __future__ import annotations
 
 import json
 from unittest.mock import MagicMock

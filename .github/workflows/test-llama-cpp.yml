@@ -1,0 +1,138 @@
+name: Test Suite - llama-cpp
+
+permissions:
+    contents: read
+
+on:
+  push:
+    paths:
+      - "libs/providers/llama-cpp/**"
+      - "pyproject.toml"
+      - "uv.lock"
+  workflow_dispatch:
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
+        with:
+          python-version: ${{ matrix.python-version }}
+          install-groups: dev
+          verify-lock: true
+
+      - name: Test llama-cpp Package
+        run: |
+          uv run pytest libs/providers/llama-cpp/tests/ -sv -m "not e2e" --cov=libs/providers/llama-cpp/src --cov-report=xml --cov-append
+
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v3
+
+      - name: test Jupyter notebook
+        shell: bash
+        run: |
+          uv run pytest --nbval --nbval-lax docs/ --verbose --continue-on-collection-errors || echo "No notebooks found or collection errors occurred"
+
+  e2e:
+    # Run on a single OS/Python to keep CI fast — the e2e job validates the
+    # full inference pipeline, not cross-platform compatibility.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
+        with:
+          python-version: "3.12"
+          install-groups: dev
+          verify-lock: true
+
+      # stories260K.gguf: 1.19 MB LLaMA model trained on TinyStories.
+      # Small enough to cache in CI, real enough to exercise streaming.
+      # Source: https://huggingface.co/ggml-org/models/tree/main/tinyllamas
+      - name: Cache GGUF test model
+        id: cache-model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/serapeum/models/stories260K.gguf
+          key: gguf-stories260K
+
+      - name: Download GGUF test model
+        if: steps.cache-model.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.cache/serapeum/models
+          curl -L \
+            "https://huggingface.co/ggml-org/models/resolve/main/tinyllamas/stories260K.gguf" \
+            -o ~/.cache/serapeum/models/stories260K.gguf
+
+      - name: Resolve model path
+        id: model
+        run: echo "path=$HOME/.cache/serapeum/models/stories260K.gguf" >> "$GITHUB_OUTPUT"
+
+      - name: Run e2e tests
+        env:
+          LLAMA_CPP_MODEL_PATH: ${{ steps.model.outputs.path }}
+        run: |
+          uv run pytest libs/providers/llama-cpp/tests \
+            -sv -m e2e \
+            --cov=libs/providers/llama-cpp/src \
+            --cov-report=xml
+
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v3
+
+  type-check:
+    # Static type checking — single OS/Python is sufficient.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
+        with:
+          python-version: "3.12"
+          install-groups: dev
+
+      - name: Install llama-cpp dev deps (type stubs)
+        run: uv sync --package serapeum-llama-cpp --dev --active
+
+      - name: Run mypy
+        run: python -m mypy libs/providers/llama-cpp
+
+  examples:
+    # check examples in the docstring and the markdown files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
+        with:
+          python-version: "3.12"
+          install-groups: dev
+          verify-lock: true
+
+      - name: Test llama-cpp doctests
+        run: |
+          uv run pytest --doctest-modules libs/providers/llama-cpp/src/ -v
+
+      - name: Test markdown docs examples
+        run: |
+          uv run pytest -v --markdown-docs docs/reference/providers/llama-cpp

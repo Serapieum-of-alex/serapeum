@@ -426,23 +426,282 @@ ChatResponseAsyncGen = AsyncGenerator[ChatResponse, None]
 
 
 class CompletionResponse(BaseResponse):
-    """
-    Completion response.
+    """Response from a text completion (non-chat) LLM call.
 
-    Fields:
-        text: Text content of the response if not streaming, or if streaming,
-            the current extent of streamed text.
-        additional_kwargs: Additional information on the response(i.e. token
-            counts, function calling information).
-        raw: Optional raw JSON that was parsed to populate text, if relevant.
-        delta: New text that just streamed in (only relevant when streaming).
+    Represents the output of a single completion request, with optional
+    streaming support via the ``delta`` field.  The class is a Pydantic
+    model; all fields are validated on construction.
+
+    Attributes:
+        text: Full text content of the response.  When streaming, this
+            contains the cumulative text received so far.
+        raw: Raw JSON payload returned by the provider, if available.
+            Useful for accessing provider-specific metadata not otherwise
+            surfaced.
+        likelihood_score: Per-token log-probability scores returned by
+            the provider.  Outer list corresponds to choices; inner list
+            to tokens within each choice.  ``None`` when not provided.
+        additional_kwargs: Arbitrary provider-specific metadata such as
+            token-usage counters or finish reason.  Defaults to ``{}``.
+        delta: Incremental text fragment that arrived in the latest
+            streaming chunk.  ``None`` when not streaming.
+
+    Examples:
+        - Non-streaming completion
+            ```python
+            >>> from serapeum.core.llms import CompletionResponse
+            >>> resp = CompletionResponse(text="The answer is 42.")
+            >>> str(resp)
+            'The answer is 42.'
+            >>> resp.delta is None
+            True
+
+            ```
+        - Streaming token with a delta
+            ```python
+            >>> chunk = CompletionResponse(text="The answer is 42.", delta=" 42.")
+            >>> chunk.delta
+            ' 42.'
+
+            ```
+        - Attaching raw provider payload and metadata
+            ```python
+            >>> resp = CompletionResponse(
+            ...     text="Hello",
+            ...     raw={"model": "llama3", "usage": {"prompt_tokens": 5}},
+            ...     additional_kwargs={"finish_reason": "stop"},
+            ... )
+            >>> resp.raw["model"]
+            'llama3'
+            >>> resp.additional_kwargs["finish_reason"]
+            'stop'
+
+            ```
+
+    See Also:
+        ChatResponse: Chat-style counterpart; convert via :meth:`to_chat_response`.
+        BaseResponse: Parent model supplying ``raw``, ``likelihood_score``,
+            ``additional_kwargs``, and ``delta``.
     """
 
     text: str
 
     def __str__(self) -> str:
-        """Return the textual content of the completion response."""
+        """Return the text content of the completion response.
+
+        Returns:
+            The ``text`` field as a plain string.
+
+        Examples:
+            - Standard string conversion
+                ```python
+                >>> from serapeum.core.llms import CompletionResponse
+                >>> str(CompletionResponse(text="Hello, world!"))
+                'Hello, world!'
+
+                ```
+            - Empty text
+                ```python
+                >>> str(CompletionResponse(text=""))
+                ''
+
+                ```
+        """
         return self.text
+
+    def to_chat_response(self) -> ChatResponse:
+        """Convert this completion response to a :class:`ChatResponse`.
+
+        Creates a :class:`ChatResponse` whose embedded :class:`Message`
+        carries the completion text as its content and the ASSISTANT role.
+
+        Note:
+            * ``additional_kwargs`` is forwarded to the **message** (i.e.
+              ``ChatResponse.message.additional_kwargs``), not to the top-level
+              :class:`ChatResponse`.
+            * ``delta`` and ``likelihood_score`` are **not** propagated; the
+              resulting :class:`ChatResponse` will have ``delta=None`` and
+              ``likelihood_score=None``.
+
+        Returns:
+            A :class:`ChatResponse` with an ASSISTANT-role :class:`Message`
+            whose content equals ``self.text`` and with ``raw`` copied from
+            this response.
+
+        Examples:
+            - Basic conversion
+                ```python
+                >>> from serapeum.core.llms import CompletionResponse, MessageRole
+                >>> chat = CompletionResponse(text="Hi there!").to_chat_response()
+                >>> chat.message.role
+                <MessageRole.ASSISTANT: 'assistant'>
+                >>> chat.message.content
+                'Hi there!'
+
+                ```
+            - ``additional_kwargs`` lands on the message, not on the response
+                ```python
+                >>> cr = CompletionResponse(text="ok", additional_kwargs={"tokens": 7})
+                >>> chat = cr.to_chat_response()
+                >>> chat.message.additional_kwargs
+                {'tokens': 7}
+                >>> chat.additional_kwargs
+                {}
+
+                ```
+            - ``delta`` is not carried forward
+                ```python
+                >>> CompletionResponse(text="partial", delta="rtial").to_chat_response().delta is None
+                True
+
+                ```
+            - Round-trip back to CompletionResponse
+                ```python
+                >>> cr = CompletionResponse(text="ping", raw={"id": "x"})
+                >>> cr.to_chat_response().to_completion_response().text
+                'ping'
+
+                ```
+
+        See Also:
+            ChatResponse.to_completion_response: Inverse conversion.
+            stream_to_chat_response: Streaming variant that also propagates ``delta``.
+        """
+        return ChatResponse(
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                content=self.text,
+                additional_kwargs=self.additional_kwargs,
+            ),
+            raw=self.raw,
+        )
+
+    @staticmethod
+    def stream_to_chat_response(
+        completion_response_gen: CompletionResponseGen,
+    ) -> ChatResponseGen:
+        """Convert a synchronous completion-response stream to a chat-response stream.
+
+        Lazily maps each :class:`CompletionResponse` yielded by
+        *completion_response_gen* to a :class:`ChatResponse` with an
+        ASSISTANT-role message.  Unlike :meth:`to_chat_response`, this method
+        **does** propagate ``delta`` and ``raw`` to each yielded
+        :class:`ChatResponse`.
+
+        Args:
+            completion_response_gen: Synchronous generator yielding
+                :class:`CompletionResponse` objects, typically from a streaming
+                LLM call.
+
+        Returns:
+            A synchronous generator yielding :class:`ChatResponse` objects,
+            one per input item, in arrival order.
+
+        Examples:
+            - Consuming a two-token stream
+                ```python
+                >>> from serapeum.core.llms import CompletionResponse
+                >>> def tokens():
+                ...     yield CompletionResponse(text="Hello", delta="Hello")
+                ...     yield CompletionResponse(text="Hello world", delta=" world")
+                >>> results = list(CompletionResponse.stream_to_chat_response(tokens()))
+                >>> [r.message.content for r in results]
+                ['Hello', 'Hello world']
+                >>> [r.delta for r in results]
+                ['Hello', ' world']
+
+                ```
+            - Empty stream produces no output
+                ```python
+                >>> list(CompletionResponse.stream_to_chat_response(iter([])))
+                []
+
+                ```
+
+        See Also:
+            astream_to_chat_response: Async counterpart.
+            to_chat_response: Single-response (non-streaming) conversion.
+            ChatResponse.stream_to_completion_response: Inverse conversion.
+        """
+
+        def gen() -> ChatResponseGen:
+            for response in completion_response_gen:
+                yield ChatResponse(
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        content=response.text,
+                        additional_kwargs=response.additional_kwargs,
+                    ),
+                    delta=response.delta,
+                    raw=response.raw,
+                )
+
+        return gen()
+
+    @staticmethod
+    def astream_to_chat_response(
+        completion_response_gen: CompletionResponseAsyncGen,
+    ) -> ChatResponseAsyncGen:
+        """Convert an async completion-response stream to an async chat-response stream.
+
+        Asynchronously maps each :class:`CompletionResponse` from
+        *completion_response_gen* to a :class:`ChatResponse` with an
+        ASSISTANT-role message, propagating ``delta``, ``raw``, and
+        ``additional_kwargs`` to each result.
+
+        Args:
+            completion_response_gen: Async generator yielding
+                :class:`CompletionResponse` objects, typically from an async
+                streaming LLM call.
+
+        Returns:
+            An async generator yielding :class:`ChatResponse` objects, one per
+            input item, in arrival order.
+
+        Examples:
+            - Iterating an async token stream
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.llms import CompletionResponse
+                >>> async def run():
+                ...     async def tokens():
+                ...         yield CompletionResponse(text="Hi", delta="Hi")
+                ...         yield CompletionResponse(text="Hi there", delta=" there")
+                ...     results = []
+                ...     async for chat in CompletionResponse.astream_to_chat_response(tokens()):
+                ...         results.append((chat.message.content, chat.delta))
+                ...     return results
+                >>> asyncio.run(run())  # doctest: +SKIP
+                [('Hi', 'Hi'), ('Hi there', ' there')]
+
+                ```
+            - Empty async stream produces no output
+                ```python
+                >>> async def empty(): return; yield  # doctest: +SKIP
+                >>> # async for item in CompletionResponse.astream_to_chat_response(empty()): ...
+
+                ```
+
+        See Also:
+            stream_to_chat_response: Synchronous counterpart.
+            to_chat_response: Single-response (non-streaming) conversion.
+            ChatResponse.astream_to_completion_response: Inverse conversion.
+        """
+
+        async def gen() -> ChatResponseAsyncGen:
+            async for response in completion_response_gen:
+                yield ChatResponse(
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        content=response.text,
+                        additional_kwargs=response.additional_kwargs,
+                    ),
+                    delta=response.delta,
+                    raw=response.raw,
+                )
+
+        return gen()
+
 
 
 CompletionResponseGen = Generator[CompletionResponse, None, None]

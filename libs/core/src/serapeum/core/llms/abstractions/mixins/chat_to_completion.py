@@ -135,9 +135,13 @@ class ChatToCompletionMixin:
         messages = MessageList.from_str(prompt)
         if stream:
             chat_response_gen = self.chat(messages, stream=True, **kwargs)  # type: ignore[attr-defined]
-            return ChatResponse.stream_to_completion_response(chat_response_gen)
-        chat_response = self.chat(messages, stream=False, **kwargs)  # type: ignore[attr-defined]
-        return chat_response.to_completion_response()
+            result: CompletionResponse | CompletionResponseGen = (
+                ChatResponse.stream_to_completion_response(chat_response_gen)
+            )
+        else:
+            chat_response = self.chat(messages, stream=False, **kwargs)  # type: ignore[attr-defined]
+            result = chat_response.to_completion_response()
+        return result
 
     @overload
     async def acomplete(
@@ -197,6 +201,10 @@ class ChatToCompletionMixin:
         messages = MessageList.from_str(prompt)
         if stream:
             chat_response_gen = await self.achat(messages, stream=True, **kwargs)  # type: ignore[attr-defined]
-            return ChatResponse.astream_to_completion_response(chat_response_gen)
-        chat_response = await self.achat(messages, stream=False, **kwargs)  # type: ignore[attr-defined]
-        return chat_response.to_completion_response()
+            result: CompletionResponse | CompletionResponseAsyncGen = (
+                ChatResponse.astream_to_completion_response(chat_response_gen)
+            )
+        else:
+            chat_response = await self.achat(messages, stream=False, **kwargs)  # type: ignore[attr-defined]
+            result = chat_response.to_completion_response()
+        return result

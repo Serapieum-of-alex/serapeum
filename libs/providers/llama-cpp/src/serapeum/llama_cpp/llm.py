@@ -729,7 +729,13 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
         call_kwargs.setdefault("stop", self.stop or None)
         with self._model_lock:
             response = self._model(prompt=prompt, **call_kwargs)
-        return CompletionResponse(text=response["choices"][0]["text"], raw=response)
+        choices = response.get("choices", [])
+        if not choices:
+            raise RuntimeError(
+                f"Model returned no choices for prompt (length={len(prompt)} chars). "
+                f"Raw response: {response!r}"
+            )
+        return CompletionResponse(text=choices[0]["text"], raw=response)
 
     def _stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
         """Run a streaming inference pass and yield one response per token delta.
@@ -770,7 +776,14 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
             text = ""
             with self._model_lock:
                 for response in self._model(prompt=prompt, **call_kwargs):
-                    delta = response["choices"][0]["text"]
+                    choices = response.get("choices", [])
+                    if not choices:
+                        raise RuntimeError(
+                            f"Model returned no choices in streaming response "
+                            f"after generating {len(text)} chars. "
+                            f"Raw response: {response!r}"
+                        )
+                    delta = choices[0]["text"]
                     text += delta
                     yield CompletionResponse(delta=delta, text=text, raw=response)
 

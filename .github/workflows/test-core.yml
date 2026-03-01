@@ -84,7 +84,7 @@ jobs:
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
 
-  examples:
+  markdown-docstring:
     # check examples in the docstrings and the markdown files
     runs-on: ubuntu-latest
     steps:
@@ -107,6 +107,12 @@ jobs:
         run: |
           uv run pytest --doctest-modules libs/providers/ollama/src/ -v
 
-      - name: Test markdown docs examples
+      - name: Test markdown docs core
+        run: |
+          uv run pytest -v --markdown-docs docs/core/ --markdown-docs-pattern "*.md"
+          uv run pytest -v --markdown-docs libs/core/README.md
+
+      - name: Test markdown docs ollama
         run: |
           uv run pytest -v --markdown-docs docs/providers/ollama/ --markdown-docs-pattern "*.md"
+          uv run pytest -v --markdown-docs libs/providers/ollama/README.md

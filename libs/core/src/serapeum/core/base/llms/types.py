@@ -449,7 +449,7 @@ class CompletionResponse(BaseResponse):
     Examples:
         - Non-streaming completion
             ```python
-            >>> from serapeum.core.llms. import CompletionResponse
+            >>> from serapeum.core.llms import CompletionResponse
             >>> resp = CompletionResponse(text="The answer is 42.")
             >>> str(resp)
             'The answer is 42.'

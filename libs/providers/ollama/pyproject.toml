@@ -89,6 +89,7 @@ testpaths = "tests"
 norecursedirs = "docs"
 markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
+    "function_calling: marks tests requiring native tool/function calling (deselect with '-m \"not function_calling\"')",
     "mock: marks tests as mock (deselect with '-m \"not mock\"')",
     "integration: marks tests as optional-package (deselect with '-m \"not optional_package\"')",
     "unit: marks tests as unit test (deselect with '-m \"not unit\"')",

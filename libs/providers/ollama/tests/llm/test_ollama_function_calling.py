@@ -92,6 +92,7 @@ class TestToolOrchestratingLLMCall:
     """Synchronous execution via __call__ covering single/multiple outputs."""
 
     @pytest.mark.e2e
+    @pytest.mark.function_calling
     def test_single_output_call(
         self, llm_model: Ollama, album: type[BaseModel]
     ) -> None:
@@ -110,6 +111,7 @@ class TestToolOrchestratingLLMCall:
         assert isinstance(result, album)
 
     @pytest.mark.e2e
+    @pytest.mark.function_calling
     def test_multiple_outputs_call_parallel_enabled(
         self, llm_model: Ollama, album: type[BaseModel]
     ) -> None:
@@ -136,6 +138,7 @@ class TestToolOrchestratingLLMAsyncCall:
     """Async execution via acall covering standard single-output scenario."""
 
     @pytest.mark.e2e
+    @pytest.mark.function_calling
     async def test_async_single_output(
         self, llm_model: Ollama, album: type[BaseModel]
     ) -> None:
@@ -156,6 +159,7 @@ class TestToolOrchestratingLLMStreamCall:
     """Tests for the synchronous streaming interface `stream_call`."""
 
     @pytest.mark.e2e
+    @pytest.mark.function_calling
     def test_streaming_yields_processed_objects(
         self, llm_model: Ollama, album: type[BaseModel]
     ) -> None:
@@ -183,6 +187,7 @@ class TestToolOrchestratingLLMAStreamCall:
     """Tests for the asynchronous streaming interface `astream_call`."""
 
     @pytest.mark.e2e
+    @pytest.mark.function_calling
     async def test_async_streaming_yields_processed_objects(
         self, llm_model: Ollama, album: type[BaseModel]
     ) -> None:
@@ -206,6 +211,7 @@ class TestToolOrchestratingLLMAStreamCall:
 
 
 @pytest.mark.e2e
+@pytest.mark.function_calling
 class TestOllamaE2E:
     """End-to-end tests with real Ollama server.
 

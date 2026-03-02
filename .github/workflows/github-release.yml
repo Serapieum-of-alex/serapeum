@@ -8,8 +8,9 @@ on:
         required: true
         type: choice
         options:
-          - serapeum-ollama
           - serapeum-core
+          - serapeum-ollama
+          - serapeum-llama-cpp
       increment:
         description: 'Version increment type'
         required: true
@@ -65,8 +66,9 @@ jobs:
       - name: Resolve package path
         run: |
           case "${{ inputs.package }}" in
-            serapeum-ollama) echo "PACKAGE_PATH=libs/providers/ollama" >> $GITHUB_ENV ;;
-            serapeum-core)   echo "PACKAGE_PATH=libs/core"             >> $GITHUB_ENV ;;
+            serapeum-core)      echo "PACKAGE_PATH=libs/core"              >> $GITHUB_ENV ;;
+            serapeum-ollama)    echo "PACKAGE_PATH=libs/providers/ollama"   >> $GITHUB_ENV ;;
+            serapeum-llama-cpp) echo "PACKAGE_PATH=libs/providers/llama-cpp" >> $GITHUB_ENV ;;
           esac
 
       - name: Create GitHub Release

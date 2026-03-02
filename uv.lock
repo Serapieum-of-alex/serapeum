@@ -3136,7 +3136,7 @@ docs = [
 
 [[package]]
 name = "serapeum-core"
-version = "0.3.0"
+version = "0.4.0"
 source = { editable = "libs/core" }
 dependencies = [
     { name = "filetype" },
@@ -3189,7 +3189,7 @@ dev = [
 
 [[package]]
 name = "serapeum-llama-cpp"
-version = "0.1.0"
+version = "0.0.0"
 source = { editable = "libs/providers/llama-cpp" }
 dependencies = [
     { name = "huggingface-hub" },

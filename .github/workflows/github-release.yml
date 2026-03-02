@@ -82,3 +82,15 @@ jobs:
           python-version: '3.12'
           install-groups: 'groups: docs dev'
           config-file: ${{ env.PACKAGE_PATH }}/pyproject.toml
+
+      - name: Update lockfile after version bump
+        run: uv lock
+
+      - name: Commit and push updated lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add uv.lock
+          git diff --cached --quiet && echo "No lockfile changes" && exit 0
+          git commit -m "build: sync uv.lock after ${{ inputs.package }} version bump"
+          git push origin ${{ inputs.release-branch }}

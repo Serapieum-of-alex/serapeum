@@ -3487,7 +3487,7 @@ docs = [
 
 [[package]]
 name = "serapeum-azure-openai"
-version = "0.1.0"
+version = "0.0.0"
 source = { editable = "libs/providers/azure-openai" }
 dependencies = [
     { name = "azure-identity" },
@@ -3507,6 +3507,8 @@ dev = [
     { name = "pytest-asyncio" },
     { name = "pytest-benchmark" },
     { name = "pytest-cov" },
+    { name = "pytest-markdown-docs" },
+    { name = "pytest-mock" },
     { name = "pytest-xdist" },
 ]
 
@@ -3529,6 +3531,8 @@ dev = [
     { name = "pytest-asyncio", specifier = ">=1.2.0" },
     { name = "pytest-benchmark" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "pytest-markdown-docs", specifier = ">=0.9.1" },
+    { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
 ]
 
@@ -3689,7 +3693,7 @@ dev = [
 
 [[package]]
 name = "serapeum-openai"
-version = "0.1.0"
+version = "0.0.0"
 source = { editable = "libs/providers/openai" }
 dependencies = [
     { name = "openai" },
@@ -3709,6 +3713,8 @@ dev = [
     { name = "pytest-asyncio" },
     { name = "pytest-benchmark" },
     { name = "pytest-cov" },
+    { name = "pytest-markdown-docs" },
+    { name = "pytest-mock" },
     { name = "pytest-xdist" },
 ]
 
@@ -3731,6 +3737,8 @@ dev = [
     { name = "pytest-asyncio", specifier = ">=1.2.0" },
     { name = "pytest-benchmark" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "pytest-markdown-docs", specifier = ">=0.9.1" },
+    { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
 ]
 

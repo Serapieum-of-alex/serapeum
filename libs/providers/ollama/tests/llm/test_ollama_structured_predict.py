@@ -227,6 +227,7 @@ def _assert_valid_instance(result: BaseModel, cls: type[BaseModel]) -> None:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.function_calling
 class TestStructuredPredictSync:
     """Synchronous parse across all schema edge-case models."""
 
@@ -592,6 +593,7 @@ class TestStructuredPredictSync:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.function_calling
 class TestStructuredPredictAsync:
     """Async aparse across key schema shapes."""
 
@@ -692,6 +694,7 @@ class TestStructuredPredictAsync:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.function_calling
 class TestStreamStructuredPredict:
     """Synchronous streaming structured predict."""
 
@@ -915,6 +918,7 @@ class TestStreamStructuredPredict:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.function_calling
 class TestAsyncStreamStructuredPredict:
     """Asynchronous streaming structured predict."""
 
@@ -1087,6 +1091,7 @@ class TestAsyncStreamStructuredPredict:
         assert final.total_usd > 0, f"Expected total_usd > 0, got {final.total_usd}"
 
     @pytest.mark.e2e
+    @pytest.mark.function_calling
     @pytest.mark.asyncio()
     @_SKIP
     async def test_async_stream_list_of_primitives(self, llm_model: Ollama) -> None:

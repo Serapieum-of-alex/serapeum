@@ -8,8 +8,9 @@ on:
         required: true
         type: choice
         options:
-          - serapeum-ollama
           - serapeum-core
+          - serapeum-ollama
+          - serapeum-llama-cpp
       increment:
         description: 'Version increment type'
         required: true
@@ -65,8 +66,9 @@ jobs:
       - name: Resolve package path
         run: |
           case "${{ inputs.package }}" in
-            serapeum-ollama) echo "PACKAGE_PATH=libs/providers/ollama" >> $GITHUB_ENV ;;
-            serapeum-core)   echo "PACKAGE_PATH=libs/core"             >> $GITHUB_ENV ;;
+            serapeum-core)      echo "PACKAGE_PATH=libs/core"              >> $GITHUB_ENV ;;
+            serapeum-ollama)    echo "PACKAGE_PATH=libs/providers/ollama"   >> $GITHUB_ENV ;;
+            serapeum-llama-cpp) echo "PACKAGE_PATH=libs/providers/llama-cpp" >> $GITHUB_ENV ;;
           esac
 
       - name: Create GitHub Release
@@ -80,3 +82,15 @@ jobs:
           python-version: '3.12'
           install-groups: 'groups: docs dev'
           config-file: ${{ env.PACKAGE_PATH }}/pyproject.toml
+
+      - name: Update lockfile after version bump
+        run: uv lock
+
+      - name: Commit and push updated lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add uv.lock
+          git diff --cached --quiet && echo "No lockfile changes" && exit 0
+          git commit -m "build: sync uv.lock after ${{ inputs.package }} version bump"
+          git push origin ${{ inputs.release-branch }}

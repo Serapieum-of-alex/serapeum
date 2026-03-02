@@ -1,0 +1,87 @@
+name: Test Suite - Core
+
+permissions:
+    contents: read
+
+on:
+  push:
+    paths:
+      - "libs/core/**"
+      - "pyproject.toml"
+      - "uv.lock"
+  workflow_dispatch:
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
+        with:
+          python-version: ${{ matrix.python-version }}
+          install-groups: dev
+          verify-lock: true
+
+      - name: Test Core Package
+        run: |
+          uv run pytest libs/core/tests/ -sv -m "not e2e" --cov=libs/core/src --cov-report=xml --cov-append
+
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v3
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
+        with:
+          python-version: "3.12"
+          install-groups: dev
+          verify-lock: true
+
+      - name: Run Core e2e tests
+        run: |
+          uv run pytest libs/core/tests/ -sv -m e2e \
+            --cov=libs/core/src \
+            --cov-report=xml --cov-append \
+            || test $? -eq 5
+
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v3
+
+  markdown-docstring:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
+        with:
+          python-version: "3.12"
+          install-groups: dev
+          verify-lock: true
+
+      - name: Test core doctests
+        run: |
+          uv run pytest --doctest-modules libs/core/src/ -v
+
+      - name: Test markdown docs core
+        run: |
+          uv run pytest -v --markdown-docs docs/core/ --markdown-docs-pattern "*.md"
+          uv run pytest -v --markdown-docs libs/core/README.md

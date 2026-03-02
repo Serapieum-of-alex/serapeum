@@ -152,6 +152,15 @@ nav:
           - Components: reference/providers/ollama/ollama_components.md
           - Lifecycle: reference/providers/ollama/ollama_state.md
           - API-Reference: reference/providers/ollama/api_reference.md
+      - LlamaCPP:
+          - Overview: reference/providers/llama-cpp/general.md
+          - Examples: reference/providers/llama-cpp/examples.md
+          - Execution Flow: reference/providers/llama-cpp/llama_cpp_sequence.md
+          - Architecture: reference/providers/llama-cpp/llama_cpp_class.md
+          - Data Flow: reference/providers/llama-cpp/llama_cpp_dataflow.md
+          - Components: reference/providers/llama-cpp/llama_cpp_components.md
+          - Lifecycle: reference/providers/llama-cpp/llama_cpp_state.md
+          - API-Reference: reference/providers/llama-cpp/api_reference.md
       - Add New Providers:
           - Instructions: reference/providers/add_new_providers.md
   - Developer Guide:

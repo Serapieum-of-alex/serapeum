@@ -8,12 +8,13 @@ from unittest.mock import patch
 from urllib.request import urlopen
 
 import pytest
-from pydantic import AnyUrl, BaseModel
+from pydantic import AnyUrl, BaseModel, ValidationError
 
 from serapeum.core.base.llms.types import (
     ChatResponse,
     CompletionResponse,
     Image,
+    LikelihoodScore,
     Message,
     MessageList,
     MessageRole,
@@ -382,6 +383,520 @@ def test_completion_response():
     """Test CompletionResponse string representation."""
     cr = CompletionResponse(text="some text")
     assert str(cr) == "some text"
+
+
+@pytest.mark.unit
+class TestCompletionResponse:
+    """Tests for CompletionResponse — __init__, __str__, to_chat_response,
+    stream_to_chat_response, astream_to_chat_response, and Pydantic model methods."""
+
+    @pytest.fixture(scope="function")
+    def basic(self) -> CompletionResponse:
+        """Create a minimal CompletionResponse for reuse.
+
+        Returns:
+            CompletionResponse: Instance with text='Hello world'.
+        """
+        return CompletionResponse(text="Hello world")
+
+    class TestInit:
+        @pytest.mark.unit
+        def test_init_text_is_required(self):
+            """Test that omitting the required 'text' field raises ValidationError.
+
+            Test scenario:
+                Constructing CompletionResponse without 'text' must raise
+                pydantic.ValidationError mentioning the missing field.
+            """
+            with pytest.raises(ValidationError) as exc_info:
+                CompletionResponse()  # type: ignore[call-arg]
+            assert "text" in str(exc_info.value), (
+                f"Expected 'text' in validation error, got: {exc_info.value}"
+            )
+
+        @pytest.mark.unit
+        def test_init_empty_string_text_is_valid(self):
+            """Test that an empty string is a valid value for 'text'.
+
+            Test scenario:
+                CompletionResponse(text='') should construct without error and
+                cr.text should equal ''.
+            """
+            cr = CompletionResponse(text="")
+            assert cr.text == "", f"Expected empty text, got: {cr.text!r}"
+
+        @pytest.mark.unit
+        def test_init_inherited_field_defaults(self):
+            """Test that all inherited BaseResponse fields default correctly.
+
+            Test scenario:
+                Constructing with only 'text' should leave:
+                raw=None, likelihood_score=None, additional_kwargs={}, delta=None.
+            """
+            cr = CompletionResponse(text="x")
+            assert cr.raw is None, f"raw should default to None, got: {cr.raw}"
+            assert cr.likelihood_score is None, (
+                f"likelihood_score should default to None, got: {cr.likelihood_score}"
+            )
+            assert cr.additional_kwargs == {}, (
+                f"additional_kwargs should default to {{}}, got: {cr.additional_kwargs}"
+            )
+            assert cr.delta is None, f"delta should default to None, got: {cr.delta}"
+
+        @pytest.mark.unit
+        def test_init_all_fields_stored(self):
+            """Test that all provided fields are stored exactly as given.
+
+            Test scenario:
+                Passing text, raw, delta, and additional_kwargs should store
+                each value without modification.
+            """
+            raw_payload = {"model": "llama3", "tokens": 42}
+            cr = CompletionResponse(
+                text="result",
+                raw=raw_payload,
+                delta="res",
+                additional_kwargs={"usage": {"input": 10}},
+            )
+            assert cr.text == "result", f"Unexpected text: {cr.text!r}"
+            assert cr.raw == raw_payload, f"Unexpected raw: {cr.raw}"
+            assert cr.delta == "res", f"Unexpected delta: {cr.delta!r}"
+            assert cr.additional_kwargs == {"usage": {"input": 10}}, (
+                f"Unexpected additional_kwargs: {cr.additional_kwargs}"
+            )
+
+        @pytest.mark.unit
+        def test_init_with_likelihood_scores(self):
+            """Test construction with a nested likelihood_score list.
+
+            Test scenario:
+                Passing a list-of-lists of LikelihoodScore objects should be
+                stored intact and accessible by index.
+            """
+            scores = [
+                [LikelihoodScore(token="hello", next_token_log_prob=-0.5, bytes=[104, 101])]
+            ]
+            cr = CompletionResponse(text="hello", likelihood_score=scores)
+            assert cr.likelihood_score == scores, (
+                f"Unexpected likelihood_score: {cr.likelihood_score}"
+            )
+            assert cr.likelihood_score[0][0].token == "hello", (
+                "First token should be 'hello'"
+            )
+
+    class TestStr:
+
+        @pytest.mark.unit
+        @pytest.mark.parametrize(
+            "text",
+            [
+                "Hello world",
+                "",
+                "line1\nline2",
+                "unicode: こんにちは",
+                "  spaces  ",
+            ],
+        )
+        def test_str_returns_text(self, text: str):
+            """Test __str__ returns the text field exactly for various inputs.
+
+            Args:
+                text: The text value to test.
+
+            Test scenario:
+                str(CompletionResponse(text=t)) should equal t for any string
+                value, including empty, multiline, unicode, and padded strings.
+            """
+            cr = CompletionResponse(text=text)
+            assert str(cr) == text, (
+                f"Expected str representation {text!r}, got {str(cr)!r}"
+            )
+
+    class TestToChatResponse:
+
+        @pytest.mark.unit
+        def test_to_chat_response_text_becomes_message_content(self, basic: CompletionResponse):
+            """Test that text maps to the ChatResponse message content.
+
+            Args:
+                basic: Fixture providing CompletionResponse(text='Hello world').
+
+            Test scenario:
+                The returned ChatResponse message content should equal the
+                original CompletionResponse.text.
+            """
+            chat = basic.to_chat_response()
+            assert chat.message.content == basic.text, (
+                f"Expected message.content={basic.text!r}, got {chat.message.content!r}"
+            )
+
+        @pytest.mark.unit
+        def test_to_chat_response_message_role_is_assistant(self, basic: CompletionResponse):
+            """Test that the resulting ChatResponse message role is ASSISTANT.
+
+            Args:
+                basic: Fixture providing CompletionResponse(text='Hello world').
+
+            Test scenario:
+                to_chat_response must always set role=MessageRole.ASSISTANT
+                regardless of any other fields.
+            """
+            chat = basic.to_chat_response()
+            assert chat.message.role == MessageRole.ASSISTANT, (
+                f"Expected role=ASSISTANT, got {chat.message.role!r}"
+            )
+
+        @pytest.mark.unit
+        def test_to_chat_response_raw_propagated(self):
+            """Test that raw payload is copied to ChatResponse.raw.
+
+            Test scenario:
+                A raw dict set on CompletionResponse should appear unchanged
+                on the resulting ChatResponse.raw.
+            """
+            raw = {"model": "llama3", "tokens": 7}
+            cr = CompletionResponse(text="hi", raw=raw)
+            chat = cr.to_chat_response()
+            assert chat.raw == raw, f"Expected raw={raw}, got {chat.raw}"
+
+        @pytest.mark.unit
+        def test_to_chat_response_additional_kwargs_go_to_message_not_response(self):
+            """Test that additional_kwargs propagate to Message, not ChatResponse.
+
+            Test scenario:
+                CompletionResponse.additional_kwargs should appear on
+                chat.message.additional_kwargs; chat.additional_kwargs should
+                remain an empty dict because to_chat_response does not forward
+                it to the response level.
+            """
+            cr = CompletionResponse(text="data", additional_kwargs={"usage": {"tokens": 5}})
+            chat = cr.to_chat_response()
+            assert chat.message.additional_kwargs == {"usage": {"tokens": 5}}, (
+                f"Expected message-level kwargs, got {chat.message.additional_kwargs}"
+            )
+            assert chat.additional_kwargs == {}, (
+                f"ChatResponse.additional_kwargs should be empty, got {chat.additional_kwargs}"
+            )
+
+        @pytest.mark.unit
+        def test_to_chat_response_delta_not_propagated(self):
+            """Test that delta is NOT forwarded to the resulting ChatResponse.
+
+            Test scenario:
+                Setting delta='d' on CompletionResponse; the resulting
+                ChatResponse.delta should be None because to_chat_response
+                intentionally omits delta from the conversion.
+            """
+            cr = CompletionResponse(text="tok", delta="d")
+            chat = cr.to_chat_response()
+            assert chat.delta is None, (
+                f"delta should not propagate via to_chat_response, got {chat.delta!r}"
+            )
+
+        @pytest.mark.unit
+        def test_to_chat_response_empty_text(self):
+            """Test to_chat_response with an empty string text.
+
+            Test scenario:
+                An empty text should yield a ChatResponse whose message
+                content is '' (not None).
+            """
+            cr = CompletionResponse(text="")
+            chat = cr.to_chat_response()
+            assert chat.message.content == "", (
+                f"Expected empty content, got {chat.message.content!r}"
+            )
+
+        @pytest.mark.integration
+        def test_to_chat_response_round_trip(self):
+            """Test CompletionResponse → ChatResponse → CompletionResponse round-trip.
+
+            Test scenario:
+                After round-trip text, raw, and additional_kwargs are preserved.
+                delta is lost because to_chat_response does not carry delta forward,
+                so ChatResponse.delta stays None and the restored delta is also None.
+            """
+            original = CompletionResponse(
+                text="round trip",
+                raw={"model": "x"},
+                additional_kwargs={"k": 1},
+                delta="d",
+            )
+            restored = original.to_chat_response().to_completion_response()
+            assert restored.text == original.text, (
+                f"text not preserved: {restored.text!r}"
+            )
+            assert restored.raw == original.raw, f"raw not preserved: {restored.raw}"
+            assert restored.additional_kwargs == original.additional_kwargs, (
+                f"additional_kwargs not preserved: {restored.additional_kwargs}"
+            )
+            assert restored.delta is None, (
+                f"delta should be lost in round-trip via to_chat_response, got {restored.delta!r}"
+            )
+
+    class TestStreamToChatResponse:
+        """Tests for stream_to_chat_response."""
+
+        @pytest.mark.unit
+        def test_stream_to_chat_response_happy_path(self):
+            """Test stream_to_chat_response yields ChatResponse per input item.
+
+            Test scenario:
+                A generator of two CompletionResponse objects should yield two
+                ChatResponse objects with their text preserved in order.
+            """
+
+            def comp_gen():
+                yield CompletionResponse(text="A")
+                yield CompletionResponse(text="B")
+
+            results = list(CompletionResponse.stream_to_chat_response(comp_gen()))
+            assert len(results) == 2, f"Expected 2 results, got {len(results)}"
+            assert results[0].message.content == "A", (
+                f"Expected 'A', got {results[0].message.content!r}"
+            )
+            assert results[1].message.content == "B", (
+                f"Expected 'B', got {results[1].message.content!r}"
+            )
+
+        @pytest.mark.unit
+        def test_stream_to_chat_response_empty_generator(self):
+            """Test stream_to_chat_response with an empty input generator.
+
+            Test scenario:
+                An empty completion generator should yield zero ChatResponse items.
+            """
+
+            def empty_gen():
+                return
+                yield  # make it a generator
+
+            results = list(CompletionResponse.stream_to_chat_response(empty_gen()))
+            assert results == [], f"Expected empty list, got {results}"
+
+        @pytest.mark.unit
+        def test_stream_to_chat_response_propagates_all_fields(self):
+            """Test that stream_to_chat_response propagates delta, raw, and additional_kwargs.
+
+            Test scenario:
+                Each yielded ChatResponse should carry:
+                - message.content == text
+                - message.additional_kwargs == completion.additional_kwargs
+                - ChatResponse.delta == completion.delta
+                - ChatResponse.raw == completion.raw
+            """
+
+            def comp_gen():
+                yield CompletionResponse(
+                    text="tok1", delta="d1", raw={"i": 0}, additional_kwargs={"a": 1}
+                )
+                yield CompletionResponse(
+                    text="tok2", delta="d2", raw={"i": 1}, additional_kwargs={"b": 2}
+                )
+
+            results = list(CompletionResponse.stream_to_chat_response(comp_gen()))
+            assert results[0].message.content == "tok1"
+            assert results[0].delta == "d1", f"Expected delta='d1', got {results[0].delta!r}"
+            assert results[0].raw == {"i": 0}, f"Expected raw={{'i':0}}, got {results[0].raw}"
+            assert results[0].message.additional_kwargs == {"a": 1}
+            assert results[1].message.content == "tok2"
+            assert results[1].delta == "d2"
+            assert results[1].raw == {"i": 1}
+            assert results[1].message.additional_kwargs == {"b": 2}
+
+        @pytest.mark.unit
+        def test_stream_to_chat_response_all_roles_are_assistant(self):
+            """Test that every streamed ChatResponse has role=ASSISTANT.
+
+            Test scenario:
+                All messages in the streamed output must carry
+                MessageRole.ASSISTANT regardless of input content.
+            """
+
+            def comp_gen():
+                for t in ("x", "y", "z"):
+                    yield CompletionResponse(text=t)
+
+            results = list(CompletionResponse.stream_to_chat_response(comp_gen()))
+            roles = [r.message.role for r in results]
+            assert all(role == MessageRole.ASSISTANT for role in roles), (
+                f"All roles should be ASSISTANT, got {roles}"
+            )
+
+        @pytest.mark.unit
+        def test_stream_to_chat_response_returns_generator(self):
+            """Test that stream_to_chat_response returns a lazy generator.
+
+            Test scenario:
+                The returned object should be a generator type, confirming
+                lazy evaluation of the input stream.
+            """
+            import types as _types
+
+            def comp_gen():
+                yield CompletionResponse(text="a")
+
+            result = CompletionResponse.stream_to_chat_response(comp_gen())
+            assert isinstance(result, _types.GeneratorType), (
+                f"Expected GeneratorType, got {type(result)}"
+            )
+
+    class TestAstreamToChatResponse:
+        """Tests for astream_to_chat_response."""
+
+        @pytest.mark.asyncio
+        @pytest.mark.unit
+        async def test_astream_to_chat_response_happy_path(self):
+            """Test astream_to_chat_response yields one ChatResponse per input.
+
+            Test scenario:
+                Async generator of two CompletionResponse objects should yield
+                two ChatResponse objects with correct text and ASSISTANT role.
+            """
+
+            async def comp_agen():
+                yield CompletionResponse(text="X")
+                yield CompletionResponse(text="Y")
+
+            results = []
+            async for item in CompletionResponse.astream_to_chat_response(comp_agen()):
+                results.append(item)
+            assert len(results) == 2, f"Expected 2 results, got {len(results)}"
+            assert results[0].message.content == "X", (
+                f"Expected 'X', got {results[0].message.content!r}"
+            )
+            assert results[1].message.content == "Y", (
+                f"Expected 'Y', got {results[1].message.content!r}"
+            )
+
+        @pytest.mark.asyncio
+        @pytest.mark.unit
+        async def test_astream_to_chat_response_empty_generator(self):
+            """Test astream_to_chat_response with an empty async generator.
+
+            Test scenario:
+                An empty async generator should yield zero ChatResponse items.
+            """
+
+            async def empty_agen():
+                return
+                yield  # make it an async generator
+
+            results = []
+            async for item in CompletionResponse.astream_to_chat_response(empty_agen()):
+                results.append(item)
+            assert results == [], f"Expected empty list, got {results}"
+
+        @pytest.mark.asyncio
+        @pytest.mark.unit
+        async def test_astream_to_chat_response_propagates_all_fields(self):
+            """Test that astream_to_chat_response propagates delta, raw, and additional_kwargs.
+
+            Test scenario:
+                Each yielded ChatResponse should carry all fields from the
+                source CompletionResponse, mirroring the sync stream behaviour.
+            """
+
+            async def comp_agen():
+                yield CompletionResponse(
+                    text="a1", delta="da1", raw={"seq": 0}, additional_kwargs={"p": 10}
+                )
+                yield CompletionResponse(
+                    text="a2", delta="da2", raw={"seq": 1}, additional_kwargs={"q": 20}
+                )
+
+            results = []
+            async for item in CompletionResponse.astream_to_chat_response(comp_agen()):
+                results.append(item)
+            assert results[0].message.content == "a1"
+            assert results[0].delta == "da1", f"Expected delta='da1', got {results[0].delta!r}"
+            assert results[0].raw == {"seq": 0}
+            assert results[0].message.additional_kwargs == {"p": 10}
+            assert results[1].message.content == "a2"
+            assert results[1].delta == "da2"
+            assert results[1].raw == {"seq": 1}
+            assert results[1].message.additional_kwargs == {"q": 20}
+
+        @pytest.mark.asyncio
+        @pytest.mark.unit
+        async def test_astream_to_chat_response_all_roles_are_assistant(self):
+            """Test that every async-streamed ChatResponse has role=ASSISTANT.
+
+            Test scenario:
+                All messages in the async streamed output must carry
+                MessageRole.ASSISTANT regardless of input content.
+            """
+
+            async def comp_agen():
+                for t in ("p", "q"):
+                    yield CompletionResponse(text=t)
+
+            results = []
+            async for item in CompletionResponse.astream_to_chat_response(comp_agen()):
+                results.append(item)
+            roles = [r.message.role for r in results]
+            assert all(role == MessageRole.ASSISTANT for role in roles), (
+                f"All roles should be ASSISTANT, got {roles}"
+            )
+
+    class TestPydanticModelMethods:
+        """Tests for Pydantic model methods."""
+        @pytest.mark.unit
+        def test_model_dump_contains_all_keys(self, basic: CompletionResponse):
+            """Test that model_dump returns a dict with all expected keys.
+
+            Args:
+                basic: Fixture providing CompletionResponse(text='Hello world').
+
+            Test scenario:
+                model_dump() should include 'text' plus every inherited
+                BaseResponse field key.
+            """
+            dumped = basic.model_dump()
+            for key in ("text", "raw", "likelihood_score", "additional_kwargs", "delta"):
+                assert key in dumped, (
+                    f"Key '{key}' missing from model_dump; keys present: {list(dumped.keys())}"
+                )
+            assert dumped["text"] == "Hello world", (
+                f"Unexpected text in dump: {dumped['text']!r}"
+            )
+
+        @pytest.mark.unit
+        def test_model_validate_roundtrip(self, basic: CompletionResponse):
+            """Test model_dump / model_validate round-trip preserves all fields.
+
+            Args:
+                basic: Fixture providing CompletionResponse(text='Hello world').
+
+            Test scenario:
+                Dumping then reloading with model_validate should produce an
+                instance equal to the original.
+            """
+            restored = CompletionResponse.model_validate(basic.model_dump())
+            assert restored == basic, f"Round-trip failed: {restored} != {basic}"
+
+        @pytest.mark.unit
+        def test_equality_same_fields(self):
+            """Test that two instances with identical fields compare equal.
+
+            Test scenario:
+                Pydantic models compare by field value; two CompletionResponse
+                instances built with the same arguments should be equal.
+            """
+            a = CompletionResponse(text="abc", delta="x", additional_kwargs={"k": 1})
+            b = CompletionResponse(text="abc", delta="x", additional_kwargs={"k": 1})
+            assert a == b, f"Expected equal instances"
+
+        @pytest.mark.unit
+        def test_equality_different_text(self):
+            """Test that instances with different text values are not equal.
+
+            Test scenario:
+                Changing only 'text' should make the two instances unequal.
+            """
+            a = CompletionResponse(text="foo")
+            b = CompletionResponse(text="bar")
+            assert a != b, "Expected unequal instances for different text"
 
 
 class TestMessageLists:

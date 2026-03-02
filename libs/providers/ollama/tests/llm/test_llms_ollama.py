@@ -125,13 +125,15 @@ def test_ollama_complete_streaming(llm_model) -> None:
     """Test complete(stream=True) with real client.
 
     Inputs: model_name and prompt string.
-    Expected: Each streamed response is non-empty and has a delta.
+    Expected: the last streamed response is non-empty and has a delta.
     """
     response = llm_model.complete("Hello!", stream=True)
-    for r in response:
+    chunks = list(response)
+    assert len(chunks) > 0
+    for r in chunks:
         assert r is not None
         assert r.delta is not None
-        assert str(r).strip() != ""
+    assert str(chunks[-1]).strip() != ""
 
 
 @pytest.mark.e2e
@@ -193,13 +195,15 @@ async def test_ollama_acomplete_streaming(llm_model) -> None:
     """Test acomplete(stream=True) with real client.
 
     Inputs: model_name and prompt string.
-    Expected: Each streamed response is non-empty and has a delta.
+    Expected: the last streamed response is non-empty and has a delta.
     """
     response = await llm_model.acomplete("Hello!", stream=True)
-    async for r in response:
+    chunks = [r async for r in response]
+    assert len(chunks) > 0
+    for r in chunks:
         assert r is not None
         assert r.delta is not None
-        assert str(r).strip() != ""
+    assert str(chunks[-1]).strip() != ""
 
 
 @pytest.mark.mock

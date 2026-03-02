@@ -1,7 +1,13 @@
 """Utilities functions."""
 
+from __future__ import annotations
+
+import os
+import sys
 import asyncio
 from typing import Iterable, Any, Coroutine, TypeVar
+from pathlib import Path
+
 
 
 DEFAULT_NUM_WORKERS = 4
@@ -123,3 +129,25 @@ async def run_jobs(
         results = await asyncio.gather(*pool_jobs)
 
     return results
+
+
+def get_cache_dir() -> str:
+    """
+    Locate a platform-appropriate cache directory for serapeum,
+    and create it if it doesn't yet exist.
+    """
+    # User override
+    if "SERAPEUM_CACHE_DIR" in os.environ:
+        path = Path(os.environ["SERAPEUM_CACHE_DIR"])
+    else:
+        if sys.platform == "win32":
+            base = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+            path = base / "serapeum" / "Cache"
+        elif sys.platform == "darwin":
+            path = Path.home() / "Library" / "Caches" / "serapeum"
+        else:
+            base = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
+            path = base / "serapeum"
+
+    path.mkdir(parents=True, exist_ok=True)
+    return str(path)

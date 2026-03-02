@@ -25,6 +25,7 @@ requires-python = ">=3.11,<4.0"
 dependencies = [
     "serapeum-core",
     "serapeum-ollama",
+    "serapeum-llama-cpp",
     "serapeum-openai",
     "serapeum-azure-openai"
 ]
@@ -44,7 +45,7 @@ dev = [
     "pytest-benchmark",
     "pytest-markdown-docs>=0.9.1",
     "pytest-mock>=3.14.0",
-    "python-dotenv",
+    "python-dotenv>=1.2.1",
 ]
 
 docs = [
@@ -93,7 +94,7 @@ changelog_pattern = "^(feat|fix|refactor|perf|build|ci|chore)(\\(.+\\))?(!)?:"
 change_type_order = ["BREAKING CHANGE", "feat", "fix", "refactor", "perf", "build", "ci", "chore"]
 
 [tool.flake8]
-ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
+ignore = ["E501", "W503", "E731", "E203", "E704", "D401", "D102"]
 max-line-length = 120
 count = true
 per-file-ignores = [
@@ -163,9 +164,9 @@ members = [
 [tool.uv.sources]
 serapeum-core = { workspace = true }
 serapeum-ollama = { workspace = true }
+serapeum-llama-cpp = { workspace = true }
 serapeum-openai = { workspace = true }
 serapeum-azure-openai = { workspace = true }
-
 
 [build-system]
 requires = ["hatchling"]

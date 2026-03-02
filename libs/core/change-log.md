@@ -1,3 +1,55 @@
+## serapeum-core-0.4.0 (2026-03-02)
+
+
+- fix(ollama,ci): stabilize e2e tests and split CI into separate workflows (#37)
+- fix(ollama,ci): stabilize e2e tests and split CI into separate workflows
+-   - Fix streaming completion tests to assert on final chunk only, not
+    every chunk — cloud models emit empty-content chunks that cause
+    str(r).strip() to return "" on intermediate responses
+  - Add function_calling pytest marker to all ToolOrchestratingLLM and
+    structured-predict tests; exclude them from cloud CI with
+    -m "e2e and not function_calling" since Ollama Cloud does not
+    support the tools API reliably
+  - Change streaming count assertion from == 2 to >= 1 (count is
+    model-dependent, not a framework contract)
+  - Skip embedding e2e tests in CI (no embedding models on Ollama Cloud)
+  - Split test-core.yml and introduce test-ollama.yml so Ollama Cloud
+    failures no longer block core CI
+  - Update cloud model default from qwen3-next:80b to mistral-large-3:675b
+  - Register function_calling marker in pyproject.toml
+-  ref: #38
+- feat(llama-cpp): add serapeum-llama-cpp provider package (#12)
+- feat(llama-cpp): add serapeum-llama-cpp provider package
+-   - Add new `serapeum-llama-cpp` provider package under                                                       
+    `libs/providers/llama-cpp/` with full src layout and namespace
+    package `serapeum.llama_cpp`
+  - Implement `LlamaCPP` class inheriting from `LLM` +               
+    `CompletionToChatMixin` for running quantised GGUF models locally
+  - Add `CompletionToChatMixin` to core, bridging completion-based
+    providers into the chat interface automatically
+  - Add model formatters for Llama 2 and Llama 3 prompt templates
+    under `serapeum.llama_cpp.formatters`
+  - Add utility helpers: GGUF model file fetching from URL or
+    HuggingFace Hub, caching, download progress, and timeout handling
+  - Add `n_gpu_layers`, `stop`, `tokenize()`, `count_tokens()`, and
+    context-window methods to `LlamaCPP`
+  - Add error handling for empty choices, stalled downloads, missing
+    headers, and non-serialisable `model_kwargs`
+  - Add HuggingFace Hub integration as an optional download backend
+  - Add comprehensive unit, mock, integration, and e2e test suites
+    (~2 600 lines across formatters, llm, and utils)
+  - Add dedicated CI workflow `test-llama-cpp.yml`; split core tests
+    into a separate `test-core.yml`; remove the old monolithic
+    `test.yml`
+  - Extend core `CompletionResponse` / `BaseLLM` types to support the
+    completion-to-chat bridge
+  - Use lazy `__getattr__` in provider `__init__` modules to prevent
+    circular-import issues when third-party SDK names collide with
+    namespace sub-packages
+  - Add full MkDocs reference documentation for the llama-cpp provider
+- ref: #35
+- build: bump up ollama (#33)
+
 ## serapeum-core-0.3.0 (2026-02-26)
 
 

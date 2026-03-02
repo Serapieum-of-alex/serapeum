@@ -34,6 +34,7 @@ from serapeum.core.base.llms.types import (
 # Core LLM abstractions
 from serapeum.core.llms.abstractions import (
     ChatToCompletionMixin,
+    CompletionToChatMixin,
     FunctionCallingLLM,
     StructuredOutputLLM,
 )
@@ -72,6 +73,7 @@ __all__ = [
     "FunctionCallingLLM",
     "StructuredOutputLLM",
     "ChatToCompletionMixin",
+    "CompletionToChatMixin",
     # Orchestrators
     "ToolOrchestratingLLM",
     "TextCompletionLLM",

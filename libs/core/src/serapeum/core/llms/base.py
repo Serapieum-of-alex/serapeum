@@ -6,18 +6,10 @@ streaming, and structured outputs.
 
 from __future__ import annotations
 from abc import ABC
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    AsyncGenerator,
-    Generator,
-    Protocol,
-    runtime_checkable,
-)
-
-from pydantic import BaseModel, Field, WithJsonSchema, field_validator, model_validator
+from typing import Any, AsyncGenerator, Generator, Protocol, TYPE_CHECKING, runtime_checkable, Sequence
 from typing_extensions import Annotated
 
+from pydantic import BaseModel, Field, WithJsonSchema, field_validator, model_validator
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.types import (
     ChatResponseAsyncGen,
@@ -27,9 +19,11 @@ from serapeum.core.base.llms.types import (
     Message,
     MessageList,
     MessageRole,
+    CompletionResponse,
 )
 from serapeum.core.output_parsers import BaseParser, TokenAsyncGen, TokenGen
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
+
 from serapeum.core.types import Model, StructuredOutputMode
 
 if TYPE_CHECKING:
@@ -61,7 +55,7 @@ class MessagesToPromptType(Protocol):
             ...         raise ValueError("Missing content")
             ...     return " ".join(str(content) for content in contents)
             ...
-            >>> validated_join(MessageList([Message(content="hi", role=MessageRole.USER)]))
+            >>> validated_join(MessageList(messages=[Message(content="hi", role=MessageRole.USER)]))
             'hi'
 
             ```
@@ -89,7 +83,7 @@ class MessagesToPromptType(Protocol):
                 ...     return " ".join((message.content or "").strip() for message in message_list)
                 ...
                 >>> concatenate(
-                ...     MessageList([
+                ...     MessageList(messages=[
                 ...         Message(content="Hello", role=MessageRole.USER),
                 ...         Message(content="world", role=MessageRole.ASSISTANT),
                 ...     ])
@@ -106,7 +100,7 @@ class MessagesToPromptType(Protocol):
                 ...             raise ValueError("Missing content")
                 ...     return " ".join(str(message.content) for message in message_list)
                 ...
-                >>> strict_concat(MessageList([Message(content="Ping", role=MessageRole.USER)]))
+                >>> strict_concat(MessageList(messages=[Message(content="Ping", role=MessageRole.USER)]))
                 'Ping'
 
                 ```

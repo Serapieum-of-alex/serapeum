@@ -1,6 +1,6 @@
 [project]
 name = "serapeum-llama-cpp"
-version = "0.1.0"
+version = "0.0.0"
 description = "llama cpp integration for serapeum"
 readme = "README.md"
 license = {text = "GNU General Public License v3"}
@@ -23,7 +23,7 @@ classifiers = [
 ]
 requires-python = ">=3.11,<4.0"
 dependencies = [
-    "serapeum-core>=0.3.0",
+    "serapeum-core>=0.4.0",
     "llama-cpp-python>=0.3.0",
     "huggingface-hub>=1.5.0"
 ]

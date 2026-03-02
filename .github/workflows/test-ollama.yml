@@ -37,7 +37,7 @@ jobs:
         env:
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         run: |
-          uv run pytest libs/providers/ollama/tests/ -sv -m "not e2e" --cov=libs/providers/ollama/src --cov-report=xml --cov-append
+          uv run pytest -c libs/providers/ollama/pyproject.toml libs/providers/ollama/tests/ -sv -m "not e2e" --cov=libs/providers/ollama/src --cov-report=xml --cov-append
 
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
@@ -62,7 +62,7 @@ jobs:
         env:
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         run: |
-          uv run pytest libs/providers/ollama/tests/ -sv -m "e2e and not function_calling" \
+          uv run pytest -c libs/providers/ollama/pyproject.toml libs/providers/ollama/tests/ -sv -m "e2e and not function_calling" \
             --cov=libs/providers/ollama/src \
             --cov-report=xml --cov-append
 

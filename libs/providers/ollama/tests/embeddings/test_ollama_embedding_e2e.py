@@ -17,7 +17,11 @@ from ..models import client, is_ci
 
 
 SKIP = pytest.mark.skipif(
-    client is None or is_ci, reason="Ollama client is not available or test model is missing"
+    client is None or is_ci,
+    reason=(
+        "Ollama client or test model is not available locally, or embeddings E2E "
+        "are disabled in CI because Ollama Cloud lacks embedding models"
+    ),
 )
 
 class TestBasicEmbedding:

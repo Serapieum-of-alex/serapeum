@@ -71,7 +71,8 @@ jobs:
         run: |
           uv run pytest libs/core/tests/ -sv -m e2e \
             --cov=libs/core/src \
-            --cov-report=xml --cov-append
+            --cov-report=xml --cov-append \
+            || test $? -eq 5
 
       - name: Run Ollama e2e tests
         env:

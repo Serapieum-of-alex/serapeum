@@ -72,8 +72,13 @@ class BaseLLM(SerializableModel, ABC):
 
     @abstractmethod
     def complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
+        self,
+        prompt: str,
+        formatted: bool = False,
+        *,
+        stream: bool = False,
+        **kwargs: Any
+    ) -> CompletionResponse | CompletionResponseGen:
         pass
 
     @abstractmethod
@@ -89,6 +94,11 @@ class BaseLLM(SerializableModel, ABC):
 
     @abstractmethod
     async def acomplete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
+        self,
+        prompt: str,
+        formatted: bool = False,
+        *,
+        stream: bool = False,
+        **kwargs: Any
+    ) -> CompletionResponse | CompletionResponseAsyncGen:
         pass

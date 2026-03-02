@@ -116,6 +116,29 @@ uv pip install "git+https://github.com/Serapieum-of-alex/serapeum.git@v0.1.0"
   uv run pytest
   ```
 
+## Syncing Provider Dev Dependencies
+
+Each workspace member (provider package/subpackage) has its own dev dependency group. The root-level `uv sync --dev --active` 
+only installs root-level dev dependencies. 
+
+To install a specific provider's dev dependencies (e.g. type stubs, test plugins), sync that package explicitly:
+
+```bash
+# Sync dev deps for a specific sub-package
+uv sync --package serapeum-llama-cpp --dev --active
+uv sync --package serapeum-ollama --dev --active
+```
+
+For example, `serapeum-llama-cpp` declares `types-requests` and `types-tqdm` in its dev group for mypy type checking. These are only installed when you sync that package:
+
+```bash
+# Install llama-cpp dev deps (includes type stubs for mypy)
+uv sync --package serapeum-llama-cpp --dev --active
+
+# Then run mypy
+python -m mypy libs/providers/llama-cpp
+```
+
 ## Troubleshooting
 
 - **Virtual environment not activating:**

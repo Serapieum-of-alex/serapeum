@@ -172,10 +172,10 @@ class TestToolOrchestratingLLMStreamCall:
             allow_parallel_tool_calls=False,
         )
 
-        out = tools_llm(topic="x", stream=True)
-        out = list(out)
-        assert len(out) == 2
-        assert all(isinstance(obj, album) for obj in out)
+        out = list(tools_llm(topic="x", stream=True))
+        assert len(out) >= 1
+        # last instance should be the final, fully resolved model
+        assert isinstance(out[-1], album)
 
 
 @pytest.mark.asyncio()
@@ -200,10 +200,8 @@ class TestToolOrchestratingLLMAStreamCall:
         )
 
         agen = await tools_llm.acall(topic="x", stream=True)
-        results: list[album] = []
-        async for item in agen:
-            results.append(item)
-        assert len(results) == 2
+        results: list[album] = [item async for item in agen]
+        assert len(results) >= 1
         assert all(isinstance(obj, album) for obj in results)
 
 

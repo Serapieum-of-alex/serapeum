@@ -44,7 +44,7 @@ def local_model() -> str:
 
 @pytest.fixture
 def cloud_model() -> str:
-    return "qwen3-next:80b"
+    return "mistral-large-3:675b"
 
 
 @pytest.fixture

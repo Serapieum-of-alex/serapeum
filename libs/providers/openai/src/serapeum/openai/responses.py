@@ -77,14 +77,16 @@ from serapeum.core.tools import ToolCallArguments
 from serapeum.core.utils.schemas import parse_partial_json
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.llms import FlexibleModel
-from serapeum.openai.utils import (
+from serapeum.openai.models import (
     O1_MODELS,
-    create_retry_decorator,
     is_function_calling_model,
     openai_modelname_to_contextsize,
+)
+from serapeum.openai.converters import to_openai_message_dicts
+from serapeum.openai.utils import (
+    create_retry_decorator,
     resolve_openai_credentials,
     resolve_tool_choice,
-    to_openai_message_dicts,
 )
 
 

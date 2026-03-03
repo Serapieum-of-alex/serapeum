@@ -53,21 +53,25 @@ from serapeum.core.prompts import PromptTemplate
 from serapeum.core.llms import FlexibleModel
 from serapeum.core.output_parsers import BaseParser
 from serapeum.core.base.models import PydanticProgramMode
-from serapeum.openai.utils import (
+from serapeum.openai.models import (
     O1_MODELS,
-    create_retry_decorator,
+    is_chat_model,
+    is_chatcomp_api_supported,
+    is_function_calling_model,
+    is_json_schema_supported,
+    openai_modelname_to_contextsize,
+)
+from serapeum.openai.converters import (
     from_openai_completion_logprobs,
     from_openai_message,
     from_openai_token_logprobs,
-    is_chat_model,
-    is_function_calling_model,
-    openai_modelname_to_contextsize,
-    resolve_openai_credentials,
-    resolve_tool_choice,
     to_openai_message_dicts,
     update_tool_calls,
-    is_json_schema_supported,
-    is_chatcomp_api_supported,
+)
+from serapeum.openai.utils import (
+    create_retry_decorator,
+    resolve_openai_credentials,
+    resolve_tool_choice,
 )
 from openai import AsyncOpenAI
 from openai import OpenAI as SyncOpenAI
@@ -276,7 +280,6 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         audio_config: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
-        # TODO: Support deprecated max_new_tokens
         if "max_new_tokens" in kwargs:
             max_tokens = kwargs["max_new_tokens"]
             del kwargs["max_new_tokens"]
@@ -353,7 +356,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
 
     @classmethod
     def class_name(cls) -> str:
-        return "openai_llm"
+        return "openai"
 
     @property
     def _tokenizer(self) -> Tokenizer | None:

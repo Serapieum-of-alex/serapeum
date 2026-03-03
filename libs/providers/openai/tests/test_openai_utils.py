@@ -24,21 +24,23 @@ from serapeum.core.base.llms.types import (
 )
 from pydantic import BaseModel
 from serapeum.openai import OpenAI
-from serapeum.openai.utils import (
+from serapeum.openai.models import (
+    ALL_AVAILABLE_MODELS,
+    CHAT_MODELS,
+    is_chat_model,
+    is_chatcomp_api_supported,
+    is_function_calling_model,
+    is_json_schema_supported,
+    openai_modelname_to_contextsize,
+)
+from serapeum.openai.converters import (
     from_openai_completion_logprobs,
     from_openai_message_dicts,
     from_openai_messages,
     from_openai_token_logprob,
     from_openai_token_logprobs,
-    is_json_schema_supported,
     to_openai_message_dicts,
     to_openai_tool,
-    openai_modelname_to_contextsize,
-    is_chat_model,
-    is_function_calling_model,
-    ALL_AVAILABLE_MODELS,
-    CHAT_MODELS,
-    is_chatcomp_api_supported,
 )
 
 

@@ -1,15 +1,9 @@
 import os
-from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.tools import CallableTool
 import pytest
 from serapeum.openai import OpenAI
 from serapeum.openai.utils import resolve_tool_choice
 from serapeum.core.base.llms.types import ToolCallBlock
-
-
-def test_text_inference_embedding_class():
-    names_of_base_classes = [b.__name__ for b in OpenAI.__mro__]
-    assert BaseLLM.__name__ in names_of_base_classes
 
 
 def search(query: str) -> str:

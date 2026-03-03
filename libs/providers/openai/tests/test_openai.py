@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from serapeum.core.llms import Message
 from serapeum.openai import OpenAI
-from serapeum.openai.utils import O1_MODELS
+from serapeum.openai.models import O1_MODELS
 
 import openai
 from openai.types.chat.chat_completion import (

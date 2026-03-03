@@ -16,7 +16,8 @@ from serapeum.core.base.llms.types import (
 )
 
 from serapeum.openai.responses import OpenAIResponses, ResponseFunctionToolCall
-from serapeum.openai.utils import to_openai_message_dicts, O1_MODELS
+from serapeum.openai.models import O1_MODELS
+from serapeum.openai.converters import to_openai_message_dicts
 from serapeum.core.tools import CallableTool
 from serapeum.core.prompts import PromptTemplate
 from openai.types.responses.response_reasoning_item import Content, Summary

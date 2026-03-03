@@ -1,4 +1,6 @@
-from typing import Any, Callable, Dict, Optional, Sequence
+from __future__ import annotations
+
+from typing import Any, Callable, Sequence
 
 import httpx
 from serapeum.core.llms import Message
@@ -88,19 +90,19 @@ class AzureOpenAI(OpenAI):
     """
 
     engine: str = Field(description="The name of the deployed azure engine.")
-    azure_endpoint: Optional[str] = Field(
+    azure_endpoint: str | None = Field(
         default=None, description="The Azure endpoint to use."
     )
-    azure_deployment: Optional[str] = Field(
+    azure_deployment: str | None = Field(
         default=None, description="The Azure deployment to use."
     )
     use_azure_ad: bool = Field(
         description="Indicates if Microsoft Entra ID (former Azure AD) is used for token authentication"
     )
-    azure_ad_token_provider: Optional[AzureADTokenProvider] = Field(
+    azure_ad_token_provider: AzureADTokenProvider | None = Field(
         default=None, description="Callback function to provide Azure Entra ID token."
     )
-    api_base: Optional[str] = Field(
+    api_base: str | None = Field(
         default=None,
         description="The Azure Base URL to use. Useful for proxies on top of Azure OpenAI.",
     )
@@ -112,34 +114,34 @@ class AzureOpenAI(OpenAI):
     def __init__(
         self,
         model: str = "gpt-35-turbo",
-        engine: Optional[str] = None,
+        engine: str | None = None,
         temperature: float = 0.1,
-        max_tokens: Optional[int] = None,
-        additional_kwargs: Optional[Dict[str, Any]] = None,
+        max_tokens: int | None = None,
+        additional_kwargs: dict[str, Any] | None = None,
         max_retries: int = 3,
         timeout: float = 60.0,
         reuse_client: bool = True,
-        api_key: Optional[str] = None,
-        api_version: Optional[str] = None,
-        api_base: Optional[str] = None,
+        api_key: str | None = None,
+        api_version: str | None = None,
+        api_base: str | None = None,
         # azure specific
-        azure_endpoint: Optional[str] = None,
-        azure_deployment: Optional[str] = None,
-        azure_ad_token_provider: Optional[AzureADTokenProvider] = None,
+        azure_endpoint: str | None = None,
+        azure_deployment: str | None = None,
+        azure_ad_token_provider: AzureADTokenProvider | None = None,
         use_azure_ad: bool = False,
         # aliases for engine
-        deployment_name: Optional[str] = None,
-        deployment_id: Optional[str] = None,
-        deployment: Optional[str] = None,
+        deployment_name: str | None = None,
+        deployment_id: str | None = None,
+        deployment: str | None = None,
         # custom httpx client
-        http_client: Optional[httpx.Client] = None,
-        async_http_client: Optional[httpx.AsyncClient] = None,
+        http_client: httpx.Client | None = None,
+        async_http_client: httpx.AsyncClient | None = None,
         # base class
-        system_prompt: Optional[str] = None,
-        messages_to_prompt: Optional[Callable[[Sequence[Message]], str]] = None,
-        completion_to_prompt: Optional[Callable[[str], str]] = None,
+        system_prompt: str | None = None,
+        messages_to_prompt: Callable[[Sequence[Message]], str] | None = None,
+        completion_to_prompt: Callable[[str], str] | None = None,
         pydantic_program_mode: PydanticProgramMode = PydanticProgramMode.DEFAULT,
-        output_parser: Optional[BaseParser] = None,
+        output_parser: BaseParser | None = None,
         **kwargs: Any,
     ) -> None:
         engine = resolve_from_aliases(
@@ -185,7 +187,7 @@ class AzureOpenAI(OpenAI):
             self.api_base = None
 
     @model_validator(mode="before")
-    def validate_env(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_env(cls, values: dict[str, Any]) -> dict[str, Any]:
         """Validate necessary credentials are set."""
         if (
             values["api_base"] == "https://api.openai.com/v1"
@@ -222,7 +224,7 @@ class AzureOpenAI(OpenAI):
 
     def _get_credential_kwargs(
         self, is_async: bool = False, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         if self.use_azure_ad:
             if self.azure_ad_token_provider:
                 self.api_key = self.azure_ad_token_provider()
@@ -256,7 +258,7 @@ class AzureOpenAI(OpenAI):
             **kwargs,
         }
 
-    def _get_model_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
+    def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         model_kwargs = super()._get_model_kwargs(**kwargs)
         model_kwargs["model"] = self.engine
         return model_kwargs

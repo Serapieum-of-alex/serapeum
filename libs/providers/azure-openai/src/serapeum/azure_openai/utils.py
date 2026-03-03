@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import time
-from typing import Any, Optional
+from typing import Any
 
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import DefaultAzureCredential
@@ -28,7 +30,7 @@ def refresh_openai_azuread_token(
     return azure_ad_token
 
 
-def resolve_from_aliases(*args: Optional[str]) -> Optional[str]:
+def resolve_from_aliases(*args: str | None) -> str | None:
     for arg in args:
         if arg is not None:
             return arg

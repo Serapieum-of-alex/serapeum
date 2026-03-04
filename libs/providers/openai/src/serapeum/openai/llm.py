@@ -52,7 +52,6 @@ from serapeum.core.tools import ToolCallArguments
 from serapeum.core.utils.schemas import parse_partial_json
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.llms import FlexibleModel
-from serapeum.core.output_parsers import BaseParser
 from serapeum.core.base.models import PydanticProgramMode
 from serapeum.openai.models import (
     O1_MODELS,
@@ -77,7 +76,6 @@ from serapeum.openai.utils import (
 from openai import AsyncOpenAI
 from openai import OpenAI as SyncOpenAI
 from openai.types.chat.chat_completion_chunk import (
-    ChatCompletionChunk,
     ChoiceDelta,
     ChoiceDeltaToolCall,
 )
@@ -254,7 +252,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
 
     @model_validator(mode="wrap")
     @classmethod
-    def _inject_clients(cls, data: Any, handler: Any) -> "OpenAI":
+    def _inject_clients(cls, data: Any, handler: Any) -> OpenAI:
         """Intercept non-field kwargs and set private attributes after validation."""
         openai_client = None
         async_openai_client = None
@@ -285,7 +283,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         return instance
 
     @model_validator(mode="after")
-    def _resolve_and_validate(self) -> "OpenAI":
+    def _resolve_and_validate(self) -> OpenAI:
         """Resolve credentials, force O1 temperature, validate model support."""
         api_key, api_base, api_version = resolve_openai_credentials(
             api_key=self.api_key,

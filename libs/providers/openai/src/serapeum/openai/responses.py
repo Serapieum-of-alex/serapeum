@@ -273,7 +273,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
 
     @model_validator(mode="wrap")
     @classmethod
-    def _inject_clients(cls, data: Any, handler: Any) -> "OpenAIResponses":
+    def _inject_clients(cls, data: Any, handler: Any) -> OpenAIResponses:
         """Intercept non-field kwargs and set private attributes after validation."""
         openai_client = None
         async_openai_client = None
@@ -303,7 +303,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
         return instance
 
     @model_validator(mode="after")
-    def _resolve_and_validate(self) -> "OpenAIResponses":
+    def _resolve_and_validate(self) -> OpenAIResponses:
         """Resolve credentials, force O1 temperature, sync store flag."""
         api_key, api_base, api_version = resolve_openai_credentials(
             api_key=self.api_key,

@@ -1,9 +1,14 @@
 """Configuration helpers and runtime settings for Serapeum."""
 
-from dataclasses import dataclass
+from __future__ import annotations
 
-from serapeum.core.llms import LLM
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
 from serapeum.core.types import StructuredOutputMode
+
+if TYPE_CHECKING:
+    from serapeum.core.llms import LLM
 
 
 @dataclass

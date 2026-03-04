@@ -446,7 +446,7 @@ def from_openai_message(
         additional_kwargs["reference_audio_id"] = reference_audio_id
         blocks.append(Audio(content=audio_data, format="mp3"))
 
-    return Message(role=role, blocks=blocks, additional_kwargs=additional_kwargs)
+    return Message(role=role, chunks=blocks, additional_kwargs=additional_kwargs)
 
 
 def from_openai_token_logprob(

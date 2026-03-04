@@ -242,7 +242,7 @@ For provider-specific issues:
 - **Ollama**: [Ollama GitHub](https://github.com/ollama/ollama)
 - **Serapeum Integration**: [Serapeum Issues](https://github.com/Serapieum-of-alex/Serapeum/issues)
 
-For general framework questions, see the [Contributing Guide](../contributing.md).
+For general framework questions, see the [Contributing Guide](../developer-guide/contributing.md).
 
 ---
 

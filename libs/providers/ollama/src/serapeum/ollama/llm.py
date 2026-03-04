@@ -160,7 +160,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         Ollama(model="m", client=my_mock_client, async_client=my_async_mock)
 
-    Args:
+    Attributes:
         model: Ollama model identifier, e.g. ``"llama3.1"`` or
             ``"qwen3-next:80b"``.
         base_url: URL of the Ollama server. Defaults to

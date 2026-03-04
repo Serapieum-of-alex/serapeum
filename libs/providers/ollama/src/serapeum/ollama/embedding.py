@@ -48,7 +48,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):  # type: ignore[misc]
     accuracy for models that support asymmetric representations (e.g., nomic-embed-text,
     mxbai-embed-large).
 
-    Args:
+    Attributes:
         model_name: The Ollama model to use for embeddings (e.g., ``"nomic-embed-text"``).
         base_url: Base URL where the Ollama server is hosted. Defaults to
             ``"http://localhost:11434"``. Automatically switched to

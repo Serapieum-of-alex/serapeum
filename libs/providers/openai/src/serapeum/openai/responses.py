@@ -66,7 +66,8 @@ from serapeum.core.llms import (
 from pydantic import (
     Field,
     PrivateAttr,
-    BaseModel
+    BaseModel,
+    model_validator,
 )
 from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
@@ -194,7 +195,8 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
         ge=0.0,
         le=1.0,
     )
-    max_output_tokens: Optional[int] = Field(
+    max_output_tokens: int | None = Field(
+        default=None,
         description="The maximum number of tokens to generate.",
         gt=0,
     )
@@ -255,99 +257,70 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
     default_headers: Optional[Dict[str, str]] = Field(
         default=None, description="The default headers for API requests."
     )
-    api_key: Optional[str] = Field(default=None, description="The OpenAI API key.")
-    api_base: str = Field(description="The base URL for OpenAI API.")
-    api_version: str = Field(description="The API version for OpenAI API.")
+    api_key: str | None = Field(default=None, description="The OpenAI API key.")
+    api_base: str | None = Field(default=None, description="The base URL for OpenAI API.")
+    api_version: str | None = Field(default=None, description="The API version for OpenAI API.")
     context_window: Optional[int] = Field(
         default=None,
         description="The context window override for the model.",
     )
 
-    _client: SyncOpenAI = PrivateAttr()
-    _aclient: AsyncOpenAI = PrivateAttr()
-    _http_client: Optional[httpx.Client] = PrivateAttr()
-    _async_http_client: Optional[httpx.AsyncClient] = PrivateAttr()
-    _previous_response_id: Optional[str] = PrivateAttr()
+    _client: SyncOpenAI | None = PrivateAttr(default=None)
+    _aclient: AsyncOpenAI | None = PrivateAttr(default=None)
+    _http_client: httpx.Client | None = PrivateAttr(default=None)
+    _async_http_client: httpx.AsyncClient | None = PrivateAttr(default=None)
+    _previous_response_id: str | None = PrivateAttr(default=None)
 
-    def __init__(
-        self,
-        model: str = DEFAULT_OPENAI_MODEL,
-        temperature: float = DEFAULT_TEMPERATURE,
-        max_output_tokens: Optional[int] = None,
-        reasoning_options: Optional[Dict[str, Any]] = None,
-        include: Optional[List[str]] = None,
-        instructions: Optional[str] = None,
-        track_previous_responses: bool = False,
-        store: bool = False,
-        built_in_tools: Optional[List[dict]] = None,
-        truncation: str = "disabled",
-        user: Optional[str] = None,
-        previous_response_id: Optional[str] = None,
-        call_metadata: Optional[Dict[str, Any]] = None,
-        strict: bool = False,
-        additional_kwargs: Optional[Dict[str, Any]] = None,
-        max_retries: int = 3,
-        timeout: float = 60.0,
-        api_key: Optional[str] = None,
-        api_base: Optional[str] = None,
-        api_version: Optional[str] = None,
-        default_headers: Optional[Dict[str, str]] = None,
-        http_client: Optional[httpx.Client] = None,
-        async_http_client: Optional[httpx.AsyncClient] = None,
-        openai_client: Optional[SyncOpenAI] = None,
-        async_openai_client: Optional[AsyncOpenAI] = None,
-        context_window: Optional[int] = None,
-        **kwargs: Any,
-    ) -> None:
-        additional_kwargs = additional_kwargs or {}
+    @model_validator(mode="wrap")
+    @classmethod
+    def _inject_clients(cls, data: Any, handler: Any) -> "OpenAIResponses":
+        """Intercept non-field kwargs and set private attributes after validation."""
+        openai_client = None
+        async_openai_client = None
+        http_client = None
+        async_http_client = None
+        previous_response_id = None
 
+        if isinstance(data, dict):
+            openai_client = data.pop("openai_client", None)
+            async_openai_client = data.pop("async_openai_client", None)
+            http_client = data.pop("http_client", None)
+            async_http_client = data.pop("async_http_client", None)
+            previous_response_id = data.pop("previous_response_id", None)
+
+        instance = handler(data)
+
+        instance._previous_response_id = previous_response_id
+        instance._http_client = http_client
+        instance._async_http_client = async_http_client
+        instance._client = openai_client or SyncOpenAI(
+            **instance._get_credential_kwargs()
+        )
+        instance._aclient = async_openai_client or AsyncOpenAI(
+            **instance._get_credential_kwargs(is_async=True)
+        )
+
+        return instance
+
+    @model_validator(mode="after")
+    def _resolve_and_validate(self) -> "OpenAIResponses":
+        """Resolve credentials, force O1 temperature, sync store flag."""
         api_key, api_base, api_version = resolve_openai_credentials(
-            api_key=api_key,
-            api_base=api_base,
-            api_version=api_version,
+            api_key=self.api_key,
+            api_base=self.api_base,
+            api_version=self.api_version,
         )
+        self.api_key = api_key
+        self.api_base = api_base
+        self.api_version = api_version
 
-        # TODO: Temp forced to 1.0 for o1
-        if model in O1_MODELS:
-            temperature = 1.0
+        if self.model in O1_MODELS:
+            self.temperature = 1.0
 
-        super().__init__(
-            model=model,
-            temperature=temperature,
-            max_output_tokens=max_output_tokens,
-            reasoning_options=reasoning_options,
-            include=include,
-            instructions=instructions,
-            track_previous_responses=track_previous_responses,
-            store=store,
-            built_in_tools=built_in_tools,
-            truncation=truncation,
-            user=user,
-            additional_kwargs=additional_kwargs,
-            max_retries=max_retries,
-            api_key=api_key,
-            api_version=api_version,
-            api_base=api_base,
-            timeout=timeout,
-            default_headers=default_headers,
-            call_metadata=call_metadata,
-            strict=strict,
-            context_window=context_window,
-            **kwargs,
-        )
-
-        self._previous_response_id = previous_response_id
-
-        # store is set to true if track_previous_responses is true
         if self.track_previous_responses:
             self.store = True
 
-        self._http_client = http_client
-        self._async_http_client = async_http_client
-        self._client = openai_client or SyncOpenAI(**self._get_credential_kwargs())
-        self._aclient = async_openai_client or AsyncOpenAI(
-            **self._get_credential_kwargs(is_async=True)
-        )
+        return self
 
     @classmethod
     def class_name(cls) -> str:
@@ -445,7 +418,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
 
     @staticmethod
     def _parse_response_output(output: List[ResponseOutputItem]) -> ChatResponse:
-        message = Message(role=MessageRole.ASSISTANT, blocks=[])
+        message = Message(role=MessageRole.ASSISTANT)
         additional_kwargs = {"built_in_tool_calls": []}
         blocks: List[ContentBlock] = []
         for item in output:
@@ -712,7 +685,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
                 yield ChatResponse(
                     message=Message(
                         role=MessageRole.ASSISTANT,
-                        blocks=blocks,
+                        chunks=blocks,
                     ),
                     delta=delta,
                     raw=event,
@@ -813,7 +786,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
                 yield ChatResponse(
                     message=Message(
                         role=MessageRole.ASSISTANT,
-                        blocks=blocks,
+                        chunks=blocks,
                     ),
                     delta=delta,
                     raw=event,

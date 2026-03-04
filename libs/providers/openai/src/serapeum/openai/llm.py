@@ -39,7 +39,8 @@ from serapeum.core.llms import (
 from pydantic import (
     Field,
     PrivateAttr,
-    BaseModel
+    BaseModel,
+    model_validator,
 )
 
 from serapeum.core.configs.defaults import (
@@ -246,89 +247,65 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         description="The audio configuration to use for the model.",
     )
 
-    _client: SyncOpenAI | None = PrivateAttr()
-    _aclient: AsyncOpenAI | None = PrivateAttr()
-    _http_client: httpx.Client | None = PrivateAttr()
-    _async_http_client: httpx.AsyncClient | None = PrivateAttr()
+    _client: SyncOpenAI | None = PrivateAttr(default=None)
+    _aclient: AsyncOpenAI | None = PrivateAttr(default=None)
+    _http_client: httpx.Client | None = PrivateAttr(default=None)
+    _async_http_client: httpx.AsyncClient | None = PrivateAttr(default=None)
 
-    def __init__(
-        self,
-        model: str = DEFAULT_OPENAI_MODEL,
-        temperature: float = DEFAULT_TEMPERATURE,
-        max_tokens: int | None = None,
-        additional_kwargs: dict[str, Any] | None = None,
-        max_retries: int = 3,
-        timeout: float = 60.0,
-        reuse_client: bool = True,
-        api_key: str | None = None,
-        api_base: str | None = None,
-        api_version: str | None = None,
-        default_headers: dict[str, str] | None = None,
-        http_client: httpx.Client | None = None,
-        async_http_client: httpx.AsyncClient | None = None,
-        openai_client: SyncOpenAI | None = None,
-        async_openai_client: AsyncOpenAI | None = None,
-        # base class
-        system_prompt: str | None = None,
-        messages_to_prompt: Callable[[Sequence[Message]], str] | None = None,
-        completion_to_prompt: Callable[[str | None], str] = None,
-        pydantic_program_mode: PydanticProgramMode = PydanticProgramMode.DEFAULT,
-        output_parser: BaseParser | None = None,
-        strict: bool = False,
-        reasoning_effort: Literal["none", "minimal", "low", "medium", "high", "xhigh"] | None = None,
-        modalities: list[str] | None = None,
-        audio_config: dict[str, Any] | None = None,
-        **kwargs: Any,
-    ) -> None:
-        if "max_new_tokens" in kwargs:
-            max_tokens = kwargs["max_new_tokens"]
-            del kwargs["max_new_tokens"]
+    @model_validator(mode="wrap")
+    @classmethod
+    def _inject_clients(cls, data: Any, handler: Any) -> "OpenAI":
+        """Intercept non-field kwargs and set private attributes after validation."""
+        openai_client = None
+        async_openai_client = None
+        http_client = None
+        async_http_client = None
 
-        additional_kwargs = additional_kwargs or {}
+        if isinstance(data, dict):
+            # Backward-compat alias: max_new_tokens → max_tokens
+            if "max_new_tokens" in data:
+                data["max_tokens"] = data.pop("max_new_tokens")
 
+            openai_client = data.pop("openai_client", None)
+            async_openai_client = data.pop("async_openai_client", None)
+            http_client = data.pop("http_client", None)
+            async_http_client = data.pop("async_http_client", None)
+
+        instance = handler(data)
+
+        if openai_client is not None:
+            instance._client = openai_client
+        if async_openai_client is not None:
+            instance._aclient = async_openai_client
+        if http_client is not None:
+            instance._http_client = http_client
+        if async_http_client is not None:
+            instance._async_http_client = async_http_client
+
+        return instance
+
+    @model_validator(mode="after")
+    def _resolve_and_validate(self) -> "OpenAI":
+        """Resolve credentials, force O1 temperature, validate model support."""
         api_key, api_base, api_version = resolve_openai_credentials(
-            api_key=api_key,
-            api_base=api_base,
-            api_version=api_version,
+            api_key=self.api_key,
+            api_base=self.api_base,
+            api_version=self.api_version,
         )
+        self.api_key = api_key
+        self.api_base = api_base
+        self.api_version = api_version
 
-        # TODO: Temp forced to 1.0 for o1
-        if model in O1_MODELS:
-            temperature = 1.0
+        if self.model in O1_MODELS:
+            self.temperature = 1.0
 
-        if not is_chatcomp_api_supported(model):
+        if not is_chatcomp_api_supported(self.model):
             raise ValueError(
-                f"Cannot use model {model} as it is only supported by the Responses API. Use the OpenAIResponses class for it."
+                f"Cannot use model {self.model} as it is only supported by the "
+                "Responses API. Use the OpenAIResponses class for it."
             )
 
-        super().__init__(
-            model=model,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            additional_kwargs=additional_kwargs,
-            max_retries=max_retries,
-            api_key=api_key,
-            api_version=api_version,
-            api_base=api_base,
-            timeout=timeout,
-            reuse_client=reuse_client,
-            default_headers=default_headers,
-            system_prompt=system_prompt,
-            messages_to_prompt=messages_to_prompt,
-            completion_to_prompt=completion_to_prompt,
-            pydantic_program_mode=pydantic_program_mode,
-            output_parser=output_parser,
-            strict=strict,
-            reasoning_effort=reasoning_effort,
-            modalities=modalities,
-            audio_config=audio_config,
-            **kwargs,
-        )
-
-        self._client = openai_client
-        self._aclient = async_openai_client
-        self._http_client = http_client
-        self._async_http_client = async_http_client
+        return self
 
     def _get_client(self) -> SyncOpenAI:
         if not self.reuse_client:
@@ -384,12 +361,18 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
             else MessageRole.SYSTEM,
         )
 
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
-        if self._use_chat_completions(kwargs):
-            chat_fn = self._chat
+    def chat(
+        self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
+    ) -> ChatResponse | ChatResponseGen:
+        if stream:
+            result: ChatResponse | ChatResponseGen = self.stream_chat(
+                messages, **kwargs
+            )
+        elif self._use_chat_completions(kwargs):
+            result = self._chat(messages, **kwargs)
         else:
-            chat_fn = completion_to_chat_decorator(self._complete)
-        return chat_fn(messages, **kwargs)
+            result = completion_to_chat_decorator(self._complete)(messages, **kwargs)
+        return result
 
     def stream_chat(
         self, messages: Sequence[Message], **kwargs: Any
@@ -430,7 +413,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         """
         if self._use_chat_completions(kwargs):
             # Let the mixin handle chat→completion conversion
-            result = super().stream_complete(prompt, formatted, **kwargs)
+            result = super().complete(prompt, formatted, stream=True, **kwargs)
         else:
             result = self._stream_complete(prompt, **kwargs)
         return result
@@ -584,7 +567,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
                 yield ChatResponse(
                     message=Message(
                         role=role,
-                        blocks=blocks,
+                        chunks=blocks,
                         additional_kwargs=additional_kwargs,
                     ),
                     delta=content_delta,
@@ -702,14 +685,21 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
     async def achat(
         self,
         messages: Sequence[Message],
+        *,
+        stream: bool = False,
         **kwargs: Any,
-    ) -> ChatResponse:
-        achat_fn: Callable[..., Awaitable[ChatResponse]]
-        if self._use_chat_completions(kwargs):
-            achat_fn = self._achat
+    ) -> ChatResponse | ChatResponseAsyncGen:
+        if stream:
+            result: ChatResponse | ChatResponseAsyncGen = await self.astream_chat(
+                messages, **kwargs
+            )
+        elif self._use_chat_completions(kwargs):
+            result = await self._achat(messages, **kwargs)
         else:
-            achat_fn = acompletion_to_chat_decorator(self._acomplete)
-        return await achat_fn(messages, **kwargs)
+            result = await acompletion_to_chat_decorator(self._acomplete)(
+                messages, **kwargs
+            )
+        return result
 
     async def astream_chat(
         self,
@@ -755,7 +745,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         """
         if self._use_chat_completions(kwargs):
             # Let the mixin handle chat→completion conversion
-            result = await super().astream_complete(prompt, formatted, **kwargs)
+            result = await super().acomplete(prompt, formatted, stream=True, **kwargs)
         else:
             result = await self._astream_complete(prompt, **kwargs)
         return result
@@ -870,7 +860,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
                 yield ChatResponse(
                     message=Message(
                         role=role,
-                        blocks=blocks,
+                        chunks=blocks,
                         additional_kwargs=additional_kwargs,
                     ),
                     delta=content_delta,

@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 from pathlib import Path
-from typing import List
+
 from serapeum.core.base.llms.types import (
     Message,
     MessageRole,
@@ -42,8 +42,8 @@ SKIP_OPENAI_TESTS = not os.environ.get("OPENAI_API_KEY")
 def default_responses_llm():
     """Create a default OpenAIResponses instance with mocked clients."""
     with (
-        patch("serapeum.llms.openai.responses.SyncOpenAI"),
-        patch("serapeum.llms.openai.responses.AsyncOpenAI"),
+        patch("serapeum.openai.responses.SyncOpenAI"),
+        patch("serapeum.openai.responses.AsyncOpenAI"),
     ):
         llm = OpenAIResponses(
             model="gpt-4o-mini",
@@ -70,8 +70,8 @@ def test_init_and_properties(default_responses_llm):
 def test_get_model_name():
     """Test different model name formats are properly handled."""
     with (
-        patch("serapeum.llms.openai.responses.SyncOpenAI"),
-        patch("serapeum.llms.openai.responses.AsyncOpenAI"),
+        patch("serapeum.openai.responses.SyncOpenAI"),
+        patch("serapeum.openai.responses.AsyncOpenAI"),
     ):
         # Standard model
         llm = OpenAIResponses(model="gpt-4o-mini")
@@ -146,8 +146,8 @@ def test_parse_response_output():
     ]
 
     with (
-        patch("serapeum.llms.openai.responses.SyncOpenAI"),
-        patch("serapeum.llms.openai.responses.AsyncOpenAI"),
+        patch("serapeum.openai.responses.SyncOpenAI"),
+        patch("serapeum.openai.responses.AsyncOpenAI"),
     ):
         llm = OpenAIResponses(model="gpt-4o-mini")
         chat_response = llm._parse_response_output(output)
@@ -332,8 +332,8 @@ def test_get_tool_calls_from_response():
     ]
 
     with (
-        patch("serapeum.llms.openai.responses.SyncOpenAI"),
-        patch("serapeum.llms.openai.responses.AsyncOpenAI"),
+        patch("serapeum.openai.responses.SyncOpenAI"),
+        patch("serapeum.openai.responses.AsyncOpenAI"),
     ):
         llm = OpenAIResponses(model="gpt-4o-mini")
         tool_selections = llm.get_tool_calls_from_response(chat_response)
@@ -717,7 +717,7 @@ def test_messages_to_openai_responses_messages():
 
 
 @pytest.fixture()
-def response_output() -> List[ResponseOutputItem]:
+def response_output() -> list[ResponseOutputItem]:
     return [
         ResponseReasoningItem(
             id="1",
@@ -776,13 +776,8 @@ def response_output() -> List[ResponseOutputItem]:
     ]
 
 
-class OpenAIResponsesMock(OpenAIResponses):
-    def __init__(self):
-        pass
-
-
-def test__parse_response_output(response_output: List[ResponseOutputItem]):
-    result = OpenAIResponsesMock()._parse_response_output(output=response_output)
+def test__parse_response_output(response_output: list[ResponseOutputItem]):
+    result = OpenAIResponses._parse_response_output(output=response_output)
     assert (
         len(
             [

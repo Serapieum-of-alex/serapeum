@@ -3518,22 +3518,20 @@ pre-built clients via the constructor::</p>
 </code></pre></div>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
+<p><span class="doc-section-title">Attributes:</span></p>
     <table>
       <thead>
         <tr>
           <th>Name</th>
           <th>Type</th>
           <th>Description</th>
-          <th>Default</th>
         </tr>
       </thead>
       <tbody>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.llm.Ollama.model">model</span></code></td>
             <td>
-                <code>model</code>
-            </td>
-            <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3541,15 +3539,11 @@ pre-built clients via the constructor::</p>
 <code>"qwen3-next:80b"</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.llm.Ollama.base_url">base_url</span></code></td>
             <td>
-                <code>base_url</code>
-            </td>
-            <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3559,15 +3553,11 @@ pre-built clients via the constructor::</p>
 this value is still the local default.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.llm.Ollama.api_key">api_key</span></code></td>
             <td>
-                <code>api_key</code>
-            </td>
-            <td>
+                  <code><span title="str">str</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3577,15 +3567,11 @@ requests are routed to Ollama Cloud and <code>base_url</code> is
 automatically updated. <strong>Not serialised by</strong> <code>model_dump()</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.llm.Ollama.temperature">temperature</span></code></td>
             <td>
-                <code>temperature</code>
-            </td>
-            <td>
+                  <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3594,15 +3580,11 @@ increase creativity; lower values produce more deterministic
 output. Defaults to <code>0.75</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.llm.Ollama.context_window">context_window</span></code></td>
             <td>
-                <code>context_window</code>
-            </td>
-            <td>
+                  <code><span title="int">int</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3610,15 +3592,11 @@ output. Defaults to <code>0.75</code>.</p>
 Defaults to <code>DEFAULT_CONTEXT_WINDOW</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.llm.Ollama.request_timeout">request_timeout</span></code></td>
             <td>
-                <code>request_timeout</code>
-            </td>
-            <td>
+                  <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3626,15 +3604,11 @@ Defaults to <code>DEFAULT_CONTEXT_WINDOW</code>.</p>
 <code>60.0</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.llm.Ollama.prompt_key">prompt_key</span></code></td>
             <td>
-                <code>prompt_key</code>
-            </td>
-            <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3642,15 +3616,11 @@ Defaults to <code>DEFAULT_CONTEXT_WINDOW</code>.</p>
 <code>"prompt"</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.llm.Ollama.json_mode">json_mode</span></code></td>
             <td>
-                <code>json_mode</code>
-            </td>
-            <td>
+                  <code><span title="bool">bool</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3658,15 +3628,11 @@ Defaults to <code>DEFAULT_CONTEXT_WINDOW</code>.</p>
 model is constrained to emit valid JSON. Defaults to <code>False</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.llm.Ollama.additional_kwargs">additional_kwargs</span></code></td>
             <td>
-                <code>additional_kwargs</code>
-            </td>
-            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3674,15 +3640,11 @@ model is constrained to emit valid JSON. Defaults to <code>False</code>.</p>
 <code>options</code> field (e.g. <code>{"mirostat": 2}</code>).</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.llm.Ollama.is_function_calling_model">is_function_calling_model</span></code></td>
             <td>
-                <code>is_function_calling_model</code>
-            </td>
-            <td>
+                  <code><span title="bool">bool</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3690,15 +3652,11 @@ model is constrained to emit valid JSON. Defaults to <code>False</code>.</p>
 function calling. Defaults to <code>True</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.llm.Ollama.keep_alive">keep_alive</span></code></td>
             <td>
-                <code>keep_alive</code>
-            </td>
-            <td>
+                  <code><span title="float">float</span> | <span title="str">str</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3707,15 +3665,15 @@ request — a duration string (<code>"5m"</code>, <code>"1h"</code>) or float
 seconds. Defaults to <code>"5m"</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;/code&gt;
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-property&quot;&gt;&lt;code&gt;property&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;serapeum.ollama.llm.Ollama.client&lt;/code&gt;)" href="#serapeum.ollama.llm.Ollama.client">client</a></code></td>
             <td>
-                <code>client</code>
-            </td>
-            <td>
+                  <code><span title="ollama.Client">Client</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3724,15 +3682,15 @@ injection or testing. When <code>None</code>, the client is created
 lazily on first access.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;async_client&lt;/span&gt;&lt;/code&gt;
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-property&quot;&gt;&lt;code&gt;property&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;serapeum.ollama.llm.Ollama.async_client&lt;/code&gt;)" href="#serapeum.ollama.llm.Ollama.async_client">async_client</a></code></td>
             <td>
-                <code>async_client</code>
-            </td>
-            <td>
+                  <code><span title="ollama.AsyncClient">AsyncClient</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3740,9 +3698,6 @@ lazily on first access.</p>
 dependency injection or testing. When <code>None</code>, a client is
 created per event loop on first access.</p>
               </div>
-            </td>
-            <td>
-                <em>required</em>
             </td>
           </tr>
       </tbody>
@@ -5336,7 +5291,7 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-160" name="__codelineno-0-160"></a>
 <a id="__codelineno-0-161" name="__codelineno-0-161"></a><span class="sd">        Ollama(model=&quot;m&quot;, client=my_mock_client, async_client=my_async_mock)</span>
 <a id="__codelineno-0-162" name="__codelineno-0-162"></a>
-<a id="__codelineno-0-163" name="__codelineno-0-163"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-163" name="__codelineno-0-163"></a><span class="sd">    Attributes:</span>
 <a id="__codelineno-0-164" name="__codelineno-0-164"></a><span class="sd">        model: Ollama model identifier, e.g. ``&quot;llama3.1&quot;`` or</span>
 <a id="__codelineno-0-165" name="__codelineno-0-165"></a><span class="sd">            ``&quot;qwen3-next:80b&quot;``.</span>
 <a id="__codelineno-0-166" name="__codelineno-0-166"></a><span class="sd">        base_url: URL of the Ollama server. Defaults to</span>
@@ -9227,37 +9182,31 @@ accuracy for models that support asymmetric representations (e.g., nomic-embed-t
 mxbai-embed-large).</p>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
+<p><span class="doc-section-title">Attributes:</span></p>
     <table>
       <thead>
         <tr>
           <th>Name</th>
           <th>Type</th>
           <th>Description</th>
-          <th>Default</th>
         </tr>
       </thead>
       <tbody>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.embedding.OllamaEmbedding.model_name">model_name</span></code></td>
             <td>
-                <code>model_name</code>
-            </td>
-            <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
                 <p>The Ollama model to use for embeddings (e.g., <code>"nomic-embed-text"</code>).</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.embedding.OllamaEmbedding.base_url">base_url</span></code></td>
             <td>
-                <code>base_url</code>
-            </td>
-            <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -9266,15 +9215,11 @@ mxbai-embed-large).</p>
 <code>https://api.ollama.com</code> when <code>api_key</code> is provided.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.embedding.OllamaEmbedding.api_key">api_key</span></code></td>
             <td>
-                <code>api_key</code>
-            </td>
-            <td>
+                  <code><span title="str">str</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -9286,15 +9231,11 @@ automatically updated. <strong>Excluded from</strong> <code>model_dump()</code> 
 manager rather than persisting the serialised model.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.embedding.OllamaEmbedding.ollama_additional_kwargs">ollama_additional_kwargs</span></code></td>
             <td>
-                <code>ollama_additional_kwargs</code>
-            </td>
-            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -9302,15 +9243,11 @@ manager rather than persisting the serialised model.</p>
 (e.g., <code>{"mirostat": 1}</code>). Defaults to <code>{}</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.embedding.OllamaEmbedding.query_instruction">query_instruction</span></code></td>
             <td>
-                <code>query_instruction</code>
-            </td>
-            <td>
+                  <code><span title="str">str</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -9319,15 +9256,11 @@ embedding (e.g., <code>"search_query:"</code>). Helps models distinguish query
 embeddings from document embeddings for asymmetric retrieval.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.embedding.OllamaEmbedding.text_instruction">text_instruction</span></code></td>
             <td>
-                <code>text_instruction</code>
-            </td>
-            <td>
+                  <code><span title="str">str</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -9336,15 +9269,11 @@ embeddings from document embeddings for asymmetric retrieval.</p>
 asymmetric embedding patterns.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.embedding.OllamaEmbedding.keep_alive">keep_alive</span></code></td>
             <td>
-                <code>keep_alive</code>
-            </td>
-            <td>
+                  <code><span title="float">float</span> | <span title="str">str</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -9353,15 +9282,11 @@ Accepts a duration string (e.g., <code>"5m"</code>, <code>"1h"</code>) or a floa
 seconds. Defaults to <code>"5m"</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.embedding.OllamaEmbedding.client_kwargs">client_kwargs</span></code></td>
             <td>
-                <code>client_kwargs</code>
-            </td>
-            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -9371,15 +9296,11 @@ constructor (merged with the base kwargs built from <code>base_url</code> and
 header generated from <code>api_key</code>.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.embedding.OllamaEmbedding.client">client</span></code></td>
             <td>
-                <code>client</code>
-            </td>
-            <td>
+                  <code><span title="ollama.Client">Client</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -9388,24 +9309,17 @@ Pydantic validation; the <code>client</code> property returns this object on fir
 access without creating a new one.</p>
               </div>
             </td>
-            <td>
-                <em>required</em>
-            </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="serapeum.ollama.embedding.OllamaEmbedding.async_client">async_client</span></code></td>
             <td>
-                <code>async_client</code>
-            </td>
-            <td>
+                  <code><span title="ollama.AsyncClient">AsyncClient</span></code>
             </td>
             <td>
               <div class="doc-md-description">
                 <p>Pre-built <code>ollama.AsyncClient</code> injected for testing. Works
 the same way as the <code>client</code> parameter.</p>
               </div>
-            </td>
-            <td>
-                <em>required</em>
             </td>
           </tr>
       </tbody>
@@ -10159,7 +10073,7 @@ alist_models: Async variant of <code>list_models</code>.</p>
 <a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    accuracy for models that support asymmetric representations (e.g., nomic-embed-text,</span>
 <a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    mxbai-embed-large).</span>
 <a id="__codelineno-0-50" name="__codelineno-0-50"></a>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    Attributes:</span>
 <a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        model_name: The Ollama model to use for embeddings (e.g., ``&quot;nomic-embed-text&quot;``).</span>
 <a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        base_url: Base URL where the Ollama server is hosted. Defaults to</span>
 <a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">            ``&quot;http://localhost:11434&quot;``. Automatically switched to</span>

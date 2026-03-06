@@ -256,6 +256,7 @@ class ChatMessageConverter:
                     )
             else:
                 converter = ChatFormat.content_converters.get(type(block))
+                
                 if converter:
                     self._content.append(converter(block))
                 else:
@@ -300,15 +301,6 @@ class ChatMessageConverter:
 
         if "tool_call_id" in self._message.additional_kwargs:
             result["tool_call_id"] = self._message.additional_kwargs["tool_call_id"]
-
-
-def to_openai_message_dict(
-    message: Message,
-    drop_none: bool = False,
-    model: str | None = None,
-) -> ChatCompletionMessageParam:
-    """Convert a single serapeum Message to a Chat Completions API dict."""
-    return ChatMessageConverter(message, drop_none=drop_none, model=model).build()
 
 
 def to_openai_responses_message_dict(
@@ -435,11 +427,7 @@ def to_openai_message_dicts(
         return final_message_dicts
     else:
         return [
-            to_openai_message_dict(
-                message,
-                drop_none=drop_none,
-                model=model,
-            )
+            ChatMessageConverter(message, drop_none=drop_none, model=model).build()
             for message in messages
         ]
 

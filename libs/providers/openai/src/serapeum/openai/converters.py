@@ -190,87 +190,125 @@ class ResponsesFormat:
 # ---------------------------------------------------------------------------
 
 
+class ChatMessageConverter:
+    """Converts a serapeum ``Message`` into a Chat Completions API dict.
+
+    Usage::
+
+        result = ChatMessageConverter(message, model="gpt-4o").build()
+    """
+
+    def __init__(
+        self,
+        message: Message,
+        *,
+        drop_none: bool = False,
+        model: str | None = None,
+    ) -> None:
+        self._message = message
+        self._model = model
+        self._drop_none = drop_none
+        self._content: list[dict[str, Any]] = []
+        self._content_txt: str = ""
+        self._tool_call_dicts: list[dict[str, Any]] = []
+
+    def build(self) -> ChatCompletionMessageParam:
+        """Convert the message and return the Chat Completions API dict."""
+        audio_ref = self._try_audio_reference()
+        if audio_ref is not None:
+            result = audio_ref
+        else:
+            self._process_blocks()
+            result = self._assemble()
+            self._merge_legacy_kwargs(result)
+        _rewrite_system_to_developer(result, self._model)
+        _strip_none_keys(result, self._drop_none)
+        return result  # type: ignore[return-value]
+
+    def _try_audio_reference(self) -> dict[str, Any] | None:
+        """Return a short-circuit dict for assistant messages with a reference audio id."""
+        reference_audio_id = (
+            self._message.additional_kwargs.get("reference_audio_id")
+            if self._message.role == MessageRole.ASSISTANT
+            else None
+        )
+        result = None
+        if reference_audio_id:
+            result = {
+                "role": self._message.role.value,
+                "audio": {"id": reference_audio_id},
+            }
+        return result
+
+    def _process_blocks(self) -> None:
+        """Iterate message chunks and dispatch to ``ChatFormat`` converters."""
+        for block in self._message.chunks:
+            if isinstance(block, TextChunk):
+                self._content.append(ChatFormat.text(block))
+                self._content_txt += block.content
+            elif isinstance(block, ToolCallBlock):
+                try:
+                    self._tool_call_dicts.append(ChatFormat.tool_call(block))
+                except Exception:
+                    logger.warning(
+                        f"It was not possible to convert ToolCallBlock with call id "
+                        f"{block.tool_call_id or '`no call id`'} to a valid message, skipping..."
+                    )
+            else:
+                converter = ChatFormat.content_converters.get(type(block))
+                if converter:
+                    self._content.append(converter(block))
+                else:
+                    raise ValueError(
+                        f"Unsupported content block type: {type(block).__name__}"
+                    )
+
+    def _resolve_content(self) -> str | list[dict[str, Any]] | None:
+        """Determine the final content value (string, list, or ``None``)."""
+        has_tool_calls = len(self._tool_call_dicts) > 0
+        content: str | list[dict[str, Any]] | None = self._content_txt
+
+        if self._content_txt == "" and _should_null_content(self._message, has_tool_calls):
+            content = None
+        elif (
+            self._message.role.value not in ("assistant", "tool", "system")
+            and not all(isinstance(b, TextChunk) for b in self._message.chunks)
+        ):
+            content = self._content
+
+        return content
+
+    def _assemble(self) -> dict[str, Any]:
+        """Construct the base message dict with role, content, and optional tool calls."""
+        result: dict[str, Any] = {
+            "role": self._message.role.value,
+            "content": self._resolve_content(),
+        }
+        if self._tool_call_dicts:
+            result["tool_calls"] = self._tool_call_dicts
+        return result
+
+    def _merge_legacy_kwargs(self, result: dict[str, Any]) -> None:
+        """Merge ``tool_calls``/``function_call`` from ``additional_kwargs`` when no
+        ``ToolCallBlock`` chunks exist, and pass through ``tool_call_id``."""
+        has_tool_calls = len(self._tool_call_dicts) > 0
+        if (
+            "tool_calls" in self._message.additional_kwargs
+            or "function_call" in self._message.additional_kwargs
+        ) and not has_tool_calls:
+            result.update(self._message.additional_kwargs)
+
+        if "tool_call_id" in self._message.additional_kwargs:
+            result["tool_call_id"] = self._message.additional_kwargs["tool_call_id"]
+
+
 def to_openai_message_dict(
     message: Message,
     drop_none: bool = False,
     model: str | None = None,
 ) -> ChatCompletionMessageParam:
     """Convert a single serapeum Message to a Chat Completions API dict."""
-    # Short-circuit for assistant messages with a reference audio id
-    reference_audio_id = (
-        message.additional_kwargs.get("reference_audio_id")
-        if message.role == MessageRole.ASSISTANT
-        else None
-    )
-    if reference_audio_id:
-        message_dict: dict[str, Any] = {
-            "role": message.role.value,
-            "audio": {"id": reference_audio_id},
-        }
-        _rewrite_system_to_developer(message_dict, model)
-        _strip_none_keys(message_dict, drop_none)
-        return message_dict  # type: ignore
-
-    content: list[dict[str, Any]] = []
-    content_txt = ""
-    tool_call_dicts: list[dict[str, Any]] = []
-
-    for block in message.chunks:
-        if isinstance(block, TextChunk):
-            content.append(ChatFormat.text(block))
-            content_txt += block.content
-        elif isinstance(block, ToolCallBlock):
-            try:
-                tool_call_dicts.append(ChatFormat.tool_call(block))
-            except Exception:
-                logger.warning(
-                    f"It was not possible to convert ToolCallBlock with call id "
-                    f"{block.tool_call_id or '`no call id`'} to a valid message, skipping..."
-                )
-        else:
-            converter = ChatFormat.content_converters.get(type(block))
-            if converter:
-                content.append(converter(block))
-            else:
-                raise ValueError(
-                    f"Unsupported content block type: {type(block).__name__}"
-                )
-
-    # Null-out content for assistant messages that only contain tool/function calls
-    has_tool_calls = len(tool_call_dicts) > 0
-    if content_txt == "" and _should_null_content(message, has_tool_calls):
-        content_txt = None  # type: ignore[assignment]
-
-    # Assistant, system, and tool roles require string content; user messages
-    # with mixed block types use the list form.
-    message_dict = {
-        "role": message.role.value,
-        "content": (
-            content_txt
-            if message.role.value in ("assistant", "tool", "system")
-            or all(isinstance(block, TextChunk) for block in message.chunks)
-            else content
-        ),
-    }
-
-    if tool_call_dicts:
-        message_dict["tool_calls"] = tool_call_dicts
-
-    _rewrite_system_to_developer(message_dict, model)
-
-    # Merge legacy additional_kwargs (tool_calls / function_call) when no
-    # ToolCallBlock objects were present in the message chunks.
-    if (
-        "tool_calls" in message.additional_kwargs
-        or "function_call" in message.additional_kwargs
-    ) and not has_tool_calls:
-        message_dict.update(message.additional_kwargs)
-
-    if "tool_call_id" in message.additional_kwargs:
-        message_dict["tool_call_id"] = message.additional_kwargs["tool_call_id"]
-
-    _strip_none_keys(message_dict, drop_none)
-    return message_dict  # type: ignore
+    return ChatMessageConverter(message, drop_none=drop_none, model=model).build()
 
 
 def to_openai_responses_message_dict(

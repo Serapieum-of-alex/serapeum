@@ -33,9 +33,11 @@ from typing import (
     AsyncGenerator,
     Callable,
     Generator,
+    Literal,
     Sequence,
     TypeVar,
     cast,
+    overload,
 )
 
 from serapeum.core.llms import (
@@ -313,6 +315,16 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
         model_kwargs.update(kwargs)
 
         return model_kwargs
+
+    @overload
+    def chat(
+        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+    ) -> ChatResponse: ...
+
+    @overload
+    def chat(
+        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+    ) -> ChatResponseGen: ...
 
     def chat(
         self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
@@ -602,6 +614,16 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
 
         return gen()
 
+    @overload
+    async def achat(
+        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+    ) -> ChatResponse: ...
+
+    @overload
+    async def achat(
+        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+    ) -> ChatResponseAsyncGen: ...
+
     async def achat(
         self,
         messages: Sequence[Message],
@@ -792,6 +814,18 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
 
         return tool_selections
 
+    @overload
+    def structured_predict(
+        self, output_cls: type[Model], prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
+    ) -> Model: ...
+
+    @overload
+    def structured_predict(
+        self, output_cls: type[Model], prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
+    ) -> Generator[Model | FlexibleModel, None, None]: ...
+
     def structured_predict(
         self,
         output_cls: type[Model],
@@ -817,6 +851,18 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
                 output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
             )
         return result
+
+    @overload
+    async def astructured_predict(
+        self, output_cls: type[Model], prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
+    ) -> Model: ...
+
+    @overload
+    async def astructured_predict(
+        self, output_cls: type[Model], prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
+    ) -> AsyncGenerator[Model | FlexibleModel, None]: ...
 
     async def astructured_predict(
         self,

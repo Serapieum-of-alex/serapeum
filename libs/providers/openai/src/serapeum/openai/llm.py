@@ -8,6 +8,7 @@ from typing import (
     Callable,
     Literal,
     Sequence,
+    overload,
 )
 
 from serapeum.core.llms import (
@@ -209,11 +210,20 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
                 model=self._get_model_name()
             ),
             model_name=self.model,
-            # TODO: Temp for O1 beta
             system_role=MessageRole.USER
             if self.model in O1_MODELS
             else MessageRole.SYSTEM,
         )
+
+    @overload
+    def chat(
+        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+    ) -> ChatResponse: ...
+
+    @overload
+    def chat(
+        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+    ) -> ChatResponseGen: ...
 
     def chat(
         self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
@@ -232,6 +242,16 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
         else:
             result = completion_to_chat_decorator(self._complete)(messages, **kwargs)
         return result
+
+    @overload
+    def complete(
+        self, prompt: str, formatted: bool = ..., *, stream: Literal[False] = ..., **kwargs: Any,
+    ) -> CompletionResponse: ...
+
+    @overload
+    def complete(
+        self, prompt: str, formatted: bool = ..., *, stream: Literal[True], **kwargs: Any,
+    ) -> CompletionResponseGen: ...
 
     def complete(
         self,
@@ -496,6 +516,16 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
         }
 
 
+    @overload
+    async def achat(
+        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+    ) -> ChatResponse: ...
+
+    @overload
+    async def achat(
+        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+    ) -> ChatResponseAsyncGen: ...
+
     async def achat(
         self,
         messages: Sequence[Message],
@@ -519,6 +549,16 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
                 messages, **kwargs
             )
         return result
+
+    @overload
+    async def acomplete(
+        self, prompt: str, formatted: bool = ..., *, stream: Literal[False] = ..., **kwargs: Any,
+    ) -> CompletionResponse: ...
+
+    @overload
+    async def acomplete(
+        self, prompt: str, formatted: bool = ..., *, stream: Literal[True], **kwargs: Any,
+    ) -> CompletionResponseAsyncGen: ...
 
     async def acomplete(
         self,

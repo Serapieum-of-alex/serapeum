@@ -5,8 +5,10 @@ from typing import (
     Any,
     AsyncGenerator,
     Generator,
+    Literal,
     Type,
     TypeVar,
+    overload,
 )
 
 from pydantic import BaseModel
@@ -59,6 +61,18 @@ class StructuredOutput:
             self.pydantic_program_mode == PydanticProgramMode.DEFAULT
             and is_json_schema_supported(self.model)
         )
+
+    @overload
+    def structured_predict(
+        self, output_cls: Type[Model], prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
+    ) -> Model: ...
+
+    @overload
+    def structured_predict(
+        self, output_cls: Type[Model], prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
+    ) -> Generator[Model | FlexibleModel | None, None]: ...
 
     def structured_predict(
         self,
@@ -126,6 +140,18 @@ class StructuredOutput:
             yield from super()._structured_stream_call(
                 output_cls, prompt, llm_kwargs, **prompt_args
             )
+
+    @overload
+    async def astructured_predict(
+        self, output_cls: Type[Model], prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
+    ) -> Model: ...
+
+    @overload
+    async def astructured_predict(
+        self, output_cls: Type[Model], prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
+    ) -> AsyncGenerator[Model | FlexibleModel, None]: ...
 
     async def astructured_predict(
         self,

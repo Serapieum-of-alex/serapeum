@@ -1,11 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Protocol, runtime_checkable
 
 import tiktoken
 
-if TYPE_CHECKING:
-    from tiktoken import Encoding as Tokenizer
+
+@runtime_checkable
+class Tokenizer(Protocol):
+    """Tokenizers support an encode function that returns a list of ints."""
+
+    def encode(self, text: str) -> list[int]:  # fmt: skip
+        ...
 
 
 class OpenAIModelMixin:

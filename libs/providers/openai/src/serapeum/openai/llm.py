@@ -93,14 +93,6 @@ def llm_retry_decorator(f: Callable[..., Any]) -> Callable[..., Any]:
     return wrapper
 
 
-@runtime_checkable
-class Tokenizer(Protocol):
-    """Tokenizers support an encode function that returns a list of ints."""
-
-    def encode(self, text: str) -> list[int]:  # fmt: skip
-        ...
-
-
 def force_single_tool_call(response: ChatResponse) -> None:
     tool_calls = [
         block for block in response.message.chunks if isinstance(block, ToolCallBlock)

@@ -129,6 +129,12 @@ class Image(Chunk):
             as_base64=as_base64,
         )
 
+    def as_data_uri(self) -> str:
+        """Return a ``data:<mimetype>;base64,<data>`` URI for this image."""
+        img_bytes = self.resolve_image(as_base64=True).read()
+        img_str = img_bytes.decode("utf-8")
+        return f"data:{self.image_mimetype};base64,{img_str}"
+
 
 class Audio(Chunk):
     """Audio chunk supporting inline bytes, file paths, or URLs."""
@@ -291,6 +297,16 @@ class DocumentBlock(BaseModel):
 
         guess = get_type(ext=suffix)
         return str(guess.mime) if guess else None
+
+    def as_base64(self) -> tuple[str, str]:
+        """Return ``(base64_string, mimetype)`` for this document."""
+        if not self.data:
+            file_buffer = self.resolve_document()
+            b64_string = self._get_b64_string(file_buffer)
+        else:
+            b64_string = self.data.decode("utf-8")
+        mimetype = self._guess_mimetype()
+        return b64_string, mimetype
 
 
 class ToolCallBlock(BaseModel):

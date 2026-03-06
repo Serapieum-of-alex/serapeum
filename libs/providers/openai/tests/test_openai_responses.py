@@ -1,7 +1,7 @@
 import os
 import httpx
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from pathlib import Path
 
@@ -41,16 +41,12 @@ SKIP_OPENAI_TESTS = not os.environ.get("OPENAI_API_KEY")
 @pytest.fixture
 def default_responses_llm():
     """Create a default OpenAIResponses instance with mocked clients."""
-    with (
-        patch("serapeum.openai.responses.SyncOpenAI"),
-        patch("serapeum.openai.responses.AsyncOpenAI"),
-    ):
-        llm = OpenAIResponses(
-            model="gpt-4o-mini",
-            api_key="fake-api-key",
-            api_base="https://api.openai.com/v1",
-            api_version="2023-05-15",
-        )
+    llm = OpenAIResponses(
+        model="gpt-4o-mini",
+        api_key="fake-api-key",
+        api_base="https://api.openai.com/v1",
+        api_version="2023-05-15",
+    )
     return llm
 
 
@@ -69,21 +65,17 @@ def test_init_and_properties(default_responses_llm):
 
 def test_get_model_name():
     """Test different model name formats are properly handled."""
-    with (
-        patch("serapeum.openai.responses.SyncOpenAI"),
-        patch("serapeum.openai.responses.AsyncOpenAI"),
-    ):
-        # Standard model
-        llm = OpenAIResponses(model="gpt-4o-mini")
-        assert llm._get_model_name() == "gpt-4o-mini"
+    # Standard model
+    llm = OpenAIResponses(model="gpt-4o-mini")
+    assert llm._get_model_name() == "gpt-4o-mini"
 
-        # Legacy fine-tuning format
-        llm = OpenAIResponses(model="ft-model:gpt-4")
-        assert llm._get_model_name() == "ft-model"
+    # Legacy fine-tuning format
+    llm = OpenAIResponses(model="ft-model:gpt-4")
+    assert llm._get_model_name() == "ft-model"
 
-        # New fine-tuning format
-        llm = OpenAIResponses(model="ft:gpt-4:org:custom:id")
-        assert llm._get_model_name() == "gpt-4"
+    # New fine-tuning format
+    llm = OpenAIResponses(model="ft:gpt-4:org:custom:id")
+    assert llm._get_model_name() == "gpt-4"
 
 
 def test_get_model_kwargs(default_responses_llm):
@@ -145,12 +137,7 @@ def test_parse_response_output():
         )
     ]
 
-    with (
-        patch("serapeum.openai.responses.SyncOpenAI"),
-        patch("serapeum.openai.responses.AsyncOpenAI"),
-    ):
-        llm = OpenAIResponses(model="gpt-4o-mini")
-        chat_response = llm._parse_response_output(output)
+    chat_response = OpenAIResponses._parse_response_output(output)
 
     assert chat_response.message.role == MessageRole.ASSISTANT
     assert len(chat_response.message.chunks) == 1
@@ -331,12 +318,8 @@ def test_get_tool_calls_from_response():
         )
     ]
 
-    with (
-        patch("serapeum.openai.responses.SyncOpenAI"),
-        patch("serapeum.openai.responses.AsyncOpenAI"),
-    ):
-        llm = OpenAIResponses(model="gpt-4o-mini")
-        tool_selections = llm.get_tool_calls_from_response(chat_response)
+    llm = OpenAIResponses(model="gpt-4o-mini")
+    tool_selections = llm.get_tool_calls_from_response(chat_response)
 
     assert len(tool_selections) == 1
     assert tool_selections[0].tool_id == "123"

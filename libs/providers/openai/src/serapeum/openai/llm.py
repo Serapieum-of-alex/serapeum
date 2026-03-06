@@ -71,8 +71,6 @@ from serapeum.openai.utils import (
     create_retry_decorator,
     resolve_tool_choice,
 )
-from openai import AsyncOpenAI
-from openai import OpenAI as SyncOpenAI
 from openai.types.chat.chat_completion_chunk import (
     ChoiceDelta,
     ChoiceDeltaToolCall,
@@ -141,7 +139,6 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         additional_kwargs: Add additional parameters to OpenAI request body.
         max_retries: How many times to retry the API call if it fails.
         timeout: How long to wait, in seconds, for an API call before failing.
-        reuse_client: Reuse the OpenAI client between requests. When doing anything with large volumes of async API calls, setting this to false can improve stability.
         api_key: Your OpenAI api key
         api_base: The base URL of the API to call
         api_version: the version of the API to call
@@ -198,13 +195,6 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
     additional_kwargs: dict[str, Any] = Field(
         default_factory=dict, description="Additional kwargs for the OpenAI API."
     )
-    reuse_client: bool = Field(
-        default=True,
-        description=(
-            "Reuse the OpenAI client between requests. When doing anything with large "
-            "volumes of async API calls, setting this to false can improve stability."
-        ),
-    )
     strict: bool = Field(
         default=False,
         description="Whether to use strict mode for invoking tools/using schemas.",
@@ -235,30 +225,6 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             )
 
         return self
-
-    @property
-    def client(self) -> SyncOpenAI:
-        """Synchronous OpenAI client. Creates fresh instance when reuse_client is False."""
-        if not self.reuse_client:
-            result = SyncOpenAI(**self._get_credential_kwargs())
-        else:
-            if self._client is None:
-                self._client = SyncOpenAI(**self._get_credential_kwargs())
-            result = self._client
-        return result
-
-    @property
-    def async_client(self) -> AsyncOpenAI:
-        """Asynchronous OpenAI client. Creates fresh instance when reuse_client is False."""
-        if not self.reuse_client:
-            result = AsyncOpenAI(**self._get_credential_kwargs(is_async=True))
-        else:
-            if self._async_client is None:
-                self._async_client = AsyncOpenAI(
-                    **self._get_credential_kwargs(is_async=True)
-                )
-            result = self._async_client
-        return result
 
     def _get_model_name(self) -> str:
         model_name = self.model
@@ -404,19 +370,11 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             model=self.model,
         )
 
-        if self.reuse_client:
-            response = client.chat.completions.create(
-                messages=message_dicts,
-                stream=False,
-                **self._get_model_kwargs(**kwargs),
-            )
-        else:
-            with client:
-                response = client.chat.completions.create(
-                    messages=message_dicts,
-                    stream=False,
-                    **self._get_model_kwargs(**kwargs),
-                )
+        response = client.chat.completions.create(
+            messages=message_dicts,
+            stream=False,
+            **self._get_model_kwargs(**kwargs),
+        )
 
         openai_message = response.choices[0].message
         message = from_openai_message(
@@ -511,19 +469,11 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         all_kwargs = self._get_model_kwargs(**kwargs)
         self._update_max_tokens(all_kwargs, prompt)
 
-        if self.reuse_client:
-            response = client.completions.create(
-                prompt=prompt,
-                stream=False,
-                **all_kwargs,
-            )
-        else:
-            with client:
-                response = client.completions.create(
-                    prompt=prompt,
-                    stream=False,
-                    **all_kwargs,
-                )
+        response = client.completions.create(
+            prompt=prompt,
+            stream=False,
+            **all_kwargs,
+        )
         text = response.choices[0].text
 
         openai_completion_logprobs = response.choices[0].logprobs
@@ -688,17 +638,11 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             model=self.model,
         )
 
-        if self.reuse_client:
-            response = await aclient.chat.completions.create(
-                messages=message_dicts, stream=False, **self._get_model_kwargs(**kwargs)
-            )
-        else:
-            async with aclient:
-                response = await aclient.chat.completions.create(
-                    messages=message_dicts,
-                    stream=False,
-                    **self._get_model_kwargs(**kwargs),
-                )
+        response = await aclient.chat.completions.create(
+            messages=message_dicts,
+            stream=False,
+            **self._get_model_kwargs(**kwargs),
+        )
 
         openai_message = response.choices[0].message
         message = from_openai_message(
@@ -804,19 +748,11 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         all_kwargs = self._get_model_kwargs(**kwargs)
         self._update_max_tokens(all_kwargs, prompt)
 
-        if self.reuse_client:
-            response = await aclient.completions.create(
-                prompt=prompt,
-                stream=False,
-                **all_kwargs,
-            )
-        else:
-            async with aclient:
-                response = await aclient.completions.create(
-                    prompt=prompt,
-                    stream=False,
-                    **all_kwargs,
-                )
+        response = await aclient.completions.create(
+            prompt=prompt,
+            stream=False,
+            **all_kwargs,
+        )
 
         text = response.choices[0].text
         openai_completion_logprobs = response.choices[0].logprobs

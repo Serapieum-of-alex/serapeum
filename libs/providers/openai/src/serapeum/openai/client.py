@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 import httpx
@@ -23,8 +24,9 @@ class OpenAIClientMixin(BaseModel):
     client lifecycle. Supports injecting pre-built SDK clients via constructor
     kwargs for testing.
 
-    Subclasses may override the ``client`` / ``async_client`` properties to
-    customise client lifecycle (e.g. ``OpenAI`` adds ``reuse_client`` support).
+    The ``async_client`` property tracks the asyncio event loop and automatically
+    recreates the client when the loop has been closed (e.g. across pytest-asyncio
+    tests).
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -56,6 +58,7 @@ class OpenAIClientMixin(BaseModel):
     _async_client: AsyncOpenAI | None = PrivateAttr(default=None)
     _http_client: httpx.Client | None = PrivateAttr(default=None)
     _async_http_client: httpx.AsyncClient | None = PrivateAttr(default=None)
+    _async_client_loop: asyncio.AbstractEventLoop | None = PrivateAttr(default=None)
 
     @model_validator(mode="wrap")
     @classmethod
@@ -127,9 +130,45 @@ class OpenAIClientMixin(BaseModel):
 
     @property
     def async_client(self) -> AsyncOpenAI:
-        """Asynchronous OpenAI client, lazily created on first access."""
+        """Asynchronous OpenAI client with event-loop safety.
+
+        Lazily creates the client on first access and tracks the asyncio event
+        loop it was created on. If the loop has been closed (e.g. between
+        pytest-asyncio test functions), the client is automatically recreated.
+        """
+        try:
+            current_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            current_loop = None
+
+        cached_loop = self._async_client_loop
+
         if self._async_client is None:
             self._async_client = AsyncOpenAI(
                 **self._get_credential_kwargs(is_async=True)
             )
+            self._async_client_loop = current_loop
+        elif cached_loop is None:
+            # Injected client with no recorded loop — bind without recreation
+            self._async_client_loop = current_loop
+        elif cached_loop is not None and hasattr(cached_loop, "is_closed") and cached_loop.is_closed():
+            # Cached loop is closed — recreate
+            self._async_client = AsyncOpenAI(
+                **self._get_credential_kwargs(is_async=True)
+            )
+            self._async_client_loop = current_loop
+        elif (
+            current_loop is not None
+            and hasattr(current_loop, "is_closed")
+            and current_loop.is_closed()
+        ):
+            # Current loop is closed — recreate
+            self._async_client = AsyncOpenAI(
+                **self._get_credential_kwargs(is_async=True)
+            )
+            self._async_client_loop = current_loop
+        else:
+            # Both loops open — reuse, update tracked loop
+            self._async_client_loop = current_loop
+
         return self._async_client

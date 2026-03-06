@@ -15,7 +15,6 @@ from typing import (
     Sequence,
     Type,
     runtime_checkable,
-    Awaitable,
 )
 
 import tiktoken
@@ -161,7 +160,7 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         llm = OpenAI(model="gpt-3.5-turbo")
 
-        stream = llm.stream_complete("Hi, write a short story")
+        stream = llm.complete("Hi, write a short story", stream=True)
 
         for r in stream:
             print(r.delta, end="")
@@ -268,32 +267,28 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
     ) -> ChatResponse | ChatResponseGen:
         if stream:
-            result: ChatResponse | ChatResponseGen = self.stream_chat(
-                messages, **kwargs
-            )
+            if self._use_chat_completions(kwargs):
+                result: ChatResponse | ChatResponseGen = self._stream_chat(
+                    messages, **kwargs
+                )
+            else:
+                result = stream_completion_to_chat_decorator(self._stream_complete)(
+                    messages, **kwargs
+                )
         elif self._use_chat_completions(kwargs):
             result = self._chat(messages, **kwargs)
         else:
             result = completion_to_chat_decorator(self._complete)(messages, **kwargs)
         return result
 
-    def stream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseGen:
-        if self._use_chat_completions(kwargs):
-            stream_chat_fn = self._stream_chat
-        else:
-            stream_chat_fn = stream_completion_to_chat_decorator(self._stream_complete)
-        return stream_chat_fn(messages, **kwargs)
-
     def complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
-        """Completion endpoint - routes to appropriate implementation based on model type.
-
-        Note: When using chat completions, the ChatToCompletionMixin provides this method
-        by calling self.chat() internally. For non-chat models, we use the native completion API.
-        """
+        self,
+        prompt: str,
+        formatted: bool = False,
+        *,
+        stream: bool = False,
+        **kwargs: Any,
+    ) -> CompletionResponse | CompletionResponseGen:
         if self.modalities and "audio" in self.modalities:
             raise ValueError(
                 "Audio is not supported for completion. Use chat/achat instead."
@@ -301,24 +296,13 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         if self._use_chat_completions(kwargs):
             # Let the mixin handle chat→completion conversion
-            result = super().complete(prompt, formatted, **kwargs)
+            result: CompletionResponse | CompletionResponseGen = super().complete(
+                prompt, formatted, stream=stream, **kwargs
+            )
+        elif stream:
+            result = self._stream_complete(prompt, **kwargs)
         else:
             result = self._complete(prompt, **kwargs)
-        return result
-
-    def stream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseGen:
-        """Streaming completion endpoint - routes to appropriate implementation based on model type.
-
-        Note: When using chat completions, the ChatToCompletionMixin provides this method
-        by calling self.stream_chat() internally. For non-chat models, we use the native completion API.
-        """
-        if self._use_chat_completions(kwargs):
-            # Let the mixin handle chat→completion conversion
-            result = super().complete(prompt, formatted, stream=True, **kwargs)
-        else:
-            result = self._stream_complete(prompt, **kwargs)
         return result
 
     def _use_chat_completions(self, kwargs: dict[str, Any]) -> bool:
@@ -568,9 +552,14 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         **kwargs: Any,
     ) -> ChatResponse | ChatResponseAsyncGen:
         if stream:
-            result: ChatResponse | ChatResponseAsyncGen = await self.astream_chat(
-                messages, **kwargs
-            )
+            if self._use_chat_completions(kwargs):
+                result: ChatResponse | ChatResponseAsyncGen = (
+                    await self._astream_chat(messages, **kwargs)
+                )
+            else:
+                result = await astream_completion_to_chat_decorator(
+                    self._astream_complete
+                )(messages, **kwargs)
         elif self._use_chat_completions(kwargs):
             result = await self._achat(messages, **kwargs)
         else:
@@ -579,28 +568,14 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             )
         return result
 
-    async def astream_chat(
-        self,
-        messages: Sequence[Message],
-        **kwargs: Any,
-    ) -> ChatResponseAsyncGen:
-        astream_chat_fn: Callable[..., Awaitable[ChatResponseAsyncGen]]
-        if self._use_chat_completions(kwargs):
-            astream_chat_fn = self._astream_chat
-        else:
-            astream_chat_fn = astream_completion_to_chat_decorator(
-                self._astream_complete
-            )
-        return await astream_chat_fn(messages, **kwargs)
-
     async def acomplete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponse:
-        """Async completion endpoint - routes to appropriate implementation based on model type.
-
-        Note: When using chat completions, the ChatToCompletionMixin provides this method
-        by calling self.achat() internally. For non-chat models, we use the native completion API.
-        """
+        self,
+        prompt: str,
+        formatted: bool = False,
+        *,
+        stream: bool = False,
+        **kwargs: Any,
+    ) -> CompletionResponse | CompletionResponseAsyncGen:
         if self.modalities and "audio" in self.modalities:
             raise ValueError(
                 "Audio is not supported for completion. Use chat/achat instead."
@@ -608,24 +583,13 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         if self._use_chat_completions(kwargs):
             # Let the mixin handle chat→completion conversion
-            result = await super().acomplete(prompt, formatted, **kwargs)
+            result: CompletionResponse | CompletionResponseAsyncGen = (
+                await super().acomplete(prompt, formatted, stream=stream, **kwargs)
+            )
+        elif stream:
+            result = await self._astream_complete(prompt, **kwargs)
         else:
             result = await self._acomplete(prompt, **kwargs)
-        return result
-
-    async def astream_complete(
-        self, prompt: str, formatted: bool = False, **kwargs: Any
-    ) -> CompletionResponseAsyncGen:
-        """Async streaming completion endpoint - routes to appropriate implementation based on model type.
-
-        Note: When using chat completions, the ChatToCompletionMixin provides this method
-        by calling self.astream_chat() internally. For non-chat models, we use the native completion API.
-        """
-        if self._use_chat_completions(kwargs):
-            # Let the mixin handle chat→completion conversion
-            result = await super().acomplete(prompt, formatted, stream=True, **kwargs)
-        else:
-            result = await self._astream_complete(prompt, **kwargs)
         return result
 
     @llm_retry_decorator
@@ -960,50 +924,70 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         output_cls: Type[Model],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
+        *,
+        stream: bool = False,
         **prompt_args: Any,
-    ) -> Model:
-        """Structured predict."""
+    ) -> Model | Generator[Model | FlexibleModel | None, None]:
         llm_kwargs = llm_kwargs or {}
 
-        if self._should_use_structure_outputs():
+        if stream:
+            result: Model | Generator[Model | FlexibleModel | None, None] = (
+                self._structured_stream_call(
+                    output_cls, prompt, llm_kwargs, **prompt_args
+                )
+            )
+        elif self._should_use_structure_outputs():
             messages = self._extend_messages(prompt.format_messages(**prompt_args))
             llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
             response = self.chat(messages, **llm_kwargs)
-            return output_cls.model_validate_json(str(response.message.content))
-
-        # when uses function calling to extract structured outputs
-        # here we force tool_choice to be required
-        llm_kwargs["tool_choice"] = (
-            "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
-        )
-        return super().structured_predict(
-            output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-        )
+            result = output_cls.model_validate_json(str(response.message.content))
+        else:
+            # when uses function calling to extract structured outputs
+            # here we force tool_choice to be required
+            llm_kwargs["tool_choice"] = (
+                "required"
+                if "tool_choice" not in llm_kwargs
+                else llm_kwargs["tool_choice"]
+            )
+            result = super().structured_predict(
+                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
+            )
+        return result
 
     async def astructured_predict(
         self,
         output_cls: Type[Model],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
+        *,
+        stream: bool = False,
         **prompt_args: Any,
-    ) -> Model:
-        """Structured predict."""
+    ) -> Model | AsyncGenerator[Model | FlexibleModel, None]:
         llm_kwargs = llm_kwargs or {}
 
-        if self._should_use_structure_outputs():
+        if stream:
+            result: Model | AsyncGenerator[Model | FlexibleModel, None] = (
+                await self._structured_astream_call(
+                    output_cls, prompt, llm_kwargs, **prompt_args
+                )
+            )
+        elif self._should_use_structure_outputs():
             messages = self._extend_messages(prompt.format_messages(**prompt_args))
             llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
             response = await self.achat(messages, **llm_kwargs)
-            return output_cls.model_validate_json(str(response.message.content))
-
-        # when uses function calling to extract structured outputs
-        # here we force tool_choice to be required
-        llm_kwargs["tool_choice"] = (
-            "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
-        )
-        return await super().astructured_predict(
-            output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-        )
+            result = output_cls.model_validate_json(str(response.message.content))
+        else:
+            # when uses function calling to extract structured outputs
+            # here we force tool_choice to be required
+            llm_kwargs["tool_choice"] = (
+                "required"
+                if "tool_choice" not in llm_kwargs
+                else llm_kwargs["tool_choice"]
+            )
+            result = await super().astructured_predict(
+                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
+            )
+        return result
 
     def _structured_stream_call(
         self,
@@ -1020,7 +1004,7 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             messages = self._extend_messages(prompt.format_messages(**prompt_args))
             llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
             curr = None
-            for response in self.stream_chat(messages, **llm_kwargs):
+            for response in self.chat(stream=True, messages=messages, **llm_kwargs):
                 curr = process_streaming_content_incremental(
                     response,
                     output_cls,
@@ -1058,7 +1042,7 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 messages = self._extend_messages(prompt.format_messages(**prompt_args))
                 llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
                 curr = None
-                async for response in await self.astream_chat(messages, **llm_kwargs):
+                async for response in await self.achat(stream=True, messages=messages, **llm_kwargs):
                     curr = process_streaming_content_incremental(
                         response, output_cls, curr
                     )
@@ -1075,29 +1059,3 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 output_cls, prompt, llm_kwargs, **prompt_args
             )
 
-    def stream_structured_predict(
-        self,
-        output_cls: Type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        **prompt_args: Any,
-    ) -> Generator[Model | FlexibleModel | None, None]:
-        """Stream structured predict."""
-        llm_kwargs = llm_kwargs or {}
-
-        return super().stream_structured_predict(
-            output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-        )
-
-    async def astream_structured_predict(
-        self,
-        output_cls: Type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        **prompt_args: Any,
-    ) -> AsyncGenerator[Model | FlexibleModel, None]:
-        """Stream structured predict."""
-        llm_kwargs = llm_kwargs or {}
-        return await super().astream_structured_predict(
-            output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-        )

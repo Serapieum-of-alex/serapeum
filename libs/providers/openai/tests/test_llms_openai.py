@@ -180,7 +180,7 @@ def test_streaming_with_usage_tokens():
         model="gpt-4.1-mini",
         additional_kwargs={"stream_options": {"include_usage": True}},
     )
-    response_gen = llm.stream_complete("What is the capital of France?")
+    response_gen = llm.complete(stream=True, prompt="What is the capital of France?")
     intermediate_response = None
     for chunk in response_gen:
         intermediate_response = chunk

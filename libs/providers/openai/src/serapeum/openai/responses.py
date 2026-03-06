@@ -352,13 +352,15 @@ class OpenAIResponses(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingL
 
         return model_kwargs
 
-    def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
-        return self._chat(messages, **kwargs)
-
-    def stream_chat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponseGen:
-        return self._stream_chat(messages, **kwargs)
+    def chat(
+        self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
+    ) -> ChatResponse | ChatResponseGen:
+        result: ChatResponse | ChatResponseGen = (
+            self._stream_chat(messages, **kwargs)
+            if stream
+            else self._chat(messages, **kwargs)
+        )
+        return result
 
     @staticmethod
     def _parse_response_output(output: List[ResponseOutputItem]) -> ChatResponse:
@@ -641,16 +643,16 @@ class OpenAIResponses(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingL
     async def achat(
         self,
         messages: Sequence[Message],
+        *,
+        stream: bool = False,
         **kwargs: Any,
-    ) -> ChatResponse:
-        return await self._achat(messages, **kwargs)
-
-    async def astream_chat(
-        self,
-        messages: Sequence[Message],
-        **kwargs: Any,
-    ) -> ChatResponseAsyncGen:
-        return await self._astream_chat(messages, **kwargs)
+    ) -> ChatResponse | ChatResponseAsyncGen:
+        result: ChatResponse | ChatResponseAsyncGen = (
+            await self._astream_chat(messages, **kwargs)
+            if stream
+            else await self._achat(messages, **kwargs)
+        )
+        return result
 
     @llm_retry_decorator
     async def _achat(
@@ -833,73 +835,49 @@ class OpenAIResponses(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingL
         output_cls: Type[Model],
         prompt: PromptTemplate,
         llm_kwargs: Optional[Dict[str, Any]] = None,
+        *,
+        stream: bool = False,
         **prompt_args: Any,
-    ) -> Model:
-        """Structured predict."""
+    ) -> Union[Model, Generator[Union[Model, FlexibleModel], None, None]]:
         llm_kwargs = llm_kwargs or {}
 
         llm_kwargs["tool_choice"] = (
             "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
         )
-        # by default structured prediction uses function calling to extract structured outputs
-        # here we force tool_choice to be required
-        return super().structured_predict(
-            output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-        )
+        if stream:
+            result: Union[Model, Generator[Union[Model, FlexibleModel], None, None]] = (
+                super().stream_structured_predict(
+                    output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
+                )
+            )
+        else:
+            result = super().structured_predict(
+                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
+            )
+        return result
 
     async def astructured_predict(
         self,
         output_cls: Type[Model],
         prompt: PromptTemplate,
         llm_kwargs: Optional[Dict[str, Any]] = None,
+        *,
+        stream: bool = False,
         **prompt_args: Any,
-    ) -> Model:
-        """Structured predict."""
+    ) -> Union[Model, AsyncGenerator[Union[Model, FlexibleModel], None]]:
         llm_kwargs = llm_kwargs or {}
 
         llm_kwargs["tool_choice"] = (
             "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
         )
-        # by default structured prediction uses function calling to extract structured outputs
-        # here we force tool_choice to be required
-        return await super().astructured_predict(
-            output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-        )
-
-    def stream_structured_predict(
-        self,
-        output_cls: Type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
-        **prompt_args: Any,
-    ) -> Generator[Union[Model, FlexibleModel], None, None]:
-        """Stream structured predict."""
-        llm_kwargs = llm_kwargs or {}
-
-        llm_kwargs["tool_choice"] = (
-            "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
-        )
-        # by default structured prediction uses function calling to extract structured outputs
-        # here we force tool_choice to be required
-        return super().stream_structured_predict(
-            output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-        )
-
-    async def astream_structured_predict(
-        self,
-        output_cls: Type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
-        **prompt_args: Any,
-    ) -> AsyncGenerator[Union[Model, FlexibleModel], None]:
-        """Stream structured predict."""
-        llm_kwargs = llm_kwargs or {}
-
-        llm_kwargs["tool_choice"] = (
-            "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
-        )
-        # by default structured prediction uses function calling to extract structured outputs
-        # here we force tool_choice to be required
-        return await super().astream_structured_predict(
-            output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-        )
+        if stream:
+            result: Union[Model, AsyncGenerator[Union[Model, FlexibleModel], None]] = (
+                await super().astream_structured_predict(
+                    output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
+                )
+            )
+        else:
+            result = await super().astructured_predict(
+                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
+            )
+        return result

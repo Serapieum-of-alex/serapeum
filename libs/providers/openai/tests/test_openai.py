@@ -339,12 +339,12 @@ def test_completion_model_streaming(MockSyncOpenAI: MagicMock) -> None:
         prompt = "test prompt"
         message = Message(role="user", content="test message")
 
-        response_gen = llm.stream_complete(prompt)
+        response_gen = llm.complete(stream=True, prompt=prompt)
         responses = list(response_gen)
         assert responses[-1].text == "12"
 
         mock_instance.completions.create.return_value = mock_completion_stream_v1()
-        chat_response_gen = llm.stream_chat([message])
+        chat_response_gen = llm.chat(stream=True, messages=[message])
         chat_responses = list(chat_response_gen)
         assert chat_responses[-1].message.content == "12"
 
@@ -361,14 +361,14 @@ def test_chat_model_streaming(MockSyncOpenAI: MagicMock) -> None:
         prompt = "test prompt"
         message = Message(role="user", content="test message")
 
-        response_gen = llm.stream_complete(prompt)
+        response_gen = llm.complete(stream=True, prompt=prompt)
         responses = list(response_gen)
         assert responses[-1].text == "\n\n2"
 
         mock_instance.chat.completions.create.return_value = (
             mock_chat_completion_stream_v1()
         )
-        chat_response_gen = llm.stream_chat([message])
+        chat_response_gen = llm.chat(stream=True, messages=[message])
         chat_responses = list(chat_response_gen)
         assert chat_responses[-1].message.chunks[-1].content == "\n\n2"
         assert chat_responses[-1].message.role == "assistant"
@@ -405,11 +405,11 @@ async def test_completion_model_async_streaming(MockAsyncOpenAI: MagicMock) -> N
     prompt = "test prompt"
     message = Message(role="user", content="test message")
 
-    response_gen = await llm.astream_complete(prompt)
+    response_gen = await llm.acomplete(stream=True, prompt=prompt)
     responses = [item async for item in response_gen]
     assert responses[-1].text == "12"
 
-    chat_response_gen = await llm.astream_chat([message])
+    chat_response_gen = await llm.achat(stream=True, messages=[message])
     chat_responses = [item async for item in chat_response_gen]
     assert chat_responses[-1].message.content == "12"
 

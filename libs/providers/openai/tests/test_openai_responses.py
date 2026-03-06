@@ -463,7 +463,7 @@ def test_stream_chat_with_api():
     llm = OpenAIResponses(model="gpt-4o-mini")
     messages = [Message(role=MessageRole.USER, content="Count to 3")]
 
-    response_gen = llm.stream_chat(messages)
+    response_gen = llm.chat(stream=True, messages=messages)
     responses = list(response_gen)
 
     assert len(responses) > 0
@@ -477,7 +477,7 @@ def test_stream_complete_with_api():
     """Test the stream_complete method with real API call."""
     llm = OpenAIResponses(model="gpt-4o-mini")
 
-    response_gen = llm.stream_complete("Count to 3 briefly.")
+    response_gen = llm.complete(stream=True, prompt="Count to 3 briefly.")
     responses = list(response_gen)
 
     assert len(responses) > 0
@@ -514,7 +514,7 @@ async def test_astream_chat_with_api():
     llm = OpenAIResponses(model="gpt-4o-mini")
     messages = [Message(role=MessageRole.USER, content="Count to 3")]
 
-    response_gen = await llm.astream_chat(messages)
+    response_gen = await llm.achat(stream=True, messages=messages)
     responses = [resp async for resp in response_gen]
 
     assert len(responses) > 0
@@ -529,7 +529,7 @@ async def test_astream_complete_with_api():
     """Test the async stream_complete method with real API call."""
     llm = OpenAIResponses(model="gpt-4o-mini")
 
-    response_gen = await llm.astream_complete("Count to 3 briefly.")
+    response_gen = await llm.acomplete(stream=True, prompt="Count to 3 briefly.")
     responses = [resp async for resp in response_gen]
 
     assert len(responses) > 0

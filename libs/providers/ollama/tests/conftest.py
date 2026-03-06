@@ -72,7 +72,7 @@ def llm_model(model_name: str, ollama_api_key: str):
 
     return serapeum_ollama(
         model=model_name,
-        request_timeout=180,
+        timeout=180,
         temperature=0.0,  # Use temperature=0 for deterministic test results
         api_key=api_key,
     )
@@ -83,7 +83,7 @@ def cloud_llm(cloud_model: str, ollama_api_key_required: str):
     """Return an Ollama instance configured for the cloud backend.
 
     Uses the api_key and test_model from the shared test models module.
-    temperature=0.0 for deterministic responses; request_timeout=120 for
+    temperature=0.0 for deterministic responses; timeout=120 for
     cloud latency.
     """
     from serapeum.ollama import Ollama
@@ -91,7 +91,7 @@ def cloud_llm(cloud_model: str, ollama_api_key_required: str):
     return Ollama(
         model=cloud_model,
         api_key=ollama_api_key_required,
-        request_timeout=120,
+        timeout=120,
         temperature=0.0,
     )
 

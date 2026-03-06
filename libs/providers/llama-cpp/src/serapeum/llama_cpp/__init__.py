@@ -28,6 +28,14 @@ See Also:
 """
 
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from serapeum.llama_cpp.llm import LlamaCPP
+
+
 def __getattr__(name: str) -> object:
     """Lazily import heavy symbols to avoid triggering llama_cpp at collection time."""
     if name == "LlamaCPP":

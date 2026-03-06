@@ -7,6 +7,12 @@ does not eagerly pull in the third-party ``openai`` SDK.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from serapeum.openai.llm import OpenAI
+    from serapeum.openai.responses import OpenAIResponses
+
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "OpenAI": ("serapeum.openai.llm", "OpenAI"),
     "OpenAIResponses": ("serapeum.openai.responses", "OpenAIResponses"),

@@ -83,18 +83,6 @@ if TYPE_CHECKING:
 Model = TypeVar("Model", bound=BaseModel)
 
 
-def force_single_tool_call(response: ChatResponse) -> None:
-    tool_calls = [
-        block for block in response.message.chunks if isinstance(block, ToolCallBlock)
-    ]
-    if len(tool_calls) > 1:
-        response.message.chunks = [
-            block
-            for block in response.message.chunks
-            if not isinstance(block, ToolCallBlock)
-        ] + [tool_calls[0]]
-
-
 class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCallingLLM):
     """
     OpenAI Responses LLM.

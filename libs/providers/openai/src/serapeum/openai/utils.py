@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import os
-from typing import Tuple
 
 import openai
 
 from serapeum.core.base.llms.utils import get_from_param_or_env
+from serapeum.core.llms import ChatResponse, ToolCallBlock
 
 DEFAULT_OPENAI_API_TYPE = "open_ai"
 DEFAULT_OPENAI_API_BASE = "https://api.openai.com/v1"
@@ -25,7 +25,7 @@ def resolve_openai_credentials(
     api_key: str | None = None,
     api_base: str | None = None,
     api_version: str | None = None,
-) -> Tuple[str | None, str, str]:
+) -> tuple[str | None, str, str]:
     """Resolve OpenAI credentials.
 
     The order of precedence is:
@@ -71,3 +71,16 @@ def resolve_tool_choice(
         return {"type": "function", "function": {"name": tool_choice}}
 
     return tool_choice
+
+
+def force_single_tool_call(response: ChatResponse) -> None:
+    """Keep only the first tool call in a response, discarding extras."""
+    tool_calls = [
+        block for block in response.message.chunks if isinstance(block, ToolCallBlock)
+    ]
+    if len(tool_calls) > 1:
+        response.message.chunks = [
+            block
+            for block in response.message.chunks
+            if not isinstance(block, ToolCallBlock)
+        ] + [tool_calls[0]]

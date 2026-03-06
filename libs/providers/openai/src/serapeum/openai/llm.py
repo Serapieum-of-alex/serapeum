@@ -52,9 +52,7 @@ from serapeum.openai.converters import (
     to_openai_message_dicts,
     update_tool_calls,
 )
-from serapeum.openai.client import OpenAIClientMixin
-from serapeum.openai.model import OpenAIModelMixin
-from serapeum.openai.structured import OpenAIStructuredOutputMixin
+from serapeum.openai.mixins import OpenAIClientMixin, OpenAIModelMixin, OpenAIStructuredOutputMixin
 from serapeum.openai.utils import (
     create_retry_decorator,
     resolve_tool_choice,

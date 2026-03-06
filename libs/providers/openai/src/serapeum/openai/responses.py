@@ -81,8 +81,7 @@ from serapeum.openai.models import (
     openai_modelname_to_contextsize,
 )
 from serapeum.openai.converters import to_openai_message_dicts
-from serapeum.openai.client import OpenAIClientMixin
-from serapeum.openai.model import OpenAIModelMixin
+from serapeum.openai.mixins import OpenAIClientMixin, OpenAIModelMixin
 from serapeum.openai.utils import (
     create_retry_decorator,
     resolve_tool_choice,

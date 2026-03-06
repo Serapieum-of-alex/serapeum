@@ -13,9 +13,9 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "AsyncOpenAI": ("serapeum.openai.llm", "AsyncOpenAI"),
     "Tokenizer": ("serapeum.openai.llm", "Tokenizer"),
     "OpenAIResponses": ("serapeum.openai.responses", "OpenAIResponses"),
-    "OpenAIClientMixin": ("serapeum.openai.client", "OpenAIClientMixin"),
-    "OpenAIModelMixin": ("serapeum.openai.model", "OpenAIModelMixin"),
-    "OpenAIStructuredOutputMixin": ("serapeum.openai.structured", "OpenAIStructuredOutputMixin"),
+    "OpenAIClientMixin": ("serapeum.openai.mixins", "OpenAIClientMixin"),
+    "OpenAIModelMixin": ("serapeum.openai.mixins", "OpenAIModelMixin"),
+    "OpenAIStructuredOutputMixin": ("serapeum.openai.mixins", "OpenAIStructuredOutputMixin"),
 }
 
 

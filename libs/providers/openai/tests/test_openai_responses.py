@@ -378,7 +378,7 @@ def test_prepare_chat_with_tools_tool_required():
 
     llm = OpenAIResponses(api_key="test-key")
     llm._client = mock_sync_client
-    llm._aclient = mock_async_client
+    llm._async_client = mock_async_client
 
     # Create a simple tool for testing
     def search(query: str) -> str:
@@ -405,7 +405,7 @@ def test_prepare_chat_with_tools_tool_not_required():
 
     llm = OpenAIResponses(api_key="test-key")
     llm._client = mock_sync_client
-    llm._aclient = mock_async_client
+    llm._async_client = mock_async_client
 
     # Create a simple tool for testing
     def search(query: str) -> str:
@@ -432,7 +432,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
 
     llm = OpenAIResponses(api_key="test-key")
     llm._client = mock_sync_client
-    llm._aclient = mock_async_client
+    llm._async_client = mock_async_client
 
     # Create a simple tool for testing
     def search(query: str) -> str:

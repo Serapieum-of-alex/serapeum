@@ -246,7 +246,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
     )
 
     _client: SyncOpenAI | None = PrivateAttr(default=None)
-    _aclient: AsyncOpenAI | None = PrivateAttr(default=None)
+    _async_client: AsyncOpenAI | None = PrivateAttr(default=None)
     _http_client: httpx.Client | None = PrivateAttr(default=None)
     _async_http_client: httpx.AsyncClient | None = PrivateAttr(default=None)
 
@@ -260,10 +260,6 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         async_http_client = None
 
         if isinstance(data, dict):
-            # Backward-compat alias: max_new_tokens → max_tokens
-            if "max_new_tokens" in data:
-                data["max_tokens"] = data.pop("max_new_tokens")
-
             openai_client = data.pop("openai_client", None)
             async_openai_client = data.pop("async_openai_client", None)
             http_client = data.pop("http_client", None)
@@ -274,7 +270,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         if openai_client is not None:
             instance._client = openai_client
         if async_openai_client is not None:
-            instance._aclient = async_openai_client
+            instance._async_client = async_openai_client
         if http_client is not None:
             instance._http_client = http_client
         if async_http_client is not None:
@@ -313,13 +309,13 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
             self._client = SyncOpenAI(**self._get_credential_kwargs())
         return self._client
 
-    def _get_aclient(self) -> AsyncOpenAI:
+    def _get_async_client(self) -> AsyncOpenAI:
         if not self.reuse_client:
             return AsyncOpenAI(**self._get_credential_kwargs(is_async=True))
 
-        if self._aclient is None:
-            self._aclient = AsyncOpenAI(**self._get_credential_kwargs(is_async=True))
-        return self._aclient
+        if self._async_client is None:
+            self._async_client = AsyncOpenAI(**self._get_credential_kwargs(is_async=True))
+        return self._async_client
 
     def _get_model_name(self) -> str:
         model_name = self.model
@@ -679,7 +675,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
             "total_tokens": total_tokens,
         }
 
-    # ===== Async Endpoints =====
+
     async def achat(
         self,
         messages: Sequence[Message],
@@ -752,7 +748,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
     async def _achat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponse:
-        aclient = self._get_aclient()
+        aclient = self._get_async_client()
         message_dicts = to_openai_message_dicts(
             messages,
             model=self.model,
@@ -794,7 +790,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         if self.modalities and "audio" in self.modalities:
             raise ValueError("Audio is not supported for chat streaming")
 
-        aclient = self._get_aclient()
+        aclient = self._get_async_client()
         message_dicts = to_openai_message_dicts(
             messages,
             model=self.model,
@@ -870,7 +866,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
 
     @llm_retry_decorator
     async def _acomplete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
-        aclient = self._get_aclient()
+        aclient = self._get_async_client()
         all_kwargs = self._get_model_kwargs(**kwargs)
         self._update_max_tokens(all_kwargs, prompt)
 
@@ -905,7 +901,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
     async def _astream_complete(
         self, prompt: str, **kwargs: Any
     ) -> CompletionResponseAsyncGen:
-        aclient = self._get_aclient()
+        aclient = self._get_async_client()
         all_kwargs = self._get_model_kwargs(stream=True, **kwargs)
         self._update_max_tokens(all_kwargs, prompt)
 

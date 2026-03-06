@@ -266,7 +266,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
     )
 
     _client: SyncOpenAI | None = PrivateAttr(default=None)
-    _aclient: AsyncOpenAI | None = PrivateAttr(default=None)
+    _async_client: AsyncOpenAI | None = PrivateAttr(default=None)
     _http_client: httpx.Client | None = PrivateAttr(default=None)
     _async_http_client: httpx.AsyncClient | None = PrivateAttr(default=None)
     _previous_response_id: str | None = PrivateAttr(default=None)
@@ -296,7 +296,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
         instance._client = openai_client or SyncOpenAI(
             **instance._get_credential_kwargs()
         )
-        instance._aclient = async_openai_client or AsyncOpenAI(
+        instance._async_client = async_openai_client or AsyncOpenAI(
             **instance._get_credential_kwargs(is_async=True)
         )
 
@@ -718,7 +718,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
             is_responses_api=True,
         )
 
-        response: Response = await self._aclient.responses.create(
+        response: Response = await self._async_client.responses.create(
             input=message_dicts,
             stream=False,
             **self._get_model_kwargs(**kwargs),
@@ -749,7 +749,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
             current_tool_call: Optional[ResponseFunctionToolCall] = None
             local_previous_response_id = self._previous_response_id
 
-            response_stream = await self._aclient.responses.create(
+            response_stream = await self._async_client.responses.create(
                 input=message_dicts,
                 stream=True,
                 **self._get_model_kwargs(**kwargs),

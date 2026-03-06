@@ -6,9 +6,10 @@ import httpx
 from serapeum.core.llms import Message
 from pydantic import Field, PrivateAttr, model_validator
 
+from serapeum.core.types import StructuredOutputMode
 from serapeum.core.base.llms.utils import get_from_param_or_env
 from serapeum.core.output_parsers import BaseParser
-from serapeum.core.base.models import PydanticProgramMode
+
 from serapeum.azure_openai.utils import (
     refresh_openai_azuread_token,
     resolve_from_aliases,
@@ -140,7 +141,7 @@ class AzureOpenAI(OpenAI):
         system_prompt: str | None = None,
         messages_to_prompt: Callable[[Sequence[Message]], str] | None = None,
         completion_to_prompt: Callable[[str], str] | None = None,
-        pydantic_program_mode: PydanticProgramMode = PydanticProgramMode.DEFAULT,
+        structured_output_mode: StructuredOutputMode = StructuredOutputMode.DEFAULT,
         output_parser: BaseParser | None = None,
         **kwargs: Any,
     ) -> None:
@@ -177,7 +178,7 @@ class AzureOpenAI(OpenAI):
             system_prompt=system_prompt,
             messages_to_prompt=messages_to_prompt,
             completion_to_prompt=completion_to_prompt,
-            pydantic_program_mode=pydantic_program_mode,
+            structured_output_mode=structured_output_mode,
             output_parser=output_parser,
             **kwargs,
         )

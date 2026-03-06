@@ -13,10 +13,10 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 from serapeum.openai.utils import resolve_openai_credentials
 
 
-__all__ = ["OpenAIClientMixin"]
+__all__ = ["Client"]
 
 
-class OpenAIClientMixin(BaseModel):
+class Client(BaseModel):
     """Shared connection fields and client management for OpenAI provider classes.
 
     Owns the API credential configuration (api_key, api_base, api_version),
@@ -64,7 +64,7 @@ class OpenAIClientMixin(BaseModel):
     @classmethod
     def _inject_clients(
         cls, data: Any, handler: Any
-    ) -> OpenAIClientMixin:
+    ) -> Client:
         """Intercept client kwargs before Pydantic validation.
 
         Pops ``openai_client``, ``async_openai_client``, ``http_client``, and
@@ -98,7 +98,7 @@ class OpenAIClientMixin(BaseModel):
         return instance
 
     @model_validator(mode="after")
-    def _resolve_credentials(self) -> OpenAIClientMixin:
+    def _resolve_credentials(self) -> Client:
         """Resolve API credentials from environment variables and defaults."""
         api_key, api_base, api_version = resolve_openai_credentials(
             api_key=self.api_key,

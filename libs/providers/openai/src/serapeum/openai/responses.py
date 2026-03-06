@@ -73,7 +73,7 @@ from serapeum.openai.models import (
     openai_modelname_to_contextsize,
 )
 from serapeum.openai.converters import to_openai_message_dicts
-from serapeum.openai.mixins import OpenAIClientMixin, OpenAIModelMixin
+from serapeum.openai.mixins import Client, ModelMetadata
 from serapeum.openai.utils import (
     create_retry_decorator,
     resolve_tool_choice,
@@ -118,7 +118,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
         ] + [tool_calls[0]]
 
 
-class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
+class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCallingLLM):
     """
     OpenAI Responses LLM.
 

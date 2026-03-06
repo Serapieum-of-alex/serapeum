@@ -1,10 +1,10 @@
-from serapeum.openai.mixins.client import OpenAIClientMixin
-from serapeum.openai.mixins.model import OpenAIModelMixin, Tokenizer
-from serapeum.openai.mixins.structured import OpenAIStructuredOutputMixin
+from serapeum.openai.mixins.client import Client
+from serapeum.openai.mixins.model import ModelMetadata, Tokenizer
+from serapeum.openai.mixins.structured import StructuredOutput
 
 __all__ = [
-    "OpenAIClientMixin",
-    "OpenAIModelMixin",
-    "OpenAIStructuredOutputMixin",
+    "Client",
+    "ModelMetadata",
+    "StructuredOutput",
     "Tokenizer",
 ]

@@ -19,7 +19,7 @@ from serapeum.openai.models import is_json_schema_supported
 Model = TypeVar("Model", bound=BaseModel)
 
 
-class OpenAIStructuredOutputMixin:
+class StructuredOutput:
     """Native JSON-schema structured output support for the OpenAI chat-completions API.
 
     Overrides ``structured_predict`` / ``astructured_predict`` so that models

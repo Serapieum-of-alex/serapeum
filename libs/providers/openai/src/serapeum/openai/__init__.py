@@ -9,13 +9,7 @@ from __future__ import annotations
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "OpenAI": ("serapeum.openai.llm", "OpenAI"),
-    "SyncOpenAI": ("serapeum.openai.llm", "SyncOpenAI"),
-    "AsyncOpenAI": ("serapeum.openai.llm", "AsyncOpenAI"),
-    "Tokenizer": ("serapeum.openai.mixins.model", "Tokenizer"),
     "OpenAIResponses": ("serapeum.openai.responses", "OpenAIResponses"),
-    "OpenAIClientMixin": ("serapeum.openai.mixins", "OpenAIClientMixin"),
-    "OpenAIModelMixin": ("serapeum.openai.mixins", "OpenAIModelMixin"),
-    "OpenAIStructuredOutputMixin": ("serapeum.openai.mixins", "OpenAIStructuredOutputMixin"),
 }
 
 
@@ -34,11 +28,5 @@ def __getattr__(name: str) -> object:
 
 __all__ = [
     "OpenAI",
-    "OpenAIClientMixin",
-    "OpenAIModelMixin",
     "OpenAIResponses",
-    "OpenAIStructuredOutputMixin",
-    "Tokenizer",
-    "SyncOpenAI",
-    "AsyncOpenAI",
 ]

@@ -13,7 +13,7 @@ class Tokenizer(Protocol):
         ...
 
 
-class OpenAIModelMixin:
+class ModelMetadata:
     """Shared model metadata helpers for OpenAI providers.
 
     Provides ``_get_model_name`` (strips fine-tuning prefixes) and a

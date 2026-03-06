@@ -33,10 +33,6 @@ class OpenAIStructuredOutputMixin:
     - ``_extend_messages()``  (from ``LLM`` base)
     """
 
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
-
     @staticmethod
     def _prepare_schema(
         llm_kwargs: dict[str, Any] | None, output_cls: Type[Model]
@@ -63,10 +59,6 @@ class OpenAIStructuredOutputMixin:
             self.pydantic_program_mode == PydanticProgramMode.DEFAULT
             and is_json_schema_supported(self.model)
         )
-
-    # ------------------------------------------------------------------
-    # Sync
-    # ------------------------------------------------------------------
 
     def structured_predict(
         self,
@@ -134,10 +126,6 @@ class OpenAIStructuredOutputMixin:
             yield from super()._structured_stream_call(
                 output_cls, prompt, llm_kwargs, **prompt_args
             )
-
-    # ------------------------------------------------------------------
-    # Async
-    # ------------------------------------------------------------------
 
     async def astructured_predict(
         self,

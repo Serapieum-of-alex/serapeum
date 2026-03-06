@@ -7,9 +7,7 @@ from typing import (
     Any,
     Callable,
     Literal,
-    Protocol,
     Sequence,
-    runtime_checkable,
 )
 
 from serapeum.core.llms import (
@@ -119,10 +117,7 @@ class OpenAI(OpenAIStructuredOutputMixin, OpenAIModelMixin, OpenAIClientMixin, C
         api_key: Your OpenAI api key
         api_base: The base URL of the API to call
         api_version: the version of the API to call
-        callback_manager: the callback manager is used for observability.
         default_headers: override the default headers for API requests.
-        http_client: pass in your own httpx.Client instance.
-        async_http_client: pass in your own httpx.AsyncClient instance.
 
     Examples:
         `pip install llama-index-llms-openai`

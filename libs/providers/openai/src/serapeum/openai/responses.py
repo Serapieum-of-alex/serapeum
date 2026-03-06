@@ -1,6 +1,5 @@
 from __future__ import annotations
 import functools
-import tiktoken
 import base64
 from openai import AzureOpenAI
 from openai.types.responses import (
@@ -83,6 +82,7 @@ from serapeum.openai.models import (
 )
 from serapeum.openai.converters import to_openai_message_dicts
 from serapeum.openai.client import OpenAIClientMixin
+from serapeum.openai.model import OpenAIModelMixin
 from serapeum.openai.utils import (
     create_retry_decorator,
     resolve_tool_choice,
@@ -136,7 +136,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
         ] + [tool_calls[0]]
 
 
-class OpenAIResponses(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
+class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
     """
     OpenAI Responses LLM.
 
@@ -291,24 +291,6 @@ class OpenAIResponses(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingL
             ),
             model_name=self.model,
         )
-
-    @property
-    def _tokenizer(self) -> Optional[Tokenizer]:
-        """
-        Get a tokenizer for this model, or None if a tokenizing method is unknown.
-
-        OpenAI can do this using the tiktoken package, subclasses may not have
-        this convenience.
-        """
-        return tiktoken.encoding_for_model(self._get_model_name())
-
-    def _get_model_name(self) -> str:
-        model_name = self.model
-        if "ft-" in model_name:  # legacy fine-tuning
-            model_name = model_name.split(":")[0]
-        elif model_name.startswith("ft:"):
-            model_name = model_name.split(":")[1]
-        return model_name
 
     def _is_azure_client(self) -> bool:
         return isinstance(self.client, AzureOpenAI)

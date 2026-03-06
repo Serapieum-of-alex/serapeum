@@ -1,24 +1,16 @@
 from __future__ import annotations
 
 import functools
-import re
 from json.decoder import JSONDecodeError
 from typing import (
     TYPE_CHECKING,
-    TypeVar,
     Any,
-    AsyncGenerator,
     Callable,
-    Generator,
     Literal,
     Protocol,
     Sequence,
-    Type,
     runtime_checkable,
 )
-
-import tiktoken
-
 
 from serapeum.core.llms import (
     Message,
@@ -36,7 +28,6 @@ from serapeum.core.llms import (
 )
 from pydantic import (
     Field,
-    BaseModel,
     model_validator,
 )
 
@@ -47,15 +38,11 @@ from serapeum.core.configs.defaults import (
 from serapeum.core.llms import FunctionCallingLLM
 from serapeum.core.tools import ToolCallArguments
 from serapeum.core.utils.schemas import parse_partial_json
-from serapeum.core.prompts import PromptTemplate
-from serapeum.core.llms import FlexibleModel
-from serapeum.core.base.models import PydanticProgramMode
 from serapeum.openai.models import (
     O1_MODELS,
     is_chat_model,
     is_chatcomp_api_supported,
     is_function_calling_model,
-    is_json_schema_supported,
     openai_modelname_to_contextsize,
 )
 from serapeum.openai.converters import (
@@ -66,6 +53,8 @@ from serapeum.openai.converters import (
     update_tool_calls,
 )
 from serapeum.openai.client import OpenAIClientMixin
+from serapeum.openai.model import OpenAIModelMixin
+from serapeum.openai.structured import OpenAIStructuredOutputMixin
 from serapeum.openai.utils import (
     create_retry_decorator,
     resolve_tool_choice,
@@ -84,7 +73,6 @@ from serapeum.core.base.llms.utils import (
 if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool
 
-Model = TypeVar("Model", bound=BaseModel)
 DEFAULT_OPENAI_MODEL = "gpt-3.5-turbo"
 
 
@@ -127,7 +115,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
         ] + [tool_calls[0]]
 
 
-class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
+class OpenAI(OpenAIStructuredOutputMixin, OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
     """
     OpenAI LLM.
 
@@ -225,27 +213,9 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         return self
 
-    def _get_model_name(self) -> str:
-        model_name = self.model
-        if "ft-" in model_name:  # legacy fine-tuning
-            model_name = model_name.split(":")[0]
-        elif model_name.startswith("ft:"):
-            model_name = model_name.split(":")[1]
-        return model_name
-
     @classmethod
     def class_name(cls) -> str:
         return "openai"
-
-    @property
-    def _tokenizer(self) -> Tokenizer | None:
-        """
-        Get a tokenizer for this model, or None if a tokenizing method is unknown.
-
-        OpenAI can do this using the tiktoken package, subclasses may not have
-        this convenience.
-        """
-        return tiktoken.encoding_for_model(self._get_model_name())
 
     @property
     def metadata(self) -> Metadata:
@@ -892,170 +862,4 @@ class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
             return tool_selections
 
-    @staticmethod
-    def _prepare_schema(
-        llm_kwargs: dict[str, Any] | None, output_cls: Type[Model]
-    ) -> dict[str, Any]:
-        from openai.resources.chat.completions.completions import (
-            _type_to_response_format,
-        )
-
-        llm_kwargs = llm_kwargs or {}
-        response_format = _type_to_response_format(output_cls)
-        if isinstance(response_format, dict):
-            json_schema = response_format.get("json_schema")
-            if isinstance(json_schema, dict) and "name" in json_schema:
-                json_schema["name"] = re.sub(
-                    r"[^a-zA-Z0-9_-]", "_", str(json_schema["name"])
-                )
-        llm_kwargs["response_format"] = response_format
-        if "tool_choice" in llm_kwargs:
-            del llm_kwargs["tool_choice"]
-        return llm_kwargs
-
-    def _should_use_structure_outputs(self) -> bool:
-        return (
-            self.pydantic_program_mode == PydanticProgramMode.DEFAULT
-            and is_json_schema_supported(self.model)
-        )
-
-    def structured_predict(
-        self,
-        output_cls: Type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        *,
-        stream: bool = False,
-        **prompt_args: Any,
-    ) -> Model | Generator[Model | FlexibleModel | None, None]:
-        llm_kwargs = llm_kwargs or {}
-
-        if stream:
-            result: Model | Generator[Model | FlexibleModel | None, None] = (
-                self._structured_stream_call(
-                    output_cls, prompt, llm_kwargs, **prompt_args
-                )
-            )
-        elif self._should_use_structure_outputs():
-            messages = self._extend_messages(prompt.format_messages(**prompt_args))
-            llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
-            response = self.chat(messages, **llm_kwargs)
-            result = output_cls.model_validate_json(str(response.message.content))
-        else:
-            # when uses function calling to extract structured outputs
-            # here we force tool_choice to be required
-            llm_kwargs["tool_choice"] = (
-                "required"
-                if "tool_choice" not in llm_kwargs
-                else llm_kwargs["tool_choice"]
-            )
-            result = super().structured_predict(
-                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-            )
-        return result
-
-    async def astructured_predict(
-        self,
-        output_cls: Type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        *,
-        stream: bool = False,
-        **prompt_args: Any,
-    ) -> Model | AsyncGenerator[Model | FlexibleModel, None]:
-        llm_kwargs = llm_kwargs or {}
-
-        if stream:
-            result: Model | AsyncGenerator[Model | FlexibleModel, None] = (
-                await self._structured_astream_call(
-                    output_cls, prompt, llm_kwargs, **prompt_args
-                )
-            )
-        elif self._should_use_structure_outputs():
-            messages = self._extend_messages(prompt.format_messages(**prompt_args))
-            llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
-            response = await self.achat(messages, **llm_kwargs)
-            result = output_cls.model_validate_json(str(response.message.content))
-        else:
-            # when uses function calling to extract structured outputs
-            # here we force tool_choice to be required
-            llm_kwargs["tool_choice"] = (
-                "required"
-                if "tool_choice" not in llm_kwargs
-                else llm_kwargs["tool_choice"]
-            )
-            result = await super().astructured_predict(
-                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-            )
-        return result
-
-    def _structured_stream_call(
-        self,
-        output_cls: Type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        **prompt_args: Any,
-    ) -> Generator[
-        Model | list[Model] | FlexibleModel | list[FlexibleModel] | None, None
-    ]:
-        if self._should_use_structure_outputs():
-            from serapeum.core.llms.orchestrators.utils import process_streaming_content_incremental
-
-            messages = self._extend_messages(prompt.format_messages(**prompt_args))
-            llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
-            curr = None
-            for response in self.chat(stream=True, messages=messages, **llm_kwargs):
-                curr = process_streaming_content_incremental(
-                    response,
-                    output_cls,
-                    curr
-                )
-                yield curr
-        else:
-            llm_kwargs["tool_choice"] = (
-                "required"
-                if "tool_choice" not in llm_kwargs
-                else llm_kwargs["tool_choice"]
-            )
-            yield from super()._structured_stream_call(
-                output_cls, prompt, llm_kwargs, **prompt_args
-            )
-
-    async def _structured_astream_call(
-        self,
-        output_cls: Type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        **prompt_args: Any,
-    ) -> AsyncGenerator[
-        Model, list[Model] | FlexibleModel | list[FlexibleModel] | None
-    ]:
-        if self._should_use_structure_outputs():
-
-            async def gen(
-                llm_kwargs=llm_kwargs,
-            ) -> AsyncGenerator[
-                Model, list[Model] | FlexibleModel | list[FlexibleModel] | None
-            ]:
-                from serapeum.core.llms.orchestrators.utils import process_streaming_content_incremental
-
-                messages = self._extend_messages(prompt.format_messages(**prompt_args))
-                llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
-                curr = None
-                async for response in await self.achat(stream=True, messages=messages, **llm_kwargs):
-                    curr = process_streaming_content_incremental(
-                        response, output_cls, curr
-                    )
-                    yield curr
-
-            return gen()
-        else:
-            llm_kwargs["tool_choice"] = (
-                "required"
-                if "tool_choice" not in llm_kwargs
-                else llm_kwargs["tool_choice"]
-            )
-            return await super()._structured_astream_call(
-                output_cls, prompt, llm_kwargs, **prompt_args
-            )
 

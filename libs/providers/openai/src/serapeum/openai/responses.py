@@ -32,18 +32,10 @@ from typing import (
     Any,
     AsyncGenerator,
     Callable,
-    Dict,
     Generator,
-    List,
-    Optional,
-    Protocol,
     Sequence,
-    Tuple,
-    Type,
-    Union,
-    runtime_checkable,
+    TypeVar,
     cast,
-    TypeVar
 )
 
 from serapeum.core.llms import (
@@ -189,15 +181,15 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         description="The maximum number of tokens to generate.",
         gt=0,
     )
-    reasoning_options: Optional[Dict[str, Any]] = Field(
+    reasoning_options: dict[str, Any] | None = Field(
         default=None,
         description="Optional dictionary to configure reasoning for O1 models. Example: {'effort': 'low', 'summary': 'concise'}",
     )
-    include: Optional[List[str]] = Field(
+    include: list[str] | None = Field(
         default=None,
         description="Additional output data to include in the model response.",
     )
-    instructions: Optional[str] = Field(
+    instructions: str | None = Field(
         default=None,
         description="Instructions for the model to follow.",
     )
@@ -209,7 +201,7 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         default=False,
         description="Whether to store previous responses in OpenAI's storage.",
     )
-    built_in_tools: Optional[List[dict]] = Field(
+    built_in_tools: list[dict] | None = Field(
         default=None,
         description="The built-in tools to use for the model to augment responses.",
     )
@@ -217,15 +209,15 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         default="disabled",
         description="Whether to auto-truncate the input if it exceeds the model's context window.",
     )
-    user: Optional[str] = Field(
+    user: str | None = Field(
         default=None,
         description="An optional identifier to help track the user's requests for abuse.",
     )
-    call_metadata: Optional[Dict[str, Any]] = Field(
+    call_metadata: dict[str, Any] | None = Field(
         default=None,
         description="Metadata to include in the API call.",
     )
-    additional_kwargs: Dict[str, Any] = Field(
+    additional_kwargs: dict[str, Any] = Field(
         default_factory=dict,
         description="Additional kwargs for the OpenAI API at inference time.",
     )
@@ -233,7 +225,7 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         default=False,
         description="Whether to enforce strict validation of the structured output.",
     )
-    context_window: Optional[int] = Field(
+    context_window: int | None = Field(
         default=None,
         description="The context window override for the model.",
     )
@@ -287,7 +279,7 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         return isinstance(self.client, AzureOpenAI)
 
 
-    def _get_model_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
+    def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         initial_tools = self.built_in_tools or []
         model_kwargs = {
             "model": self.model,
@@ -336,10 +328,10 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         return result
 
     @staticmethod
-    def _parse_response_output(output: List[ResponseOutputItem]) -> ChatResponse:
+    def _parse_response_output(output: list[ResponseOutputItem]) -> ChatResponse:
         message = Message(role=MessageRole.ASSISTANT)
         additional_kwargs = {"built_in_tool_calls": []}
-        blocks: List[ContentBlock] = []
+        blocks: list[ContentBlock] = []
         for item in output:
             if isinstance(item, ResponseOutputMessage):
                 for part in item.content:
@@ -377,7 +369,7 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
             elif isinstance(item, ResponseComputerToolCall):
                 additional_kwargs["built_in_tool_calls"].append(item)
             elif isinstance(item, ResponseReasoningItem):
-                content: Optional[str] = None
+                content: str | None = None
 
                 if item.content:
                     content = "\n".join([i.text for i in item.content])
@@ -431,17 +423,17 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
     @staticmethod
     def process_response_event(
         event: ResponseStreamEvent,
-        built_in_tool_calls: List[Any],
-        additional_kwargs: Dict[str, Any],
-        current_tool_call: Optional[ResponseFunctionToolCall],
+        built_in_tool_calls: list[Any],
+        additional_kwargs: dict[str, Any],
+        current_tool_call: ResponseFunctionToolCall | None,
         track_previous_responses: bool,
-        previous_response_id: Optional[str] = None,
-    ) -> Tuple[
-        List[ContentBlock],
-        List[Any],
-        Dict[str, Any],
-        Optional[ResponseFunctionToolCall],
-        Optional[str],
+        previous_response_id: str | None = None,
+    ) -> tuple[
+        list[ContentBlock],
+        list[Any],
+        dict[str, Any],
+        ResponseFunctionToolCall | None,
+        str | None,
         str,
     ]:
         """
@@ -449,7 +441,7 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
 
         Args:
             event: The response stream event to process
-            built_in_tool_calls: List of built-in tool calls
+            built_in_tool_calls: list of built-in tool calls
             additional_kwargs: Additional keyword arguments to include in ChatResponse
             current_tool_call: The currently in-progress tool call, if any
             track_previous_responses: Whether to track previous response IDs
@@ -462,7 +454,7 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         delta = ""
         updated_previous_response_id = previous_response_id
         # we use blocks instead of content, since now we also support images! :)
-        blocks: List[ContentBlock] = []
+        blocks: list[ContentBlock] = []
         if isinstance(event, ResponseCreatedEvent) or isinstance(
             event, ResponseInProgressEvent
         ):
@@ -519,7 +511,7 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         elif isinstance(event, ResponseOutputItemDoneEvent):
             # Reasoning information
             if isinstance(event.item, ResponseReasoningItem):
-                content: Optional[str] = None
+                content: str | None = None
                 if event.item.content:
                     content = "\n".join([i.text for i in event.item.content])
                 if event.item.summary:
@@ -566,7 +558,7 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         def gen() -> ChatResponseGen:
             built_in_tool_calls = []
             additional_kwargs = {"built_in_tool_calls": []}
-            current_tool_call: Optional[ResponseFunctionToolCall] = None
+            current_tool_call: ResponseFunctionToolCall | None = None
             local_previous_response_id = self._previous_response_id
 
             for event in self.client.responses.create(
@@ -665,7 +657,7 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         async def gen() -> ChatResponseAsyncGen:
             built_in_tool_calls = []
             additional_kwargs = {"built_in_tool_calls": []}
-            current_tool_call: Optional[ResponseFunctionToolCall] = None
+            current_tool_call: ResponseFunctionToolCall | None = None
             local_previous_response_id = self._previous_response_id
 
             response_stream = await self.async_client.responses.create(
@@ -717,15 +709,15 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
     def _prepare_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
-        chat_history: Optional[List[Message]] = None,
+        user_msg: str | Message | None = None,
+        chat_history: list[Message] | None = None,
         allow_parallel_tool_calls: bool = True,
         tool_required: bool = False,
-        tool_choice: Optional[Union[str, dict]] = None,
+        tool_choice: str | dict | None = None,
         verbose: bool = False,
-        strict: Optional[bool] = None,
+        strict: bool | None = None,
         **kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Predict and call the tool."""
 
         # openai responses api has a slightly different tool spec format
@@ -769,9 +761,9 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         response: "ChatResponse",
         error_on_no_tool_call: bool = True,
         **kwargs: Any,
-    ) -> List[ToolCallArguments]:
+    ) -> list[ToolCallArguments]:
         """Predict and call the tool."""
-        tool_calls: List[ToolCallBlock] = [
+        tool_calls: list[ToolCallBlock] = [
             block
             for block in response.message.chunks
             if isinstance(block, ToolCallBlock)
@@ -805,20 +797,20 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
 
     def structured_predict(
         self,
-        output_cls: Type[Model],
+        output_cls: type[Model],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         *,
         stream: bool = False,
         **prompt_args: Any,
-    ) -> Union[Model, Generator[Union[Model, FlexibleModel], None, None]]:
+    ) -> Model | Generator[Model | FlexibleModel, None, None]:
         llm_kwargs = llm_kwargs or {}
 
         llm_kwargs["tool_choice"] = (
             "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
         )
         if stream:
-            result: Union[Model, Generator[Union[Model, FlexibleModel], None, None]] = (
+            result: Model | Generator[Model | FlexibleModel, None, None] = (
                 super().stream_structured_predict(
                     output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
                 )
@@ -831,20 +823,20 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
 
     async def astructured_predict(
         self,
-        output_cls: Type[Model],
+        output_cls: type[Model],
         prompt: PromptTemplate,
-        llm_kwargs: Optional[Dict[str, Any]] = None,
+        llm_kwargs: dict[str, Any] | None = None,
         *,
         stream: bool = False,
         **prompt_args: Any,
-    ) -> Union[Model, AsyncGenerator[Union[Model, FlexibleModel], None]]:
+    ) -> Model | AsyncGenerator[Model | FlexibleModel, None]:
         llm_kwargs = llm_kwargs or {}
 
         llm_kwargs["tool_choice"] = (
             "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
         )
         if stream:
-            result: Union[Model, AsyncGenerator[Union[Model, FlexibleModel], None]] = (
+            result: Model | AsyncGenerator[Model | FlexibleModel, None] = (
                 await super().astream_structured_predict(
                     output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
                 )

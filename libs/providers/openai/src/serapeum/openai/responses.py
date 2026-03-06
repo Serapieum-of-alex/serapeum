@@ -85,7 +85,6 @@ if TYPE_CHECKING:
 
 Model = TypeVar("Model", bound=BaseModel)
 
-DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
 
 
 def llm_retry_decorator(f: Callable[..., Any]) -> Callable[..., Any]:
@@ -161,9 +160,7 @@ class OpenAIResponses(OpenAIModelMixin, OpenAIClientMixin, ChatToCompletionMixin
         ```
     """
 
-    model: str = Field(
-        default=DEFAULT_OPENAI_MODEL, description="The OpenAI model to use."
-    )
+    model: str = Field(description="The OpenAI model to use.")
     temperature: float = Field(
         default=DEFAULT_TEMPERATURE,
         description="The temperature to use during generation.",

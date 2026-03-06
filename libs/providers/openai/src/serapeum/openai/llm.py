@@ -69,7 +69,6 @@ from serapeum.core.base.llms.utils import (
 if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool
 
-DEFAULT_OPENAI_MODEL = "gpt-3.5-turbo"
 
 
 def llm_retry_decorator(f: Callable[..., Any]) -> Callable[..., Any]:
@@ -140,9 +139,7 @@ class OpenAI(OpenAIStructuredOutputMixin, OpenAIModelMixin, OpenAIClientMixin, C
         ```
     """
 
-    model: str = Field(
-        default=DEFAULT_OPENAI_MODEL, description="The OpenAI model to use."
-    )
+    model: str = Field(description="The OpenAI model to use.")
     temperature: float = Field(
         default=DEFAULT_TEMPERATURE,
         description="The temperature to use during generation.",

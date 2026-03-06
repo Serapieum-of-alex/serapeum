@@ -359,7 +359,7 @@ def test_prepare_chat_with_tools_tool_required():
     mock_sync_client = MagicMock()
     mock_async_client = MagicMock()
 
-    llm = OpenAIResponses(api_key="test-key")
+    llm = OpenAIResponses(model="gpt-4o-mini", api_key="test-key")
     llm._client = mock_sync_client
     llm._async_client = mock_async_client
 
@@ -386,7 +386,7 @@ def test_prepare_chat_with_tools_tool_not_required():
     mock_sync_client = MagicMock()
     mock_async_client = MagicMock()
 
-    llm = OpenAIResponses(api_key="test-key")
+    llm = OpenAIResponses(model="gpt-4o-mini", api_key="test-key")
     llm._client = mock_sync_client
     llm._async_client = mock_async_client
 
@@ -413,7 +413,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
     mock_sync_client = MagicMock()
     mock_async_client = MagicMock()
 
-    llm = OpenAIResponses(api_key="test-key")
+    llm = OpenAIResponses(model="gpt-4o-mini", api_key="test-key")
     llm._client = mock_sync_client
     llm._async_client = mock_async_client
 

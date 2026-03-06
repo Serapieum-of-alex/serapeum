@@ -44,7 +44,7 @@ def test_resolve_tool_choice_utility():
 
 def test_prepare_chat_with_tools_tool_required():
     """Test that tool_required=True is correctly passed to the API request."""
-    llm = OpenAI(api_key="test-key")
+    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
         tools=[search_tool], user_msg="Search for Python tutorials", tool_required=True
@@ -60,7 +60,7 @@ def test_prepare_chat_with_tools_tool_required():
 
 def test_prepare_chat_with_tools_tool_not_required():
     """Test that tool_required=False is correctly passed to the API request."""
-    llm = OpenAI(api_key="test-key")
+    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
         tools=[search_tool], user_msg="Search for Python tutorials", tool_required=False
@@ -76,7 +76,7 @@ def test_prepare_chat_with_tools_tool_not_required():
 
 def test_prepare_chat_with_tools_default_behavior():
     """Test default behavior when tool_required is not specified (should default to False/auto)."""
-    llm = OpenAI(api_key="test-key")
+    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
         tools=[search_tool], user_msg="Search for Python tutorials"
@@ -93,7 +93,7 @@ def test_prepare_chat_with_tools_default_behavior():
 
 def test_prepare_chat_with_tools_no_tools():
     """Test _prepare_chat_with_tools with no tools."""
-    llm = OpenAI(api_key="test-key")
+    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
         tools=[],
@@ -108,7 +108,7 @@ def test_prepare_chat_with_tools_no_tools():
 
 def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
     """Test that explicit tool_choice parameter overrides tool_required."""
-    llm = OpenAI(api_key="test-key")
+    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
 
     # Test that explicit tool_choice="none" overrides tool_required=True
     result = llm._prepare_chat_with_tools(
@@ -136,7 +136,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
 
 def test_prepare_chat_with_tools_explicit_tool_choice_required():
     """Test that explicit tool_choice="required" works even when tool_required=False."""
-    llm = OpenAI(api_key="test-key")
+    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
         tools=[search_tool],

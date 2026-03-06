@@ -257,7 +257,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
     default_headers: Optional[Dict[str, str]] = Field(
         default=None, description="The default headers for API requests."
     )
-    api_key: str | None = Field(default=None, description="The OpenAI API key.")
+    api_key: str | None = Field(default=None, exclude=True, description="The OpenAI API key.")
     api_base: str | None = Field(default=None, description="The base URL for OpenAI API.")
     api_version: str | None = Field(default=None, description="The API version for OpenAI API.")
     context_window: Optional[int] = Field(

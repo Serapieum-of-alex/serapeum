@@ -221,7 +221,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         ),
     )
 
-    api_key: str | None = Field(default=None, description="The OpenAI API key.")
+    api_key: str | None = Field(default=None, exclude=True, description="The OpenAI API key.")
     api_base: str | None = Field(
         default=None, description="The base URL for OpenAI API."
     )

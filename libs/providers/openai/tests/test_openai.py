@@ -428,20 +428,14 @@ def test_validates_api_key_is_present() -> None:
         assert OpenAI(model="gpt-4o-mini", api_key="sk-" + ("a" * 48))
 
 
+@pytest.mark.unit
 @patch("serapeum.openai.mixins.client.SyncOpenAI")
-def test_completion_model_with_retry(MockSyncOpenAI: MagicMock) -> None:
-    mock_instance = MockSyncOpenAI.return_value
-    mock_instance.completions.create.side_effect = openai.APITimeoutError(None)
-
-    llm = OpenAI(model="text-davinci-003", max_retries=3)
-    prompt = "test prompt"
-    with pytest.raises(openai.APITimeoutError) as exc:
-        llm.complete(prompt)
-
-    assert exc.value.message == "Request timed out."
-    # The actual retry count is max_retries - 1
-    # see https://github.com/jd/tenacity/issues/459
-    assert mock_instance.completions.create.call_count == 3
+def test_max_retries_passed_to_sdk_client(MockSyncOpenAI: MagicMock) -> None:
+    """max_retries is forwarded to the OpenAI SDK client which handles retries."""
+    llm = OpenAI(model="gpt-4o-mini", max_retries=5)
+    _ = llm.client  # trigger lazy client creation
+    call_kwargs = MockSyncOpenAI.call_args[1]
+    assert call_kwargs["max_retries"] == 5
 
 
 @patch("serapeum.openai.mixins.client.SyncOpenAI")

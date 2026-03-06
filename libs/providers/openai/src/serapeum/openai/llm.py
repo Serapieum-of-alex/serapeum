@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import functools
 from json.decoder import JSONDecodeError
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Literal,
     Sequence,
     overload,
@@ -52,10 +50,7 @@ from serapeum.openai.converters import (
     update_tool_calls,
 )
 from serapeum.openai.mixins import Client, ModelMetadata, StructuredOutput
-from serapeum.openai.utils import (
-    create_retry_decorator,
-    resolve_tool_choice,
-)
+from serapeum.openai.utils import resolve_tool_choice
 from openai.types.chat.chat_completion_chunk import (
     ChoiceDelta,
     ChoiceDeltaToolCall,
@@ -69,26 +64,6 @@ from serapeum.core.base.llms.utils import (
 
 if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool
-
-
-
-def llm_retry_decorator(f: Callable[..., Any]) -> Callable[..., Any]:
-    @functools.wraps(f)
-    def wrapper(self, *args: Any, **kwargs: Any) -> Any:
-        max_retries = getattr(self, "max_retries", 0)
-        if max_retries <= 0:
-            return f(self, *args, **kwargs)
-
-        retry = create_retry_decorator(
-            max_retries=max_retries,
-            random_exponential=True,
-            stop_after_delay_seconds=60,
-            min_seconds=1,
-            max_seconds=20,
-        )
-        return retry(f)(self, *args, **kwargs)
-
-    return wrapper
 
 
 def force_single_tool_call(response: ChatResponse) -> None:
@@ -318,7 +293,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
 
         return all_kwargs
 
-    @llm_retry_decorator
     def _chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         client = self.client
         message_dicts = to_openai_message_dicts(
@@ -349,7 +323,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
             additional_kwargs=self._get_response_token_counts(response),
         )
 
-    @llm_retry_decorator
     def _stream_chat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseGen:
@@ -419,7 +392,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
 
         return gen()
 
-    @llm_retry_decorator
     def _complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
         client = self.client
         all_kwargs = self._get_model_kwargs(**kwargs)
@@ -444,7 +416,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
             additional_kwargs=self._get_response_token_counts(response),
         )
 
-    @llm_retry_decorator
     def _stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
         client = self.client
         all_kwargs = self._get_model_kwargs(stream=True, **kwargs)
@@ -584,7 +555,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
             result = await self._acomplete(prompt, **kwargs)
         return result
 
-    @llm_retry_decorator
     async def _achat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponse:
@@ -617,7 +587,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
             additional_kwargs=self._get_response_token_counts(response),
         )
 
-    @llm_retry_decorator
     async def _astream_chat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseAsyncGen:
@@ -698,7 +667,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
 
         return gen()
 
-    @llm_retry_decorator
     async def _acomplete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
         aclient = self.async_client
         all_kwargs = self._get_model_kwargs(**kwargs)
@@ -723,7 +691,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
             additional_kwargs=self._get_response_token_counts(response),
         )
 
-    @llm_retry_decorator
     async def _astream_complete(
         self, prompt: str, **kwargs: Any
     ) -> CompletionResponseAsyncGen:

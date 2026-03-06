@@ -1,5 +1,4 @@
 from __future__ import annotations
-import functools
 import base64
 from openai import AzureOpenAI
 from openai.types.responses import (
@@ -31,7 +30,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     AsyncGenerator,
-    Callable,
     Generator,
     Literal,
     Sequence,
@@ -76,36 +74,13 @@ from serapeum.openai.models import (
 )
 from serapeum.openai.converters import to_openai_message_dicts
 from serapeum.openai.mixins import Client, ModelMetadata
-from serapeum.openai.utils import (
-    create_retry_decorator,
-    resolve_tool_choice,
-)
+from serapeum.openai.utils import resolve_tool_choice
 
 
 if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool
 
 Model = TypeVar("Model", bound=BaseModel)
-
-
-
-def llm_retry_decorator(f: Callable[..., Any]) -> Callable[..., Any]:
-    @functools.wraps(f)
-    def wrapper(self, *args: Any, **kwargs: Any) -> Any:
-        max_retries = getattr(self, "max_retries", 0)
-        if max_retries <= 0:
-            return f(self, *args, **kwargs)
-
-        retry = create_retry_decorator(
-            max_retries=max_retries,
-            random_exponential=True,
-            stop_after_delay_seconds=60,
-            min_seconds=1,
-            max_seconds=20,
-        )
-        return retry(f)(self, *args, **kwargs)
-
-    return wrapper
 
 
 def force_single_tool_call(response: ChatResponse) -> None:
@@ -399,7 +374,6 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
 
         return ChatResponse(message=message, additional_kwargs=additional_kwargs)
 
-    @llm_retry_decorator
     def _chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         kwargs_dict = self._get_model_kwargs(**kwargs)
         message_dicts = to_openai_message_dicts(
@@ -554,7 +528,6 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
             delta,
         )
 
-    @llm_retry_decorator
     def _stream_chat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseGen:
@@ -638,7 +611,6 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
         )
         return result
 
-    @llm_retry_decorator
     async def _achat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponse:
@@ -663,7 +635,6 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
 
         return chat_response
 
-    @llm_retry_decorator
     async def _astream_chat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseAsyncGen:

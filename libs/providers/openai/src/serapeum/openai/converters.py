@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from typing import Any, Sequence, Type
 
 from deprecated import deprecated
@@ -31,181 +32,244 @@ logger = logging.getLogger(__name__)
 
 OpenAIToolCall = ChatCompletionMessageToolCall | ChoiceDeltaToolCall
 
+# ---------------------------------------------------------------------------
+# Shared block-level helpers
+# ---------------------------------------------------------------------------
+
+
+
+def _rewrite_system_to_developer(
+    message_dict: dict[str, Any], model: str | None
+) -> None:
+    """Rewrite ``system`` role to ``developer`` for O1-family models."""
+    if (
+        model is not None
+        and model in O1_MODELS
+        and model not in O1_MODELS_WITHOUT_FUNCTION_CALLING
+        and message_dict.get("role") == "system"
+    ):
+        message_dict["role"] = "developer"
+
+
+def _strip_none_keys(message_dict: dict[str, Any], drop_none: bool) -> None:
+    """Remove keys whose value is *None* when *drop_none* is set."""
+    if drop_none:
+        for key in [k for k, v in message_dict.items() if v is None]:
+            message_dict.pop(key)
+
+
+def _should_null_content(message: Message, has_tool_calls: bool) -> bool:
+    """Return True when assistant content should be sent as ``None``.
+
+    OpenAI requires ``content: null`` for assistant messages that only
+    contain tool calls or function calls.
+    """
+    return (
+        message.role == MessageRole.ASSISTANT
+        and (
+            "function_call" in message.additional_kwargs
+            or "tool_calls" in message.additional_kwargs
+            or has_tool_calls
+        )
+    )
+
+
+class ChatFormat:
+    """Convert serapeum content blocks to Chat Completions API dicts."""
+
+    @staticmethod
+    def text(block: TextChunk) -> dict[str, Any]:
+        return {"type": "text", "text": block.content}
+
+    @staticmethod
+    def document(block: DocumentBlock) -> dict[str, Any]:
+        b64_string, mimetype = block.as_base64()
+        return {
+            "type": "file",
+            "filename": block.title,
+            "file_data": f"data:{mimetype};base64,{b64_string}",
+        }
+
+    @staticmethod
+    def image(block: Image) -> dict[str, Any]:
+        if block.url:
+            image_url: dict[str, Any] = {"url": str(block.url)}
+        else:
+            image_url = {"url": block.as_data_uri()}
+        if block.detail:
+            image_url["detail"] = block.detail
+        return {"type": "image_url", "image_url": image_url}
+
+    @staticmethod
+    def audio(block: Audio) -> dict[str, Any]:
+        audio_bytes = block.resolve_audio(as_base64=True).read()
+        audio_str = audio_bytes.decode("utf-8")
+        return {
+            "type": "input_audio",
+            "input_audio": {"data": audio_str, "format": block.format},
+        }
+
+    @staticmethod
+    def tool_call(block: ToolCallBlock) -> dict[str, Any]:
+        return {
+            "type": "function",
+            "function": {
+                "name": block.tool_name,
+                "arguments": block.tool_kwargs,
+            },
+            "id": block.tool_call_id,
+        }
+
+    # noinspection PyUnresolvedReferences
+    content_converters: dict[type, Callable[..., dict[str, Any]]] = {
+        TextChunk: text.__func__,
+        DocumentBlock: document.__func__,
+        Image: image.__func__,
+        Audio: audio.__func__,
+    }
+
+
+class ResponsesFormat:
+    """Convert serapeum content blocks to Responses API dicts."""
+
+    @staticmethod
+    def text(block: TextChunk, role: str) -> dict[str, Any]:
+        text_type = "input_text" if role == "user" else "output_text"
+        return {"type": text_type, "text": block.content}
+
+    @staticmethod
+    def document(block: DocumentBlock) -> dict[str, Any]:
+        b64_string, mimetype = block.as_base64()
+        return {
+            "type": "input_file",
+            "filename": block.title,
+            "file_data": f"data:{mimetype};base64,{b64_string}",
+        }
+
+    @staticmethod
+    def image(block: Image) -> dict[str, Any]:
+        if block.url:
+            url_str = str(block.url)
+        else:
+            url_str = block.as_data_uri()
+        return {
+            "type": "input_image",
+            "image_url": url_str,
+            "detail": block.detail or "auto",
+        }
+
+    @staticmethod
+    def thinking(block: ThinkingBlock) -> dict[str, Any] | None:
+        if block.content and "id" in block.additional_information:
+            return {
+                "type": "reasoning",
+                "id": block.additional_information["id"],
+                "summary": [
+                    {"type": "summary_text", "text": block.content or ""}
+                ],
+            }
+        return None
+
+    @staticmethod
+    def tool_call(block: ToolCallBlock) -> dict[str, Any]:
+        return {
+            "type": "function_call",
+            "arguments": block.tool_kwargs,
+            "call_id": block.tool_call_id,
+            "name": block.tool_name,
+        }
+
+    # noinspection PyUnresolvedReferences
+    content_converters: dict[type, Callable[..., dict[str, Any]]] = {
+        DocumentBlock: document.__func__,
+        Image: image.__func__,
+    }
+
+# ---------------------------------------------------------------------------
+# Public converters (to OpenAI)
+# ---------------------------------------------------------------------------
+
 
 def to_openai_message_dict(
     message: Message,
     drop_none: bool = False,
     model: str | None = None,
 ) -> ChatCompletionMessageParam:
-    """Convert a Message to an OpenAI message dict."""
-    content = []
-    content_txt = ""
-    reference_audio_id = None
-    for block in message.chunks:
-        if message.role == MessageRole.ASSISTANT:
-            reference_audio_id = message.additional_kwargs.get(
-                "reference_audio_id", None
-            )
-            # if reference audio id is provided, we don't need to send the audio
-            if reference_audio_id:
-                continue
-
-        if isinstance(block, TextChunk):
-            content.append({"type": "text", "text": block.content})
-            content_txt += block.content
-        elif isinstance(block, DocumentBlock):
-            if not block.data:
-                file_buffer = block.resolve_document()
-                b64_string = block._get_b64_string(file_buffer)
-                mimetype = block._guess_mimetype()
-            else:
-                b64_string = block.data.decode("utf-8")
-                mimetype = block._guess_mimetype()
-            content.append(
-                {
-                    "type": "file",
-                    "filename": block.title,
-                    "file_data": f"data:{mimetype};base64,{b64_string}",
-                }
-            )
-        elif isinstance(block, Image):
-            if block.url:
-                image_url = {"url": str(block.url)}
-                if block.detail:
-                    image_url["detail"] = block.detail
-
-                content.append(
-                    {
-                        "type": "image_url",
-                        "image_url": image_url,
-                    }
-                )
-            else:
-                img_bytes = block.resolve_image(as_base64=True).read()
-                img_str = img_bytes.decode("utf-8")
-                image_url = f"data:{block.image_mimetype};base64,{img_str}"
-
-                image_url_dict = {"url": image_url}
-                if block.detail:
-                    image_url_dict["detail"] = block.detail
-
-                content.append(
-                    {
-                        "type": "image_url",
-                        "image_url": image_url_dict,
-                    }
-                )
-        elif isinstance(block, Audio):
-            audio_bytes = block.resolve_audio(as_base64=True).read()
-            audio_str = audio_bytes.decode("utf-8")
-            content.append(
-                {
-                    "type": "input_audio",
-                    "input_audio": {
-                        "data": audio_str,
-                        "format": block.format,
-                    },
-                }
-            )
-        elif isinstance(block, ToolCallBlock):
-            try:
-                function_dict = {
-                    "type": "function",
-                    "function": {
-                        "name": block.tool_name,
-                        "arguments": block.tool_kwargs,
-                    },
-                    "id": block.tool_call_id,
-                }
-
-                if len(content) == 0 or content[-1]["type"] != "text":
-                    content.append(
-                        {"type": "text", "text": "", "tool_calls": [function_dict]}
-                    )
-                elif content[-1]["type"] == "text" and "tool_calls" in content[-1]:
-                    content[-1]["tool_calls"].append(function_dict)
-                elif content[-1]["type"] == "text" and "tool_calls" not in content[-1]:
-                    content[-1]["tool_calls"] = [function_dict]
-            except Exception:
-                logger.warning(
-                    f"It was not possible to convert ToolCallBlock with call id {block.tool_call_id or '`no call id`'} to a valid message, skipping..."
-                )
-                continue
-        else:
-            msg = f"Unsupported content block type: {type(block).__name__}"
-            raise ValueError(msg)
-
-    # NOTE: Sending a null value (None) for Tool Message to OpenAI will cause error
-    # It's only Allowed to send None if it's an Assistant Message and either a function call or tool calls were performed
-    # Reference: https://platform.openai.com/docs/api-reference/chat/create
-    already_has_tool_calls = any(
-        isinstance(block, ToolCallBlock) for block in message.chunks
+    """Convert a single serapeum Message to a Chat Completions API dict."""
+    # Short-circuit for assistant messages with a reference audio id
+    reference_audio_id = (
+        message.additional_kwargs.get("reference_audio_id")
+        if message.role == MessageRole.ASSISTANT
+        else None
     )
-    content_txt = (
-        None
-        if content_txt == ""
-        and message.role == MessageRole.ASSISTANT
-        and (
-            "function_call" in message.additional_kwargs
-            or "tool_calls" in message.additional_kwargs
-            or already_has_tool_calls
-        )
-        else content_txt
-    )
-
-    # If reference audio id is provided, we don't need to send the audio
-    # NOTE: this is only a thing for assistant messages
     if reference_audio_id:
-        message_dict = {
+        message_dict: dict[str, Any] = {
             "role": message.role.value,
             "audio": {"id": reference_audio_id},
         }
-    else:
-        # NOTE: Despite what the openai docs say, if the role is ASSISTANT, SYSTEM
-        # or TOOL, 'content' cannot be a list and must be string instead.
-        # Furthermore, if all blocks are text blocks, we can use the content_txt
-        # as the content. This will avoid breaking openai-like APIs.
-        message_dict = {
-            "role": message.role.value,
-            "content": (
-                content_txt
-                if message.role.value in ("assistant", "tool", "system")
-                or all(isinstance(block, TextChunk) for block in message.chunks)
-                else content
-            ),
-        }
-        if already_has_tool_calls:
-            existing_tool_calls = []
-            for c in content:
-                existing_tool_calls.extend(c.get("tool_calls", []))
+        _rewrite_system_to_developer(message_dict, model)
+        _strip_none_keys(message_dict, drop_none)
+        return message_dict  # type: ignore
 
-            if existing_tool_calls:
-                message_dict["tool_calls"] = existing_tool_calls
+    content: list[dict[str, Any]] = []
+    content_txt = ""
+    tool_call_dicts: list[dict[str, Any]] = []
 
-    # TODO: O1 models do not support system prompts
-    if (
-        model is not None
-        and model in O1_MODELS
-        and model not in O1_MODELS_WITHOUT_FUNCTION_CALLING
-    ):
-        if message_dict["role"] == "system":
-            message_dict["role"] = "developer"
+    for block in message.chunks:
+        if isinstance(block, TextChunk):
+            content.append(ChatFormat.text(block))
+            content_txt += block.content
+        elif isinstance(block, ToolCallBlock):
+            try:
+                tool_call_dicts.append(ChatFormat.tool_call(block))
+            except Exception:
+                logger.warning(
+                    f"It was not possible to convert ToolCallBlock with call id "
+                    f"{block.tool_call_id or '`no call id`'} to a valid message, skipping..."
+                )
+        else:
+            converter = ChatFormat.content_converters.get(type(block))
+            if converter:
+                content.append(converter(block))
+            else:
+                raise ValueError(
+                    f"Unsupported content block type: {type(block).__name__}"
+                )
 
+    # Null-out content for assistant messages that only contain tool/function calls
+    has_tool_calls = len(tool_call_dicts) > 0
+    if content_txt == "" and _should_null_content(message, has_tool_calls):
+        content_txt = None  # type: ignore[assignment]
+
+    # Assistant, system, and tool roles require string content; user messages
+    # with mixed block types use the list form.
+    message_dict = {
+        "role": message.role.value,
+        "content": (
+            content_txt
+            if message.role.value in ("assistant", "tool", "system")
+            or all(isinstance(block, TextChunk) for block in message.chunks)
+            else content
+        ),
+    }
+
+    if tool_call_dicts:
+        message_dict["tool_calls"] = tool_call_dicts
+
+    _rewrite_system_to_developer(message_dict, model)
+
+    # Merge legacy additional_kwargs (tool_calls / function_call) when no
+    # ToolCallBlock objects were present in the message chunks.
     if (
         "tool_calls" in message.additional_kwargs
         or "function_call" in message.additional_kwargs
-    ) and not already_has_tool_calls:
+    ) and not has_tool_calls:
         message_dict.update(message.additional_kwargs)
 
     if "tool_call_id" in message.additional_kwargs:
         message_dict["tool_call_id"] = message.additional_kwargs["tool_call_id"]
 
-    null_keys = [key for key, value in message_dict.items() if value is None]
-    # if drop_none is True, remove keys with None values
-    if drop_none:
-        for key in null_keys:
-            message_dict.pop(key)
-
+    _strip_none_keys(message_dict, drop_none)
     return message_dict  # type: ignore
 
 
@@ -214,108 +278,44 @@ def to_openai_responses_message_dict(
     drop_none: bool = False,
     model: str | None = None,
 ) -> str | dict[str, Any] | list[dict[str, Any]]:
-    """Convert a Message to an OpenAI message dict."""
-    content = []
+    """Convert a single serapeum Message to an OpenAI Responses API dict."""
+    content: list[dict[str, Any]] = []
     content_txt = ""
-    tool_calls = []
-    reasoning = []
+    tool_calls: list[dict[str, Any]] = []
+    reasoning: list[dict[str, Any]] = []
 
     for block in message.chunks:
         if isinstance(block, TextChunk):
-            if message.role.value == "user":
-                content.append({"type": "input_text", "text": block.content})
-            else:
-                content.append({"type": "output_text", "text": block.content})
+            content.append(ResponsesFormat.text(block, message.role.value))
             content_txt += block.content
-        elif isinstance(block, DocumentBlock):
-            if not block.data:
-                file_buffer = block.resolve_document()
-                b64_string = block._get_b64_string(file_buffer)
-                mimetype = block._guess_mimetype()
-            else:
-                b64_string = block.data.decode("utf-8")
-                mimetype = block._guess_mimetype()
-            content.append(
-                {
-                    "type": "input_file",
-                    "filename": block.title,
-                    "file_data": f"data:{mimetype};base64,{b64_string}",
-                }
-            )
-        elif isinstance(block, Image):
-            if block.url:
-                content.append(
-                    {
-                        "type": "input_image",
-                        "image_url": str(block.url),
-                        "detail": block.detail or "auto",
-                    }
-                )
-            else:
-                img_bytes = block.resolve_image(as_base64=True).read()
-                img_str = img_bytes.decode("utf-8")
-                content.append(
-                    {
-                        "type": "input_image",
-                        "image_url": f"data:{block.image_mimetype};base64,{img_str}",
-                        "detail": block.detail or "auto",
-                    }
-                )
         elif isinstance(block, ThinkingBlock):
-            if block.content and "id" in block.additional_information:
-                reasoning.append(
-                    {
-                        "type": "reasoning",
-                        "id": block.additional_information["id"],
-                        "summary": [
-                            {"type": "summary_text", "text": block.content or ""}
-                        ],
-                    }
-                )
+            item = ResponsesFormat.thinking(block)
+            if item is not None:
+                reasoning.append(item)
         elif isinstance(block, ToolCallBlock):
-            tool_calls.extend(
-                [
-                    {
-                        "type": "function_call",
-                        "arguments": block.tool_kwargs,
-                        "call_id": block.tool_call_id,
-                        "name": block.tool_name,
-                    }
-                ]
-            )
+            tool_calls.append(ResponsesFormat.tool_call(block))
         else:
-            msg = f"Unsupported content block type: {type(block).__name__}"
-            raise ValueError(msg)
+            converter = ResponsesFormat.content_converters.get(type(block))
+            if converter:
+                content.append(converter(block))
+            else:
+                raise ValueError(
+                    f"Unsupported content block type: {type(block).__name__}"
+                )
 
+    # Legacy additional_kwargs tool calls take precedence over ToolCallBlock chunks
     if "tool_calls" in message.additional_kwargs:
-        message_dicts = [
-            tool_call if isinstance(tool_call, dict) else tool_call.model_dump()
-            for tool_call in message.additional_kwargs["tool_calls"]
+        legacy_calls = [
+            tc if isinstance(tc, dict) else tc.model_dump()
+            for tc in message.additional_kwargs["tool_calls"]
         ]
-
-        return [*reasoning, *message_dicts]
+        result: str | dict[str, Any] | list[dict[str, Any]] = [
+            *reasoning, *legacy_calls
+        ]
     elif tool_calls:
-        return [*reasoning, *tool_calls]
-
-    # NOTE: Sending a null value (None) for Tool Message to OpenAI will cause error
-    # It's only Allowed to send None if it's an Assistant Message and either a function call or tool calls were performed
-    # Reference: https://platform.openai.com/docs/api-reference/chat/create
-    content_txt = (
-        None
-        if content_txt == ""
-        and message.role == MessageRole.ASSISTANT
-        and (
-            "function_call" in message.additional_kwargs
-            or "tool_calls" in message.additional_kwargs
-        )
-        else content_txt
-    )
-
-    # NOTE: Despite what the openai docs say, if the role is ASSISTANT, SYSTEM
-    # or TOOL, 'content' cannot be a list and must be string instead.
-    # Furthermore, if all blocks are text blocks, we can use the content_txt
-    # as the content. This will avoid breaking openai-like APIs.
-    if message.role.value == "tool":
+        result = [*reasoning, *tool_calls]
+    elif message.role.value == "tool":
+        # Tool output message
         call_id = message.additional_kwargs.get(
             "tool_call_id", message.additional_kwargs.get("call_id")
         )
@@ -323,54 +323,45 @@ def to_openai_responses_message_dict(
             raise ValueError(
                 "tool_call_id or call_id is required in additional_kwargs for tool messages"
             )
-
-        message_dict = {
+        result = {
             "type": "function_call_output",
             "output": content_txt,
             "call_id": call_id,
         }
-
-        return message_dict
-
-    # there are some cases (like image generation or MCP tool call) that only support the string input
-    # this is why, if context_txt is a non-empty string, all the blocks are TextBlocks and the role is user, we return directly context_txt
     elif (
-        isinstance(content_txt, str)
-        and len(content_txt) != 0
+        content_txt
         and all(item["type"] == "input_text" for item in content)
         and message.role.value == "user"
     ):
-        return content_txt
+        # Plain text user message — some features (image generation, MCP)
+        # require a bare string input.
+        result = content_txt
     else:
-        message_dict = {
+        # Null-out content for assistant-only tool/function call messages
+        final_content: str | list[dict[str, Any]] | None = content_txt
+        if content_txt == "" and _should_null_content(message, False):
+            final_content = None
+
+        # Assistant, system, and developer roles require string content
+        if (
+            final_content is not None
+            and message.role.value in ("system", "developer")
+            or all(isinstance(block, TextChunk) for block in message.chunks)
+        ):
+            pass  # final_content is already the string form
+        else:
+            final_content = content
+
+        message_dict: dict[str, Any] = {
             "role": message.role.value,
-            "content": (
-                content_txt
-                if message.role.value in ("system", "developer")
-                or all(isinstance(block, TextChunk) for block in message.chunks)
-                else content
-            ),
+            "content": final_content,
         }
+        _rewrite_system_to_developer(message_dict, model)
+        _strip_none_keys(message_dict, drop_none)
 
-    # TODO: O1 models do not support system prompts
-    if (
-        model is not None
-        and model in O1_MODELS
-        and model not in O1_MODELS_WITHOUT_FUNCTION_CALLING
-    ):
-        if message_dict["role"] == "system":
-            message_dict["role"] = "developer"
+        result = [*reasoning, message_dict] if reasoning else message_dict
 
-    null_keys = [key for key, value in message_dict.items() if value is None]
-    # if drop_none is True, remove keys with None values
-    if drop_none:
-        for key in null_keys:
-            message_dict.pop(key)
-
-    if reasoning:
-        return [*reasoning, message_dict]
-
-    return message_dict  # type: ignore
+    return result
 
 
 def to_openai_message_dicts(
@@ -543,7 +534,7 @@ def from_openai_message_dict(message_dict: dict) -> Message:
     additional_kwargs.pop("content", None)
 
     return Message(
-        role=role, content=content, additional_kwargs=additional_kwargs, blocks=blocks
+        role=role, content=content, additional_kwargs=additional_kwargs, chunks=blocks
     )
 
 

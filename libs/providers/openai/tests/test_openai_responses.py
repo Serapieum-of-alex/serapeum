@@ -34,8 +34,13 @@ from openai.types.responses import (
 )
 from pydantic import BaseModel, Field
 
-# Skip markers for tests requiring API keys
-SKIP_OPENAI_TESTS = not os.environ.get("OPENAI_API_KEY")
+# Skip API tests when no real OpenAI key is available.
+# The e2e module calls load_dotenv() at import time, which may load an Azure key
+# into OPENAI_API_KEY. Azure doesn't support the Responses API, so we also check
+# that the API base is not an Azure endpoint.
+_api_key = os.environ.get("OPENAI_API_KEY")
+_api_base = os.environ.get("OPENAI_API_BASE", "")
+SKIP_OPENAI_TESTS = not _api_key or "azure" in _api_base.lower() or "cognitiveservices" in _api_base.lower()
 
 
 @pytest.fixture

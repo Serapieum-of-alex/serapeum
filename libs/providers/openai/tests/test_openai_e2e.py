@@ -21,20 +21,21 @@ load_dotenv()
 _has_key = os.getenv("OPENAI_API_KEY") is not None
 skip_no_key = pytest.mark.skipif(not _has_key, reason="OPENAI_API_KEY not set")
 
-MODEL = os.environ.get("OPENAI_MODEL", "gpt-5-chat")
-endpoint = os.environ.get("OPENAI_API_BASE")
-deployment_name = os.environ.get("OPENAI_DEPLOYMENT_NAME", "gpt-5-chat")
-api_key = os.environ.get("OPENAI_API_KEY")
+
+@pytest.fixture(scope="session")
+def model():
+    return os.environ.get("OPENAI_MODEL", "gpt-5-chat")
+
 
 @pytest.fixture()
 def llm():
     from serapeum.openai import OpenAI
 
     return OpenAI(
-        model=MODEL,
-        api_base=endpoint,
-        deployment_name=deployment_name,
-        api_key=api_key,
+        model=os.environ.get("OPENAI_MODEL", "gpt-5-chat"),
+        api_base=os.environ.get("OPENAI_API_BASE"),
+        deployment_name=os.environ.get("OPENAI_DEPLOYMENT_NAME", "gpt-5-chat"),
+        api_key=os.environ.get("OPENAI_API_KEY"),
     )
 
 
@@ -195,7 +196,7 @@ class TestStructuredOutput:
 class TestToolCalling:
     def test_chat_with_single_tool(self, llm):
         """Chat with a single tool returns a tool call."""
-        response = llm.chat_with_tools(
+        response = llm.generate_tool_calls(
             tools=[weather_tool],
             user_msg="What is the weather in Paris?",
             tool_required=True,
@@ -209,7 +210,7 @@ class TestToolCalling:
 
     def test_chat_with_tool_choice_specific(self, llm):
         """Forcing a specific tool name selects that tool."""
-        response = llm.chat_with_tools(
+        response = llm.generate_tool_calls(
             tools=[weather_tool, search_tool],
             user_msg="Tell me about the Eiffel Tower",
             tool_choice="search_web",
@@ -222,7 +223,7 @@ class TestToolCalling:
 
     def test_chat_with_tools_parallel(self, llm):
         """Parallel tool calls returns multiple tool calls in one response."""
-        response = llm.chat_with_tools(
+        response = llm.generate_tool_calls(
             tools=[weather_tool],
             user_msg="What is the weather in Paris and London?",
             allow_parallel_tool_calls=True,
@@ -235,7 +236,7 @@ class TestToolCalling:
 
     def test_chat_with_tool_no_tool_needed(self, llm):
         """When no tool is required and the query doesn't need one, model may respond directly."""
-        response = llm.chat_with_tools(
+        response = llm.generate_tool_calls(
             tools=[weather_tool],
             user_msg="What is 2 + 2?",
             tool_required=False,
@@ -250,10 +251,10 @@ class TestToolCalling:
 @pytest.mark.e2e
 @skip_no_key
 class TestConfiguration:
-    def test_metadata_properties(self, llm):
+    def test_metadata_properties(self, llm, model):
         """Metadata reflects the model's capabilities."""
         meta = llm.metadata
-        assert meta.model_name == MODEL
+        assert meta.model_name == model
         assert meta.is_chat_model is True
         assert meta.is_function_calling_model is True
         assert meta.context_window == 128000
@@ -262,14 +263,15 @@ class TestConfiguration:
         """Custom temperature is stored on the instance."""
         from serapeum.openai import OpenAI
 
-        llm = OpenAI(model=MODEL, temperature=0.9)
+        # Use a non-O1 model — O1 models force temperature to 1.0
+        llm = OpenAI(model="gpt-4o-mini", temperature=0.9)
         assert llm.temperature == 0.9
 
-    def test_max_tokens_limits_output(self):
+    def test_max_tokens_limits_output(self, model):
         """Setting max_tokens limits the response length."""
         from serapeum.openai import OpenAI
 
-        llm = OpenAI(model=MODEL, max_tokens=5)
+        llm = OpenAI(model=model, max_tokens=5)
         response = llm.chat(
             [Message(role=MessageRole.USER, content="Write a very long essay about the history of France.")]
         )

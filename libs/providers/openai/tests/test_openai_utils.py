@@ -121,7 +121,7 @@ def azure_chat_messages_with_function_calling() -> List[Message]:
     return [
         Message(
             role=MessageRole.ASSISTANT,
-            blocks=[
+            chunks=[
                 ToolCallBlock(
                     type="tool_call",
                     tool_call_id="0123",
@@ -268,7 +268,7 @@ def test_to_openai_message_with_pydantic_description() -> None:
 def test_to_openai_message_dicts_with_content_blocks() -> None:
     chat_message = Message(
         role=MessageRole.USER,
-        blocks=[
+        chunks=[
             TextChunk(content="test question"),
             Image(url="https://example.com/image.jpg"),
         ],
@@ -291,7 +291,7 @@ def test_to_openai_message_dicts_with_content_blocks() -> None:
 
     chat_message = Message(
         role=MessageRole.USER,
-        blocks=[
+        chunks=[
             TextChunk(content="test question"),
             Image(url="https://example.com/image.jpg"),
         ],
@@ -300,7 +300,7 @@ def test_to_openai_message_dicts_with_content_blocks() -> None:
     # other messages do not support blocks
     chat_message = Message(
         role=MessageRole.ASSISTANT,
-        blocks=[
+        chunks=[
             TextChunk(content="test question"),
             Image(url="https://example.com/image.jpg"),
         ],
@@ -316,7 +316,7 @@ def test_to_openai_message_dicts_with_content_blocks() -> None:
 def test_to_openai_message_dicts_with_content_blocks_with_detail() -> None:
     chat_message = Message(
         role=MessageRole.USER,
-        blocks=[
+        chunks=[
             TextChunk(content="test question"),
             Image(url="https://example.com/image.jpg", detail="high"),
         ],

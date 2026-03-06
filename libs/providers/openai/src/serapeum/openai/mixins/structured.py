@@ -13,7 +13,7 @@ from typing import (
 
 from pydantic import BaseModel
 
-from serapeum.core.base.models import PydanticProgramMode
+from serapeum.core.types import StructuredOutputMode
 from serapeum.core.llms import FlexibleModel
 from serapeum.core.prompts import PromptTemplate
 from serapeum.openai.models import is_json_schema_supported
@@ -30,7 +30,7 @@ class StructuredOutput:
 
     The concrete class must provide:
     - ``model: str``
-    - ``pydantic_program_mode``
+    - ``structured_output_mode``
     - ``chat()`` / ``achat()``
     - ``_extend_messages()``  (from ``LLM`` base)
     """
@@ -58,7 +58,7 @@ class StructuredOutput:
 
     def _should_use_structure_outputs(self) -> bool:
         return (
-            self.pydantic_program_mode == PydanticProgramMode.DEFAULT
+            self.structured_output_mode == StructuredOutputMode.DEFAULT
             and is_json_schema_supported(self.model)
         )
 

@@ -1,10 +1,8 @@
 from __future__ import annotations
 import functools
-import httpx
 import tiktoken
 import base64
-from openai import AsyncOpenAI, AzureOpenAI
-from openai import OpenAI as SyncOpenAI
+from openai import AzureOpenAI
 from openai.types.responses import (
     Response,
     ResponseStreamEvent,
@@ -84,9 +82,9 @@ from serapeum.openai.models import (
     openai_modelname_to_contextsize,
 )
 from serapeum.openai.converters import to_openai_message_dicts
+from serapeum.openai.client import OpenAIClientMixin
 from serapeum.openai.utils import (
     create_retry_decorator,
-    resolve_openai_credentials,
     resolve_tool_choice,
 )
 
@@ -138,7 +136,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
         ] + [tool_calls[0]]
 
 
-class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
+class OpenAIResponses(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
     """
     OpenAI Responses LLM.
 
@@ -240,80 +238,35 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
         default_factory=dict,
         description="Additional kwargs for the OpenAI API at inference time.",
     )
-    max_retries: int = Field(
-        default=3,
-        description="The maximum number of API retries.",
-        ge=0,
-    )
-    timeout: float = Field(
-        default=60.0,
-        description="The timeout, in seconds, for API requests.",
-        ge=0,
-    )
     strict: bool = Field(
         default=False,
         description="Whether to enforce strict validation of the structured output.",
     )
-    default_headers: Optional[Dict[str, str]] = Field(
-        default=None, description="The default headers for API requests."
-    )
-    api_key: str | None = Field(default=None, exclude=True, description="The OpenAI API key.")
-    api_base: str | None = Field(default=None, description="The base URL for OpenAI API.")
-    api_version: str | None = Field(default=None, description="The API version for OpenAI API.")
     context_window: Optional[int] = Field(
         default=None,
         description="The context window override for the model.",
     )
 
-    _client: SyncOpenAI | None = PrivateAttr(default=None)
-    _async_client: AsyncOpenAI | None = PrivateAttr(default=None)
-    _http_client: httpx.Client | None = PrivateAttr(default=None)
-    _async_http_client: httpx.AsyncClient | None = PrivateAttr(default=None)
     _previous_response_id: str | None = PrivateAttr(default=None)
 
     @model_validator(mode="wrap")
     @classmethod
-    def _inject_clients(cls, data: Any, handler: Any) -> OpenAIResponses:
-        """Intercept non-field kwargs and set private attributes after validation."""
-        openai_client = None
-        async_openai_client = None
-        http_client = None
-        async_http_client = None
+    def _inject_response_state(
+        cls, data: Any, handler: Any
+    ) -> OpenAIResponses:
+        """Pop previous_response_id before Pydantic validation and restore after."""
         previous_response_id = None
-
         if isinstance(data, dict):
-            openai_client = data.pop("openai_client", None)
-            async_openai_client = data.pop("async_openai_client", None)
-            http_client = data.pop("http_client", None)
-            async_http_client = data.pop("async_http_client", None)
             previous_response_id = data.pop("previous_response_id", None)
 
         instance = handler(data)
-
         instance._previous_response_id = previous_response_id
-        instance._http_client = http_client
-        instance._async_http_client = async_http_client
-        instance._client = openai_client or SyncOpenAI(
-            **instance._get_credential_kwargs()
-        )
-        instance._async_client = async_openai_client or AsyncOpenAI(
-            **instance._get_credential_kwargs(is_async=True)
-        )
 
         return instance
 
     @model_validator(mode="after")
-    def _resolve_and_validate(self) -> OpenAIResponses:
-        """Resolve credentials, force O1 temperature, sync store flag."""
-        api_key, api_base, api_version = resolve_openai_credentials(
-            api_key=self.api_key,
-            api_base=self.api_base,
-            api_version=self.api_version,
-        )
-        self.api_key = api_key
-        self.api_base = api_base
-        self.api_version = api_version
-
+    def _validate_model(self) -> OpenAIResponses:
+        """Force O1 temperature and sync store flag."""
         if self.model in O1_MODELS:
             self.temperature = 1.0
 
@@ -358,17 +311,8 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
         return model_name
 
     def _is_azure_client(self) -> bool:
-        return isinstance(self._client, AzureOpenAI)
+        return isinstance(self.client, AzureOpenAI)
 
-    def _get_credential_kwargs(self, is_async: bool = False) -> Dict[str, Any]:
-        return {
-            "api_key": self.api_key,
-            "base_url": self.api_base,
-            "max_retries": self.max_retries,
-            "timeout": self.timeout,
-            "default_headers": self.default_headers,
-            "http_client": self._async_http_client if is_async else self._http_client,
-        }
 
     def _get_model_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
         initial_tools = self.built_in_tools or []
@@ -488,7 +432,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
             is_responses_api=True,
         )
 
-        response: Response = self._client.responses.create(
+        response: Response = self.client.responses.create(
             input=message_dicts,
             stream=False,
             **kwargs_dict,
@@ -650,7 +594,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
             current_tool_call: Optional[ResponseFunctionToolCall] = None
             local_previous_response_id = self._previous_response_id
 
-            for event in self._client.responses.create(
+            for event in self.client.responses.create(
                 input=message_dicts,
                 stream=True,
                 **self._get_model_kwargs(**kwargs),
@@ -718,7 +662,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
             is_responses_api=True,
         )
 
-        response: Response = await self._async_client.responses.create(
+        response: Response = await self.async_client.responses.create(
             input=message_dicts,
             stream=False,
             **self._get_model_kwargs(**kwargs),
@@ -749,7 +693,7 @@ class OpenAIResponses(ChatToCompletionMixin, FunctionCallingLLM):
             current_tool_call: Optional[ResponseFunctionToolCall] = None
             local_previous_response_id = self._previous_response_id
 
-            response_stream = await self._async_client.responses.create(
+            response_stream = await self.async_client.responses.create(
                 input=message_dicts,
                 stream=True,
                 **self._get_model_kwargs(**kwargs),

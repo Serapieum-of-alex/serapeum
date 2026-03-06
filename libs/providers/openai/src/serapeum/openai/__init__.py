@@ -13,6 +13,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "AsyncOpenAI": ("serapeum.openai.llm", "AsyncOpenAI"),
     "Tokenizer": ("serapeum.openai.llm", "Tokenizer"),
     "OpenAIResponses": ("serapeum.openai.responses", "OpenAIResponses"),
+    "OpenAIClientMixin": ("serapeum.openai.client", "OpenAIClientMixin"),
 }
 
 
@@ -29,4 +30,11 @@ def __getattr__(name: str) -> object:
     return result
 
 
-__all__ = ["OpenAI", "OpenAIResponses", "Tokenizer", "SyncOpenAI", "AsyncOpenAI"]
+__all__ = [
+    "OpenAI",
+    "OpenAIClientMixin",
+    "OpenAIResponses",
+    "Tokenizer",
+    "SyncOpenAI",
+    "AsyncOpenAI",
+]

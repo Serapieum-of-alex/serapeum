@@ -18,7 +18,6 @@ from typing import (
     Awaitable,
 )
 
-import httpx
 import tiktoken
 
 
@@ -38,7 +37,6 @@ from serapeum.core.llms import (
 )
 from pydantic import (
     Field,
-    PrivateAttr,
     BaseModel,
     model_validator,
 )
@@ -68,9 +66,9 @@ from serapeum.openai.converters import (
     to_openai_message_dicts,
     update_tool_calls,
 )
+from serapeum.openai.client import OpenAIClientMixin
 from serapeum.openai.utils import (
     create_retry_decorator,
-    resolve_openai_credentials,
     resolve_tool_choice,
 )
 from openai import AsyncOpenAI
@@ -132,7 +130,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
         ] + [tool_calls[0]]
 
 
-class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
+class OpenAI(OpenAIClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
     """
     OpenAI LLM.
 
@@ -200,33 +198,12 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
     additional_kwargs: dict[str, Any] = Field(
         default_factory=dict, description="Additional kwargs for the OpenAI API."
     )
-    max_retries: int = Field(
-        default=3,
-        description="The maximum number of API retries.",
-        ge=0,
-    )
-    timeout: float = Field(
-        default=60.0,
-        description="The timeout, in seconds, for API requests.",
-        ge=0,
-    )
-    default_headers: dict[str, str] | None = Field(
-        default=None, description="The default headers for API requests."
-    )
     reuse_client: bool = Field(
         default=True,
         description=(
             "Reuse the OpenAI client between requests. When doing anything with large "
             "volumes of async API calls, setting this to false can improve stability."
         ),
-    )
-
-    api_key: str | None = Field(default=None, exclude=True, description="The OpenAI API key.")
-    api_base: str | None = Field(
-        default=None, description="The base URL for OpenAI API."
-    )
-    api_version: str | None = Field(
-        default=None, description="The API version for OpenAI API."
     )
     strict: bool = Field(
         default=False,
@@ -245,51 +222,9 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         description="The audio configuration to use for the model.",
     )
 
-    _client: SyncOpenAI | None = PrivateAttr(default=None)
-    _async_client: AsyncOpenAI | None = PrivateAttr(default=None)
-    _http_client: httpx.Client | None = PrivateAttr(default=None)
-    _async_http_client: httpx.AsyncClient | None = PrivateAttr(default=None)
-
-    @model_validator(mode="wrap")
-    @classmethod
-    def _inject_clients(cls, data: Any, handler: Any) -> OpenAI:
-        """Intercept non-field kwargs and set private attributes after validation."""
-        openai_client = None
-        async_openai_client = None
-        http_client = None
-        async_http_client = None
-
-        if isinstance(data, dict):
-            openai_client = data.pop("openai_client", None)
-            async_openai_client = data.pop("async_openai_client", None)
-            http_client = data.pop("http_client", None)
-            async_http_client = data.pop("async_http_client", None)
-
-        instance = handler(data)
-
-        if openai_client is not None:
-            instance._client = openai_client
-        if async_openai_client is not None:
-            instance._async_client = async_openai_client
-        if http_client is not None:
-            instance._http_client = http_client
-        if async_http_client is not None:
-            instance._async_http_client = async_http_client
-
-        return instance
-
     @model_validator(mode="after")
-    def _resolve_and_validate(self) -> OpenAI:
-        """Resolve credentials, force O1 temperature, validate model support."""
-        api_key, api_base, api_version = resolve_openai_credentials(
-            api_key=self.api_key,
-            api_base=self.api_base,
-            api_version=self.api_version,
-        )
-        self.api_key = api_key
-        self.api_base = api_base
-        self.api_version = api_version
-
+    def _validate_model(self) -> OpenAI:
+        """Force O1 temperature and validate model is Chat Completions-compatible."""
         if self.model in O1_MODELS:
             self.temperature = 1.0
 
@@ -301,21 +236,29 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
 
         return self
 
-    def _get_client(self) -> SyncOpenAI:
+    @property
+    def client(self) -> SyncOpenAI:
+        """Synchronous OpenAI client. Creates fresh instance when reuse_client is False."""
         if not self.reuse_client:
-            return SyncOpenAI(**self._get_credential_kwargs())
+            result = SyncOpenAI(**self._get_credential_kwargs())
+        else:
+            if self._client is None:
+                self._client = SyncOpenAI(**self._get_credential_kwargs())
+            result = self._client
+        return result
 
-        if self._client is None:
-            self._client = SyncOpenAI(**self._get_credential_kwargs())
-        return self._client
-
-    def _get_async_client(self) -> AsyncOpenAI:
+    @property
+    def async_client(self) -> AsyncOpenAI:
+        """Asynchronous OpenAI client. Creates fresh instance when reuse_client is False."""
         if not self.reuse_client:
-            return AsyncOpenAI(**self._get_credential_kwargs(is_async=True))
-
-        if self._async_client is None:
-            self._async_client = AsyncOpenAI(**self._get_credential_kwargs(is_async=True))
-        return self._async_client
+            result = AsyncOpenAI(**self._get_credential_kwargs(is_async=True))
+        else:
+            if self._async_client is None:
+                self._async_client = AsyncOpenAI(
+                    **self._get_credential_kwargs(is_async=True)
+                )
+            result = self._async_client
+        return result
 
     def _get_model_name(self) -> str:
         model_name = self.model
@@ -417,15 +360,6 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
             return kwargs["use_chat_completions"]
         return self.metadata.is_chat_model
 
-    def _get_credential_kwargs(self, is_async: bool = False) -> dict[str, Any]:
-        return {
-            "api_key": self.api_key,
-            "base_url": self.api_base,
-            "max_retries": self.max_retries,
-            "timeout": self.timeout,
-            "default_headers": self.default_headers,
-            "http_client": self._async_http_client if is_async else self._http_client,
-        }
 
     def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         base_kwargs = {"model": self.model, "temperature": self.temperature, **kwargs}
@@ -464,7 +398,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
 
     @llm_retry_decorator
     def _chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
-        client = self._get_client()
+        client = self.client
         message_dicts = to_openai_message_dicts(
             messages,
             model=self.model,
@@ -508,7 +442,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         if self.modalities and "audio" in self.modalities:
             raise ValueError("Audio is not supported for chat streaming")
 
-        client = self._get_client()
+        client = self.client
         message_dicts = to_openai_message_dicts(
             messages,
             model=self.model,
@@ -573,7 +507,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
 
     @llm_retry_decorator
     def _complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
-        client = self._get_client()
+        client = self.client
         all_kwargs = self._get_model_kwargs(**kwargs)
         self._update_max_tokens(all_kwargs, prompt)
 
@@ -606,7 +540,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
 
     @llm_retry_decorator
     def _stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
-        client = self._get_client()
+        client = self.client
         all_kwargs = self._get_model_kwargs(stream=True, **kwargs)
         self._update_max_tokens(all_kwargs, prompt)
 
@@ -748,7 +682,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
     async def _achat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponse:
-        aclient = self._get_async_client()
+        aclient = self.async_client
         message_dicts = to_openai_message_dicts(
             messages,
             model=self.model,
@@ -790,7 +724,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
         if self.modalities and "audio" in self.modalities:
             raise ValueError("Audio is not supported for chat streaming")
 
-        aclient = self._get_async_client()
+        aclient = self.async_client
         message_dicts = to_openai_message_dicts(
             messages,
             model=self.model,
@@ -866,7 +800,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
 
     @llm_retry_decorator
     async def _acomplete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
-        aclient = self._get_async_client()
+        aclient = self.async_client
         all_kwargs = self._get_model_kwargs(**kwargs)
         self._update_max_tokens(all_kwargs, prompt)
 
@@ -901,7 +835,7 @@ class OpenAI(ChatToCompletionMixin, FunctionCallingLLM):
     async def _astream_complete(
         self, prompt: str, **kwargs: Any
     ) -> CompletionResponseAsyncGen:
-        aclient = self._get_async_client()
+        aclient = self.async_client
         all_kwargs = self._get_model_kwargs(stream=True, **kwargs)
         self._update_max_tokens(all_kwargs, prompt)
 

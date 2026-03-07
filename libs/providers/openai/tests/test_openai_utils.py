@@ -24,7 +24,7 @@ from serapeum.core.base.llms.types import (
 )
 from pydantic import BaseModel
 from serapeum.openai import OpenAI
-from serapeum.openai.models import (
+from serapeum.openai.data.models import (
     ALL_AVAILABLE_MODELS,
     CHAT_MODELS,
     is_chat_model,

@@ -19,7 +19,7 @@ from openai.types.responses import ResponseFunctionToolCall
 
 from serapeum.openai.converters import ResponsesOutputParser, ResponsesStreamAccumulator
 from serapeum.openai.responses import OpenAIResponses
-from serapeum.openai.models import O1_MODELS
+from serapeum.openai.data.models import O1_MODELS
 from serapeum.openai.converters import to_openai_message_dicts
 from serapeum.core.tools import CallableTool
 from serapeum.core.prompts import PromptTemplate

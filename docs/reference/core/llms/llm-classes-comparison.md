@@ -118,7 +118,7 @@ class PersonInfo(BaseModel):
 base_llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=90
+    timeout=90
 )
 structured_llm = StructuredOutputLLM(
     llm=base_llm,
@@ -240,7 +240,7 @@ class Story(BaseModel):
 story_generator = ToolOrchestratingLLM(
     schema=Story,
     prompt="Generate a short {genre} story",
-    llm=Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=90),
+    llm=Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=90),
 )
 
 # Stream partial results
@@ -286,7 +286,7 @@ class Task(BaseModel):
     priority: int
     completed: bool
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=90)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=90)
 # Create text completion LLM
 task_extractor = TextCompletionLLM(
     output_parser=PydanticParser(output_cls=Task),
@@ -316,7 +316,7 @@ class Product(BaseModel):
 product_extractor = TextCompletionLLM(
     output_cls=Product,  # Parser created automatically
     prompt="Extract product: {description}",
-    llm=Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=90),
+    llm=Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=90),
 )
 
 result = product_extractor(description="iPhone 15 Pro - $999")

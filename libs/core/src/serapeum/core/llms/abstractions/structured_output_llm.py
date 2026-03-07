@@ -1,5 +1,5 @@
 """Structured output wrapper and helpers around the core LLM API."""
-
+from __future__ import annotations
 from typing import Any, Literal, Sequence, Type, overload
 
 from pydantic import BaseModel, Field, SerializeAsAny
@@ -13,12 +13,12 @@ from serapeum.core.base.llms.types import (
     Metadata,
 )
 
-from serapeum.core.llms.abstractions.mixins import ChatToCompletionMixin
+from serapeum.core.llms.abstractions.mixins import ChatToCompletion
 from serapeum.core.llms.base import LLM
 from serapeum.core.prompts.base import ChatPromptTemplate
 
 
-class StructuredOutputLLM(ChatToCompletionMixin, LLM):
+class StructuredOutputLLM(ChatToCompletion, LLM):
     """Wrap an LLM to produce structured Pydantic outputs.
 
     This adapter delegates to an underlying LLM while exposing the same

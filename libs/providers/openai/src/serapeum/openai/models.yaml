@@ -1,0 +1,142 @@
+# OpenAI model metadata: model name -> context window size (tokens)
+# Groups also determine model capabilities (chat, function calling, etc.)
+
+o1_models:
+  o1: 200000
+  o1-2024-12-17: 200000
+  o1-pro: 200000
+  o1-pro-2025-03-19: 200000
+  o1-preview: 128000
+  o1-preview-2024-09-12: 128000
+  o1-mini: 128000
+  o1-mini-2024-09-12: 128000
+  o3-mini: 200000
+  o3-mini-2025-01-31: 200000
+  o3: 200000
+  o3-2025-04-16: 200000
+  o3-pro: 200000
+  o3-pro-2025-06-10: 200000
+  o4-mini: 200000
+  o4-mini-2025-04-16: 200000
+  # gpt-5 is a reasoning model
+  gpt-5: 400000
+  gpt-5-2025-08-07: 400000
+  gpt-5-chat: 128000
+  gpt-5-chat-latest: 128000
+  gpt-5-mini: 400000
+  gpt-5-mini-2025-08-07: 400000
+  gpt-5-nano: 400000
+  gpt-5-nano-2025-08-07: 400000
+  gpt-5-pro: 400000
+  gpt-5-pro-2025-10-06: 400000
+  gpt-5.1: 400000
+  gpt-5.1-2025-11-13: 400000
+  gpt-5.1-chat-latest: 128000
+  gpt-5.2: 400000
+  gpt-5.2-2025-12-11: 400000
+  gpt-5.2-chat-latest: 128000
+
+responses_api_only_models:
+  gpt-5.2-pro: 400000
+  gpt-5.2-pro-2025-12-11: 400000
+
+# O1 models that predate function-calling support
+o1_models_without_function_calling:
+  - o1-preview
+  - o1-preview-2024-09-12
+  - o1-mini
+  - o1-mini-2024-09-12
+
+gpt4_models:
+  gpt-4: 8192
+  gpt-4-32k: 32768
+  # turbo models (Turbo, JSON mode)
+  gpt-4-1106-preview: 128000
+  gpt-4-0125-preview: 128000
+  gpt-4-turbo-preview: 128000
+  # multimodal
+  gpt-4-vision-preview: 128000
+  gpt-4-1106-vision-preview: 128000
+  gpt-4-turbo-2024-04-09: 128000
+  gpt-4-turbo: 128000
+  gpt-4o: 128000
+  gpt-4o-audio-preview: 128000
+  gpt-4o-audio-preview-2024-12-17: 128000
+  gpt-4o-audio-preview-2024-10-01: 128000
+  gpt-4o-mini-audio-preview: 128000
+  gpt-4o-mini-audio-preview-2024-12-17: 128000
+  gpt-4o-2024-05-13: 128000
+  gpt-4o-2024-08-06: 128000
+  gpt-4o-2024-11-20: 128000
+  gpt-4.5-preview: 128000
+  gpt-4.5-preview-2025-02-27: 128000
+  # research and evaluation
+  chatgpt-4o-latest: 128000
+  gpt-4o-mini: 128000
+  gpt-4o-mini-2024-07-18: 128000
+  # 0613 models (function calling)
+  gpt-4-0613: 8192
+  gpt-4-32k-0613: 32768
+  # 0314 models
+  gpt-4-0314: 8192
+  gpt-4-32k-0314: 32768
+  # GPT 4.1 models
+  gpt-4.1: 1047576
+  gpt-4.1-mini: 1047576
+  gpt-4.1-nano: 1047576
+  gpt-4.1-2025-04-14: 1047576
+  gpt-4.1-mini-2025-04-14: 1047576
+  gpt-4.1-nano-2025-04-14: 1047576
+  # GPT-5-chat supports temperature, so it goes here
+  gpt-5-chat-latest: 128000
+
+azure_turbo_models:
+  gpt-4o: 128000
+  gpt-4o-mini: 128000
+  gpt-35-turbo-16k: 16384
+  gpt-35-turbo: 4096
+  gpt-35-turbo-0125: 16384
+  gpt-35-turbo-1106: 16384
+  gpt-35-turbo-0613: 4096
+  gpt-35-turbo-16k-0613: 16384
+
+turbo_models:
+  gpt-3.5-turbo: 16384
+  gpt-3.5-turbo-16k: 16384
+  gpt-3.5-turbo-0125: 16384
+  gpt-3.5-turbo-1106: 16384
+  gpt-3.5-turbo-0613: 4096
+  gpt-3.5-turbo-16k-0613: 16384
+  gpt-3.5-turbo-0301: 4096
+
+gpt3_5_models:
+  text-davinci-003: 4097
+  text-davinci-002: 4097
+  gpt-3.5-turbo-instruct: 4096
+
+gpt3_models:
+  text-ada-001: 2049
+  text-babbage-001: 2040
+  text-curie-001: 2049
+  ada: 2049
+  babbage: 2049
+  curie: 2049
+  davinci: 2049
+
+discontinued_models:
+  code-davinci-002: 8001
+  code-davinci-001: 8001
+  code-cushman-002: 2048
+  code-cushman-001: 2048
+
+# Models supporting JSON schema structured output (prefix-matched)
+json_schema_models:
+  - o4-mini
+  - o1
+  - o1-pro
+  - o3
+  - o3-mini
+  - gpt-4o
+  - gpt-4.1
+  - gpt-5
+  - gpt-5.2

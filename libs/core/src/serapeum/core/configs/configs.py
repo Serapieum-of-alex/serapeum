@@ -1,17 +1,21 @@
 """Configuration helpers and runtime settings for Serapeum."""
 
-from dataclasses import dataclass
-from typing import Optional
+from __future__ import annotations
 
-from serapeum.core.llms import LLM
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
 from serapeum.core.types import StructuredOutputMode
+
+if TYPE_CHECKING:
+    from serapeum.core.llms import LLM
 
 
 @dataclass
 class _Configs:
     """Configs for the Llama Index, lazily initialized."""
 
-    _llm: Optional[LLM] = None
+    _llm: LLM | None = None
 
     @property
     def llm(self) -> LLM:

@@ -9,7 +9,7 @@ flowchart TD
     Init --> SetConfig[Set Configuration]
     SetConfig --> StoreModel[Store model name]
     StoreModel --> StoreURL[Store base_url]
-    StoreURL --> StoreTimeout[Store request_timeout]
+    StoreURL --> StoreTimeout[Store timeout]
     StoreTimeout --> StoreTemp[Store temperature]
     StoreTemp --> StoreJSON[Store json_mode flag]
     StoreJSON --> StoreKwargs[Store additional_kwargs]
@@ -131,13 +131,13 @@ flowchart TD
 ### 1. Initialization
 ```python notest
 Input:
-  Ollama(model="llama3.1", base_url="http://localhost:11434", request_timeout=180)
+  Ollama(model="llama3.1", base_url="http://localhost:11434", timeout=180)
 
 Transformations:
   1. Store configuration:
      - model = "llama3.1"
      - base_url = "http://localhost:11434"
-     - request_timeout = 180
+     - timeout = 180
      - temperature = 0.75 (default)
      - json_mode = False (default)
 
@@ -349,7 +349,7 @@ Output:
 - **model**: Must be non-empty string
 - **base_url**: Must be valid URL format
 - **temperature**: Must be float in range [0.0, 1.0]
-- **request_timeout**: Must be positive float
+- **timeout**: Must be positive float
 
 ### 2. Message Validation
 - **messages**: Must be non-empty list

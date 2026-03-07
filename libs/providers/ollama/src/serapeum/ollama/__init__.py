@@ -8,6 +8,12 @@ does not eagerly pull in the third-party ``ollama`` SDK.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from serapeum.ollama.llm import Ollama
+    from serapeum.ollama.embedding import OllamaEmbedding
+
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "Ollama": ("serapeum.ollama.llm", "Ollama"),
     "OllamaEmbedding": ("serapeum.ollama.embedding", "OllamaEmbedding"),

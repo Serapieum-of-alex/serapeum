@@ -23,7 +23,7 @@ from serapeum.core.prompts.base import BasePromptTemplate, PromptTemplate
 from serapeum.core.tools.callable_tool import CallableTool
 
 if TYPE_CHECKING:
-    from serapeum.core.chat.types import AgentChatResponse
+    from serapeum.core.chat import AgentChatResponse
 
 _logger = logging.getLogger(__name__)
 

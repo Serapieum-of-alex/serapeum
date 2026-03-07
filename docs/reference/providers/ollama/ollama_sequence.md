@@ -13,11 +13,11 @@ sequenceDiagram
     participant PydanticParser
 
     Note over User: Initialization Phase
-    User->>Ollama: __init__(model, base_url, request_timeout, ...)
+    User->>Ollama: __init__(model, base_url, timeout, ...)
     activate Ollama
 
     Ollama->>Ollama: Set model configuration
-    Note over Ollama: Store: model, base_url, temperature,<br/>request_timeout, json_mode, etc.
+    Note over Ollama: Store: model, base_url, temperature,<br/>timeout, json_mode, etc.
 
     Ollama->>Ollama: Initialize metadata
     Note over Ollama: Set is_chat_model=True<br/>is_function_calling_model=True<br/>context_window, num_output

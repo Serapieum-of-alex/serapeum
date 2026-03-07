@@ -17,17 +17,18 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import logging
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Generator, Literal, overload
 
 import ollama as ollama_sdk  # type: ignore[attr-defined]
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
+from pydantic import BaseModel, Field, PrivateAttr, ConfigDict
 
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llms import (
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
-    ChatToCompletionMixin,
+    ChatToCompletion,
     FunctionCallingLLM,
     Image,
     Message,
@@ -41,10 +42,14 @@ from serapeum.core.llms.orchestrators import StreamingObjectProcessor
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ArgumentCoercer, ToolCallArguments, ToolCallError
 from serapeum.core.types import StructuredOutputMode
-from serapeum.ollama.client import OllamaClientMixin
+from serapeum.core.retry import retry
+from serapeum.ollama.client import Client
+from serapeum.ollama.retry import is_retryable
 
 if TYPE_CHECKING:
     from serapeum.core.tools.types import BaseTool
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_REQUEST_TIMEOUT = 60.0
 
@@ -131,7 +136,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
         response.message.additional_kwargs["tool_calls"] = [tool_calls[0]]
 
 
-class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
+class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
     """Ollama LLM adapter for chat, streaming, structured output, and tool calling.
 
     Integrates with a local or remote Ollama server to expose synchronous and
@@ -160,7 +165,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         Ollama(model="m", client=my_mock_client, async_client=my_async_mock)
 
-    Args:
+    Attributes:
         model: Ollama model identifier, e.g. ``"llama3.1"`` or
             ``"qwen3-next:80b"``.
         base_url: URL of the Ollama server. Defaults to
@@ -176,7 +181,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             output. Defaults to ``0.75``.
         context_window: Maximum number of tokens in the context window.
             Defaults to ``DEFAULT_CONTEXT_WINDOW``.
-        request_timeout: HTTP request timeout in seconds. Defaults to
+        timeout: HTTP request timeout in seconds. Defaults to
             ``60.0``.
         prompt_key: Key used when formatting prompt templates. Defaults to
             ``"prompt"``.
@@ -206,7 +211,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             ...     model="qwen3-next:80b",
             ...     api_key=os.environ.get("OLLAMA_API_KEY"),
             ...     temperature=0.0,
-            ...     request_timeout=120,
+            ...     timeout=120,
             ... )
             >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'hello'.")])
             >>> print(response) # doctest: +SKIP
@@ -253,7 +258,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             ...     model="qwen3-next:80b",
             ...     api_key=os.environ.get("OLLAMA_API_KEY"),
             ...     temperature=0.0,
-            ...     request_timeout=120,
+            ...     timeout=120,
             ... )
             >>> chunks = list(llm.chat([
             ...     Message(role=MessageRole.USER, content="Say 'hello'.")
@@ -279,7 +284,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             ...     model="qwen3-next:80b",
             ...     api_key=os.environ.get("OLLAMA_API_KEY"),
             ...     temperature=0.0,
-            ...     request_timeout=120,
+            ...     timeout=120,
             ... )
             >>> prompt = PromptTemplate("Extract city and country from: {text}")
             >>> result = llm.parse(
@@ -313,7 +318,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
     See Also:
         OllamaEmbedding: Companion class for generating embeddings with Ollama.
-        OllamaClientMixin: Shared connection logic, URL resolution, and client injection.
+        Client: Shared connection logic, URL resolution, and client injection.
         chat: Synchronous chat completion (supports streaming via ``stream=True``).
         achat: Asynchronous chat completion (supports streaming via ``stream=True``).
         parse: Structured output via JSON schema and Pydantic validation.
@@ -321,8 +326,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         alist_models: Async variant of list_models.
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
     model: str = Field(description="The Ollama model to use.")
     temperature: float = Field(
         default=0.75,
@@ -335,7 +339,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         description="The maximum number of context tokens for the model.",
         gt=0,
     )
-    request_timeout: float = Field(
+    timeout: float = Field(
         default=DEFAULT_REQUEST_TIMEOUT,
         description="The timeout for making http request to Ollama API server",
     )
@@ -365,7 +369,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
     def _build_client_kwargs(self) -> dict[str, Any]:
         """Extend base client kwargs with the request timeout for the LLM client."""
-        return {**super()._build_client_kwargs(), "timeout": self.request_timeout}
+        return {**super()._build_client_kwargs(), "timeout": self.timeout}
 
     @classmethod
     def class_name(cls) -> str:
@@ -420,7 +424,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             - Lazily create the client on first access
                 ```python
                 >>> from serapeum.ollama import Ollama      # type: ignore[attr-defined]
-                >>> llm = Ollama(model="m", base_url="http://localhost:11434", request_timeout=1.0)
+                >>> llm = Ollama(model="m", base_url="http://localhost:11434", timeout=1.0)
                 >>> c = llm.client  # doctest: +SKIP
                 >>> type(c).__name__  # doctest: +SKIP
                 'Client'
@@ -949,7 +953,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 ```python
                 >>> from serapeum.core.llms import Message, MessageRole
                 >>> # Ensure `ollama serve` is running and the model is available locally.
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)
+                >>> llm = Ollama(model="llama3.1", timeout=120)
                 >>> resp = llm.chat([Message(role=MessageRole.USER, content="hi")])  # doctest: +SKIP
                 >>> print(resp)   # doctest: +SKIP
                 Hello! How are you today? Is there something I can help you with or would you like to chat?
@@ -960,7 +964,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             - Streaming chat with deltas
                 ```python
                 >>> from serapeum.core.llms import Message, MessageRole
-                >>> llm = Ollama(model="llama3.1", request_timeout=180)
+                >>> llm = Ollama(model="llama3.1", timeout=180)
                 >>> chunks = list(llm.chat(
                 ...     [Message(role=MessageRole.USER, content="Say hello")],
                 ...     stream=True
@@ -973,6 +977,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         result = self._stream_chat(messages, **kwargs) if stream else self._chat(messages, **kwargs)
         return result
 
+    @retry(is_retryable, logger)
     def _chat(
         self, messages: MessageList | list[Message], **kwargs: Any
     ) -> ChatResponse:
@@ -1078,6 +1083,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             raw=r,
         )
 
+    @retry(is_retryable, logger)
     def _stream_chat(
         self, messages: MessageList | list[Message], **kwargs: Any
     ) -> ChatResponseGen:
@@ -1086,6 +1092,12 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         tools = kwargs.pop("tools", None)
         response_format = kwargs.pop("format", "json" if self.json_mode else None)
+
+        tools_dict = {
+            "response_txt": "",
+            "seen_tool_calls": set(),
+            "all_tool_calls": [],
+        }
 
         response = self.client.chat(
             model=self.model,
@@ -1096,12 +1108,6 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             options=self._model_kwargs,
             keep_alive=self.keep_alive,
         )
-
-        tools_dict = {
-            "response_txt": "",
-            "seen_tool_calls": set(),
-            "all_tool_calls": [],
-        }
 
         for r in response:
             if r["message"]["content"] is not None:
@@ -1157,7 +1163,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> import asyncio
                 >>> from serapeum.core.llms import Message, MessageRole
                 >>> from serapeum.ollama import Ollama      # type: ignore
-                >>> llm = Ollama(model="llama3.1", request_timeout=120) # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", timeout=120) # doctest: +SKIP
                 >>> async def chat_example():   # doctest: +SKIP
                 ...     response = await llm.achat([
                 ...         Message(role=MessageRole.USER, content="Say hello")
@@ -1171,7 +1177,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> import asyncio
                 >>> from serapeum.core.llms import Message, MessageRole
                 >>> from serapeum.ollama import Ollama      # type: ignore
-                >>> llm = Ollama(model="llama3.1", request_timeout=120) # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", timeout=120) # doctest: +SKIP
                 >>> async def stream_example():
                 ...     chunks = []
                 ...     async for chunk in await llm.achat(
@@ -1190,6 +1196,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         result = await self._astream_chat(messages, **kwargs) if stream else await self._achat(messages, **kwargs)
         return result
 
+    @retry(is_retryable, logger)
     async def _achat(
         self, messages: MessageList | list[Message], **kwargs: Any
     ) -> ChatResponse:
@@ -1211,6 +1218,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         return self._build_chat_response(response)
 
+    @retry(is_retryable, logger, stream=True)
     async def _astream_chat(
         self, messages: MessageList | list[Message], **kwargs: Any
     ) -> ChatResponseAsyncGen:
@@ -1322,7 +1330,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> class Person(BaseModel):
                 ...     name: str = Field(description="Person's full name")
                 ...     age: int = Field(description="Person's age in years")
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", timeout=120)     # doctest: +SKIP
                 >>> prompt = PromptTemplate("Extract person info: {text}")  # doctest: +SKIP
                 >>> result = llm.parse(    # doctest: +SKIP
                 ...     Person,
@@ -1342,7 +1350,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> class Summary(BaseModel):
                 ...     title: str
                 ...     points: list[str]
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", timeout=120)     # doctest: +SKIP
                 >>> prompt = PromptTemplate("Summarize: {text}")
                 >>> for obj in llm.parse(   # doctest: +SKIP
                 ...     Summary, prompt, stream=True, text="Long article..."
@@ -1482,7 +1490,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> class City(BaseModel):
                 ...     name: str
                 ...     country: str
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)  # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", timeout=120)  # doctest: +SKIP
                 >>> async def extract_city():       # doctest: +SKIP
                 ...     prompt = PromptTemplate("Extract city: {text}")
                 ...     result = await llm.aparse(City, prompt, text="Paris is in France")
@@ -1500,7 +1508,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
                 >>> class Analysis(BaseModel):
                 ...     sentiment: str
                 ...     keywords: list[str]
-                >>> llm = Ollama(model="llama3.1", request_timeout=120)     # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", timeout=120)     # doctest: +SKIP
                 >>> async def stream_analysis():
                 ...     prompt = PromptTemplate("Analyze: {text}")
                 ...     async for obj in await llm.aparse(

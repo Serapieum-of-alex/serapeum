@@ -227,7 +227,7 @@ graph TB
 ```
 User Code
   └─→ Ollama.__init__
-      ├─→ Store: model, base_url, temperature, request_timeout, json_mode, additional_kwargs
+      ├─→ Store: model, base_url, temperature, timeout, json_mode, additional_kwargs
       ├─→ Create Metadata: is_chat_model=True, is_function_calling_model=True
       └─→ Set _client=None, _async_client=None (lazy init)
 ```
@@ -237,7 +237,7 @@ User Code
 User → Ollama.chat
   └─→ Access self.client property
       └─→ Check if self._client is None
-          ├─→ If None: Create Client(host=base_url, timeout=request_timeout)
+          ├─→ If None: Create Client(host=base_url, timeout=timeout)
           └─→ Return self._client
 ```
 
@@ -350,7 +350,7 @@ User → tools_llm(topic="rock")
 Initialization:
   - model: str (immutable after init)
   - base_url: str (immutable after init)
-  - request_timeout: float (immutable after init)
+  - timeout: float (immutable after init)
   - temperature: float (immutable after init)
   - json_mode: bool (immutable after init)
   - additional_kwargs: dict (immutable after init)
@@ -403,7 +403,7 @@ Ollama.__init__
       ├─→ model: must be non-empty string
       ├─→ base_url: must be valid URL
       ├─→ temperature: must be in [0.0, 1.0]
-      └─→ request_timeout: must be positive
+      └─→ timeout: must be positive
 ```
 
 ### 2. Client Creation Errors (First Use)

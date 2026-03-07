@@ -971,7 +971,7 @@ class BaseNode(SerializableModel, ABC):
         """Get embedding.
 
         Raises:
-            ValueErrors if embedding is None.
+            ValueError: if embedding is None.
         """
         if self.embedding is None:
             raise ValueError("embedding not set.")

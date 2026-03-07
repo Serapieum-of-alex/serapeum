@@ -90,7 +90,6 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.tabbed
   - pymdownx.inlinehilite
   - pymdownx.snippets:
       base_path: .
@@ -170,7 +169,7 @@ nav:
       - testing-documentation: developer-guide/testing-docs.md
   - About:
     - Change-log: change-log.md
-    - Contributing: contributing.md
+    - Contributing: developer-guide/contributing.md
     - License: LICENSE.md
 
 extra:

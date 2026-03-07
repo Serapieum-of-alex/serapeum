@@ -26,6 +26,7 @@ from serapeum.core.llms import (
 from pydantic import (
     Field,
     model_validator,
+    ConfigDict
 )
 
 from serapeum.core.configs.defaults import (
@@ -102,6 +103,8 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
             print(r.delta, end="")
         ```
     """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     model: str = Field(description="The OpenAI model to use.")
     temperature: float = Field(

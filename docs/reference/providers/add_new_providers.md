@@ -773,7 +773,7 @@ uv run pytest libs/providers/{provider}/tests/ --cov=serapeum.providers.{provide
 See these for reference:
 
 - **Ollama**: `libs/providers/ollama/` - Complete implementation with streaming, async, and tool calling
-- **Core abstractions**: `libs/core/src/serapeum/core/llms/abstractions/` - Base classes and mixins
+- **Core abstractions**: `libs/core/src/serapeum/core/llms/abstractions/` - Base classes and adapters
 
 ### Minimal Example
 

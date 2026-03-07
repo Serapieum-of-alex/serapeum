@@ -1,4 +1,4 @@
-"""LLM mixins and helpers for function/tool calling workflows."""
+"""LLM adapters and helpers for function/tool calling workflows."""
 
 from __future__ import annotations
 import asyncio

@@ -44,18 +44,14 @@ from serapeum.openai.models import (
     openai_modelname_to_contextsize,
 )
 from serapeum.openai.converters import (
-    from_openai_completion_logprobs,
-    from_openai_message,
-    from_openai_token_logprobs,
+    ChatMessageParser,
+    LogProbParser,
+    ToolCallAccumulator,
     to_openai_message_dicts,
-    update_tool_calls,
 )
 from serapeum.openai.mixins import Client, ModelMetadata, StructuredOutput
 from serapeum.openai.utils import force_single_tool_call, resolve_tool_choice
-from openai.types.chat.chat_completion_chunk import (
-    ChoiceDelta,
-    ChoiceDeltaToolCall,
-)
+from openai.types.chat.chat_completion_chunk import ChoiceDelta
 from serapeum.core.base.llms.utils import (
     completion_to_chat_decorator,
     stream_completion_to_chat_decorator,
@@ -298,14 +294,14 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
         )
 
         openai_message = response.choices[0].message
-        message = from_openai_message(
+        message = ChatMessageParser(
             openai_message, modalities=self.modalities or ["text"]
-        )
+        ).build()
         openai_token_logprobs = response.choices[0].logprobs
         logprobs = None
 
         if openai_token_logprobs and openai_token_logprobs.content:
-            logprobs = from_openai_token_logprobs(openai_token_logprobs.content)
+            logprobs = LogProbParser.from_tokens(openai_token_logprobs.content)
 
         return ChatResponse(
             message=message,
@@ -328,7 +324,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
 
         def gen() -> ChatResponseGen:
             content = ""
-            tool_calls: list[ChoiceDeltaToolCall] = []
+            accumulator = ToolCallAccumulator()
 
             is_function = False
             for response in client.chat.completions.create(
@@ -357,10 +353,10 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
 
                 additional_kwargs = {}
                 if is_function:
-                    tool_calls = update_tool_calls(tool_calls, delta.tool_calls)
-                    if tool_calls:
-                        additional_kwargs["tool_calls"] = tool_calls
-                        for tool_call in tool_calls:
+                    accumulator.update(delta.tool_calls)
+                    if accumulator.tool_calls:
+                        additional_kwargs["tool_calls"] = accumulator.tool_calls
+                        for tool_call in accumulator.tool_calls:
                             if tool_call.function:
                                 blocks.append(
                                     ToolCallBlock(
@@ -398,7 +394,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
         openai_completion_logprobs = response.choices[0].logprobs
         logprobs = None
         if openai_completion_logprobs:
-            logprobs = from_openai_completion_logprobs(openai_completion_logprobs)
+            logprobs = LogProbParser.from_completions(openai_completion_logprobs)
 
         return CompletionResponse(
             text=text,
@@ -562,14 +558,14 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
         )
 
         openai_message = response.choices[0].message
-        message = from_openai_message(
+        message = ChatMessageParser(
             openai_message, modalities=self.modalities or ["text"]
-        )
+        ).build()
         openai_token_logprobs = response.choices[0].logprobs
 
         logprobs = None
         if openai_token_logprobs and openai_token_logprobs.content:
-            logprobs = from_openai_token_logprobs(openai_token_logprobs.content)
+            logprobs = LogProbParser.from_tokens(openai_token_logprobs.content)
 
         return ChatResponse(
             message=message,
@@ -592,7 +588,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
 
         async def gen() -> ChatResponseAsyncGen:
             content = ""
-            tool_calls: list[ChoiceDeltaToolCall] = []
+            accumulator = ToolCallAccumulator()
 
             is_function = False
             first_chat_chunk = True
@@ -632,10 +628,10 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
 
                 additional_kwargs = {}
                 if is_function:
-                    tool_calls = update_tool_calls(tool_calls, delta.tool_calls)
-                    if tool_calls:
-                        additional_kwargs["tool_calls"] = tool_calls
-                        for tool_call in tool_calls:
+                    accumulator.update(delta.tool_calls)
+                    if accumulator.tool_calls:
+                        additional_kwargs["tool_calls"] = accumulator.tool_calls
+                        for tool_call in accumulator.tool_calls:
                             if tool_call.function:
                                 blocks.append(
                                     ToolCallBlock(
@@ -673,7 +669,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, Fun
         openai_completion_logprobs = response.choices[0].logprobs
         logprobs = None
         if openai_completion_logprobs:
-            logprobs = from_openai_completion_logprobs(openai_completion_logprobs)
+            logprobs = LogProbParser.from_completions(openai_completion_logprobs)
 
         return CompletionResponse(
             text=text,

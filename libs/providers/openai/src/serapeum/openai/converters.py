@@ -6,9 +6,8 @@ import logging
 from collections.abc import Callable
 from typing import Any, Sequence, Type, cast
 
-from deprecated import deprecated
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionMessageToolCall
-from openai.types.chat.chat_completion_chunk import ChoiceDeltaToolCall
+from openai.types.chat.chat_completion_chunk import ChoiceDeltaToolCall, ChoiceDeltaToolCallFunction
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from openai.types.chat.chat_completion_token_logprob import ChatCompletionTokenLogprob
 from openai.types.completion_choice import Logprobs
@@ -464,150 +463,230 @@ def to_openai_message_dicts(
     return result
 
 
-def from_openai_message(
-    openai_message: ChatCompletionMessage, modalities: list[str]
-) -> Message:
-    """Convert openai message dict to generic message."""
-    role = openai_message.role
-    # NOTE: Azure OpenAI returns function calling messages without a content key
-    if "text" in modalities and openai_message.content:
-        blocks: list[ContentBlock] = [TextChunk(content=openai_message.content or "")]
-    else:
-        blocks: list[ContentBlock] = []
+# ---------------------------------------------------------------------------
+# "From OpenAI" parsers — typed SDK objects → serapeum types
+# ---------------------------------------------------------------------------
 
-    additional_kwargs: dict[str, Any] = {}
-    if openai_message.tool_calls:
-        tool_calls: list[ChatCompletionMessageToolCall] = openai_message.tool_calls
-        for tool_call in tool_calls:
-            if tool_call.function:
-                blocks.append(
-                    ToolCallBlock(
-                        tool_call_id=tool_call.id,
-                        tool_name=tool_call.function.name or "",
-                        tool_kwargs=tool_call.function.arguments or {},
+
+class ChatMessageParser:
+    """Parses a Chat Completions API ``ChatCompletionMessage`` into a serapeum ``Message``."""
+
+    def __init__(self, openai_message: ChatCompletionMessage, modalities: list[str]) -> None:
+        self._openai_message = openai_message
+        self._modalities = modalities
+        self._blocks: list[ContentBlock] = []
+        self._additional_kwargs: dict[str, Any] = {}
+
+    def build(self) -> Message:
+        self._extract_text_content()
+        self._extract_tool_calls()
+        self._extract_audio()
+        return Message(
+            role=self._openai_message.role,
+            chunks=self._blocks,
+            additional_kwargs=self._additional_kwargs,
+        )
+
+    def _extract_text_content(self) -> None:
+        # NOTE: Azure OpenAI returns function calling messages without a content key
+        if "text" in self._modalities and self._openai_message.content:
+            self._blocks.append(TextChunk(content=self._openai_message.content or ""))
+
+    def _extract_tool_calls(self) -> None:
+        if self._openai_message.tool_calls:
+            tool_calls: list[ChatCompletionMessageToolCall] = self._openai_message.tool_calls
+            for tool_call in tool_calls:
+                if tool_call.function:
+                    self._blocks.append(
+                        ToolCallBlock(
+                            tool_call_id=tool_call.id,
+                            tool_name=tool_call.function.name or "",
+                            tool_kwargs=tool_call.function.arguments or {},
+                        )
                     )
-                )
-        additional_kwargs.update(tool_calls=tool_calls)
+            self._additional_kwargs.update(tool_calls=tool_calls)
 
-    if openai_message.audio and "audio" in modalities:
-        reference_audio_id = openai_message.audio.id
-        audio_data = openai_message.audio.data
-        additional_kwargs["reference_audio_id"] = reference_audio_id
-        blocks.append(Audio(content=audio_data, format="mp3"))
+    def _extract_audio(self) -> None:
+        if self._openai_message.audio and "audio" in self._modalities:
+            reference_audio_id = self._openai_message.audio.id
+            audio_data = self._openai_message.audio.data
+            self._additional_kwargs["reference_audio_id"] = reference_audio_id
+            self._blocks.append(Audio(content=audio_data, format="mp3"))
 
-    return Message(role=role, chunks=blocks, additional_kwargs=additional_kwargs)
+    @classmethod
+    def batch(cls, messages: Sequence[ChatCompletionMessage], modalities: list[str]) -> list[Message]:
+        return [cls(m, modalities).build() for m in messages]
 
 
-def from_openai_token_logprob(
-    openai_token_logprob: ChatCompletionTokenLogprob,
-) -> list[LogProb]:
-    """Convert a single openai token logprob to generic list of logprobs."""
-    result = []
-    if openai_token_logprob.top_logprobs:
-        try:
+# ---------------------------------------------------------------------------
+# "From OpenAI" parsers — raw dicts → serapeum types
+# ---------------------------------------------------------------------------
+
+
+class DictMessageParser:
+    """Parses a raw OpenAI message dict into a serapeum ``Message``."""
+
+    _BLOCK_PARSERS: dict[str, Callable[..., ContentBlock]] = {}
+
+    def __init__(self, message_dict: dict[str, Any]) -> None:
+        self._message_dict = message_dict
+        self._blocks: list[ContentBlock] = []
+
+    def build(self) -> Message:
+        content = self._message_dict.get("content")
+        if isinstance(content, list):
+            self._parse_content_blocks(content)
+            content = None
+        additional_kwargs = self._extract_additional_kwargs()
+        return Message(
+            role=self._message_dict["role"],
+            content=content,
+            additional_kwargs=additional_kwargs,
+            chunks=self._blocks,
+        )
+
+    def _parse_content_blocks(self, content: list[dict[str, Any]]) -> None:
+        for elem in content:
+            t = elem.get("type")
+            parser = self._BLOCK_PARSERS.get(t)  # type: ignore[arg-type]
+            if parser:
+                self._blocks.append(parser(elem))
+            else:
+                raise ValueError(f"Unsupported message type: {t}")
+
+    def _extract_additional_kwargs(self) -> dict[str, Any]:
+        additional_kwargs = self._message_dict.copy()
+        additional_kwargs.pop("role")
+        additional_kwargs.pop("content", None)
+        return additional_kwargs
+
+    @classmethod
+    def batch(cls, dicts: Sequence[dict[str, Any]]) -> list[Message]:
+        return [cls(d).build() for d in dicts]
+
+    # -- block parsers (populated after class definition) --
+
+    @staticmethod
+    def _parse_text(elem: dict[str, Any]) -> TextChunk:
+        return TextChunk(content=elem.get("text", ""))
+
+    @staticmethod
+    def _parse_image(elem: dict[str, Any]) -> Image:
+        img = elem["image_url"]["url"]
+        detail = elem["image_url"].get("detail")
+        if img.startswith("data:"):
+            result = Image(content=img, detail=detail)
+        else:
+            result = Image(url=img, detail=detail)
+        return result
+
+    @staticmethod
+    def _parse_function_call(elem: dict[str, Any]) -> ToolCallBlock:
+        return ToolCallBlock(
+            tool_call_id=elem.get("call_id"),
+            tool_name=elem.get("name", ""),
+            tool_kwargs=elem.get("arguments", {}),
+        )
+
+
+DictMessageParser._BLOCK_PARSERS = {
+    "text": DictMessageParser._parse_text,
+    "image_url": DictMessageParser._parse_image,
+    "function_call": DictMessageParser._parse_function_call,
+    "output_text": DictMessageParser._parse_text,
+    "input_text": DictMessageParser._parse_text,
+}
+
+
+# ---------------------------------------------------------------------------
+# LogProb parsers
+# ---------------------------------------------------------------------------
+
+
+class LogProbParser:
+    """Converts OpenAI logprob types to serapeum ``LogProb`` lists."""
+
+    @staticmethod
+    def from_token(openai_token_logprob: ChatCompletionTokenLogprob) -> list[LogProb]:
+        result: list[LogProb] = []
+        if openai_token_logprob.top_logprobs:
             result = [
                 LogProb(token=el.token, logprob=el.logprob, bytes=el.bytes or [])
                 for el in openai_token_logprob.top_logprobs
             ]
-        except Exception:
-            print(openai_token_logprob)
-            raise
-    return result
+        return result
 
+    @staticmethod
+    def from_tokens(openai_token_logprobs: Sequence[ChatCompletionTokenLogprob]) -> list[list[LogProb]]:
+        result: list[list[LogProb]] = []
+        for token_logprob in openai_token_logprobs:
+            if logprobs := LogProbParser.from_token(token_logprob):
+                result.append(logprobs)
+        return result
 
-def from_openai_token_logprobs(
-    openai_token_logprobs: Sequence[ChatCompletionTokenLogprob],
-) -> list[list[LogProb]]:
-    """Convert openai token logprobs to generic list of LogProb."""
-    result = []
-    for token_logprob in openai_token_logprobs:
-        if logprobs := from_openai_token_logprob(token_logprob):
-            result.append(logprobs)
-    return result
-
-
-def from_openai_completion_logprob(
-    openai_completion_logprob: dict[str, float],
-) -> list[LogProb]:
-    """Convert openai completion logprobs to generic list of LogProb."""
-    return [
-        LogProb(token=t, logprob=v, bytes=[])
-        for t, v in openai_completion_logprob.items()
-    ]
-
-
-def from_openai_completion_logprobs(
-    openai_completion_logprobs: Logprobs,
-) -> list[list[LogProb]]:
-    """Convert openai completion logprobs to generic list of LogProb."""
-    result = []
-    if openai_completion_logprobs.top_logprobs:
-        result = [
-            from_openai_completion_logprob(completion_logprob)
-            for completion_logprob in openai_completion_logprobs.top_logprobs
+    @staticmethod
+    def from_completion(openai_completion_logprob: dict[str, float]) -> list[LogProb]:
+        return [
+            LogProb(token=t, logprob=v, bytes=[])
+            for t, v in openai_completion_logprob.items()
         ]
-    return result
+
+    @staticmethod
+    def from_completions(openai_completion_logprobs: Logprobs) -> list[list[LogProb]]:
+        result: list[list[LogProb]] = []
+        if openai_completion_logprobs.top_logprobs:
+            result = [
+                LogProbParser.from_completion(completion_logprob)
+                for completion_logprob in openai_completion_logprobs.top_logprobs
+            ]
+        return result
 
 
-def from_openai_messages(
-    openai_messages: Sequence[ChatCompletionMessage], modalities: list[str]
-) -> list[Message]:
-    """Convert openai message dicts to generic messages."""
-    return [from_openai_message(message, modalities) for message in openai_messages]
+# ---------------------------------------------------------------------------
+# Streaming tool call accumulator
+# ---------------------------------------------------------------------------
 
 
-def from_openai_message_dict(message_dict: dict) -> Message:
-    """Convert openai message dict to generic message."""
-    role = message_dict["role"]
-    # NOTE: Azure OpenAI returns function calling messages without a content key
-    content = message_dict.get("content")
-    blocks = []
-    if isinstance(content, list):
-        for elem in content:
-            t = elem.get("type")
-            if t == "text":
-                blocks.append(TextChunk(content=elem.get("text")))
-            elif t == "image_url":
-                img = elem["image_url"]["url"]
-                detail = elem["image_url"]["detail"]
-                if img.startswith("data:"):
-                    blocks.append(Image(content=img, detail=detail))
-                else:
-                    blocks.append(Image(url=img, detail=detail))
-            elif t == "function_call":
-                blocks.append(
-                    ToolCallBlock(
-                        tool_call_id=elem.get("call_id"),
-                        tool_name=elem.get("name", ""),
-                        tool_kwargs=elem.get("arguments", {}),
-                    )
-                )
+class ToolCallAccumulator:
+    """Accumulates streaming tool call deltas into complete tool calls."""
+
+    def __init__(self) -> None:
+        self._tool_calls: list[ChoiceDeltaToolCall] = []
+
+    @property
+    def tool_calls(self) -> list[ChoiceDeltaToolCall]:
+        return self._tool_calls
+
+    def update(self, tool_calls_delta: list[ChoiceDeltaToolCall] | None) -> None:
+        if tool_calls_delta and len(tool_calls_delta) > 0:
+            tc_delta = tool_calls_delta[0]
+            if len(self._tool_calls) == 0:
+                self._tool_calls.append(tc_delta)
+            elif self._tool_calls[-1].index != tc_delta.index:
+                self._tool_calls.append(tc_delta)
             else:
-                msg = f"Unsupported message type: {t}"
-                raise ValueError(msg)
-        content = None
+                self._merge_into_existing(self._tool_calls[-1], tc_delta)
 
-    additional_kwargs = message_dict.copy()
-    additional_kwargs.pop("role")
-    additional_kwargs.pop("content", None)
+    @staticmethod
+    def _merge_into_existing(existing: ChoiceDeltaToolCall, delta: ChoiceDeltaToolCall) -> None:
+        existing_fn = cast(ChoiceDeltaToolCallFunction, existing.function)
+        delta_fn = cast(ChoiceDeltaToolCallFunction, delta.function)
 
-    return Message(
-        role=role, content=content, additional_kwargs=additional_kwargs, chunks=blocks
-    )
+        if existing_fn.arguments is None:
+            existing_fn.arguments = ""
+        if existing_fn.name is None:
+            existing_fn.name = ""
+        if existing.id is None:
+            existing.id = ""
+
+        existing_fn.arguments += delta_fn.arguments or ""
+        existing_fn.name += delta_fn.name or ""
+        existing.id += delta.id or ""
 
 
-def from_openai_message_dicts(message_dicts: Sequence[dict]) -> list[Message]:
-    """Convert openai message dicts to generic messages."""
-    return [from_openai_message_dict(message_dict) for message_dict in message_dicts]
-
-
-@deprecated("Deprecated in favor of `to_openai_tool`, which should be used instead.")
-def to_openai_function(pydantic_class: Type[BaseModel]) -> dict[str, Any]:
-    """Deprecated in favor of `to_openai_tool`.
-
-    Convert pydantic class to OpenAI function.
-    """
-    return to_openai_tool(pydantic_class, description=None)
+# ---------------------------------------------------------------------------
+# Tool schema conversion
+# ---------------------------------------------------------------------------
 
 
 def to_openai_tool(
@@ -619,60 +698,6 @@ def to_openai_tool(
     function = {
         "name": schema["title"],
         "description": schema_description,
-        "parameters": pydantic_class.model_json_schema(),
+        "parameters": schema,
     }
     return {"type": "function", "function": function}
-
-
-def update_tool_calls(
-    tool_calls: list[ChoiceDeltaToolCall],
-    tool_calls_delta: list[ChoiceDeltaToolCall] | None,
-) -> list[ChoiceDeltaToolCall]:
-    """Use the tool_calls_delta objects received from openai stream chunks to update the running tool_calls object.
-
-    Args:
-        tool_calls: the list of tool calls
-        tool_calls_delta: the delta to update tool_calls
-
-    Returns:
-        The updated tool calls
-    """
-    # openai provides chunks consisting of tool_call deltas one tool at a time
-    if tool_calls_delta is None or len(tool_calls_delta) == 0:
-        return tool_calls
-
-    tc_delta = tool_calls_delta[0]
-
-    if len(tool_calls) == 0:
-        tool_calls.append(tc_delta)
-    else:
-        # we need to either update latest tool_call or start a
-        # new tool_call (i.e., multiple tools in this turn) and
-        # accumulate that new tool_call with future delta chunks
-        t = tool_calls[-1]
-        if t.index != tc_delta.index:
-            # the start of a new tool call, so append to our running tool_calls list
-            tool_calls.append(tc_delta)
-        else:
-            # not the start of a new tool call, so update last item of tool_calls
-
-            # validations to get passed by mypy
-            assert t.function is not None
-            assert tc_delta.function is not None
-
-            # Initialize fields if they're None
-            # OpenAI(or Compatible)'s streaming API can return partial tool call
-            # information across multiple chunks where some fields may be None in
-            # initial chunks and populated in subsequent ones
-            if t.function.arguments is None:
-                t.function.arguments = ""
-            if t.function.name is None:
-                t.function.name = ""
-            if t.id is None:
-                t.id = ""
-
-            # Update with delta values
-            t.function.arguments += tc_delta.function.arguments or ""
-            t.function.name += tc_delta.function.name or ""
-            t.id += tc_delta.id or ""
-    return tool_calls

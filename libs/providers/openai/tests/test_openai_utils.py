@@ -34,11 +34,9 @@ from serapeum.openai.models import (
     openai_modelname_to_contextsize,
 )
 from serapeum.openai.converters import (
-    from_openai_completion_logprobs,
-    from_openai_message_dicts,
-    from_openai_messages,
-    from_openai_token_logprob,
-    from_openai_token_logprobs,
+    ChatMessageParser,
+    DictMessageParser,
+    LogProbParser,
     to_openai_message_dicts,
     to_openai_tool,
 )
@@ -203,7 +201,7 @@ def test_from_openai_message_dicts_function_calling(
     openai_message_dicts_with_function_calling: List[ChatCompletionMessageParam],
     chat_messages_with_function_calling: List[Message],
 ) -> None:
-    chat_messages = from_openai_message_dicts(
+    chat_messages = DictMessageParser.batch(
         openai_message_dicts_with_function_calling
     )  # type: ignore
 
@@ -223,7 +221,7 @@ def test_from_openai_messages_function_calling_azure(
     azure_openai_message_dicts_with_function_calling: List[ChatCompletionMessage],
     azure_chat_messages_with_function_calling: List[Message],
 ) -> None:
-    chat_messages = from_openai_messages(
+    chat_messages = ChatMessageParser.batch(
         azure_openai_message_dicts_with_function_calling,
         ["text"],
     )
@@ -342,20 +340,20 @@ def test_to_openai_message_dicts_with_content_blocks_with_detail() -> None:
 def test_from_openai_token_logprob_none_top_logprob() -> None:
     logprob = ChatCompletionTokenLogprob(token="", logprob=1.0, top_logprobs=[])
     logprob.top_logprobs = None
-    result: List[LogProb] = from_openai_token_logprob(logprob)
+    result: List[LogProb] = LogProbParser.from_token(logprob)
     assert isinstance(result, list)
 
 
 def test_from_openai_token_logprobs_none_top_logprobs() -> None:
     logprob = ChatCompletionTokenLogprob(token="", logprob=1.0, top_logprobs=[])
     logprob.top_logprobs = None
-    result: List[LogProb] = from_openai_token_logprobs([logprob])
+    result: List[LogProb] = LogProbParser.from_tokens([logprob])
     assert isinstance(result, list)
 
 
 def test_from_openai_completion_logprobs_none_top_logprobs() -> None:
     logprobs = Logprobs(top_logprobs=None)
-    result = from_openai_completion_logprobs(logprobs)
+    result = LogProbParser.from_completions(logprobs)
     assert isinstance(result, list)
 
 

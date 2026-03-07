@@ -49,7 +49,9 @@ from serapeum.core.llms import (
     CompletionToChatMixin,
     Metadata,
 )
+from serapeum.core.retry import Retry, retry
 from serapeum.core.utils.base import get_cache_dir
+from serapeum.llama_cpp.retry import is_retryable
 from serapeum.llama_cpp.utils import _fetch_model_file, _fetch_model_file_hf
 
 logger = logging.getLogger(__name__)
@@ -66,7 +68,7 @@ _MODEL_CACHE: weakref.WeakValueDictionary[tuple[str, str], Llama] = weakref.Weak
 _MODEL_CACHE_LOCK = threading.Lock()
 
 
-class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
+class LlamaCPP(Retry, CompletionToChatMixin, LLM):  # type: ignore[misc]
     """LlamaCPP LLM — local inference via llama-cpp-python.
 
     Runs GGUF models locally using the llama-cpp-python backend.  The model is
@@ -131,6 +133,11 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
+    max_retries: int = Field(
+        default=0,
+        description="Maximum number of retry attempts. Disabled by default for local inference.",
+        ge=0,
+    )
     model_url: str | None = Field(
         default=None,
         description="URL of a GGUF model to download and cache locally.",
@@ -707,6 +714,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
             result = await asyncio.to_thread(self.complete, prompt, formatted, stream=False, **kwargs)  # type: ignore[arg-type]
         return result
 
+    @retry(is_retryable, logger)
     def _complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
         """Run a single non-streaming inference pass and return the full completion.
 
@@ -746,6 +754,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
             )
         return CompletionResponse(text=choices[0]["text"], raw=response)
 
+    @retry(is_retryable, logger)
     def _stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
         """Run a streaming inference pass and yield one response per token delta.
 
@@ -781,26 +790,22 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
         }
         call_kwargs.setdefault("stop", self.stop or None)
 
-        def gen() -> CompletionResponseGen:
-            text = ""
-            with self._model_lock:
-                try:
-                    for response in self._model(prompt=prompt, **call_kwargs):
-                        choices = response.get("choices", [])
-                        if not choices:
-                            raise RuntimeError(
-                                f"Model returned no choices in streaming response "
-                                f"after generating {len(text)} chars. "
-                                f"Raw response: {response!r}"
-                            )
-                        delta = choices[0]["text"]
-                        text += delta
-                        yield CompletionResponse(delta=delta, text=text, raw=response)
-                except Exception:
-                    logger.exception(
-                        "Streaming inference failed after generating %d chars",
-                        len(text),
-                    )
-                    raise
-
-        return gen()
+        text = ""
+        with self._model_lock:
+            try:
+                for response in self._model(prompt=prompt, **call_kwargs):
+                    choices = response.get("choices", [])
+                    if not choices:
+                        raise RuntimeError(
+                            f"Model returned no choices in streaming response "
+                            f"after generating {len(text)} chars. "
+                            f"Raw response: {response!r}"
+                        )
+                    delta = choices[0]["text"]
+                    text += delta
+                    yield CompletionResponse(delta=delta, text=text, raw=response)
+            except Exception:
+                logger.exception(
+                    f"Streaming inference failed after generating {text} chars",
+                )
+                raise

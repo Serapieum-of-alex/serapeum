@@ -78,7 +78,7 @@ from serapeum.core.llms import (
     ThinkingBlock,
     ToolCallBlock,
 )
-from serapeum.openai.models import O1_MODELS, O1_MODELS_WITHOUT_FUNCTION_CALLING
+from serapeum.openai.data.models import O1_MODELS, O1_MODELS_WITHOUT_FUNCTION_CALLING
 
 logger = logging.getLogger(__name__)
 

@@ -11,7 +11,7 @@ from importlib.resources import files
 import yaml
 
 # Load model registry from YAML (once, at import time)
-_yaml_text = (files("serapeum.openai") / "models.yaml").read_text(encoding="utf-8")
+_yaml_text = (files("serapeum.openai.data") / "models.yaml").read_text(encoding="utf-8")
 _registry: dict = yaml.safe_load(_yaml_text)
 
 

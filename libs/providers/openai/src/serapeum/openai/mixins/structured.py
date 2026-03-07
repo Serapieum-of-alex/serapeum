@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from serapeum.core.types import StructuredOutputMode
 from serapeum.core.llms import FlexibleModel
 from serapeum.core.prompts import PromptTemplate
-from serapeum.openai.models import is_json_schema_supported
+from serapeum.openai.data.models import is_json_schema_supported
 
 Model = TypeVar("Model", bound=BaseModel)
 

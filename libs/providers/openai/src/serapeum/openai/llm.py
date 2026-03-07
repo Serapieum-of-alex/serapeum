@@ -37,7 +37,7 @@ from serapeum.core.configs.defaults import (
 from serapeum.core.llms import FunctionCallingLLM
 from serapeum.core.tools import ToolCallArguments
 from serapeum.core.utils.schemas import parse_partial_json
-from serapeum.openai.models import (
+from serapeum.openai.data.models import (
     O1_MODELS,
     is_chat_model,
     is_chatcomp_api_supported,

@@ -18,7 +18,7 @@ from serapeum.core.base.llms.types import (
 from openai.types.responses import ResponseFunctionToolCall
 
 from serapeum.openai.converters import ResponsesOutputParser, ResponsesStreamAccumulator
-from serapeum.openai.responses import OpenAIResponses
+from serapeum.openai.llm.responses import OpenAIResponses
 from serapeum.openai.data.models import O1_MODELS
 from serapeum.openai.converters import to_openai_message_dicts
 from serapeum.core.tools import CallableTool

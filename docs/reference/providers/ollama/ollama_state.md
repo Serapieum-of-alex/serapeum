@@ -15,7 +15,7 @@ stateDiagram-v2
             State: Configuration stored
             - model: str
             - base_url: str
-            - request_timeout: float
+            - timeout: float
             - temperature: float
             - json_mode: bool
             - _client: None
@@ -153,7 +153,7 @@ llm = Ollama(
     model="llama3.1",
     api_key=os.environ.get("OLLAMA_API_KEY"),
     base_url="http://localhost:11434",
-    request_timeout=180
+    timeout=180
 )
 
 # State: Configured
@@ -172,7 +172,7 @@ response = llm.chat([Message(role=MessageRole.USER, content="Hello")])
 # Transition:
 # - Access self.client property
 # - Check if self._client is None → True
-# - Create Client(host=self.base_url, timeout=self.request_timeout)
+# - Create Client(host=self.base_url, timeout=self.timeout)
 # - Store in self._client
 
 # State: ClientInitialized → Idle
@@ -297,7 +297,7 @@ except Exception as e:
 # Error state:
 # 1. LoggingError: Log exception details
 # 2. RaisingException: Raise appropriate exception type
-#    - TimeoutError: request_timeout exceeded
+#    - TimeoutError: timeout exceeded
 #    - ConnectionError: Cannot reach server
 #    - ValueError: Invalid response format
 #    - KeyError: Missing required field in response
@@ -314,7 +314,7 @@ except Exception as e:
 # Set during __init__, never change
 self.model: str = "llama3.1"
 self.base_url: str = "http://localhost:11434"
-self.request_timeout: float = 180.0
+self.timeout: float = 180.0
 self.temperature: float = 0.75
 self.context_window: int = 3900
 self.prompt_key: str = "prompt"
@@ -331,10 +331,10 @@ self._client: Client | None = None
 self._async_client: AsyncClient | None = None
 
 # After first sync call
-self._client: Client = Client(host=self.base_url, timeout=self.request_timeout)
+self._client: Client = Client(host=self.base_url, timeout=self.timeout)
 
 # After first async call
-self._async_client: AsyncClient = AsyncClient(host=self.base_url, timeout=self.request_timeout)
+self._async_client: AsyncClient = AsyncClient(host=self.base_url, timeout=self.timeout)
 ```
 
 ### Request State (Per-call, transient)
@@ -442,7 +442,7 @@ Safe to have:
 import os
 from serapeum.ollama import Ollama
 # ✓ Good: Initialize once, reuse
-llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # ✗ Bad: Create new instance per call
 def get_response(prompt):

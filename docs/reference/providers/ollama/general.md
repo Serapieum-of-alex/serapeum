@@ -24,7 +24,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180,
+    timeout=180,
 )
 
 # Send chat request
@@ -48,7 +48,7 @@ class DummyModel(BaseModel):
 
 
 # Initialize Ollama
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # Create structured completion runner
 text_llm = TextCompletionLLM(
@@ -78,7 +78,7 @@ class Album(BaseModel):
 
 
 # Initialize Ollama
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # Create tool orchestrator
 tools_llm = ToolOrchestratingLLM(
@@ -247,7 +247,7 @@ Clients are created on first use, not during `__init__`:
 @property
 def client(self) -> Client:
     if self._client is None:
-        self._client = Client(host=self.base_url, timeout=self.request_timeout)
+        self._client = Client(host=self.base_url, timeout=self.timeout)
     return self._client
 ```
 
@@ -316,7 +316,7 @@ Model Runtime (llama3.1, etc.)
 ### Essential
 - `model`: Model name (e.g., "qwen3.5:397b")
 - `base_url`: Ollama server URL (default: "http://localhost:11434")
-- `request_timeout`: Timeout in seconds (default: 60.0)
+- `timeout`: Timeout in seconds (default: 60.0)
 
 ### Generation
 - `temperature`: Sampling temperature (0.0-1.0, default: 0.75)
@@ -383,7 +383,7 @@ uv pip install -e libs/providers/serapeum-ollama
 import os
 from serapeum.ollama import Ollama
 from serapeum.core.llms import Message, MessageRole
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # Reuse many times
 messages1 = [Message(role=MessageRole.USER, content="Hi!")]
@@ -402,7 +402,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
   model="qwen3.5:397b",
   api_key=os.environ.get("OLLAMA_API_KEY"),
-  request_timeout=180
+  timeout=180
 )
 messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
 for chunk in llm.chat(messages, stream=True):
@@ -452,7 +452,7 @@ class Album(BaseModel):
 llm = Ollama(
   model="qwen3.5:397b",
   api_key=os.environ.get("OLLAMA_API_KEY"),
-  request_timeout=180
+  timeout=180
 )
 
 # Define tool from Pydantic model
@@ -496,7 +496,7 @@ async def main():
     llm = Ollama(
         model="qwen3.5:397b",
         api_key=os.environ.get("OLLAMA_API_KEY"),
-        request_timeout=180
+        timeout=180
     )
 
     # Prepare multiple message lists
@@ -571,8 +571,8 @@ Solution: Pull the model first
 
 ### Issue: Timeout
 ```
-Solution: Increase request_timeout
-  llm = Ollama(model="qwen3.5:397b", request_timeout=300)
+Solution: Increase timeout
+  llm = Ollama(model="qwen3.5:397b", timeout=300)
 ```
 
 ### Issue: Invalid JSON Response

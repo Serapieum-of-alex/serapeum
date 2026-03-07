@@ -45,7 +45,7 @@ classDiagram
         +base_url: str
         +temperature: float
         +context_window: int
-        +request_timeout: float
+        +timeout: float
         +prompt_key: str
         +json_mode: bool
         +additional_kwargs: dict
@@ -295,7 +295,7 @@ BaseLLM (abstract)
 @property
 def client(self) -> Client:
     if self._client is None:
-        self._client = Client(host=self.base_url, timeout=self.request_timeout)
+        self._client = Client(host=self.base_url, timeout=self.timeout)
     return self._client
 ```
 

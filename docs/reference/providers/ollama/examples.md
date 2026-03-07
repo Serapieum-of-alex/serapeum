@@ -73,7 +73,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180,
+    timeout=180,
 )
 
 # Create a message
@@ -96,7 +96,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180,
+    timeout=180,
 )
 
 # Send completion request
@@ -135,7 +135,7 @@ llm = Ollama(
     api_key=os.environ.get("OLLAMA_API_KEY"),
     temperature=0.8,
     context_window=4096,
-    request_timeout=180.0,
+    timeout=180.0,
     json_mode=True,
     keep_alive="5m",
     additional_kwargs={"top_p": 0.9, "top_k": 40}
@@ -174,7 +174,7 @@ llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
     json_mode=True,  # Forces JSON output
-    request_timeout=180,
+    timeout=180,
 )
 ```
 
@@ -194,7 +194,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 messages = [
@@ -217,7 +217,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 messages = [
@@ -243,7 +243,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 messages = [Message(role=MessageRole.USER, content="Write a creative story.")]
@@ -270,7 +270,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3-vl:235b-instruct",     # Vision model
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 # Create message with image
@@ -305,7 +305,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 prompt = "The capital of France is"
@@ -324,7 +324,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 response = llm.complete(
@@ -347,7 +347,7 @@ llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
     json_mode=True,
-    request_timeout=180,
+    timeout=180,
 )
 
 prompt = 'Return {"name": "John", "age": 30} as JSON'
@@ -371,7 +371,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 messages = [Message(role=MessageRole.USER, content="Count from 1 to 5.")]
@@ -393,7 +393,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 prompt = "Write a haiku about coding:"
@@ -415,7 +415,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
@@ -460,7 +460,7 @@ def create_album(title: str, artist: str, songs: list[str]) -> Album:
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 # Create tool from function
@@ -501,7 +501,7 @@ class Album(BaseModel):
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 # Create tool from Pydantic model
@@ -543,7 +543,7 @@ class Album(BaseModel):
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 tool = CallableTool.from_model(Album)
@@ -585,7 +585,7 @@ class Album(BaseModel):
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 tool = CallableTool.from_model(Album)

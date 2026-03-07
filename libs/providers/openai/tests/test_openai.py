@@ -430,12 +430,12 @@ def test_validates_api_key_is_present() -> None:
 
 @pytest.mark.unit
 @patch("serapeum.openai.mixins.client.SyncOpenAI")
-def test_max_retries_passed_to_sdk_client(MockSyncOpenAI: MagicMock) -> None:
-    """max_retries is forwarded to the OpenAI SDK client which handles retries."""
+def test_sdk_retries_disabled(MockSyncOpenAI: MagicMock) -> None:
+    """SDK retries are disabled; the @retry decorator handles retries instead."""
     llm = OpenAI(model="gpt-4o-mini", max_retries=5)
     _ = llm.client  # trigger lazy client creation
     call_kwargs = MockSyncOpenAI.call_args[1]
-    assert call_kwargs["max_retries"] == 5
+    assert call_kwargs["max_retries"] == 0
 
 
 @patch("serapeum.openai.mixins.client.SyncOpenAI")

@@ -1,95 +1,85 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Sequence
+import asyncio
+import os
+from typing import Any
 
-import httpx
-from serapeum.core.llms import Message
+from openai import AsyncAzureOpenAI
+from openai import AzureOpenAI as SyncAzureOpenAI
+from openai.lib.azure import AzureADTokenProvider
 from pydantic import Field, PrivateAttr, model_validator
-
-from serapeum.core.types import StructuredOutputMode
-from serapeum.core.base.llms.utils import get_from_param_or_env
-from serapeum.core.output_parsers import BaseParser
 
 from serapeum.azure_openai.utils import (
     refresh_openai_azuread_token,
     resolve_from_aliases,
 )
+from serapeum.core.base.llms.utils import get_from_param_or_env
 from serapeum.openai import OpenAI
 from serapeum.openai.utils import DEFAULT_OPENAI_API_BASE
-from openai import AsyncAzureOpenAI
-from openai import AzureOpenAI as SyncAzureOpenAI
-from openai.lib.azure import AzureADTokenProvider
 
 __all__ = ["AzureOpenAI", "SyncAzureOpenAI", "AsyncAzureOpenAI"]
 
 
 class AzureOpenAI(OpenAI):
-    """
-    Azure OpenAI.
+    """Azure OpenAI.
 
     To use this, you must first deploy a model on Azure OpenAI.
-    Unlike OpenAI, you need to specify a `engine` parameter to identify
+    Unlike OpenAI, you need to specify an ``engine`` parameter to identify
     your deployment (called "model deployment name" in Azure portal).
 
-    - model: Name of the model (e.g. `text-davinci-003`)
-        This in only used to decide completion vs. chat endpoint.
-    - engine: This will correspond to the custom name you chose
-        for your deployment when you deployed a model.
+    - ``model``: Name of the model (e.g. ``gpt-4o``).
+      This is only used to decide completion vs. chat endpoint.
+    - ``engine``: This will correspond to the custom name you chose
+      for your deployment when you deployed a model.
 
     You must have the following environment variables set:
 
-    - `OPENAI_API_VERSION`: set this to `2023-07-01-preview` or newer.
-        This may change in the future.
-    - `AZURE_OPENAI_ENDPOINT`: your endpoint should look like the following
-        https://YOUR_RESOURCE_NAME.openai.azure.com/
-    - `AZURE_OPENAI_API_KEY`: your API key if the api type is `azure`| Or pass through `AZURE_AD_TOKEN_PROVIDER`
-        and set `use_azure_ad = True` to use managed identity with Azure Entra ID
+    - ``OPENAI_API_VERSION``: set this to ``2024-02-01`` or newer.
+    - ``AZURE_OPENAI_ENDPOINT``: your endpoint should look like
+      ``https://YOUR_RESOURCE_NAME.openai.azure.com/``
+    - ``AZURE_OPENAI_API_KEY``: your API key if the api type is ``azure``.
+      Or pass through ``azure_ad_token_provider`` and set ``use_azure_ad=True``
+      to use managed identity with Azure Entra ID.
 
     More information can be found here:
-        https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?tabs=command-line&pivots=programming-language-python
+        https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart
 
     Examples:
-        `pip install llama-index-llms-azure-openai`
-
         ```python
-        from serapeum.llms.azure_openai import AzureOpenAI
-
-        aoai_api_key = "YOUR_AZURE_OPENAI_API_KEY"
-        aoai_endpoint = "YOUR_AZURE_OPENAI_ENDPOINT"
-        aoai_api_version = "2023-07-01-preview"
+        from serapeum.azure_openai import AzureOpenAI
 
         llm = AzureOpenAI(
-            engine="AZURE_AZURE_OPENAI_DEPLOYMENT_NAME",
-            model="YOUR_AZURE_OPENAI_COMPLETION_MODEL_NAME",
-            api_key=aoai_api_key,
-            azure_endpoint=aoai_endpoint,
-            api_version=aoai_api_version,
+            engine="my-deployment",
+            model="gpt-4o",
+            api_key="YOUR_AZURE_OPENAI_API_KEY",
+            azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+            api_version="2024-02-01",
         )
         ```
 
         Using managed identity (passing a token provider instead of an API key):
 
-         ```python
-        from serapeum.llms.azure_openai import AzureOpenAI
-
-        aoai_endpoint = "YOUR_AZURE_OPENAI_ENDPOINT"
-        aoai_api_version = "2023-07-01-preview"
+        ```python
+        from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+        from serapeum.azure_openai import AzureOpenAI
 
         credential = DefaultAzureCredential()
-        token_provider = get_bearer_token_provider(credential, "https://cognitiveservices.azure.com/.default")
+        token_provider = get_bearer_token_provider(
+            credential, "https://cognitiveservices.azure.com/.default"
+        )
 
         llm = AzureOpenAI(
-            engine = llm_deployment
-            model="YOUR_AZURE_OPENAI_COMPLETION_MODEL_NAME",
+            engine="my-deployment",
+            model="gpt-4o",
             azure_ad_token_provider=token_provider,
             use_azure_ad=True,
-            azure_endpoint=aoai_endpoint,
-            api_version=aoai_api_version,
+            azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+            api_version="2024-02-01",
         )
         ```
-
     """
 
+    model: str = Field(default="gpt-35-turbo", description="The OpenAI model name.")
     engine: str = Field(description="The name of the deployed azure engine.")
     azure_endpoint: str | None = Field(
         default=None, description="The Azure endpoint to use."
@@ -98,153 +88,98 @@ class AzureOpenAI(OpenAI):
         default=None, description="The Azure deployment to use."
     )
     use_azure_ad: bool = Field(
-        description="Indicates if Microsoft Entra ID (former Azure AD) is used for token authentication"
+        default=False,
+        description="Indicates if Microsoft Entra ID (former Azure AD) is used for token authentication.",
     )
     azure_ad_token_provider: AzureADTokenProvider | None = Field(
         default=None, description="Callback function to provide Azure Entra ID token."
     )
-    api_base: str | None = Field(
-        default=None,
-        description="The Azure Base URL to use. Useful for proxies on top of Azure OpenAI.",
-    )
 
     _azure_ad_token: Any = PrivateAttr(default=None)
-    _client: SyncAzureOpenAI = PrivateAttr()
-    _aclient: AsyncAzureOpenAI = PrivateAttr()
-
-    def __init__(
-        self,
-        model: str = "gpt-35-turbo",
-        engine: str | None = None,
-        temperature: float = 0.1,
-        max_tokens: int | None = None,
-        additional_kwargs: dict[str, Any] | None = None,
-        max_retries: int = 3,
-        timeout: float = 60.0,
-        reuse_client: bool = True,
-        api_key: str | None = None,
-        api_version: str | None = None,
-        api_base: str | None = None,
-        # azure specific
-        azure_endpoint: str | None = None,
-        azure_deployment: str | None = None,
-        azure_ad_token_provider: AzureADTokenProvider | None = None,
-        use_azure_ad: bool = False,
-        # aliases for engine
-        deployment_name: str | None = None,
-        deployment_id: str | None = None,
-        deployment: str | None = None,
-        # custom httpx client
-        http_client: httpx.Client | None = None,
-        async_http_client: httpx.AsyncClient | None = None,
-        # base class
-        system_prompt: str | None = None,
-        messages_to_prompt: Callable[[Sequence[Message]], str] | None = None,
-        completion_to_prompt: Callable[[str], str] | None = None,
-        structured_output_mode: StructuredOutputMode = StructuredOutputMode.DEFAULT,
-        output_parser: BaseParser | None = None,
-        **kwargs: Any,
-    ) -> None:
-        engine = resolve_from_aliases(
-            engine, deployment_name, deployment_id, deployment, azure_deployment
-        )
-
-        if engine is None:
-            raise ValueError("You must specify an `engine` parameter.")
-
-        if api_base is None:
-            azure_endpoint = get_from_param_or_env(
-                "azure_endpoint", azure_endpoint, "AZURE_OPENAI_ENDPOINT", ""
-            )
-
-        super().__init__(
-            engine=engine,
-            model=model,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            additional_kwargs=additional_kwargs,
-            max_retries=max_retries,
-            timeout=timeout,
-            reuse_client=reuse_client,
-            api_key=api_key,
-            azure_endpoint=azure_endpoint,
-            azure_deployment=azure_deployment,
-            api_base=api_base,
-            azure_ad_token_provider=azure_ad_token_provider,
-            use_azure_ad=use_azure_ad,
-            api_version=api_version,
-            http_client=http_client,
-            async_http_client=async_http_client,
-            system_prompt=system_prompt,
-            messages_to_prompt=messages_to_prompt,
-            completion_to_prompt=completion_to_prompt,
-            structured_output_mode=structured_output_mode,
-            output_parser=output_parser,
-            **kwargs,
-        )
-
-        # reset api_base to None if it is the default
-        if self.api_base == DEFAULT_OPENAI_API_BASE or self.azure_endpoint:
-            self.api_base = None
 
     @model_validator(mode="before")
-    def validate_env(cls, values: dict[str, Any]) -> dict[str, Any]:
-        """Validate necessary credentials are set."""
+    @classmethod
+    def _validate_azure_env(cls, values: dict[str, Any]) -> dict[str, Any]:
+        """Resolve engine aliases, validate required Azure fields, and resolve endpoint."""
+        # --- engine alias resolution ---
+        engine = resolve_from_aliases(
+            values.get("engine"),
+            values.pop("deployment_name", None),
+            values.pop("deployment_id", None),
+            values.pop("deployment", None),
+            values.get("azure_deployment"),
+        )
+        if engine is None:
+            raise ValueError("You must specify an `engine` parameter.")
+        values["engine"] = engine
+
+        # --- api_version validation ---
+        if values.get("api_version") is None:
+            raise ValueError("You must set OPENAI_API_VERSION for Azure OpenAI.")
+
+        # --- azure_endpoint resolution from env ---
+        api_base = values.get("api_base")
+        azure_endpoint = values.get("azure_endpoint")
+
+        if api_base is None and azure_endpoint is None:
+            values["azure_endpoint"] = get_from_param_or_env(
+                "azure_endpoint", None, "AZURE_OPENAI_ENDPOINT", ""
+            )
+
         if (
-            values["api_base"] == "https://api.openai.com/v1"
-            and values["azure_endpoint"] is None
+            api_base == DEFAULT_OPENAI_API_BASE
+            and azure_endpoint is None
         ):
             raise ValueError(
                 "You must set OPENAI_API_BASE to your Azure endpoint. "
                 "It should look like https://YOUR_RESOURCE_NAME.openai.azure.com/"
             )
-        if values["api_version"] is None:
-            raise ValueError("You must set OPENAI_API_VERSION for Azure OpenAI.")
 
         return values
 
-    def _get_client(self) -> SyncAzureOpenAI:
-        if not self.reuse_client:
-            return SyncAzureOpenAI(**self._get_credential_kwargs())
+    @model_validator(mode="after")
+    def _reset_api_base_for_azure(self) -> AzureOpenAI:
+        """Reset api_base to None when it is the OpenAI default or azure_endpoint is set.
 
-        if self._client is None:
-            self._client = SyncAzureOpenAI(
-                **self._get_credential_kwargs(),
-            )
-        return self._client
+        Runs after the parent ``_resolve_credentials`` validator which may set
+        ``api_base`` to the OpenAI default URL.
+        """
+        if self.api_base == DEFAULT_OPENAI_API_BASE or self.azure_endpoint:
+            self.api_base = None
+        return self
 
-    def _get_aclient(self) -> AsyncAzureOpenAI:
-        if not self.reuse_client:
-            return AsyncAzureOpenAI(**self._get_credential_kwargs(is_async=True))
+    def _resolve_api_key(self) -> str:
+        """Resolve the API key from Azure AD, token provider, or environment.
 
-        if self._aclient is None:
-            self._aclient = AsyncAzureOpenAI(
-                **self._get_credential_kwargs(is_async=True),
-            )
-        return self._aclient
+        Returns:
+            The resolved API key string.
 
-    def _get_credential_kwargs(
-        self, is_async: bool = False, **kwargs: Any
-    ) -> dict[str, Any]:
+        Raises:
+            ValueError: If no API key can be resolved from any source.
+        """
         if self.use_azure_ad:
             if self.azure_ad_token_provider:
-                self.api_key = self.azure_ad_token_provider()
+                api_key = self.azure_ad_token_provider()
             else:
                 self._azure_ad_token = refresh_openai_azuread_token(
                     self._azure_ad_token
                 )
-                self.api_key = self._azure_ad_token.token
+                api_key = self._azure_ad_token.token
         else:
-            import os
+            api_key = self.api_key or os.getenv("AZURE_OPENAI_API_KEY")
 
-            self.api_key = self.api_key or os.getenv("AZURE_OPENAI_API_KEY")
-
-        if self.api_key is None:
+        if api_key is None:
             raise ValueError(
                 "You must set an `api_key` parameter. "
-                "Alternatively, you can set the AZURE_OPENAI_API_KEY env var OR set `use_azure_ad=True`."
+                "Alternatively, you can set the AZURE_OPENAI_API_KEY env var "
+                "OR set `use_azure_ad=True`."
             )
+        self.api_key = api_key
+        return api_key
 
+    def _get_credential_kwargs(self, is_async: bool = False) -> dict[str, Any]:
+        """Build kwargs for the Azure OpenAI SDK client constructor."""
+        self._resolve_api_key()
         return {
             "api_key": self.api_key,
             "max_retries": self.max_retries,
@@ -256,8 +191,50 @@ class AzureOpenAI(OpenAI):
             "api_version": self.api_version,
             "default_headers": self.default_headers,
             "http_client": self._async_http_client if is_async else self._http_client,
-            **kwargs,
         }
+
+    @property
+    def client(self) -> SyncAzureOpenAI:
+        """Synchronous Azure OpenAI client, lazily created on first access."""
+        if self._client is None:
+            self._client = SyncAzureOpenAI(**self._get_credential_kwargs())
+        return self._client  # type: ignore[return-value]
+
+    @property
+    def async_client(self) -> AsyncAzureOpenAI:
+        """Asynchronous Azure OpenAI client with event-loop safety."""
+        try:
+            current_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            current_loop = None
+
+        cached_loop = self._async_client_loop
+
+        if self._async_client is None:
+            self._async_client = AsyncAzureOpenAI(
+                **self._get_credential_kwargs(is_async=True)
+            )
+            self._async_client_loop = current_loop
+        elif cached_loop is None:
+            self._async_client_loop = current_loop
+        elif cached_loop is not None and hasattr(cached_loop, "is_closed") and cached_loop.is_closed():
+            self._async_client = AsyncAzureOpenAI(
+                **self._get_credential_kwargs(is_async=True)
+            )
+            self._async_client_loop = current_loop
+        elif (
+            current_loop is not None
+            and hasattr(current_loop, "is_closed")
+            and current_loop.is_closed()
+        ):
+            self._async_client = AsyncAzureOpenAI(
+                **self._get_credential_kwargs(is_async=True)
+            )
+            self._async_client_loop = current_loop
+        else:
+            self._async_client_loop = current_loop
+
+        return self._async_client  # type: ignore[return-value]
 
     def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         model_kwargs = super()._get_model_kwargs(**kwargs)

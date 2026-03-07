@@ -304,11 +304,11 @@ class ChatMessageConverter:
 
 
 class ResponsesMessageConverter:
-    """Converts a serapeum ``Message`` into a Responses API dict, list, or string.
+    """Converts a serapeum ``Message`` into a Responses API dict or list of dicts.
 
     Usage::
 
-        result = ResponsesMessageConverter(message, model="o3-mini").build()
+        result = ResponsesMessageConverter(message, model="gpt-4o").build()
     """
 
     def __init__(
@@ -326,7 +326,7 @@ class ResponsesMessageConverter:
         self._tool_call_dicts: list[dict[str, Any]] = []
         self._reasoning: list[dict[str, Any]] = []
 
-    def build(self) -> str | dict[str, Any] | list[dict[str, Any]]:
+    def build(self) -> dict[str, Any] | list[dict[str, Any]]:
         """Convert the message and return the Responses API representation."""
         self._process_blocks()
         result = self._assemble()
@@ -391,14 +391,16 @@ class ResponsesMessageConverter:
             "role": self._message.role.value,
             "content": self._resolve_content(),
         }
-        _rewrite_system_to_developer(message_dict, self._model)
+        # Responses API always uses "developer" instead of "system"
+        if message_dict.get("role") == "system":
+            message_dict["role"] = "developer"
         _strip_none_keys(message_dict, self._drop_none)
         result: dict[str, Any] | list[dict[str, Any]] = (
             [*self._reasoning, message_dict] if self._reasoning else message_dict
         )
         return result
 
-    def _assemble(self) -> str | dict[str, Any] | list[dict[str, Any]]:
+    def _assemble(self) -> dict[str, Any] | list[dict[str, Any]]:
         """Select the appropriate output shape based on message role and content."""
         # Legacy additional_kwargs tool calls take precedence over ToolCallBlock chunks
         if "tool_calls" in self._message.additional_kwargs:
@@ -406,21 +408,13 @@ class ResponsesMessageConverter:
                 tc if isinstance(tc, dict) else tc.model_dump()
                 for tc in self._message.additional_kwargs["tool_calls"]
             ]
-            result: str | dict[str, Any] | list[dict[str, Any]] = [
+            result: dict[str, Any] | list[dict[str, Any]] = [
                 *self._reasoning, *legacy_calls
             ]
         elif self._tool_call_dicts:
             result = [*self._reasoning, *self._tool_call_dicts]
         elif self._message.role.value == "tool":
             result = self._assemble_tool_output()
-        elif (
-            self._content_txt
-            and all(item["type"] == "input_text" for item in self._content)
-            and self._message.role.value == "user"
-        ):
-            # Plain text user message — some features (image generation, MCP)
-            # require a bare string input.
-            result = self._content_txt
         else:
             result = self._assemble_message_dict()
         return result
@@ -439,12 +433,10 @@ def to_openai_message_dicts(
             message_dicts = ResponsesMessageConverter(
                 message,
                 drop_none=drop_none,
-                model="o3-mini",  # hardcode to ensure developer messages are used
+                model=model,
             ).build()
             if isinstance(message_dicts, list):
                 final_message_dicts.extend(message_dicts)
-            elif isinstance(message_dicts, str):
-                final_message_dicts.append({"role": "user", "content": message_dicts})
             else:
                 final_message_dicts.append(message_dicts)
 

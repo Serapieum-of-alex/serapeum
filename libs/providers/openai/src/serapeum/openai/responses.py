@@ -1,31 +1,7 @@
 from __future__ import annotations
-import base64
+
 from openai import AzureOpenAI
-from openai.types.responses import (
-    Response,
-    ResponseStreamEvent,
-    ResponseCompletedEvent,
-    ResponseCreatedEvent,
-    ResponseFileSearchCallCompletedEvent,
-    ResponseFunctionCallArgumentsDeltaEvent,
-    ResponseFunctionCallArgumentsDoneEvent,
-    ResponseInProgressEvent,
-    ResponseOutputItemAddedEvent,
-    ResponseOutputTextAnnotationAddedEvent,
-    ResponseTextDeltaEvent,
-    ResponseWebSearchCallCompletedEvent,
-    ResponseOutputItem,
-    ResponseOutputMessage,
-    ResponseFileSearchToolCall,
-    ResponseFunctionToolCall,
-    ResponseFunctionWebSearch,
-    ResponseComputerToolCall,
-    ResponseReasoningItem,
-    ResponseCodeInterpreterToolCall,
-    ResponseImageGenCallPartialImageEvent,
-    ResponseOutputItemDoneEvent,
-)
-from openai.types.responses.response_output_item import ImageGenerationCall, McpCall
+from openai.types.responses import Response
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -45,9 +21,6 @@ from serapeum.core.llms import (
     ChatResponseGen,
     Metadata,
     MessageRole,
-    ContentBlock,
-    TextChunk,
-    Image,
     ThinkingBlock,
     ToolCallBlock,
     ChatToCompletionMixin,
@@ -72,7 +45,11 @@ from serapeum.openai.models import (
     is_function_calling_model,
     openai_modelname_to_contextsize,
 )
-from serapeum.openai.converters import to_openai_message_dicts
+from serapeum.openai.converters import (
+    ResponsesOutputParser,
+    ResponsesStreamAccumulator,
+    to_openai_message_dicts,
+)
 from serapeum.openai.mixins import Client, ModelMetadata
 from serapeum.openai.utils import resolve_tool_choice
 
@@ -240,7 +217,6 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
     def _is_azure_client(self) -> bool:
         return isinstance(self.client, AzureOpenAI)
 
-
     def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         initial_tools = self.built_in_tools or []
         model_kwargs = {
@@ -299,69 +275,6 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
         )
         return result
 
-    @staticmethod
-    def _parse_response_output(output: list[ResponseOutputItem]) -> ChatResponse:
-        message = Message(role=MessageRole.ASSISTANT)
-        additional_kwargs = {"built_in_tool_calls": []}
-        blocks: list[ContentBlock] = []
-        for item in output:
-            if isinstance(item, ResponseOutputMessage):
-                for part in item.content:
-                    if hasattr(part, "text"):
-                        blocks.append(TextChunk(content=part.text))
-                    if hasattr(part, "annotations"):
-                        additional_kwargs["annotations"] = part.annotations
-                    if hasattr(part, "refusal"):
-                        additional_kwargs["refusal"] = part.refusal
-
-                message.chunks.extend(blocks)
-            elif isinstance(item, ImageGenerationCall):
-                # return an Image if there is image generation
-                if item.status != "failed":
-                    additional_kwargs["built_in_tool_calls"].append(item)
-                    if item.result is not None:
-                        image_bytes = base64.b64decode(item.result)
-                        blocks.append(Image(content=image_bytes))
-            elif isinstance(item, ResponseCodeInterpreterToolCall):
-                additional_kwargs["built_in_tool_calls"].append(item)
-            elif isinstance(item, McpCall):
-                additional_kwargs["built_in_tool_calls"].append(item)
-            elif isinstance(item, ResponseFileSearchToolCall):
-                additional_kwargs["built_in_tool_calls"].append(item)
-            elif isinstance(item, ResponseFunctionToolCall):
-                message.chunks.append(
-                    ToolCallBlock(
-                        tool_name=item.name,
-                        tool_call_id=item.call_id,
-                        tool_kwargs=item.arguments,
-                    )
-                )
-            elif isinstance(item, ResponseFunctionWebSearch):
-                additional_kwargs["built_in_tool_calls"].append(item)
-            elif isinstance(item, ResponseComputerToolCall):
-                additional_kwargs["built_in_tool_calls"].append(item)
-            elif isinstance(item, ResponseReasoningItem):
-                content: str | None = None
-
-                if item.content:
-                    content = "\n".join([i.text for i in item.content])
-
-                if item.summary:
-                    if content:
-                        content += "\n" + "\n".join([i.text for i in item.summary])
-                    else:
-                        content = "\n".join([i.text for i in item.summary])
-                message.chunks.append(
-                    ThinkingBlock(
-                        content=content,
-                        additional_information=item.model_dump(
-                            exclude={"content", "summary"}
-                        ),
-                    )
-                )
-
-        return ChatResponse(message=message, additional_kwargs=additional_kwargs)
-
     def _chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         kwargs_dict = self._get_model_kwargs(**kwargs)
         message_dicts = to_openai_message_dicts(
@@ -379,7 +292,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
         if self.track_previous_responses:
             self._previous_response_id = response.id
 
-        chat_response = OpenAIResponses._parse_response_output(response.output)
+        chat_response = ResponsesOutputParser(response.output).build()
         chat_response.raw = response
         chat_response.additional_kwargs["usage"] = response.usage
         if hasattr(response.usage.output_tokens_details, "reasoning_tokens"):
@@ -391,131 +304,6 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
 
         return chat_response
 
-    @staticmethod
-    def process_response_event(
-        event: ResponseStreamEvent,
-        built_in_tool_calls: list[Any],
-        additional_kwargs: dict[str, Any],
-        current_tool_call: ResponseFunctionToolCall | None,
-        track_previous_responses: bool,
-        previous_response_id: str | None = None,
-    ) -> tuple[
-        list[ContentBlock],
-        list[Any],
-        dict[str, Any],
-        ResponseFunctionToolCall | None,
-        str | None,
-        str,
-    ]:
-        """
-        Process a ResponseStreamEvent and update the state accordingly.
-
-        Args:
-            event: The response stream event to process
-            built_in_tool_calls: list of built-in tool calls
-            additional_kwargs: Additional keyword arguments to include in ChatResponse
-            current_tool_call: The currently in-progress tool call, if any
-            track_previous_responses: Whether to track previous response IDs
-            previous_response_id: Previous response ID if tracking
-
-        Returns:
-            A tuple containing the updated state:
-            (content, tool_calls, built_in_tool_calls, additional_kwargs, current_tool_call, updated_previous_response_id, delta)
-        """
-        delta = ""
-        updated_previous_response_id = previous_response_id
-        # we use blocks instead of content, since now we also support images! :)
-        blocks: list[ContentBlock] = []
-        if isinstance(event, ResponseCreatedEvent) or isinstance(
-            event, ResponseInProgressEvent
-        ):
-            # Initial events, track the response id
-            if track_previous_responses:
-                updated_previous_response_id = event.response.id
-        elif isinstance(event, ResponseOutputItemAddedEvent):
-            # New output item (message, tool call, etc.)
-            if isinstance(event.item, ResponseFunctionToolCall):
-                current_tool_call = event.item
-        elif isinstance(event, ResponseTextDeltaEvent):
-            # Text content is being added
-            delta = event.delta
-            blocks.append(TextChunk(content=delta))
-        elif isinstance(event, ResponseImageGenCallPartialImageEvent):
-            # Partial image
-            if event.partial_image_b64:
-                blocks.append(
-                    Image(
-                        content=base64.b64decode(event.partial_image_b64),
-                        detail=f"id_{event.partial_image_index}",
-                    )
-                )
-        elif isinstance(event, ResponseFunctionCallArgumentsDeltaEvent):
-            # Function call arguments are being streamed
-            if current_tool_call is not None:
-                current_tool_call.arguments += event.delta
-        elif isinstance(event, ResponseFunctionCallArgumentsDoneEvent):
-            # Function call arguments are complete
-            if current_tool_call is not None:
-                current_tool_call.arguments = event.arguments
-                current_tool_call.status = "completed"
-                blocks.append(
-                    ToolCallBlock(
-                        tool_name=current_tool_call.name,
-                        tool_kwargs=current_tool_call.arguments,
-                        tool_call_id=current_tool_call.call_id,
-                    )
-                )
-
-                # clear the current tool call
-                current_tool_call = None
-        elif isinstance(event, ResponseOutputTextAnnotationAddedEvent):
-            # Annotations for the text
-            annotations = additional_kwargs.get("annotations", [])
-            annotations.append(event.annotation)
-            additional_kwargs["annotations"] = annotations
-        elif isinstance(event, ResponseFileSearchCallCompletedEvent):
-            # File search tool call completed
-            built_in_tool_calls.append(event)
-        elif isinstance(event, ResponseWebSearchCallCompletedEvent):
-            # Web search tool call completed
-            built_in_tool_calls.append(event)
-        elif isinstance(event, ResponseOutputItemDoneEvent):
-            # Reasoning information
-            if isinstance(event.item, ResponseReasoningItem):
-                content: str | None = None
-                if event.item.content:
-                    content = "\n".join([i.text for i in event.item.content])
-                if event.item.summary:
-                    if content:
-                        content += "\n" + "\n".join(
-                            [i.text for i in event.item.summary]
-                        )
-                    else:
-                        content = "\n".join([i.text for i in event.item.summary])
-                blocks.append(
-                    ThinkingBlock(
-                        content=content,
-                        additional_information=event.item.model_dump(
-                            exclude={"content", "summary"}
-                        ),
-                    )
-                )
-        elif isinstance(event, ResponseCompletedEvent):
-            # Response is complete
-            if hasattr(event, "response") and hasattr(event.response, "usage"):
-                additional_kwargs["usage"] = event.response.usage
-            resp = OpenAIResponses._parse_response_output(event.response.output)
-            blocks = resp.message.chunks
-
-        return (
-            blocks,
-            built_in_tool_calls,
-            additional_kwargs,
-            current_tool_call,
-            updated_previous_response_id,
-            delta,
-        )
-
     def _stream_chat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseGen:
@@ -526,43 +314,24 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
         )
 
         def gen() -> ChatResponseGen:
-            built_in_tool_calls = []
-            additional_kwargs = {"built_in_tool_calls": []}
-            current_tool_call: ResponseFunctionToolCall | None = None
-            local_previous_response_id = self._previous_response_id
+            accumulator = ResponsesStreamAccumulator(
+                track_previous_responses=self.track_previous_responses,
+                previous_response_id=self._previous_response_id,
+            )
 
             for event in self.client.responses.create(
                 input=message_dicts,
                 stream=True,
                 **self._get_model_kwargs(**kwargs),
             ):
-                # Process the event and update state
-                (
-                    blocks,
-                    built_in_tool_calls,
-                    additional_kwargs,
-                    current_tool_call,
-                    local_previous_response_id,
-                    delta,
-                ) = OpenAIResponses.process_response_event(
-                    event=event,
-                    built_in_tool_calls=built_in_tool_calls,
-                    additional_kwargs=additional_kwargs,
-                    current_tool_call=current_tool_call,
-                    track_previous_responses=self.track_previous_responses,
-                    previous_response_id=local_previous_response_id,
-                )
+                blocks, delta = accumulator.update(event)
 
                 if (
                     self.track_previous_responses
-                    and local_previous_response_id != self._previous_response_id
+                    and accumulator.previous_response_id != self._previous_response_id
                 ):
-                    self._previous_response_id = local_previous_response_id
+                    self._previous_response_id = accumulator.previous_response_id
 
-                if built_in_tool_calls:
-                    additional_kwargs["built_in_tool_calls"] = built_in_tool_calls
-
-                # For any event, yield a ChatResponse with the current state
                 yield ChatResponse(
                     message=Message(
                         role=MessageRole.ASSISTANT,
@@ -570,7 +339,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
                     ),
                     delta=delta,
                     raw=event,
-                    additional_kwargs=additional_kwargs,
+                    additional_kwargs=accumulator.additional_kwargs,
                 )
 
         return gen()
@@ -617,7 +386,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
         if self.track_previous_responses:
             self._previous_response_id = response.id
 
-        chat_response = OpenAIResponses._parse_response_output(response.output)
+        chat_response = ResponsesOutputParser(response.output).build()
         chat_response.raw = response
         chat_response.additional_kwargs["usage"] = response.usage
 
@@ -633,10 +402,10 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
         )
 
         async def gen() -> ChatResponseAsyncGen:
-            built_in_tool_calls = []
-            additional_kwargs = {"built_in_tool_calls": []}
-            current_tool_call: ResponseFunctionToolCall | None = None
-            local_previous_response_id = self._previous_response_id
+            accumulator = ResponsesStreamAccumulator(
+                track_previous_responses=self.track_previous_responses,
+                previous_response_id=self._previous_response_id,
+            )
 
             response_stream = await self.async_client.responses.create(
                 input=message_dicts,
@@ -645,33 +414,14 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
             )
 
             async for event in response_stream:
-                # Process the event and update state
-                (
-                    blocks,
-                    built_in_tool_calls,
-                    additional_kwargs,
-                    current_tool_call,
-                    local_previous_response_id,
-                    delta,
-                ) = OpenAIResponses.process_response_event(
-                    event=event,
-                    built_in_tool_calls=built_in_tool_calls,
-                    additional_kwargs=additional_kwargs,
-                    current_tool_call=current_tool_call,
-                    track_previous_responses=self.track_previous_responses,
-                    previous_response_id=local_previous_response_id,
-                )
+                blocks, delta = accumulator.update(event)
 
                 if (
                     self.track_previous_responses
-                    and local_previous_response_id != self._previous_response_id
+                    and accumulator.previous_response_id != self._previous_response_id
                 ):
-                    self._previous_response_id = local_previous_response_id
+                    self._previous_response_id = accumulator.previous_response_id
 
-                if built_in_tool_calls:
-                    additional_kwargs["built_in_tool_calls"] = built_in_tool_calls
-
-                # For any event, yield a ChatResponse with the current state
                 yield ChatResponse(
                     message=Message(
                         role=MessageRole.ASSISTANT,
@@ -679,7 +429,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCall
                     ),
                     delta=delta,
                     raw=event,
-                    additional_kwargs=additional_kwargs,
+                    additional_kwargs=accumulator.additional_kwargs,
                 )
 
         return gen()

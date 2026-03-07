@@ -15,7 +15,10 @@ from serapeum.core.base.llms.types import (
     ToolCallBlock,
 )
 
-from serapeum.openai.responses import OpenAIResponses, ResponseFunctionToolCall
+from openai.types.responses import ResponseFunctionToolCall
+
+from serapeum.openai.converters import ResponsesOutputParser, ResponsesStreamAccumulator
+from serapeum.openai.responses import OpenAIResponses
 from serapeum.openai.models import O1_MODELS
 from serapeum.openai.converters import to_openai_message_dicts
 from serapeum.core.tools import CallableTool
@@ -142,7 +145,7 @@ def test_parse_response_output():
         )
     ]
 
-    chat_response = OpenAIResponses._parse_response_output(output)
+    chat_response = ResponsesOutputParser(output).build()
 
     assert chat_response.message.role == MessageRole.ASSISTANT
     assert len(chat_response.message.chunks) == 1
@@ -150,12 +153,9 @@ def test_parse_response_output():
     assert chat_response.message.chunks[0].content == "Hello world"
 
 
-def test_process_response_event():
-    """Test the static process_response_event method for streaming responses."""
-    # Initial state
-    built_in_tool_calls = []
-    additional_kwargs = {}
-    current_tool_call = None
+def test_responses_stream_accumulator():
+    """Test ResponsesStreamAccumulator for streaming responses."""
+    accumulator = ResponsesStreamAccumulator()
 
     # Test text delta event
     event = ResponseTextDeltaEvent(
@@ -168,18 +168,11 @@ def test_process_response_event():
         logprobs=[],
     )
 
-    result = OpenAIResponses.process_response_event(
-        event=event,
-        built_in_tool_calls=built_in_tool_calls,
-        additional_kwargs=additional_kwargs,
-        current_tool_call=current_tool_call,
-        track_previous_responses=False,
-    )
-
-    updated_blocks, _, _, _, _, delta = result
-    assert updated_blocks == [TextChunk(content="Hello")]
+    blocks, delta = accumulator.update(event)
+    assert blocks == [TextChunk(content="Hello")]
     assert delta == "Hello"
 
+    # Test reasoning item done event
     event = ResponseOutputItemDoneEvent(
         item=ResponseReasoningItem(
             id="1",
@@ -197,16 +190,8 @@ def test_process_response_event():
         type="response.output_item.done",
     )
 
-    result = OpenAIResponses.process_response_event(
-        event=event,
-        built_in_tool_calls=built_in_tool_calls,
-        additional_kwargs=additional_kwargs,
-        current_tool_call=current_tool_call,
-        track_previous_responses=False,
-    )
-
-    updated_blocks, _, _, _, _, _ = result
-    assert updated_blocks == [
+    blocks, _ = accumulator.update(event)
+    assert blocks == [
         ThinkingBlock(
             type="thinking",
             content="hello world\nthis is a test",
@@ -220,8 +205,10 @@ def test_process_response_event():
         )
     ]
 
-    # Test function call arguments delta
-    current_tool_call = ResponseFunctionToolCall(
+    # Test function call: simulate OutputItemAdded → ArgumentsDelta → ArgumentsDone
+    from openai.types.responses import ResponseOutputItemAddedEvent
+
+    tool_call_item = ResponseFunctionToolCall(
         id="call_123",
         call_id="123",
         type="function_call",
@@ -229,6 +216,12 @@ def test_process_response_event():
         arguments="",
         status="in_progress",
     )
+    accumulator.update(ResponseOutputItemAddedEvent(
+        item=tool_call_item,
+        output_index=0,
+        sequence_number=1,
+        type="response.output_item.added",
+    ))
 
     event = ResponseFunctionCallArgumentsDeltaEvent(
         item_id="123",
@@ -238,16 +231,9 @@ def test_process_response_event():
         sequence_number=1,
     )
 
-    result = OpenAIResponses.process_response_event(
-        event=event,
-        built_in_tool_calls=built_in_tool_calls,
-        additional_kwargs=additional_kwargs,
-        current_tool_call=current_tool_call,
-        track_previous_responses=False,
-    )
-
-    _, _, _, updated_call, _, _ = result
-    assert updated_call.arguments == '{"arg": "value"'
+    blocks, _ = accumulator.update(event)
+    assert blocks == []
+    assert tool_call_item.arguments == '{"arg": "value"'
 
     # Test function call arguments done
     event = ResponseFunctionCallArgumentsDoneEvent(
@@ -259,30 +245,19 @@ def test_process_response_event():
         sequence_number=1,
     )
 
-    result = OpenAIResponses.process_response_event(
-        event=event,
-        built_in_tool_calls=built_in_tool_calls,
-        additional_kwargs=additional_kwargs,
-        current_tool_call=updated_call,
-        track_previous_responses=False,
-    )
-
-    final_blocks, _, _, final_current_call, _, _ = result
+    blocks, _ = accumulator.update(event)
     completed_tool_calls = [
-        block for block in final_blocks if isinstance(block, ToolCallBlock)
+        block for block in blocks if isinstance(block, ToolCallBlock)
     ]
     assert len(completed_tool_calls) == 1
     assert completed_tool_calls[0].tool_kwargs == '{"arg": "value"}'
     assert completed_tool_calls[0].tool_call_id == "123"
     assert completed_tool_calls[0].tool_name == "test_function"
-    assert final_current_call is None
 
 
-def test_process_response_event_with_text_annotation():
-    """Test process_response_event handles ResponseOutputTextAnnotationAddedEvent."""
-    built_in_tool_calls = []
-    additional_kwargs = {}
-    current_tool_call = None
+def test_responses_stream_accumulator_text_annotation():
+    """Test ResponsesStreamAccumulator handles ResponseOutputTextAnnotationAddedEvent."""
+    accumulator = ResponsesStreamAccumulator()
 
     # Create a dummy annotation event
     event = ResponseOutputTextAnnotationAddedEvent(
@@ -295,18 +270,11 @@ def test_process_response_event_with_text_annotation():
         sequence_number=1,
     )
 
-    result = OpenAIResponses.process_response_event(
-        event=event,
-        built_in_tool_calls=built_in_tool_calls,
-        additional_kwargs=additional_kwargs,
-        current_tool_call=current_tool_call,
-        track_previous_responses=False,
-    )
+    accumulator.update(event)
 
-    # The annotation should be added to additional_kwargs["annotations"]
-    _, _, updated_additional_kwargs, _, _, _ = result
-    assert "annotations" in updated_additional_kwargs
-    assert updated_additional_kwargs["annotations"] == [
+    # The annotation should be in additional_kwargs
+    assert "annotations" in accumulator.additional_kwargs
+    assert accumulator.additional_kwargs["annotations"] == [
         {"type": "test_annotation", "value": 42}
     ]
 
@@ -765,7 +733,7 @@ def response_output() -> list[ResponseOutputItem]:
 
 
 def test__parse_response_output(response_output: list[ResponseOutputItem]):
-    result = OpenAIResponses._parse_response_output(output=response_output)
+    result = ResponsesOutputParser(output=response_output).build()
     assert (
         len(
             [

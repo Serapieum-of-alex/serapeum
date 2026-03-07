@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from typing import Any, Sequence, Type
+from typing import Any, Sequence, Type, cast
 
 from deprecated import deprecated
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionMessageToolCall
@@ -223,7 +223,7 @@ class ChatMessageConverter:
             self._merge_legacy_kwargs(result)
         _rewrite_system_to_developer(result, self._model)
         _strip_none_keys(result, self._drop_none)
-        return result  # type: ignore[return-value]
+        return cast(ChatCompletionMessageParam, result)
 
     def _try_audio_reference(self) -> dict[str, Any] | None:
         """Return a short-circuit dict for assistant messages with a reference audio id."""
@@ -246,17 +246,14 @@ class ChatMessageConverter:
             if isinstance(block, TextChunk):
                 self._content.append(ChatFormat.text(block))
                 self._content_txt += block.content
+            elif isinstance(block, ThinkingBlock):
+                logger.debug(
+                    "ThinkingBlock skipped in Chat Completions path (not supported)"
+                )
             elif isinstance(block, ToolCallBlock):
-                try:
-                    self._tool_call_dicts.append(ChatFormat.tool_call(block))
-                except Exception:
-                    logger.warning(
-                        f"It was not possible to convert ToolCallBlock with call id "
-                        f"{block.tool_call_id or '`no call id`'} to a valid message, skipping..."
-                    )
+                self._tool_call_dicts.append(ChatFormat.tool_call(block))
             else:
                 converter = ChatFormat.content_converters.get(type(block))
-                
                 if converter:
                     self._content.append(converter(block))
                 else:
@@ -346,6 +343,10 @@ class ResponsesMessageConverter:
                     self._reasoning.append(item)
             elif isinstance(block, ToolCallBlock):
                 self._tool_call_dicts.append(ResponsesFormat.tool_call(block))
+            elif isinstance(block, Audio):
+                raise ValueError(
+                    "Audio blocks are not supported in the Responses API"
+                )
             else:
                 converter = ResponsesFormat.content_converters.get(type(block))
                 if converter:
@@ -357,12 +358,12 @@ class ResponsesMessageConverter:
 
     def _resolve_content(self) -> str | list[dict[str, Any]] | None:
         """Determine the final content value (string, list, or ``None``)."""
+        has_tool_calls = len(self._tool_call_dicts) > 0
         content: str | list[dict[str, Any]] | None = self._content_txt
-        if self._content_txt == "" and _should_null_content(self._message, False):
+        if self._content_txt == "" and _should_null_content(self._message, has_tool_calls):
             content = None
         elif (
-            content is not None
-            and self._message.role.value in ("system", "developer")
+            (content is not None and self._message.role.value in ("system", "developer"))
             or all(isinstance(block, TextChunk) for block in self._message.chunks)
         ):
             pass  # content is already the string form
@@ -402,17 +403,16 @@ class ResponsesMessageConverter:
 
     def _assemble(self) -> dict[str, Any] | list[dict[str, Any]]:
         """Select the appropriate output shape based on message role and content."""
-        # Legacy additional_kwargs tool calls take precedence over ToolCallBlock chunks
-        if "tool_calls" in self._message.additional_kwargs:
+        if self._tool_call_dicts:
+            result: dict[str, Any] | list[dict[str, Any]] = [
+                *self._reasoning, *self._tool_call_dicts
+            ]
+        elif "tool_calls" in self._message.additional_kwargs:
             legacy_calls = [
                 tc if isinstance(tc, dict) else tc.model_dump()
                 for tc in self._message.additional_kwargs["tool_calls"]
             ]
-            result: dict[str, Any] | list[dict[str, Any]] = [
-                *self._reasoning, *legacy_calls
-            ]
-        elif self._tool_call_dicts:
-            result = [*self._reasoning, *self._tool_call_dicts]
+            result = [*self._reasoning, *legacy_calls]
         elif self._message.role.value == "tool":
             result = self._assemble_tool_output()
         else:
@@ -426,7 +426,12 @@ def to_openai_message_dicts(
     model: str | None = None,
     is_responses_api: bool = False,
 ) -> list[ChatCompletionMessageParam] | str:
-    """Convert generic messages to OpenAI message dicts."""
+    """Convert generic messages to OpenAI message dicts.
+
+    Returns ``str`` for the Responses API when the input is a single plain-text
+    user message (the OpenAI Responses API ``input`` parameter accepts ``str``
+    directly for features like image generation and MCP).
+    """
     if is_responses_api:
         final_message_dicts: list[dict[str, Any]] = []
         for message in messages:

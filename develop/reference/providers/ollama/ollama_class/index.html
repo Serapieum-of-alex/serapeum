@@ -1583,7 +1583,7 @@ Hold "Ctrl" to enable pan &amp; zoom
         +base_url: str
         +temperature: float
         +context_window: int
-        +request_timeout: float
+        +timeout: float
         +prompt_key: str
         +json_mode: bool
         +additional_kwargs: dict
@@ -1819,7 +1819,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 @property
 def client(self) -&gt; Client:
     if self._client is None:
-        self._client = Client(host=self.base_url, timeout=self.request_timeout)
+        self._client = Client(host=self.base_url, timeout=self.timeout)
     return self._client
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>### 2. Template Method Pattern
 <a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>```python notest

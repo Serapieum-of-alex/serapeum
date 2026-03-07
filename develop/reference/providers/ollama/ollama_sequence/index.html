@@ -1409,11 +1409,11 @@ Hold "Ctrl" to enable pan &amp; zoom
     participant PydanticParser
 
     Note over User: Initialization Phase
-    User-&gt;&gt;Ollama: __init__(model, base_url, request_timeout, ...)
+    User-&gt;&gt;Ollama: __init__(model, base_url, timeout, ...)
     activate Ollama
 
     Ollama-&gt;&gt;Ollama: Set model configuration
-    Note over Ollama: Store: model, base_url, temperature,&lt;br/&gt;request_timeout, json_mode, etc.
+    Note over Ollama: Store: model, base_url, temperature,&lt;br/&gt;timeout, json_mode, etc.
 
     Ollama-&gt;&gt;Ollama: Initialize metadata
     Note over Ollama: Set is_chat_model=True&lt;br/&gt;is_function_calling_model=True&lt;br/&gt;context_window, num_output

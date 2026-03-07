@@ -1351,7 +1351,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     Init --&gt; SetConfig[Set Configuration]
     SetConfig --&gt; StoreModel[Store model name]
     StoreModel --&gt; StoreURL[Store base_url]
-    StoreURL --&gt; StoreTimeout[Store request_timeout]
+    StoreURL --&gt; StoreTimeout[Store timeout]
     StoreTimeout --&gt; StoreTemp[Store temperature]
     StoreTemp --&gt; StoreJSON[Store json_mode flag]
     StoreJSON --&gt; StoreKwargs[Store additional_kwargs]
@@ -1471,12 +1471,12 @@ Hold "Ctrl" to enable pan &amp; zoom
 <h3 id="1-initialization"><a class="toclink" href="#1-initialization">1. Initialization</a><a class="headerlink" href="#1-initialization" title="Permanent link">#</a></h3>
 <p>```python notest
 Input:
-  Ollama(model="llama3.1", base_url="http://localhost:11434", request_timeout=180)</p>
+  Ollama(model="llama3.1", base_url="http://localhost:11434", timeout=180)</p>
 <p>Transformations:
   1. Store configuration:
      - model = "llama3.1"
      - base_url = "http://localhost:11434"
-     - request_timeout = 180
+     - timeout = 180
      - temperature = 0.75 (default)
      - json_mode = False (default)</p>
 <ol>
@@ -1685,7 +1685,7 @@ Input:
 <a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>- **model**: Must be non-empty string
 <a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>- **base_url**: Must be valid URL format
 <a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a>- **temperature**: Must be float in range [0.0, 1.0]
-<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>- **request_timeout**: Must be positive float
+<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>- **timeout**: Must be positive float
 <a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a>
 <a href="#__codelineno-2-9" id="__codelineno-2-9" name="__codelineno-2-9"></a>### 2. Message Validation
 <a href="#__codelineno-2-10" id="__codelineno-2-10" name="__codelineno-2-10"></a>- **messages**: Must be non-empty list

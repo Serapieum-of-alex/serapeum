@@ -1357,7 +1357,7 @@ Hold "Ctrl" to enable pan &amp; zoom
             State: Configuration stored
             - model: str
             - base_url: str
-            - request_timeout: float
+            - timeout: float
             - temperature: float
             - json_mode: bool
             - _client: None
@@ -1492,7 +1492,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a>    <span class="n">model</span><span class="o">=</span><span class="s2">"llama3.1"</span><span class="p">,</span>
 <a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a>    <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"OLLAMA_API_KEY"</span><span class="p">),</span>
 <a href="#__codelineno-0-6" id="__codelineno-0-6" name="__codelineno-0-6"></a>    <span class="n">base_url</span><span class="o">=</span><span class="s2">"http://localhost:11434"</span><span class="p">,</span>
-<a href="#__codelineno-0-7" id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="n">request_timeout</span><span class="o">=</span><span class="mi">180</span>
+<a href="#__codelineno-0-7" id="__codelineno-0-7" name="__codelineno-0-7"></a>    <span class="n">timeout</span><span class="o">=</span><span class="mi">180</span>
 <a href="#__codelineno-0-8" id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="p">)</span>
 <a href="#__codelineno-0-9" id="__codelineno-0-9" name="__codelineno-0-9"></a>
 <a href="#__codelineno-0-10" id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="c1"># State: Configured</span>
@@ -1509,7 +1509,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a><span class="c1"># Transition:</span>
 <a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a><span class="c1"># - Access self.client property</span>
 <a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a><span class="c1"># - Check if self._client is None → True</span>
-<a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a><span class="c1"># - Create Client(host=self.base_url, timeout=self.request_timeout)</span>
+<a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a><span class="c1"># - Create Client(host=self.base_url, timeout=self.timeout)</span>
 <a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a><span class="c1"># - Store in self._client</span>
 <a href="#__codelineno-1-10" id="__codelineno-1-10" name="__codelineno-1-10"></a>
 <a href="#__codelineno-1-11" id="__codelineno-1-11" name="__codelineno-1-11"></a><span class="c1"># State: ClientInitialized → Idle</span>
@@ -1618,7 +1618,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-4-15" id="__codelineno-4-15" name="__codelineno-4-15"></a># Error state:
 <a href="#__codelineno-4-16" id="__codelineno-4-16" name="__codelineno-4-16"></a># 1. LoggingError: Log exception details
 <a href="#__codelineno-4-17" id="__codelineno-4-17" name="__codelineno-4-17"></a># 2. RaisingException: Raise appropriate exception type
-<a href="#__codelineno-4-18" id="__codelineno-4-18" name="__codelineno-4-18"></a>#    - TimeoutError: request_timeout exceeded
+<a href="#__codelineno-4-18" id="__codelineno-4-18" name="__codelineno-4-18"></a>#    - TimeoutError: timeout exceeded
 <a href="#__codelineno-4-19" id="__codelineno-4-19" name="__codelineno-4-19"></a>#    - ConnectionError: Cannot reach server
 <a href="#__codelineno-4-20" id="__codelineno-4-20" name="__codelineno-4-20"></a>#    - ValueError: Invalid response format
 <a href="#__codelineno-4-21" id="__codelineno-4-21" name="__codelineno-4-21"></a>#    - KeyError: Missing required field in response
@@ -1633,7 +1633,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <h1 id="set-during-init-never-change"><a class="toclink" href="#set-during-init-never-change">Set during <strong>init</strong>, never change</a><a class="headerlink" href="#set-during-init-never-change" title="Permanent link">#</a></h1>
 <p>self.model: str = "llama3.1"
 self.base_url: str = "http://localhost:11434"
-self.request_timeout: float = 180.0
+self.timeout: float = 180.0
 self.temperature: float = 0.75
 self.context_window: int = 3900
 self.prompt_key: str = "prompt"
@@ -1648,10 +1648,10 @@ self._is_function_calling_model: bool = True
 <a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a>self._async_client: AsyncClient | None = None
 <a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a>
 <a href="#__codelineno-5-7" id="__codelineno-5-7" name="__codelineno-5-7"></a># After first sync call
-<a href="#__codelineno-5-8" id="__codelineno-5-8" name="__codelineno-5-8"></a>self._client: Client = Client(host=self.base_url, timeout=self.request_timeout)
+<a href="#__codelineno-5-8" id="__codelineno-5-8" name="__codelineno-5-8"></a>self._client: Client = Client(host=self.base_url, timeout=self.timeout)
 <a href="#__codelineno-5-9" id="__codelineno-5-9" name="__codelineno-5-9"></a>
 <a href="#__codelineno-5-10" id="__codelineno-5-10" name="__codelineno-5-10"></a># After first async call
-<a href="#__codelineno-5-11" id="__codelineno-5-11" name="__codelineno-5-11"></a>self._async_client: AsyncClient = AsyncClient(host=self.base_url, timeout=self.request_timeout)
+<a href="#__codelineno-5-11" id="__codelineno-5-11" name="__codelineno-5-11"></a>self._async_client: AsyncClient = AsyncClient(host=self.base_url, timeout=self.timeout)
 </code></pre></div></p>
 <h3 id="request-state-per-call-transient"><a class="toclink" href="#request-state-per-call-transient">Request State (Per-call, transient)</a><a class="headerlink" href="#request-state-per-call-transient" title="Permanent link">#</a></h3>
 <p>```python notest</p>
@@ -1744,7 +1744,7 @@ self._is_function_calling_model: bool = True
 import os
 from serapeum.ollama import Ollama</p>
 <h1 id="good-initialize-once-reuse"><a class="toclink" href="#good-initialize-once-reuse">✓ Good: Initialize once, reuse</a><a class="headerlink" href="#good-initialize-once-reuse" title="Permanent link">#</a></h1>
-<p>llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)</p>
+<p>llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)</p>
 <h1 id="bad-create-new-instance-per-call"><a class="toclink" href="#bad-create-new-instance-per-call">✗ Bad: Create new instance per call</a><a class="headerlink" href="#bad-create-new-instance-per-call" title="Permanent link">#</a></h1>
 <p>def get_response(prompt):
     llm = Ollama(model="llama3.1", api_key=os.environ.get("OLLAMA_API_KEY"))  # Inefficient

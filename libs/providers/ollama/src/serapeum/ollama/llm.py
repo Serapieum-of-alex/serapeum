@@ -27,7 +27,7 @@ from serapeum.core.llms import (
     ChatResponse,
     ChatResponseAsyncGen,
     ChatResponseGen,
-    ChatToCompletionMixin,
+    ChatToCompletion,
     FunctionCallingLLM,
     Image,
     Message,

@@ -21,7 +21,7 @@ from serapeum.core.llms import (
     MessageRole,
     ToolCallBlock,
     TextChunk,
-    ChatToCompletionMixin
+    ChatToCompletion
 )
 from pydantic import (
     Field,
@@ -63,7 +63,7 @@ if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool
 
 
-class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletionMixin, FunctionCallingLLM):
+class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
     """
     OpenAI LLM.
 

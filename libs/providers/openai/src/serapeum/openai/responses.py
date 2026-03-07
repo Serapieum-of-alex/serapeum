@@ -23,7 +23,7 @@ from serapeum.core.llms import (
     MessageRole,
     ThinkingBlock,
     ToolCallBlock,
-    ChatToCompletionMixin,
+    ChatToCompletion,
 )
 from pydantic import (
     Field,
@@ -60,7 +60,7 @@ if TYPE_CHECKING:
 Model = TypeVar("Model", bound=BaseModel)
 
 
-class OpenAIResponses(ModelMetadata, Client, ChatToCompletionMixin, FunctionCallingLLM):
+class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
     """
     OpenAI Responses LLM.
 

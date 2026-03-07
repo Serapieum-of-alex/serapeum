@@ -26,7 +26,7 @@ __all__ = ["CompletionToChatMixin"]
 class CompletionToChatMixin:
     """Mixin that implements chat methods by delegating to completion methods.
 
-    This is the mirror of :class:`ChatToCompletionMixin`. Use this when your
+    This is the mirror of :class:`ChatToCompletion`. Use this when your
     provider natively exposes a completion API (prompt-in/text-out) but needs
     to satisfy the full :class:`~serapeum.core.llms.base.LLM` interface.
 
@@ -63,7 +63,7 @@ class CompletionToChatMixin:
         ```
 
     See Also:
-        - :class:`serapeum.core.llms.abstractions.mixins.ChatToCompletionMixin`: Reverse direction
+        - :class:`serapeum.core.llms.abstractions.mixins.ChatToCompletion`: Reverse direction
     """
 
     @overload

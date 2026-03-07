@@ -12,14 +12,14 @@ from typing import Any, Sequence
 from pydantic import Field
 
 from serapeum.core.embeddings import BaseEmbedding
-from serapeum.ollama.client import OllamaClientMixin
+from serapeum.ollama.client import Client
 
 
-class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):  # type: ignore[misc]
+class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
     """Ollama-based embedding model for generating text and query vector representations.
 
     Wraps the Ollama SDK embed API to produce dense float vectors from text. Inherits
-    connection management from ``OllamaClientMixin``, which supplies ``base_url``,
+    connection management from ``Client``, which supplies ``base_url``,
     ``api_key``, and lazily-created sync/async SDK clients.
 
     **Local vs Ollama Cloud**
@@ -187,7 +187,7 @@ class OllamaEmbedding(OllamaClientMixin, BaseEmbedding):  # type: ignore[misc]
 
     See Also:
         Ollama: Chat / completion LLM from the same Ollama provider.
-        OllamaClientMixin: Shared connection mixin (base_url, api_key, lazy clients).
+        Client: Shared connection mixin (base_url, api_key, lazy clients).
         get_text_embedding: Embed a single document string.
         get_query_embedding: Embed a query string with optional instruction prefix.
         list_models: List all models available on the connected Ollama server.

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import logging
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Generator, Literal, overload
 
 import ollama as ollama_sdk  # type: ignore[attr-defined]
@@ -41,10 +42,14 @@ from serapeum.core.llms.orchestrators import StreamingObjectProcessor
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import ArgumentCoercer, ToolCallArguments, ToolCallError
 from serapeum.core.types import StructuredOutputMode
-from serapeum.ollama.client import OllamaClientMixin
+from serapeum.core.retry import retry
+from serapeum.ollama.client import Client
+from serapeum.ollama.retry import is_retryable
 
 if TYPE_CHECKING:
     from serapeum.core.tools.types import BaseTool
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_REQUEST_TIMEOUT = 60.0
 
@@ -131,7 +136,7 @@ def force_single_tool_call(response: ChatResponse) -> None:
         response.message.additional_kwargs["tool_calls"] = [tool_calls[0]]
 
 
-class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
+class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
     """Ollama LLM adapter for chat, streaming, structured output, and tool calling.
 
     Integrates with a local or remote Ollama server to expose synchronous and
@@ -313,7 +318,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
     See Also:
         OllamaEmbedding: Companion class for generating embeddings with Ollama.
-        OllamaClientMixin: Shared connection logic, URL resolution, and client injection.
+        Client: Shared connection logic, URL resolution, and client injection.
         chat: Synchronous chat completion (supports streaming via ``stream=True``).
         achat: Asynchronous chat completion (supports streaming via ``stream=True``).
         parse: Structured output via JSON schema and Pydantic validation.
@@ -972,6 +977,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         result = self._stream_chat(messages, **kwargs) if stream else self._chat(messages, **kwargs)
         return result
 
+    @retry(is_retryable, logger)
     def _chat(
         self, messages: MessageList | list[Message], **kwargs: Any
     ) -> ChatResponse:
@@ -1077,6 +1083,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             raw=r,
         )
 
+    @retry(is_retryable, logger)
     def _stream_chat(
         self, messages: MessageList | list[Message], **kwargs: Any
     ) -> ChatResponseGen:
@@ -1085,6 +1092,12 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         tools = kwargs.pop("tools", None)
         response_format = kwargs.pop("format", "json" if self.json_mode else None)
+
+        tools_dict = {
+            "response_txt": "",
+            "seen_tool_calls": set(),
+            "all_tool_calls": [],
+        }
 
         response = self.client.chat(
             model=self.model,
@@ -1095,12 +1108,6 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
             options=self._model_kwargs,
             keep_alive=self.keep_alive,
         )
-
-        tools_dict = {
-            "response_txt": "",
-            "seen_tool_calls": set(),
-            "all_tool_calls": [],
-        }
 
         for r in response:
             if r["message"]["content"] is not None:
@@ -1189,6 +1196,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         result = await self._astream_chat(messages, **kwargs) if stream else await self._achat(messages, **kwargs)
         return result
 
+    @retry(is_retryable, logger)
     async def _achat(
         self, messages: MessageList | list[Message], **kwargs: Any
     ) -> ChatResponse:
@@ -1210,6 +1218,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
 
         return self._build_chat_response(response)
 
+    @retry(is_retryable, logger, stream=True)
     async def _astream_chat(
         self, messages: MessageList | list[Message], **kwargs: Any
     ) -> ChatResponseAsyncGen:

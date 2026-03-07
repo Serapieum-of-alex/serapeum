@@ -7,14 +7,16 @@ from typing import Any
 import ollama as ollama_sdk
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
+from serapeum.core.retry import Retry
+
 DEFAULT_BASE_URL = "http://localhost:11434"
 OLLAMA_CLOUD_BASE_URL = "https://api.ollama.com"
 
 
-__all__ = ["DEFAULT_BASE_URL", "OLLAMA_CLOUD_BASE_URL", "OllamaClientMixin"]
+__all__ = ["DEFAULT_BASE_URL", "OLLAMA_CLOUD_BASE_URL", "Client"]
 
 
-class OllamaClientMixin(BaseModel):
+class Client(Retry, BaseModel):
     """Shared connection fields and client injection for Ollama provider classes.
 
     Owns the server connection configuration (base_url, api_key), handles
@@ -47,7 +49,7 @@ class OllamaClientMixin(BaseModel):
 
     @model_validator(mode="wrap")
     @classmethod
-    def _inject_clients(cls, data: Any, handler: Any) -> "OllamaClientMixin":
+    def _inject_clients(cls, data: Any, handler: Any) -> "Client":
         """Intercept client/async_client kwargs before Pydantic validation.
 
         Pops ``client`` and ``async_client`` from the raw input dict so Pydantic
@@ -72,7 +74,7 @@ class OllamaClientMixin(BaseModel):
         return instance  # type: ignore[no-any-return]
 
     @model_validator(mode="after")
-    def _resolve_base_url(self) -> "OllamaClientMixin":
+    def _resolve_base_url(self) -> "Client":
         """Switch base_url to Ollama Cloud when api_key is provided with the default base_url.
 
         An explicit non-default base_url is always preserved so custom remote

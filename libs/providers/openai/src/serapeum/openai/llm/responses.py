@@ -47,7 +47,7 @@ from serapeum.openai.data.models import (
     is_function_calling_model,
     openai_modelname_to_contextsize,
 )
-from serapeum.openai.converters import (
+from serapeum.openai.parsers import (
     ResponsesOutputParser,
     ResponsesStreamAccumulator,
     to_openai_message_dicts,

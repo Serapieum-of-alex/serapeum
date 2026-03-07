@@ -49,7 +49,7 @@ from serapeum.core.base.llms.types import (
     ThinkingBlock,
     ToolCallBlock,
 )
-from serapeum.openai.converters import (
+from serapeum.openai.parsers import (
     ResponsesOutputParser,
     ResponsesStreamAccumulator,
     _build_reasoning_content,
@@ -600,6 +600,31 @@ class TestResponsesOutputParser:
         result = ResponsesOutputParser([_make_output_message()]).build()
         assert result.message.role == MessageRole.ASSISTANT, (
             f"Expected ASSISTANT role, got {result.message.role}"
+        )
+
+    def test_message_with_refusal(self) -> None:
+        """Test that refusal from message content part is stored in additional_kwargs.
+
+        Test scenario:
+            A ResponseOutputRefusal content part with a refusal string is
+            detected by hasattr(part, "refusal") and stored in additional_kwargs.
+        """
+        from openai.types.responses import ResponseOutputRefusal
+
+        refusal_part = ResponseOutputRefusal(
+            refusal="I cannot help with that",
+            type="refusal",
+        )
+        msg = ResponseOutputMessage(
+            id="msg_ref",
+            content=[refusal_part],
+            role="assistant",
+            status="completed",
+            type="message",
+        )
+        result = ResponsesOutputParser([msg]).build()
+        assert result.additional_kwargs.get("refusal") == "I cannot help with that", (
+            f"Expected refusal in additional_kwargs, got {result.additional_kwargs}"
         )
 
     def test_built_in_tool_types_tuple_coverage(self) -> None:

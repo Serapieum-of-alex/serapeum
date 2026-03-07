@@ -22,7 +22,7 @@ from serapeum.core.base.llms.types import (
     ThinkingBlock,
     ToolCallBlock,
 )
-from serapeum.openai.converters import (
+from serapeum.openai.parsers import (
     ChatFormat,
     ResponsesFormat,
     _rewrite_system_to_developer,

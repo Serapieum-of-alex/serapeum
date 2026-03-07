@@ -33,7 +33,7 @@ from serapeum.openai.data.models import (
     is_json_schema_supported,
     openai_modelname_to_contextsize,
 )
-from serapeum.openai.converters import (
+from serapeum.openai.parsers import (
     ChatMessageParser,
     DictMessageParser,
     LogProbParser,

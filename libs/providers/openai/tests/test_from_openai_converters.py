@@ -34,7 +34,7 @@ from serapeum.core.base.llms.types import (
     TextChunk,
     ToolCallBlock,
 )
-from serapeum.openai.converters import (
+from serapeum.openai.parsers import (
     ChatMessageParser,
     DictMessageParser,
     LogProbParser,

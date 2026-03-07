@@ -76,7 +76,7 @@ class TestParseRouting:
         Checks: return value is what _parse_default returned; super path not taken.
         """
         expected = Simple(value="x")
-        mock_pd = mocker.patch.object(llm, "_parse_default", return_value=expected)
+        mock_pd = mocker.patch.object(Ollama, "_parse_default", return_value=expected)
         result = llm.parse(Simple, prompt, topic="python")
         mock_pd.assert_called_once_with(Simple, prompt, None, {"topic": "python"})
         assert result is expected
@@ -91,7 +91,7 @@ class TestParseRouting:
         Checks: _stream_parse_default called once; prompt_args dict correctly collected.
         """
         mock_gen = iter([Simple(value="a")])
-        mock_spd = mocker.patch.object(llm, "_stream_parse_default", return_value=mock_gen)
+        mock_spd = mocker.patch.object(Ollama, "_stream_parse_default", return_value=mock_gen)
         result = llm.parse(Simple, prompt, stream=True, topic="python")
         mock_spd.assert_called_once_with(Simple, prompt, None, {"topic": "python"})
         assert result is mock_gen
@@ -107,7 +107,7 @@ class TestParseRouting:
         """
         kwargs = {"temperature": 0.0}
         expected = Simple(value="y")
-        mock_pd = mocker.patch.object(llm, "_parse_default", return_value=expected)
+        mock_pd = mocker.patch.object(Ollama, "_parse_default", return_value=expected)
         llm.parse(Simple, prompt, kwargs, topic="x")
         mock_pd.assert_called_once_with(Simple, prompt, kwargs, {"topic": "x"})
 
@@ -127,7 +127,7 @@ class TestParseRouting:
         llm.structured_output_mode = mode
         expected = Simple(value="super")
         mock_super = mocker.patch.object(LLM, "parse", return_value=expected)
-        mock_pd = mocker.patch.object(llm, "_parse_default")
+        mock_pd = mocker.patch.object(Ollama, "_parse_default")
         result = llm.parse(Simple, prompt, topic="x")
         mock_super.assert_called_once()
         mock_pd.assert_not_called()
@@ -149,7 +149,7 @@ class TestParseRouting:
         llm.structured_output_mode = mode
         mock_gen = iter([Simple(value="super-stream")])
         mock_super = mocker.patch.object(LLM, "stream_parse", return_value=mock_gen)
-        mock_spd = mocker.patch.object(llm, "_stream_parse_default")
+        mock_spd = mocker.patch.object(Ollama, "_stream_parse_default")
         result = llm.parse(Simple, prompt, stream=True, topic="x")
         mock_super.assert_called_once()
         mock_spd.assert_not_called()
@@ -180,7 +180,7 @@ class TestParseDefault:
         Expected: self.chat called with format=Simple.model_json_schema().
         Checks: 'format' key present with the correct schema value.
         """
-        mock_chat = mocker.patch.object(llm, "chat", return_value=make_chat_response('{"value": "hi"}'))
+        mock_chat = mocker.patch.object(Ollama, "chat", return_value=make_chat_response('{"value": "hi"}'))
         llm._parse_default(Simple, prompt, None, {"topic": "x"})
         _, chat_kwargs = mock_chat.call_args
         assert chat_kwargs.get("format") == Simple.model_json_schema()
@@ -194,7 +194,7 @@ class TestParseDefault:
         Expected: No error; chat is called successfully with a fresh dict.
         Checks: None is never accessed as a dict; call completes.
         """
-        mocker.patch.object(llm, "chat", return_value=make_chat_response('{"value": "ok"}'))
+        mocker.patch.object(Ollama, "chat", return_value=make_chat_response('{"value": "ok"}'))
         result = llm._parse_default(Simple, prompt, None, {"topic": "x"})
         assert isinstance(result, Simple)
 
@@ -207,7 +207,7 @@ class TestParseDefault:
         Expected: chat receives both 'temperature' and 'format' keys.
         Checks: format injection does not discard pre-existing kwargs.
         """
-        mock_chat = mocker.patch.object(llm, "chat", return_value=make_chat_response('{"value": "ok"}'))
+        mock_chat = mocker.patch.object(Ollama, "chat", return_value=make_chat_response('{"value": "ok"}'))
         llm._parse_default(Simple, prompt, {"temperature": 0.1}, {"topic": "x"})
         _, chat_kwargs = mock_chat.call_args
         assert "temperature" in chat_kwargs
@@ -224,7 +224,7 @@ class TestParseDefault:
         """
         mock_prompt = mocker.MagicMock(spec=PromptTemplate)
         mock_prompt.format_messages.return_value = []
-        mocker.patch.object(llm, "chat", return_value=make_chat_response('{"value": "ok"}'))
+        mocker.patch.object(Ollama, "chat", return_value=make_chat_response('{"value": "ok"}'))
         llm._parse_default(Simple, mock_prompt, None, {"topic": "AI"})
         mock_prompt.format_messages.assert_called_once_with(topic="AI")
 
@@ -237,7 +237,7 @@ class TestParseDefault:
         Expected: Simple(value="hello") returned.
         Checks: model_validate_json result is what the method returns.
         """
-        mocker.patch.object(llm, "chat", return_value=make_chat_response('{"value": "hello"}'))
+        mocker.patch.object(Ollama, "chat", return_value=make_chat_response('{"value": "hello"}'))
         result = llm._parse_default(Simple, prompt, None, {"topic": "x"})
         assert isinstance(result, Simple)
         assert result.value == "hello"
@@ -253,7 +253,7 @@ class TestParseDefault:
         """
         mock_schema = mocker.MagicMock()
         mock_schema.model_json_schema.return_value = {}
-        mocker.patch.object(llm, "chat", return_value=make_chat_response(""))
+        mocker.patch.object(Ollama, "chat", return_value=make_chat_response(""))
         llm._parse_default(mock_schema, prompt, None, {"topic": "x"})
         mock_schema.model_validate_json.assert_called_once_with("")
 
@@ -268,7 +268,7 @@ class TestParseDefault:
         """
         mock_schema = mocker.MagicMock()
         mock_schema.model_json_schema.return_value = {}
-        mocker.patch.object(llm, "chat", return_value=make_chat_response(None))
+        mocker.patch.object(Ollama, "chat", return_value=make_chat_response(None))
         llm._parse_default(mock_schema, prompt, None, {"topic": "x"})
         mock_schema.model_validate_json.assert_called_once_with("")
 
@@ -285,7 +285,7 @@ class TestStreamParseDefault:
         Expected: Calling _stream_parse_default returns a GeneratorType immediately.
         Checks: stream_chat is NOT called until the generator is advanced.
         """
-        mock_sc = mocker.patch.object(llm, "_stream_chat", return_value=iter([]))
+        mock_sc = mocker.patch.object(Ollama, "_stream_chat", return_value=iter([]))
         result = llm._stream_parse_default(Simple, prompt, None, {"topic": "x"})
         assert isinstance(result, GeneratorType)
         mock_sc.assert_not_called()
@@ -299,7 +299,7 @@ class TestStreamParseDefault:
         Expected: chat(..., stream=True) called with format=Simple.model_json_schema().
         Checks: format key present with correct schema value.
         """
-        mock_sc = mocker.patch.object(llm, "chat", return_value=iter([mocker.MagicMock()]))
+        mock_sc = mocker.patch.object(Ollama, "chat", return_value=iter([mocker.MagicMock()]))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.return_value = Simple(value="partial")
         list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
@@ -316,7 +316,7 @@ class TestStreamParseDefault:
         Checks: None is handled via `llm_kwargs or {}`.
         """
         obj = Simple(value="x")
-        mocker.patch.object(llm, "_stream_chat", return_value=iter([mocker.MagicMock()]))
+        mocker.patch.object(Ollama, "_stream_chat", return_value=iter([mocker.MagicMock()]))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.return_value = obj
         results = list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
@@ -333,7 +333,7 @@ class TestStreamParseDefault:
         """
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         objects = [Simple(value="a"), Simple(value="b")]
-        mocker.patch.object(llm, "chat", return_value=iter(chunks))
+        mocker.patch.object(Ollama, "chat", return_value=iter(chunks))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = objects
         results = list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
@@ -351,7 +351,7 @@ class TestStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock()]
         obj_a = Simple(value="a")
         obj_c = Simple(value="c")
-        mocker.patch.object(llm, "_stream_chat", return_value=iter(chunks))
+        mocker.patch.object(Ollama, "_stream_chat", return_value=iter(chunks))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = [obj_a, ValueError("bad JSON fragment"), obj_c]
         results = list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
@@ -366,7 +366,7 @@ class TestStreamParseDefault:
         Expected: generator completes normally, yielding an empty sequence.
         Checks: exception swallowing works for every iteration step.
         """
-        mocker.patch.object(llm, "_stream_chat", return_value=iter([mocker.MagicMock(), mocker.MagicMock()]))
+        mocker.patch.object(Ollama, "_stream_chat", return_value=iter([mocker.MagicMock(), mocker.MagicMock()]))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = RuntimeError("boom")
         results = list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
@@ -384,7 +384,7 @@ class TestStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         obj1 = Simple(value="first")
         obj2 = Simple(value="second")
-        mocker.patch.object(llm, "_stream_chat", return_value=iter(chunks))
+        mocker.patch.object(Ollama, "_stream_chat", return_value=iter(chunks))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc = mock_proc_cls.return_value
         mock_proc.process.side_effect = [obj1, obj2]
@@ -405,7 +405,7 @@ class TestStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         obj_list = [Simple(value="x"), Simple(value="y")]
         obj2 = Simple(value="second")
-        mocker.patch.object(llm, "_stream_chat", return_value=iter(chunks))
+        mocker.patch.object(Ollama, "_stream_chat", return_value=iter(chunks))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc = mock_proc_cls.return_value
         mock_proc.process.side_effect = [obj_list, obj2]
@@ -423,7 +423,7 @@ class TestStreamParseDefault:
                   allow_parallel_tool_calls=False).
         Checks: constructor receives exact keyword arguments — no accidental drift.
         """
-        mocker.patch.object(llm, "_stream_chat", return_value=iter([]))
+        mocker.patch.object(Ollama, "_stream_chat", return_value=iter([]))
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         list(llm._stream_parse_default(Simple, prompt, None, {"topic": "x"}))
         mock_proc_cls.assert_called_once_with(
@@ -465,7 +465,7 @@ class TestAParseRouting:
         Checks: method called once with correct args; returned async generator forwarded.
         """
         mock_gen = mocker.MagicMock()
-        mock_spd = mocker.patch.object(llm, "_astream_parse_default", return_value=mock_gen)
+        mock_spd = mocker.patch.object(Ollama, "_astream_parse_default", return_value=mock_gen)
         result = await llm.aparse(Simple, prompt, stream=True, topic="python")
         mock_spd.assert_called_once_with(Simple, prompt, None, {"topic": "python"})
         assert result is mock_gen, f"Expected forwarded generator, got {result}"
@@ -507,7 +507,7 @@ class TestAParseRouting:
         mock_super = mocker.patch.object(
             LLM, "aparse", new_callable=mocker.AsyncMock, return_value=expected
         )
-        mock_pd = mocker.patch.object(llm, "_aparse_default")
+        mock_pd = mocker.patch.object(Ollama, "_aparse_default")
         result = await llm.aparse(Simple, prompt, topic="x")
         mock_super.assert_called_once()
         mock_pd.assert_not_called()
@@ -532,7 +532,7 @@ class TestAParseRouting:
         mock_super = mocker.patch.object(
             LLM, "astream_parse", new_callable=mocker.AsyncMock, return_value=mock_gen
         )
-        mock_spd = mocker.patch.object(llm, "_astream_parse_default")
+        mock_spd = mocker.patch.object(Ollama, "_astream_parse_default")
         result = await llm.aparse(Simple, prompt, stream=True, topic="x")
         mock_super.assert_called_once()
         mock_spd.assert_not_called()
@@ -566,7 +566,7 @@ class TestAParseDefault:
         Checks: 'format' key present with the correct schema value.
         """
         mock_achat = mocker.patch.object(
-            llm, "achat", new_callable=mocker.AsyncMock,
+            Ollama, "achat", new_callable=mocker.AsyncMock,
             return_value=make_chat_response('{"value": "hi"}'),
         )
         await llm._aparse_default(Simple, prompt, None, {"topic": "x"})
@@ -586,7 +586,7 @@ class TestAParseDefault:
         Checks: None is handled via `llm_kwargs or {}`.
         """
         mocker.patch.object(
-            llm, "achat", new_callable=mocker.AsyncMock,
+            Ollama, "achat", new_callable=mocker.AsyncMock,
             return_value=make_chat_response('{"value": "ok"}'),
         )
         result = await llm._aparse_default(Simple, prompt, None, {"topic": "x"})
@@ -603,7 +603,7 @@ class TestAParseDefault:
         Checks: format injection does not discard pre-existing kwargs.
         """
         mock_achat = mocker.patch.object(
-            llm, "achat", new_callable=mocker.AsyncMock,
+            Ollama, "achat", new_callable=mocker.AsyncMock,
             return_value=make_chat_response('{"value": "ok"}'),
         )
         await llm._aparse_default(Simple, prompt, {"temperature": 0.1}, {"topic": "x"})
@@ -624,7 +624,7 @@ class TestAParseDefault:
         mock_prompt = mocker.MagicMock(spec=PromptTemplate)
         mock_prompt.format_messages.return_value = []
         mocker.patch.object(
-            llm, "achat", new_callable=mocker.AsyncMock,
+            Ollama, "achat", new_callable=mocker.AsyncMock,
             return_value=make_chat_response('{"value": "ok"}'),
         )
         await llm._aparse_default(Simple, mock_prompt, None, {"topic": "AI"})
@@ -641,7 +641,7 @@ class TestAParseDefault:
         Checks: model_validate_json result is what the method returns.
         """
         mocker.patch.object(
-            llm, "achat", new_callable=mocker.AsyncMock,
+            Ollama, "achat", new_callable=mocker.AsyncMock,
             return_value=make_chat_response('{"value": "hello"}'),
         )
         result = await llm._aparse_default(Simple, prompt, None, {"topic": "x"})
@@ -661,7 +661,7 @@ class TestAParseDefault:
         mock_schema = mocker.MagicMock()
         mock_schema.model_json_schema.return_value = {}
         mocker.patch.object(
-            llm, "achat", new_callable=mocker.AsyncMock,
+            Ollama, "achat", new_callable=mocker.AsyncMock,
             return_value=make_chat_response(""),
         )
         await llm._aparse_default(mock_schema, prompt, None, {"topic": "x"})
@@ -680,7 +680,7 @@ class TestAParseDefault:
         mock_schema = mocker.MagicMock()
         mock_schema.model_json_schema.return_value = {}
         mocker.patch.object(
-            llm, "achat", new_callable=mocker.AsyncMock,
+            Ollama, "achat", new_callable=mocker.AsyncMock,
             return_value=make_chat_response(None),
         )
         await llm._aparse_default(mock_schema, prompt, None, {"topic": "x"})
@@ -700,7 +700,7 @@ class TestAStreamParseDefault:
         Expected: Calling _astream_parse_default returns AsyncGeneratorType immediately.
         Checks: astream_chat is NOT called until the generator is advanced.
         """
-        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(Ollama, "_astream_chat", new_callable=mocker.AsyncMock)
         gen = llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})
         assert isinstance(gen, AsyncGeneratorType), (
             f"Expected AsyncGeneratorType, got {type(gen)}"
@@ -718,7 +718,7 @@ class TestAStreamParseDefault:
         Expected: astream_chat called with format=Simple.model_json_schema().
         Checks: format key present with correct schema value.
         """
-        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(Ollama, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(mocker.MagicMock())
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.return_value = Simple(value="partial")
@@ -740,7 +740,7 @@ class TestAStreamParseDefault:
         Checks: None is handled via `_llm_kwargs or {}`.
         """
         obj = Simple(value="x")
-        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(Ollama, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(mocker.MagicMock())
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.return_value = obj
@@ -759,7 +759,7 @@ class TestAStreamParseDefault:
         """
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         objects = [Simple(value="a"), Simple(value="b")]
-        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(Ollama, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(*chunks)
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = objects
@@ -779,7 +779,7 @@ class TestAStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock()]
         obj_a = Simple(value="a")
         obj_c = Simple(value="c")
-        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(Ollama, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(*chunks)
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = [obj_a, ValueError("bad JSON fragment"), obj_c]
@@ -796,7 +796,7 @@ class TestAStreamParseDefault:
         Expected: generator completes normally, yielding an empty sequence.
         Checks: exception swallowing works for every iteration step.
         """
-        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(Ollama, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(mocker.MagicMock(), mocker.MagicMock())
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc_cls.return_value.process.side_effect = RuntimeError("boom")
@@ -816,7 +816,7 @@ class TestAStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         obj1 = Simple(value="first")
         obj2 = Simple(value="second")
-        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(Ollama, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(*chunks)
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc = mock_proc_cls.return_value
@@ -843,7 +843,7 @@ class TestAStreamParseDefault:
         chunks = [mocker.MagicMock(), mocker.MagicMock()]
         obj_list = [Simple(value="x"), Simple(value="y")]
         obj2 = Simple(value="second")
-        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(Ollama, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen(*chunks)
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         mock_proc = mock_proc_cls.return_value
@@ -865,7 +865,7 @@ class TestAStreamParseDefault:
                   allow_parallel_tool_calls=False).
         Checks: constructor receives exact keyword arguments — no accidental drift.
         """
-        mock_asc = mocker.patch.object(llm, "_astream_chat", new_callable=mocker.AsyncMock)
+        mock_asc = mocker.patch.object(Ollama, "_astream_chat", new_callable=mocker.AsyncMock)
         mock_asc.return_value = _async_gen()
         mock_proc_cls = mocker.patch("serapeum.ollama.llm.StreamingObjectProcessor")
         [item async for item in llm._astream_parse_default(Simple, prompt, None, {"topic": "x"})]

@@ -26,7 +26,8 @@ dependencies = [
     "filetype>=1.2.0",
     "requests>=2.32.5",
     "tqdm>=4.67.1",
-    "pydantic>=2.12.5"
+    "pydantic>=2.12.5",
+    "tenacity>=9.1.2",
 ]
 
 

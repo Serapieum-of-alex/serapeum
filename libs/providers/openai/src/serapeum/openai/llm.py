@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from json.decoder import JSONDecodeError
 from typing import (
     TYPE_CHECKING,
@@ -50,7 +51,9 @@ from serapeum.openai.converters import (
     to_openai_message_dicts,
 )
 from serapeum.openai.mixins import Client, ModelMetadata, StructuredOutput
+from serapeum.openai.retry import is_retryable
 from serapeum.openai.utils import force_single_tool_call, resolve_tool_choice
+from serapeum.core.retry import retry
 from openai.types.chat.chat_completion_chunk import ChoiceDelta
 from serapeum.core.base.llms.utils import (
     completion_to_chat_decorator,
@@ -61,6 +64,8 @@ from serapeum.core.base.llms.utils import (
 
 if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool
+
+logger = logging.getLogger(__name__)
 
 
 class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
@@ -280,6 +285,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
 
         return all_kwargs
 
+    @retry(is_retryable, logger)
     def _chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         client = self.client
         message_dicts = to_openai_message_dicts(
@@ -310,6 +316,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             additional_kwargs=self._get_response_token_counts(response),
         )
 
+    @retry(is_retryable, logger)
     def _stream_chat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseGen:
@@ -322,63 +329,61 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             model=self.model,
         )
 
-        def gen() -> ChatResponseGen:
-            content = ""
-            accumulator = ToolCallAccumulator()
+        content = ""
+        accumulator = ToolCallAccumulator()
 
-            is_function = False
-            for response in client.chat.completions.create(
-                messages=message_dicts,
-                **self._get_model_kwargs(stream=True, **kwargs),
-            ):
-                blocks = []
-                response = response
-                if len(response.choices) > 0:
-                    delta = response.choices[0].delta
-                else:
-                    delta = ChoiceDelta()
+        is_function = False
+        for response in client.chat.completions.create(
+            messages=message_dicts,
+            **self._get_model_kwargs(stream=True, **kwargs),
+        ):
+            blocks = []
+            response = response
+            if len(response.choices) > 0:
+                delta = response.choices[0].delta
+            else:
+                delta = ChoiceDelta()
 
-                if delta is None:
-                    continue
+            if delta is None:
+                continue
 
-                # check if this chunk is the start of a function call
-                if delta.tool_calls:
-                    is_function = True
+            # check if this chunk is the start of a function call
+            if delta.tool_calls:
+                is_function = True
 
-                # update using deltas
-                role = delta.role or MessageRole.ASSISTANT
-                content_delta = delta.content or ""
-                content += content_delta
-                blocks.append(TextChunk(content=content))
+            # update using deltas
+            role = delta.role or MessageRole.ASSISTANT
+            content_delta = delta.content or ""
+            content += content_delta
+            blocks.append(TextChunk(content=content))
 
-                additional_kwargs = {}
-                if is_function:
-                    accumulator.update(delta.tool_calls)
-                    if accumulator.tool_calls:
-                        additional_kwargs["tool_calls"] = accumulator.tool_calls
-                        for tool_call in accumulator.tool_calls:
-                            if tool_call.function:
-                                blocks.append(
-                                    ToolCallBlock(
-                                        tool_call_id=tool_call.id,
-                                        tool_kwargs=tool_call.function.arguments or {},
-                                        tool_name=tool_call.function.name or "",
-                                    )
+            additional_kwargs = {}
+            if is_function:
+                accumulator.update(delta.tool_calls)
+                if accumulator.tool_calls:
+                    additional_kwargs["tool_calls"] = accumulator.tool_calls
+                    for tool_call in accumulator.tool_calls:
+                        if tool_call.function:
+                            blocks.append(
+                                ToolCallBlock(
+                                    tool_call_id=tool_call.id,
+                                    tool_kwargs=tool_call.function.arguments or {},
+                                    tool_name=tool_call.function.name or "",
                                 )
+                            )
 
-                yield ChatResponse(
-                    message=Message(
-                        role=role,
-                        chunks=blocks,
-                        additional_kwargs=additional_kwargs,
-                    ),
-                    delta=content_delta,
-                    raw=response,
-                    additional_kwargs=self._get_response_token_counts(response),
-                )
+            yield ChatResponse(
+                message=Message(
+                    role=role,
+                    chunks=blocks,
+                    additional_kwargs=additional_kwargs,
+                ),
+                delta=content_delta,
+                raw=response,
+                additional_kwargs=self._get_response_token_counts(response),
+            )
 
-        return gen()
-
+    @retry(is_retryable, logger)
     def _complete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
         client = self.client
         all_kwargs = self._get_model_kwargs(**kwargs)
@@ -403,32 +408,30 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             additional_kwargs=self._get_response_token_counts(response),
         )
 
+    @retry(is_retryable, logger)
     def _stream_complete(self, prompt: str, **kwargs: Any) -> CompletionResponseGen:
         client = self.client
         all_kwargs = self._get_model_kwargs(stream=True, **kwargs)
         self._update_max_tokens(all_kwargs, prompt)
 
-        def gen() -> CompletionResponseGen:
-            text = ""
-            for response in client.completions.create(
-                prompt=prompt,
-                **all_kwargs,
-            ):
-                if len(response.choices) > 0:
-                    delta = response.choices[0].text
-                    if delta is None:
-                        delta = ""
-                else:
+        text = ""
+        for response in client.completions.create(
+            prompt=prompt,
+            **all_kwargs,
+        ):
+            if len(response.choices) > 0:
+                delta = response.choices[0].text
+                if delta is None:
                     delta = ""
-                text += delta
-                yield CompletionResponse(
-                    delta=delta,
-                    text=text,
-                    raw=response,
-                    additional_kwargs=self._get_response_token_counts(response),
-                )
-
-        return gen()
+            else:
+                delta = ""
+            text += delta
+            yield CompletionResponse(
+                delta=delta,
+                text=text,
+                raw=response,
+                additional_kwargs=self._get_response_token_counts(response),
+            )
 
     def _update_max_tokens(self, all_kwargs: dict[str, Any], prompt: str) -> None:
         """Infer max_tokens for the payload, if possible."""
@@ -542,6 +545,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             result = await self._acomplete(prompt, **kwargs)
         return result
 
+    @retry(is_retryable, logger)
     async def _achat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponse:
@@ -574,6 +578,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             additional_kwargs=self._get_response_token_counts(response),
         )
 
+    @retry(is_retryable, logger, stream=True)
     async def _astream_chat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseAsyncGen:
@@ -654,6 +659,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
 
         return gen()
 
+    @retry(is_retryable, logger)
     async def _acomplete(self, prompt: str, **kwargs: Any) -> CompletionResponse:
         aclient = self.async_client
         all_kwargs = self._get_model_kwargs(**kwargs)
@@ -678,6 +684,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             additional_kwargs=self._get_response_token_counts(response),
         )
 
+    @retry(is_retryable, logger, stream=True)
     async def _astream_complete(
         self, prompt: str, **kwargs: Any
     ) -> CompletionResponseAsyncGen:

@@ -10,13 +10,14 @@ from openai import AsyncOpenAI
 from openai import OpenAI as SyncOpenAI
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
+from serapeum.core.retry import Retry
 from serapeum.openai.utils import resolve_openai_credentials
 
 
 __all__ = ["Client"]
 
 
-class Client(BaseModel):
+class Client(Retry, BaseModel):
     """Shared connection fields and client management for OpenAI provider classes.
 
     Owns the API credential configuration (api_key, api_base, api_version),
@@ -39,11 +40,6 @@ class Client(BaseModel):
     )
     api_version: str | None = Field(
         default=None, description="The API version for OpenAI API."
-    )
-    max_retries: int = Field(
-        default=3,
-        description="The maximum number of API retries.",
-        ge=0,
     )
     timeout: float = Field(
         default=60.0,
@@ -115,7 +111,7 @@ class Client(BaseModel):
         return {
             "api_key": self.api_key,
             "base_url": self.api_base,
-            "max_retries": self.max_retries,
+            "max_retries": 0,  # SDK retries disabled; handled by @retry decorator
             "timeout": self.timeout,
             "default_headers": self.default_headers,
             "http_client": self._async_http_client if is_async else self._http_client,

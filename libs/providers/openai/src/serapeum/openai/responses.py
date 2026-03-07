@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from openai import AzureOpenAI
 from openai.types.responses import Response
 from typing import (
@@ -51,11 +53,15 @@ from serapeum.openai.converters import (
     to_openai_message_dicts,
 )
 from serapeum.openai.mixins import Client, ModelMetadata
+from serapeum.openai.retry import is_retryable
 from serapeum.openai.utils import resolve_tool_choice
+from serapeum.core.retry import retry
 
 
 if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool
+
+logger = logging.getLogger(__name__)
 
 Model = TypeVar("Model", bound=BaseModel)
 
@@ -275,6 +281,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
         )
         return result
 
+    @retry(is_retryable, logger)
     def _chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         kwargs_dict = self._get_model_kwargs(**kwargs)
         message_dicts = to_openai_message_dicts(
@@ -304,6 +311,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
 
         return chat_response
 
+    @retry(is_retryable, logger)
     def _stream_chat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseGen:
@@ -313,36 +321,33 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
             is_responses_api=True,
         )
 
-        def gen() -> ChatResponseGen:
-            accumulator = ResponsesStreamAccumulator(
-                track_previous_responses=self.track_previous_responses,
-                previous_response_id=self._previous_response_id,
-            )
+        accumulator = ResponsesStreamAccumulator(
+            track_previous_responses=self.track_previous_responses,
+            previous_response_id=self._previous_response_id,
+        )
 
-            for event in self.client.responses.create(
-                input=message_dicts,
-                stream=True,
-                **self._get_model_kwargs(**kwargs),
+        for event in self.client.responses.create(
+            input=message_dicts,
+            stream=True,
+            **self._get_model_kwargs(**kwargs),
+        ):
+            blocks, delta = accumulator.update(event)
+
+            if (
+                self.track_previous_responses
+                and accumulator.previous_response_id != self._previous_response_id
             ):
-                blocks, delta = accumulator.update(event)
+                self._previous_response_id = accumulator.previous_response_id
 
-                if (
-                    self.track_previous_responses
-                    and accumulator.previous_response_id != self._previous_response_id
-                ):
-                    self._previous_response_id = accumulator.previous_response_id
-
-                yield ChatResponse(
-                    message=Message(
-                        role=MessageRole.ASSISTANT,
-                        chunks=blocks,
-                    ),
-                    delta=delta,
-                    raw=event,
-                    additional_kwargs=accumulator.additional_kwargs,
-                )
-
-        return gen()
+            yield ChatResponse(
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=blocks,
+                ),
+                delta=delta,
+                raw=event,
+                additional_kwargs=accumulator.additional_kwargs,
+            )
 
     @overload
     async def achat(
@@ -368,6 +373,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
         )
         return result
 
+    @retry(is_retryable, logger)
     async def _achat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponse:
@@ -392,6 +398,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
 
         return chat_response
 
+    @retry(is_retryable, logger, stream=True)
     async def _astream_chat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseAsyncGen:

@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Any, Literal, overload
 
 from llama_cpp import Llama
-from pydantic import Field, PrivateAttr, field_validator, model_validator
+from pydantic import Field, PrivateAttr, field_validator, model_validator, ConfigDict
 
 from serapeum.core.configs.defaults import (
     DEFAULT_CONTEXT_WINDOW,
@@ -130,6 +130,7 @@ class LlamaCPP(CompletionToChatMixin, LLM):  # type: ignore[misc]
             ```
     """
 
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
     model_url: str | None = Field(
         default=None,
         description="URL of a GGUF model to download and cache locally.",

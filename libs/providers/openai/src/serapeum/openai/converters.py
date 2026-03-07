@@ -303,95 +303,127 @@ class ChatMessageConverter:
             result["tool_call_id"] = self._message.additional_kwargs["tool_call_id"]
 
 
-def to_openai_responses_message_dict(
-    message: Message,
-    drop_none: bool = False,
-    model: str | None = None,
-) -> str | dict[str, Any] | list[dict[str, Any]]:
-    """Convert a single serapeum Message to an OpenAI Responses API dict."""
-    content: list[dict[str, Any]] = []
-    content_txt = ""
-    tool_calls: list[dict[str, Any]] = []
-    reasoning: list[dict[str, Any]] = []
+class ResponsesMessageConverter:
+    """Converts a serapeum ``Message`` into a Responses API dict, list, or string.
 
-    for block in message.chunks:
-        if isinstance(block, TextChunk):
-            content.append(ResponsesFormat.text(block, message.role.value))
-            content_txt += block.content
-        elif isinstance(block, ThinkingBlock):
-            item = ResponsesFormat.thinking(block)
-            if item is not None:
-                reasoning.append(item)
-        elif isinstance(block, ToolCallBlock):
-            tool_calls.append(ResponsesFormat.tool_call(block))
-        else:
-            converter = ResponsesFormat.content_converters.get(type(block))
-            if converter:
-                content.append(converter(block))
-            else:
-                raise ValueError(
-                    f"Unsupported content block type: {type(block).__name__}"
+    Usage::
+
+        result = ResponsesMessageConverter(message, model="o3-mini").build()
+    """
+
+    def __init__(
+        self,
+        message: Message,
+        *,
+        drop_none: bool = False,
+        model: str | None = None,
+    ) -> None:
+        self._message = message
+        self._model = model
+        self._drop_none = drop_none
+        self._content: list[dict[str, Any]] = []
+        self._content_txt: str = ""
+        self._tool_call_dicts: list[dict[str, Any]] = []
+        self._reasoning: list[dict[str, Any]] = []
+
+    def build(self) -> str | dict[str, Any] | list[dict[str, Any]]:
+        """Convert the message and return the Responses API representation."""
+        self._process_blocks()
+        result = self._assemble()
+        return result
+
+    def _process_blocks(self) -> None:
+        """Iterate message chunks and dispatch to ``ResponsesFormat`` converters."""
+        for block in self._message.chunks:
+            if isinstance(block, TextChunk):
+                self._content.append(
+                    ResponsesFormat.text(block, self._message.role.value)
                 )
+                self._content_txt += block.content
+            elif isinstance(block, ThinkingBlock):
+                item = ResponsesFormat.thinking(block)
+                if item is not None:
+                    self._reasoning.append(item)
+            elif isinstance(block, ToolCallBlock):
+                self._tool_call_dicts.append(ResponsesFormat.tool_call(block))
+            else:
+                converter = ResponsesFormat.content_converters.get(type(block))
+                if converter:
+                    self._content.append(converter(block))
+                else:
+                    raise ValueError(
+                        f"Unsupported content block type: {type(block).__name__}"
+                    )
 
-    # Legacy additional_kwargs tool calls take precedence over ToolCallBlock chunks
-    if "tool_calls" in message.additional_kwargs:
-        legacy_calls = [
-            tc if isinstance(tc, dict) else tc.model_dump()
-            for tc in message.additional_kwargs["tool_calls"]
-        ]
-        result: str | dict[str, Any] | list[dict[str, Any]] = [
-            *reasoning, *legacy_calls
-        ]
-    elif tool_calls:
-        result = [*reasoning, *tool_calls]
-    elif message.role.value == "tool":
-        # Tool output message
-        call_id = message.additional_kwargs.get(
-            "tool_call_id", message.additional_kwargs.get("call_id")
+    def _resolve_content(self) -> str | list[dict[str, Any]] | None:
+        """Determine the final content value (string, list, or ``None``)."""
+        content: str | list[dict[str, Any]] | None = self._content_txt
+        if self._content_txt == "" and _should_null_content(self._message, False):
+            content = None
+        elif (
+            content is not None
+            and self._message.role.value in ("system", "developer")
+            or all(isinstance(block, TextChunk) for block in self._message.chunks)
+        ):
+            pass  # content is already the string form
+        else:
+            content = self._content
+        return content
+
+    def _assemble_tool_output(self) -> dict[str, Any]:
+        """Construct a ``function_call_output`` dict for tool-role messages."""
+        call_id = self._message.additional_kwargs.get(
+            "tool_call_id", self._message.additional_kwargs.get("call_id")
         )
         if call_id is None:
             raise ValueError(
                 "tool_call_id or call_id is required in additional_kwargs for tool messages"
             )
-        result = {
+        return {
             "type": "function_call_output",
-            "output": content_txt,
+            "output": self._content_txt,
             "call_id": call_id,
         }
-    elif (
-        content_txt
-        and all(item["type"] == "input_text" for item in content)
-        and message.role.value == "user"
-    ):
-        # Plain text user message — some features (image generation, MCP)
-        # require a bare string input.
-        result = content_txt
-    else:
-        # Null-out content for assistant-only tool/function call messages
-        final_content: str | list[dict[str, Any]] | None = content_txt
-        if content_txt == "" and _should_null_content(message, False):
-            final_content = None
 
-        # Assistant, system, and developer roles require string content
-        if (
-            final_content is not None
-            and message.role.value in ("system", "developer")
-            or all(isinstance(block, TextChunk) for block in message.chunks)
-        ):
-            pass  # final_content is already the string form
-        else:
-            final_content = content
-
+    def _assemble_message_dict(self) -> dict[str, Any] | list[dict[str, Any]]:
+        """Construct a standard message dict, optionally prefixed by reasoning items."""
         message_dict: dict[str, Any] = {
-            "role": message.role.value,
-            "content": final_content,
+            "role": self._message.role.value,
+            "content": self._resolve_content(),
         }
-        _rewrite_system_to_developer(message_dict, model)
-        _strip_none_keys(message_dict, drop_none)
+        _rewrite_system_to_developer(message_dict, self._model)
+        _strip_none_keys(message_dict, self._drop_none)
+        result: dict[str, Any] | list[dict[str, Any]] = (
+            [*self._reasoning, message_dict] if self._reasoning else message_dict
+        )
+        return result
 
-        result = [*reasoning, message_dict] if reasoning else message_dict
-
-    return result
+    def _assemble(self) -> str | dict[str, Any] | list[dict[str, Any]]:
+        """Select the appropriate output shape based on message role and content."""
+        # Legacy additional_kwargs tool calls take precedence over ToolCallBlock chunks
+        if "tool_calls" in self._message.additional_kwargs:
+            legacy_calls = [
+                tc if isinstance(tc, dict) else tc.model_dump()
+                for tc in self._message.additional_kwargs["tool_calls"]
+            ]
+            result: str | dict[str, Any] | list[dict[str, Any]] = [
+                *self._reasoning, *legacy_calls
+            ]
+        elif self._tool_call_dicts:
+            result = [*self._reasoning, *self._tool_call_dicts]
+        elif self._message.role.value == "tool":
+            result = self._assemble_tool_output()
+        elif (
+            self._content_txt
+            and all(item["type"] == "input_text" for item in self._content)
+            and self._message.role.value == "user"
+        ):
+            # Plain text user message — some features (image generation, MCP)
+            # require a bare string input.
+            result = self._content_txt
+        else:
+            result = self._assemble_message_dict()
+        return result
 
 
 def to_openai_message_dicts(
@@ -402,13 +434,13 @@ def to_openai_message_dicts(
 ) -> list[ChatCompletionMessageParam] | str:
     """Convert generic messages to OpenAI message dicts."""
     if is_responses_api:
-        final_message_dicts = []
+        final_message_dicts: list[dict[str, Any]] = []
         for message in messages:
-            message_dicts = to_openai_responses_message_dict(
+            message_dicts = ResponsesMessageConverter(
                 message,
                 drop_none=drop_none,
                 model="o3-mini",  # hardcode to ensure developer messages are used
-            )
+            ).build()
             if isinstance(message_dicts, list):
                 final_message_dicts.extend(message_dicts)
             elif isinstance(message_dicts, str):
@@ -416,20 +448,23 @@ def to_openai_message_dicts(
             else:
                 final_message_dicts.append(message_dicts)
 
-        # If there is only one message, and it is a user message, return the content string directly
+        # Single user message → return the content string directly
         if (
             len(final_message_dicts) == 1
             and final_message_dicts[0]["role"] == "user"
             and isinstance(final_message_dicts[0]["content"], str)
         ):
-            return final_message_dicts[0]["content"]
-
-        return final_message_dicts
+            result: list[ChatCompletionMessageParam] | str = (
+                final_message_dicts[0]["content"]
+            )
+        else:
+            result = final_message_dicts
     else:
-        return [
+        result = [
             ChatMessageConverter(message, drop_none=drop_none, model=model).build()
             for message in messages
         ]
+    return result
 
 
 def from_openai_message(

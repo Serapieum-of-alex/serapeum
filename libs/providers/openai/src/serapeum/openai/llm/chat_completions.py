@@ -50,7 +50,7 @@ from serapeum.openai.parsers import (
     ToolCallAccumulator,
     to_openai_message_dicts,
 )
-from serapeum.openai.mixins import Client, ModelMetadata, StructuredOutput
+from serapeum.openai.llm.base import Client, ModelMetadata, StructuredOutput
 from serapeum.openai.retry import is_retryable
 from serapeum.openai.utils import force_single_tool_call, resolve_tool_choice
 from serapeum.core.retry import retry
@@ -77,10 +77,10 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
     Streaming, function calling, structured outputs via native JSON-schema, audio
     modalities, and per-token log-probability extraction are all supported.
 
-    Inherits connection management from :class:`~serapeum.openai.mixins.Client`,
-    model-metadata utilities from :class:`~serapeum.openai.mixins.ModelMetadata`,
+    Inherits connection management from :class:`~serapeum.openai.llm.base.Client`,
+    model-metadata utilities from :class:`~serapeum.openai.llm.base.ModelMetadata`,
     native JSON-schema structured outputs from
-    :class:`~serapeum.openai.mixins.StructuredOutput`, and the
+    :class:`~serapeum.openai.llm.base.StructuredOutput`, and the
     chat-to-completion interface bridge from
     :class:`~serapeum.core.llms.ChatToCompletion`.
 
@@ -161,9 +161,9 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
 
     See Also:
         OpenAIResponses: Responses API provider for models exclusive to that API.
-        serapeum.openai.mixins.Client: OpenAI SDK client lifecycle management.
-        serapeum.openai.mixins.StructuredOutput: Native JSON-schema structured outputs.
-        serapeum.openai.mixins.ModelMetadata: Model name normalisation and tokenizer.
+        serapeum.openai.llm.base.Client: OpenAI SDK client lifecycle management.
+        serapeum.openai.llm.base.StructuredOutput: Native JSON-schema structured outputs.
+        serapeum.openai.llm.base.ModelMetadata: Model name normalisation and tokenizer.
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")

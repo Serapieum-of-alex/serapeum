@@ -292,7 +292,7 @@ def mock_chat_completion_stream_v1(
     yield from responses
 
 
-@patch("serapeum.openai.mixins.client.SyncOpenAI")
+@patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_completion_model_basic(MockSyncOpenAI: MagicMock) -> None:
     with CachedOpenAIApiKeys(set_fake_key=True):
         mock_instance = MockSyncOpenAI.return_value
@@ -311,7 +311,7 @@ def test_completion_model_basic(MockSyncOpenAI: MagicMock) -> None:
         assert chat_response.message.additional_kwargs["total_tokens"] == 12
 
 
-@patch("serapeum.openai.mixins.client.SyncOpenAI")
+@patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_chat_model_basic(MockSyncOpenAI: MagicMock) -> None:
     with CachedOpenAIApiKeys(set_fake_key=True):
         mock_instance = MockSyncOpenAI.return_value
@@ -329,7 +329,7 @@ def test_chat_model_basic(MockSyncOpenAI: MagicMock) -> None:
         assert chat_response.additional_kwargs["total_tokens"] == 20
 
 
-@patch("serapeum.openai.mixins.client.SyncOpenAI")
+@patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_completion_model_streaming(MockSyncOpenAI: MagicMock) -> None:
     with CachedOpenAIApiKeys(set_fake_key=True):
         mock_instance = MockSyncOpenAI.return_value
@@ -349,7 +349,7 @@ def test_completion_model_streaming(MockSyncOpenAI: MagicMock) -> None:
         assert chat_responses[-1].message.content == "12"
 
 
-@patch("serapeum.openai.mixins.client.SyncOpenAI")
+@patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_chat_model_streaming(MockSyncOpenAI: MagicMock) -> None:
     with CachedOpenAIApiKeys(set_fake_key=True):
         mock_instance = MockSyncOpenAI.return_value
@@ -375,7 +375,7 @@ def test_chat_model_streaming(MockSyncOpenAI: MagicMock) -> None:
 
 
 @pytest.mark.asyncio()
-@patch("serapeum.openai.mixins.client.AsyncOpenAI")
+@patch("serapeum.openai.llm.base.client.AsyncOpenAI")
 async def test_completion_model_async(MockAsyncOpenAI: MagicMock) -> None:
     mock_instance = MockAsyncOpenAI.return_value
     create_fn = AsyncMock()
@@ -394,7 +394,7 @@ async def test_completion_model_async(MockAsyncOpenAI: MagicMock) -> None:
 
 
 @pytest.mark.asyncio()
-@patch("serapeum.openai.mixins.client.AsyncOpenAI")
+@patch("serapeum.openai.llm.base.client.AsyncOpenAI")
 async def test_completion_model_async_streaming(MockAsyncOpenAI: MagicMock) -> None:
     mock_instance = MockAsyncOpenAI.return_value
     create_fn = AsyncMock()
@@ -429,7 +429,7 @@ def test_validates_api_key_is_present() -> None:
 
 
 @pytest.mark.unit
-@patch("serapeum.openai.mixins.client.SyncOpenAI")
+@patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_sdk_retries_disabled(MockSyncOpenAI: MagicMock) -> None:
     """SDK retries are disabled; the @retry decorator handles retries instead."""
     llm = OpenAI(model="gpt-4o-mini", max_retries=5)
@@ -438,7 +438,7 @@ def test_sdk_retries_disabled(MockSyncOpenAI: MagicMock) -> None:
     assert call_kwargs["max_retries"] == 0
 
 
-@patch("serapeum.openai.mixins.client.SyncOpenAI")
+@patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_ensure_chat_message_is_serializable(MockSyncOpenAI: MagicMock) -> None:
     with CachedOpenAIApiKeys(set_fake_key=True):
         mock_instance = MockSyncOpenAI.return_value
@@ -471,7 +471,7 @@ def test_ensure_chat_message_is_serializable(MockSyncOpenAI: MagicMock) -> None:
         )
 
 
-@patch("serapeum.openai.mixins.client.SyncOpenAI")
+@patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_structured_chat_simple(MockSyncOpenAI: MagicMock):
     """Simple test for structured output using as_structured_llm."""
     from pydantic import BaseModel, Field
@@ -546,7 +546,7 @@ def test_prepare_schema_sanitizes_json_schema_name() -> None:
 
 
 @pytest.mark.asyncio()
-@patch("serapeum.openai.mixins.client.AsyncOpenAI")
+@patch("serapeum.openai.llm.base.client.AsyncOpenAI")
 async def test_structured_chat_simple_async(MockAsyncOpenAI: MagicMock):
     """Simple async test for structured output using as_structured_llm."""
     from pydantic import BaseModel, Field

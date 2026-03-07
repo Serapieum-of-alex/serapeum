@@ -52,7 +52,7 @@ from serapeum.openai.parsers import (
     ResponsesStreamAccumulator,
     to_openai_message_dicts,
 )
-from serapeum.openai.mixins import Client, ModelMetadata
+from serapeum.openai.llm.base import Client, ModelMetadata
 from serapeum.openai.retry import is_retryable
 from serapeum.openai.utils import resolve_tool_choice
 from serapeum.core.retry import retry
@@ -75,9 +75,9 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
     stateful conversation continuation via ``track_previous_responses``,
     structured output via tool-call forcing, and reasoning-effort control.
 
-    Inherits connection management from :class:`~serapeum.openai.mixins.Client`,
+    Inherits connection management from :class:`~serapeum.openai.llm.base.Client`,
     model-metadata utilities from
-    :class:`~serapeum.openai.mixins.ModelMetadata`, and the
+    :class:`~serapeum.openai.llm.base.ModelMetadata`, and the
     chat-to-completion interface bridge from
     :class:`~serapeum.core.llms.ChatToCompletion`.
 
@@ -165,7 +165,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
 
     See Also:
         OpenAI: Chat Completions API provider for models such as ``gpt-4o``.
-        serapeum.openai.mixins.Client: SDK client lifecycle management.
+        serapeum.openai.llm.base.Client: SDK client lifecycle management.
         serapeum.openai.converters.ResponsesOutputParser: Parses Responses API
             output items into a :class:`~serapeum.core.llms.ChatResponse`.
         serapeum.openai.converters.ResponsesStreamAccumulator: Accumulates

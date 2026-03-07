@@ -8,7 +8,7 @@ from serapeum.core.base.llms.types import (
     MessageList,
     MessageRole,
 )
-from serapeum.core.llms.abstractions.mixins import ChatToCompletion
+from serapeum.core.llms.abstractions.adapters import ChatToCompletion
 
 
 class MockLLM(ChatToCompletion):

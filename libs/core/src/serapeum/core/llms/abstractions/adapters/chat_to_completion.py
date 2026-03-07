@@ -40,7 +40,7 @@ class ChatToCompletion:
 
         ```python
         >>> from serapeum.core.llms import FunctionCallingLLM, ChatResponse, Message, MessageRole
-        >>> from serapeum.core.llms.abstractions.mixins import ChatToCompletion
+        >>> from serapeum.core.llms.abstractions.adapters import ChatToCompletion
         >>>
         >>> class MyLLM(ChatToCompletion, FunctionCallingLLM):
         ...     def chat(self, messages, *, stream=False, **kwargs):

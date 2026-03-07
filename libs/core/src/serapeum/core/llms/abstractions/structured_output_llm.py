@@ -13,7 +13,7 @@ from serapeum.core.base.llms.types import (
     Metadata,
 )
 
-from serapeum.core.llms.abstractions.mixins import ChatToCompletion
+from serapeum.core.llms.abstractions.adapters import ChatToCompletion
 from serapeum.core.llms.base import LLM
 from serapeum.core.prompts.base import ChatPromptTemplate
 

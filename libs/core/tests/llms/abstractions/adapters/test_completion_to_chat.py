@@ -1,4 +1,4 @@
-"""Tests for CompletionToChatMixin."""
+"""Tests for CompletionToChat."""
 
 from __future__ import annotations
 
@@ -10,11 +10,11 @@ from serapeum.core.base.llms.types import (
     Message,
     MessageRole,
 )
-from serapeum.core.llms.abstractions.mixins import CompletionToChatMixin
+from serapeum.core.llms.abstractions.adapters import CompletionToChat
 
 
-class ConcreteCompletionLLM(CompletionToChatMixin):
-    """Minimal concrete class that satisfies CompletionToChatMixin's duck-typed contract.
+class ConcreteCompletionLLM(CompletionToChat):
+    """Minimal concrete class that satisfies CompletionToChat's duck-typed contract.
 
     Implements the two methods the mixin requires:
     - ``messages_to_prompt`` (callable attribute)
@@ -91,8 +91,8 @@ def _make_messages(*contents: str) -> list[Message]:
 
 
 @pytest.mark.unit
-class TestCompletionToChatMixinChat:
-    """Test CompletionToChatMixin.chat()."""
+class TestCompletionToChatChat:
+    """Test CompletionToChat.chat()."""
 
     def test_chat_non_stream_returns_chat_response(self):
         """chat(stream=False) must return a ChatResponse, not a generator.
@@ -311,8 +311,8 @@ class TestCompletionToChatMixinChat:
 
 
 @pytest.mark.unit
-class TestCompletionToChatMixinAchat:
-    """Test CompletionToChatMixin.achat()."""
+class TestCompletionToChatAchat:
+    """Test CompletionToChat.achat()."""
 
     @pytest.mark.asyncio
     async def test_achat_non_stream_returns_chat_response(self):
@@ -496,8 +496,8 @@ class TestCompletionToChatMixinAchat:
 
 
 @pytest.mark.unit
-class TestCompletionToChatMixinAcomplete:
-    """Test CompletionToChatMixin.acomplete()."""
+class TestCompletionToChatAcomplete:
+    """Test CompletionToChat.acomplete()."""
 
     @pytest.mark.asyncio
     async def test_acomplete_non_stream_returns_completion_response(self):

@@ -46,7 +46,7 @@ from serapeum.core.llms import (
     CompletionResponse,
     CompletionResponseAsyncGen,
     CompletionResponseGen,
-    CompletionToChatMixin,
+    CompletionToChat,
     Metadata,
 )
 from serapeum.core.retry import Retry, retry
@@ -68,7 +68,7 @@ _MODEL_CACHE: weakref.WeakValueDictionary[tuple[str, str], Llama] = weakref.Weak
 _MODEL_CACHE_LOCK = threading.Lock()
 
 
-class LlamaCPP(Retry, CompletionToChatMixin, LLM):  # type: ignore[misc]
+class LlamaCPP(Retry, CompletionToChat, LLM):  # type: ignore[misc]
     """LlamaCPP LLM — local inference via llama-cpp-python.
 
     Runs GGUF models locally using the llama-cpp-python backend.  The model is

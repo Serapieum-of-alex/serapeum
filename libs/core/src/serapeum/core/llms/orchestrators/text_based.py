@@ -54,7 +54,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             >>> from serapeum.ollama import Ollama
             >>> LLM = Ollama(
             ...     model="llama3.1",
-            ...     request_timeout=180,
+            ...     timeout=180,
             >>> )
             >>> class Greeting(BaseModel):
             ...     message: str
@@ -128,7 +128,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
-                ...     request_timeout=180,
+                ...     timeout=180,
                 >>> )
                 >>> class Item(BaseModel):
                 ...     name: str
@@ -370,7 +370,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
-                ...     request_timeout=180,
+                ...     timeout=180,
                 >>> )
                 >>> class Item(BaseModel):
                 ...     value: int
@@ -407,7 +407,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
-                ...     request_timeout=180,
+                ...     timeout=180,
                 >>> )
                 >>> class Item(BaseModel):
                 ...     value: int
@@ -450,7 +450,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
-                ...     request_timeout=180,
+                ...     timeout=180,
                 >>> )
                 >>> class Item(BaseModel):
                 ...     value: int
@@ -500,7 +500,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
-                ...     request_timeout=180,
+                ...     timeout=180,
                 >>> )
                 >>> class Record(BaseModel):
                 ...     value: int
@@ -591,7 +591,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.ollama import Ollama
                 >>> LLM = Ollama(
                 ...     model="llama3.1",
-                ...     request_timeout=180,
+                ...     timeout=180,
                 >>> )
                 >>> class Record(BaseModel):
                 ...     value: int

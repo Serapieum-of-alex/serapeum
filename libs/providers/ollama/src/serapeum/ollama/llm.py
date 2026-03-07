@@ -20,7 +20,7 @@ import inspect
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Generator, Literal, overload
 
 import ollama as ollama_sdk  # type: ignore[attr-defined]
-from pydantic import BaseModel, Field, PrivateAttr
+from pydantic import BaseModel, Field, PrivateAttr, ConfigDict
 
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llms import (
@@ -321,6 +321,7 @@ class Ollama(OllamaClientMixin, ChatToCompletionMixin, FunctionCallingLLM):
         alist_models: Async variant of list_models.
     """
 
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
     model: str = Field(description="The Ollama model to use.")
     temperature: float = Field(
         default=0.75,

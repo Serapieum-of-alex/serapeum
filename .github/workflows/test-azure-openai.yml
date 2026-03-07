@@ -1,4 +1,4 @@
-name: Test Suite - OpenAI
+name: Test Suite - Azure OpenAI
 
 permissions:
     contents: read
@@ -6,7 +6,7 @@ permissions:
 on:
   push:
     paths:
-      - "libs/providers/openai/**"
+      - "libs/providers/azure-openai/**"
       - "libs/core/**"
       - "pyproject.toml"
       - "uv.lock"
@@ -33,11 +33,12 @@ jobs:
           install-groups: dev
           verify-lock: true
 
-      - name: Test OpenAI Package
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Test Azure OpenAI Package
         run: |
-          uv run pytest -c libs/providers/openai/pyproject.toml libs/providers/openai/tests/ -sv -m "not e2e" --cov=libs/providers/openai/src --cov-report=xml --cov-append
+          uv run pytest -c libs/providers/ollama/pyproject.toml \
+                libs/providers/ollama/tests/ -sv -m "not e2e" \
+                --cov=libs/providers/ollama/src \
+                --cov-report=xml --cov-append
 
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
@@ -60,11 +61,12 @@ jobs:
 
       - name: Run OpenAI e2e tests
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
         run: |
-          uv run pytest -c libs/providers/openai/pyproject.toml libs/providers/openai/tests/ -sv -m "e2e and not function_calling" \
-            --cov=libs/providers/openai/src \
-            --cov-report=xml --cov-append
+          uv run pytest -c libs/providers/openai/pyproject.toml \
+                libs/providers/openai/tests/ -sv -m "e2e and not function_calling" \
+                --cov=libs/providers/openai/src \
+                --cov-report=xml --cov-append
 
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3

@@ -34,7 +34,6 @@ def llm():
     return OpenAI(
         model=os.environ.get("OPENAI_MODEL", "gpt-5-chat"),
         api_base=os.environ.get("OPENAI_API_BASE"),
-        deployment_name=os.environ.get("OPENAI_DEPLOYMENT_NAME", "gpt-5-chat"),
         api_key=os.environ.get("OPENAI_API_KEY"),
     )
 

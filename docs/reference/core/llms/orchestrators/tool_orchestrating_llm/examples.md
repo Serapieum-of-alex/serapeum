@@ -83,8 +83,7 @@ class Album(BaseModel):
 
 # Initialize the LLM with function calling support
 llm = Ollama(
-    model="qwen3.5:397b",
-    api_key=os.environ.get("OLLAMA_API_KEY"),
+    model="llama3.1",
     timeout=80
 )
 
@@ -126,8 +125,7 @@ class Task(BaseModel):
 
 # Initialize Ollama with function calling support
 llm = Ollama(
-    model="qwen3.5:397b",
-    api_key=os.environ.get("OLLAMA_API_KEY"),
+    model="llama3.1",
     timeout=80,
     temperature=0.7,
 )
@@ -155,7 +153,7 @@ from serapeum.ollama import Ollama
 
 
 # Set global LLM
-Configs.llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+Configs.llm = Ollama(model="llama3.1", timeout=80)
 
 class Entity(BaseModel):
     name: str
@@ -188,7 +186,7 @@ class Response(BaseModel):
     answer: str
     confidence: float
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+llm = Ollama(model="llama3.1", timeout=80)
 
 # Force the LLM to use the tool
 tools_llm = ToolOrchestratingLLM(
@@ -223,7 +221,7 @@ class Recipe(BaseModel):
     steps: List[str]
     prep_time: int
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+llm = Ollama(model="llama3.1", timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Recipe,
@@ -251,7 +249,7 @@ class Analysis(BaseModel):
     topics: list[str]
     summary: str
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+llm = Ollama(model="llama3.1", timeout=80)
 
 # Create explicit PromptTemplate
 prompt_template = PromptTemplate(
@@ -284,7 +282,7 @@ class CodeReview(BaseModel):
     suggestions: list[str]
     rating: int  # 1-10
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+llm = Ollama(model="llama3.1", timeout=80)
 
 # Create message templates
 messages = [
@@ -328,7 +326,7 @@ class Summary(BaseModel):
     main_points: list[str]
     conclusion: str
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+llm = Ollama(model="llama3.1", timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Summary,
@@ -362,7 +360,7 @@ class Classification(BaseModel):
     subcategory: str
     confidence: float
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+llm = Ollama(model="llama3.1", timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Classification,
@@ -397,7 +395,7 @@ class EntityExtraction(BaseModel):
     entities: List[str]
     entity_types: List[str]
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+llm = Ollama(model="llama3.1", timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=EntityExtraction,
@@ -436,7 +434,7 @@ class Article(BaseModel):
     sections: list[str]
     word_count: int
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+llm = Ollama(model="llama3.1", timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Article,
@@ -468,7 +466,7 @@ class Report(BaseModel):
     findings: list[str]
     recommendations: list[str]
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+llm = Ollama(model="llama3.1", timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Report,
@@ -501,7 +499,7 @@ class Story(BaseModel):
     plot: str
     characters: list[str]
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+llm = Ollama(model="llama3.1", timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Story,
@@ -540,7 +538,7 @@ class Product(BaseModel):
     price: float
     description: str
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Product,
@@ -570,7 +568,7 @@ class Item(BaseModel):
     name: str
     category: str
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Item,
@@ -602,7 +600,7 @@ class Question(BaseModel):
     question: str
     difficulty: str
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Question,
@@ -679,7 +677,7 @@ class Sentiment(BaseModel):
     confidence: float
     keywords: list[str]
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 # Create reusable instance
 sentiment_analyzer = ToolOrchestratingLLM(
@@ -728,7 +726,7 @@ class Article(BaseModel):
     tags: List[str]
     comments: List[Comment]
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Article,
@@ -759,7 +757,7 @@ from serapeum.ollama import Ollama
 class Data(BaseModel):
     result: str
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Data,
@@ -794,7 +792,7 @@ from serapeum.ollama import Ollama
 class Output(BaseModel):
     data: str
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 # Force the LLM to always use the tool
 tools_llm = ToolOrchestratingLLM(
@@ -851,7 +849,7 @@ def calculate_statistics(numbers: list[float], operation: str) -> dict[str, floa
     }
 
 # Use function directly with ToolOrchestratingLLM
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=calculate_statistics,  # Pass function directly!
@@ -910,7 +908,7 @@ def validate_email(email: str, check_mx: bool = False) -> dict:
     return validator.to_dict()
 
 # Use function with ToolOrchestratingLLM
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=validate_email,  # Pass function that uses the class
@@ -967,7 +965,7 @@ def create_product(name: str, price: float, category: str, in_stock: bool = True
     return product.to_dict()
 
 # Use factory function with ToolOrchestratingLLM
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=create_product,  # Pass factory function
@@ -1022,7 +1020,7 @@ async def fetch_user_data(user_id: int, include_posts: bool = False) -> dict:
 
 # Use async function with ToolOrchestratingLLM
 async def main():
-    llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+    llm = Ollama(model="llama3.1", request_timeout=80)
 
     tools_llm = ToolOrchestratingLLM(
         schema=fetch_user_data,  # Pass async function
@@ -1059,7 +1057,7 @@ convert_temp = lambda celsius: {
     "kelvin": celsius + 273.15
 }
 
-llm = Ollama(model="deepseek-v3.1:671b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="deepseek-v3.1:671b", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=convert_temp,  # Pass lambda function
@@ -1107,7 +1105,7 @@ def analyze_text(text: str, language: str = "en") -> dict:
         "avg_word_length": sum(len(w) for w in words) / len(words) if words else 0
     }
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=analyze_text,  # Pass function with complex return
@@ -1194,7 +1192,7 @@ class StrictData(BaseModel):
     number: int  # Must be integer
     ratio: float  # Must be float
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=StrictData,
@@ -1227,7 +1225,7 @@ from serapeum.ollama import Ollama
 class Result(BaseModel):
     data: str
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Result,
@@ -1269,7 +1267,7 @@ from serapeum.ollama import Ollama
 class Output(BaseModel):
     result: str
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=Output,
@@ -1315,7 +1313,7 @@ class WellDefinedModel(BaseModel):
         default_factory=list
     )
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 tools_llm = ToolOrchestratingLLM(
     schema=WellDefinedModel,
@@ -1334,13 +1332,13 @@ from serapeum.ollama import Ollama
 
 # Good: Models that support function calling
 good_models = [
-    "qwen3.5:397b",
+    "llama3.1",
     "llama3.2",
     "mistral",
     # Check Ollama docs for function calling support
 ]
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 # llm.metadata.is_function_calling_model should be True
 ```
 
@@ -1360,7 +1358,7 @@ class Classification(BaseModel):
     confidence: float
 
 # Create once
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 classifier = ToolOrchestratingLLM(
     schema=Classification,
@@ -1390,7 +1388,7 @@ class Item(BaseModel):
     name: str
     type: str
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=80)
+llm = Ollama(model="llama3.1", request_timeout=80)
 
 # Good: Enable parallel for extracting multiple items
 tools_llm = ToolOrchestratingLLM(

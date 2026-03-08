@@ -117,11 +117,44 @@ class Client(Retry, BaseModel):
             "http_client": self._async_http_client if is_async else self._http_client,
         }
 
+    def _build_sync_client(self, **kwargs: Any) -> SyncOpenAI:
+        """Create a synchronous SDK client.
+
+        Subclasses override this to return a provider-specific client
+        (e.g. ``SyncAzureOpenAI``) while inheriting the lazy-init and
+        event-loop safety logic from the ``client`` / ``async_client``
+        properties.
+        """
+        return SyncOpenAI(**kwargs)
+
+    def _build_async_client(self, **kwargs: Any) -> AsyncOpenAI:
+        """Create an asynchronous SDK client.
+
+        Subclasses override this to return a provider-specific client
+        (e.g. ``AsyncAzureOpenAI``).
+        """
+        return AsyncOpenAI(**kwargs)
+
+    def _needs_async_client_recreation(self) -> bool:
+        """Return ``True`` when the cached async client must be recreated.
+
+        Checks whether the event loop the client was created on has been
+        closed (e.g. between pytest-asyncio test functions).
+        """
+        cached = self._async_client_loop
+        if cached is None:
+            result = False
+        elif hasattr(cached, "is_closed") and cached.is_closed():
+            result = True
+        else:
+            result = False
+        return result
+
     @property
     def client(self) -> SyncOpenAI:
         """Synchronous OpenAI client, lazily created on first access."""
         if self._client is None:
-            self._client = SyncOpenAI(**self._get_credential_kwargs())
+            self._client = self._build_sync_client(**self._get_credential_kwargs())
         return self._client
 
     @property
@@ -137,34 +170,10 @@ class Client(Retry, BaseModel):
         except RuntimeError:
             current_loop = None
 
-        cached_loop = self._async_client_loop
+        if self._async_client is None or self._needs_async_client_recreation():
+            self._async_client = self._build_async_client(
+                **self._get_credential_kwargs(is_async=True)
+            )
 
-        if self._async_client is None:
-            self._async_client = AsyncOpenAI(
-                **self._get_credential_kwargs(is_async=True)
-            )
-            self._async_client_loop = current_loop
-        elif cached_loop is None:
-            # Injected client with no recorded loop — bind without recreation
-            self._async_client_loop = current_loop
-        elif cached_loop is not None and hasattr(cached_loop, "is_closed") and cached_loop.is_closed():
-            # Cached loop is closed — recreate
-            self._async_client = AsyncOpenAI(
-                **self._get_credential_kwargs(is_async=True)
-            )
-            self._async_client_loop = current_loop
-        elif (
-            current_loop is not None
-            and hasattr(current_loop, "is_closed")
-            and current_loop.is_closed()
-        ):
-            # Current loop is closed — recreate
-            self._async_client = AsyncOpenAI(
-                **self._get_credential_kwargs(is_async=True)
-            )
-            self._async_client_loop = current_loop
-        else:
-            # Both loops open — reuse, update tracked loop
-            self._async_client_loop = current_loop
-
+        self._async_client_loop = current_loop
         return self._async_client

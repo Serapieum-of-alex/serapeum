@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import os
 from typing import Any
 
@@ -182,7 +181,7 @@ class AzureOpenAI(OpenAI):
         self._resolve_api_key()
         return {
             "api_key": self.api_key,
-            "max_retries": self.max_retries,
+            "max_retries": 0,  # SDK retries disabled; handled by @retry decorator
             "timeout": self.timeout,
             "azure_endpoint": self.azure_endpoint,
             "azure_deployment": self.azure_deployment,
@@ -193,48 +192,13 @@ class AzureOpenAI(OpenAI):
             "http_client": self._async_http_client if is_async else self._http_client,
         }
 
-    @property
-    def client(self) -> SyncAzureOpenAI:
-        """Synchronous Azure OpenAI client, lazily created on first access."""
-        if self._client is None:
-            self._client = SyncAzureOpenAI(**self._get_credential_kwargs())
-        return self._client  # type: ignore[return-value]
+    def _build_sync_client(self, **kwargs: Any) -> SyncAzureOpenAI:
+        """Create a synchronous Azure OpenAI SDK client."""
+        return SyncAzureOpenAI(**kwargs)
 
-    @property
-    def async_client(self) -> AsyncAzureOpenAI:
-        """Asynchronous Azure OpenAI client with event-loop safety."""
-        try:
-            current_loop = asyncio.get_running_loop()
-        except RuntimeError:
-            current_loop = None
-
-        cached_loop = self._async_client_loop
-
-        if self._async_client is None:
-            self._async_client = AsyncAzureOpenAI(
-                **self._get_credential_kwargs(is_async=True)
-            )
-            self._async_client_loop = current_loop
-        elif cached_loop is None:
-            self._async_client_loop = current_loop
-        elif cached_loop is not None and hasattr(cached_loop, "is_closed") and cached_loop.is_closed():
-            self._async_client = AsyncAzureOpenAI(
-                **self._get_credential_kwargs(is_async=True)
-            )
-            self._async_client_loop = current_loop
-        elif (
-            current_loop is not None
-            and hasattr(current_loop, "is_closed")
-            and current_loop.is_closed()
-        ):
-            self._async_client = AsyncAzureOpenAI(
-                **self._get_credential_kwargs(is_async=True)
-            )
-            self._async_client_loop = current_loop
-        else:
-            self._async_client_loop = current_loop
-
-        return self._async_client  # type: ignore[return-value]
+    def _build_async_client(self, **kwargs: Any) -> AsyncAzureOpenAI:
+        """Create an asynchronous Azure OpenAI SDK client."""
+        return AsyncAzureOpenAI(**kwargs)
 
     def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         model_kwargs = super()._get_model_kwargs(**kwargs)

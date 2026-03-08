@@ -88,7 +88,7 @@ class Greeting(BaseModel):
 llm = Ollama(
     model="ministral-3:14b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=180
+    timeout=180
 )
 
 # Create output parser
@@ -128,7 +128,7 @@ class Product(BaseModel):
     price: float = Field(description="Product price in USD")
     in_stock: bool = Field(description="Availability status")
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 output_parser = PydanticParser(output_cls=Product)
 
 text_llm = TextCompletionLLM(
@@ -155,7 +155,7 @@ class Person(BaseModel):
     name: str
     age: int
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # Parser is created automatically from output_cls
 text_llm = TextCompletionLLM(
@@ -181,7 +181,7 @@ from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
 
 # Set global LLM
-Configs.llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+Configs.llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 class Task(BaseModel):
     id: str
@@ -216,7 +216,7 @@ class Summary(BaseModel):
     summary: str
     word_count: int
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Summary,
@@ -245,7 +245,7 @@ class Sentiment(BaseModel):
     sentiment: str
     confidence: float
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # Create explicit PromptTemplate
 prompt_template = PromptTemplate(
@@ -279,7 +279,7 @@ class Translation(BaseModel):
     source_language: str
     target_language: str
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # Create message templates
 messages = [
@@ -321,7 +321,7 @@ class Answer(BaseModel):
     answer: str
     reasoning: str
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Answer,
@@ -349,7 +349,7 @@ class Analysis(BaseModel):
     result: str
     confidence: float
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Analysis,
@@ -381,7 +381,7 @@ class Category(BaseModel):
     category: str
     subcategory: str
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Category,
@@ -414,7 +414,7 @@ class Story(BaseModel):
     title: str
     content: str
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Story,
@@ -452,7 +452,7 @@ from serapeum.ollama import Ollama
 class Response(BaseModel):
     response: str
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Response,
@@ -484,7 +484,7 @@ class Entity(BaseModel):
     name: str
     type: str
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # Create reusable instance
 entity_extractor = TextCompletionLLM(

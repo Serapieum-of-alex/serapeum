@@ -26,6 +26,8 @@ dependencies = [
     "serapeum-core",
     "serapeum-ollama",
     "serapeum-llama-cpp",
+    "serapeum-openai",
+    "serapeum-azure-openai"
 ]
 
 
@@ -163,7 +165,8 @@ members = [
 serapeum-core = { workspace = true }
 serapeum-ollama = { workspace = true }
 serapeum-llama-cpp = { workspace = true }
-
+serapeum-openai = { workspace = true }
+serapeum-azure-openai = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

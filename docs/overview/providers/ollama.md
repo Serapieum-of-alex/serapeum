@@ -136,7 +136,7 @@ llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
     temperature=0.7,
-    request_timeout=120
+    timeout=120
 )
 
 # Single message
@@ -349,7 +349,7 @@ tools = [
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=120,
+    timeout=120,
 )
 
 response = llm.invoke_callable(
@@ -396,7 +396,7 @@ messages = [Message(role=MessageRole.USER, content="What's 25 + 17?")]
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=120,
+    timeout=120,
 )
 
 response = llm.generate_tool_calls(
@@ -609,7 +609,7 @@ llm = Ollama(
     base_url="https://api.ollama.com",   # Ollama server URL
     temperature=0.75,                    # Sampling temperature (0.0-1.0)
     context_window=3900,                 # Max context tokens
-    request_timeout=60.0,                # Request timeout in seconds
+    timeout=60.0,                # Request timeout in seconds
     json_mode=False,                     # Enable JSON formatting
     is_function_calling_model=True,      # Whether model supports tools
     keep_alive="5m",                     # How long to keep model loaded
@@ -628,7 +628,7 @@ llm = Ollama(
 - **base_url**: Ollama cloud server endpoint (default: `https://api.ollama.com`)
 - **temperature**: Controls randomness (0.0 = deterministic, 1.0 = very random)
 - **json_mode**: Request JSON-formatted responses when `True`
-- **request_timeout**: Timeout for API calls (increase for slower models)
+- **timeout**: Timeout for API calls (increase for slower models)
 - **keep_alive**: Duration to keep model in memory (e.g., `"5m"`, `"1h"`)
 - **additional_kwargs**: Pass any Ollama-specific options
 
@@ -746,7 +746,7 @@ uv run pytest --cov=serapeum.ollama
 - **Server Required**: Ollama must be running (`ollama serve`) before using this provider
 - **Tool Calling**: Depends on model capabilities (llama3.1+ recommended for best results)
 - **JSON Mode**: Improves structured output quality when enabled
-- **Timeouts**: Increase `request_timeout` for larger models or complex tasks
+- **Timeouts**: Increase `timeout` for larger models or complex tasks
 - **Local Only**: All inference happens on your machine
 - **Model Availability**: Only models you've downloaded with `ollama pull` are available
 
@@ -786,7 +786,7 @@ from serapeum.ollama import Ollama
 llm = Ollama(
     model="qwen3.5:397b",
     api_key=os.environ.get("OLLAMA_API_KEY"),
-    request_timeout=300  # 5 minutes
+    timeout=300  # 5 minutes
 )
 ```
 

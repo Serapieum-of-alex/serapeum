@@ -1,0 +1,124 @@
+[project]
+name = "serapeum-azure-openai"
+version = "0.0.0"
+description = "serapeum azure openai integration"
+authors = [{name = "Mostafa Farrag", email = "moah.farrag@gmail.com"}]
+readme = "README.md"
+license = {text = "GNU General Public License v3"}
+
+keywords = ["llm", "generativeai", "chatbot", "rag", "natural language processing"]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+]
+
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "serapeum-core>=0.4.0",
+    "serapeum-openai",
+    "azure-identity>=1.15.0,<2",
+    "httpx",
+]
+
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+    "pre-commit>=4.3.0",
+    "pre-commit-hooks>=6.0.0",
+    "pytest-asyncio>=1.2.0",
+    "nest-asyncio>=1.6.0",
+    "nbval>=0.11.0",
+    "mypy>=1.13.0",
+    "pytest-xdist>=3.8.0",
+    "pytest-benchmark",
+    "pytest-markdown-docs>=0.9.1",
+    "pytest-mock>=3.14.0"
+]
+
+[project.urls]
+homepage = "https://github.com/Serapieum-of-alex/serapeum"
+repository = "https://github.com/Serapieum-of-alex/serapeum"
+documentation = "https://serapieum-of-alex.github.io"
+Changelog = "https://serapieum-of-alex.github.io/serapeum/latest/change-log"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/serapeum"]
+include =  ["src/serapeum"]
+
+[tool.hatch.build.targets.sdist]
+include =  ["src/serapeum"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.commitizen]
+name = "cz_customize"
+version_provider = "pep621"
+tag_format = "serapeum-azure-openai-$version"
+changelog_file = "change-log.md"
+changelog_incremental = true
+changelog_merge_prerelease = true
+update_changelog_on_bump = true
+
+[tool.commitizen.customize]
+message_template = "{{change_type}}:{% if show_message %} {{message}}{% endif %}"
+example = "feature: this feature enables customize through config file"
+schema = "<type>: <body>"
+schema_pattern = "(feat|fix|refactor|perf|build|ci|chore)(\\(.+\\))?: (.+)"
+changelog_pattern = "^(feat|fix|refactor|perf|build|ci|chore)(\\(.+\\))?(!)?:"
+change_type_order = ["BREAKING CHANGE", "feat", "fix", "refactor", "perf", "build", "ci", "chore"]
+
+[tool.flake8]
+ignore = ["E501", "W503", "E731", "E203", "D401", "D102"]
+max-line-length = 120
+count = true
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+testpaths = "tests"
+norecursedirs = "docs"
+markers = [
+    "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
+    "mock: marks tests as mock (deselect with '-m \"not mock\"')",
+    "integration: marks tests as optional-package (deselect with '-m \"not optional_package\"')",
+    "unit: marks tests as unit test (deselect with '-m \"not unit\"')",
+    "performance: marks tests as performance test (deselect with '-m \"not performance\"')",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+show_error_codes = true
+show_column_numbers = true
+warn_unused_ignores = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_any_unimported = false
+ignore_missing_imports = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+
+[tool.uv.sources]
+serapeum-core = { workspace = true }
+
+#[tool.uv]
+#managed = false
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

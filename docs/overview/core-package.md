@@ -226,7 +226,7 @@ Documents/queries
   → Use for similarity search, RAG, etc.
 ```
 
-See the [Architecture](../architecture/) section for diagrams and deeper internals, and the API Reference for exhaustive signatures.
+See the [Architecture](../architecture/diagrams.md) section for diagrams and deeper internals, and the API Reference for exhaustive signatures.
 
 ## Architecture & API Overview
 

@@ -82,7 +82,7 @@ class TestToolOrchestratingLLM:
         prompt_template_str = """This is a test album with {topic}"""
         llm = MockLLM()
         # from serapeum.ollama import Ollama
-        # llm = Ollama(model="llama3.1:latest", request_timeout=80)
+        # llm = Ollama(model="llama3.1:latest", timeout=80)
         tools_llm = ToolOrchestratingLLM(
             schema=MockAlbum,
             prompt=prompt_template_str,
@@ -98,7 +98,7 @@ class TestToolOrchestratingLLM:
     def test_tools_llm_multiple(self) -> None:
         """Test Function program multiple."""
         llm = MockLLM()
-        # llm = Ollama(model="llama3.1:latest", request_timeout=80)
+        # llm = Ollama(model="llama3.1:latest", timeout=80)
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM(
             schema=MockAlbum,
@@ -121,7 +121,7 @@ class TestToolOrchestratingLLM:
     async def test_async(self) -> None:
         """Test async function program."""
         llm = MockLLM()
-        # llm = Ollama(model="llama3.1:latest", request_timeout=80)
+        # llm = Ollama(model="llama3.1:latest", timeout=80)
         # same as above but async
         prompt_template_str = """This is a test album with {topic}"""
         tools_llm = ToolOrchestratingLLM(

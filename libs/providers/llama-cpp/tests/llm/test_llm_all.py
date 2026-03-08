@@ -1146,16 +1146,16 @@ class TestLlamaCPPInheritance:
 
     @pytest.mark.unit
     def test_has_completion_to_chat_mixin(self) -> None:
-        """Test that LlamaCPP includes CompletionToChatMixin in its MRO.
+        """Test that LlamaCPP includes CompletionToChat in its MRO.
 
         Test scenario:
-            CompletionToChatMixin provides chat() and achat() — verifying it
+            CompletionToChat provides chat() and achat() — verifying it
             is in the MRO confirms those methods are available.
         """
-        from serapeum.core.llms import CompletionToChatMixin
+        from serapeum.core.llms import CompletionToChat
 
-        assert issubclass(LlamaCPP, CompletionToChatMixin), (
-            f"LlamaCPP must include CompletionToChatMixin, "
+        assert issubclass(LlamaCPP, CompletionToChat), (
+            f"LlamaCPP must include CompletionToChat, "
             f"MRO: {[c.__name__ for c in LlamaCPP.__mro__]}"
         )
 

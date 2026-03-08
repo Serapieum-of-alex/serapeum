@@ -78,7 +78,7 @@ from serapeum.ollama import Ollama
 from serapeum.core.llms import Message, MessageRole
 
 # Initialize the model
-llm = Ollama(model="llama3.1", request_timeout=120)
+llm = Ollama(model="llama3.1", timeout=120)
 
 # Simple chat
 messages = [Message(role=MessageRole.USER, content="Explain quantum computing in one sentence.")]
@@ -99,7 +99,7 @@ from serapeum.core.llms import Message, MessageRole, MessageList
 llm = Ollama(
     model="llama3.1",
     temperature=0.7,
-    request_timeout=120
+    timeout=120
 )
 
 # Single message
@@ -264,7 +264,7 @@ def calculate(operation: str, a: float, b: float) -> float:
   return ops.get(operation, 0)
 
 # Create orchestrator with tools
-llm = Ollama(model="llama3.1", request_timeout=120, json_mode=True)
+llm = Ollama(model="llama3.1", timeout=120, json_mode=True)
 
 orchestrator = ToolOrchestratingLLM(
   llm=llm,
@@ -565,7 +565,7 @@ llm = Ollama(
     base_url="http://localhost:11434",   # Ollama server URL
     temperature=0.75,                    # Sampling temperature (0.0-1.0)
     context_window=3900,                 # Max context tokens
-    request_timeout=60.0,                # Request timeout in seconds
+    timeout=60.0,                # Request timeout in seconds
     json_mode=False,                     # Enable JSON formatting
     is_function_calling_model=True,      # Whether model supports tools
     keep_alive="5m",                     # How long to keep model loaded
@@ -584,7 +584,7 @@ llm = Ollama(
 - `base_url`: Ollama server endpoint (default: `http://localhost:11434`)
 - `temperature`: Controls randomness (0.0 = deterministic, 1.0 = very random)
 - `json_mode`: Request JSON-formatted responses when `True`
-- `request_timeout`: Timeout for API calls (increase for slower models)
+- `timeout`: Timeout for API calls (increase for slower models)
 - `keep_alive`: Duration to keep model in memory (e.g., `"5m"`, `"1h"`)
 - `additional_kwargs`: Pass any Ollama-specific options
 
@@ -665,7 +665,7 @@ uv run pytest --cov=serapeum.ollama
 - **Server Required**: Ollama must be running (`ollama serve`) before using this adapter
 - **Tool Calling**: Depends on model capabilities and Ollama version (some models don't support tools)
 - **JSON Mode**: Improves structured output reliability when the model supports it
-- **Timeouts**: Increase `request_timeout` for larger models or complex tasks
+- **Timeouts**: Increase `timeout` for larger models or complex tasks
 - **Async**: All async methods use a per-event-loop client for thread safety
 
 ## Links

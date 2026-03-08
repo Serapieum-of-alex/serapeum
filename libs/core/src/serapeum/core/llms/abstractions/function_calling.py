@@ -1,4 +1,4 @@
-"""LLM mixins and helpers for function/tool calling workflows."""
+"""LLM adapters and helpers for function/tool calling workflows."""
 
 from __future__ import annotations
 import asyncio
@@ -15,6 +15,7 @@ from serapeum.core.llms.base import LLM
 from serapeum.core.tools.types import ToolCallArguments
 from serapeum.core.tools.invoke import ExecutionConfig, ToolExecutor
 from serapeum.core.chat import AgentChatResponse
+
 
 if TYPE_CHECKING:
     from serapeum.core.tools.types import BaseTool

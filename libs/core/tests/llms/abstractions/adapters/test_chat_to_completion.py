@@ -1,4 +1,4 @@
-"""Tests for ChatToCompletionMixin."""
+"""Tests for ChatToCompletion."""
 
 import pytest
 
@@ -8,11 +8,11 @@ from serapeum.core.base.llms.types import (
     MessageList,
     MessageRole,
 )
-from serapeum.core.llms.abstractions.mixins import ChatToCompletionMixin
+from serapeum.core.llms.abstractions.adapters import ChatToCompletion
 
 
-class MockLLM(ChatToCompletionMixin):
-    """Mock LLM that uses ChatToCompletionMixin for testing.
+class MockLLM(ChatToCompletion):
+    """Mock LLM that uses ChatToCompletion for testing.
 
     This mock implements only the chat methods. The completion methods
     are provided by the mixin.
@@ -69,8 +69,8 @@ class MockLLM(ChatToCompletionMixin):
         return gen()
 
 
-class TestChatToCompletionMixin:
-    """Test ChatToCompletionMixin functionality."""
+class TestChatToCompletion:
+    """Test ChatToCompletion functionality."""
 
     def test_complete_delegates_to_chat(self):
         """Test that complete() delegates to chat().
@@ -174,7 +174,7 @@ class TestChatToCompletionMixin:
         Checks: This is tested by ensuring no errors occur with extra params.
         """
 
-        class KwargsCapturingLLM(ChatToCompletionMixin):
+        class KwargsCapturingLLM(ChatToCompletion):
             def __init__(self):
                 self.captured_kwargs = {}
 

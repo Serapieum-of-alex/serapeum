@@ -15,10 +15,10 @@ from serapeum.core.base.llms.types import (
     MessageList,
 )
 
-__all__ = ["ChatToCompletionMixin"]
+__all__ = ["ChatToCompletion"]
 
 
-class ChatToCompletionMixin:
+class ChatToCompletion:
     """Mixin that provides completion methods by delegating to chat methods.
 
     This mixin adds completion method implementations for classes that have
@@ -40,9 +40,9 @@ class ChatToCompletionMixin:
 
         ```python
         >>> from serapeum.core.llms import FunctionCallingLLM, ChatResponse, Message, MessageRole
-        >>> from serapeum.core.llms.abstractions.mixins import ChatToCompletionMixin
+        >>> from serapeum.core.llms.abstractions.adapters import ChatToCompletion
         >>>
-        >>> class MyLLM(ChatToCompletionMixin, FunctionCallingLLM):
+        >>> class MyLLM(ChatToCompletion, FunctionCallingLLM):
         ...     def chat(self, messages, *, stream=False, **kwargs):
         ...         if stream:
         ...             return self._stream_chat(messages, **kwargs)

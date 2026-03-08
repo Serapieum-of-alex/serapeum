@@ -20,13 +20,13 @@ from serapeum.core.base.llms.types import (
     Message,
 )
 
-__all__ = ["CompletionToChatMixin"]
+__all__ = ["CompletionToChat"]
 
 
-class CompletionToChatMixin:
+class CompletionToChat:
     """Mixin that implements chat methods by delegating to completion methods.
 
-    This is the mirror of :class:`ChatToCompletionMixin`. Use this when your
+    This is the mirror of :class:`ChatToCompletion`. Use this when your
     provider natively exposes a completion API (prompt-in/text-out) but needs
     to satisfy the full :class:`~serapeum.core.llms.base.LLM` interface.
 
@@ -46,9 +46,9 @@ class CompletionToChatMixin:
 
         ```python
         >>> from serapeum.core.llms import LLM, CompletionResponse, Metadata
-        >>> from serapeum.core.llms.abstractions.mixins import CompletionToChatMixin
+        >>> from serapeum.core.llms.abstractions.adapters import CompletionToChat
         >>>
-        >>> class MyCompletionLLM(CompletionToChatMixin, LLM):
+        >>> class MyCompletionLLM(CompletionToChat, LLM):
         ...     @property
         ...     def metadata(self):
         ...         return Metadata(is_chat_model=False)
@@ -63,7 +63,7 @@ class CompletionToChatMixin:
         ```
 
     See Also:
-        - :class:`serapeum.core.llms.abstractions.mixins.ChatToCompletionMixin`: Reverse direction
+        - :class:`serapeum.core.llms.abstractions.adapters.ChatToCompletion`: Reverse direction
     """
 
     @overload

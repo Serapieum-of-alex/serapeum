@@ -79,7 +79,7 @@ def test_ollama_chat(mock_ollama_client, model_name) -> None:
     Expected: llm.chat returns a non-empty response string.
     """
     mock_ollama_client.chat = MagicMock(return_value=normal_response)
-    llm = Ollama(model=model_name, request_timeout=80)
+    llm = Ollama(model=model_name, timeout=80)
     response = llm.chat([Message(role="user", content="Hello!")])
     assert response is not None
     assert str(response).strip() != ""
@@ -94,7 +94,7 @@ def test_ollama_complete(mock_ollama_client, model_name) -> None:
     Expected: llm.complete returns a non-empty response string.
     """
     mock_ollama_client.chat = MagicMock(return_value=normal_response)
-    llm = Ollama(model=model_name, request_timeout=80)
+    llm = Ollama(model=model_name, timeout=80)
     response = llm.complete("Hello!")
     assert response is not None
     assert str(response).strip() != ""
@@ -215,7 +215,7 @@ def test_chat_with_tools(mock_ollama_client, model_name) -> None:
     Expected: Tool call is detected and tool result is correct type.
     """
     mock_ollama_client.chat = MagicMock(return_value=response_for_tool_call)
-    llm = Ollama(model=model_name, request_timeout=80)
+    llm = Ollama(model=model_name, timeout=80)
     response = llm.generate_tool_calls([tool], user_msg="Hello!")
     tool_calls = llm.get_tool_calls_from_response(response)
     assert len(tool_calls) == 1

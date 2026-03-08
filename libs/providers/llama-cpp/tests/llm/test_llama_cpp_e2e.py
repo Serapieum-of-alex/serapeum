@@ -511,7 +511,7 @@ class TestLlamaCPPStreamComplete:
 
 @pytest.mark.e2e
 class TestLlamaCPPChat:
-    """E2E tests for LlamaCPP.chat() — provided by CompletionToChatMixin."""
+    """E2E tests for LlamaCPP.chat() — provided by CompletionToChat."""
 
     @skip_no_model
     def test_non_stream_returns_chat_response(self, llm: LlamaCPP) -> None:
@@ -604,7 +604,7 @@ class TestLlamaCPPChat:
 
         Test scenario:
             Both entry points should work for the same semantic query — this
-            exercises the CompletionToChatMixin bridge end-to-end.
+            exercises the CompletionToChat bridge end-to-end.
         """
         completion = llm.complete("Say hello.")
         chat_resp = llm.chat(_user_messages("Say hello."))
@@ -747,7 +747,7 @@ class TestLlamaCPPAcomplete:
 
 @pytest.mark.e2e
 class TestLlamaCPPAchat:
-    """E2E tests for LlamaCPP.achat() — async chat via CompletionToChatMixin."""
+    """E2E tests for LlamaCPP.achat() — async chat via CompletionToChat."""
 
     @pytest.mark.asyncio
     @skip_no_model

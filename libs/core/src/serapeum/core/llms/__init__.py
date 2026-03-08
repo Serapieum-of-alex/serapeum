@@ -24,15 +24,21 @@ from serapeum.core.base.llms.types import (
     MessageRole,
     Metadata,
     TextChunk,
+    ToolCallBlock,
+    ThinkingBlock,
+    DocumentBlock,
+    ContentBlock,
+    LogProb
 )
 
 # Core LLM abstractions
 from serapeum.core.llms.abstractions import (
-    ChatToCompletionMixin,
-    CompletionToChatMixin,
+    ChatToCompletion,
+    CompletionToChat,
     FunctionCallingLLM,
     StructuredOutputLLM,
 )
+from serapeum.core.llms.orchestrators.utils import FlexibleModel
 from serapeum.core.llms.base import LLM
 
 # High-level orchestrators
@@ -58,12 +64,18 @@ __all__ = [
     "TextChunk",
     "Audio",
     "MessageList",
+    "ToolCallBlock",
+    "ThinkingBlock",
+    "ContentBlock",
+    "DocumentBlock",
+    "LogProb",
     # Core abstractions
     "FunctionCallingLLM",
     "StructuredOutputLLM",
-    "ChatToCompletionMixin",
-    "CompletionToChatMixin",
+    "ChatToCompletion",
+    "CompletionToChat",
     # Orchestrators
     "ToolOrchestratingLLM",
     "TextCompletionLLM",
+    "FlexibleModel",
 ]

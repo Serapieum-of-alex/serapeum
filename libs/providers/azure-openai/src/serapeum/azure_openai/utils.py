@@ -7,14 +7,14 @@ from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import DefaultAzureCredential
 
 
-def refresh_openai_azuread_token(
+def refresh_openai_azure_ad_token(
     azure_ad_token: Any = None,
 ) -> Any:
     """
     Checks the validity of the associated token, if any, and tries to refresh it
     using the credentials available in the current context. Different authentication
     methods are tried, in order, until a successful one is found as defined at the
-    package `azure-indentity`.
+    package `azure-identity`.
     """
     if not azure_ad_token or azure_ad_token.expires_on < time.time() + 60:
         try:

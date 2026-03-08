@@ -9,7 +9,7 @@ from openai.lib.azure import AzureADTokenProvider
 from pydantic import Field, PrivateAttr, model_validator
 
 from serapeum.azure_openai.utils import (
-    refresh_openai_azuread_token,
+    refresh_openai_azure_ad_token,
     resolve_from_aliases,
 )
 from serapeum.core.base.llms.utils import get_from_param_or_env
@@ -160,7 +160,7 @@ class AzureOpenAI(OpenAI):
             if self.azure_ad_token_provider:
                 api_key = self.azure_ad_token_provider()
             else:
-                self._azure_ad_token = refresh_openai_azuread_token(
+                self._azure_ad_token = refresh_openai_azure_ad_token(
                     self._azure_ad_token
                 )
                 api_key = self._azure_ad_token.token

@@ -91,7 +91,7 @@ class Docstring:
         >>> ds.get_short_summary_line()
         'Song(*, title: str) -> None\nA music track.'
         >>> ds.docstring
-        'A music track.\n    \n    Attribute:\n        title (str): Title of the song.\n    '
+        'A music track.\n\n    Attribute:\n        title (str): Title of the song.\n    '
 
         ```
     """

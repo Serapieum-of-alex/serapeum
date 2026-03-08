@@ -372,7 +372,7 @@ class ToolMetadata:
                 ```python
                 >>> from serapeum.core.tools.types import ToolMetadata
                 >>> meta = ToolMetadata(description="Echo input.", name="echo")
-                >>> spec = meta.to_openai_tool()
+                >>> spec = meta.to_openai_tool(include_schema_guidance=False)
                 >>> spec['type']
                 'function'
                 >>> spec['function']['name']

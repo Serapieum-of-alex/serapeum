@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from serapeum.azure_openai.utils import refresh_openai_azuread_token, resolve_from_aliases
+from serapeum.azure_openai.utils import refresh_openai_azure_ad_token, resolve_from_aliases
 
 
 @pytest.mark.unit
@@ -46,7 +46,7 @@ class TestRefreshOpenaiAzureadToken:
         """A token that is not about to expire is returned unchanged."""
         token = MagicMock()
         token.expires_on = time.time() + 300  # expires in 5 minutes
-        result = refresh_openai_azuread_token(token)
+        result = refresh_openai_azure_ad_token(token)
         assert result is token
 
     @patch("serapeum.azure_openai.utils.DefaultAzureCredential")
@@ -59,7 +59,7 @@ class TestRefreshOpenaiAzureadToken:
         new_token.expires_on = time.time() + 3600
         mock_credential.get_token.return_value = new_token
 
-        result = refresh_openai_azuread_token(None)
+        result = refresh_openai_azure_ad_token(None)
         assert result is new_token
         mock_credential.get_token.assert_called_once_with(
             "https://cognitiveservices.azure.com/.default"
@@ -77,7 +77,7 @@ class TestRefreshOpenaiAzureadToken:
         new_token.expires_on = time.time() + 3600
         mock_credential.get_token.return_value = new_token
 
-        result = refresh_openai_azuread_token(old_token)
+        result = refresh_openai_azure_ad_token(old_token)
         assert result is new_token
 
     @patch("serapeum.azure_openai.utils.DefaultAzureCredential")
@@ -93,4 +93,4 @@ class TestRefreshOpenaiAzureadToken:
         )
 
         with pytest.raises(ValueError, match="Unable to acquire a valid Microsoft Entra ID"):
-            refresh_openai_azuread_token(None)
+            refresh_openai_azure_ad_token(None)

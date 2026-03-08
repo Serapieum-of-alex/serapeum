@@ -77,7 +77,7 @@ class JsonParser:
             - Handles literal newlines in strings
             ```python
             >>> JsonParser.parse('{"text": "line1\\nline2"}')
-            {'text': 'line1\\nline2'}
+            {'text': 'line1\nline2'}
 
             ```
         """

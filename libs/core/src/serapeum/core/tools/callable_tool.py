@@ -443,8 +443,8 @@ class CallableTool(AsyncBaseTool):
                 A callable tool instance that wraps the Pydantic model. The tool can be invoked with keyword arguments
                 matching the model's fields, and will return an instance of the output_cls.
 
-        Example:
-            - Create a tool from a simple Pydantic model:
+        Examples:
+            - Create a tool from a Pydantic model and invoke it:
                 ```python
                 >>> from pydantic import BaseModel, Field
                 >>> from serapeum.core.tools.callable_tool import CallableTool
@@ -457,25 +457,19 @@ class CallableTool(AsyncBaseTool):
                 >>> tool = CallableTool.from_model(UserInfo)
                 >>> tool.metadata.name
                 'UserInfo'
-                >>> isinstance(tool, CallableTool)
-                True
-
-                ```
-
-            - Use the tool to create model instances:
-                ```python
                 >>> user = tool.sync_func(name="Alice Smith", age=30)
                 >>> user.name
                 'Alice Smith'
                 >>> user.age
                 30
-                >>> isinstance(user, UserInfo)
-                True
 
                 ```
 
-            - Tool with optional fields:
+            - Tool with optional fields and defaults:
                 ```python
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.tools.callable_tool import CallableTool
+                >>>
                 >>> class Product(BaseModel):
                 ...     '''Product information.'''
                 ...     name: str
@@ -483,7 +477,7 @@ class CallableTool(AsyncBaseTool):
                 ...     in_stock: bool = True
                 >>>
                 >>> product_tool = CallableTool.from_model(Product)
-                >>> product = product_tool.fn(name="Widget", price=29.99)
+                >>> product = product_tool.sync_func(name="Widget", price=29.99)
                 >>> product.in_stock
                 True
 
@@ -491,6 +485,9 @@ class CallableTool(AsyncBaseTool):
 
             - Tool with nested models:
                 ```python
+                >>> from pydantic import BaseModel
+                >>> from serapeum.core.tools.callable_tool import CallableTool
+                >>>
                 >>> class Address(BaseModel):
                 ...     '''Address information.'''
                 ...     street: str

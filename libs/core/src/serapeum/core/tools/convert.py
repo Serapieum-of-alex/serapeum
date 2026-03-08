@@ -67,8 +67,8 @@ class Docstring:
         True
         >>> ds.get_short_summary_line()
         'add(a: int, b: int) -> int\nAdd two integers.'
-        >>> ds.func_arguments
-        {'b', 'a'}
+        >>> sorted(ds.func_arguments)
+        ['a', 'b']
 
         ```
     - Create from a class and get first-line summary
@@ -83,7 +83,7 @@ class Docstring:
         ...     title: str
         >>> ds = Docstring(Song)
         >>> ds.name
-        "Song"
+        'Song'
         >>> ds.func_arguments
         {'title'}
         >>> ds.extract_param_docs()

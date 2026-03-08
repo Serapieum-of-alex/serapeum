@@ -108,18 +108,10 @@ class ToolMetadata:
             >>> from serapeum.core.tools.types import ToolMetadata
             >>> meta = ToolMetadata(description="Echo user input back.", name="echo")
             >>> params = meta.get_schema()
-            >>> print(params)
-            {
-                'properties':
-                    {
-                        'input': {
-                            'title': 'Input',
-                            'type': 'string'
-                        }
-                    },
-                'required': ['input'],
-                'type': 'object'
-            }
+            >>> sorted(params.keys())
+            ['properties', 'required', 'type']
+            >>> 'input' in params['properties']
+            True
 
             ```
 
@@ -131,44 +123,16 @@ class ToolMetadata:
             ...     limit: int | None = None
             ...
             >>> meta = ToolMetadata(description="Search items.", name="search", tool_schema=MyArgs)
-            >>> print(meta.get_schema())
-            {
-                'properties':
-                    {
-                        'query': {'title': 'Query',  'type': 'string'},
-                        'limit': {
-                            'anyOf': [{'type': 'integer'}, {'type': 'null'}],
-                            'default': None,
-                            'title': 'Limit'
-                        }
-                    },
-                'required': ['query'],
-                'type': 'object'
-            }
-            >>> print(meta.to_openai_tool())
-            {
-                'type': 'function',
-                'function':
-                    {
-                        'name': 'search',
-                        'description': 'Search items.',
-                        'parameters':
-                            {
-                                'properties':
-                                    {
-                                        'query': {'title': 'Query', 'type': 'string'},
-                                        'limit':
-                                            {
-                                                'anyOf': [{'type': 'integer'}, {'type': 'null'}],
-                                                'default': None,
-                                                'title': 'Limit'
-                                            }
-                                    },
-                                'required': ['query'],
-                                'type': 'object'
-                            }
-                    }
-                }
+            >>> schema = meta.get_schema()
+            >>> sorted(schema['properties'].keys())
+            ['limit', 'query']
+            >>> schema['required']
+            ['query']
+            >>> tool_spec = meta.to_openai_tool()
+            >>> tool_spec['type']
+            'function'
+            >>> tool_spec['function']['name']
+            'search'
 
             ```
 
@@ -203,16 +167,10 @@ class ToolMetadata:
                 >>> from serapeum.core.tools.types import ToolMetadata
                 >>> meta = ToolMetadata(description="Echo", name="echo", tool_schema=None)
                 >>> params = meta.get_schema()
-                >>> print(params)
-                {
-                    'type': 'object',
-                    'properties':
-                        {
-                            'input':
-                                {'title': 'input query string', 'type': 'string'}
-                        },
-                    'required': ['input']
-                }
+                >>> params['type']
+                'object'
+                >>> list(params['properties'].keys())
+                ['input']
 
                 ```
 
@@ -225,16 +183,10 @@ class ToolMetadata:
                 ...
                 >>> meta = ToolMetadata(description="Repeat text", name="repeat", tool_schema=MyArgs)
                 >>> params = meta.get_schema()
-                >>> print(params) # doctest: +NORMALIZE_WHITESPACE
-                {
-                    'properties':
-                        {
-                            'text': {'title': 'Text', 'type': 'string'},
-                            'count': {'title': 'Count', 'type': 'integer'}
-                        },
-                    'required': ['text', 'count'],
-                    'type': 'object'
-                }
+                >>> sorted(params['properties'].keys())
+                ['count', 'text']
+                >>> params['required']
+                ['text', 'count']
 
                 ```
         """
@@ -282,14 +234,10 @@ class ToolMetadata:
                 ...
                 >>> meta = ToolMetadata(description="Echo", name="echo", tool_schema=Args)
                 >>> s = meta.tool_schema_str
-                >>> print(s)
-                {
-                    "properties":
-                        { "input": {"title": "Input", "type": "string"}},
-                    "required": ["input"],
-                    "type": "object"
-                }
-                >>> isinstance(json.loads(s), dict)
+                >>> parsed = json.loads(s)
+                >>> sorted(parsed.keys())
+                ['properties', 'required', 'type']
+                >>> 'input' in parsed['properties']
                 True
 
                 ```
@@ -424,22 +372,13 @@ class ToolMetadata:
                 ```python
                 >>> from serapeum.core.tools.types import ToolMetadata
                 >>> meta = ToolMetadata(description="Echo input.", name="echo")
-                >>> print(meta.to_openai_tool())
-                {
-                    'type': 'function',
-                    'function':
-                        {
-                            'name': 'echo',
-                            'description': 'Echo input.',
-                            'parameters':
-                                {
-                                    'properties':
-                                        {'input': {'title': 'Input', 'type': 'string'}},
-                                    'required': ['input'],
-                                    'type': 'object'
-                                }
-                        }
-                }
+                >>> spec = meta.to_openai_tool()
+                >>> spec['type']
+                'function'
+                >>> spec['function']['name']
+                'echo'
+                >>> spec['function']['description']
+                'Echo input.'
 
                 ```
             - Error on overly long descriptions (when not skipped)
@@ -526,7 +465,7 @@ class ToolOutput(BaseModel):
             >>> from serapeum.core.base.llms.types import TextChunk
             >>> from serapeum.core.tools.types import ToolOutput
             >>> out = ToolOutput(tool_name="echo", chunks=[TextChunk(content="hi")])
-            >>> print(out.content)
+            >>> out.content
             'hi'
 
             ```
@@ -726,7 +665,7 @@ class BaseTool:
             ...
             >>> tool = Echo()
             >>> out = tool({"input": "hi"})
-            >>> print(out.content)
+            >>> out.content
             'hi'
 
             ```

@@ -289,9 +289,11 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             >>> prompt = PromptTemplate("Extract city and country from: {text}")
             >>> result = llm.parse(
             ...     Capital, prompt, text="Paris is the capital of France."
-            ... )
-            >>> isinstance(result, Capital)
-            True
+            ... )  # doctest: +SKIP
+            >>> result.city  # doctest: +SKIP
+            'Paris'
+            >>> result.country  # doctest: +SKIP
+            'France'
 
             ```
         - List all models available on the Ollama Cloud server

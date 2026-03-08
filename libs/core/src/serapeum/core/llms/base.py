@@ -699,7 +699,6 @@ class LLM(BaseLLM, ABC):
                 ...     @property
                 ...     def metadata(self):
                 ...         return Metadata.model_construct(is_chat_model=False)
-                ...     output_parser = UpperParser()
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -709,7 +708,8 @@ class LLM(BaseLLM, ABC):
                 ...     async def acomplete(self, prompt, formatted=False, **kwargs):
                 ...         return CompletionResponse(text=prompt, delta=prompt)
                 ...
-                >>> DemoLLM()._get_prompt(PromptTemplate("summarize {item}"), item="notes")
+                >>> llm = DemoLLM(output_parser=UpperParser())
+                >>> llm._get_prompt(PromptTemplate("summarize {item}"), item="notes")
                 'SUMMARIZE NOTES'
 
                 ```
@@ -745,7 +745,7 @@ class LLM(BaseLLM, ABC):
         Examples:
             - Generate user-facing messages without an output parser
                 ```python
-                >>> from serapeum.core.prompts import PromptTemplate
+                >>> from serapeum.core.prompts import ChatPromptTemplate
                 >>> from serapeum.core.base.llms.types import (
                 ...     CompletionResponse,
                 ...     Metadata,
@@ -792,7 +792,6 @@ class LLM(BaseLLM, ABC):
                 ...     @property
                 ...     def metadata(self):
                 ...         return Metadata.model_construct(is_chat_model=True)
-                ...     output_parser = UpperParser()
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -802,7 +801,7 @@ class LLM(BaseLLM, ABC):
                 ...     async def acomplete(self, prompt, formatted=False, **kwargs):
                 ...         return CompletionResponse(text=prompt, delta=prompt)
                 ...
-                >>> message = DemoLLM()._get_messages(
+                >>> message = DemoLLM(output_parser=UpperParser())._get_messages(
                 ...     ChatPromptTemplate.from_messages([("user", "Hello {name}!")]),
                 ...     name="Ada",
                 ... )[0]
@@ -864,7 +863,6 @@ class LLM(BaseLLM, ABC):
                 ...     @property
                 ...     def metadata(self):
                 ...         return Metadata.model_construct(is_chat_model=False)
-                ...     output_parser = TrimParser()
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -874,7 +872,7 @@ class LLM(BaseLLM, ABC):
                 ...     async def acomplete(self, prompt, formatted=False, **kwargs):
                 ...         return CompletionResponse(text=prompt, delta=prompt)
                 ...
-                >>> DemoLLM()._parse_output("  ok  ")
+                >>> DemoLLM(output_parser=TrimParser())._parse_output("  ok  ")
                 'ok'
 
                 ```
@@ -930,8 +928,6 @@ class LLM(BaseLLM, ABC):
                 ...     @property
                 ...     def metadata(self):
                 ...         return Metadata.model_construct(is_chat_model=False)
-                ...     system_prompt: str | None = "You are an assistant."
-                ...     query_wrapper_prompt = PromptTemplate("Question: {query_str}")
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -941,8 +937,12 @@ class LLM(BaseLLM, ABC):
                 ...     async def acomplete(self, prompt, formatted=False, **kwargs):
                 ...         return CompletionResponse(text=prompt, delta=prompt)
                 ...
-                >>> DemoLLM()._extend_prompt("List priorities")
-                'You are an assistant.\\n\\nQuestion: List priorities'
+                >>> llm = DemoLLM(
+                ...     system_prompt="You are an assistant.",
+                ...     query_wrapper_prompt=PromptTemplate("Question: {query_str}"),
+                ... )
+                >>> llm._extend_prompt("List priorities")
+                'Question: You are an assistant.\n\nList priorities'
 
                 ```
         See Also:
@@ -1576,9 +1576,9 @@ class LLM(BaseLLM, ABC):
                 ...             PromptTemplate("{name}"),
                 ...             name="flow",
                 ...         )
-                ...     items = []
-                ...     async for partial in stream:
-                ...         items.append(partial.value)
+                ...         items = []
+                ...         async for partial in stream:
+                ...             items.append(partial.value)
                 ...     return items
                 ...
                 >>> asyncio.run(demo())
@@ -1625,9 +1625,9 @@ class LLM(BaseLLM, ABC):
                 ...             PromptTemplate("{name}"),
                 ...             name="ignored",
                 ...         )
-                ...     values = []
-                ...     async for batch in stream:
-                ...         values.append(batch[0].value)
+                ...         values = []
+                ...         async for batch in stream:
+                ...             values.append(batch[0].value)
                 ...     return values
                 ...
                 >>> asyncio.run(demo())
@@ -1765,6 +1765,8 @@ class LLM(BaseLLM, ABC):
                 ...     @property
                 ...     def metadata(self):
                 ...         return Metadata.model_construct(is_chat_model=False)
+                ...     def _log_template_data(self, prompt, **kwargs):
+                ...         pass
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1805,6 +1807,8 @@ class LLM(BaseLLM, ABC):
                 ...     @property
                 ...     def metadata(self):
                 ...         return Metadata.model_construct(is_chat_model=True)
+                ...     def _log_template_data(self, prompt, **kwargs):
+                ...         pass
                 ...     def chat(self, messages, *, stream=False, **kwargs):
                 ...         if stream:
                 ...             return chat_stream()

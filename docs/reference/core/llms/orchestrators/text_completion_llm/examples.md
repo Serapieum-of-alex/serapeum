@@ -530,7 +530,7 @@ class Person(BaseModel):
     address: Address
     contact: Contact
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Person,
@@ -569,7 +569,7 @@ class Event(BaseModel):
     attendees: Optional[int] = None
     type: Union[str, None] = "general"
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Event,
@@ -600,7 +600,7 @@ class Recipe(BaseModel):
     steps: list[str]
     prep_time: int  # in minutes
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Recipe,
@@ -639,7 +639,7 @@ class StrictModel(BaseModel):
     count: int  # Must be integer
     ratio: float  # Must be float
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=StrictModel,
@@ -707,7 +707,7 @@ class FaultyParser(BaseParser):
     def parse(self, output: str):
         return WrongModel(other=output)  # Wrong type!
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_parser=FaultyParser(),
@@ -737,7 +737,7 @@ from serapeum.ollama import Ollama
 class Result(BaseModel):
     data: str
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Result,
@@ -789,7 +789,7 @@ class ValidatedData(BaseModel):
             raise ValueError('Invalid email format')
         return v.lower()
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=ValidatedData,
@@ -811,7 +811,7 @@ from serapeum.ollama import Ollama
 class Output(BaseModel):
     result: str
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # Good: Clear instructions
 text_llm = TextCompletionLLM(
@@ -843,7 +843,7 @@ class Classification(BaseModel):
     confidence: float
 
 # Create once
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), request_timeout=180)
+llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 classifier = TextCompletionLLM(
     output_cls=Classification,
     prompt="Classify: {text}",

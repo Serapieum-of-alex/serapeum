@@ -1223,22 +1223,14 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             ValueError: If the legacy path encounters a tool type other than
                 ``"function"``.
         """
-        tool_calls = [
+        tool_call_blocks = [
             block
             for block in response.message.chunks
             if isinstance(block, ToolCallBlock)
         ]
-        if tool_calls:
-            if len(tool_calls) < 1:
-                if error_on_no_tool_call:
-                    raise ValueError(
-                        f"Expected at least one tool call, but got {len(tool_calls)} tool calls."
-                    )
-                else:
-                    return []
-
+        if tool_call_blocks:
             tool_selections = []
-            for tool_call in tool_calls:
+            for tool_call in tool_call_blocks:
                 # this should handle both complete and partial jsons
                 try:
                     if isinstance(tool_call.tool_kwargs, str):
@@ -1255,38 +1247,38 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                         tool_kwargs=argument_dict,
                     )
                 )
+            result = tool_selections
+        else:
+            # Legacy backward-compatible path: read from additional_kwargs.
+            legacy_tool_calls = response.message.additional_kwargs.get("tool_calls", [])
 
-            return tool_selections
-        else:  # keep it backward-compatible
-            tool_calls = response.message.additional_kwargs.get("tool_calls", [])
+            if legacy_tool_calls:
+                tool_selections = []
+                for tool_call in legacy_tool_calls:
+                    if tool_call.type != "function":
+                        raise ValueError("Invalid tool type. Unsupported by OpenAI llm")
 
-            if len(tool_calls) < 1:
-                if error_on_no_tool_call:
-                    raise ValueError(
-                        f"Expected at least one tool call, but got {len(tool_calls)} tool calls."
+                    # this should handle both complete and partial jsons
+                    try:
+                        argument_dict = parse_partial_json(tool_call.function.arguments)
+                    except (ValueError, TypeError, JSONDecodeError):
+                        argument_dict = {}
+
+                    tool_selections.append(
+                        ToolCallArguments(
+                            tool_id=tool_call.id,
+                            tool_name=tool_call.function.name,
+                            tool_kwargs=argument_dict,
+                        )
                     )
-                else:
-                    return []
-
-            tool_selections = []
-            for tool_call in tool_calls:
-                if tool_call.type != "function":
-                    raise ValueError("Invalid tool type. Unsupported by OpenAI llm")
-
-                # this should handle both complete and partial jsons
-                try:
-                    argument_dict = parse_partial_json(tool_call.function.arguments)
-                except (ValueError, TypeError, JSONDecodeError):
-                    argument_dict = {}
-
-                tool_selections.append(
-                    ToolCallArguments(
-                        tool_id=tool_call.id,
-                        tool_name=tool_call.function.name,
-                        tool_kwargs=argument_dict,
-                    )
+                result = tool_selections
+            elif error_on_no_tool_call:
+                raise ValueError(
+                    f"Expected at least one tool call, but got {len(legacy_tool_calls)} tool calls."
                 )
+            else:
+                result = []
 
-            return tool_selections
+        return result
 
 

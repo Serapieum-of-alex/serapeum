@@ -31,7 +31,6 @@ def refresh_openai_azuread_token(
 
 
 def resolve_from_aliases(*args: str | None) -> str | None:
-    for arg in args:
-        if arg is not None:
-            return arg
-    return None
+    """Return the first non-``None`` value among *args*, or ``None``."""
+    result = next((arg for arg in args if arg is not None), None)
+    return result

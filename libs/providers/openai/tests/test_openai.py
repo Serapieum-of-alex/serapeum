@@ -292,6 +292,7 @@ def mock_chat_completion_stream_v1(
     yield from responses
 
 
+@pytest.mark.mock
 @patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_completion_model_basic(MockSyncOpenAI: MagicMock) -> None:
     with CachedOpenAIApiKeys(set_fake_key=True):
@@ -311,6 +312,7 @@ def test_completion_model_basic(MockSyncOpenAI: MagicMock) -> None:
         assert chat_response.message.additional_kwargs["total_tokens"] == 12
 
 
+@pytest.mark.mock
 @patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_chat_model_basic(MockSyncOpenAI: MagicMock) -> None:
     with CachedOpenAIApiKeys(set_fake_key=True):
@@ -329,6 +331,7 @@ def test_chat_model_basic(MockSyncOpenAI: MagicMock) -> None:
         assert chat_response.additional_kwargs["total_tokens"] == 20
 
 
+@pytest.mark.mock
 @patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_completion_model_streaming(MockSyncOpenAI: MagicMock) -> None:
     with CachedOpenAIApiKeys(set_fake_key=True):
@@ -349,6 +352,7 @@ def test_completion_model_streaming(MockSyncOpenAI: MagicMock) -> None:
         assert chat_responses[-1].message.content == "12"
 
 
+@pytest.mark.mock
 @patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_chat_model_streaming(MockSyncOpenAI: MagicMock) -> None:
     with CachedOpenAIApiKeys(set_fake_key=True):
@@ -414,6 +418,7 @@ async def test_completion_model_async_streaming(MockAsyncOpenAI: MagicMock) -> N
     assert chat_responses[-1].message.content == "12"
 
 
+@pytest.mark.unit
 def test_validates_api_key_is_present() -> None:
     with CachedOpenAIApiKeys():
         os.environ["OPENAI_API_KEY"] = "sk-" + ("a" * 48)
@@ -438,6 +443,7 @@ def test_sdk_retries_disabled(MockSyncOpenAI: MagicMock) -> None:
     assert call_kwargs["max_retries"] == 0
 
 
+@pytest.mark.mock
 @patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_ensure_chat_message_is_serializable(MockSyncOpenAI: MagicMock) -> None:
     with CachedOpenAIApiKeys(set_fake_key=True):
@@ -471,6 +477,7 @@ def test_ensure_chat_message_is_serializable(MockSyncOpenAI: MagicMock) -> None:
         )
 
 
+@pytest.mark.mock
 @patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_structured_chat_simple(MockSyncOpenAI: MagicMock):
     """Simple test for structured output using as_structured_llm."""
@@ -522,6 +529,7 @@ def test_structured_chat_simple(MockSyncOpenAI: MagicMock):
     assert result.raw.age == 25
 
 
+@pytest.mark.unit
 def test_prepare_schema_sanitizes_json_schema_name() -> None:
     from pydantic import BaseModel
 
@@ -598,6 +606,7 @@ async def test_structured_chat_simple_async(MockAsyncOpenAI: MagicMock):
     assert result.raw.age == 30
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "effort", ["low", "medium", "high", "minimal", "xhigh", "none"]
 )
@@ -612,6 +621,7 @@ def test_reasoning_effort_passed_for_o1_models(effort):
     assert kwargs["reasoning_effort"] == effort
 
 
+@pytest.mark.unit
 def test_reasoning_effort_not_passed_for_non_o1_models():
     """Test that reasoning_effort is NOT passed for non-O1 models."""
     model_name = "gpt-4o"
@@ -622,6 +632,7 @@ def test_reasoning_effort_not_passed_for_non_o1_models():
     assert "reasoning_effort" not in kwargs
 
 
+@pytest.mark.unit
 def test_reasoning_effort_none_default():
     """Test that reasoning_effort defaults to None and is not passed."""
     model_name = "o1-mini"

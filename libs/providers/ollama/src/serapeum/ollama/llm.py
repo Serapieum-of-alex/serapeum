@@ -121,13 +121,27 @@ def force_single_tool_call(response: ChatResponse) -> None:
             1
 
             ```
-        - Leave empty or single tool call lists unchanged
+        - No-op when there are no tool calls
             ```python
             >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-            >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=""))
+            >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="hi"))
             >>> force_single_tool_call(r)
-            >>> r.message.additional_kwargs.get("tool_calls") is None or len(r.message.additional_kwargs.get("tool_calls", [])) == 0
-            True
+            >>> r.message.additional_kwargs.get("tool_calls")
+
+            ```
+        - Single tool call is left as-is
+            ```python
+            >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
+            >>> r = ChatResponse(message=Message(
+            ...     role=MessageRole.ASSISTANT,
+            ...     content="",
+            ...     additional_kwargs={
+            ...         "tool_calls": [{"function": {"name": "a", "arguments": {}}}]
+            ...     },
+            ... ))
+            >>> force_single_tool_call(r)
+            >>> r.message.additional_kwargs["tool_calls"][0]["function"]["name"]
+            'a'
 
             ```
     """
@@ -213,11 +227,11 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ...     temperature=0.0,
             ...     timeout=120,
             ... )
-            >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'hello'.")])
-            >>> print(response) # doctest: +SKIP
-            assistant:
-
-            hello
+            >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'hello'.")])  # doctest: +SKIP, +ELLIPSIS
+            >>> response.message.role  # doctest: +SKIP
+            <MessageRole.ASSISTANT: 'assistant'>
+            >>> print("content:", response.message.content)  # doctest: +SKIP, +ELLIPSIS
+            content: ...
 
             ```
         - Supplying api_key automatically switches base_url to Ollama Cloud
@@ -239,17 +253,20 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             False
 
             ```
-        - Inject a mock client for unit tests (no network required)
+        - Configure additional model parameters and inspect them
             ```python
-            >>> from unittest.mock import MagicMock
             >>> from serapeum.ollama import Ollama  # type: ignore
-            >>> mock = MagicMock()
-            >>> llm = Ollama(model="m", client=mock)
-            >>> llm.client is mock
-            True
+            >>> llm = Ollama(
+            ...     model="llama3.1",
+            ...     additional_kwargs={"mirostat": 2, "top_k": 40},
+            ... )
+            >>> llm.additional_kwargs
+            {'mirostat': 2, 'top_k': 40}
+            >>> llm._model_kwargs["mirostat"]
+            2
 
             ```
-        - Stream chat deltas via Ollama Cloud
+        - Stream chat deltas and collect incremental content
             ```python
             >>> import os
             >>> from serapeum.core.llms import Message, MessageRole
@@ -260,15 +277,13 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ...     temperature=0.0,
             ...     timeout=120,
             ... )
-            >>> chunks = list(llm.chat([
+            >>> chunks = list(llm.chat([  # doctest: +SKIP, +ELLIPSIS
             ...     Message(role=MessageRole.USER, content="Say 'hello'.")
             ... ], stream=True))
-            >>> chunks
-            [ChatResponse(raw={'model': 'qwen3-next:80b', ... chunks=[TextChunk(content='', path=None, url=None, type='text')])),
-            ChatResponse(raw={'model': 'qwen3-next:80b', ...  chunks=[TextChunk(content='', path=None, url=None, type='text')])),
-            ChatResponse(raw={'model': 'qwen3-next:80b', ... chunks=[TextChunk(content='', path=None, url=None, type='text')])),
-            ChatResponse(raw={'model': 'qwen3-next:80b', ... chunks=[TextChunk(content='', path=None, url=None, type='text')])),
-            ...
+            >>> print("delta:", chunks[0].delta)  # first streamed token  # doctest: +SKIP, +ELLIPSIS
+            delta: ...
+            >>> print("final:", chunks[-1].message.content)  # final accumulated text  # doctest: +SKIP, +ELLIPSIS
+            final: ...
 
             ```
         - Structured output parsed into a Pydantic model
@@ -281,29 +296,30 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ...     city: str
             ...     country: str
             >>> llm = Ollama(
-            ...     model="qwen3-next:80b",
-            ...     api_key=os.environ.get("OLLAMA_API_KEY"),
+            ...     model="llama3.1",
             ...     temperature=0.0,
             ...     timeout=120,
             ... )
             >>> prompt = PromptTemplate("Extract city and country from: {text}")
             >>> result = llm.parse(
             ...     Capital, prompt, text="Paris is the capital of France."
-            ... )  # doctest: +SKIP
-            >>> result.city  # doctest: +SKIP
-            'Paris'
-            >>> result.country  # doctest: +SKIP
-            'France'
+            ... )  # doctest: +SKIP, +ELLIPSIS
+            >>> print("city:", result.city)  # doctest: +SKIP, +ELLIPSIS
+            city: ...
+            >>> print("country:", result.country)  # doctest: +SKIP, +ELLIPSIS
+            country: ...
+            >>> sorted(result.model_dump().keys())  # doctest: +SKIP
+            ['city', 'country']
 
             ```
-        - List all models available on the Ollama Cloud server
+        - List all models available on the Ollama server
             ```python
             >>> import os
             >>> from serapeum.ollama import Ollama  # type: ignore
             >>> llm = Ollama(model="qwen3-next:80b", api_key=os.environ.get("OLLAMA_API_KEY"))
-            >>> models = llm.list_models()
-            >>> isinstance(models, list)
-            True
+            >>> models = llm.list_models()  # doctest: +SKIP, +ELLIPSIS
+            >>> models[:2]  # doctest: +SKIP, +ELLIPSIS
+            ['...', '...']
 
             ```
         - Async model listing via Ollama Cloud
@@ -311,10 +327,11 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             >>> import asyncio, os
             >>> from serapeum.ollama import Ollama  # type: ignore
             >>> llm = Ollama(model="qwen3-next:80b", api_key=os.environ.get("OLLAMA_API_KEY"))
-            >>> async def get_models():
+            >>> async def get_models():  # doctest: +SKIP
             ...     return await llm.alist_models()
-            >>> isinstance(asyncio.run(get_models()), list)
-            True
+            >>> models = asyncio.run(get_models())  # doctest: +SKIP, +ELLIPSIS
+            >>> models[:2]  # doctest: +SKIP, +ELLIPSIS
+            ['...', '...']
 
             ```
 
@@ -393,17 +410,24 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
 
     @property
     def metadata(self) -> Metadata:
-        """LLM metadata.
+        """LLM metadata describing model capabilities and configuration.
 
         Returns:
             Metadata: Static capabilities such as context window and chat support.
 
         Examples:
-            - Inspect chat model capabilities
+            - Inspect model capabilities and configuration
                 ```python
                 >>> from serapeum.ollama import Ollama      # type: ignore[attr-defined]
-                >>> Ollama(model="m").metadata.is_chat_model
+                >>> meta = Ollama(model="llama3.1").metadata
+                >>> meta.model_name
+                'llama3.1'
+                >>> meta.is_chat_model
                 True
+                >>> meta.is_function_calling_model
+                True
+                >>> meta.context_window
+                3900
 
                 ```
         """
@@ -423,15 +447,13 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             Client: Underlying Ollama client instance.
 
         Examples:
-            - Lazily create the client on first access
+            - Access the lazily-created sync client and inspect its host
                 ```python
                 >>> from serapeum.ollama import Ollama      # type: ignore[attr-defined]
                 >>> llm = Ollama(model="m", base_url="http://localhost:11434", timeout=1.0)
-                >>> c = llm.client  # doctest: +SKIP
-                >>> type(c).__name__  # doctest: +SKIP
-                'Client'
-                >>> hasattr(c, "chat")  # doctest: +SKIP
-                True
+                >>> c = llm.client  # doctest: +SKIP, +ELLIPSIS
+                >>> str(c._client.base_url)  # doctest: +SKIP, +ELLIPSIS
+                'http://localhost:11434'
 
                 ```
         """
@@ -508,15 +530,17 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             The async client instance used for asynchronous operations.
 
         Examples:
-            - Access async client for manual API calls
+            - Access the async client within an async context
                 ```python
                 >>> import asyncio
                 >>> from serapeum.ollama import Ollama      # type: ignore
                 >>> llm = Ollama(model="llama3.1")
-                >>> async def check_client():    # doctest: +SKIP
+                >>> async def use_client():  # doctest: +SKIP
                 ...     client = llm.async_client
-                ...     return hasattr(client, "chat")
-                >>> asyncio.run(check_client())  # Returns True # doctest: +SKIP
+                ...     response = await client.list()
+                ...     return [m.model for m in response.models][:2]
+                >>> asyncio.run(use_client())  # doctest: +SKIP, +ELLIPSIS
+                ['...', '...']
 
                 ```
 
@@ -756,9 +780,10 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ChatResponse: The validated response (possibly mutated in-place).
 
         Examples:
-            - Force single tool call when multiple are present (remove the multiple tool calls and leave only the first)
+            - Trim multiple tool calls down to the first one
                 ```python
                 >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
+                >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="m")
                 >>> response = ChatResponse(
                 ...     message=Message(
@@ -770,13 +795,33 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ...         }
                 ...     )
                 ... )
-                >>> validated_response = llm._validate_chat_with_tools_response(
-                ...     response,
-                ...     tools=[],
-                ...     allow_parallel_tool_calls=False,
+                >>> validated = llm._validate_chat_with_tools_response(
+                ...     response, tools=[], allow_parallel_tool_calls=False,
                 ... )
-                >>> len(validated_response.message.additional_kwargs.get("tool_calls"))
-                1
+                >>> validated.message.additional_kwargs["tool_calls"]
+                [{'function': {'name': 'a', 'arguments': {}}}]
+
+                ```
+            - Allow parallel tool calls to pass through untrimmed
+                ```python
+                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
+                >>> from serapeum.ollama import Ollama  # type: ignore
+                >>> llm = Ollama(model="m")
+                >>> response = ChatResponse(
+                ...     message=Message(
+                ...         role=MessageRole.ASSISTANT, content="", additional_kwargs={
+                ...             "tool_calls": [
+                ...                 {"function": {"name": "a", "arguments": {}}},
+                ...                 {"function": {"name": "b", "arguments": {}}},
+                ...             ]
+                ...         }
+                ...     )
+                ... )
+                >>> validated = llm._validate_chat_with_tools_response(
+                ...     response, tools=[], allow_parallel_tool_calls=True,
+                ... )
+                >>> [tc["function"]["name"] for tc in validated.message.additional_kwargs["tool_calls"]]
+                ['a', 'b']
 
                 ```
         """
@@ -802,9 +847,10 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ValueError: When ``error_on_no_tool_call`` is ``True`` and no tool calls exist.
 
         Examples:
-            - Parse a single tool call
+            - Parse a single tool call and explore its fields
                 ```python
                 >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
+                >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="m")
                 >>> r = ChatResponse(
                 ...     message=Message(
@@ -818,25 +864,39 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ...     )
                 ... )
                 >>> calls = llm.get_tool_calls_from_response(r)
-                >>> (
-                ...     calls[0].tool_id,
-                ...     calls[0].tool_name,
-                ...     calls[0].tool_kwargs["a"],
-                ... ) == ("run", "run", 1)
-                True
+                >>> calls[0].tool_name
+                'run'
+                >>> calls[0].tool_id
+                'run'
+                >>> calls[0].tool_kwargs
+                {'a': 1}
 
                 ```
-            - Raise when no tool call is present and errors are enabled
+            - Gracefully return empty list when no tool calls and errors disabled
                 ```python
                 >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
+                >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="m")
-                >>> empty = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=""))
-                >>> try:
-                ...     _ = llm.get_tool_calls_from_response(empty, error_on_no_tool_call=True)
-                ... except ToolCallError as e:
-                ...     msg = str(e)
-                >>> 'Expected at least one tool call' in msg
-                True
+                >>> empty = ChatResponse(
+                ...     message=Message(role=MessageRole.ASSISTANT, content="No tools needed.")
+                ... )
+                >>> calls = llm.get_tool_calls_from_response(empty, error_on_no_tool_call=False)
+                >>> calls
+                []
+
+                ```
+            - Raise ToolCallError when no tool call is present and errors are enabled
+                ```python
+                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
+                >>> from serapeum.ollama import Ollama  # type: ignore
+                >>> llm = Ollama(model="m")
+                >>> empty = ChatResponse(
+                ...     message=Message(role=MessageRole.ASSISTANT, content="")
+                ... )
+                >>> llm.get_tool_calls_from_response(empty, error_on_no_tool_call=True)
+                Traceback (most recent call last):
+                    ...
+                serapeum.core.tools.types.ToolCallError: Expected at least one tool call, but the LLM response contained 0 tool calls.
 
                 ```
         """
@@ -884,15 +944,30 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             and token usage populated in ``raw["usage"]`` when available.
 
         Examples:
-            - Build a response from a minimal raw dict
+            - Build a response from a minimal raw dict and explore it
                 ```python
                 >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> raw = {"message": {"role": "assistant", "content": "Hi"}}
                 >>> resp = Ollama._build_chat_response(raw)
                 >>> resp.message.content
                 'Hi'
+                >>> resp.message.role
+                <MessageRole.ASSISTANT: 'assistant'>
                 >>> resp.message.additional_kwargs["tool_calls"]
                 []
+
+                ```
+            - Build a response with token usage from raw provider data
+                ```python
+                >>> from serapeum.ollama import Ollama  # type: ignore
+                >>> raw = {
+                ...     "message": {"role": "assistant", "content": "Hello!"},
+                ...     "prompt_eval_count": 10,
+                ...     "eval_count": 5,
+                ... }
+                >>> resp = Ollama._build_chat_response(raw)
+                >>> resp.raw["usage"]
+                {'prompt_tokens': 10, 'completion_tokens': 5, 'total_tokens': 15}
 
                 ```
         """
@@ -951,28 +1026,33 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ChatResponse when ``stream=False``, or ChatResponseGen when ``stream=True``.
 
         Examples:
-            - Non-streaming chat against a running Ollama server (requires server and model)
+            - Non-streaming chat — explore the response message
                 ```python
                 >>> from serapeum.core.llms import Message, MessageRole
-                >>> # Ensure `ollama serve` is running and the model is available locally.
+                >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="llama3.1", timeout=120)
-                >>> resp = llm.chat([Message(role=MessageRole.USER, content="hi")])  # doctest: +SKIP
-                >>> print(resp)   # doctest: +SKIP
-                Hello! How are you today? Is there something I can help you with or would you like to chat?
-                >>> isinstance(resp.message.content, str)   # doctest: +SKIP
-                True
+                >>> resp = llm.chat([Message(role=MessageRole.USER, content="Say hi")])  # doctest: +SKIP, +ELLIPSIS
+                >>> resp.message.role  # doctest: +SKIP
+                <MessageRole.ASSISTANT: 'assistant'>
+                >>> print("content:", resp.message.content)  # doctest: +SKIP, +ELLIPSIS
+                content: ...
+                >>> print("model:", resp.raw.get("model"))  # raw provider metadata  # doctest: +SKIP, +ELLIPSIS
+                model: ...
 
                 ```
-            - Streaming chat with deltas
+            - Streaming chat — collect deltas and see accumulated text
                 ```python
                 >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="llama3.1", timeout=180)
-                >>> chunks = list(llm.chat(
-                ...     [Message(role=MessageRole.USER, content="Say hello")],
-                ...     stream=True
-                ... ))  # doctest: +SKIP
-                >>> isinstance(chunks[-1].message.content, str) and len(chunks) >= 1  # doctest: +SKIP
-                True
+                >>> chunks = list(llm.chat(  # doctest: +SKIP, +ELLIPSIS
+                ...     [Message(role=MessageRole.USER, content="Count to 3")],
+                ...     stream=True,
+                ... ))
+                >>> print("delta:", chunks[0].delta)  # first streamed token  # doctest: +SKIP, +ELLIPSIS
+                delta: ...
+                >>> print("final:", chunks[-1].message.content)  # final accumulated  # doctest: +SKIP, +ELLIPSIS
+                final: ...
 
                 ```
         """
@@ -1160,35 +1240,43 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ChatResponse when ``stream=False``, or ChatResponseAsyncGen when ``stream=True``.
 
         Examples:
-            - Async non-streaming chat
+            - Async non-streaming chat — explore the response
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.llms import Message, MessageRole
                 >>> from serapeum.ollama import Ollama      # type: ignore
-                >>> llm = Ollama(model="llama3.1", timeout=120) # doctest: +SKIP
-                >>> async def chat_example():   # doctest: +SKIP
+                >>> llm = Ollama(model="llama3.1", timeout=120)  # doctest: +SKIP
+                >>> async def chat_example():  # doctest: +SKIP
                 ...     response = await llm.achat([
                 ...         Message(role=MessageRole.USER, content="Say hello")
                 ...     ])
-                ...     return isinstance(response.message.content, str)
-                >>> asyncio.run(chat_example())  # Returns True     # doctest: +SKIP
+                ...     return response
+                >>> resp = asyncio.run(chat_example())  # doctest: +SKIP, +ELLIPSIS
+                >>> resp.message.role  # doctest: +SKIP
+                <MessageRole.ASSISTANT: 'assistant'>
+                >>> print("content:", resp.message.content)  # doctest: +SKIP, +ELLIPSIS
+                content: ...
 
                 ```
-            - Async streaming chat
+            - Async streaming chat — collect deltas
                 ```python
                 >>> import asyncio
                 >>> from serapeum.core.llms import Message, MessageRole
                 >>> from serapeum.ollama import Ollama      # type: ignore
-                >>> llm = Ollama(model="llama3.1", timeout=120) # doctest: +SKIP
-                >>> async def stream_example():
-                ...     chunks = []
+                >>> llm = Ollama(model="llama3.1", timeout=120)  # doctest: +SKIP
+                >>> async def stream_example():  # doctest: +SKIP
+                ...     deltas = []
                 ...     async for chunk in await llm.achat(
                 ...         [Message(role=MessageRole.USER, content="Count to 3")],
-                ...         stream=True
+                ...         stream=True,
                 ...     ):
-                ...         chunks.append(chunk.delta)
-                ...     return len(chunks) > 0
-                >>> asyncio.run(stream_example())  # Returns True   # doctest: +SKIP
+                ...         deltas.append(chunk.delta)
+                ...     return deltas
+                >>> deltas = asyncio.run(stream_example())  # doctest: +SKIP, +ELLIPSIS
+                >>> len(deltas) >= 1  # doctest: +SKIP
+                True
+                >>> print("text:", "".join(deltas))  # final accumulated text  # doctest: +SKIP, +ELLIPSIS
+                text: ...
 
                 ```
 
@@ -1323,7 +1411,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 (non-streaming mode only).
 
         Examples:
-            - Extract structured data from unstructured text
+            - Extract structured data and explore the parsed fields
                 ```python
                 >>> import os
                 >>> from pydantic import BaseModel, Field
@@ -1334,17 +1422,21 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ...     age: int = Field(description="Person's age in years")
                 >>> llm = Ollama(model="llama3.1", timeout=120)     # doctest: +SKIP
                 >>> prompt = PromptTemplate("Extract person info: {text}")  # doctest: +SKIP
-                >>> result = llm.parse(    # doctest: +SKIP
+                >>> result = llm.parse(  # doctest: +SKIP, +ELLIPSIS
                 ...     Person,
                 ...     prompt,
-                ...     text="John Doe is 30 years old"
+                ...     text="John Doe is 30 years old",
                 ... )
-                >>> result  # doctest: +SKIP
-                Person(name='John Doe', age=30)
+                >>> print("name:", result.name)  # doctest: +SKIP, +ELLIPSIS
+                name: ...
+                >>> result.age >= 0  # age is a valid integer  # doctest: +SKIP
+                True
+                >>> sorted(result.model_dump().keys())  # doctest: +SKIP
+                ['age', 'name']
 
                 ```
 
-            - Stream structured data as it's generated
+            - Stream structured data and observe incremental updates
                 ```python
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.prompts import PromptTemplate
@@ -1353,11 +1445,16 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ...     title: str
                 ...     points: list[str]
                 >>> llm = Ollama(model="llama3.1", timeout=120)     # doctest: +SKIP
-                >>> prompt = PromptTemplate("Summarize: {text}")
-                >>> for obj in llm.parse(   # doctest: +SKIP
-                ...     Summary, prompt, stream=True, text="Long article..."
+                >>> prompt = PromptTemplate("Summarize: {text}")  # doctest: +SKIP
+                >>> last = None  # doctest: +SKIP
+                >>> for obj in llm.parse(  # doctest: +SKIP, +ELLIPSIS
+                ...     Summary, prompt, stream=True, text="Long article about AI..."
                 ... ):
-                ...     print(obj)
+                ...     last = obj
+                >>> print("title:", last.title)  # final parsed title  # doctest: +SKIP, +ELLIPSIS
+                title: ...
+                >>> len(last.points) >= 0  # doctest: +SKIP
+                True
 
                 ```
 
@@ -1483,7 +1580,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 (non-streaming mode only).
 
         Examples:
-            - Async structured extraction
+            - Async structured extraction — explore the parsed object
                 ```python
                 >>> import asyncio
                 >>> from pydantic import BaseModel
@@ -1493,15 +1590,20 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ...     name: str
                 ...     country: str
                 >>> llm = Ollama(model="llama3.1", timeout=120)  # doctest: +SKIP
-                >>> async def extract_city():       # doctest: +SKIP
+                >>> async def extract_city():  # doctest: +SKIP
                 ...     prompt = PromptTemplate("Extract city: {text}")
-                ...     result = await llm.aparse(City, prompt, text="Paris is in France")
-                ...     return result.name == "Paris"
-                >>> asyncio.run(extract_city())  # Returns True     # doctest: +SKIP
+                ...     return await llm.aparse(City, prompt, text="Paris is in France")
+                >>> result = asyncio.run(extract_city())  # doctest: +SKIP, +ELLIPSIS
+                >>> print("name:", result.name)  # doctest: +SKIP, +ELLIPSIS
+                name: ...
+                >>> print("country:", result.country)  # doctest: +SKIP, +ELLIPSIS
+                country: ...
+                >>> sorted(result.model_dump().keys())  # doctest: +SKIP
+                ['country', 'name']
 
                 ```
 
-            - Async stream structured data as it's generated
+            - Async stream structured data and observe incremental fields
                 ```python
                 >>> import asyncio
                 >>> from pydantic import BaseModel
@@ -1510,14 +1612,20 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 >>> class Analysis(BaseModel):
                 ...     sentiment: str
                 ...     keywords: list[str]
-                >>> llm = Ollama(model="llama3.1", timeout=120)     # doctest: +SKIP
-                >>> async def stream_analysis():
+                >>> llm = Ollama(model="llama3.1", timeout=120)  # doctest: +SKIP
+                >>> async def stream_analysis():  # doctest: +SKIP
                 ...     prompt = PromptTemplate("Analyze: {text}")
+                ...     last = None
                 ...     async for obj in await llm.aparse(
-                ...         Analysis, prompt, stream=True, text="Product review text..."
+                ...         Analysis, prompt, stream=True, text="Great product!"
                 ...     ):
-                ...         print(obj)
-                >>> asyncio.run(stream_analysis())      # doctest: +SKIP
+                ...         last = obj
+                ...     return last
+                >>> last = asyncio.run(stream_analysis())  # doctest: +SKIP, +ELLIPSIS
+                >>> print("sentiment:", last.sentiment)  # doctest: +SKIP, +ELLIPSIS
+                sentiment: ...
+                >>> len(last.keywords) >= 0  # doctest: +SKIP
+                True
 
                 ```
 

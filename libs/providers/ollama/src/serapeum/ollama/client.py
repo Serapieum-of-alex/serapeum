@@ -116,13 +116,22 @@ class Client(Retry, BaseModel):
             list[str]: Model name strings (e.g. ``["llama3.1:latest", "mistral:latest"]``).
 
         Examples:
-            - List available models
+            - List available models and inspect the first few names
                 ```python
                 >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="llama3.1")
-                >>> models = llm.list_models()  # doctest: +SKIP
-                >>> isinstance(models, list)    # doctest: +SKIP
-                True
+                >>> models = llm.list_models()  # doctest: +SKIP, +ELLIPSIS
+                >>> models[:2]  # doctest: +SKIP, +ELLIPSIS
+                ['...', '...']
+
+                ```
+            - Filter the returned model names
+                ```python
+                >>> from serapeum.ollama import Ollama  # type: ignore
+                >>> llm = Ollama(model="llama3.1")
+                >>> models = llm.list_models()  # doctest: +SKIP, +ELLIPSIS
+                >>> [m for m in models if "embed" in m][:1]  # doctest: +SKIP, +ELLIPSIS
+                ['...']
 
                 ```
         """
@@ -135,15 +144,18 @@ class Client(Retry, BaseModel):
             list[str]: Model name strings (e.g. ``["llama3.1:latest", "mistral:latest"]``).
 
         Examples:
-            - Async list available models
+            - Fetch and explore available model names asynchronously
                 ```python
                 >>> import asyncio
                 >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="llama3.1")
                 >>> async def get_models():         # doctest: +SKIP
                 ...     return await llm.alist_models()
-                >>> asyncio.run(get_models())       # doctest: +SKIP
-                ['llama3.1:latest', 'mistral:latest']
+                >>> models = asyncio.run(get_models())  # doctest: +SKIP, +ELLIPSIS
+                >>> models[:2]  # doctest: +SKIP, +ELLIPSIS
+                ['...', '...']
+                >>> len(models) >= 1  # doctest: +SKIP
+                True
 
                 ```
         """

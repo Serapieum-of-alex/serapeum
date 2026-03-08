@@ -21,7 +21,7 @@
 <link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1410,11 +1410,11 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../developer-guide/contributing/">
+<a class="md-nav__link" href="../../../../contributing.md">
 <span class="md-ellipsis">
     
   
-    contributing
+    Contributing
   
 
     
@@ -1932,7 +1932,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <h3 id="1-initialization-pattern"><a class="toclink" href="#1-initialization-pattern">1. Initialization Pattern</a><a class="headerlink" href="#1-initialization-pattern" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>User Code
 <a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a>  └─→ Ollama.__init__
-<a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>      ├─→ Store: model, base_url, temperature, timeout, json_mode, additional_kwargs
+<a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>      ├─→ Store: model, base_url, temperature, request_timeout, json_mode, additional_kwargs
 <a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a>      ├─→ Create Metadata: is_chat_model=True, is_function_calling_model=True
 <a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a>      └─→ Set _client=None, _async_client=None (lazy init)
 </code></pre></div>
@@ -1940,7 +1940,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>User → Ollama.chat
 <a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>  └─→ Access self.client property
 <a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>      └─→ Check if self._client is None
-<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>          ├─→ If None: Create Client(host=base_url, timeout=timeout)
+<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>          ├─→ If None: Create Client(host=base_url, timeout=request_timeout)
 <a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>          └─→ Return self._client
 </code></pre></div>
 <h3 id="3-chat-request-pattern"><a class="toclink" href="#3-chat-request-pattern">3. Chat Request Pattern</a><a class="headerlink" href="#3-chat-request-pattern" title="Permanent link">#</a></h3>
@@ -2038,7 +2038,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a>Initialization:
 <a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a>  - model: str (immutable after init)
 <a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a>  - base_url: str (immutable after init)
-<a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a>  - timeout: float (immutable after init)
+<a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a>  - request_timeout: float (immutable after init)
 <a href="#__codelineno-8-5" id="__codelineno-8-5" name="__codelineno-8-5"></a>  - temperature: float (immutable after init)
 <a href="#__codelineno-8-6" id="__codelineno-8-6" name="__codelineno-8-6"></a>  - json_mode: bool (immutable after init)
 <a href="#__codelineno-8-7" id="__codelineno-8-7" name="__codelineno-8-7"></a>  - additional_kwargs: dict (immutable after init)
@@ -2084,7 +2084,7 @@ Hold "Ctrl" to enable pan &amp; zoom
 <a href="#__codelineno-11-3" id="__codelineno-11-3" name="__codelineno-11-3"></a>      ├─→ model: must be non-empty string
 <a href="#__codelineno-11-4" id="__codelineno-11-4" name="__codelineno-11-4"></a>      ├─→ base_url: must be valid URL
 <a href="#__codelineno-11-5" id="__codelineno-11-5" name="__codelineno-11-5"></a>      ├─→ temperature: must be in [0.0, 1.0]
-<a href="#__codelineno-11-6" id="__codelineno-11-6" name="__codelineno-11-6"></a>      └─→ timeout: must be positive
+<a href="#__codelineno-11-6" id="__codelineno-11-6" name="__codelineno-11-6"></a>      └─→ request_timeout: must be positive
 </code></pre></div>
 <h3 id="2-client-creation-errors-first-use"><a class="toclink" href="#2-client-creation-errors-first-use">2. Client Creation Errors (First Use)</a><a class="headerlink" href="#2-client-creation-errors-first-use" title="Permanent link">#</a></h3>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-12-1" id="__codelineno-12-1" name="__codelineno-12-1"></a>client property

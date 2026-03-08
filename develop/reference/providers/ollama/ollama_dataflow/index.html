@@ -21,7 +21,7 @@
 <link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1227,11 +1227,11 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../../../developer-guide/contributing/">
+<a class="md-nav__link" href="../../../../contributing.md">
 <span class="md-ellipsis">
     
   
-    contributing
+    Contributing
   
 
     
@@ -1351,7 +1351,7 @@ Hold "Ctrl" to enable pan &amp; zoom
     Init --&gt; SetConfig[Set Configuration]
     SetConfig --&gt; StoreModel[Store model name]
     StoreModel --&gt; StoreURL[Store base_url]
-    StoreURL --&gt; StoreTimeout[Store timeout]
+    StoreURL --&gt; StoreTimeout[Store request_timeout]
     StoreTimeout --&gt; StoreTemp[Store temperature]
     StoreTemp --&gt; StoreJSON[Store json_mode flag]
     StoreJSON --&gt; StoreKwargs[Store additional_kwargs]
@@ -1471,12 +1471,12 @@ Hold "Ctrl" to enable pan &amp; zoom
 <h3 id="1-initialization"><a class="toclink" href="#1-initialization">1. Initialization</a><a class="headerlink" href="#1-initialization" title="Permanent link">#</a></h3>
 <p>```python notest
 Input:
-  Ollama(model="llama3.1", base_url="http://localhost:11434", timeout=180)</p>
+  Ollama(model="llama3.1", base_url="http://localhost:11434", request_timeout=180)</p>
 <p>Transformations:
   1. Store configuration:
      - model = "llama3.1"
      - base_url = "http://localhost:11434"
-     - timeout = 180
+     - request_timeout = 180
      - temperature = 0.75 (default)
      - json_mode = False (default)</p>
 <ol>
@@ -1685,7 +1685,7 @@ Input:
 <a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a>- **model**: Must be non-empty string
 <a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a>- **base_url**: Must be valid URL format
 <a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a>- **temperature**: Must be float in range [0.0, 1.0]
-<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>- **timeout**: Must be positive float
+<a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>- **request_timeout**: Must be positive float
 <a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a>
 <a href="#__codelineno-2-9" id="__codelineno-2-9" name="__codelineno-2-9"></a>### 2. Message Validation
 <a href="#__codelineno-2-10" id="__codelineno-2-10" name="__codelineno-2-10"></a>- **messages**: Must be non-empty list

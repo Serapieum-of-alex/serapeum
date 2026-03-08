@@ -85,6 +85,83 @@ response = llm.complete("Hello")
 ```
 ````
 
+## Filtering Code Blocks by Custom Markers
+
+You can tag individual Python code blocks with custom markers such as `function_calling` or `ci`,
+then use the `--md-marker` flag to run only the blocks that carry a specific tag.
+
+### Tagging a Code Block
+
+Append one or more marker names after the language identifier on the opening fence:
+
+````markdown
+```python function_calling
+# Runs only when --md-marker function_calling is passed
+result = expensive_function_calling_call()
+```
+
+```python ci
+# Runs only when --md-marker ci is passed
+result = ci_only_call()
+```
+
+```python
+# Untagged — runs normally, but is skipped when --md-marker is active
+result = always_runs()
+```
+````
+
+Tags compose freely with the built-in modifiers:
+
+````markdown
+```python function_calling continuation fixture:my_fixture
+# tagged 'function_calling', shares state with the previous block, and injects my_fixture
+```
+````
+
+### Running Tagged Blocks
+
+```bash
+# Run only blocks tagged 'function_calling'
+python -m pytest --markdown-docs --md-marker function_calling docs/
+
+# Run blocks tagged 'function_calling' OR 'ci'
+python -m pytest --markdown-docs --md-marker function_calling --md-marker ci docs/
+
+# Run all blocks (default — unchanged behaviour)
+python -m pytest --markdown-docs docs/
+```
+
+Because each tag is added as a real pytest marker, you can also use standard `-m` expressions:
+
+```bash
+# Same as --md-marker function_calling
+python -m pytest --markdown-docs -m function_calling docs/
+
+# Boolean expressions work too
+python -m pytest --markdown-docs -m "function_calling and not ci" docs/
+```
+
+### Listing Which Blocks Have Markers
+
+Combine `--collect-only` with `--md-marker` to preview what would run:
+
+```bash
+python -m pytest --collect-only --markdown-docs --md-marker function_calling docs/
+```
+
+### Registering New Markers
+
+The `function_calling` and `ci` markers are registered in `pyproject.toml` under `[tool.pytest.ini_options].markers`.
+If you introduce a new tag (e.g., `gpu`), add it there to suppress unknown-marker warnings:
+
+```toml
+markers = [
+    # ...existing markers...
+    "gpu: markdown code block requiring a GPU",
+]
+```
+
 ## Environment Variables
 
 Code blocks that call the Ollama cloud API require `OLLAMA_API_KEY` to be set. Load it from a `.env` file before running:

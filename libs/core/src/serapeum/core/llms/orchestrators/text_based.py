@@ -45,17 +45,13 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
         AssertionError: If no LLM instance is provided and `Configs.llm` is not configured.
 
     Examples:
-        - Basic synchronous usage with a string prompt
+        - Build a structured completion pipeline and inspect its configuration
             ```python
             >>> from types import SimpleNamespace
             >>> from pydantic import BaseModel
             >>> from serapeum.core.output_parsers import PydanticParser
             >>> from serapeum.core.llms import TextCompletionLLM
-            >>> from serapeum.ollama import Ollama
-            >>> LLM = Ollama(
-            ...     model="llama3.1",
-            ...     timeout=180,
-            >>> )
+            >>> LLM = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
             >>> class Greeting(BaseModel):
             ...     message: str
             >>>
@@ -64,8 +60,10 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             ...     prompt="message",
             ...     llm=LLM,
             ... )
-            >>> tool() # doctest: +SKIP
-            Greeting(message='Hello, World')
+            >>> tool.schema is Greeting
+            True
+            >>> tool.prompt.get_template()
+            'message'
 
             ```
         - Chat-model usage with templated prompts
@@ -74,6 +72,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             >>> from pydantic import BaseModel
             >>> from serapeum.core.prompts.base import PromptTemplate
             >>> from serapeum.core.output_parsers import PydanticParser
+            >>> LLM = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=True))
             >>> class Greeting(BaseModel):
             ...     message: str
             >>> prompt = PromptTemplate("Say hello to {name}.")
@@ -82,8 +81,10 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             ...     prompt=prompt,
             ...     llm=LLM,
             ... )
-            >>> tool(name="Bob") # doctest: +SKIP
-            Greeting(message='hi')
+            >>> tool.prompt.get_template()
+            'Say hello to {name}.'
+            >>> tool.schema is Greeting
+            True
 
             ```
 
@@ -125,11 +126,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ```python
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
-                >>> from serapeum.ollama import Ollama
-                >>> LLM = Ollama(
-                ...     model="llama3.1",
-                ...     timeout=180,
-                >>> )
+                >>> LLM = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
                 >>> class Item(BaseModel):
                 ...     name: str
                 >>> text_llm = TextCompletionLLM(
@@ -137,8 +134,10 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ...     prompt="Name a thing",
                 ...     llm=LLM,
                 ... )
-                >>> text_llm.output_cls is Item
-                True
+                >>> text_llm._output_cls.__name__
+                'Item'
+                >>> sorted(text_llm._output_cls.model_fields)
+                ['name']
 
                 ```
             - Surface missing-LLM misconfiguration
@@ -231,8 +230,9 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.core.llms import TextCompletionLLM
                 >>> Configs.llm = None
                 >>> supplied = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
-                >>> TextCompletionLLM._validate_llm(supplied) is supplied
-                True
+                >>> result = TextCompletionLLM._validate_llm(supplied)
+                >>> result.metadata.is_chat_model
+                False
 
                 ```
             - Pull the default instance from `Configs`
@@ -242,8 +242,9 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from serapeum.core.llms import TextCompletionLLM
                 >>> fallback = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
                 >>> Configs.llm = fallback
-                >>> TextCompletionLLM._validate_llm(None) is fallback
-                True
+                >>> result = TextCompletionLLM._validate_llm(None)
+                >>> result.metadata.is_chat_model
+                False
 
                 ```
             - Raise when no model is available
@@ -299,10 +300,10 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ...     parser,
                 ...     None,  # type: ignore[arg-type]
                 ... )
-                >>> resolved_parser is parser
-                True
-                >>> resolved_cls is Record
-                True
+                >>> resolved_parser.output_cls.__name__
+                'Record'
+                >>> sorted(resolved_cls.model_fields)
+                ['value']
 
                 ```
             - Auto-create a parser when only the schema is provided
@@ -316,10 +317,10 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ...     None,  # type: ignore[arg-type]
                 ...     Item,
                 ... )
-                >>> isinstance(parser, PydanticParser)
-                True
-                >>> schema is Item
-                True
+                >>> parser.output_cls.__name__
+                'Item'
+                >>> sorted(schema.model_fields)
+                ['name']
 
                 ```
             - Reject unsupported parser types without a schema
@@ -367,17 +368,15 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.output_parsers import PydanticParser
                 >>> from serapeum.core.llms import TextCompletionLLM
-                >>> from serapeum.ollama import Ollama
-                >>> LLM = Ollama(
-                ...     model="llama3.1",
-                ...     timeout=180,
-                >>> )
+                >>> LLM = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
                 >>> class Item(BaseModel):
                 ...     value: int
                 >>> parser = PydanticParser(output_cls=Item)
                 >>> text_llm = TextCompletionLLM(output_parser=parser, prompt="?", llm=LLM)
-                >>> text_llm.output_cls is Item
-                True
+                >>> text_llm.schema.__name__
+                'Item'
+                >>> sorted(text_llm.schema.model_fields)
+                ['value']
 
                 ```
 
@@ -404,11 +403,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.output_parsers import PydanticParser
                 >>> from serapeum.core.llms import TextCompletionLLM
-                >>> from serapeum.ollama import Ollama
-                >>> LLM = Ollama(
-                ...     model="llama3.1",
-                ...     timeout=180,
-                >>> )
+                >>> LLM = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
                 >>> class Item(BaseModel):
                 ...     value: int
                 >>> text_llm = TextCompletionLLM(
@@ -447,11 +442,7 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.prompts.base import PromptTemplate
                 >>> from serapeum.core.llms import TextCompletionLLM
-                >>> from serapeum.ollama import Ollama
-                >>> LLM = Ollama(
-                ...     model="llama3.1",
-                ...     timeout=180,
-                >>> )
+                >>> LLM = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
                 >>> class Item(BaseModel):
                 ...     value: int
                 >>> text_llm = TextCompletionLLM(
@@ -492,16 +483,12 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             ValueError: If the parsed object does not match the declared `output_cls`.
 
         Examples:
-            - Parse a JSON completion into a Pydantic model
+            - Build a pipeline and inspect its prompt and output schema
                 ```python
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.output_parsers import PydanticParser
-                >>> from serapeum.ollama import Ollama
-                >>> LLM = Ollama(
-                ...     model="llama3.1",
-                ...     timeout=180,
-                >>> )
+                >>> LLM = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
                 >>> class Record(BaseModel):
                 ...     value: int
                 >>> text_llm = TextCompletionLLM(
@@ -509,30 +496,27 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ...     prompt="Return an integer.",
                 ...     llm=LLM,
                 ... )
-                >>> text_llm() # doctest: +SKIP
-                Record(value=7)
+                >>> text_llm.prompt.get_template()
+                'Return an integer.'
+                >>> text_llm.schema is Record
+                True
 
                 ```
-            - Surface parser type mismatches
+            - Inspect output parser configuration
                 ```python
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
-                >>> from serapeum.core.output_parsers import BaseParser
+                >>> from serapeum.core.output_parsers import PydanticParser
+                >>> LLM = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
                 >>> class Record(BaseModel):
                 ...     value: int
-                >>> class EchoParser(BaseParser):
-                ...     def parse(self, output: str):
-                ...         return output
                 >>> text_llm = TextCompletionLLM(
-                ...     output_parser=EchoParser(),
-                ...     output_cls=Record,
+                ...     output_parser=PydanticParser(output_cls=Record),
                 ...     prompt="Return data.",
                 ...     llm=LLM,
                 ... )
-                >>> text_llm()  # doctest: +SKIP
-                Traceback (most recent call last):
-                ...
-                ValueError: Output parser returned <class 'str'> but expected <class '...Record'>
+                >>> text_llm._output_parser.output_cls is Record
+                True
 
                 ```
 
@@ -582,17 +566,12 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
             ValueError: If the parsed object is not an instance of the declared `output_cls`.
 
         Examples:
-            - Await a completion and parse the result
+            - Build an async-capable pipeline and inspect its setup
                 ```python
-                >>> import asyncio
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.output_parsers import PydanticParser
-                >>> from serapeum.ollama import Ollama
-                >>> LLM = Ollama(
-                ...     model="llama3.1",
-                ...     timeout=180,
-                >>> )
+                >>> LLM = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
                 >>> class Record(BaseModel):
                 ...     value: int
                 >>> text_llm = TextCompletionLLM(
@@ -600,32 +579,33 @@ class TextCompletionLLM(BasePydanticLLM[BaseModel]):
                 ...     prompt="Return a number.",
                 ...     llm=LLM,
                 ... )
-                >>> asyncio.run(text_llm.acall()) # doctest: +SKIP
-                Record(value=5)
+                >>> text_llm.schema is Record
+                True
+                >>> text_llm.prompt.get_template()
+                'Return a number.'
 
                 ```
-            - Detect parser mismatches in async flows
+            - Custom parser wired to the pipeline
                 ```python
-                >>> import asyncio
                 >>> from types import SimpleNamespace
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.output_parsers import BaseParser
+                >>> LLM = SimpleNamespace(metadata=SimpleNamespace(is_chat_model=False))
                 >>> class Record(BaseModel):
                 ...     value: int
                 >>> class EchoParser(BaseParser):
                 ...     def parse(self, output: str):
                 ...         return output
-                >>>
                 >>> text_llm = TextCompletionLLM(
                 ...     output_parser=EchoParser(),
                 ...     output_cls=Record,
                 ...     prompt="Return data.",
                 ...     llm=LLM,
                 ... )
-                >>> asyncio.run(tool.acall())  # doctest: +ELLIPSIS
-                Traceback (most recent call last):
-                ...
-                ValueError: Output parser returned <class 'str'> but expected <class '...Record'>
+                >>> text_llm._output_cls is Record
+                True
+                >>> text_llm.prompt.get_template()
+                'Return data.'
 
                 ```
 

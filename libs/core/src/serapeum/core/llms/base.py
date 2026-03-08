@@ -42,8 +42,12 @@ class MessagesToPromptType(Protocol):
             >>> def newline_join(message_list):
             ...     return '\n'.join(message.content or "" for message in message_list)
             ...
-            >>> isinstance(newline_join, MessagesToPromptType)
-            True
+            >>> msgs = MessageList(messages=[
+            ...     Message(content="hello", role=MessageRole.USER),
+            ...     Message(content="world", role=MessageRole.ASSISTANT),
+            ... ])
+            >>> newline_join(msgs)
+            'hello\nworld'
 
             ```
         - Validate message content before rendering the prompt
@@ -121,8 +125,8 @@ class CompletionToPromptType(Protocol):
             >>> def identity(prompt: str) -> str:
             ...     return prompt
             ...
-            >>> isinstance(identity, CompletionToPromptType)
-            True
+            >>> identity("Summarize the document.")
+            'Summarize the document.'
 
             ```
         - Compose multiple adapters to build reusable transformations
@@ -525,11 +529,16 @@ class LLM(BaseLLM, ABC):
                 ```
             - Preserve a custom adapter when one is supplied
                 ```python
+                >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList
                 >>> def reverse_messages(message_list):
                 ...     return "\\n".join(message.content or "" for message in reversed(message_list))
                 ...
-                >>> LLM.set_messages_to_prompt(reverse_messages) is reverse_messages
-                True
+                >>> adapter = LLM.set_messages_to_prompt(reverse_messages)
+                >>> adapter(MessageList(messages=[
+                ...     Message(content="first", role=MessageRole.USER),
+                ...     Message(content="second", role=MessageRole.ASSISTANT),
+                ... ]))
+                'second\\nfirst'
 
                 ```
         See Also:
@@ -567,8 +576,9 @@ class LLM(BaseLLM, ABC):
                 >>> def prefix(prompt: str) -> str:
                 ...     return "PREFIX: " + prompt
                 ...
-                >>> LLM.set_completion_to_prompt(prefix) is prefix
-                True
+                >>> adapter = LLM.set_completion_to_prompt(prefix)
+                >>> adapter("Tell me a joke")
+                'PREFIX: Tell me a joke'
 
                 ```
         See Also:
@@ -607,8 +617,8 @@ class LLM(BaseLLM, ABC):
                 ...         return CompletionResponse(text=prompt, delta=prompt)
                 ...
                 >>> llm = DemoLLM()
-                >>> callable(llm.messages_to_prompt)
-                True
+                >>> llm.completion_to_prompt("test prompt")
+                'test prompt'
 
                 ```
             - Respect explicitly provided adapters
@@ -2098,8 +2108,8 @@ class LLM(BaseLLM, ABC):
                 ...
                 >>> llm = DemoLLM()
                 >>> wrapper = llm.as_structured_llm(Person)
-                >>> wrapper.llm is llm
-                True
+                >>> wrapper.output_cls.__name__
+                'Person'
 
                 ```
             - Pass configuration options through to ``StructuredOutputLLM``

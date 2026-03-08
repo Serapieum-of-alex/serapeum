@@ -216,10 +216,12 @@ class ToolExecutor:
             Exception: If ``raise_on_error`` is True and execution fails.
 
         Examples:
-            - Creating an executor (avoid running event loops in doctests)
+            - Creating an executor and inspecting its config
                 ```python
-                >>> exec_async = ToolExecutor()
-                >>> isinstance(exec_async, ToolExecutor)
+                >>> executor = ToolExecutor()
+                >>> executor.config.raise_on_error
+                False
+                >>> executor.config.single_arg_auto_unpack
                 True
 
                 ```
@@ -317,10 +319,11 @@ class ToolExecutor:
             KeyError: If the selected tool is not found in the tools sequence.
 
         Examples:
-            - Creating an executor (avoid running event loops in doctests)
+            - Creating an executor and inspecting its config
                 ```python
-                >>> isinstance(ToolExecutor(), ToolExecutor)
-                True
+                >>> executor = ToolExecutor()
+                >>> executor.config.verbose
+                False
 
                 ```
         """

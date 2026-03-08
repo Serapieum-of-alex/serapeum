@@ -115,9 +115,9 @@ class AgentChatResponse:
             ```python
             >>> try:
             ...     _ = list(AgentChatResponse(response="hi").response_gen)
-            ... except Exception as e:
-            ...     type(e).__name__
-            'ValueError'
+            ... except ValueError as e:
+            ...     str(e)[:20]
+            'response_gen is only'
 
             ```
         """
@@ -162,10 +162,10 @@ class AgentChatResponse:
             ...     try:
             ...         async for _ in AgentChatResponse(response="x").async_response_gen():
             ...             pass
-            ...     except Exception as e:
-            ...         return type(e).__name__
+            ...     except ValueError as e:
+            ...         return str(e)[:20]
             >>> asyncio.run(try_access())
-            'ValueError'
+            'response_gen is only'
 
             ```
         """
@@ -244,13 +244,13 @@ class AgentChatResponse:
             'Bob'
 
             ```
-        - Empty sources result in ``IndexError`` when parallel calls are disabled
+        - Empty sources raise ``IndexError`` when parallel calls are disabled
             ```python
             >>> try:
             ...     AgentChatResponse().parse_tool_outputs()
-            ... except Exception as e:
-            ...     type(e).__name__
-            'IndexError'
+            ... except IndexError:
+            ...     print("no sources available")
+            no sources available
 
             ```
 

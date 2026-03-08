@@ -666,8 +666,8 @@ class CallableTool(AsyncBaseTool):
                 ```python
                 >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> chunks = CallableTool._parse_tool_output("hello")
-                >>> print(type(chunks[0]).__name__, getattr(chunks[0], 'content', None))
-                TextChunk hello
+                >>> chunks[0].content
+                'hello'
 
                 ```
             - List of TextChunk values is preserved
@@ -676,8 +676,8 @@ class CallableTool(AsyncBaseTool):
                 >>> from serapeum.core.tools.callable_tool import CallableTool
                 >>> lst = [TextChunk(content="a"), TextChunk(content="b")]
                 >>> chunks = CallableTool._parse_tool_output(lst)
-                >>> print(len(chunks), type(chunks[1]).__name__)
-                2 TextChunk
+                >>> chunks[0].content, chunks[1].content
+                ('a', 'b')
 
                 ```
         """

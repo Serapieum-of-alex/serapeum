@@ -56,15 +56,11 @@ class MinimalToolSchema(BaseModel):
         - Validation error on missing required field
             ```python
             >>> from pydantic import ValidationError
-            >>> def build_invalid():
-            ...     # missing required field "input"
-            ...     MinimalToolSchema()  # type: ignore[call-arg]
-            ...
             >>> try:
-            ...     build_invalid()
+            ...     MinimalToolSchema()  # type: ignore[call-arg]
             ... except ValidationError as e:
-            ...     print(type(e).__name__)
-            ValidationError
+            ...     print(e.error_count(), "validation error")
+            1 validation error
 
             ```
 
@@ -110,8 +106,8 @@ class ToolMetadata:
             >>> params = meta.get_schema()
             >>> sorted(params.keys())
             ['properties', 'required', 'type']
-            >>> 'input' in params['properties']
-            True
+            >>> sorted(params['properties'].keys())
+            ['input']
 
             ```
 
@@ -237,8 +233,8 @@ class ToolMetadata:
                 >>> parsed = json.loads(s)
                 >>> sorted(parsed.keys())
                 ['properties', 'required', 'type']
-                >>> 'input' in parsed['properties']
-                True
+                >>> sorted(parsed['properties'].keys())
+                ['input']
 
                 ```
 
@@ -389,8 +385,8 @@ class ToolMetadata:
                 >>> try:
                 ...     meta.to_openai_tool()
                 ... except ValueError as e:
-                ...     print("exceeds" in str(e))
-                True
+                ...     print(str(e).split('.')[0])
+                Tool description exceeds maximum length of 1024 characters
 
                 ```
         """
@@ -477,8 +473,8 @@ class ToolOutput(BaseModel):
             >>> try:
             ...     ToolOutput(tool_name="echo", content="x", chunks=[TextChunk(content="y")])
             ... except ValueError as e:
-            ...     print("Cannot provide both" in str(e))
-            True
+            ...     print(str(e))
+            Cannot provide both content and chunks.
 
             ```
 
@@ -720,8 +716,8 @@ class BaseTool:
                 ...         return ToolOutput(tool_name="echo", content=input_values.get("input", ""))
                 ...
                 >>> async_tool = Echo().to_async_tool()
-                >>> type(async_tool)
-                <class 'serapeum.core.tools.types.BaseToolAsyncAdapter'>
+                >>> async_tool.metadata.get_name()
+                'echo'
                 >>> asyncio.run(async_tool.acall({"input": "hi"})).content
                 'hi'
 
@@ -915,20 +911,22 @@ class ToolCallArguments(BaseModel):
 
         - Non-dict ``tool_kwargs`` are replaced with an empty dict
             ```python
+            >>> from serapeum.core.tools.types import ToolCallArguments
             >>> sel = ToolCallArguments(tool_id="id-1", tool_name="echo", tool_kwargs="not-a-dict")
-            >>> sel.tool_kwargs == {}
-            True
+            >>> sel.tool_kwargs
+            {}
 
             ```
 
         - Missing required fields raise a ValidationError
             ```python
             >>> from pydantic import ValidationError
+            >>> from serapeum.core.tools.types import ToolCallArguments
             >>> try:
             ...     ToolCallArguments(tool_id="only-id", tool_kwargs={})  # missing tool_name
             ... except ValidationError as e:
-            ...     print(type(e).__name__)
-            ValidationError
+            ...     print(e.error_count(), "validation error")
+            1 validation error
 
             ```
 

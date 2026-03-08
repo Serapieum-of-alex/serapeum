@@ -176,8 +176,8 @@ class NodeInfo(SerializableModel):
             >>> content = "Sample text"
             >>> content_hash = hashlib.sha256(content.encode()).hexdigest()
             >>> ref = NodeInfo(id="node-2", hash=content_hash)
-            >>> ref.hash[:8]  # First 8 chars of hash  # doctest: +SKIP
-            'e3b0c442'
+            >>> ref.hash[:8]
+            '3a2c5c49'
 
             ```
 
@@ -246,10 +246,10 @@ class MetadataMode(str, Enum):
             True
 
             ```
-        - Checking mode type
+        - All mode values are plain strings
             ```python
-            >>> isinstance(MetadataMode.ALL, str)
-            True
+            >>> MetadataMode.ALL.value
+            'all'
 
             ```
 
@@ -318,8 +318,8 @@ class LinkedNodes(SerializableModel):
             >>> child1 = NodeInfo(id="para-1")
             >>> child2 = NodeInfo(id="para-2")
             >>> links = LinkedNodes(parent=parent, children=[child1, child2])
-            >>> len(links.children)
-            2
+            >>> [c.id for c in links.children]
+            ['para-1', 'para-2']
 
             ```
         - Using factory method with NodeType enum
@@ -383,12 +383,14 @@ class LinkedNodes(SerializableModel):
                 'valid'
 
                 ```
-            - Invalid list assignment to single-node field
+            - Invalid list assignment to single-node field raises ValidationError
                 ```python
-                >>> LinkedNodes(source=[NodeInfo(id="bad")])  # doctest: +SKIP
-                Traceback (most recent call last):
-                    ...
-                ValueError: Must be a NodeInfo object, not a list
+                >>> from pydantic import ValidationError
+                >>> try:
+                ...     LinkedNodes(source=[NodeInfo(id="bad")])
+                ... except ValidationError as e:
+                ...     'source' in str(e)
+                True
 
                 ```
 
@@ -424,16 +426,18 @@ class LinkedNodes(SerializableModel):
                 >>> child1 = NodeInfo(id="child-1")
                 >>> child2 = NodeInfo(id="child-2")
                 >>> links = LinkedNodes(children=[child1, child2])
-                >>> len(links.children)
-                2
+                >>> [c.id for c in links.children]
+                ['child-1', 'child-2']
 
                 ```
-            - Invalid single NodeInfo for children
+            - Invalid single NodeInfo for children raises ValidationError
                 ```python
-                >>> LinkedNodes(children=NodeInfo(id="bad"))  # doctest: +SKIP
-                Traceback (most recent call last):
-                    ...
-                ValueError: Children must be a list of NodeInfo objects
+                >>> from pydantic import ValidationError
+                >>> try:
+                ...     LinkedNodes(children=NodeInfo(id="bad"))
+                ... except ValidationError as e:
+                ...     'children' in str(e)
+                True
 
                 ```
             - Empty children list is valid
@@ -949,8 +953,8 @@ class BaseNode(SerializableModel, ABC):
             >>> node.links = {NodeType.PARENT: parent, NodeType.CHILD: [child1, child2]}
             >>> node.linked_nodes.parent.id
             'parent-1'
-            >>> len(node.linked_nodes.children)
-            2
+            >>> [c.id for c in node.linked_nodes.children]
+            ['child-1', 'child-2']
         """
         if self.linked_nodes_cache is None:
             # Compute and cache the LinkedNodes

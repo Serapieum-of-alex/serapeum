@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import re
 from typing import TYPE_CHECKING, Any, Sequence, Type, TypeVar
 
 from pydantic import BaseModel, ConfigDict, ValidationError, create_model
@@ -330,53 +332,46 @@ def _extract_partial_list_progress(
     list additions even when JSON is malformed.
     """
     if not isinstance(content, str) or cur_object is None:
-        return None
+        result = None
+    else:
+        try:
+            # Try to extract list patterns from incomplete JSON
+            # Look for patterns like: "jokes": [{"setup": "...", "punchline": "..."}
+            list_pattern = r'"(\w+)":\s*\[([^\]]*)'
+            matches = re.findall(list_pattern, content)
+            if not matches:
+                result = None
+            else:
+                # Start with current object data
+                current_data = (
+                    cur_object.model_dump() if hasattr(cur_object, "model_dump") else {}
+                )
 
-    try:
-        import re
+                for field_name, list_content in matches:
+                    if (
+                            hasattr(output_cls, "model_fields")
+                            and field_name in output_cls.model_fields
+                    ):
+                        items = _parse_partial_list_items(list_content, field_name, output_cls)
+                        if items:
+                            current_data[field_name] = items
 
-        # Try to extract list patterns from incomplete JSON
-        # Look for patterns like: "jokes": [{"setup": "...", "punchline": "..."}
-        list_pattern = r'"(\w+)":\s*\[([^\]]*)'
-        matches = re.findall(list_pattern, content)
+                result = partial_output_cls.model_validate(current_data)
 
-        if not matches:
-            return None
+        except (ValidationError, ValueError, TypeError, KeyError) as exc:
+            _logger.debug("Failed to extract partial list progress: %s", exc)
+            result = None
 
-        # Start with current object data
-        current_data = (
-            cur_object.model_dump() if hasattr(cur_object, "model_dump") else {}
-        )
-
-        for field_name, list_content in matches:
-            if (
-                    hasattr(output_cls, "model_fields")
-                    and field_name in output_cls.model_fields
-            ):
-                # Try to parse individual items from the list content
-                items = _parse_partial_list_items(list_content, field_name, output_cls)
-                if items:
-                    current_data[field_name] = items
-
-        # Try to create object with updated data
-        return partial_output_cls.model_validate(current_data)
-
-    except Exception:
-        return None
+    return result
 
 
 def _parse_partial_list_items(
     list_content: str, field_name: str, output_cls: Type[Model]
 ) -> list:
-    """
-    Parse individual items from partial list content.
-    """
+    """Parse individual items from partial list content."""
+    items: list = []
+
     try:
-        import json
-        import re
-
-        items = []
-
         # Look for complete object patterns within the list
         # Pattern: {"key": "value", "key2": "value2"}
         object_pattern = r"\{[^{}]*\}"
@@ -384,7 +379,6 @@ def _parse_partial_list_items(
 
         for obj_str in object_matches:
             try:
-                # Try to parse as complete JSON object
                 obj_data = json.loads(obj_str)
                 items.append(obj_data)
             except (json.JSONDecodeError, SyntaxError):
@@ -396,7 +390,7 @@ def _parse_partial_list_items(
                 except (json.JSONDecodeError, SyntaxError):
                     continue
 
-        return items
+    except (ValueError, TypeError) as exc:
+        _logger.debug("Failed to parse partial list items for field '%s': %s", field_name, exc)
 
-    except Exception:
-        return []
+    return items

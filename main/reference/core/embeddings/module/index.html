@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -3362,14 +3362,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../contributing.md" class="md-nav__link">
+      <a href="../../../../developer-guide/contributing/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Contributing
+    contributing
   
 
     
@@ -8690,7 +8690,7 @@ SerializableModel: Base class providing serialization capabilities.</p>
 <a id="__codelineno-0-971" name="__codelineno-0-971"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get embedding.</span>
 <a id="__codelineno-0-972" name="__codelineno-0-972"></a>
 <a id="__codelineno-0-973" name="__codelineno-0-973"></a><span class="sd">        Raises:</span>
-<a id="__codelineno-0-974" name="__codelineno-0-974"></a><span class="sd">            ValueErrors if embedding is None.</span>
+<a id="__codelineno-0-974" name="__codelineno-0-974"></a><span class="sd">            ValueError: if embedding is None.</span>
 <a id="__codelineno-0-975" name="__codelineno-0-975"></a><span class="sd">        &quot;&quot;&quot;</span>
 <a id="__codelineno-0-976" name="__codelineno-0-976"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 <a id="__codelineno-0-977" name="__codelineno-0-977"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;embedding not set.&quot;</span><span class="p">)</span>
@@ -8926,6 +8926,29 @@ when the links field is reassigned through Pydantic's field validation.</p>
         <p>Get embedding.</p>
 
 
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>if embedding is None.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
             <details class="mkdocstrings-source">
               <summary>Source code in <code>libs/core/src/serapeum/core/base/embeddings/types.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-970">970</a></span>
@@ -8940,7 +8963,7 @@ when the links field is reassigned through Pydantic's field validation.</p>
 <a id="__codelineno-0-971" name="__codelineno-0-971"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get embedding.</span>
 <a id="__codelineno-0-972" name="__codelineno-0-972"></a>
 <a id="__codelineno-0-973" name="__codelineno-0-973"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-974" name="__codelineno-0-974"></a><span class="sd">        ValueErrors if embedding is None.</span>
+<a id="__codelineno-0-974" name="__codelineno-0-974"></a><span class="sd">        ValueError: if embedding is None.</span>
 <a id="__codelineno-0-975" name="__codelineno-0-975"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-976" name="__codelineno-0-976"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 <a id="__codelineno-0-977" name="__codelineno-0-977"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;embedding not set.&quot;</span><span class="p">)</span>

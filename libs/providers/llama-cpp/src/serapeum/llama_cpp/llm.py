@@ -88,7 +88,7 @@ class LlamaCPP(Retry, CompletionToChat, LLM):  # type: ignore[misc]
             llm = await asyncio.to_thread(LlamaCPP, model_path="...", ...)
 
     Examples:
-        - Load a Llama 3 instruct model from a local path and run a completion
+        - Load a model with Llama 3 formatters and explore the instance
             ```python
             >>> import os
             >>> from serapeum.llama_cpp import LlamaCPP
@@ -96,38 +96,44 @@ class LlamaCPP(Retry, CompletionToChat, LLM):  # type: ignore[misc]
             ...     messages_to_prompt_v3_instruct,
             ...     completion_to_prompt_v3_instruct,
             ... )
-            >>> model_path = "path/to/llama-3-8b-instruct-v0.1.Q2_K.gguf"
             >>> llm_v3 = LlamaCPP(
-            ...     model_path=model_path,
+            ...     model_path=os.environ["LLAMA_MODEL_PATH"],
             ...     temperature=0.1,
             ...     max_new_tokens=256,
             ...     context_window=512,
             ...     messages_to_prompt=messages_to_prompt_v3_instruct,
             ...     completion_to_prompt=completion_to_prompt_v3_instruct,
             ... )
-            >>> response = llm_v3.complete("Hello, how are you?")
-            >>> response.text
-            'He, Annaxter...'
+            >>> llm_v3.temperature
+            0.1
+            >>> llm_v3.max_new_tokens
+            256
+            >>> llm_v3.context_window
+            512
 
             ```
-        - Load a Llama 2 / Mistral model from a local path
+        - Load a model with Llama 2 formatters and different settings
             ```python
+            >>> import os
             >>> from serapeum.llama_cpp import LlamaCPP
             >>> from serapeum.llama_cpp.formatters.llama2 import (
             ...     messages_to_prompt,
             ...     completion_to_prompt,
             ... )
             >>> llm_v2 = LlamaCPP(
-            ...     model_path="path/to/mistral-7b-instruct-v0.1.Q2_K.gguf",
-            ...     temperature=0.1,
-            ...     max_new_tokens=256,
+            ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+            ...     temperature=0.5,
+            ...     max_new_tokens=128,
             ...     context_window=512,
             ...     messages_to_prompt=messages_to_prompt,
             ...     completion_to_prompt=completion_to_prompt,
             ... )
-            >>> response = llm_v2.complete("Hello, how are you?")
-            >>> response.text
-            " I'm doing well, thank you for asking!"
+            >>> llm_v2.temperature
+            0.5
+            >>> llm_v2.max_new_tokens
+            128
+            >>> LlamaCPP.class_name()
+            'LlamaCPP'
 
             ```
     """
@@ -423,13 +429,27 @@ class LlamaCPP(Retry, CompletionToChat, LLM):  # type: ignore[misc]
         Examples:
             - Inspect metadata fields of a loaded model
                 ```python
+                >>> import os
+                >>> from serapeum.llama_cpp import LlamaCPP
+                >>> from serapeum.llama_cpp.formatters.llama3 import (
+                ...     messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm = LlamaCPP(
+                ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+                ...     temperature=0.1,
+                ...     max_new_tokens=256,
+                ...     context_window=512,
+                ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+                ... )
                 >>> meta = llm.metadata
-                >>> meta.model_name
-                '/models/llama-3-8b-instruct.Q4_0.gguf'
-                >>> meta.num_output
-                256
                 >>> meta.context_window
                 512
+                >>> meta.num_output
+                256
+                >>> meta.model_name.split(".")[-1]
+                'gguf'
 
                 ```
 
@@ -454,11 +474,49 @@ class LlamaCPP(Retry, CompletionToChat, LLM):  # type: ignore[misc]
         Examples:
             - Tokenize a short string and explore the token IDs
                 ```python
+                >>> import os
+                >>> from serapeum.llama_cpp import LlamaCPP
+                >>> from serapeum.llama_cpp.formatters.llama3 import (
+                ...     messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm = LlamaCPP(
+                ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+                ...     temperature=0.1,
+                ...     max_new_tokens=256,
+                ...     context_window=512,
+                ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+                ... )
                 >>> tokens = llm.tokenize("Hello!")
-                >>> len(tokens)
-                4
-                >>> tokens[:3]
-                [1, 15043, 29991]
+                >>> tokens[0]
+                1
+                >>> all(t >= 0 for t in tokens)
+                True
+
+                ```
+            - Longer text produces more tokens
+                ```python
+                >>> import os
+                >>> from serapeum.llama_cpp import LlamaCPP
+                >>> from serapeum.llama_cpp.formatters.llama3 import (
+                ...     messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm = LlamaCPP(
+                ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+                ...     temperature=0.1,
+                ...     max_new_tokens=256,
+                ...     context_window=512,
+                ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+                ... )
+                >>> short = llm.tokenize("Hi")
+                >>> long = llm.tokenize("Hello, how are you doing today?")
+                >>> short[0] == long[0]  # both start with the BOS token
+                True
+                >>> len(long) > len(short)  # more text yields more tokens
+                True
 
                 ```
 
@@ -478,12 +536,48 @@ class LlamaCPP(Retry, CompletionToChat, LLM):  # type: ignore[misc]
             Integer token count for *text*.
 
         Examples:
-            - Count tokens in phrases of different lengths
+            - count_tokens is consistent with tokenize
                 ```python
-                >>> llm.count_tokens("Hello!")
-                4
-                >>> llm.count_tokens("A longer sentence has more tokens.")
-                9
+                >>> import os
+                >>> from serapeum.llama_cpp import LlamaCPP
+                >>> from serapeum.llama_cpp.formatters.llama3 import (
+                ...     messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm = LlamaCPP(
+                ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+                ...     temperature=0.1,
+                ...     max_new_tokens=256,
+                ...     context_window=512,
+                ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm.count_tokens("Hello!") == len(llm.tokenize("Hello!"))
+                True
+
+                ```
+            - Longer text yields a higher count
+                ```python
+                >>> import os
+                >>> from serapeum.llama_cpp import LlamaCPP
+                >>> from serapeum.llama_cpp.formatters.llama3 import (
+                ...     messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm = LlamaCPP(
+                ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+                ...     temperature=0.1,
+                ...     max_new_tokens=256,
+                ...     context_window=512,
+                ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+                ... )
+                >>> short_count = llm.count_tokens("Hi")
+                >>> long_count = llm.count_tokens("Hello, how are you doing today?")
+                >>> long_count > short_count  # more text yields a higher count
+                True
+                >>> short_count == len(llm.tokenize("Hi"))  # consistent with tokenize
+                True
 
                 ```
 
@@ -508,15 +602,43 @@ class LlamaCPP(Retry, CompletionToChat, LLM):  # type: ignore[misc]
         Examples:
             - A prompt within the context window raises no error
                 ```python
+                >>> import os
+                >>> from serapeum.llama_cpp import LlamaCPP
+                >>> from serapeum.llama_cpp.formatters.llama3 import (
+                ...     messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm = LlamaCPP(
+                ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+                ...     temperature=0.1,
+                ...     max_new_tokens=256,
+                ...     context_window=512,
+                ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+                ... )
                 >>> llm._guard_context("Short prompt.")
 
                 ```
             - A prompt that exceeds the context window raises ValueError
                 ```python
-                >>> llm._guard_context("word " * 10_000)
+                >>> import os
+                >>> from serapeum.llama_cpp import LlamaCPP
+                >>> from serapeum.llama_cpp.formatters.llama3 import (
+                ...     messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm = LlamaCPP(
+                ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+                ...     temperature=0.1,
+                ...     max_new_tokens=256,
+                ...     context_window=512,
+                ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm._guard_context("word " * 10_000)  # doctest: +ELLIPSIS
                 Traceback (most recent call last):
                     ...
-                ValueError: Prompt is 10001 tokens but context_window is 512...
+                ValueError: Prompt is ... tokens but context_window is 512. ...
 
                 ```
 
@@ -580,23 +702,52 @@ class LlamaCPP(Retry, CompletionToChat, LLM):  # type: ignore[misc]
             ValueError: If *prompt* exceeds :attr:`context_window` tokens.
 
         Examples:
-            - Non-streaming completion — explore the response text and raw output
+            - Non-streaming completion — explore the response structure
                 ```python
-                >>> response = llm.complete("The capital of France is")
-                >>> response.text
-                ' Paris, the City of Light.'
-                >>> response.raw["choices"][0]["finish_reason"]
-                'stop'
+                >>> import os
+                >>> from serapeum.llama_cpp import LlamaCPP
+                >>> from serapeum.llama_cpp.formatters.llama3 import (
+                ...     messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm = LlamaCPP(
+                ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+                ...     temperature=0.1,
+                ...     max_new_tokens=256,
+                ...     context_window=512,
+                ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+                ... )
+                >>> response = llm.complete("Once upon a time")
+                >>> response.raw["choices"][0]["text"] == response.text
+                True
+                >>> sorted(response.raw.keys())
+                ['choices', 'created', 'id', 'model', 'object', 'usage']
+                >>> response.raw["usage"]["prompt_tokens"] > 0
+                True
 
                 ```
             - Streaming completion — iterate over token deltas
                 ```python
-                >>> gen = llm.complete("Hello", stream=True)
-                >>> first = next(gen)
-                >>> first.delta
-                ' there'
-                >>> first.text
-                ' there'
+                >>> import os
+                >>> from serapeum.llama_cpp import LlamaCPP
+                >>> from serapeum.llama_cpp.formatters.llama3 import (
+                ...     messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm = LlamaCPP(
+                ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+                ...     temperature=0.1,
+                ...     max_new_tokens=256,
+                ...     context_window=512,
+                ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+                ... )
+                >>> chunks = list(llm.complete("Once upon a time", stream=True))
+                >>> chunks[-1].text.startswith(chunks[0].delta)
+                True
+                >>> chunks[-1].text != chunks[0].delta
+                True
 
                 ```
 
@@ -674,22 +825,52 @@ class LlamaCPP(Retry, CompletionToChat, LLM):  # type: ignore[misc]
         Examples:
             - Non-streaming async completion — explore the response
                 ```python
+                >>> import os
                 >>> import asyncio
-                >>> response = asyncio.run(llm.acomplete("Hello"))
-                >>> response.text
-                ' there! How can I help you today?'
+                >>> from serapeum.llama_cpp import LlamaCPP
+                >>> from serapeum.llama_cpp.formatters.llama3 import (
+                ...     messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm = LlamaCPP(
+                ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+                ...     temperature=0.1,
+                ...     max_new_tokens=256,
+                ...     context_window=512,
+                ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+                ... )
+                >>> response = asyncio.run(llm.acomplete("Once upon a time"))
+                >>> response.raw["choices"][0]["text"] == response.text
+                True
+                >>> sorted(response.raw.keys())
+                ['choices', 'created', 'id', 'model', 'object', 'usage']
 
                 ```
             - Streaming async completion — collect and inspect chunks
                 ```python
+                >>> import os
                 >>> import asyncio
+                >>> from serapeum.llama_cpp import LlamaCPP
+                >>> from serapeum.llama_cpp.formatters.llama3 import (
+                ...     messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt_v3_instruct,
+                ... )
+                >>> llm = LlamaCPP(
+                ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+                ...     temperature=0.1,
+                ...     max_new_tokens=256,
+                ...     context_window=512,
+                ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+                ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+                ... )
                 >>> async def _collect():
-                ...     return [c async for c in await llm.acomplete("Hello", stream=True)]
+                ...     return [c async for c in await llm.acomplete("Once upon", stream=True)]
                 >>> chunks = asyncio.run(_collect())
-                >>> chunks[0].delta
-                ' there'
-                >>> chunks[-1].text
-                ' there! How can I help you today?'
+                >>> chunks[-1].text.startswith(chunks[0].delta)
+                True
+                >>> chunks[-1].text != chunks[0].delta
+                True
 
                 ```
 

@@ -52,19 +52,16 @@ def _fetch_model_file(model_url: str, model_path: Path) -> None:
         OSError: If ``model_path`` cannot be opened for writing.
 
     Examples:
-        - Download a GGUF model file to a local directory
-            ```python
-            >>> from pathlib import Path
-            >>> _fetch_model_file(
-            ...     "https://huggingface.co/TheBloke/Llama-2-7B-GGUF/resolve/main/llama-2-7b.Q4_0.gguf",
-            ...     Path("/models/llama-2-7b.Q4_0.gguf"),
-            ... ) # doctest: +SKIP
-            >>> Path("/models/llama-2-7b.Q4_0.gguf").exists() # doctest: +SKIP
-            True
-            >>> Path("/models/llama-2-7b.Q4_0.gguf").stat().st_size # doctest: +SKIP
-            3791725568
+        Download a GGUF model file to a local directory::
 
-            ```
+            from pathlib import Path
+            _fetch_model_file(
+                "https://huggingface.co/TheBloke/Llama-2-7B-GGUF/resolve/main/llama-2-7b.Q4_0.gguf",
+                Path("/models/llama-2-7b.Q4_0.gguf"),
+            )
+            # After download, the file exists at the target path:
+            Path("/models/llama-2-7b.Q4_0.gguf").exists()   # True
+            Path("/models/llama-2-7b.Q4_0.gguf").stat().st_size  # e.g. 3791725568
 
     See Also:
         tqdm: Progress bar library used to display download progress.
@@ -122,22 +119,17 @@ def _fetch_model_file_hf(repo_id: str, filename: str, cache_dir: Path) -> Path:
             errors, authentication failures, missing files, etc.
 
     Examples:
-        - Download a model file from HuggingFace Hub and explore the result
-            ```python
-            >>> from pathlib import Path
-            >>> model_path = _fetch_model_file_hf(
-            ...     "TheBloke/Llama-2-13B-chat-GGUF",
-            ...     "llama-2-13b-chat.Q4_0.gguf",
-            ...     Path("/tmp/hf_cache"),
-            ... ) # doctest: +SKIP
-            >>> model_path.name # doctest: +SKIP
-            'llama-2-13b-chat.Q4_0.gguf'
-            >>> model_path.suffix # doctest: +SKIP
-            '.gguf'
-            >>> model_path.exists() # doctest: +SKIP
-            True
+        Download a model file from HuggingFace Hub and explore the result::
 
-            ```
+            from pathlib import Path
+            model_path = _fetch_model_file_hf(
+                "TheBloke/Llama-2-13B-chat-GGUF",
+                "llama-2-13b-chat.Q4_0.gguf",
+                Path("/tmp/hf_cache"),
+            )
+            model_path.name       # 'llama-2-13b-chat.Q4_0.gguf'
+            model_path.suffix     # '.gguf'
+            model_path.exists()   # True
 
     See Also:
         _fetch_model_file: Direct-URL download alternative.

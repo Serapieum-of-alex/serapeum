@@ -7,20 +7,30 @@ or fetched from HuggingFace Hub.
 
 Typical usage:
 
-```python
->>> from serapeum.llama_cpp import LlamaCPP
->>> from serapeum.llama_cpp.formatters.llama3 import (
-... messages_to_prompt_v3_instruct,
-... completion_to_prompt_v3_instruct,
-... )
+- Load a local GGUF model with Llama 3 formatters and explore the instance
+    ```python
+    >>> import os
+    >>> from serapeum.llama_cpp import LlamaCPP
+    >>> from serapeum.llama_cpp.formatters.llama3 import (
+    ...     messages_to_prompt_v3_instruct,
+    ...     completion_to_prompt_v3_instruct,
+    ... )
+    >>> llm = LlamaCPP(
+    ...     model_path=os.environ["LLAMA_MODEL_PATH"],
+    ...     temperature=0.1,
+    ...     max_new_tokens=256,
+    ...     context_window=512,
+    ...     messages_to_prompt=messages_to_prompt_v3_instruct,
+    ...     completion_to_prompt=completion_to_prompt_v3_instruct,
+    ... )
+    >>> llm.temperature
+    0.1
+    >>> llm.max_new_tokens
+    256
+    >>> LlamaCPP.class_name()
+    'LlamaCPP'
 
->>> llm = LlamaCPP(
-... model_path="/models/llama-3-8b-instruct.Q4_0.gguf",
-... messages_to_prompt=messages_to_prompt_v3_instruct,
-... completion_to_prompt=completion_to_prompt_v3_instruct,
-... ) # doctest: +SKIP
->>> response = llm.complete("Hello!")  # doctest: +SKIP
-```
+    ```
 
 See Also:
     serapeum.llama_cpp.formatters.llama2: Prompt formatters for Llama 2 / Mistral models.

@@ -60,6 +60,7 @@ class CompletionToChat:
         ...         return CompletionResponse(text="Hello")
         ...
         >>> llm = MyCompletionLLM(model="example")
+
         ```
 
     See Also:

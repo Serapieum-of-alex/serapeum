@@ -1,6 +1,6 @@
-"""Mixin for converting chat interface to completion interface.
+"""adapters for converting chat interface to completion interface.
 
-This module provides a mixin class that implements completion methods by
+This module provides a adapters class that implements completion methods by
 delegating to chat methods. This is useful for LLM providers that primarily
 support a chat interface but need to implement the completion interface as well.
 """
@@ -19,16 +19,16 @@ __all__ = ["ChatToCompletion"]
 
 
 class ChatToCompletion:
-    """Mixin that provides completion methods by delegating to chat methods.
+    """adapters that provides completion methods by delegating to chat methods.
 
-    This mixin adds completion method implementations for classes that have
+    This adapters adds completion method implementations for classes that have
     chat methods. It uses duck typing and assumes the class it's mixed into
     implements the following methods:
 
     - ``chat(messages, stream, **kwargs) -> ChatResponse | ChatResponseGen``
     - ``achat(messages, stream, **kwargs) -> ChatResponse | ChatResponseAsyncGen``
 
-    The mixin provides implementations for:
+    The adapters provides implementations for:
 
     - ``complete(prompt, *, stream=False, **kwargs)``
     - ``stream_complete(prompt, **kwargs)`` (shim → ``complete(stream=True)``)
@@ -76,6 +76,7 @@ class ChatToCompletion:
         >>>
         >>> # Now MyLLM has complete() and other completion methods automatically
         >>> llm = MyLLM(model="example")
+
         ```
 
     See Also:
@@ -121,16 +122,39 @@ class ChatToCompletion:
             CompletionResponse when stream=False, CompletionResponseGen when stream=True.
 
         Examples:
-            ```python
-            >>> # Assuming MyLLM is defined as shown in class docstring
-            >>> llm = MyLLM(model="example")
-            >>> response = llm.complete("Hello, world!")
-            >>> print(response.text)
-            'Response'
-            >>> for chunk in llm.complete("Tell me a story", stream=True):
-            ...     print(chunk.delta, end='')
-            'Response'
-            ```
+            - Non-streaming completion returns full response text:
+                ```python
+                >>> from serapeum.core.llms import FunctionCallingLLM, ChatResponse, Message, MessageRole, Metadata
+                >>> from serapeum.core.llms.abstractions.adapters import ChatToCompletion
+                >>>
+                >>> class DemoLLM(ChatToCompletion, FunctionCallingLLM):
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata(is_chat_model=True, is_function_calling_model=True)
+                ...     def chat(self, messages, *, stream=False, **kwargs):
+                ...         if stream:
+                ...             def gen():
+                ...                 yield ChatResponse(
+                ...                     message=Message(role=MessageRole.ASSISTANT, content="Hi"),
+                ...                     delta="Hi",
+                ...                 )
+                ...             return gen()
+                ...         return ChatResponse(
+                ...             message=Message(role=MessageRole.ASSISTANT, content="Hi"),
+                ...         )
+                ...     async def achat(self, messages, *, stream=False, **kwargs):
+                ...         return ChatResponse(
+                ...             message=Message(role=MessageRole.ASSISTANT, content="Hi"),
+                ...         )
+                ...     def _prepare_chat_with_tools(self, tools, **kwargs):
+                ...         return {"messages": [], "tools": []}
+                >>>
+                >>> llm = DemoLLM(model="test")
+                >>> response = llm.complete("Hello")
+                >>> response.text
+                'Hi'
+
+                ```
         """
         messages = MessageList.from_str(prompt)
         if stream:
@@ -181,22 +205,35 @@ class ChatToCompletion:
             CompletionResponse when stream=False, CompletionResponseAsyncGen when stream=True.
 
         Examples:
-            ```python
-            >>> import asyncio
-            >>> # Assuming MyLLM is defined as shown in class docstring
-            >>> async def example():
-            ...     llm = MyLLM(model="example")
-            ...     response = await llm.acomplete("Hello, world!")
-            ...     return response.text
-            >>> asyncio.run(example())
-            'Response'
-            >>> async def stream_example():
-            ...     llm = MyLLM(model="example")
-            ...     stream = await llm.acomplete("Tell me a story", stream=True)
-            ...     async for chunk in stream:
-            ...         print(chunk.delta, end='')
-            >>> asyncio.run(stream_example())  # doctest: +SKIP
-            ```
+            - Async non-streaming completion:
+                ```python
+                >>> import asyncio
+                >>> from serapeum.core.llms import FunctionCallingLLM, ChatResponse, Message, MessageRole, Metadata
+                >>> from serapeum.core.llms.abstractions.adapters import ChatToCompletion
+                >>>
+                >>> class DemoLLM(ChatToCompletion, FunctionCallingLLM):
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata(is_chat_model=True, is_function_calling_model=True)
+                ...     def chat(self, messages, *, stream=False, **kwargs):
+                ...         return ChatResponse(
+                ...             message=Message(role=MessageRole.ASSISTANT, content="Hi"),
+                ...         )
+                ...     async def achat(self, messages, *, stream=False, **kwargs):
+                ...         return ChatResponse(
+                ...             message=Message(role=MessageRole.ASSISTANT, content="Hi"),
+                ...         )
+                ...     def _prepare_chat_with_tools(self, tools, **kwargs):
+                ...         return {"messages": [], "tools": []}
+                >>>
+                >>> async def example():
+                ...     llm = DemoLLM(model="test")
+                ...     response = await llm.acomplete("Hello")
+                ...     return response.text
+                >>> asyncio.run(example())
+                'Hi'
+
+                ```
         """
         messages = MessageList.from_str(prompt)
         if stream:

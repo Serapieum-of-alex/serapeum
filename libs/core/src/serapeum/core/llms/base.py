@@ -134,7 +134,7 @@ class CompletionToPromptType(Protocol):
             ...     return add_footer(prompt.upper())
             ...
             >>> upper_then_footer("ok")
-            'OK\n--'
+            'OK\\n--'
 
             ```
     See Also:
@@ -437,7 +437,9 @@ class LLM(BaseLLM, ABC):
             ```python
             >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
             >>> class EchoLLM(LLM):
-            ...     metadata = Metadata.model_construct(is_chat_model=False)
+            ...     @property
+            ...     def metadata(self):
+            ...         return Metadata.model_construct(is_chat_model=False)
             ...     def chat(self, messages, **kwargs):
             ...         raise NotImplementedError()
             ...     async def achat(self, messages, **kwargs):
@@ -592,7 +594,9 @@ class LLM(BaseLLM, ABC):
                 ...     Metadata,
                 ... )
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -611,7 +615,9 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> from serapeum.core.base.llms.types import Metadata
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -661,7 +667,9 @@ class LLM(BaseLLM, ABC):
                 >>> from serapeum.core.prompts import ChatPromptTemplate
                 >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -688,7 +696,9 @@ class LLM(BaseLLM, ABC):
                 ...         return query.upper()
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     output_parser = UpperParser()
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
@@ -741,7 +751,9 @@ class LLM(BaseLLM, ABC):
                 ...     Metadata,
                 ... )
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=True)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -777,7 +789,9 @@ class LLM(BaseLLM, ABC):
                 ...         return messages
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=True)
                 ...     output_parser = UpperParser()
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
@@ -822,7 +836,9 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -845,7 +861,9 @@ class LLM(BaseLLM, ABC):
                 ...         return output.strip()
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     output_parser = TrimParser()
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
@@ -888,7 +906,9 @@ class LLM(BaseLLM, ABC):
                 ```python
                 >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -907,8 +927,10 @@ class LLM(BaseLLM, ABC):
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
-                ...     system_prompt = "You are an assistant."
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
+                ...     system_prompt: str | None = "You are an assistant."
                 ...     query_wrapper_prompt = PromptTemplate("Question: {query_str}")
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
@@ -960,7 +982,9 @@ class LLM(BaseLLM, ABC):
                 ...     MessageRole,
                 ... )
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=True)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -984,8 +1008,10 @@ class LLM(BaseLLM, ABC):
                 ...     MessageRole,
                 ... )
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=True)
-                ...     system_prompt = "You are helpful."
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=True)
+                ...     system_prompt: str | None = "You are helpful."
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1097,7 +1123,9 @@ class LLM(BaseLLM, ABC):
                 ...     name: str
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1129,7 +1157,9 @@ class LLM(BaseLLM, ABC):
                 ...     config: dict
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1198,7 +1228,9 @@ class LLM(BaseLLM, ABC):
                 ...     name: str
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1239,7 +1271,9 @@ class LLM(BaseLLM, ABC):
                 ...     meta: dict
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1312,7 +1346,9 @@ class LLM(BaseLLM, ABC):
                 ...     value: str
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1355,7 +1391,9 @@ class LLM(BaseLLM, ABC):
                 ...     value: str
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1430,7 +1468,9 @@ class LLM(BaseLLM, ABC):
                 ...     value: str
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1506,7 +1546,9 @@ class LLM(BaseLLM, ABC):
                 ...     value: str
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1553,7 +1595,9 @@ class LLM(BaseLLM, ABC):
                 ...     value: str
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1627,7 +1671,9 @@ class LLM(BaseLLM, ABC):
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1651,7 +1697,9 @@ class LLM(BaseLLM, ABC):
                 ...     Metadata,
                 ... )
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=True)
                 ...     def chat(self, messages, **kwargs):
                 ...         return ChatResponse(
                 ...             message=Message(content="pong", role=MessageRole.ASSISTANT)
@@ -1714,7 +1762,9 @@ class LLM(BaseLLM, ABC):
                 ...     yield CompletionResponse(text="run", delta="un")
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1752,7 +1802,9 @@ class LLM(BaseLLM, ABC):
                 ...     )
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=True)
                 ...     def chat(self, messages, *, stream=False, **kwargs):
                 ...         if stream:
                 ...             return chat_stream()
@@ -1817,7 +1869,9 @@ class LLM(BaseLLM, ABC):
                 >>> from serapeum.core.prompts import PromptTemplate
                 >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1845,7 +1899,9 @@ class LLM(BaseLLM, ABC):
                 ...     Metadata,
                 ... )
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=True)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1912,7 +1968,9 @@ class LLM(BaseLLM, ABC):
                 ...     yield CompletionResponse(text="run", delta="un")
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -1953,7 +2011,9 @@ class LLM(BaseLLM, ABC):
                 ...     )
                 ...
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=True)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=True)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, *, stream=False, **kwargs):
@@ -2017,7 +2077,9 @@ class LLM(BaseLLM, ABC):
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
@@ -2041,7 +2103,9 @@ class LLM(BaseLLM, ABC):
                 >>> from pydantic import BaseModel
                 >>> from serapeum.core.base.llms.types import CompletionResponse, Metadata
                 >>> class DemoLLM(LLM):
-                ...     metadata = Metadata.model_construct(is_chat_model=False)
+                ...     @property
+                ...     def metadata(self):
+                ...         return Metadata.model_construct(is_chat_model=False)
                 ...     def chat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):

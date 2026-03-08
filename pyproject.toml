@@ -121,6 +121,8 @@ markers = [
     "mock: marks tests as mock (deselect with '-m \"not mock\"')",
     "integration: marks tests as integration test (deselect with '-m \"not integration\"')",
     "unit: marks tests as unit test (deselect with '-m \"not unit\"')",
+    "function_calling: markdown code block that runs only with local resources (deselect with '-m \"not function_calling\"')",
+
 ]
 
 [tool.mypy]

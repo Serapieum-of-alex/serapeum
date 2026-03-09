@@ -89,5 +89,5 @@ jobs:
 
       - name: Test markdown docs openai
         run: |
-          uv run pytest -v --markdown-docs docs/providers/openai/ --markdown-docs-pattern "*.md"
+          uv run pytest -v --markdown-docs docs/providers/openai/
           uv run pytest -v --markdown-docs libs/providers/openai/README.md

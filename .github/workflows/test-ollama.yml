@@ -91,5 +91,5 @@ jobs:
 
       - name: Test markdown docs ollama
         run: |
-          uv run pytest -v --markdown-docs docs/providers/ollama/ --markdown-docs-pattern "*.md" -m "not function_calling"
+          uv run pytest -v --markdown-docs docs/providers/ollama/  -m "not function_calling"
           uv run pytest -v --markdown-docs libs/providers/ollama/README.md -m "not function_calling"

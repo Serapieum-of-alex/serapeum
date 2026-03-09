@@ -83,5 +83,5 @@ jobs:
 
       - name: Test markdown docs core
         run: |
-          uv run pytest -v --markdown-docs docs/core/ --markdown-docs-pattern "*.md"
+          uv run pytest -v --markdown-docs docs/core/
           uv run pytest -v --markdown-docs libs/core/README.md

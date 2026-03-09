@@ -600,7 +600,7 @@ class Recipe(BaseModel):
     steps: list[str]
     prep_time: int  # in minutes
 
-llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
+llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), max_retries=3, timeout=180)
 
 text_llm = TextCompletionLLM(
     output_cls=Recipe,

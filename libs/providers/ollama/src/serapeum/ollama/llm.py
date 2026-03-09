@@ -227,10 +227,10 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ...     temperature=0.0,
             ...     timeout=120,
             ... )
-            >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'hello'.")])  # doctest: +SKIP, +ELLIPSIS
-            >>> response.message.role  # doctest: +SKIP
+            >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'hello'.")])
+            >>> response.message.role
             <MessageRole.ASSISTANT: 'assistant'>
-            >>> print("content:", response.message.content)  # doctest: +SKIP, +ELLIPSIS
+            >>> print("content:", response.message.content)
             content: ...
 
             ```

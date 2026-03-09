@@ -2803,6 +2803,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#filtering-code-blocks-by-custom-markers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering Code Blocks by Custom Markers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Filtering Code Blocks by Custom Markers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tagging-a-code-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tagging a Code Block
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-tagged-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running Tagged Blocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#listing-which-blocks-have-markers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listing Which Blocks Have Markers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#registering-new-markers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registering New Markers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3062,6 +3123,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#filtering-code-blocks-by-custom-markers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering Code Blocks by Custom Markers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Filtering Code Blocks by Custom Markers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tagging-a-code-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tagging a Code Block
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-tagged-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running Tagged Blocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#listing-which-blocks-have-markers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listing Which Blocks Have Markers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#registering-new-markers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registering New Markers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3181,13 +3303,67 @@
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">complete</span><span class="p">(</span><span class="s2">&quot;Hello&quot;</span><span class="p">)</span>
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="sb">```</span>
 </code></pre></div>
+<h2 id="filtering-code-blocks-by-custom-markers"><a class="toclink" href="#filtering-code-blocks-by-custom-markers">Filtering Code Blocks by Custom Markers</a><a class="headerlink" href="#filtering-code-blocks-by-custom-markers" title="Permanent link">#</a></h2>
+<p>You can tag individual Python code blocks with custom markers such as <code>function_calling</code> or <code>ci</code>,
+then use the <code>--md-marker</code> flag to run only the blocks that carry a specific tag.</p>
+<h3 id="tagging-a-code-block"><a class="toclink" href="#tagging-a-code-block">Tagging a Code Block</a><a class="headerlink" href="#tagging-a-code-block" title="Permanent link">#</a></h3>
+<p>Append one or more marker names after the language identifier on the opening fence:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="sb">```python</span><span class="w"> </span>function_calling
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1"># Runs only when --md-marker function_calling is passed</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">expensive_function_calling_call</span><span class="p">()</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="sb">```</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="sb">```python</span><span class="w"> </span>ci
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Runs only when --md-marker ci is passed</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="n">result</span> <span class="o">=</span> <span class="n">ci_only_call</span><span class="p">()</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="sb">```</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="sb">```python</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="c1"># Untagged — runs normally, but is skipped when --md-marker is active</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="n">result</span> <span class="o">=</span> <span class="n">always_runs</span><span class="p">()</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="sb">```</span>
+</code></pre></div>
+<p>Tags compose freely with the built-in modifiers:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="sb">```python</span><span class="w"> </span>function_calling continuation fixture:my_fixture
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># tagged &#39;function_calling&#39;, shares state with the previous block, and injects my_fixture</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="sb">```</span>
+</code></pre></div>
+<h3 id="running-tagged-blocks"><a class="toclink" href="#running-tagged-blocks">Running Tagged Blocks</a><a class="headerlink" href="#running-tagged-blocks" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Run only blocks tagged &#39;function_calling&#39;</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>--markdown-docs<span class="w"> </span>--md-marker<span class="w"> </span>function_calling<span class="w"> </span>docs/
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Run blocks tagged &#39;function_calling&#39; OR &#39;ci&#39;</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>--markdown-docs<span class="w"> </span>--md-marker<span class="w"> </span>function_calling<span class="w"> </span>--md-marker<span class="w"> </span>ci<span class="w"> </span>docs/
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># Run all blocks (default — unchanged behaviour)</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>--markdown-docs<span class="w"> </span>docs/
+</code></pre></div>
+<p>Because each tag is added as a real pytest marker, you can also use standard <code>-m</code> expressions:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Same as --md-marker function_calling</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>--markdown-docs<span class="w"> </span>-m<span class="w"> </span>function_calling<span class="w"> </span>docs/
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Boolean expressions work too</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>--markdown-docs<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;function_calling and not ci&quot;</span><span class="w"> </span>docs/
+</code></pre></div>
+<h3 id="listing-which-blocks-have-markers"><a class="toclink" href="#listing-which-blocks-have-markers">Listing Which Blocks Have Markers</a><a class="headerlink" href="#listing-which-blocks-have-markers" title="Permanent link">#</a></h3>
+<p>Combine <code>--collect-only</code> with <code>--md-marker</code> to preview what would run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>--collect-only<span class="w"> </span>--markdown-docs<span class="w"> </span>--md-marker<span class="w"> </span>function_calling<span class="w"> </span>docs/
+</code></pre></div>
+<h3 id="registering-new-markers"><a class="toclink" href="#registering-new-markers">Registering New Markers</a><a class="headerlink" href="#registering-new-markers" title="Permanent link">#</a></h3>
+<p>The <code>function_calling</code> and <code>ci</code> markers are registered in <code>pyproject.toml</code> under <code>[tool.pytest.ini_options].markers</code>.
+If you introduce a new tag (e.g., <code>gpu</code>), add it there to suppress unknown-marker warnings:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">markers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="c1"># ...existing markers...</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="s2">&quot;gpu: markdown code block requiring a GPU&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="p">]</span>
+</code></pre></div>
 <h2 id="environment-variables"><a class="toclink" href="#environment-variables">Environment Variables</a><a class="headerlink" href="#environment-variables" title="Permanent link">#</a></h2>
 <p>Code blocks that call the Ollama cloud API require <code>OLLAMA_API_KEY</code> to be set. Load it from a <code>.env</code> file before running:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># The dotenv package is included in dev dependencies</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>--markdown-docs<span class="w"> </span>docs/reference/providers/ollama/examples.md
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># The dotenv package is included in dev dependencies</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>--markdown-docs<span class="w"> </span>docs/reference/providers/ollama/examples.md
 </code></pre></div>
 <p>In your <code>.env</code> file at the repo root:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>OLLAMA_API_KEY=your_api_key_here
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>OLLAMA_API_KEY=your_api_key_here
 </code></pre></div>
 <p>Tests that require a live API call should be marked as <code>e2e</code> (see <a href="../contributing/">Contributing</a>) or use <code>notest</code> if they are purely illustrative.</p>
 

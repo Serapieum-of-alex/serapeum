@@ -62,22 +62,33 @@ def _get_tags(filepath: pathlib.Path) -> dict[int, set[str]]:
 # Hooks
 # ---------------------------------------------------------------------------
 def pytest_addoption(parser: pytest.Parser) -> None:
-    """Register shared CLI flags."""
-    parser.addoption(
-        "--no-skip-doctest",
-        action="store_true",
-        default=False,
-        help="Ignore all '# doctest: +SKIP' directives so skipped examples run.",
-    )
-    parser.addoption(
-        "--md-marker",
-        action="append",
-        default=[],
-        help=(
-            "Only run markdown code blocks tagged with this marker. "
-            "Repeatable: --md-marker local --md-marker ci runs both."
-        ),
-    )
+    """Register shared CLI flags.
+
+    Each call is guarded because provider conftest files re-export this hook,
+    and pytest may invoke it more than once when both conftest files are
+    discovered in the same run.
+    """
+    try:
+        parser.addoption(
+            "--no-skip-doctest",
+            action="store_true",
+            default=False,
+            help="Ignore all '# doctest: +SKIP' directives so skipped examples run.",
+        )
+    except ValueError:
+        pass
+    try:
+        parser.addoption(
+            "--md-marker",
+            action="append",
+            default=[],
+            help=(
+                "Only run markdown code blocks tagged with this marker. "
+                "Repeatable: --md-marker local --md-marker ci runs both."
+            ),
+        )
+    except ValueError:
+        pass
 
 
 def pytest_collection_modifyitems(

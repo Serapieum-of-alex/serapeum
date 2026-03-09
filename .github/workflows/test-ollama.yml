@@ -86,6 +86,8 @@ jobs:
       - name: Test ollama doctests
         run: |
           uv run pytest --doctest-modules libs/providers/ollama/src/ -v
+        env:
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
 
       - name: Test markdown docs ollama
         run: |

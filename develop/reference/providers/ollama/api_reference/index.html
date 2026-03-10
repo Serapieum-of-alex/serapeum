@@ -5815,7 +5815,7 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-599" name="__codelineno-0-599"></a><span class="sd">                &gt;&gt;&gt; from serapeum.ollama import Ollama      # type: ignore[attr-defined]</span>
 <a id="__codelineno-0-600" name="__codelineno-0-600"></a><span class="sd">                &gt;&gt;&gt; llm = Ollama(model=&quot;m&quot;)</span>
 <a id="__codelineno-0-601" name="__codelineno-0-601"></a><span class="sd">                &gt;&gt;&gt; wire = llm._convert_to_ollama_messages(</span>
-<a id="__codelineno-0-602" name="__codelineno-0-602"></a><span class="sd">                ...     MessageList.from_list([</span>
+<a id="__codelineno-0-602" name="__codelineno-0-602"></a><span class="sd">                ...     MessageList(messages=[</span>
 <a id="__codelineno-0-603" name="__codelineno-0-603"></a><span class="sd">                ...         Message(role=MessageRole.USER, content=&quot;hello&quot;),</span>
 <a id="__codelineno-0-604" name="__codelineno-0-604"></a><span class="sd">                ...     ])</span>
 <a id="__codelineno-0-605" name="__codelineno-0-605"></a><span class="sd">                ... )</span>

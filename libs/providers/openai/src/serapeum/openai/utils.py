@@ -65,12 +65,15 @@ def resolve_tool_choice(
     """
     if tool_choice is None:
         tool_choice = "required" if tool_required else "auto"
-    if isinstance(tool_choice, dict):
-        return tool_choice
-    if tool_choice not in ["none", "auto", "required"]:
-        return {"type": "function", "function": {"name": tool_choice}}
 
-    return tool_choice
+    if isinstance(tool_choice, dict):
+        result: str | dict = tool_choice
+    elif tool_choice not in ["none", "auto", "required"]:
+        result = {"type": "function", "function": {"name": tool_choice}}
+    else:
+        result = tool_choice
+
+    return result
 
 
 def force_single_tool_call(response: ChatResponse) -> None:

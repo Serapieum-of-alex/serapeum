@@ -562,6 +562,69 @@ class ChatResponse(BaseResponse):
 
         return gen()
 
+    def force_single_tool_call(self) -> None:
+        """Mutate a response to include at most a single tool call.
+
+        Ollama may return multiple tool calls within a single assistant message. Some
+        consumers require a single call at a time. This helper trims the list to the
+        first occurrence in-place.
+
+        Args:
+            response (ChatResponse):
+                Parsed chat response whose ``message.chunks`` may contain multiple
+                ToolCallBlock entries.
+
+        Returns:
+            None: The function mutates ``response`` and returns nothing.
+
+        Examples:
+            - Truncate multiple tool calls to one
+                ```python
+                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse, ToolCallBlock
+                >>> r = ChatResponse(message=Message(
+                ...     role=MessageRole.ASSISTANT,
+                ...     chunks=[
+                ...         ToolCallBlock(tool_name="a", tool_kwargs={}),
+                ...         ToolCallBlock(tool_name="b", tool_kwargs={}),
+                ...     ],
+                ... ))
+                >>> r.force_single_tool_call()
+                >>> len(r.message.tool_calls)
+                1
+
+                ```
+            - No-op when there are no tool calls
+                ```python
+                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
+                >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="hi"))
+                >>> force_single_tool_call(r)
+                >>> r.message.tool_calls
+                []
+
+                ```
+            - Single tool call is left as-is
+                ```python
+                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse, ToolCallBlock
+                >>> r = ChatResponse(message=Message(
+                ...     role=MessageRole.ASSISTANT,
+                ...     chunks=[ToolCallBlock(tool_name="a", tool_kwargs={})],
+                ... ))
+                >>> force_single_tool_call(r)
+                >>> r.message.tool_calls[0].tool_name
+                'a'
+
+                ```
+        """
+        tool_calls = [
+            block for block in self.message.chunks if isinstance(block, ToolCallBlock)
+        ]
+        if len(tool_calls) > 1:
+            self.message.chunks = [
+                  block
+                  for block in self.message.chunks
+                  if not isinstance(block, ToolCallBlock)
+              ] + [tool_calls[0]]
+
 
 ChatResponseGen = Generator[ChatResponse, None, None]
 ChatResponseAsyncGen = AsyncGenerator[ChatResponse, None]

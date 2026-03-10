@@ -87,69 +87,6 @@ def get_additional_kwargs(
     return {k: v for k, v in response.items() if k not in exclude}
 
 
-def force_single_tool_call(response: ChatResponse) -> None:
-    """Mutate a response to include at most a single tool call.
-
-    Ollama may return multiple tool calls within a single assistant message. Some
-    consumers require a single call at a time. This helper trims the list to the
-    first occurrence in-place.
-
-    Args:
-        response (ChatResponse):
-            Parsed chat response whose ``message.additional_kwargs['tool_calls']``
-            may contain multiple entries.
-
-    Returns:
-        None: The function mutates ``response`` and returns nothing.
-
-    Examples:
-        - Truncate multiple tool calls to one
-            ```python
-            >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-            >>> r = ChatResponse(message=Message(
-            ...     role=MessageRole.ASSISTANT,
-            ...     content="",
-            ...     additional_kwargs={
-            ...         "tool_calls": [
-            ...             {"function": {"name": "a", "arguments": {}}},
-            ...             {"function": {"name": "b", "arguments": {}}},
-            ...         ]
-            ...     },
-            ... ))
-            >>> force_single_tool_call(r)
-            >>> len(r.message.additional_kwargs.get("tool_calls", []))
-            1
-
-            ```
-        - No-op when there are no tool calls
-            ```python
-            >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-            >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="hi"))
-            >>> force_single_tool_call(r)
-            >>> r.message.additional_kwargs.get("tool_calls")
-
-            ```
-        - Single tool call is left as-is
-            ```python
-            >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-            >>> r = ChatResponse(message=Message(
-            ...     role=MessageRole.ASSISTANT,
-            ...     content="",
-            ...     additional_kwargs={
-            ...         "tool_calls": [{"function": {"name": "a", "arguments": {}}}]
-            ...     },
-            ... ))
-            >>> force_single_tool_call(r)
-            >>> r.message.additional_kwargs["tool_calls"][0]["function"]["name"]
-            'a'
-
-            ```
-    """
-    tool_calls = response.message.additional_kwargs.get("tool_calls", [])
-    if tool_calls and len(tool_calls) > 1:
-        response.message.additional_kwargs["tool_calls"] = [tool_calls[0]]
-
-
 class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
     """Ollama LLM adapter for chat, streaming, structured output, and tool calling.
 
@@ -826,7 +763,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ```
         """
         if not allow_parallel_tool_calls:
-            force_single_tool_call(response)
+            response.force_single_tool_call()
         return response
 
     def get_tool_calls_from_response(

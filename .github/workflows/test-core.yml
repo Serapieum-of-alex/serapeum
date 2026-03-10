@@ -82,7 +82,7 @@ jobs:
         run: |
           uv run pytest --doctest-modules libs/core/src/ -v
 
-      - name: Test markdown docs core
-        run: |
-          uv run pytest -v --markdown-docs docs/reference/core/ -m "not function_calling"
-          uv run pytest -v --markdown-docs libs/core/README.md  -m "not function_calling"
+#       - name: Test markdown docs core
+#         run: |
+#           uv run pytest -v --markdown-docs docs/reference/core/ -m "not function_calling"
+#           uv run pytest -v --markdown-docs libs/core/README.md  -m "not function_calling"

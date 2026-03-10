@@ -354,19 +354,22 @@ class Message(BaseModel):
     additional_kwargs: dict[str, Any] = Field(default_factory=dict)
     chunks: list[ChunkType] = Field(default_factory=list)
 
-    def __init__(self, /, content: Any | None = None, **data: Any) -> None:
-        """Constructor.
+    @model_validator(mode="before")
+    @classmethod
+    def _content_to_chunks(cls, data: Any) -> Any:
+        """Convert ``content`` shorthand into ``chunks``.
 
         If content was passed and contained text, store a single TextChunk.
-        If content was passed and it was a list, assume it's a list of content chunks and store it.
+        If content was passed and it was a list, assume it's a list of content chunks.
         """
-        if content is not None:
-            if isinstance(content, str):
-                data["chunks"] = [TextChunk(content=content)]
-            elif isinstance(content, list):
-                data["chunks"] = content
-
-        super().__init__(**data)
+        if isinstance(data, dict):
+            content = data.pop("content", None)
+            if content is not None and "chunks" not in data:
+                if isinstance(content, str):
+                    data["chunks"] = [TextChunk(content=content)]
+                elif isinstance(content, list):
+                    data["chunks"] = content
+        return data
 
     @property
     def content(self) -> str | None:

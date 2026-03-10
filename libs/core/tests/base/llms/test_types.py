@@ -273,7 +273,7 @@ class TestImageBlock:
 
 def test_chat_response():
     """Test ChatResponse string representation."""
-    message = Message("some content")
+    message = Message(content="some content")
     cr = ChatResponse(message=message)
     assert str(cr) == str(message)
 

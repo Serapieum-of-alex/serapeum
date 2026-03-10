@@ -153,7 +153,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             ...     points: list[str]
             >>> llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
             >>> tmpl = PromptTemplate("Summarise: {text}")  # doctest: +SKIP
-            >>> out = llm.structured_predict(Summary, tmpl, text="…")  # doctest: +SKIP
+            >>> out = llm.parse(Summary, tmpl, text="…")  # doctest: +SKIP
             >>> isinstance(out, Summary)  # doctest: +SKIP
             True
 

@@ -63,20 +63,20 @@ class StructuredOutput:
         )
 
     @overload
-    def structured_predict(
+    def parse(
         self, output_cls: Type[Model], prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
     ) -> Model: ...
 
     @overload
-    def structured_predict(
+    def parse(
         self, output_cls: Type[Model], prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
     ) -> Generator[Model | FlexibleModel | None, None]: ...
 
-    def structured_predict(
+    def parse(
         self,
-        output_cls: Type[Model],
+        schema: Type[Model],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         *,
@@ -87,15 +87,17 @@ class StructuredOutput:
 
         if stream:
             result: Model | Generator[Model | FlexibleModel | None, None] = (
-                self._structured_stream_call(
-                    output_cls, prompt, llm_kwargs, **prompt_args
+                self._parse_stream_call(
+                    schema, prompt, llm_kwargs, **prompt_args
                 )
             )
+
         elif self._should_use_structure_outputs():
             messages = self._extend_messages(prompt.format_messages(**prompt_args))
-            llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
+            llm_kwargs = self._prepare_schema(llm_kwargs, schema)
             response = self.chat(messages, **llm_kwargs)
-            result = output_cls.model_validate_json(str(response.message.content))
+            result = schema.model_validate_json(str(response.message.content))
+
         else:
             # when uses function calling to extract structured outputs
             # here we force tool_choice to be required
@@ -104,12 +106,13 @@ class StructuredOutput:
                 if "tool_choice" not in llm_kwargs
                 else llm_kwargs["tool_choice"]
             )
+
             result = super().structured_predict(
-                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
+                schema, prompt, llm_kwargs=llm_kwargs, **prompt_args
             )
         return result
 
-    def _structured_stream_call(
+    def _parse_stream_call(
         self,
         output_cls: Type[Model],
         prompt: PromptTemplate,
@@ -142,20 +145,20 @@ class StructuredOutput:
             )
 
     @overload
-    async def astructured_predict(
+    async def aparse(
         self, output_cls: Type[Model], prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
     ) -> Model: ...
 
     @overload
-    async def astructured_predict(
+    async def aparse(
         self, output_cls: Type[Model], prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
     ) -> AsyncGenerator[Model | FlexibleModel, None]: ...
 
-    async def astructured_predict(
+    async def aparse(
         self,
-        output_cls: Type[Model],
+        schema: Type[Model],
         prompt: PromptTemplate,
         llm_kwargs: dict[str, Any] | None = None,
         *,
@@ -166,15 +169,15 @@ class StructuredOutput:
 
         if stream:
             result: Model | AsyncGenerator[Model | FlexibleModel, None] = (
-                await self._structured_astream_call(
-                    output_cls, prompt, llm_kwargs, **prompt_args
+                await self._parse_astream_call(
+                    schema, prompt, llm_kwargs, **prompt_args
                 )
             )
         elif self._should_use_structure_outputs():
             messages = self._extend_messages(prompt.format_messages(**prompt_args))
-            llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
+            llm_kwargs = self._prepare_schema(llm_kwargs, schema)
             response = await self.achat(messages, **llm_kwargs)
-            result = output_cls.model_validate_json(str(response.message.content))
+            result = schema.model_validate_json(str(response.message.content))
         else:
             # when uses function calling to extract structured outputs
             # here we force tool_choice to be required
@@ -184,11 +187,11 @@ class StructuredOutput:
                 else llm_kwargs["tool_choice"]
             )
             result = await super().astructured_predict(
-                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
+                schema, prompt, llm_kwargs=llm_kwargs, **prompt_args
             )
         return result
 
-    async def _structured_astream_call(
+    async def _parse_astream_call(
         self,
         output_cls: Type[Model],
         prompt: PromptTemplate,

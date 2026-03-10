@@ -168,21 +168,21 @@ class TestCompletion:
 
 @pytest.mark.e2e
 @skip_no_key
-class TestStructuredOutput:
-    def test_structured_predict(self, llm):
+class TestParse:
+    def test_parse(self, llm):
         """Structured predict extracts a Pydantic model."""
         prompt = PromptTemplate("Create a person named Alice who is 30 years old.")
-        result = llm.structured_predict(output_cls=Person, prompt=prompt)
+        result = llm.parse(schema=Person, prompt=prompt)
         assert isinstance(result, Person)
         assert result.name == "Alice"
         assert result.age == 30
 
-    def test_structured_predict_nested(self, llm):
+    def test_parse_nested(self, llm):
         """Structured predict handles nested Pydantic models."""
         prompt = PromptTemplate(
             "Create a person named Bob, age 25, living at 123 Main St, New York, USA."
         )
-        result = llm.structured_predict(output_cls=PersonWithAddress, prompt=prompt)
+        result = llm.parse(schema=PersonWithAddress, prompt=prompt)
         assert isinstance(result, PersonWithAddress)
         assert result.name == "Bob"
         assert result.age == 25

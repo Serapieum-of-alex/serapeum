@@ -202,7 +202,7 @@ stateDiagram-v2
 ## State Data by Phase
 
 ### Initialization Phase
-```python
+```python notest
 # Uninitialized → Validating → Ready
 {
     "_output_cls": Type[MockAlbum],
@@ -215,7 +215,7 @@ stateDiagram-v2
 ```
 
 ### Execution Phase (Sync)
-```python
+```python notest
 # Ready → ExecutingSync → Ready
 {
     # Instance state (immutable during execution)
@@ -233,7 +233,7 @@ stateDiagram-v2
 ```
 
 ### Streaming Phase
-```python
+```python notest
 # Ready → ExecutingStream → Ready
 {
     # Instance state

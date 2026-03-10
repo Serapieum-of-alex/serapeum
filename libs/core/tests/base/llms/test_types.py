@@ -75,8 +75,8 @@ def mp4_base64(mp4_bytes: bytes) -> bytes:
 class TestMessage:
     """Test Message."""
 
-    def test_chat_message_from_str(self):
-        m = Message.from_str(content="test content")
+    def test_chat_message_from_content(self):
+        m = Message(content="test content")
         assert m.content == "test content"
         assert len(m.chunks) == 1
         assert type(m.chunks[0]) is TextChunk

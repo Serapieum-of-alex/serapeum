@@ -405,16 +405,6 @@ class Message(BaseModel):
         """Return a human-readable representation of the message."""
         return f"{self.role.value}: {self.content}"
 
-    @classmethod
-    def from_str(
-        cls,
-        content: str,
-        role: MessageRole | str = MessageRole.USER,
-        **kwargs: Any,
-    ) -> Self:
-        if isinstance(role, str):
-            role = MessageRole(role)
-        return cls(role=role, chunks=[TextChunk(content=content)], **kwargs)
 
     def _recursive_serialization(self, value: Any) -> Any:
         if isinstance(value, BaseModel):
@@ -486,7 +476,7 @@ class MessageList(BaseModel, ABCSequence):
     @classmethod
     def from_str(cls, prompt: str) -> "MessageList":
         """Create from a string prompt."""
-        return cls(messages=[Message(role=MessageRole.USER, content=prompt)])
+        return cls(messages=[Message(content=prompt)])
 
 
 class LikelihoodScore(BaseModel):

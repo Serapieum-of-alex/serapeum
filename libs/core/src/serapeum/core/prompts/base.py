@@ -225,7 +225,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         """From messages."""
         if isinstance(message_templates[0], tuple):
             message_templates = [
-                Message.from_str(role=role, content=content)  # type: ignore[arg-type]
+                Message(role=role, content=content)  # type: ignore[arg-type]
                 for role, content in message_templates
             ]
         return cls(message_templates=message_templates, **kwargs)  # type: ignore[arg-type]

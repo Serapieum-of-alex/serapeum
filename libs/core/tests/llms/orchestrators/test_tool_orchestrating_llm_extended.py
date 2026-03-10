@@ -146,11 +146,11 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     def chat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | Generator[ChatResponse, None, None]:  # type: ignore[override]
         if stream:
             return self._stream_chat(messages, **kwargs)
-        return ChatResponse(message=Message.from_str("ok"))
+        return ChatResponse(message=Message(content="ok"))
 
     def _stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator[ChatResponse, None, None]:
-        yield ChatResponse(message=Message.from_str("chunk-1"))
-        yield ChatResponse(message=Message.from_str("chunk-2"))
+        yield ChatResponse(message=Message(content="chunk-1"))
+        yield ChatResponse(message=Message(content="chunk-2"))
 
     def complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
@@ -158,11 +158,11 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     async def achat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | AsyncGenerator[ChatResponse, None]:  # type: ignore[override]
         if stream:
             return self._astream_chat(messages, **kwargs)
-        return ChatResponse(message=Message.from_str("ok"))
+        return ChatResponse(message=Message(content="ok"))
 
     async def _astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> AsyncGenerator[ChatResponse, None]:
-        yield ChatResponse(message=Message.from_str("chunk-1"))
-        yield ChatResponse(message=Message.from_str("chunk-2"))
+        yield ChatResponse(message=Message(content="chunk-1"))
+        yield ChatResponse(message=Message(content="chunk-2"))
 
     async def acomplete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
@@ -182,7 +182,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
             messages = chat_history
         elif user_msg is not None:
             messages = [
-                Message.from_str(user_msg) if isinstance(user_msg, str) else user_msg
+                Message(content=user_msg) if isinstance(user_msg, str) else user_msg
             ]
         else:
             messages = []

@@ -1036,12 +1036,12 @@ class TestMessageLists:
     class TestMessageListBasics:
         """Test MessageList basic operations."""
 
-        def test_from_list_and_len_getitem_slice_and_append(self):
-            """Test MessageList.from_list, __len__, __getitem__, slice, and append.
+        def test_len_getitem_slice_and_append(self):
+            """Test MessageList constructor, __len__, __getitem__, slice, and append.
 
             Inputs:
                 - Start with two messages (system and user).
-                - Use MessageList.from_list to construct, then test __len__, __getitem__ (int), slicing, and append.
+                - Use MessageList constructor, then test __len__, __getitem__ (int), slicing, and append.
             Expected:
                 - Length reflects number of messages.
                 - Integer indexing returns Message; slicing returns MessageList with correct subset.
@@ -1051,7 +1051,7 @@ class TestMessageLists:
             """
             m1 = Message(role=MessageRole.SYSTEM, content="You are a bot.")
             m2 = Message(role=MessageRole.USER, content="Hello")
-            ml = MessageList.from_list([m1, m2])
+            ml = MessageList(messages=[m1, m2])
 
             # __len__ and __getitem__
             assert len(ml) == 2

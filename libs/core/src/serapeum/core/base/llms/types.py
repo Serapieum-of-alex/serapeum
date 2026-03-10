@@ -469,11 +469,6 @@ class MessageList(BaseModel, ABCSequence):
         self.messages.append(message)
 
     @classmethod
-    def from_list(cls, messages: list[Message]) -> "MessageList":
-        """Create from a standard list."""
-        return cls(messages=messages)
-
-    @classmethod
     def from_str(cls, prompt: str) -> "MessageList":
         """Create from a string prompt."""
         return cls(messages=[Message(content=prompt)])

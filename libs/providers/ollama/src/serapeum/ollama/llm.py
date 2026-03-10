@@ -599,7 +599,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 >>> from serapeum.ollama import Ollama      # type: ignore[attr-defined]
                 >>> llm = Ollama(model="m")
                 >>> wire = llm._convert_to_ollama_messages(
-                ...     MessageList.from_list([
+                ...     MessageList(messages=[
                 ...         Message(role=MessageRole.USER, content="hello"),
                 ...     ])
                 ... )

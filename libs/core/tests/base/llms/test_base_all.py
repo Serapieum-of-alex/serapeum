@@ -333,7 +333,7 @@ class TestSetMessagesToPrompt:
         Checks: output matches MessageList.to_prompt for sample data.
         """
         # arrange
-        messages = MessageList.from_list([Message(role=MessageRole.USER, content="hi")])
+        messages = MessageList(messages=[Message(role=MessageRole.USER, content="hi")])
 
         # act
         adapter = LLM.set_messages_to_prompt(None)
@@ -431,7 +431,7 @@ class TestCheckPrompts:
         )
 
         # assert
-        assert llm.messages_to_prompt(MessageList.from_list([])) == "CUSTOM"
+        assert llm.messages_to_prompt(MessageList(messages=[])) == "CUSTOM"
         assert llm.completion_to_prompt("hi") == "HI"
 
 

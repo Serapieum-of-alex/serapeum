@@ -1144,7 +1144,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         if isinstance(user_msg, str):
             user_msg = Message(role=MessageRole.USER, content=user_msg)
 
-        messages = chat_history or []
+        messages = list(chat_history or [])
         if user_msg:
             messages.append(user_msg)
 

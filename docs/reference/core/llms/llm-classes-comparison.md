@@ -102,7 +102,7 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 - You need structured outputs without manually handling parsing
 
 #### Example
-```python
+```python function_calling 
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
@@ -165,7 +165,7 @@ High-level orchestrator that converts Pydantic models or Python functions into t
 
 #### Example with Pydantic Model
 
-```python
+```python function_calling
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
@@ -198,7 +198,7 @@ print(result)
 
 #### Example with Function
 
-```python
+```python function_calling
 import os
 from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM

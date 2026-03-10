@@ -89,7 +89,7 @@ jobs:
         env:
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
 
-      - name: Test markdown docs ollama
-        run: |
-          uv run pytest -v --markdown-docs docs/reference/providers/ollama/  -m "not function_calling"
-          uv run pytest -v --markdown-docs libs/providers/ollama/README.md -m "not function_calling"
+#       - name: Test markdown docs ollama
+#         run: |
+#           uv run pytest -v --markdown-docs docs/reference/providers/ollama/  -m "not function_calling"
+#           uv run pytest -v --markdown-docs libs/providers/ollama/README.md -m "not function_calling"

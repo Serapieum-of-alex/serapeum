@@ -50,11 +50,11 @@ class MockEmbedding(BaseEmbedding):
 
             ```
 
-        - All inputs produce identical embeddings
+        - All inputs produce identical constant vectors
             ```python
             >>> emb = MockEmbedding(embed_dim=2)
-            >>> emb.get_text_embedding("hello") == emb.get_text_embedding("world")
-            True
+            >>> emb.get_text_embedding("hello")
+            [0.5, 0.5]
 
             ```
 
@@ -133,12 +133,12 @@ class MockEmbedding(BaseEmbedding):
 
                 ```
 
-            - Vector length matches embed_dim
+            - Vector values are all 0.5
                 ```python
                 >>> from serapeum.core.embeddings import MockEmbedding
                 >>> emb = MockEmbedding(embed_dim=3)
-                >>> len(emb._get_mocked_vector())
-                3
+                >>> emb._get_mocked_vector()
+                [0.5, 0.5, 0.5]
 
                 ```
         """
@@ -166,11 +166,11 @@ class MockEmbedding(BaseEmbedding):
 
                 ```
 
-            - Different queries return identical vectors
+            - Different queries return the same constant vector
                 ```python
                 >>> emb = MockEmbedding(embed_dim=2)
-                >>> emb._get_query_embedding("query1") == emb._get_query_embedding("query2")
-                True
+                >>> emb._get_query_embedding("query1")
+                [0.5, 0.5]
 
                 ```
         """
@@ -198,11 +198,11 @@ class MockEmbedding(BaseEmbedding):
 
                 ```
 
-            - Different texts return identical vectors
+            - Different texts return the same constant vector
                 ```python
                 >>> emb = MockEmbedding(embed_dim=2)
-                >>> emb._get_text_embedding("text1") == emb._get_text_embedding("text2")
-                True
+                >>> emb._get_text_embedding("text1")
+                [0.5, 0.5]
 
                 ```
         """

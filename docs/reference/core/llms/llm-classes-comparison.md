@@ -102,7 +102,7 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 - You need structured outputs without manually handling parsing
 
 #### Example
-```python
+```python function_calling 
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
@@ -116,8 +116,7 @@ class PersonInfo(BaseModel):
 
 # Wrap an LLM to always return PersonInfo
 base_llm = Ollama(
-    model="qwen3.5:397b",
-    api_key=os.environ.get("OLLAMA_API_KEY"),
+    model="llama3.1",
     timeout=90
 )
 structured_llm = StructuredOutputLLM(
@@ -166,7 +165,7 @@ High-level orchestrator that converts Pydantic models or Python functions into t
 
 #### Example with Pydantic Model
 
-```python
+```python function_calling
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
@@ -180,8 +179,7 @@ class WeatherInfo(BaseModel):
     conditions: str
 
 llm = Ollama(
-    model="qwen3.5:397b",
-    api_key=os.environ.get("OLLAMA_API_KEY")
+    model="llama3.1",
 )
 # Create orchestrator
 weather_extractor = ToolOrchestratingLLM(
@@ -200,7 +198,7 @@ print(result)
 
 #### Example with Function
 
-```python
+```python function_calling
 import os
 from serapeum.ollama import Ollama
 from serapeum.core.llms import ToolOrchestratingLLM
@@ -210,7 +208,7 @@ def calculate_sum(a: int, b: int) -> dict:
     """Calculate the sum of two numbers."""
     return {"result": a + b}
 
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"))
+llm = Ollama(model="llama3.1")
 # Create orchestrator with function
 calculator = ToolOrchestratingLLM(
     schema=calculate_sum,

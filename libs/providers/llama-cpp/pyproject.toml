@@ -88,9 +88,9 @@ max-line-length = 120
 count = true
 
 [tool.pytest.ini_options]
+consider_namespace_packages = true
 testpaths = "tests"
 norecursedirs = "docs"
-addopts = "--import-mode=importlib"
 markers = [
     "e2e: marks tests as end-to-end (deselect with '-m \"not e2e\"')",
     "mock: marks tests as mock (deselect with '-m \"not mock\"')",

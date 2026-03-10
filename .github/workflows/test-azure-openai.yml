@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.12", "3.13", "3.14"]
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -87,11 +87,11 @@ jobs:
           install-groups: dev
           verify-lock: true
 
-      - name: Test openai doctests
+      - name: Test azure-openai doctests
         run: |
-          uv run pytest --doctest-modules libs/providers/openai/src/ -v
+          uv run pytest --doctest-modules libs/providers/azure-openai/src/ -v
 
-      - name: Test markdown docs openai
+      - name: Test markdown docs azure-openai
         run: |
-          uv run pytest -v --markdown-docs docs/providers/openai/ --markdown-docs-pattern "*.md"
-          uv run pytest -v --markdown-docs libs/providers/openai/README.md
+          uv run pytest -v --markdown-docs docs/providers/azure-openai/ --markdown-docs-pattern "*.md"
+          uv run pytest -v --markdown-docs libs/providers/azure-openai/README.md

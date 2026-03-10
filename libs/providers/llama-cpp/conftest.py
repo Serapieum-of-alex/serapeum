@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import importlib.util
 import os
+from pathlib import Path
 from typing import Any
 
 # Pre-import the third-party llama_cpp BEFORE pytest's --doctest-modules
@@ -10,6 +12,14 @@ from typing import Any
 # llm.py's `from llama_cpp import Llama` will find the correct package.
 import llama_cpp as _llama_cpp_ext  # noqa: F401
 import pytest
+
+# Re-export shared pytest hooks from the core conftest (--no-skip-doctest flag).
+_core_conftest = Path(__file__).resolve().parents[2] / "core" / "conftest.py"
+_spec = importlib.util.spec_from_file_location("_core_conftest", _core_conftest)
+_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+pytest_addoption = _mod.pytest_addoption  # noqa: F401
+pytest_collection_modifyitems = _mod.pytest_collection_modifyitems  # noqa: F401
 from dotenv import load_dotenv
 
 load_dotenv()

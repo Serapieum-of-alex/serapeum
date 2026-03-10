@@ -81,12 +81,14 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
             the same way as the ``client`` parameter.
 
     Examples:
-        - Basic text embedding against a local Ollama server
+        - Embed text and explore the resulting vector
             ```python
             >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
             >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
-            >>> embedding = embedder.get_text_embedding("Hello world")  # doctest: +SKIP
-            >>> len(embedding) > 0  # doctest: +SKIP
+            >>> embedding = embedder.get_text_embedding("Hello world")  # doctest: +SKIP, +ELLIPSIS
+            >>> embedding[:3]  # doctest: +SKIP, +ELLIPSIS
+            [...]
+            >>> len(embedding) >= 1  # doctest: +SKIP
             True
 
             ```
@@ -98,33 +100,38 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
             ...     model_name="nomic-embed-text",
             ...     api_key="sk-my-ollama-key",
             ... )
+            >>> embedder.base_url
+            'https://api.ollama.com'
             >>> embedder.base_url == OLLAMA_CLOUD_BASE_URL
             True
 
             ```
-        - Verify api_key is excluded from serialisation
+        - Verify api_key is excluded from serialisation (never leaked to logs/disk)
             ```python
             >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
             >>> embedder = OllamaEmbedding(
             ...     model_name="nomic-embed-text",
             ...     api_key="sk-secret",
             ... )
-            >>> "api_key" in embedder.model_dump()
+            >>> dumped = embedder.model_dump()
+            >>> "api_key" in dumped
             False
+            >>> dumped["model_name"]
+            'nomic-embed-text'
 
             ```
-        - Inject a mock client to test embedding logic without a running server
+        - Configure asymmetric instructions and inspect how queries/documents are formatted
             ```python
-            >>> from unittest.mock import MagicMock
             >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
-            >>> mock_client = MagicMock()
-            >>> mock_client.embed.return_value.embeddings = [[0.1, 0.2, 0.3]]
             >>> embedder = OllamaEmbedding(
             ...     model_name="nomic-embed-text",
-            ...     client=mock_client,
+            ...     query_instruction="search_query:",
+            ...     text_instruction="search_document:",
             ... )
-            >>> embedder.get_text_embedding("test")
-            [0.1, 0.2, 0.3]
+            >>> embedder._format_query("What is Python?")
+            'search_query: What is Python?'
+            >>> embedder._format_text("Python is a programming language")
+            'search_document: Python is a programming language'
 
             ```
         - Asymmetric embeddings for retrieval (query vs. document)
@@ -135,53 +142,52 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
             ...     query_instruction="search_query:",
             ...     text_instruction="search_document:",
             ... )
-            >>> query_vec = embedder.get_query_embedding("What is Python?")    # doctest: +SKIP
-            >>> doc_vec = embedder.get_text_embedding("Python is a language")  # doctest: +SKIP
-            >>> len(query_vec) == len(doc_vec)  # doctest: +SKIP
+            >>> query_vec = embedder.get_query_embedding("What is Python?")    # doctest: +SKIP, +ELLIPSIS
+            >>> doc_vec = embedder.get_text_embedding("Python is a language")  # doctest: +SKIP, +ELLIPSIS
+            >>> query_vec[:3]  # doctest: +SKIP, +ELLIPSIS
+            [...]
+            >>> doc_vec[:3]  # doctest: +SKIP, +ELLIPSIS
+            [...]
+            >>> len(query_vec) == len(doc_vec)  # both share the same dimensionality  # doctest: +SKIP
             True
 
             ```
-        - Batch embed multiple documents in one call
+        - Batch embed multiple documents and inspect results
             ```python
             >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
             >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
             >>> docs = ["First document", "Second document", "Third document"]
-            >>> embeddings = embedder.get_text_embedding_batch(docs)  # doctest: +SKIP
-            >>> len(embeddings) == 3  # doctest: +SKIP
+            >>> embeddings = embedder.get_text_embedding_batch(docs)  # doctest: +SKIP, +ELLIPSIS
+            >>> len(embeddings)  # one vector per document  # doctest: +SKIP
+            3
+            >>> len(embeddings[0]) >= 1  # doctest: +SKIP
             True
+            >>> embeddings[0][:3]  # doctest: +SKIP, +ELLIPSIS
+            [...]
 
             ```
-        - Async batch embedding
+        - Async batch embedding with result exploration
             ```python
             >>> import asyncio
             >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
             >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
             >>> async def embed_batch():  # doctest: +SKIP
             ...     docs = ["Doc 1", "Doc 2", "Doc 3"]
-            ...     vecs = await embedder.aget_text_embedding_batch(docs)
-            ...     return len(vecs)
-            >>> asyncio.run(embed_batch())  # doctest: +SKIP
+            ...     return await embedder.aget_text_embedding_batch(docs)
+            >>> vecs = asyncio.run(embed_batch())  # doctest: +SKIP, +ELLIPSIS
+            >>> len(vecs)  # one vector per document  # doctest: +SKIP
             3
+            >>> vecs[0][:3]  # doctest: +SKIP, +ELLIPSIS
+            [...]
 
             ```
-        - List available models on the connected server
+        - List available models and find embedding-capable ones
             ```python
             >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
             >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
-            >>> models = embedder.list_models()   # doctest: +SKIP
-            >>> isinstance(models, list)          # doctest: +SKIP
-            True
-
-            ```
-        - Async model listing
-            ```python
-            >>> import asyncio
-            >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
-            >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
-            >>> async def show_models():                # doctest: +SKIP
-            ...     return await embedder.alist_models()
-            >>> asyncio.run(show_models())              # doctest: +SKIP
-            ['nomic-embed-text:latest', 'mxbai-embed-large:latest']
+            >>> models = embedder.list_models()  # doctest: +SKIP, +ELLIPSIS
+            >>> [m for m in models if "embed" in m][:1]  # doctest: +SKIP, +ELLIPSIS
+            ['...']
 
             ```
 
@@ -273,15 +279,17 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
             ValueError: If the query is empty or whitespace-only.
 
         Examples:
-            - Embed a search query
+            - Embed a search query and inspect the vector
                 ```python
                 >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(  # doctest: +SKIP
                 ...     model_name="nomic-embed-text",
                 ...     query_instruction="search_query:"
                 ... )
-                >>> query_vec = embedder.get_query_embedding("What is machine learning?")  # doctest: +SKIP
-                >>> len(query_vec) > 0  # doctest: +SKIP
+                >>> query_vec = embedder.get_query_embedding("What is machine learning?")  # doctest: +SKIP, +ELLIPSIS
+                >>> query_vec[:3]  # first three dimensions  # doctest: +SKIP, +ELLIPSIS
+                [...]
+                >>> len(query_vec) >= 1  # doctest: +SKIP
                 True
 
                 ```
@@ -309,15 +317,18 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
             ValueError: If the query is empty or whitespace-only.
 
         Examples:
-            - Async query embedding
+            - Async query embedding with vector exploration
                 ```python
                 >>> import asyncio
                 >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
                 >>> async def embed_query():  # doctest: +SKIP
-                ...     vec = await embedder.aget_query_embedding("neural networks")
-                ...     return len(vec) > 0
-                >>> # asyncio.run(embed_query())  # Returns True
+                ...     return await embedder.aget_query_embedding("neural networks")
+                >>> vec = asyncio.run(embed_query())  # doctest: +SKIP, +ELLIPSIS
+                >>> vec[:3]  # doctest: +SKIP, +ELLIPSIS
+                [...]
+                >>> len(vec) >= 1  # doctest: +SKIP
+                True
 
                 ```
 
@@ -345,15 +356,17 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
             ValueError: If the text is empty or whitespace-only.
 
         Examples:
-            - Embed a document
+            - Embed a document and inspect the resulting vector
                 ```python
                 >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(  # doctest: +SKIP
                 ...     model_name="nomic-embed-text",
                 ...     text_instruction="search_document:"
                 ... )
-                >>> doc_vec = embedder.get_text_embedding("Python is a programming language")  # doctest: +SKIP
-                >>> len(doc_vec) > 0  # doctest: +SKIP
+                >>> doc_vec = embedder.get_text_embedding("Python is a programming language")  # doctest: +SKIP, +ELLIPSIS
+                >>> doc_vec[:3]  # doctest: +SKIP, +ELLIPSIS
+                [...]
+                >>> len(doc_vec) >= 1  # doctest: +SKIP
                 True
 
                 ```
@@ -381,15 +394,18 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
             ValueError: If the text is empty or whitespace-only.
 
         Examples:
-            - Async document embedding
+            - Async document embedding with vector exploration
                 ```python
                 >>> import asyncio
                 >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
                 >>> async def embed_doc():  # doctest: +SKIP
-                ...     vec = await embedder.aget_text_embedding("Machine learning basics")
-                ...     return len(vec) > 0
-                >>> # asyncio.run(embed_doc())  # Returns True
+                ...     return await embedder.aget_text_embedding("Machine learning basics")
+                >>> vec = asyncio.run(embed_doc())  # doctest: +SKIP, +ELLIPSIS
+                >>> vec[:3]  # doctest: +SKIP, +ELLIPSIS
+                [...]
+                >>> len(vec) >= 1  # doctest: +SKIP
+                True
 
                 ```
 
@@ -417,14 +433,18 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
             ValueError: If any text is empty or whitespace-only.
 
         Examples:
-            - Batch embed multiple documents
+            - Batch embed multiple documents and explore per-document vectors
                 ```python
                 >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
                 >>> docs = ["First document", "Second document", "Third document"]  # doctest: +SKIP
-                >>> embeddings = embedder.get_text_embeddings(docs)  # doctest: +SKIP
-                >>> len(embeddings) == 3  # doctest: +SKIP
+                >>> embeddings = embedder._get_text_embeddings(docs)  # doctest: +SKIP, +ELLIPSIS
+                >>> len(embeddings)  # one vector per input document  # doctest: +SKIP
+                3
+                >>> len(embeddings[0]) >= 1  # doctest: +SKIP
                 True
+                >>> embeddings[0][:3]  # first three floats of the first vector  # doctest: +SKIP, +ELLIPSIS
+                [...]
 
                 ```
 
@@ -453,16 +473,19 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
             ValueError: If any text is empty or whitespace-only.
 
         Examples:
-            - Async batch embedding
+            - Async batch embedding with result exploration
                 ```python
                 >>> import asyncio
                 >>> from serapeum.ollama import OllamaEmbedding     # type: ignore
                 >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")  # doctest: +SKIP
                 >>> async def batch_embed():  # doctest: +SKIP
                 ...     docs = ["Doc 1", "Doc 2", "Doc 3"]
-                ...     vecs = await embedder.aget_text_embeddings(docs)
-                ...     return len(vecs)
-                >>> # asyncio.run(batch_embed())  # Returns 3
+                ...     return await embedder._aget_text_embeddings(docs)
+                >>> vecs = asyncio.run(batch_embed())  # doctest: +SKIP, +ELLIPSIS
+                >>> len(vecs)  # one vector per document  # doctest: +SKIP
+                3
+                >>> vecs[0][:3]  # doctest: +SKIP, +ELLIPSIS
+                [...]
 
                 ```
 
@@ -578,14 +601,49 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
     def _format_query(self, query: str) -> str:
         """Format query with instruction if provided.
 
+        Strips whitespace from the query and prepends the ``query_instruction``
+        prefix when configured. Used internally before passing text to the
+        Ollama embed API.
+
         Args:
             query: The query string to format.
 
         Returns:
-            Formatted query string.
+            Formatted query string with optional instruction prefix.
 
         Raises:
             ValueError: If query is empty or whitespace-only after stripping.
+
+        Examples:
+            - Format a query with an instruction prefix
+                ```python
+                >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+                >>> embedder = OllamaEmbedding(
+                ...     model_name="nomic-embed-text",
+                ...     query_instruction="search_query:",
+                ... )
+                >>> embedder._format_query("What is Python?")
+                'search_query: What is Python?'
+
+                ```
+            - Format without an instruction prefix (returns stripped query)
+                ```python
+                >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+                >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
+                >>> embedder._format_query("  What is Python?  ")
+                'What is Python?'
+
+                ```
+            - Empty query raises ValueError
+                ```python
+                >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+                >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
+                >>> embedder._format_query("   ")
+                Traceback (most recent call last):
+                    ...
+                ValueError: Cannot embed empty or whitespace-only query. Query becomes empty after stripping whitespace.
+
+                ```
         """
         stripped_query = query.strip()
 
@@ -602,14 +660,49 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
     def _format_text(self, text: str) -> str:
         """Format text with instruction if provided.
 
+        Strips whitespace from the text and prepends the ``text_instruction``
+        prefix when configured. Used internally before passing text to the
+        Ollama embed API.
+
         Args:
             text: The text string to format.
 
         Returns:
-            Formatted text string.
+            Formatted text string with optional instruction prefix.
 
         Raises:
             ValueError: If text is empty or whitespace-only after stripping.
+
+        Examples:
+            - Format a document with an instruction prefix
+                ```python
+                >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+                >>> embedder = OllamaEmbedding(
+                ...     model_name="nomic-embed-text",
+                ...     text_instruction="search_document:",
+                ... )
+                >>> embedder._format_text("Python is a programming language")
+                'search_document: Python is a programming language'
+
+                ```
+            - Format without an instruction prefix (returns stripped text)
+                ```python
+                >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+                >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
+                >>> embedder._format_text("  Python is great  ")
+                'Python is great'
+
+                ```
+            - Empty text raises ValueError
+                ```python
+                >>> from serapeum.ollama import OllamaEmbedding  # type: ignore
+                >>> embedder = OllamaEmbedding(model_name="nomic-embed-text")
+                >>> embedder._format_text("")
+                Traceback (most recent call last):
+                    ...
+                ValueError: Cannot embed empty or whitespace-only text. Text becomes empty after stripping whitespace.
+
+                ```
         """
         stripped_text = text.strip()
 

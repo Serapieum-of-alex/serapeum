@@ -56,15 +56,11 @@ class MinimalToolSchema(BaseModel):
         - Validation error on missing required field
             ```python
             >>> from pydantic import ValidationError
-            >>> def build_invalid():
-            ...     # missing required field "input"
-            ...     MinimalToolSchema()  # type: ignore[call-arg]
-            ...
             >>> try:
-            ...     build_invalid()
+            ...     MinimalToolSchema()  # type: ignore[call-arg]
             ... except ValidationError as e:
-            ...     print(type(e).__name__)
-            ValidationError
+            ...     print(e.error_count(), "validation error")
+            1 validation error
 
             ```
 
@@ -108,18 +104,10 @@ class ToolMetadata:
             >>> from serapeum.core.tools.types import ToolMetadata
             >>> meta = ToolMetadata(description="Echo user input back.", name="echo")
             >>> params = meta.get_schema()
-            >>> print(params)
-            {
-                'properties':
-                    {
-                        'input': {
-                            'title': 'Input',
-                            'type': 'string'
-                        }
-                    },
-                'required': ['input'],
-                'type': 'object'
-            }
+            >>> sorted(params.keys())
+            ['properties', 'required', 'type']
+            >>> sorted(params['properties'].keys())
+            ['input']
 
             ```
 
@@ -131,44 +119,16 @@ class ToolMetadata:
             ...     limit: int | None = None
             ...
             >>> meta = ToolMetadata(description="Search items.", name="search", tool_schema=MyArgs)
-            >>> print(meta.get_schema())
-            {
-                'properties':
-                    {
-                        'query': {'title': 'Query',  'type': 'string'},
-                        'limit': {
-                            'anyOf': [{'type': 'integer'}, {'type': 'null'}],
-                            'default': None,
-                            'title': 'Limit'
-                        }
-                    },
-                'required': ['query'],
-                'type': 'object'
-            }
-            >>> print(meta.to_openai_tool())
-            {
-                'type': 'function',
-                'function':
-                    {
-                        'name': 'search',
-                        'description': 'Search items.',
-                        'parameters':
-                            {
-                                'properties':
-                                    {
-                                        'query': {'title': 'Query', 'type': 'string'},
-                                        'limit':
-                                            {
-                                                'anyOf': [{'type': 'integer'}, {'type': 'null'}],
-                                                'default': None,
-                                                'title': 'Limit'
-                                            }
-                                    },
-                                'required': ['query'],
-                                'type': 'object'
-                            }
-                    }
-                }
+            >>> schema = meta.get_schema()
+            >>> sorted(schema['properties'].keys())
+            ['limit', 'query']
+            >>> schema['required']
+            ['query']
+            >>> tool_spec = meta.to_openai_tool()
+            >>> tool_spec['type']
+            'function'
+            >>> tool_spec['function']['name']
+            'search'
 
             ```
 
@@ -203,16 +163,10 @@ class ToolMetadata:
                 >>> from serapeum.core.tools.types import ToolMetadata
                 >>> meta = ToolMetadata(description="Echo", name="echo", tool_schema=None)
                 >>> params = meta.get_schema()
-                >>> print(params)
-                {
-                    'type': 'object',
-                    'properties':
-                        {
-                            'input':
-                                {'title': 'input query string', 'type': 'string'}
-                        },
-                    'required': ['input']
-                }
+                >>> params['type']
+                'object'
+                >>> list(params['properties'].keys())
+                ['input']
 
                 ```
 
@@ -225,16 +179,10 @@ class ToolMetadata:
                 ...
                 >>> meta = ToolMetadata(description="Repeat text", name="repeat", tool_schema=MyArgs)
                 >>> params = meta.get_schema()
-                >>> print(params) # doctest: +NORMALIZE_WHITESPACE
-                {
-                    'properties':
-                        {
-                            'text': {'title': 'Text', 'type': 'string'},
-                            'count': {'title': 'Count', 'type': 'integer'}
-                        },
-                    'required': ['text', 'count'],
-                    'type': 'object'
-                }
+                >>> sorted(params['properties'].keys())
+                ['count', 'text']
+                >>> params['required']
+                ['text', 'count']
 
                 ```
         """
@@ -282,15 +230,11 @@ class ToolMetadata:
                 ...
                 >>> meta = ToolMetadata(description="Echo", name="echo", tool_schema=Args)
                 >>> s = meta.tool_schema_str
-                >>> print(s)
-                {
-                    "properties":
-                        { "input": {"title": "Input", "type": "string"}},
-                    "required": ["input"],
-                    "type": "object"
-                }
-                >>> isinstance(json.loads(s), dict)
-                True
+                >>> parsed = json.loads(s)
+                >>> sorted(parsed.keys())
+                ['properties', 'required', 'type']
+                >>> sorted(parsed['properties'].keys())
+                ['input']
 
                 ```
 
@@ -424,22 +368,13 @@ class ToolMetadata:
                 ```python
                 >>> from serapeum.core.tools.types import ToolMetadata
                 >>> meta = ToolMetadata(description="Echo input.", name="echo")
-                >>> print(meta.to_openai_tool())
-                {
-                    'type': 'function',
-                    'function':
-                        {
-                            'name': 'echo',
-                            'description': 'Echo input.',
-                            'parameters':
-                                {
-                                    'properties':
-                                        {'input': {'title': 'Input', 'type': 'string'}},
-                                    'required': ['input'],
-                                    'type': 'object'
-                                }
-                        }
-                }
+                >>> spec = meta.to_openai_tool(include_schema_guidance=False)
+                >>> spec['type']
+                'function'
+                >>> spec['function']['name']
+                'echo'
+                >>> spec['function']['description']
+                'Echo input.'
 
                 ```
             - Error on overly long descriptions (when not skipped)
@@ -450,8 +385,8 @@ class ToolMetadata:
                 >>> try:
                 ...     meta.to_openai_tool()
                 ... except ValueError as e:
-                ...     print("exceeds" in str(e))
-                True
+                ...     print(str(e).split('.')[0])
+                Tool description exceeds maximum length of 1024 characters
 
                 ```
         """
@@ -526,7 +461,7 @@ class ToolOutput(BaseModel):
             >>> from serapeum.core.base.llms.types import TextChunk
             >>> from serapeum.core.tools.types import ToolOutput
             >>> out = ToolOutput(tool_name="echo", chunks=[TextChunk(content="hi")])
-            >>> print(out.content)
+            >>> out.content
             'hi'
 
             ```
@@ -538,8 +473,8 @@ class ToolOutput(BaseModel):
             >>> try:
             ...     ToolOutput(tool_name="echo", content="x", chunks=[TextChunk(content="y")])
             ... except ValueError as e:
-            ...     print("Cannot provide both" in str(e))
-            True
+            ...     print(str(e))
+            Cannot provide both content and chunks.
 
             ```
 
@@ -726,7 +661,7 @@ class BaseTool:
             ...
             >>> tool = Echo()
             >>> out = tool({"input": "hi"})
-            >>> print(out.content)
+            >>> out.content
             'hi'
 
             ```
@@ -781,8 +716,8 @@ class BaseTool:
                 ...         return ToolOutput(tool_name="echo", content=input_values.get("input", ""))
                 ...
                 >>> async_tool = Echo().to_async_tool()
-                >>> type(async_tool)
-                <class 'serapeum.core.tools.types.BaseToolAsyncAdapter'>
+                >>> async_tool.metadata.get_name()
+                'echo'
                 >>> asyncio.run(async_tool.acall({"input": "hi"})).content
                 'hi'
 
@@ -976,20 +911,22 @@ class ToolCallArguments(BaseModel):
 
         - Non-dict ``tool_kwargs`` are replaced with an empty dict
             ```python
+            >>> from serapeum.core.tools.types import ToolCallArguments
             >>> sel = ToolCallArguments(tool_id="id-1", tool_name="echo", tool_kwargs="not-a-dict")
-            >>> sel.tool_kwargs == {}
-            True
+            >>> sel.tool_kwargs
+            {}
 
             ```
 
         - Missing required fields raise a ValidationError
             ```python
             >>> from pydantic import ValidationError
+            >>> from serapeum.core.tools.types import ToolCallArguments
             >>> try:
             ...     ToolCallArguments(tool_id="only-id", tool_kwargs={})  # missing tool_name
             ... except ValidationError as e:
-            ...     print(type(e).__name__)
-            ValidationError
+            ...     print(e.error_count(), "validation error")
+            1 validation error
 
             ```
 

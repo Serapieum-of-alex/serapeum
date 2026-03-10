@@ -107,6 +107,10 @@ profile = "black"
 line_length = 88
 
 [tool.pytest.ini_options]
+# Required so pytest recognises serapeum/ (no __init__.py) as a PEP 420
+# namespace package and derives module names as serapeum.ollama.* instead
+# of ollama.* when running --doctest-modules.
+consider_namespace_packages = true
 testpaths = [
     "libs/core/tests",
     "libs/providers/ollama/tests",
@@ -117,6 +121,8 @@ markers = [
     "mock: marks tests as mock (deselect with '-m \"not mock\"')",
     "integration: marks tests as integration test (deselect with '-m \"not integration\"')",
     "unit: marks tests as unit test (deselect with '-m \"not unit\"')",
+    "function_calling: markdown code block that runs only with local resources (deselect with '-m \"not function_calling\"')",
+
 ]
 
 [tool.mypy]

@@ -77,7 +77,7 @@ class JsonParser:
             - Handles literal newlines in strings
             ```python
             >>> JsonParser.parse('{"text": "line1\\nline2"}')
-            {'text': 'line1\\nline2'}
+            {'text': 'line1\nline2'}
 
             ```
         """
@@ -273,8 +273,8 @@ class SchemaFormatter:
             ...     done: bool = False
             >>> schema = Task.model_json_schema()
             >>> prompt = SchemaFormatter.format_for_llm(schema, escape_json=False)
-            >>> "Expected JSON structure" in prompt
-            True
+            >>> prompt.split('\\n')[1]
+            "Here's a JSON schema to follow strictly:"
         """
         simplified_schema = SchemaFormatter.simplify(schema_dict, excluded_keys)
         output_str = template.format(schema=simplified_schema)

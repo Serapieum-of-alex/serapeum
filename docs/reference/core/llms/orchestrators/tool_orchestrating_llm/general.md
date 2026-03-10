@@ -45,7 +45,7 @@ class Album(BaseModel):
     songs: list[Song]
 
 # Initialize LLM with function calling support
-llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=80)
+llm = Ollama(model="llama3.1", timeout=80)
 
 # Create ToolOrchestratingLLM instance
 tools_llm = ToolOrchestratingLLM(

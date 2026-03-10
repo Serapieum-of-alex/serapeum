@@ -67,8 +67,8 @@ class Docstring:
         True
         >>> ds.get_short_summary_line()
         'add(a: int, b: int) -> int\nAdd two integers.'
-        >>> ds.func_arguments
-        {'b', 'a'}
+        >>> sorted(ds.func_arguments)
+        ['a', 'b']
 
         ```
     - Create from a class and get first-line summary
@@ -83,7 +83,7 @@ class Docstring:
         ...     title: str
         >>> ds = Docstring(Song)
         >>> ds.name
-        "Song"
+        'Song'
         >>> ds.func_arguments
         {'title'}
         >>> ds.extract_param_docs()
@@ -91,7 +91,7 @@ class Docstring:
         >>> ds.get_short_summary_line()
         'Song(*, title: str) -> None\nA music track.'
         >>> ds.docstring
-        'A music track.\n    \n    Attribute:\n        title (str): Title of the song.\n    '
+        'A music track.\n\n    Attribute:\n        title (str): Title of the song.\n    '
 
         ```
     """
@@ -159,8 +159,8 @@ class Docstring:
                 ...     '''
                 ...     return a * b
                 >>> ds = Docstring(mul)
-                >>> ds.func_arguments == {'a', 'b'}
-                True
+                >>> sorted(ds.func_arguments)
+                ['a', 'b']
                 >>> docs, unknown = ds.extract_param_docs()
                 >>> sorted(docs.items())
                 [('a', 'Left factor.'), ('b', 'Right factor.')]
@@ -216,9 +216,9 @@ class Docstring:
                 ...     'Greet someone.'
                 ...     return f'Hi {name}'
                 >>> ds = Docstring(say)
-                >>> summary = ds.get_short_summary_line()
-                >>> 'say(name: str) -> str' in summary and 'Greet someone.' in summary
-                True
+                >>> print(ds.get_short_summary_line())
+                say(name: str) -> str
+                Greet someone.
 
                 ```
         """
@@ -251,8 +251,8 @@ class FunctionArgument:
             >>> param = list(signature(f).parameters.values())[0]
             >>> arg = FunctionArgument(param)
             >>> t, field = arg.to_field()
-            >>> (t is int) and (field.default == 3)
-            True
+            >>> t.__name__, field.default
+            ('int', 3)
 
             ```
     """
@@ -307,8 +307,8 @@ class FunctionArgument:
                 ...     pass
                 >>> param = list(signature(f).parameters.values())[0]
                 >>> fa = FunctionArgument(param)
-                >>> fa.param_type is int and fa.description == 'User age'
-                True
+                >>> fa.param_type.__name__, fa.description
+                ('int', 'User age')
 
                 ```
             - Using FieldInfo to pass description and extras
@@ -435,8 +435,8 @@ class FunctionArgument:
                 ...     pass
                 >>> param = list(signature(f).parameters.values())[0]
                 >>> t, fi = FunctionArgument(param).to_field()
-                >>> t is int and fi.default == 42 and fi.description == 'Counter'
-                True
+                >>> t.__name__, fi.default, fi.description
+                ('int', 42, 'Counter')
 
                 ```
         """
@@ -590,8 +590,10 @@ class FunctionConverter:
                 ...     additional_fields=[('a', int), ('b', str, 'x')]
                 ... )
                 >>> merged = conv._apply_additional_fields({})
-                >>> sorted([(key, value[0].__name__) for key, value in merged.items()])
-                [('a', 'int'), ('b', 'str')]
+                >>> sorted(merged.keys())
+                ['a', 'b']
+                >>> merged['b'][1].default
+                'x'
 
                 ```
         """

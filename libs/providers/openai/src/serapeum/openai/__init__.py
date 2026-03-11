@@ -10,13 +10,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from serapeum.openai.llm import Completions, Responses, OpenAIResponses
+    from serapeum.openai.llm import Completions, Responses
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "Completions": ("serapeum.openai.llm", "Completions"),
-    "OpenAI": ("serapeum.openai.llm", "OpenAI"),
     "Responses": ("serapeum.openai.llm", "Responses"),
-    "OpenAIResponses": ("serapeum.openai.llm", "OpenAIResponses"),
 }
 
 
@@ -36,5 +34,4 @@ def __getattr__(name: str) -> object:
 __all__ = [
     "Completions",
     "Responses",
-    "OpenAIResponses",
 ]

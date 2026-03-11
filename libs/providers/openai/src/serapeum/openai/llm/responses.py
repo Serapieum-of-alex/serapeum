@@ -773,7 +773,3 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
             "parallel_tool_calls": allow_parallel_tool_calls,
             **kwargs,
         }
-
-
-# Backward-compatible alias
-OpenAIResponses = Responses

@@ -1008,7 +1008,7 @@ class TestValidateChatWithToolsResponse:
             )
         )
         result = llm._validate_chat_with_tools_response(
-            response, tools=[], allow_parallel_tool_calls=True
+            response, allow_parallel_tool_calls=True
         )
         tool_blocks = [
             b for b in result.message.chunks if isinstance(b, ToolCallBlock)
@@ -1038,7 +1038,7 @@ class TestValidateChatWithToolsResponse:
             )
         )
         result = llm._validate_chat_with_tools_response(
-            response, tools=[], allow_parallel_tool_calls=False
+            response, allow_parallel_tool_calls=False
         )
         tool_blocks = [
             b for b in result.message.chunks if isinstance(b, ToolCallBlock)

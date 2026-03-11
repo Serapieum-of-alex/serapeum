@@ -1163,38 +1163,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             **kwargs,
         }
 
-    def _validate_chat_with_tools_response(
-        self,
-        response: ChatResponse,
-        tools: Sequence["BaseTool"],
-        allow_parallel_tool_calls: bool = False,
-        **kwargs: Any,
-    ) -> ChatResponse:
-        """Enforce single-tool-call constraint on a chat-with-tools response.
-
-        When *allow_parallel_tool_calls* is ``False``, calls
-        :func:`~serapeum.openai.utils.force_single_tool_call` to raise if the
-        response contains more than one tool call.
-
-        Args:
-            response: The chat response to validate.
-            tools: Tools that were available during the call (unused but
-                required by the interface).
-            allow_parallel_tool_calls: When ``False`` (default), raises if the
-                model invoked multiple tools simultaneously.
-            **kwargs: Accepted for interface compatibility; not forwarded.
-
-        Returns:
-            ChatResponse: The unmodified *response* after validation.
-
-        Raises:
-            ValueError: If parallel tool calls are disallowed and the response
-                contains more than one tool call.
-        """
-        if not allow_parallel_tool_calls:
-            response.force_single_tool_call()
-        return response
-
     def get_tool_calls_from_response(
         self,
         response: "ChatResponse",

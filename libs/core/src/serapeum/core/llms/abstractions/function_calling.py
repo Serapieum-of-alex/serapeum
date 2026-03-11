@@ -83,9 +83,7 @@ class FunctionCallingLLM(LLM, ABC):
             response = self.chat(**chat_kwargs)
             result = self._validate_chat_with_tools_response(
                 response,
-                tools,
                 allow_parallel_tool_calls=allow_parallel_tool_calls,
-                **kwargs,
             )
         return result
 
@@ -141,9 +139,7 @@ class FunctionCallingLLM(LLM, ABC):
             response = await self.achat(**chat_kwargs)
             result = self._validate_chat_with_tools_response(
                 response,
-                tools,
                 allow_parallel_tool_calls=allow_parallel_tool_calls,
-                **kwargs,
             )
         return result
 
@@ -162,11 +158,24 @@ class FunctionCallingLLM(LLM, ABC):
     def _validate_chat_with_tools_response(
         self,
         response: ChatResponse,
-        tools: Sequence[BaseTool],
         allow_parallel_tool_calls: bool = False,
-        **kwargs: Any,
     ) -> ChatResponse:
-        """Validate the response from generate_tool_calls."""
+        """Validate and normalize a chat-with-tools response.
+
+        If ``allow_parallel_tool_calls`` is ``False``, the response is mutated
+        to include at most a single tool call.
+
+        Args:
+            response: Response to validate.
+            tools: Tools originally requested (reserved for future checks).
+            allow_parallel_tool_calls: Whether multiple tool calls are allowed.
+            **kwargs: Reserved for future options.
+
+        Returns:
+            The validated response (possibly mutated in-place).
+        """
+        if not allow_parallel_tool_calls:
+            response.force_single_tool_call()
         return response
 
     def get_tool_calls_from_response(

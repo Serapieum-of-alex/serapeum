@@ -1007,7 +1007,7 @@ class TestValidateChatWithToolsResponse:
                 ],
             )
         )
-        result = llm._validate_chat_with_tools_response(
+        result = llm._validate_response(
             response, allow_parallel_tool_calls=True
         )
         tool_blocks = [
@@ -1037,7 +1037,7 @@ class TestValidateChatWithToolsResponse:
                 ],
             )
         )
-        result = llm._validate_chat_with_tools_response(
+        result = llm._validate_response(
             response, allow_parallel_tool_calls=False
         )
         tool_blocks = [

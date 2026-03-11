@@ -253,11 +253,12 @@ def client(self) -> Client:
 
 ### 2. **Template Method Pattern**
 FunctionCallingLLM defines workflow, Ollama implements specifics:
+
 ```python
 def generate_tool_calls(self, messages, tools, **kwargs):
     prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass
     response = self.chat(prepared)
-    validated = self._validate_chat_with_tools_response(response, tools)  # Subclass
+    validated = self._validate_response(response, tools)  # Subclass
     return validated
 ```
 

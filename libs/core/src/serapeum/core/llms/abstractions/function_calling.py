@@ -81,7 +81,7 @@ class FunctionCallingLLM(LLM, ABC):
             result = self.chat(stream=True, **chat_kwargs)
         else:
             response = self.chat(**chat_kwargs)
-            result = self._validate_chat_with_tools_response(
+            result = self._validate_response(
                 response,
                 allow_parallel_tool_calls=allow_parallel_tool_calls,
             )
@@ -137,7 +137,7 @@ class FunctionCallingLLM(LLM, ABC):
             result = await self.achat(stream=True, **chat_kwargs)
         else:
             response = await self.achat(**chat_kwargs)
-            result = self._validate_chat_with_tools_response(
+            result = self._validate_response(
                 response,
                 allow_parallel_tool_calls=allow_parallel_tool_calls,
             )
@@ -155,8 +155,8 @@ class FunctionCallingLLM(LLM, ABC):
     ) -> dict[str, Any]:
         """Prepare the arguments needed to let the LLM chat with tools."""
 
-    def _validate_chat_with_tools_response(
-        self,
+    @staticmethod
+    def _validate_response(
         response: ChatResponse,
         allow_parallel_tool_calls: bool = False,
     ) -> ChatResponse:
@@ -167,9 +167,7 @@ class FunctionCallingLLM(LLM, ABC):
 
         Args:
             response: Response to validate.
-            tools: Tools originally requested (reserved for future checks).
             allow_parallel_tool_calls: Whether multiple tool calls are allowed.
-            **kwargs: Reserved for future options.
 
         Returns:
             The validated response (possibly mutated in-place).

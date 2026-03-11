@@ -28,12 +28,13 @@ from serapeum.core.llms import (
     Image,
     LogProb,
     Message,
-    MessageRole,
     TextChunk,
     ToolCallBlock,
 )
 
 OpenAIToolCall = ChatCompletionMessageToolCall | ChoiceDeltaToolCall
+
+
 class ChatMessageParser:
     """Parses a Chat Completions API :class:`~openai.types.chat.ChatCompletionMessage` into a serapeum :class:`~serapeum.core.llms.Message`.
 
@@ -178,11 +179,6 @@ class ChatMessageParser:
                 ```
         """
         return [cls(m, modalities).build() for m in messages]
-
-
-# ---------------------------------------------------------------------------
-# "From OpenAI" parsers — raw dicts → serapeum types
-# ---------------------------------------------------------------------------
 
 
 class DictMessageParser:
@@ -450,11 +446,6 @@ DictMessageParser._BLOCK_PARSERS = {
 }
 
 
-# ---------------------------------------------------------------------------
-# LogProb parsers
-# ---------------------------------------------------------------------------
-
-
 class LogProbParser:
     """Namespace of static methods that convert OpenAI logprob types to serapeum :class:`~serapeum.core.llms.LogProb` lists.
 
@@ -630,11 +621,6 @@ class LogProbParser:
                 for completion_logprob in openai_completion_logprobs.top_logprobs
             ]
         return result
-
-
-# ---------------------------------------------------------------------------
-# Streaming tool call accumulator
-# ---------------------------------------------------------------------------
 
 
 class ToolCallAccumulator:

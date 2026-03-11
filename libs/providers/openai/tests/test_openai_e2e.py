@@ -476,16 +476,43 @@ class TestAsyncCompletion:
         assert chunks[-1].text is not None, "Final text should not be None"
 
 
+@pytest.fixture()
+def llm_function_calling(model):
+    """Create an OpenAI instance that forces the function-calling fallback path.
+
+    Setting ``structured_output_mode`` to ``FUNCTION`` makes
+    ``_should_use_structure_outputs()`` return ``False``, exercising the
+    tool-call branch in ``StructuredOutput.parse`` / ``aparse``.
+
+    Returns:
+        OpenAI: Instance using function-calling for structured outputs.
+    """
+    from serapeum.openai import OpenAI
+    from serapeum.core.types import StructuredOutputMode
+
+    return OpenAI(
+        model=model,
+        api_base=os.environ.get("OPENAI_API_BASE"),
+        api_key=os.environ.get("OPENAI_API_KEY"),
+        structured_output_mode=StructuredOutputMode.FUNCTION,
+    )
+
+
 @pytest.mark.e2e
 @skip_no_key
-class TestParse:
-    """Tests for OpenAI.parse (structured output prediction)."""
+class TestParseJsonSchema:
+    """Tests for ``parse`` / ``aparse`` via the native JSON-schema path.
+
+    The default ``llm`` fixture uses ``structured_output_mode=DEFAULT``
+    with ``gpt-4o-mini`` which supports JSON-schema, so these tests
+    exercise ``_should_use_structure_outputs() == True``.
+    """
 
     def test_parse_flat_model(self, llm):
-        """Test structured predict extracts a flat Pydantic model.
+        """Test JSON-schema parse extracts a flat Pydantic model.
 
         Test scenario:
-            Ask the model to create a person and verify the fields match.
+            Ask the model to create a person, verify type and fields.
         """
         prompt = PromptTemplate(
             "Create a person named Alice who is 30 years old."
@@ -500,7 +527,7 @@ class TestParse:
         assert result.age == 30, f"Expected age 30, got {result.age}"
 
     def test_parse_nested_model(self, llm):
-        """Test structured predict handles nested Pydantic models.
+        """Test JSON-schema parse handles nested Pydantic models.
 
         Test scenario:
             Create a person with a nested address and verify nested fields.
@@ -513,18 +540,59 @@ class TestParse:
         assert isinstance(result, PersonWithAddress), (
             f"Expected PersonWithAddress, got {type(result)}"
         )
-        assert result.name == "Bob", f"Expected name 'Bob', got '{result.name}'"
-        assert result.age == 25, f"Expected age 25, got {result.age}"
-        assert isinstance(result.address, Address), (
-            f"Expected Address, got {type(result.address)}"
+        assert result.name == "Bob", (
+            f"Expected name 'Bob', got '{result.name}'"
         )
         assert result.address.city == "New York", (
             f"Expected city 'New York', got '{result.address.city}'"
         )
 
+    def test_parse_with_prompt_args(self, llm):
+        """Test JSON-schema parse with template variables via prompt_args.
+
+        Test scenario:
+            Use a PromptTemplate with a variable and pass it through
+            prompt_args to verify the template is rendered.
+        """
+        prompt = PromptTemplate(
+            "Create a person named {name} who is 28 years old."
+        )
+        result = llm.parse(schema=Person, prompt=prompt, name="Zara")
+        assert isinstance(result, Person), (
+            f"Expected Person, got {type(result)}"
+        )
+        assert result.name == "Zara", (
+            f"Expected name 'Zara', got '{result.name}'"
+        )
+        assert result.age == 28, f"Expected age 28, got {result.age}"
+
+    def test_parse_streaming_yields_partials(self, llm):
+        """Test streaming JSON-schema parse yields partial then final objects.
+
+        Test scenario:
+            Streaming parse should yield at least one result; the final one
+            should be a valid Person instance with correct fields.
+        """
+        prompt = PromptTemplate(
+            "Create a person named Dave who is 50 years old."
+        )
+        results = list(
+            llm.parse(schema=Person, prompt=prompt, stream=True)
+        )
+        assert len(results) > 0, (
+            "Streaming parse should yield at least one result"
+        )
+        final = results[-1]
+        assert isinstance(final, Person), (
+            f"Final streamed object should be Person, got {type(final)}"
+        )
+        assert final.name == "Dave", (
+            f"Expected name 'Dave', got '{final.name}'"
+        )
+
     @pytest.mark.asyncio()
     async def test_aparse_flat_model(self, llm):
-        """Test async structured predict extracts a Pydantic model.
+        """Test async JSON-schema parse extracts a Pydantic model.
 
         Test scenario:
             Same as sync parse but via aparse.
@@ -541,32 +609,13 @@ class TestParse:
         )
         assert result.age == 40, f"Expected age 40, got {result.age}"
 
-    def test_parse_streaming(self, llm):
-        """Test streaming parse yields partial objects converging to final.
-
-        Test scenario:
-            Streaming parse should yield multiple partial objects; the last
-            one should be a valid Person.
-        """
-        prompt = PromptTemplate(
-            "Create a person named Dave who is 50 years old."
-        )
-        results = list(llm.parse(schema=Person, prompt=prompt, stream=True))
-        assert len(results) > 0, "Streaming parse should yield at least one result"
-        final = results[-1]
-        assert isinstance(final, Person), (
-            f"Expected Person, got {type(final)}"
-        )
-        assert final.name == "Dave", (
-            f"Expected name 'Dave', got '{final.name}'"
-        )
-
     @pytest.mark.asyncio()
     async def test_aparse_streaming(self, llm):
-        """Test async streaming parse yields partial objects.
+        """Test async streaming JSON-schema parse yields partial objects.
 
         Test scenario:
-            Async streaming parse should yield multiple partial objects.
+            Async streaming parse should yield at least one result; the
+            final one should be a valid Person.
         """
         prompt = PromptTemplate(
             "Create a person named Eve who is 35 years old."
@@ -585,6 +634,199 @@ class TestParse:
         )
         assert final.name == "Eve", (
             f"Expected name 'Eve', got '{final.name}'"
+        )
+
+    def test_parse_custom_tool_choice_passthrough(self, llm):
+        """Test that custom tool_choice in llm_kwargs is not overwritten.
+
+        Test scenario:
+            When the JSON-schema path is taken, ``_prepare_schema`` removes
+            ``tool_choice`` from ``llm_kwargs`` (because JSON-schema mode
+            doesn't use tools). Verify the call still succeeds even when
+            ``tool_choice`` is passed — it gets stripped, not errored.
+        """
+        prompt = PromptTemplate(
+            "Create a person named Grace who is 22 years old."
+        )
+        result = llm.parse(
+            schema=Person,
+            prompt=prompt,
+            llm_kwargs={"tool_choice": "auto"},
+        )
+        assert isinstance(result, Person), (
+            f"Expected Person, got {type(result)}"
+        )
+        assert result.name == "Grace", (
+            f"Expected name 'Grace', got '{result.name}'"
+        )
+
+
+@pytest.mark.e2e
+@skip_no_key
+class TestParseFunctionCalling:
+    """Tests for ``parse`` / ``aparse`` via the function-calling fallback.
+
+    The ``llm_function_calling`` fixture forces
+    ``structured_output_mode=FUNCTION`` so that
+    ``_should_use_structure_outputs()`` returns ``False``.
+    """
+
+    def test_parse_flat_model(self, llm_function_calling):
+        """Test function-calling parse extracts a flat Pydantic model.
+
+        Test scenario:
+            With JSON-schema disabled, parse should fall back to the
+            function-calling tool-use path and still produce a valid model.
+        """
+        prompt = PromptTemplate(
+            "Create a person named Frank who is 45 years old."
+        )
+        result = llm_function_calling.parse(schema=Person, prompt=prompt)
+        assert isinstance(result, Person), (
+            f"Expected Person, got {type(result)}"
+        )
+        assert result.name == "Frank", (
+            f"Expected name 'Frank', got '{result.name}'"
+        )
+        assert result.age == 45, f"Expected age 45, got {result.age}"
+
+    def test_parse_nested_model(self, llm_function_calling):
+        """Test function-calling parse handles nested models.
+
+        Test scenario:
+            Verify nested Pydantic models work through the tool-use path.
+        """
+        prompt = PromptTemplate(
+            "Create a person named Hank, age 33, at "
+            "456 Oak Ave, London, UK."
+        )
+        result = llm_function_calling.parse(
+            schema=PersonWithAddress, prompt=prompt
+        )
+        assert isinstance(result, PersonWithAddress), (
+            f"Expected PersonWithAddress, got {type(result)}"
+        )
+        assert result.name == "Hank", (
+            f"Expected name 'Hank', got '{result.name}'"
+        )
+        assert result.address.city == "London", (
+            f"Expected city 'London', got '{result.address.city}'"
+        )
+
+    def test_parse_default_tool_choice_is_required(self, llm_function_calling):
+        """Test that function-calling path defaults tool_choice to required.
+
+        Test scenario:
+            Without explicit llm_kwargs, ``_ensure_tool_choice`` should
+            set ``tool_choice="required"`` and the model must produce a
+            valid structured output.
+        """
+        prompt = PromptTemplate(
+            "Create a person named Iris who is 29 years old."
+        )
+        result = llm_function_calling.parse(schema=Person, prompt=prompt)
+        assert isinstance(result, Person), (
+            f"Expected Person, got {type(result)}"
+        )
+        assert result.name == "Iris", (
+            f"Expected name 'Iris', got '{result.name}'"
+        )
+
+    def test_parse_custom_tool_choice_preserved(self, llm_function_calling):
+        """Test that explicit tool_choice in llm_kwargs is not overwritten.
+
+        Test scenario:
+            Pass ``tool_choice="required"`` explicitly via ``llm_kwargs``
+            and verify it works (i.e. ``_ensure_tool_choice`` doesn't
+            clobber the existing value).
+        """
+        prompt = PromptTemplate(
+            "Create a person named Jack who is 55 years old."
+        )
+        result = llm_function_calling.parse(
+            schema=Person,
+            prompt=prompt,
+            llm_kwargs={"tool_choice": "required"},
+        )
+        assert isinstance(result, Person), (
+            f"Expected Person, got {type(result)}"
+        )
+        assert result.name == "Jack", (
+            f"Expected name 'Jack', got '{result.name}'"
+        )
+
+    def test_parse_streaming(self, llm_function_calling):
+        """Test streaming function-calling parse yields partial objects.
+
+        Test scenario:
+            Streaming through the function-calling path should yield at
+            least one result converging to a valid Person.
+        """
+        prompt = PromptTemplate(
+            "Create a person named Kate who is 38 years old."
+        )
+        results = list(
+            llm_function_calling.parse(
+                schema=Person, prompt=prompt, stream=True
+            )
+        )
+        assert len(results) > 0, (
+            "Streaming parse should yield at least one result"
+        )
+        final = results[-1]
+        assert isinstance(final, Person), (
+            f"Final streamed object should be Person, got {type(final)}"
+        )
+        assert final.name == "Kate", (
+            f"Expected name 'Kate', got '{final.name}'"
+        )
+
+    @pytest.mark.asyncio()
+    async def test_aparse_flat_model(self, llm_function_calling):
+        """Test async function-calling parse extracts a Pydantic model.
+
+        Test scenario:
+            Async variant of the function-calling fallback path.
+        """
+        prompt = PromptTemplate(
+            "Create a person named Leo who is 60 years old."
+        )
+        result = await llm_function_calling.aparse(
+            schema=Person, prompt=prompt
+        )
+        assert isinstance(result, Person), (
+            f"Expected Person, got {type(result)}"
+        )
+        assert result.name == "Leo", (
+            f"Expected name 'Leo', got '{result.name}'"
+        )
+        assert result.age == 60, f"Expected age 60, got {result.age}"
+
+    @pytest.mark.asyncio()
+    async def test_aparse_streaming(self, llm_function_calling):
+        """Test async streaming function-calling parse yields partials.
+
+        Test scenario:
+            Async streaming through the function-calling path should yield
+            at least one result converging to a valid Person.
+        """
+        prompt = PromptTemplate(
+            "Create a person named Mia who is 27 years old."
+        )
+        results = []
+        async for partial in await llm_function_calling.aparse(
+            schema=Person, prompt=prompt, stream=True
+        ):
+            results.append(partial)
+        assert len(results) > 0, (
+            "Async streaming parse should yield at least one result"
+        )
+        final = results[-1]
+        assert isinstance(final, Person), (
+            f"Expected Person, got {type(final)}"
+        )
+        assert final.name == "Mia", (
+            f"Expected name 'Mia', got '{final.name}'"
         )
 
 

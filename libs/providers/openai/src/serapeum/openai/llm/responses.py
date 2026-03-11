@@ -884,12 +884,12 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
         )
         if stream:
             result: Model | Generator[Model | FlexibleModel, None, None] = (
-                super().stream_structured_predict(
+                super().stream_parse(
                     output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
                 )
             )
         else:
-            result = super().structured_predict(
+            result = super().parse(
                 output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
             )
         return result
@@ -940,12 +940,12 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
         )
         if stream:
             result: Model | AsyncGenerator[Model | FlexibleModel, None] = (
-                await super().astream_structured_predict(
+                await super().astream_parse(
                     output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
                 )
             )
         else:
-            result = await super().astructured_predict(
+            result = await super().aparse(
                 output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
             )
         return result

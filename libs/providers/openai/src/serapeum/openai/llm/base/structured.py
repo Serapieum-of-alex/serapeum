@@ -17,6 +17,7 @@ from serapeum.core.types import StructuredOutputMode
 from serapeum.core.llms import FlexibleModel
 from serapeum.core.prompts import PromptTemplate
 from serapeum.openai.data.models import is_json_schema_supported
+from serapeum.core.llms.orchestrators.utils import process_streaming_content_incremental
 
 Model = TypeVar("Model", bound=BaseModel)
 
@@ -107,7 +108,7 @@ class StructuredOutput:
                 else llm_kwargs["tool_choice"]
             )
 
-            result = super().structured_predict(
+            result = super().parse(
                 schema, prompt, llm_kwargs=llm_kwargs, **prompt_args
             )
         return result
@@ -122,8 +123,6 @@ class StructuredOutput:
         Model | list[Model] | FlexibleModel | list[FlexibleModel] | None, None
     ]:
         if self._should_use_structure_outputs():
-            from serapeum.core.llms.orchestrators.utils import process_streaming_content_incremental
-
             messages = self._extend_messages(prompt.format_messages(**prompt_args))
             llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
             curr = None
@@ -140,8 +139,8 @@ class StructuredOutput:
                 if "tool_choice" not in llm_kwargs
                 else llm_kwargs["tool_choice"]
             )
-            yield from super()._structured_stream_call(
-                output_cls, prompt, llm_kwargs, **prompt_args
+            yield from super().stream_parse(
+                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
             )
 
     @overload
@@ -186,7 +185,7 @@ class StructuredOutput:
                 if "tool_choice" not in llm_kwargs
                 else llm_kwargs["tool_choice"]
             )
-            result = await super().astructured_predict(
+            result = await super().aparse(
                 schema, prompt, llm_kwargs=llm_kwargs, **prompt_args
             )
         return result
@@ -207,8 +206,6 @@ class StructuredOutput:
             ) -> AsyncGenerator[
                 Model, list[Model] | FlexibleModel | list[FlexibleModel] | None
             ]:
-                from serapeum.core.llms.orchestrators.utils import process_streaming_content_incremental
-
                 messages = self._extend_messages(prompt.format_messages(**prompt_args))
                 llm_kwargs = self._prepare_schema(llm_kwargs, output_cls)
                 curr = None

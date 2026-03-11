@@ -363,7 +363,7 @@ class Message(BaseModel):
         """
         if isinstance(data, dict):
             content = data.pop("content", None)
-            if content is not None and "chunks" not in data:
+            if content is not None and not data.get("chunks"):
                 if isinstance(content, str):
                     data["chunks"] = [TextChunk(content=content)]
                 elif isinstance(content, list):
@@ -383,6 +383,15 @@ class Message(BaseModel):
         )
 
         return result
+
+    @property
+    def tool_calls(self) -> list[ToolCallBlock]:
+        """Tool calls contained in this message.
+
+        Returns:
+            All ToolCallBlock entries from chunks, in order.
+        """
+        return [b for b in self.chunks if isinstance(b, ToolCallBlock)]
 
     @content.setter
     def content(self, content: str) -> None:

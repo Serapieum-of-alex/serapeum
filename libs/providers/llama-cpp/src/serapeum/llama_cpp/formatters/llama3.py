@@ -71,8 +71,8 @@ def messages_to_prompt_v3_instruct(
         - Single user message with a custom system prompt — explore the structure
             ```python
             >>> from serapeum.llama_cpp.formatters.llama3 import messages_to_prompt_v3_instruct
-            >>> from serapeum.core.llms import Message, MessageRole
-            >>> messages = [Message(role=MessageRole.USER, content="Hello!")]
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
+            >>> messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])]
             >>> prompt = messages_to_prompt_v3_instruct(messages, system_prompt="Be brief.")
             >>> prompt.split("<|eot_id|>")[0].split("<|end_header_id|>")[1].strip()
             'Be brief.'
@@ -83,11 +83,11 @@ def messages_to_prompt_v3_instruct(
         - Multi-turn conversation — prompt ends with the assistant header
             ```python
             >>> from serapeum.llama_cpp.formatters.llama3 import messages_to_prompt_v3_instruct
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> messages = [
-            ...     Message(role=MessageRole.USER, content="What is 2+2?"),
-            ...     Message(role=MessageRole.ASSISTANT, content="4"),
-            ...     Message(role=MessageRole.USER, content="And 3+3?"),
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="What is 2+2?")]),
+            ...     Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="4")]),
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="And 3+3?")]),
             ... ]
             >>> prompt = messages_to_prompt_v3_instruct(messages, system_prompt="Be brief.")
             >>> prompt.count("<|eot_id|>")
@@ -99,10 +99,10 @@ def messages_to_prompt_v3_instruct(
         - Explicit SYSTEM message is extracted as system prompt
             ```python
             >>> from serapeum.llama_cpp.formatters.llama3 import messages_to_prompt_v3_instruct
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> messages = [
-            ...     Message(role=MessageRole.SYSTEM, content="You are terse."),
-            ...     Message(role=MessageRole.USER, content="Hi!"),
+            ...     Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are terse.")]),
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi!")]),
             ... ]
             >>> prompt = messages_to_prompt_v3_instruct(messages)
             >>> prompt.split("<|eot_id|>")[0].split("<|end_header_id|>")[1].strip()

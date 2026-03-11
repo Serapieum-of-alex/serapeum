@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.llama_cpp.formatters.llama2 import (
     B_INST,
     B_SYS,
@@ -19,15 +19,15 @@ from serapeum.llama_cpp.formatters.llama2 import (
 
 
 def _user(content: str) -> Message:
-    return Message(role=MessageRole.USER, content=content)
+    return Message(role=MessageRole.USER, chunks=[TextChunk(content=content)])
 
 
 def _assist(content: str) -> Message:
-    return Message(role=MessageRole.ASSISTANT, content=content)
+    return Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content=content)])
 
 
 def _system(content: str) -> Message:
-    return Message(role=MessageRole.SYSTEM, content=content)
+    return Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content=content)])
 
 
 def _sys_block(sys: str) -> str:
@@ -161,7 +161,7 @@ class TestMessagesToPrompt:
             Note: a lone SYSTEM message does NOT raise — it is consumed as the
             system block, leaving ``remaining`` empty.
         """
-        messages = [Message(role=MessageRole.ASSISTANT, content="wrong")]
+        messages = [Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="wrong")])]
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt(messages)
         assert "Expected a USER message at position 0" in str(
@@ -190,7 +190,7 @@ class TestMessagesToPrompt:
             the error message must identify the unexpected role so users can
             diagnose the issue without reading source code.
         """
-        messages = [Message(role=MessageRole.ASSISTANT, content="wrong")]
+        messages = [Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="wrong")])]
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt(messages)
         error_text = str(exc_info.value)

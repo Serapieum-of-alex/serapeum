@@ -18,7 +18,7 @@ from openai.types.completion import CompletionUsage
 
 from serapeum.azure_openai import AzureOpenAI
 from serapeum.core.base.llms.base import BaseLLM
-from serapeum.core.llms import Message
+from serapeum.core.llms import Message, TextChunk
 
 
 def mock_chat_completion_v1(*args: Any, **kwargs: Any) -> ChatCompletion:
@@ -371,7 +371,7 @@ class TestAzureOpenAIWithMocks:
 
         llm = AzureOpenAI(engine="foo bar", api_key="mock", api_version="2024-02-01")
         prompt = "test prompt"
-        message = Message(role="user", content="test message")
+        message = Message(role="user", chunks=[TextChunk(content="test message")])
 
         response_gen = llm.complete(prompt, stream=True)
         responses = list(response_gen)
@@ -402,7 +402,7 @@ class TestAzureOpenAIWithMocks:
 
         llm = AzureOpenAI(engine="foo bar", api_key="mock", api_version="2024-02-01")
         prompt = "test prompt"
-        message = Message(role="user", content="test message")
+        message = Message(role="user", chunks=[TextChunk(content="test message")])
 
         response_gen = await llm.acomplete(prompt, stream=True)
         responses = [item async for item in response_gen]

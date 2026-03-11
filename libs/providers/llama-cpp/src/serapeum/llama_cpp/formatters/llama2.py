@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 
 BOS, EOS = "<s>", "</s>"
 B_INST, E_INST = "[INST]", "[/INST]"
@@ -64,8 +64,8 @@ def messages_to_prompt(
         - Single user message with a custom system prompt — explore the structure
             ```python
             >>> from serapeum.llama_cpp.formatters.llama2 import messages_to_prompt
-            >>> from serapeum.core.llms import Message, MessageRole
-            >>> messages = [Message(role=MessageRole.USER, content="Hello!")]
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
+            >>> messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])]
             >>> prompt = messages_to_prompt(messages, system_prompt="Be brief.")
             >>> prompt[:10]
             '<s> [INST]'
@@ -78,11 +78,11 @@ def messages_to_prompt(
         - Multi-turn conversation — each turn is wrapped in [INST]...[/INST]
             ```python
             >>> from serapeum.llama_cpp.formatters.llama2 import messages_to_prompt
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> messages = [
-            ...     Message(role=MessageRole.USER, content="What is 2+2?"),
-            ...     Message(role=MessageRole.ASSISTANT, content="4"),
-            ...     Message(role=MessageRole.USER, content="And 3+3?"),
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="What is 2+2?")]),
+            ...     Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="4")]),
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="And 3+3?")]),
             ... ]
             >>> prompt = messages_to_prompt(messages, system_prompt="Be brief.")
             >>> prompt.count("[INST]")
@@ -94,10 +94,10 @@ def messages_to_prompt(
         - Explicit SYSTEM message in the conversation is extracted as system prompt
             ```python
             >>> from serapeum.llama_cpp.formatters.llama2 import messages_to_prompt
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> messages = [
-            ...     Message(role=MessageRole.SYSTEM, content="You are terse."),
-            ...     Message(role=MessageRole.USER, content="Hi!"),
+            ...     Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are terse.")]),
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi!")]),
             ... ]
             >>> prompt = messages_to_prompt(messages)
             >>> prompt.split("<</SYS>>")[0].split("<<SYS>>")[1].strip()

@@ -25,7 +25,7 @@ from unittest.mock import patch
 
 import pytest
 
-from serapeum.core.llms import ChatResponse, CompletionResponse, Message, MessageRole
+from serapeum.core.llms import ChatResponse, CompletionResponse, Message, MessageRole, TextChunk
 from serapeum.llama_cpp import LlamaCPP
 
 
@@ -57,7 +57,7 @@ def _passthrough_completion_to_prompt(
 
 def _user_messages(*contents: str) -> list[Message]:
     """Build a list of USER messages from plain strings."""
-    return [Message(role=MessageRole.USER, content=c) for c in contents]
+    return [Message(role=MessageRole.USER, chunks=[TextChunk(content=c)]) for c in contents]
 
 
 def _formatters() -> dict[str, Any]:

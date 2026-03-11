@@ -16,7 +16,7 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, ChoiceD
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 from openai.types.completion import CompletionUsage
 
-from serapeum.azure_openai import AzureOpenAI
+from serapeum.azure_openai import Completions
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.llms import Message, TextChunk
 
@@ -127,32 +127,32 @@ async def mock_async_chat_completion_stream_with_filter_results(
 
 
 @pytest.mark.unit
-class TestAzureOpenAI:
-    """Tests for AzureOpenAI class."""
+class TestCompletions:
+    """Tests for Completions class."""
 
     def test_mro_includes_base_llm(self) -> None:
-        """Verify AzureOpenAI inherits from BaseLLM."""
-        names_of_base_classes = [b.__name__ for b in AzureOpenAI.__mro__]
+        """Verify Completions inherits from BaseLLM."""
+        names_of_base_classes = [b.__name__ for b in Completions.__mro__]
         assert BaseLLM.__name__ in names_of_base_classes
 
     def test_class_name(self) -> None:
         """Verify class_name() returns the expected string."""
-        assert AzureOpenAI.class_name() == "azure_openai_llm"
+        assert Completions.class_name() == "azure_openai_completions"
 
     def test_missing_engine_raises(self) -> None:
         """Instantiation without engine raises ValueError."""
         with pytest.raises(ValueError, match="engine"):
-            AzureOpenAI(api_key="k", api_version="2024-02-01")
+            Completions(api_key="k", api_version="2024-02-01")
 
     def test_missing_api_version_raises(self) -> None:
         """Instantiation without api_version raises ValueError."""
         with pytest.raises(ValueError, match="OPENAI_API_VERSION"):
-            AzureOpenAI(engine="dep", api_key="k")
+            Completions(engine="dep", api_key="k")
 
     def test_default_openai_base_without_azure_endpoint_raises(self) -> None:
         """Using default OpenAI base URL without azure_endpoint raises."""
         with pytest.raises(ValueError, match="OPENAI_API_BASE"):
-            AzureOpenAI(
+            Completions(
                 engine="dep",
                 api_key="k",
                 api_version="2024-02-01",
@@ -161,7 +161,7 @@ class TestAzureOpenAI:
 
     def test_engine_alias_deployment_name(self) -> None:
         """Engine can be set via deployment_name alias."""
-        llm = AzureOpenAI(
+        llm = Completions(
             deployment_name="my-dep",
             api_key="k",
             api_version="2024-02-01",
@@ -170,7 +170,7 @@ class TestAzureOpenAI:
 
     def test_engine_alias_deployment_id(self) -> None:
         """Engine can be set via deployment_id alias."""
-        llm = AzureOpenAI(
+        llm = Completions(
             deployment_id="my-dep-id",
             api_key="k",
             api_version="2024-02-01",
@@ -179,7 +179,7 @@ class TestAzureOpenAI:
 
     def test_engine_alias_deployment(self) -> None:
         """Engine can be set via deployment alias."""
-        llm = AzureOpenAI(
+        llm = Completions(
             deployment="my-dep",
             api_key="k",
             api_version="2024-02-01",
@@ -188,7 +188,7 @@ class TestAzureOpenAI:
 
     def test_api_base_reset_when_azure_endpoint_set(self) -> None:
         """api_base is reset to None when azure_endpoint is provided."""
-        llm = AzureOpenAI(
+        llm = Completions(
             engine="dep",
             api_key="k",
             api_version="2024-02-01",
@@ -199,7 +199,7 @@ class TestAzureOpenAI:
 
     def test_default_model(self) -> None:
         """Default model is gpt-35-turbo."""
-        llm = AzureOpenAI(
+        llm = Completions(
             engine="dep", api_key="k", api_version="2024-02-01"
         )
         assert llm.model == "gpt-35-turbo"
@@ -209,7 +209,7 @@ class TestAzureOpenAI:
         self, sync_mock: MagicMock
     ) -> None:
         """_get_model_kwargs substitutes engine for model."""
-        llm = AzureOpenAI(
+        llm = Completions(
             engine="my-deployment",
             api_key="k",
             api_version="2024-02-01",
@@ -219,7 +219,7 @@ class TestAzureOpenAI:
 
 
 @pytest.mark.unit
-class TestAzureOpenAICredentials:
+class TestCompletionsCredentials:
     """Tests for _resolve_api_key and _get_credential_kwargs."""
 
     @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
@@ -228,7 +228,7 @@ class TestAzureOpenAICredentials:
     ) -> None:
         """API key is resolved from AZURE_OPENAI_API_KEY env var."""
         monkeypatch.setenv("AZURE_OPENAI_API_KEY", "env-key")
-        llm = AzureOpenAI(
+        llm = Completions(
             engine="dep", api_version="2024-02-01"
         )
         key = llm._resolve_api_key()
@@ -241,7 +241,7 @@ class TestAzureOpenAICredentials:
         """Missing API key raises ValueError."""
         monkeypatch.delenv("AZURE_OPENAI_API_KEY", raising=False)
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-        llm = AzureOpenAI(
+        llm = Completions(
             engine="dep", api_version="2024-02-01"
         )
         # Clear any key resolved during init
@@ -254,7 +254,7 @@ class TestAzureOpenAICredentials:
         self, sync_mock: MagicMock
     ) -> None:
         """Azure AD token provider callback is invoked to set api_key."""
-        llm = AzureOpenAI(
+        llm = Completions(
             engine="dep",
             api_version="2024-02-01",
             use_azure_ad=True,
@@ -274,7 +274,7 @@ class TestAzureOpenAICredentials:
         mock_token.token = "refreshed-token"
         refresh_mock.return_value = mock_token
 
-        llm = AzureOpenAI(
+        llm = Completions(
             engine="dep",
             api_version="2024-02-01",
             use_azure_ad=True,
@@ -288,7 +288,7 @@ class TestAzureOpenAICredentials:
         self, sync_mock: MagicMock
     ) -> None:
         """_get_credential_kwargs includes Azure-specific fields."""
-        llm = AzureOpenAI(
+        llm = Completions(
             engine="dep",
             api_key="k",
             api_version="2024-02-01",
@@ -306,7 +306,7 @@ class TestAzureOpenAICredentials:
         self, sync_mock: MagicMock
     ) -> None:
         """client property creates a SyncAzureOpenAI instance."""
-        llm = AzureOpenAI(
+        llm = Completions(
             engine="dep", api_key="k", api_version="2024-02-01"
         )
         _ = llm.client
@@ -314,8 +314,8 @@ class TestAzureOpenAICredentials:
 
 
 @pytest.mark.mock
-class TestAzureOpenAIWithMocks:
-    """Tests for AzureOpenAI that require mocking the Azure SDK clients."""
+class TestCompletionsWithMocks:
+    """Tests for Completions that require mocking the Azure SDK clients."""
 
     @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
     def test_custom_http_client(self, sync_azure_openai_mock: MagicMock) -> None:
@@ -323,7 +323,7 @@ class TestAzureOpenAIWithMocks:
         custom_http_client = httpx.Client()
         mock_instance = sync_azure_openai_mock.return_value
         mock_instance.chat.completions.create.return_value = mock_chat_completion_v1()
-        azure_openai = AzureOpenAI(
+        azure_openai = Completions(
             engine="foo bar",
             http_client=custom_http_client,
             api_key="mock",
@@ -346,7 +346,7 @@ class TestAzureOpenAIWithMocks:
 
         mock_instance = sync_azure_openai_mock.return_value
         mock_instance.chat.completions.create.return_value = mock_chat_completion_v1()
-        azure_openai = AzureOpenAI(
+        azure_openai = Completions(
             engine="foo bar",
             use_azure_ad=True,
             azure_ad_token_provider=custom_azure_ad_token_provider,
@@ -369,7 +369,7 @@ class TestAzureOpenAIWithMocks:
         )
         mock_instance.chat = chat_mock
 
-        llm = AzureOpenAI(engine="foo bar", api_key="mock", api_version="2024-02-01")
+        llm = Completions(engine="foo bar", api_key="mock", api_version="2024-02-01")
         prompt = "test prompt"
         message = Message(role="user", chunks=[TextChunk(content="test message")])
 
@@ -400,7 +400,7 @@ class TestAzureOpenAIWithMocks:
         chat_mock.completions.create = create_fn
         mock_instance.chat = chat_mock
 
-        llm = AzureOpenAI(engine="foo bar", api_key="mock", api_version="2024-02-01")
+        llm = Completions(engine="foo bar", api_key="mock", api_version="2024-02-01")
         prompt = "test prompt"
         message = Message(role="user", chunks=[TextChunk(content="test message")])
 

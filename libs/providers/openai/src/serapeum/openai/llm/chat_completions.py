@@ -34,8 +34,7 @@ from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
 )
 
-from serapeum.core.llms import FunctionCallingLLM
-from serapeum.core.tools import ToolCallArguments
+from serapeum.core.llms import FunctionCallingLLM, ToolCallArguments
 from serapeum.core.utils.schemas import parse_partial_json
 from serapeum.openai.data.models import (
     O1_MODELS,
@@ -1197,14 +1196,12 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
     ) -> list[ToolCallArguments]:
         """Extract parsed tool-call arguments from a chat response.
 
-        Looks for :class:`~serapeum.core.llms.ToolCallBlock` entries in
-        ``response.message.chunks`` first (the modern path). Falls back to
+        Delegates to the base-class implementation which reads
+        :class:`~serapeum.core.llms.ToolCallBlock` entries from
+        ``response.message.tool_calls``.  Falls back to
         ``response.message.additional_kwargs["tool_calls"]`` for backward
-        compatibility with older response formats.
-
-        Attempts to parse tool-call arguments as JSON using
-        :func:`~serapeum.core.utils.schemas.parse_partial_json`; if parsing
-        fails, the arguments default to an empty dict.
+        compatibility with older response formats that store raw OpenAI SDK
+        tool-call objects.
 
         Args:
             response: A :class:`~serapeum.core.llms.ChatResponse` that may

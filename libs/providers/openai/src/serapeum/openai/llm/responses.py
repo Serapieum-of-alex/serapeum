@@ -37,8 +37,7 @@ from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
 )
 
-from serapeum.core.llms import FunctionCallingLLM
-from serapeum.core.tools import ToolCallArguments
+from serapeum.core.llms import FunctionCallingLLM, ToolCallArguments
 from serapeum.core.utils.schemas import parse_partial_json
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.llms import FlexibleModel

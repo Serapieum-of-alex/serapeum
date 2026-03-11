@@ -30,7 +30,7 @@ jobs:
         uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
         with:
           python-version: ${{ matrix.python-version }}
-          install-groups: dev
+          install-groups: "groups: dev"
           verify-lock: true
 
       - name: Test Ollama Package
@@ -55,7 +55,7 @@ jobs:
         uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
         with:
           python-version: "3.12"
-          install-groups: dev
+          install-groups: "groups: dev"
           verify-lock: true
 
       - name: Run Ollama e2e tests
@@ -80,7 +80,7 @@ jobs:
         uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
         with:
           python-version: "3.12"
-          install-groups: dev
+          install-groups: "groups: dev"
           verify-lock: true
 
       - name: Test ollama doctests

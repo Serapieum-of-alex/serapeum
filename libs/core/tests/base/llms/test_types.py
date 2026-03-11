@@ -868,7 +868,7 @@ class TestCompletionResponse:
                 BaseResponse field key.
             """
             dumped = basic.model_dump()
-            for key in ("text", "raw", "likelihood_score", "additional_kwargs", "delta"):
+            for key in ("text", "raw", "logprob", "additional_kwargs", "delta"):
                 assert key in dumped, (
                     f"Key '{key}' missing from model_dump; keys present: {list(dumped.keys())}"
                 )

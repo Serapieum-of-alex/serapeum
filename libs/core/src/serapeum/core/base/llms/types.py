@@ -202,9 +202,6 @@ class Audio(Chunk):
         )
 
 
-ChunkType = Annotated[TextChunk | Image | Audio, Field(discriminator="type")]
-
-
 class DocumentBlock(BaseModel):
     """A representation of a document to directly pass to the LLM."""
 
@@ -435,7 +432,6 @@ class ThinkingBlock(BaseModel):
         description="Additional information related to the thinking/reasoning process, if available",
         default_factory=dict,
     )
-
 
 ChunkType = Annotated[
     TextChunk | Image | Audio | DocumentBlock | ToolCallBlock | ThinkingBlock,
@@ -688,7 +684,7 @@ class ChatResponse(BaseResponse):
                 ```python
                 >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
                 >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="hi")]))
-                >>> force_single_tool_call(r)
+                >>> r.force_single_tool_call()
                 >>> r.message.tool_calls
                 []
 
@@ -696,11 +692,13 @@ class ChatResponse(BaseResponse):
             - Single tool call is left as-is
                 ```python
                 >>> from serapeum.core.llms import Message, MessageRole, ChatResponse, ToolCallBlock
-                >>> r = ChatResponse(message=Message(
-                ...     role=MessageRole.ASSISTANT,
-                ...     chunks=[ToolCallBlock(tool_name="a", tool_kwargs={})],
-                ... ))
-                >>> force_single_tool_call(r)
+                >>> r = ChatResponse(
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[ToolCallBlock(tool_name="a", tool_kwargs={})],
+                ...         )
+                ... )
+                >>> r.force_single_tool_call()
                 >>> r.message.tool_calls[0].tool_name
                 'a'
 

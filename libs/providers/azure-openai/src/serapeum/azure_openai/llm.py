@@ -13,69 +13,43 @@ from serapeum.azure_openai.utils import (
     resolve_from_aliases,
 )
 from serapeum.core.base.llms.utils import get_from_param_or_env
-from serapeum.openai import Completions
+from serapeum.openai import Completions as OpenAICompletions
+from serapeum.openai import Responses as OpenAIResponses
 from serapeum.openai.utils import DEFAULT_OPENAI_API_BASE
 
-__all__ = ["AzureOpenAI", "SyncAzureOpenAI", "AsyncAzureOpenAI"]
+__all__ = [
+    "AzureClient",
+    "Completions",
+    "Responses",
+    "SyncAzureOpenAI",
+    "AsyncAzureOpenAI",
+]
 
 
-class AzureOpenAI(Completions):
-    """Azure OpenAI.
+class AzureClient:
+    """Mixin that adds Azure-specific connection fields and client construction.
 
-    To use this, you must first deploy a model on Azure OpenAI.
-    Unlike OpenAI, you need to specify an ``engine`` parameter to identify
-    your deployment (called "model deployment name" in Azure portal).
+    Overrides the credential resolution and SDK client construction methods
+    from :class:`~serapeum.openai.llm.base.Client` to target Azure OpenAI
+    endpoints using Azure AD or API-key authentication.
 
-    - ``model``: Name of the model (e.g. ``gpt-4o``).
-      This is only used to decide completion vs. chat endpoint.
-    - ``engine``: This will correspond to the custom name you chose
-      for your deployment when you deployed a model.
+    This mixin is designed to be composed with an API-specific class
+    (``OpenAICompletions`` or ``OpenAIResponses``) via multiple inheritance::
 
-    You must have the following environment variables set:
+        class Completions(AzureClient, OpenAICompletions): ...
+        class Responses(AzureClient, OpenAIResponses): ...
 
-    - ``OPENAI_API_VERSION``: set this to ``2024-02-01`` or newer.
-    - ``AZURE_OPENAI_ENDPOINT``: your endpoint should look like
-      ``https://YOUR_RESOURCE_NAME.openai.azure.com/``
-    - ``AZURE_OPENAI_API_KEY``: your API key if the api type is ``azure``.
-      Or pass through ``azure_ad_token_provider`` and set ``use_azure_ad=True``
-      to use managed identity with Azure Entra ID.
-
-    More information can be found here:
-        https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart
-
-    Examples:
-        ```python
-        from serapeum.azure_openai import AzureOpenAI
-
-        llm = AzureOpenAI(
-            engine="my-deployment",
-            model="gpt-4o",
-            api_key="YOUR_AZURE_OPENAI_API_KEY",
-            azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
-            api_version="2024-02-01",
-        )
-        ```
-
-        Using managed identity (passing a token provider instead of an API key):
-
-        ```python
-        from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-        from serapeum.azure_openai import AzureOpenAI
-
-        credential = DefaultAzureCredential()
-        token_provider = get_bearer_token_provider(
-            credential, "https://cognitiveservices.azure.com/.default"
-        )
-
-        llm = AzureOpenAI(
-            engine="my-deployment",
-            model="gpt-4o",
-            azure_ad_token_provider=token_provider,
-            use_azure_ad=True,
-            azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
-            api_version="2024-02-01",
-        )
-        ```
+    Args:
+        engine: Azure deployment name (called "model deployment name" in
+            the Azure portal).
+        azure_endpoint: Azure OpenAI resource URL, e.g.
+            ``https://YOUR_RESOURCE.openai.azure.com/``.
+        azure_deployment: Optional Azure deployment identifier (passed
+            directly to the SDK).
+        use_azure_ad: When ``True``, authenticate via Microsoft Entra ID
+            instead of an API key.
+        azure_ad_token_provider: Callback that returns a bearer token for
+            Azure AD authentication.
     """
 
     model: str = Field(default="gpt-35-turbo", description="The OpenAI model name.")
@@ -137,7 +111,7 @@ class AzureOpenAI(Completions):
         return values
 
     @model_validator(mode="after")
-    def _reset_api_base_for_azure(self) -> AzureOpenAI:
+    def _reset_api_base_for_azure(self) -> AzureClient:
         """Reset api_base to None when it is the OpenAI default or azure_endpoint is set.
 
         Runs after the parent ``_resolve_credentials`` validator which may set
@@ -201,10 +175,107 @@ class AzureOpenAI(Completions):
         return AsyncAzureOpenAI(**kwargs)
 
     def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
+        """Swap ``model`` for the Azure ``engine`` deployment name."""
         model_kwargs = super()._get_model_kwargs(**kwargs)
         model_kwargs["model"] = self.engine
         return model_kwargs
 
+
+class Completions(AzureClient, OpenAICompletions):
+    """Azure OpenAI Chat Completions API provider.
+
+    Combines Azure-specific connection management from
+    :class:`AzureClient` with the Chat Completions API logic from
+    :class:`~serapeum.openai.llm.chat_completions.Completions`.
+
+    To use this, you must first deploy a model on Azure OpenAI.
+    Unlike direct OpenAI, you need to specify an ``engine`` parameter to
+    identify your deployment (called "model deployment name" in Azure portal).
+
+    - ``model``: Name of the model (e.g. ``gpt-4o``).
+      This is only used to decide completion vs. chat endpoint.
+    - ``engine``: This will correspond to the custom name you chose
+      for your deployment when you deployed a model.
+
+    You must have the following environment variables set:
+
+    - ``OPENAI_API_VERSION``: set this to ``2024-02-01`` or newer.
+    - ``AZURE_OPENAI_ENDPOINT``: your endpoint should look like
+      ``https://YOUR_RESOURCE_NAME.openai.azure.com/``
+    - ``AZURE_OPENAI_API_KEY``: your API key if the api type is ``azure``.
+      Or pass through ``azure_ad_token_provider`` and set ``use_azure_ad=True``
+      to use managed identity with Azure Entra ID.
+
+    More information can be found here:
+        https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart
+
+    Examples:
+        ```python
+        from serapeum.azure_openai import Completions
+
+        llm = Completions(
+            engine="my-deployment",
+            model="gpt-4o",
+            api_key="YOUR_AZURE_OPENAI_API_KEY",
+            azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+            api_version="2024-02-01",
+        )
+        ```
+
+        Using managed identity (passing a token provider instead of an API key):
+
+        ```python
+        from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+        from serapeum.azure_openai import Completions
+
+        credential = DefaultAzureCredential()
+        token_provider = get_bearer_token_provider(
+            credential, "https://cognitiveservices.azure.com/.default"
+        )
+
+        llm = Completions(
+            engine="my-deployment",
+            model="gpt-4o",
+            azure_ad_token_provider=token_provider,
+            use_azure_ad=True,
+            azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+            api_version="2024-02-01",
+        )
+        ```
+    """
+
     @classmethod
     def class_name(cls) -> str:
-        return "azure_openai_llm"
+        """Return the canonical provider identifier."""
+        return "azure_openai_completions"
+
+
+class Responses(AzureClient, OpenAIResponses):
+    """Azure OpenAI Responses API provider.
+
+    Combines Azure-specific connection management from
+    :class:`AzureClient` with the Responses API logic from
+    :class:`~serapeum.openai.llm.responses.Responses`.
+
+    Supports streaming, built-in tools, stateful conversation continuation,
+    structured output via tool-call forcing, and reasoning-effort control —
+    all through an Azure OpenAI deployment.
+
+    Examples:
+        ```python
+        from serapeum.azure_openai import Responses
+
+        llm = Responses(
+            engine="my-o3-deployment",
+            model="o3",
+            api_key="YOUR_AZURE_OPENAI_API_KEY",
+            azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+            api_version="2024-02-01",
+        )
+        ```
+    """
+
+    @classmethod
+    def class_name(cls) -> str:
+        """Return the canonical provider identifier."""
+        return "azure_openai_responses"

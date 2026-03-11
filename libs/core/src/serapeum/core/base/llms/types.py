@@ -28,6 +28,7 @@ from pydantic import (
 from typing_extensions import Self
 
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
+from serapeum.core.utils.schemas import parse_partial_json
 
 ImageType = str | BytesIO
 
@@ -399,6 +400,24 @@ class ToolCallBlock(BaseModel):
         description="Arguments provided to the tool, if available",
     )
 
+    @property
+    def parsed_kwargs(self) -> dict[str, Any]:
+        """Return tool_kwargs as a dict, parsing JSON strings on demand."""
+        if isinstance(self.tool_kwargs, dict):
+            result = self.tool_kwargs
+        else:
+            try:
+                result = parse_partial_json(self.tool_kwargs)
+            except (ValueError, TypeError):
+                result = {}
+        return result
+
+    def get_arguments(self) -> ToolCallArguments:
+        return ToolCallArguments(
+            tool_id=self.tool_call_id or "",
+            tool_name=self.tool_name,
+            tool_kwargs=self.parsed_kwargs,
+        )
 
 class ThinkingBlock(BaseModel):
     """A representation of the content streamed from reasoning/thinking processes by LLMs"""

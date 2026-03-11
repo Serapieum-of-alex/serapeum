@@ -11,6 +11,7 @@ from serapeum.core.base.llms.types import (
     Message,
     MessageRole,
     Metadata,
+    TextChunk,
 )
 
 from serapeum.core.llms.abstractions.adapters import ChatToCompletion
@@ -64,8 +65,7 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
         ):
             yield ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content=partial_output.json()
-                ),
+                    role=MessageRole.ASSISTANT, chunks=[TextChunk(content=partial_output.json())]),
                 raw=partial_output,
             )
 
@@ -82,8 +82,7 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
             )
             result = ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content=output.model_dump_json()
-                ),
+                    role=MessageRole.ASSISTANT, chunks=[TextChunk(content=output.model_dump_json())]),
                 raw=output,
             )
         return result
@@ -115,8 +114,7 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
         ):
             yield ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content=partial_output.json()
-                ),
+                    role=MessageRole.ASSISTANT, chunks=[TextChunk(content=partial_output.json())]),
                 raw=partial_output,
             )
 
@@ -137,8 +135,7 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
             )
             result = ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content=output.model_dump_json()
-                ),
+                    role=MessageRole.ASSISTANT, chunks=[TextChunk(content=output.model_dump_json())]),
                 raw=output,
             )
         return result

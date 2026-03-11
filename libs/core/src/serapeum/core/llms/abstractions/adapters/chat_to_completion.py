@@ -5,6 +5,8 @@ delegating to chat methods. This is useful for LLM providers that primarily
 support a chat interface but need to implement the completion interface as well.
 """
 
+from __future__ import annotations
+
 from typing import Any, Literal, overload
 
 from serapeum.core.base.llms.types import (
@@ -40,6 +42,7 @@ class ChatToCompletion:
 
         ```python
         >>> from serapeum.core.llms import FunctionCallingLLM, ChatResponse, Message, MessageRole
+        >>> from serapeum.core.base.llms.types import TextChunk
         >>> from serapeum.core.llms.abstractions.adapters import ChatToCompletion
         >>>
         >>> class MyLLM(ChatToCompletion, FunctionCallingLLM):
@@ -47,23 +50,35 @@ class ChatToCompletion:
         ...         if stream:
         ...             return self._stream_chat(messages, **kwargs)
         ...         return ChatResponse(
-        ...             message=Message(role=MessageRole.ASSISTANT, content="Response")
+        ...             message=Message(
+        ...                 role=MessageRole.ASSISTANT,
+        ...                 chunks=[TextChunk(content="Response")],
+        ...             )
         ...         )
         ...     def _stream_chat(self, messages, **kwargs):
         ...         yield ChatResponse(
-        ...             message=Message(role=MessageRole.ASSISTANT, content="Response"),
+        ...             message=Message(
+        ...                 role=MessageRole.ASSISTANT,
+        ...                 chunks=[TextChunk(content="Response")],
+        ...             ),
         ...             delta="Response"
         ...         )
         ...     async def achat(self, messages, *, stream=False, **kwargs):
         ...         if stream:
         ...             return await self._astream_chat(messages, **kwargs)
         ...         return ChatResponse(
-        ...             message=Message(role=MessageRole.ASSISTANT, content="Response")
+        ...             message=Message(
+        ...                 role=MessageRole.ASSISTANT,
+        ...                 chunks=[TextChunk(content="Response")],
+        ...             )
         ...         )
         ...     async def _astream_chat(self, messages, **kwargs):
         ...         async def gen():
         ...             yield ChatResponse(
-        ...                 message=Message(role=MessageRole.ASSISTANT, content="Response"),
+        ...                 message=Message(
+        ...                     role=MessageRole.ASSISTANT,
+        ...                     chunks=[TextChunk(content="Response")],
+        ...                 ),
         ...                 delta="Response"
         ...             )
         ...         return gen()
@@ -124,7 +139,10 @@ class ChatToCompletion:
         Examples:
             - Non-streaming completion returns full response text:
                 ```python
-                >>> from serapeum.core.llms import FunctionCallingLLM, ChatResponse, Message, MessageRole, Metadata
+                >>> from serapeum.core.llms import (
+                ...     FunctionCallingLLM, ChatResponse, Message, MessageRole, Metadata,
+                ... )
+                >>> from serapeum.core.base.llms.types import TextChunk
                 >>> from serapeum.core.llms.abstractions.adapters import ChatToCompletion
                 >>>
                 >>> class DemoLLM(ChatToCompletion, FunctionCallingLLM):
@@ -135,16 +153,25 @@ class ChatToCompletion:
                 ...         if stream:
                 ...             def gen():
                 ...                 yield ChatResponse(
-                ...                     message=Message(role=MessageRole.ASSISTANT, content="Hi"),
+                ...                     message=Message(
+                ...                         role=MessageRole.ASSISTANT,
+                ...                         chunks=[TextChunk(content="Hi")],
+                ...                     ),
                 ...                     delta="Hi",
                 ...                 )
                 ...             return gen()
                 ...         return ChatResponse(
-                ...             message=Message(role=MessageRole.ASSISTANT, content="Hi"),
+                ...             message=Message(
+                ...                 role=MessageRole.ASSISTANT,
+                ...                 chunks=[TextChunk(content="Hi")],
+                ...             ),
                 ...         )
                 ...     async def achat(self, messages, *, stream=False, **kwargs):
                 ...         return ChatResponse(
-                ...             message=Message(role=MessageRole.ASSISTANT, content="Hi"),
+                ...             message=Message(
+                ...                 role=MessageRole.ASSISTANT,
+                ...                 chunks=[TextChunk(content="Hi")],
+                ...             ),
                 ...         )
                 ...     def _prepare_chat_with_tools(self, tools, **kwargs):
                 ...         return {"messages": [], "tools": []}
@@ -208,7 +235,10 @@ class ChatToCompletion:
             - Async non-streaming completion:
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.llms import FunctionCallingLLM, ChatResponse, Message, MessageRole, Metadata
+                >>> from serapeum.core.llms import (
+                ...     FunctionCallingLLM, ChatResponse, Message, MessageRole, Metadata,
+                ... )
+                >>> from serapeum.core.base.llms.types import TextChunk
                 >>> from serapeum.core.llms.abstractions.adapters import ChatToCompletion
                 >>>
                 >>> class DemoLLM(ChatToCompletion, FunctionCallingLLM):
@@ -217,11 +247,17 @@ class ChatToCompletion:
                 ...         return Metadata(is_chat_model=True, is_function_calling_model=True)
                 ...     def chat(self, messages, *, stream=False, **kwargs):
                 ...         return ChatResponse(
-                ...             message=Message(role=MessageRole.ASSISTANT, content="Hi"),
+                ...             message=Message(
+                ...                 role=MessageRole.ASSISTANT,
+                ...                 chunks=[TextChunk(content="Hi")],
+                ...             ),
                 ...         )
                 ...     async def achat(self, messages, *, stream=False, **kwargs):
                 ...         return ChatResponse(
-                ...             message=Message(role=MessageRole.ASSISTANT, content="Hi"),
+                ...             message=Message(
+                ...                 role=MessageRole.ASSISTANT,
+                ...                 chunks=[TextChunk(content="Hi")],
+                ...             ),
                 ...         )
                 ...     def _prepare_chat_with_tools(self, tools, **kwargs):
                 ...         return {"messages": [], "tools": []}

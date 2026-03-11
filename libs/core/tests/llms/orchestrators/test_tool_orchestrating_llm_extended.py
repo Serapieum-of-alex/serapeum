@@ -17,13 +17,14 @@ import pytest
 from pydantic import BaseModel
 
 from serapeum.core.chat.types import AgentChatResponse
+from serapeum.core.base.llms.types import TextChunk
 from serapeum.core.llms import (
     ChatResponse,
     FunctionCallingLLM,
     Message,
     Metadata,
     ToolOrchestratingLLM,
-    ToolCallArguments
+    ToolCallArguments,
 )
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.tools import ToolOutput
@@ -147,11 +148,15 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     def chat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | Generator[ChatResponse, None, None]:  # type: ignore[override]
         if stream:
             return self._stream_chat(messages, **kwargs)
-        return ChatResponse(message=Message(content="ok"))
+        return ChatResponse(message=Message(chunks=[TextChunk(content="ok")]))
 
     def _stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator[ChatResponse, None, None]:
-        yield ChatResponse(message=Message(content="chunk-1"))
-        yield ChatResponse(message=Message(content="chunk-2"))
+        yield ChatResponse(
+            message=Message(chunks=[TextChunk(content="chunk-1")]),
+        )
+        yield ChatResponse(
+            message=Message(chunks=[TextChunk(content="chunk-2")]),
+        )
 
     def complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
@@ -159,11 +164,15 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     async def achat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | AsyncGenerator[ChatResponse, None]:  # type: ignore[override]
         if stream:
             return self._astream_chat(messages, **kwargs)
-        return ChatResponse(message=Message(content="ok"))
+        return ChatResponse(message=Message(chunks=[TextChunk(content="ok")]))
 
     async def _astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> AsyncGenerator[ChatResponse, None]:
-        yield ChatResponse(message=Message(content="chunk-1"))
-        yield ChatResponse(message=Message(content="chunk-2"))
+        yield ChatResponse(
+            message=Message(chunks=[TextChunk(content="chunk-1")]),
+        )
+        yield ChatResponse(
+            message=Message(chunks=[TextChunk(content="chunk-2")]),
+        )
 
     async def acomplete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
@@ -183,7 +192,9 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
             messages = chat_history
         elif user_msg is not None:
             messages = [
-                Message(content=user_msg) if isinstance(user_msg, str) else user_msg
+                Message(chunks=[TextChunk(content=user_msg)])
+                if isinstance(user_msg, str)
+                else user_msg
             ]
         else:
             messages = []

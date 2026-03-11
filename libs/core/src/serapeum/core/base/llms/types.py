@@ -452,23 +452,6 @@ class Message(BaseModel):
     additional_kwargs: dict[str, Any] = Field(default_factory=dict)
     chunks: list[ChunkType] = Field(default_factory=list)
 
-    @model_validator(mode="before")
-    @classmethod
-    def _content_to_chunks(cls, data: Any) -> Any:
-        """Convert ``content`` shorthand into ``chunks``.
-
-        If content was passed and contained text, store a single TextChunk.
-        If content was passed and it was a list, assume it's a list of content chunks.
-        """
-        if isinstance(data, dict):
-            content = data.pop("content", None)
-            if content is not None and not data.get("chunks"):
-                if isinstance(content, str):
-                    data["chunks"] = [TextChunk(content=content)]
-                elif isinstance(content, list):
-                    data["chunks"] = content
-        return data
-
     @property
     def content(self) -> str | None:
         """Content.
@@ -582,7 +565,7 @@ class MessageList(BaseModel, ABCSequence):
     @classmethod
     def from_str(cls, prompt: str) -> "MessageList":
         """Create from a string prompt."""
-        return cls(messages=[Message(content=prompt)])
+        return cls(messages=[Message(chunks=[TextChunk(content=prompt)])])
 
 
 class LikelihoodScore(BaseModel):
@@ -704,7 +687,7 @@ class ChatResponse(BaseResponse):
             - No-op when there are no tool calls
                 ```python
                 >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-                >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="hi"))
+                >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="hi")]))
                 >>> force_single_tool_call(r)
                 >>> r.message.tool_calls
                 []
@@ -886,7 +869,7 @@ class CompletionResponse(BaseResponse):
         return ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content=self.text,
+                chunks=[TextChunk(content=self.text)],
                 additional_kwargs=self.additional_kwargs,
             ),
             raw=self.raw,
@@ -945,7 +928,7 @@ class CompletionResponse(BaseResponse):
                 yield ChatResponse(
                     message=Message(
                         role=MessageRole.ASSISTANT,
-                        content=response.text,
+                        chunks=[TextChunk(content=response.text)],
                         additional_kwargs=response.additional_kwargs,
                     ),
                     delta=response.delta,
@@ -1009,7 +992,7 @@ class CompletionResponse(BaseResponse):
                 yield ChatResponse(
                     message=Message(
                         role=MessageRole.ASSISTANT,
-                        content=response.text,
+                        chunks=[TextChunk(content=response.text)],
                         additional_kwargs=response.additional_kwargs,
                     ),
                     delta=response.delta,

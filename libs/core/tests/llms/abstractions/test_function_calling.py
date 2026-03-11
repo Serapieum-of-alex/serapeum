@@ -10,6 +10,7 @@ from serapeum.core.base.llms.types import (
     CompletionResponse,
     Message,
     Metadata,
+    TextChunk,
 )
 from serapeum.core.llms import FunctionCallingLLM, ToolCallArguments
 from serapeum.core.tools import CallableTool
@@ -25,7 +26,9 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         self._tool_selection = tool_selection
 
     def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
-        return ChatResponse(message=Message(role="user", content=""))
+        return ChatResponse(
+            message=Message(role="user", chunks=[TextChunk(content="")]),
+        )
 
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
@@ -35,7 +38,9 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     async def achat(
         self, messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponse:
-        return ChatResponse(message=Message(role="user", content=""))
+        return ChatResponse(
+            message=Message(role="user", chunks=[TextChunk(content="")]),
+        )
 
     async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any

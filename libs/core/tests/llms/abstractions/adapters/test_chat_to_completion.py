@@ -7,6 +7,7 @@ from serapeum.core.base.llms.types import (
     Message,
     MessageList,
     MessageRole,
+    TextChunk,
 )
 from serapeum.core.llms.abstractions.adapters import ChatToCompletion
 
@@ -28,7 +29,10 @@ class MockLLM(ChatToCompletion):
         if not stream:
             self.last_messages = messages
             return ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content=self.response_text)
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content=self.response_text)],
+                )
             )
         else:
             return self._stream_chat(messages, **kwargs)
@@ -38,10 +42,18 @@ class MockLLM(ChatToCompletion):
         self.last_messages = messages
         # Yield two chunks
         yield ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content="O"), delta="O"
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content="O")],
+            ),
+            delta="O",
         )
         yield ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content="OK"), delta="K"
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content="OK")],
+            ),
+            delta="K",
         )
 
     async def achat(self, messages: MessageList, *, stream, **kwargs):
@@ -49,7 +61,10 @@ class MockLLM(ChatToCompletion):
         if not stream:
             self.last_messages = messages
             return ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content=self.response_text)
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content=self.response_text)],
+                )
             )
         else:
             return await self._astream_chat(messages, **kwargs)
@@ -60,10 +75,18 @@ class MockLLM(ChatToCompletion):
 
         async def gen():
             yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="O"), delta="O"
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="O")],
+                ),
+                delta="O",
             )
             yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="OK"), delta="K"
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="OK")],
+                ),
+                delta="K",
             )
 
         return gen()
@@ -181,7 +204,10 @@ class TestChatToCompletion:
             def chat(self, messages, **kwargs):
                 self.captured_kwargs = kwargs
                 return ChatResponse(
-                    message=Message(role=MessageRole.ASSISTANT, content="OK")
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        chunks=[TextChunk(content="OK")],
+                    ),
                 )
 
         llm = KwargsCapturingLLM()

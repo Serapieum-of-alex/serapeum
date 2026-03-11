@@ -10,6 +10,7 @@ from serapeum.core.base.llms.types import (
     MessageList,
     MessageRole,
     Metadata,
+    TextChunk,
 )
 from serapeum.core.llms import TextCompletionLLM, ToolOrchestratingLLM
 from serapeum.core.llms.base import (
@@ -119,11 +120,17 @@ class _ChatLLM(LLM):
 
             def gen() -> Generator[ChatResponse, None, None]:
                 yield ChatResponse(
-                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        chunks=[TextChunk(content="ok")],
+                    ),
                     delta="o",
                 )
                 yield ChatResponse(
-                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        chunks=[TextChunk(content="ok")],
+                    ),
                     delta="k",
                 )
 
@@ -131,7 +138,10 @@ class _ChatLLM(LLM):
 
         self.last_chat = (messages, kwargs)
         return ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content="pong"),
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content="pong")],
+            ),
             delta=None,
         )
 
@@ -148,11 +158,17 @@ class _ChatLLM(LLM):
 
             async def gen() -> AsyncGenerator[ChatResponse, None]:
                 yield ChatResponse(
-                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        chunks=[TextChunk(content="ok")],
+                    ),
                     delta="o",
                 )
                 yield ChatResponse(
-                    message=Message(role=MessageRole.ASSISTANT, content="ok"),
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        chunks=[TextChunk(content="ok")],
+                    ),
                     delta="k",
                 )
 
@@ -160,7 +176,10 @@ class _ChatLLM(LLM):
 
         self.last_achat = (messages, kwargs)
         return ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content="pong"),
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content="pong")],
+            ),
             delta=None,
         )
 
@@ -245,11 +264,17 @@ class TestStreamResponseToTokens:
         # arrange
         def responses() -> Generator[ChatResponse, None, None]:
             yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="partial"),
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="partial")],
+                ),
                 delta=None,
             )
             yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="done"),
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="done")],
+                ),
                 delta="",
             )
 
@@ -292,11 +317,17 @@ class TestAstreamResponseToTokens:
         # arrange
         async def responses() -> AsyncGenerator[ChatResponse, None]:
             yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="partial"),
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="partial")],
+                ),
                 delta=None,
             )
             yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="done"),
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="done")],
+                ),
                 delta="",
             )
 
@@ -333,7 +364,9 @@ class TestSetMessagesToPrompt:
         Checks: output matches MessageList.to_prompt for sample data.
         """
         # arrange
-        messages = MessageList(messages=[Message(role=MessageRole.USER, content="hi")])
+        messages = MessageList(
+            messages=[Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
+        )
 
         # act
         adapter = LLM.set_messages_to_prompt(None)
@@ -538,7 +571,7 @@ class TestExtendMessages:
         """
         # arrange
         llm = _ChatLLM()
-        messages = [Message(role=MessageRole.USER, content="Hi")]
+        messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi")])]
 
         # act
         extended = llm._extend_messages(messages)
@@ -554,7 +587,7 @@ class TestExtendMessages:
         """
         # arrange
         llm = _ChatLLM(system_prompt="SYS")
-        messages = [Message(role=MessageRole.USER, content="Hi")]
+        messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi")])]
 
         # act
         extended = llm._extend_messages(messages)

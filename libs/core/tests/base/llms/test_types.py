@@ -75,21 +75,24 @@ def mp4_base64(mp4_bytes: bytes) -> bytes:
 class TestMessage:
     """Test Message."""
 
-    def test_chat_message_from_content(self):
-        m = Message(content="test content")
+    def test_chat_message_from_chunks(self):
+        m = Message(chunks=[TextChunk(content="test content")])
         assert m.content == "test content"
         assert len(m.chunks) == 1
         assert type(m.chunks[0]) is TextChunk
         assert m.chunks[0].content == "test content"
 
     def test_chat_message_content_legacy_get(self):
-        m = Message(content="test content")
+        m = Message(chunks=[TextChunk(content="test content")])
         assert m.content == "test content"
         assert len(m.chunks) == 1
         assert type(m.chunks[0]) is TextChunk
         assert m.chunks[0].content == "test content"
 
-        m = Message(role="user", content="test content")
+        m = Message(
+            role="user",
+            chunks=[TextChunk(content="test content")],
+        )
         assert m.role == "user"
         assert m.content == "test content"
         assert len(m.chunks) == 1
@@ -113,31 +116,34 @@ class TestMessage:
         assert type(m.chunks[0]) is TextChunk
         assert m.chunks[0].content == "test content"
 
-        m = Message(content="some original content")
+        m = Message(chunks=[TextChunk(content="some original content")])
         m.content = "test content"
         assert len(m.chunks) == 1
         assert type(m.chunks[0]) is TextChunk
         assert m.chunks[0].content == "test content"
 
-        m = Message(content=[TextChunk(content="test content"), Image()])
+        m = Message(chunks=[TextChunk(content="test content"), Image()])
         with pytest.raises(ValueError):
             m.content = "test content"
 
     def test_chat_message_content_returns_empty_string(self):
-        m = Message(content=[TextChunk(content="test content"), Image()])
+        m = Message(chunks=[TextChunk(content="test content"), Image()])
         assert m.content == "test content"
         m = Message()
         assert m.content is None
 
     def test_chat_message__str__(self):
-        assert str(Message(content="test content")) == "user: test content"
+        assert (
+            str(Message(chunks=[TextChunk(content="test content")]))
+            == "user: test content"
+        )
 
     def test_chat_message_serializer(self):
         class SimpleModel(BaseModel):
             some_field: str = ""
 
         m = Message(
-            content="test content",
+            chunks=[TextChunk(content="test content")],
             additional_kwargs={
                 "some_list": ["a", "b", "c"],
                 "some_object": SimpleModel(),
@@ -152,13 +158,12 @@ class TestMessage:
             "chunks": [{"type": "text", "content": "test content"}],
         }
 
-    def test_chat_message_legacy_roundtrip(self):
-        legacy_message = {
-            "role": MessageRole.USER,
-            "content": "foo",
-            "additional_kwargs": {},
-        }
-        m = Message(**legacy_message)
+    def test_chat_message_chunks_roundtrip(self):
+        m = Message(
+            role=MessageRole.USER,
+            chunks=[TextChunk(content="foo")],
+            additional_kwargs={},
+        )
         assert m.model_dump(exclude_none=True) == {
             "additional_kwargs": {},
             "chunks": [{"type": "text", "content": "foo"}],
@@ -273,7 +278,7 @@ class TestImageBlock:
 
 def test_chat_response():
     """Test ChatResponse string representation."""
-    message = Message(content="some content")
+    message = Message(chunks=[TextChunk(content="some content")])
     cr = ChatResponse(message=message)
     assert str(cr) == str(message)
 
@@ -290,7 +295,7 @@ class TestChatResponseToCompletionResponse:
         """
         msg = Message(
             role=MessageRole.ASSISTANT,
-            content="Hello",
+            chunks=[TextChunk(content="Hello")],
             additional_kwargs={"from": "message"},
         )
         cr = ChatResponse(
@@ -309,7 +314,7 @@ class TestChatResponseToCompletionResponse:
         Checks: Exact empty string, not None.
         """
         img = Image(content=b"\x89PNG", image_mimetype="image/png")
-        msg = Message(role=MessageRole.ASSISTANT, content=[img])
+        msg = Message(role=MessageRole.ASSISTANT, chunks=[img])
         assert msg.content is None  # guard
         cr = ChatResponse(message=msg)
         out = cr.to_completion_response()
@@ -325,13 +330,18 @@ class TestChatResponseToCompletionResponse:
 
         def chat_gen():
             yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="A"),
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="A")],
+                ),
                 delta="A",
                 raw={"i": 0},
             )
             yield ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content="B", additional_kwargs={"x": 2}
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="B")],
+                    additional_kwargs={"x": 2},
                 ),
                 delta="B",
                 raw={"i": 1},
@@ -356,13 +366,18 @@ class TestChatResponseToCompletionResponse:
 
         async def agen():
             yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="X"),
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="X")],
+                ),
                 delta="x",
                 raw={"k": 0},
             )
             yield ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content="Y", additional_kwargs={"a": 1}
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="Y")],
+                    additional_kwargs={"a": 1},
                 ),
                 delta="y",
                 raw={"k": 1},
@@ -913,8 +928,14 @@ class TestMessageLists:
             Checks: Exact string equality; ordering preserved; single trailing assistant line; no trailing newline at end.
             """
             messages = [
-                Message(role=MessageRole.SYSTEM, content="You are a bot."),
-                Message(role=MessageRole.USER, content="Hello"),
+                Message(
+                    role=MessageRole.SYSTEM,
+                    chunks=[TextChunk(content="You are a bot.")],
+                ),
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Hello")],
+                ),
             ]
             message_list = MessageList(messages=messages)
             prompt = message_list.to_prompt()
@@ -951,7 +972,7 @@ class TestMessageLists:
             """
             msg = Message(
                 role=MessageRole.USER,
-                content="Hi",
+                chunks=[TextChunk(content="Hi")],
                 additional_kwargs={"tool": {"name": "calc"}},
             )
             message_list = MessageList(messages=[msg])
@@ -975,7 +996,7 @@ class TestMessageLists:
             """
             msg = Message(
                 role=MessageRole.USER,
-                content=[TextChunk(content="Line1"), TextChunk(content="Line2")],
+                chunks=[TextChunk(content="Line1"), TextChunk(content="Line2")],
             )
             message_list = MessageList(messages=[msg])
             prompt = message_list.to_prompt()
@@ -996,7 +1017,7 @@ class TestMessageLists:
             Checks: Graceful handling of non-text content without exceptions.
             """
             img = Image(content=b"\x89PNG", image_mimetype="image/png")
-            msg = Message(role=MessageRole.USER, content=[img])
+            msg = Message(role=MessageRole.USER, chunks=[img])
             message_list = MessageList(messages=[msg])
             prompt = message_list.to_prompt()
 
@@ -1016,9 +1037,18 @@ class TestMessageLists:
             Checks: Ordering stability and presence of the final assistant prompt starter even when an assistant message exists in input.
             """
             messages = [
-                Message(role=MessageRole.USER, content="A"),
-                Message(role=MessageRole.ASSISTANT, content="B"),
-                Message(role=MessageRole.TOOL, content="C"),
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="A")],
+                ),
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="B")],
+                ),
+                Message(
+                    role=MessageRole.TOOL,
+                    chunks=[TextChunk(content="C")],
+                ),
             ]
             message_list = MessageList(messages=messages)
             prompt = message_list.to_prompt()
@@ -1049,8 +1079,14 @@ class TestMessageLists:
             Checks:
                 - Types of returned objects; content and roles remain intact.
             """
-            m1 = Message(role=MessageRole.SYSTEM, content="You are a bot.")
-            m2 = Message(role=MessageRole.USER, content="Hello")
+            m1 = Message(
+                role=MessageRole.SYSTEM,
+                chunks=[TextChunk(content="You are a bot.")],
+            )
+            m2 = Message(
+                role=MessageRole.USER,
+                chunks=[TextChunk(content="Hello")],
+            )
             ml = MessageList(messages=[m1, m2])
 
             # __len__ and __getitem__
@@ -1065,7 +1101,10 @@ class TestMessageLists:
             assert sub[0] is m1
 
             # append maintains order
-            m3 = Message(role=MessageRole.ASSISTANT, content="Hi!")
+            m3 = Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content="Hi!")],
+            )
             ml.append(m3)
             assert list(ml)[-1] is m3
             assert [m.role for m in ml] == [
@@ -1096,11 +1135,26 @@ class TestMessageLists:
             Checks: Type and ordering preserved; other roles excluded.
             """
             messages = [
-                Message(role=MessageRole.SYSTEM, content="S"),
-                Message(role=MessageRole.USER, content="U1"),
-                Message(role=MessageRole.ASSISTANT, content="A"),
-                Message(role=MessageRole.USER, content="U2"),
-                Message(role=MessageRole.TOOL, content="T"),
+                Message(
+                    role=MessageRole.SYSTEM,
+                    chunks=[TextChunk(content="S")],
+                ),
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="U1")],
+                ),
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="A")],
+                ),
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="U2")],
+                ),
+                Message(
+                    role=MessageRole.TOOL,
+                    chunks=[TextChunk(content="T")],
+                ),
             ]
             ml = MessageList(messages=messages)
             only_users = ml.filter_by_role(MessageRole.USER)

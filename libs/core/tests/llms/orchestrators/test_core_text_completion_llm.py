@@ -12,6 +12,7 @@ from serapeum.core.llms import (
     MessageRole,
     Metadata,
     TextCompletionLLM,
+    TextChunk,
 )
 from serapeum.core.output_parsers import PydanticParser
 from serapeum.core.prompts import ChatPromptTemplate
@@ -36,7 +37,7 @@ class MockChatLLM(MagicMock):
     def chat(self, prompt: str) -> ChatResponse:
         test_object = {"hello": "chat"}
         text = json.dumps(test_object)
-        return ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=text))
+        return ChatResponse(message=Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content=text)]))
 
     @property
     def metadata(self) -> Metadata:
@@ -70,7 +71,7 @@ class TestTextCompletionLLM:
 
     def test_text_llm_with_messages(self) -> None:
         """Test LLM program."""
-        messages = [Message(role=MessageRole.USER, content="Test")]
+        messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Test")])]
         prompt = ChatPromptTemplate(message_templates=messages)
         output_parser = PydanticParser(output_cls=ModelTest)
         text_llm = TextCompletionLLM(
@@ -85,7 +86,7 @@ class TestTextCompletionLLM:
 
     def test_llm_program_with_messages_and_chat(self) -> None:
         """Test LLM program."""
-        messages = [Message(role=MessageRole.USER, content="Test")]
+        messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Test")])]
         prompt = ChatPromptTemplate(message_templates=messages)
         output_parser = PydanticParser(output_cls=ModelTest)
         text_llm = TextCompletionLLM(

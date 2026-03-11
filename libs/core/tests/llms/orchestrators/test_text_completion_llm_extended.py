@@ -9,6 +9,7 @@ from serapeum.core.base.llms.types import (
     Message,
     MessageRole,
     Metadata,
+    TextChunk,
 )
 from serapeum.core.configs.configs import Configs
 from serapeum.core.llms import TextCompletionLLM
@@ -76,7 +77,14 @@ class DummyLLM:
         self.metadata = Metadata(is_chat_model=is_chat)
         self.completion_response = CompletionResponse(text=completion_text)
         self.chat_response = ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content=chat_content)
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                chunks=(
+                    [TextChunk(content=chat_content)]
+                    if chat_content is not None
+                    else []
+                ),
+            ),
         )
         self.complete_calls: list[tuple[str, dict]] = []
         self.chat_calls: list[tuple[list[Message], dict]] = []
@@ -102,7 +110,10 @@ class DummyLLM:
 
     def _extend_messages(self, messages):
         extended = list(messages) + [
-            Message(role=MessageRole.SYSTEM, content="extended")
+            Message(
+                role=MessageRole.SYSTEM,
+                chunks=[TextChunk(content="extended")],
+            ),
         ]
         self.extend_calls.append((messages, extended))
         return extended
@@ -439,7 +450,10 @@ class TestCallMethod:
         llm = DummyLLM(is_chat=True, chat_content='{"value": "chat"}')
         parser = RecordingPydanticParser(output_cls=DummyModel)
         messages = [
-            Message(role=MessageRole.USER, content="Value"),
+            Message(
+                role=MessageRole.USER,
+                chunks=[TextChunk(content="Value")],
+            ),
         ]
         prompt = ChatPromptTemplate(message_templates=messages)
         text_llm = TextCompletionLLM(
@@ -467,7 +481,10 @@ class TestCallMethod:
             custom_results={"": DummyModel(value="fallback")},
         )
         messages = [
-            Message(role=MessageRole.USER, content="Value"),
+            Message(
+                role=MessageRole.USER,
+                chunks=[TextChunk(content="Value")],
+            ),
         ]
         prompt = ChatPromptTemplate(message_templates=messages)
         text_llm = TextCompletionLLM(
@@ -539,7 +556,10 @@ class TestAcallMethod:
         llm = DummyLLM(is_chat=True, chat_content='{"value": "chat"}')
         parser = RecordingPydanticParser(output_cls=DummyModel)
         messages = [
-            Message(role=MessageRole.USER, content="Value"),
+            Message(
+                role=MessageRole.USER,
+                chunks=[TextChunk(content="Value")],
+            ),
         ]
         prompt = ChatPromptTemplate(message_templates=messages)
         text_llm = TextCompletionLLM(

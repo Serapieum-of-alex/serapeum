@@ -9,6 +9,7 @@ from serapeum.core.base.llms.types import (
     CompletionResponse,
     Message,
     MessageRole,
+    TextChunk,
 )
 from serapeum.core.llms.abstractions.adapters import CompletionToChat
 
@@ -87,7 +88,10 @@ def _make_messages(*contents: str) -> list[Message]:
     Returns:
         A list of Message objects with USER role.
     """
-    return [Message(role=MessageRole.USER, content=c) for c in contents]
+    return [
+        Message(role=MessageRole.USER, chunks=[TextChunk(content=c)])
+        for c in contents
+    ]
 
 
 @pytest.mark.unit

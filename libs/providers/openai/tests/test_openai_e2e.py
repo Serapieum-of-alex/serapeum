@@ -24,7 +24,7 @@ import pytest
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
-from serapeum.core.base.llms.types import (
+from serapeum.core.llms import (
     ChatResponse,
     Message,
     MessageRole,
@@ -33,6 +33,9 @@ from serapeum.core.base.llms.types import (
 )
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import CallableTool
+from serapeum.openai import OpenAI
+from serapeum.core.types import StructuredOutputMode
+from serapeum.openai.data.models import RESPONSES_API_ONLY_MODELS
 
 load_dotenv()
 
@@ -57,8 +60,6 @@ def llm(model):
     Returns:
         OpenAI: Instance configured from environment variables.
     """
-    from serapeum.openai import OpenAI
-
     return OpenAI(
         model=model,
         api_base=os.environ.get("OPENAI_API_BASE"),
@@ -73,8 +74,6 @@ def llm_with_logprobs(model):
     Returns:
         OpenAI: Instance with logprobs=True and top_logprobs=3.
     """
-    from serapeum.openai import OpenAI
-
     return OpenAI(
         model=model,
         api_base=os.environ.get("OPENAI_API_BASE"),
@@ -487,9 +486,6 @@ def llm_function_calling(model):
     Returns:
         OpenAI: Instance using function-calling for structured outputs.
     """
-    from serapeum.openai import OpenAI
-    from serapeum.core.types import StructuredOutputMode
-
     return OpenAI(
         model=model,
         api_base=os.environ.get("OPENAI_API_BASE"),
@@ -1198,8 +1194,6 @@ class TestConfiguration:
         Test scenario:
             Non-O1 models should preserve the user-specified temperature.
         """
-        from serapeum.openai import OpenAI
-
         llm = OpenAI(model="gpt-4o-mini", temperature=0.9)
         assert llm.temperature == 0.9, (
             f"Expected temperature 0.9, got {llm.temperature}"
@@ -1211,8 +1205,6 @@ class TestConfiguration:
         Test scenario:
             Creating an O1 model with temperature=0.5 should override to 1.0.
         """
-        from serapeum.openai import OpenAI
-
         llm = OpenAI(model="o1-mini", api_key="sk-test", temperature=0.5)
         assert llm.temperature == 1.0, (
             f"O1 model should force temperature to 1.0, got {llm.temperature}"
@@ -1225,9 +1217,6 @@ class TestConfiguration:
             Creating an OpenAI instance with a Responses-only model should
             raise ValueError directing the user to OpenAIResponses.
         """
-        from serapeum.openai import OpenAI
-        from serapeum.openai.data.models import RESPONSES_API_ONLY_MODELS
-
         if not RESPONSES_API_ONLY_MODELS:
             pytest.skip("No Responses API-only models defined")
 
@@ -1241,8 +1230,6 @@ class TestConfiguration:
         Test scenario:
             With max_tokens=5, the response should be very short.
         """
-        from serapeum.openai import OpenAI
-
         llm = OpenAI(model=model, max_tokens=5)
         response = llm.chat(
             [Message(
@@ -1264,8 +1251,6 @@ class TestConfiguration:
         Test scenario:
             Audio output is only supported via chat/achat, not complete.
         """
-        from serapeum.openai import OpenAI
-
         llm = OpenAI(
             model="gpt-4o-mini",
             api_key="sk-test",
@@ -1280,8 +1265,6 @@ class TestConfiguration:
         Test scenario:
             Audio output is not supported in streaming mode.
         """
-        from serapeum.openai import OpenAI
-
         llm = OpenAI(
             model="gpt-4o-mini",
             api_key="sk-test",
@@ -1303,8 +1286,6 @@ class TestConfiguration:
         Test scenario:
             Async completion should also reject audio modality.
         """
-        from serapeum.openai import OpenAI
-
         llm = OpenAI(
             model="gpt-4o-mini",
             api_key="sk-test",
@@ -1319,8 +1300,6 @@ class TestConfiguration:
         Test scenario:
             The canonical provider identifier should be 'openai'.
         """
-        from serapeum.openai import OpenAI
-
         assert OpenAI.class_name() == "openai", (
             f"Expected 'openai', got '{OpenAI.class_name()}'"
         )
@@ -1332,19 +1311,19 @@ class TestConfiguration:
             O1 models don't accept system messages, so metadata.system_role
             should be MessageRole.USER.
         """
-        from serapeum.openai import OpenAI
-
         llm = OpenAI(model="o1-mini", api_key="sk-test")
         assert llm.metadata.system_role == MessageRole.USER, (
             f"Expected USER system_role for O1, got {llm.metadata.system_role}"
         )
 
-    def test_system_role_for_chat_model(self, llm):
+    def test_system_role_for_chat_model(self):
         """Test that standard chat models report system_role as SYSTEM.
 
         Test scenario:
             Non-O1 models should use the standard SYSTEM role.
+            Uses a hardcoded non-O1 model to avoid env-var interference.
         """
+        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
         assert llm.metadata.system_role == MessageRole.SYSTEM, (
             f"Expected SYSTEM role, got {llm.metadata.system_role}"
         )

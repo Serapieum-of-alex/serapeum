@@ -482,10 +482,6 @@ def test_ensure_chat_message_is_serializable(MockSyncOpenAI: MagicMock) -> None:
 def test_structured_chat_simple(MockSyncOpenAI: MagicMock):
     """Simple test for structured output using as_structured_llm."""
     from pydantic import BaseModel, Field
-    from openai.types.chat.chat_completion_message_tool_call import (
-        ChatCompletionMessageToolCall,
-        Function,
-    )
     from serapeum.core.base.llms.types import Message
 
     class Person(BaseModel):
@@ -494,24 +490,17 @@ def test_structured_chat_simple(MockSyncOpenAI: MagicMock):
 
     person_json = '{"name": "Alice", "age": 25}'
 
-    # Mock OpenAI response with tool calls (function-calling path)
+    # gpt-4o uses structured outputs (JSON in content), not function calling
     mock_choice = MagicMock()
     mock_choice.message.role = "assistant"
-    mock_choice.message.content = None
-    mock_choice.message.tool_calls = [
-        ChatCompletionMessageToolCall(
-            id="call_1",
-            type="function",
-            function=Function(name="Person", arguments=person_json),
-        )
-    ]
+    mock_choice.message.content = person_json
+    mock_choice.message.tool_calls = None
     mock_choice.message.audio = None
     mock_choice.logprobs = None
 
     mock_response = MagicMock()
     mock_response.choices = [mock_choice]
 
-    # Mock OpenAI client
     mock_client = MagicMock()
     mock_client.chat.completions.create.return_value = mock_response
     MockSyncOpenAI.return_value = mock_client
@@ -523,7 +512,6 @@ def test_structured_chat_simple(MockSyncOpenAI: MagicMock):
     ]
 
     result = structured_llm.chat(messages)
-    # Verify the result has the expected structure
     assert isinstance(result.raw, Person)
     assert result.raw.name == "Alice"
     assert result.raw.age == 25
@@ -558,10 +546,6 @@ def test_prepare_schema_sanitizes_json_schema_name() -> None:
 async def test_structured_chat_simple_async(MockAsyncOpenAI: MagicMock):
     """Simple async test for structured output using as_structured_llm."""
     from pydantic import BaseModel, Field
-    from openai.types.chat.chat_completion_message_tool_call import (
-        ChatCompletionMessageToolCall,
-        Function,
-    )
     from serapeum.core.base.llms.types import Message
 
     class Person(BaseModel):
@@ -570,37 +554,28 @@ async def test_structured_chat_simple_async(MockAsyncOpenAI: MagicMock):
 
     person_json = '{"name": "Bob", "age": 30}'
 
-    # Mock OpenAI response with tool calls (function-calling path)
+    # gpt-4o uses structured outputs (JSON in content), not function calling
     mock_choice = MagicMock()
     mock_choice.message.role = "assistant"
-    mock_choice.message.content = None
-    mock_choice.message.tool_calls = [
-        ChatCompletionMessageToolCall(
-            id="call_1",
-            type="function",
-            function=Function(name="Person", arguments=person_json),
-        )
-    ]
+    mock_choice.message.content = person_json
+    mock_choice.message.tool_calls = None
     mock_choice.message.audio = None
     mock_choice.logprobs = None
 
     mock_response = MagicMock()
     mock_response.choices = [mock_choice]
 
-    # Mock async OpenAI client
     mock_client = MagicMock()
     create_fn = AsyncMock()
     create_fn.return_value = mock_response
     mock_client.chat.completions.create = create_fn
     MockAsyncOpenAI.return_value = mock_client
 
-    # Instantiate OpenAI class
     llm = OpenAI(model="gpt-4o", api_key="test-key")
     structured_llm = llm.as_structured_llm(Person)
     messages = [Message(role="user", content="Create a person named Bob who is 30")]
     result = await structured_llm.achat(messages)
 
-    # Verify the result has the expected structure
     assert isinstance(result.raw, Person)
     assert result.raw.name == "Bob"
     assert result.raw.age == 30

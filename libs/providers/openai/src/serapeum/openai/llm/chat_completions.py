@@ -392,8 +392,10 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                 ``False`` to use the legacy Completions endpoint.
         """
         if "use_chat_completions" in kwargs:
-            return kwargs["use_chat_completions"]
-        return self.metadata.is_chat_model
+            val = kwargs["use_chat_completions"]
+        else:
+            val = self.metadata.is_chat_model
+        return val
 
 
     def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:

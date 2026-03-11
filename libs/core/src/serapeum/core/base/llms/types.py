@@ -576,7 +576,7 @@ class LikelihoodScore(BaseModel):
     Attributes:
         token(str):
             the actual text token (string).
-        next_token_log_prob(float):
+        logprob(float):
             The logarithmic probability score (float) indicating how likely the model thought this token was the
             correct next token.
         bytes(list[int]):
@@ -584,7 +584,7 @@ class LikelihoodScore(BaseModel):
     """
 
     token: str = Field(default_factory=str)
-    next_token_log_prob: float = Field(default_factory=float)
+    logprob: float = Field(default_factory=float)
     bytes: list[int] = Field(default_factory=list)
 
 

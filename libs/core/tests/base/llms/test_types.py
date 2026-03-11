@@ -489,7 +489,7 @@ class TestCompletionResponse:
                 stored intact and accessible by index.
             """
             scores = [
-                [LikelihoodScore(token="hello", next_token_log_prob=-0.5, bytes=[104, 101])]
+                [LikelihoodScore(token="hello", logprob=-0.5, bytes=[104, 101])]
             ]
             cr = CompletionResponse(text="hello", likelihood_score=scores)
             assert cr.likelihood_score == scores, (

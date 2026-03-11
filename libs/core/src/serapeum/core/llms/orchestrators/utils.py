@@ -125,29 +125,28 @@ class StreamingObjectProcessor:
 
     def _extract_args(self, chat_response: ChatResponse) -> list[Any]:
         """Extract output arguments from chat response."""
-        tool_calls_data = chat_response.message.additional_kwargs.get("tool_calls")
+        has_tool_calls = (
+            chat_response.message.tool_calls
+            or chat_response.message.additional_kwargs.get("tool_calls")
+        )
 
-        if not tool_calls_data:
-            # return the args in the message content
+        if not has_tool_calls:
             return [chat_response.message.content]
 
         if not self._llm:
             raise ValueError("LLM is required to extract tool calls from response")
 
-        if not isinstance(tool_calls_data, list):
-            # return an instance of the flexible class
-            return [self._parsing_cls()]
-
-        # get the tool calls from the response
         tool_calls: list[ToolCallArguments] = self._llm.get_tool_calls_from_response(
             chat_response, error_on_no_tool_call=False
         )
 
-        return (
+        result = (
             [call.tool_kwargs for call in tool_calls]
             if tool_calls
             else [self._parsing_cls()]
         )
+
+        return result
 
     def _parse_objects(
         self,

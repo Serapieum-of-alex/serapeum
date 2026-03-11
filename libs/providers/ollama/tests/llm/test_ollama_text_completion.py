@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 from pydantic import BaseModel
 
-from serapeum.core.base.llms.types import Message, MessageRole
+from serapeum.core.base.llms.types import Message, MessageRole, TextChunk
 from serapeum.core.configs.configs import Configs
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.core.output_parsers import PydanticParser
@@ -92,7 +92,7 @@ class TestCallMethod:
         """
         parser = RecordingPydanticParser(output_cls=DummyModel)
         messages = [
-            Message(role=MessageRole.USER, content="Value"),
+            Message(role=MessageRole.USER, chunks=[TextChunk(content="Value")]),
         ]
         prompt = ChatPromptTemplate(message_templates=messages)
         text_llm = TextCompletionLLM(
@@ -164,7 +164,7 @@ class TestAcallMethod:
         """
         parser = RecordingPydanticParser(output_cls=DummyModel)
         messages = [
-            Message(role=MessageRole.USER, content="Value"),
+            Message(role=MessageRole.USER, chunks=[TextChunk(content="Value")]),
         ]
         prompt = ChatPromptTemplate(message_templates=messages)
         text_llm = TextCompletionLLM(

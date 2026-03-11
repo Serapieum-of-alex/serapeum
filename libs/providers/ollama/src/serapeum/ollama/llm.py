@@ -157,7 +157,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         - Basic chat via Ollama Cloud
             ```python
             >>> import os
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> from serapeum.ollama import Ollama  # type: ignore
             >>> llm = Ollama(
             ...     model="qwen3-next:80b",
@@ -165,7 +165,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ...     temperature=0.0,
             ...     timeout=120,
             ... )
-            >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'hello'.")])
+            >>> response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="Say 'hello'.")])])
             >>> response.message.role
             <MessageRole.ASSISTANT: 'assistant'>
             >>> print("content:", response.message.content)
@@ -207,7 +207,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         - Stream chat deltas and collect incremental content
             ```python
             >>> import os
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> from serapeum.ollama import Ollama  # type: ignore
             >>> llm = Ollama(
             ...     model="qwen3-next:80b",
@@ -216,7 +216,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ...     timeout=120,
             ... )
             >>> chunks = list(llm.chat([  # doctest: +SKIP, +ELLIPSIS
-            ...     Message(role=MessageRole.USER, content="Say 'hello'.")
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Say 'hello'.")])
             ... ], stream=True))
             >>> print("delta:", chunks[0].delta)  # first streamed token  # doctest: +SKIP, +ELLIPSIS
             delta: ...
@@ -533,12 +533,12 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         Examples:
             - Text-only conversion
                 ```python
-                >>> from serapeum.core.llms import Message, MessageList, MessageRole
+                >>> from serapeum.core.llms import Message, MessageList, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama      # type: ignore[attr-defined]
                 >>> llm = Ollama(model="m")
                 >>> wire = llm._convert_to_ollama_messages(
                 ...     MessageList(messages=[
-                ...         Message(role=MessageRole.USER, content="hello"),
+                ...         Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")]),
                 ...     ])
                 ... )
                 >>> print(wire)
@@ -658,7 +658,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         Examples:
             - Combine history, a new user message, and tool specs
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama      # type: ignore
                 >>> class T:
                 ...     def __init__(self, n):
@@ -668,7 +668,11 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ...         self.metadata = M()
                 ...
                 >>> llm = Ollama(model="m")
-                >>> payload = llm._prepare_chat_with_tools([T("t1")], user_msg="hi", chat_history=[Message(role=MessageRole.SYSTEM, content="s")])
+                >>> payload = llm._prepare_chat_with_tools(
+                ...     [T("t1")],
+                ...     user_msg="hi",
+                ...     chat_history=[Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="s")])],
+                ... )
                 >>> len(payload["messages"])
                 2
                 >>> payload["messages"][0].role == MessageRole.SYSTEM
@@ -685,7 +689,10 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         ]
 
         if isinstance(user_msg, str):
-            user_msg = Message(role=MessageRole.USER, content=user_msg)
+            user_msg = Message(
+                role=MessageRole.USER,
+                chunks=[TextChunk(content=user_msg)],
+            )
 
         messages = list(chat_history or [])
         if user_msg:
@@ -881,10 +888,12 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         Examples:
             - Non-streaming chat — explore the response message
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="llama3.1", timeout=120)
-                >>> resp = llm.chat([Message(role=MessageRole.USER, content="Say hi")])  # doctest: +SKIP, +ELLIPSIS
+                >>> resp = llm.chat([  # doctest: +SKIP, +ELLIPSIS
+                ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Say hi")])
+                ... ])
                 >>> resp.message.role  # doctest: +SKIP
                 <MessageRole.ASSISTANT: 'assistant'>
                 >>> print("content:", resp.message.content)  # doctest: +SKIP, +ELLIPSIS
@@ -895,11 +904,11 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ```
             - Streaming chat — collect deltas and see accumulated text
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="llama3.1", timeout=180)
                 >>> chunks = list(llm.chat(  # doctest: +SKIP, +ELLIPSIS
-                ...     [Message(role=MessageRole.USER, content="Count to 3")],
+                ...     [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 3")])],
                 ...     stream=True,
                 ... ))
                 >>> print("delta:", chunks[0].delta)  # first streamed token  # doctest: +SKIP, +ELLIPSIS
@@ -1107,12 +1116,12 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             - Async non-streaming chat — explore the response
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama      # type: ignore
                 >>> llm = Ollama(model="llama3.1", timeout=120)  # doctest: +SKIP
                 >>> async def chat_example():  # doctest: +SKIP
                 ...     response = await llm.achat([
-                ...         Message(role=MessageRole.USER, content="Say hello")
+                ...         Message(role=MessageRole.USER, chunks=[TextChunk(content="Say hello")])
                 ...     ])
                 ...     return response
                 >>> resp = asyncio.run(chat_example())  # doctest: +SKIP, +ELLIPSIS
@@ -1125,13 +1134,13 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             - Async streaming chat — collect deltas
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama      # type: ignore
                 >>> llm = Ollama(model="llama3.1", timeout=120)  # doctest: +SKIP
                 >>> async def stream_example():  # doctest: +SKIP
                 ...     deltas = []
                 ...     async for chunk in await llm.achat(
-                ...         [Message(role=MessageRole.USER, content="Count to 3")],
+                ...         [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 3")])],
                 ...         stream=True,
                 ...     ):
                 ...         deltas.append(chunk.delta)

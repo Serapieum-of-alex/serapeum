@@ -3,9 +3,9 @@ from __future__ import annotations
 import os
 
 import pytest
-from serapeum.core.base.llms.types import ToolCallBlock
+from serapeum.core.llms import ToolCallBlock
 from serapeum.core.tools import CallableTool
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 from serapeum.openai.utils import resolve_tool_choice
 
 
@@ -49,7 +49,7 @@ def test_resolve_tool_choice_utility():
 @pytest.mark.unit
 def test_prepare_chat_with_tools_tool_required():
     """Test that tool_required=True is correctly passed to the API request."""
-    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
+    llm = Completions(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
         tools=[search_tool], message="Search for Python tutorials", tool_required=True
@@ -66,7 +66,7 @@ def test_prepare_chat_with_tools_tool_required():
 @pytest.mark.unit
 def test_prepare_chat_with_tools_tool_not_required():
     """Test that tool_required=False is correctly passed to the API request."""
-    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
+    llm = Completions(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
         tools=[search_tool], message="Search for Python tutorials", tool_required=False
@@ -83,7 +83,7 @@ def test_prepare_chat_with_tools_tool_not_required():
 @pytest.mark.unit
 def test_prepare_chat_with_tools_default_behavior():
     """Test default behavior when tool_required is not specified (should default to False/auto)."""
-    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
+    llm = Completions(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
         tools=[search_tool], message="Search for Python tutorials"
@@ -101,7 +101,7 @@ def test_prepare_chat_with_tools_default_behavior():
 @pytest.mark.unit
 def test_prepare_chat_with_tools_no_tools():
     """Test _prepare_chat_with_tools with no tools."""
-    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
+    llm = Completions(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
         tools=[],
@@ -117,7 +117,7 @@ def test_prepare_chat_with_tools_no_tools():
 @pytest.mark.unit
 def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
     """Test that explicit tool_choice parameter overrides tool_required."""
-    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
+    llm = Completions(model="gpt-4o-mini", api_key="test-key")
 
     # Test that explicit tool_choice="none" overrides tool_required=True
     result = llm._prepare_chat_with_tools(
@@ -146,7 +146,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
 @pytest.mark.unit
 def test_prepare_chat_with_tools_explicit_tool_choice_required():
     """Test that explicit tool_choice="required" works even when tool_required=False."""
-    llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
+    llm = Completions(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
         tools=[search_tool],
@@ -163,7 +163,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_required():
     os.getenv("OPENAI_API_KEY") is None, reason="OpenAI API key not available"
 )
 def test_tool_required():
-    llm = OpenAI(model="gpt-4.1-mini")
+    llm = Completions(model="gpt-4.1-mini")
     response = llm.chat_with_tools(
         message="What is the capital of France?",
         tools=[search_tool],
@@ -188,7 +188,7 @@ def test_tool_required():
     os.getenv("OPENAI_API_KEY") is None, reason="OpenAI API key not available"
 )
 def test_streaming_with_usage_tokens():
-    llm = OpenAI(
+    llm = Completions(
         model="gpt-4.1-mini",
         additional_kwargs={"stream_options": {"include_usage": True}},
     )

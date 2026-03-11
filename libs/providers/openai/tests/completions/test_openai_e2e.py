@@ -33,7 +33,7 @@ from serapeum.core.llms import (
 )
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import CallableTool
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 from serapeum.core.types import StructuredOutputMode
 from serapeum.openai.data.models import RESPONSES_API_ONLY_MODELS
 
@@ -60,7 +60,7 @@ def llm(model):
     Returns:
         OpenAI: Instance configured from environment variables.
     """
-    return OpenAI(
+    return Completions(
         model=model,
         api_base=os.environ.get("OPENAI_API_BASE"),
         api_key=os.environ.get("OPENAI_API_KEY"),
@@ -74,7 +74,7 @@ def llm_with_logprobs(model):
     Returns:
         OpenAI: Instance with logprobs=True and top_logprobs=3.
     """
-    return OpenAI(
+    return Completions(
         model=model,
         api_base=os.environ.get("OPENAI_API_BASE"),
         api_key=os.environ.get("OPENAI_API_KEY"),
@@ -486,7 +486,7 @@ def llm_function_calling(model):
     Returns:
         OpenAI: Instance using function-calling for structured outputs.
     """
-    return OpenAI(
+    return Completions(
         model=model,
         api_base=os.environ.get("OPENAI_API_BASE"),
         api_key=os.environ.get("OPENAI_API_KEY"),
@@ -1194,7 +1194,7 @@ class TestConfiguration:
         Test scenario:
             Non-O1 models should preserve the user-specified temperature.
         """
-        llm = OpenAI(model="gpt-4o-mini", temperature=0.9)
+        llm = Completions(model="gpt-4o-mini", temperature=0.9)
         assert llm.temperature == 0.9, (
             f"Expected temperature 0.9, got {llm.temperature}"
         )
@@ -1205,7 +1205,7 @@ class TestConfiguration:
         Test scenario:
             Creating an O1 model with temperature=0.5 should override to 1.0.
         """
-        llm = OpenAI(model="o1-mini", api_key="sk-test", temperature=0.5)
+        llm = Completions(model="o1-mini", api_key="sk-test", temperature=0.5)
         assert llm.temperature == 1.0, (
             f"O1 model should force temperature to 1.0, got {llm.temperature}"
         )
@@ -1222,7 +1222,7 @@ class TestConfiguration:
 
         model_name = next(iter(RESPONSES_API_ONLY_MODELS))
         with pytest.raises(ValueError, match="Responses API"):
-            OpenAI(model=model_name, api_key="sk-test")
+            Completions(model=model_name, api_key="sk-test")
 
     def test_max_tokens_limits_output(self, model):
         """Test that max_tokens limits response length.
@@ -1230,7 +1230,7 @@ class TestConfiguration:
         Test scenario:
             With max_tokens=5, the response should be very short.
         """
-        llm = OpenAI(model=model, max_tokens=5)
+        llm = Completions(model=model, max_tokens=5)
         response = llm.chat(
             [Message(
                 role=MessageRole.USER,
@@ -1251,7 +1251,7 @@ class TestConfiguration:
         Test scenario:
             Audio output is only supported via chat/achat, not complete.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini",
             api_key="sk-test",
             modalities=["text", "audio"],
@@ -1265,7 +1265,7 @@ class TestConfiguration:
         Test scenario:
             Audio output is not supported in streaming mode.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini",
             api_key="sk-test",
             modalities=["text", "audio"],
@@ -1286,7 +1286,7 @@ class TestConfiguration:
         Test scenario:
             Async completion should also reject audio modality.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini",
             api_key="sk-test",
             modalities=["text", "audio"],
@@ -1300,8 +1300,8 @@ class TestConfiguration:
         Test scenario:
             The canonical provider identifier should be 'openai'.
         """
-        assert OpenAI.class_name() == "openai", (
-            f"Expected 'openai', got '{OpenAI.class_name()}'"
+        assert Completions.class_name() == "openai", (
+            f"Expected 'openai', got '{Completions.class_name()}'"
         )
 
     def test_system_role_for_o1(self):
@@ -1311,7 +1311,7 @@ class TestConfiguration:
             O1 models don't accept system messages, so metadata.system_role
             should be MessageRole.USER.
         """
-        llm = OpenAI(model="o1-mini", api_key="sk-test")
+        llm = Completions(model="o1-mini", api_key="sk-test")
         assert llm.metadata.system_role == MessageRole.USER, (
             f"Expected USER system_role for O1, got {llm.metadata.system_role}"
         )
@@ -1323,7 +1323,7 @@ class TestConfiguration:
             Non-O1 models should use the standard SYSTEM role.
             Uses a hardcoded non-O1 model to avoid env-var interference.
         """
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         assert llm.metadata.system_role == MessageRole.SYSTEM, (
             f"Expected SYSTEM role, got {llm.metadata.system_role}"
         )

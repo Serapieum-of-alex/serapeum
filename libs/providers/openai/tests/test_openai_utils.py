@@ -25,7 +25,7 @@ from serapeum.core.base.llms.types import (
     ToolCallBlock,
 )
 from pydantic import BaseModel
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 from serapeum.openai.data.models import (
     ALL_AVAILABLE_MODELS,
     CHAT_MODELS,
@@ -389,7 +389,7 @@ def test_get_tool_calls_from_response_returns_empty_arguments_with_invalid_json_
     None
 ):
     response = _build_chat_response("INVALID JSON")
-    tools = OpenAI(model="gpt-4o-mini").get_tool_calls_from_response(response)
+    tools = Completions(model="gpt-4o-mini").get_tool_calls_from_response(response)
     assert len(tools) == 1
     assert tools[0].tool_kwargs == {}
 
@@ -398,7 +398,7 @@ def test_get_tool_calls_from_response_returns_empty_arguments_with_non_dict_json
     None
 ):
     response = _build_chat_response("null")
-    tools = OpenAI(model="gpt-4o-mini").get_tool_calls_from_response(response)
+    tools = Completions(model="gpt-4o-mini").get_tool_calls_from_response(response)
     assert len(tools) == 1
     assert tools[0].tool_kwargs == {}
 
@@ -406,7 +406,7 @@ def test_get_tool_calls_from_response_returns_empty_arguments_with_non_dict_json
 def test_get_tool_calls_from_response_returns_arguments_with_dict_json_input() -> None:
     arguments = {"test": 123}
     response = _build_chat_response(json.dumps(arguments))
-    tools = OpenAI(model="gpt-4o-mini").get_tool_calls_from_response(response)
+    tools = Completions(model="gpt-4o-mini").get_tool_calls_from_response(response)
     assert len(tools) == 1
     assert tools[0].tool_kwargs == arguments
 

@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from serapeum.core.base.llms.types import TextChunk
 from serapeum.core.llms import Message
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 from serapeum.openai.data.models import O1_MODELS
 
 import openai
@@ -302,7 +302,7 @@ def test_completion_model_basic(MockSyncOpenAI: MagicMock) -> None:
         mock_instance = MockSyncOpenAI.return_value
         mock_instance.completions.create.return_value = mock_completion_v1()
 
-        llm = OpenAI(model="text-davinci-003")
+        llm = Completions(model="text-davinci-003")
         prompt = "test prompt"
         message = Message(role="user", chunks=[TextChunk(content="test message")])
 
@@ -322,7 +322,7 @@ def test_chat_model_basic(MockSyncOpenAI: MagicMock) -> None:
         mock_instance = MockSyncOpenAI.return_value
         mock_instance.chat.completions.create.return_value = mock_chat_completion_v1()
 
-        llm = OpenAI(model="gpt-3.5-turbo")
+        llm = Completions(model="gpt-3.5-turbo")
         prompt = "test prompt"
         message = Message(role="user", chunks=[TextChunk(content="test message")])
 
@@ -341,7 +341,7 @@ def test_completion_model_streaming(MockSyncOpenAI: MagicMock) -> None:
         mock_instance = MockSyncOpenAI.return_value
         mock_instance.completions.create.return_value = mock_completion_stream_v1()
 
-        llm = OpenAI(model="text-davinci-003")
+        llm = Completions(model="text-davinci-003")
         prompt = "test prompt"
         message = Message(role="user", chunks=[TextChunk(content="test message")])
 
@@ -364,7 +364,7 @@ def test_chat_model_streaming(MockSyncOpenAI: MagicMock) -> None:
             mock_chat_completion_stream_v1()
         )
 
-        llm = OpenAI(model="gpt-3.5-turbo")
+        llm = Completions(model="gpt-3.5-turbo")
         prompt = "test prompt"
         message = Message(role="user", chunks=[TextChunk(content="test message")])
 
@@ -389,7 +389,7 @@ async def test_completion_model_async(MockAsyncOpenAI: MagicMock) -> None:
     create_fn.side_effect = mock_async_completion_v1
     mock_instance.completions.create = create_fn
 
-    llm = OpenAI(model="text-davinci-003")
+    llm = Completions(model="text-davinci-003")
     prompt = "test prompt"
     message = Message(role="user", chunks=[TextChunk(content="test message")])
 
@@ -408,7 +408,7 @@ async def test_completion_model_async_streaming(MockAsyncOpenAI: MagicMock) -> N
     create_fn.side_effect = mock_async_completion_stream_v1
     mock_instance.completions.create = create_fn
 
-    llm = OpenAI(model="text-davinci-003")
+    llm = Completions(model="text-davinci-003")
     prompt = "test prompt"
     message = Message(role="user", chunks=[TextChunk(content="test message")])
 
@@ -427,20 +427,20 @@ def test_validates_api_key_is_present() -> None:
         os.environ["OPENAI_API_KEY"] = "sk-" + ("a" * 48)
 
         # We can create a new LLM when the env variable is set
-        assert OpenAI(model="gpt-4o-mini")
+        assert Completions(model="gpt-4o-mini")
 
         os.environ["OPENAI_API_KEY"] = ""
 
         # We can create a new LLM when the api_key is set on the
         # class directly
-        assert OpenAI(model="gpt-4o-mini", api_key="sk-" + ("a" * 48))
+        assert Completions(model="gpt-4o-mini", api_key="sk-" + ("a" * 48))
 
 
 @pytest.mark.unit
 @patch("serapeum.openai.llm.base.client.SyncOpenAI")
 def test_sdk_retries_disabled(MockSyncOpenAI: MagicMock) -> None:
     """SDK retries are disabled; the @retry decorator handles retries instead."""
-    llm = OpenAI(model="gpt-4o-mini", max_retries=5)
+    llm = Completions(model="gpt-4o-mini", max_retries=5)
     _ = llm.client  # trigger lazy client creation
     call_kwargs = MockSyncOpenAI.call_args[1]
     assert call_kwargs["max_retries"] == 0
@@ -453,7 +453,7 @@ def test_ensure_chat_message_is_serializable(MockSyncOpenAI: MagicMock) -> None:
         mock_instance = MockSyncOpenAI.return_value
         mock_instance.chat.completions.create.return_value = mock_chat_completion_v1()
 
-        llm = OpenAI(model="gpt-3.5-turbo")
+        llm = Completions(model="gpt-3.5-turbo")
         message = Message(role="user", chunks=[TextChunk(content="test message")])
 
         response = llm.chat([message])
@@ -508,7 +508,7 @@ def test_structured_chat_simple(MockSyncOpenAI: MagicMock):
     mock_client.chat.completions.create.return_value = mock_response
     MockSyncOpenAI.return_value = mock_client
 
-    llm = OpenAI(model="gpt-4o", api_key="test-key")
+    llm = Completions(model="gpt-4o", api_key="test-key")
     structured_llm = llm.as_structured_llm(Person)
     messages = [
         Message(
@@ -530,7 +530,7 @@ def test_prepare_schema_sanitizes_json_schema_name() -> None:
     class DummyModel(BaseModel):
         answer: int
 
-    llm = OpenAI(model="gpt-4o", api_key="test-key")
+    llm = Completions(model="gpt-4o", api_key="test-key")
     response_format = {
         "type": "json_schema",
         "json_schema": {"name": "GenericDataModel[int]", "schema": {}},
@@ -577,7 +577,7 @@ async def test_structured_chat_simple_async(MockAsyncOpenAI: MagicMock):
     mock_client.chat.completions.create = create_fn
     MockAsyncOpenAI.return_value = mock_client
 
-    llm = OpenAI(model="gpt-4o", api_key="test-key")
+    llm = Completions(model="gpt-4o", api_key="test-key")
     structured_llm = llm.as_structured_llm(Person)
     messages = [
         Message(
@@ -601,7 +601,7 @@ def test_reasoning_effort_passed_for_o1_models(effort):
     model_name = "o1-mini"
     assert model_name in O1_MODELS
 
-    llm = OpenAI(model=model_name, reasoning_effort=effort, api_key="test-key")
+    llm = Completions(model=model_name, reasoning_effort=effort, api_key="test-key")
     kwargs = llm._get_model_kwargs()
     assert "reasoning_effort" in kwargs
     assert kwargs["reasoning_effort"] == effort
@@ -613,7 +613,7 @@ def test_reasoning_effort_not_passed_for_non_o1_models():
     model_name = "gpt-4o"
     assert model_name not in O1_MODELS
 
-    llm = OpenAI(model=model_name, reasoning_effort="low", api_key="test-key")
+    llm = Completions(model=model_name, reasoning_effort="low", api_key="test-key")
     kwargs = llm._get_model_kwargs()
     assert "reasoning_effort" not in kwargs
 
@@ -623,6 +623,6 @@ def test_reasoning_effort_none_default():
     """Test that reasoning_effort defaults to None and is not passed."""
     model_name = "o1-mini"
 
-    llm = OpenAI(model=model_name, api_key="test-key")
+    llm = Completions(model=model_name, api_key="test-key")
     kwargs = llm._get_model_kwargs()
     assert "reasoning_effort" not in kwargs

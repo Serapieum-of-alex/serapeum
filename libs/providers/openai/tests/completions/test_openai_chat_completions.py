@@ -27,7 +27,7 @@ from openai.types.chat.chat_completion_message_tool_call import (
 )
 from openai.types.completion import Completion, CompletionChoice, CompletionUsage
 
-from serapeum.core.base.llms.types import (
+from serapeum.core.llms import (
     ChatResponse,
     Message,
     MessageRole,
@@ -35,38 +35,38 @@ from serapeum.core.base.llms.types import (
     ToolCallBlock,
 )
 from serapeum.core.tools import CallableTool
-from serapeum.openai import OpenAI
-from serapeum.openai.data.models import O1_MODELS, RESPONSES_API_ONLY_MODELS
+from serapeum.openai import Completions
+from serapeum.openai.data.models import RESPONSES_API_ONLY_MODELS
 
 
 @pytest.fixture()
-def llm() -> OpenAI:
+def llm() -> Completions:
     """Create a default OpenAI instance for unit tests.
 
     Returns:
         OpenAI: Instance configured with a fake API key and gpt-4o-mini model.
     """
-    return OpenAI(model="gpt-4o-mini", api_key="sk-test-key")
+    return Completions(model="gpt-4o-mini", api_key="sk-test-key")
 
 
 @pytest.fixture()
-def completion_llm() -> OpenAI:
+def completion_llm() -> Completions:
     """Create an OpenAI instance configured for legacy completion models.
 
     Returns:
         OpenAI: Instance using text-davinci-003 with a fake API key.
     """
-    return OpenAI(model="text-davinci-003", api_key="sk-test-key")
+    return Completions(model="text-davinci-003", api_key="sk-test-key")
 
 
 @pytest.fixture()
-def o1_llm() -> OpenAI:
+def o1_llm() -> Completions:
     """Create an OpenAI instance configured for an O1 reasoning model.
 
     Returns:
         OpenAI: Instance using o1-mini with a fake API key.
     """
-    return OpenAI(model="o1-mini", api_key="sk-test-key")
+    return Completions(model="o1-mini", api_key="sk-test-key")
 
 
 def _make_search_tool() -> CallableTool:
@@ -286,7 +286,7 @@ class TestValidateModel:
             Creating an OpenAI instance with an O1 model and custom temperature
             should override the temperature to 1.0.
         """
-        llm = OpenAI(model="o1-mini", api_key="sk-test", temperature=0.5)
+        llm = Completions(model="o1-mini", api_key="sk-test", temperature=0.5)
         assert llm.temperature == 1.0, (
             f"O1 model should force temperature to 1.0, got {llm.temperature}"
         )
@@ -298,7 +298,7 @@ class TestValidateModel:
             Creating an OpenAI instance with a non-O1 model and custom
             temperature should keep the custom value.
         """
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test", temperature=0.7)
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test", temperature=0.7)
         assert llm.temperature == 0.7, (
             f"Non-O1 model should preserve temperature, got {llm.temperature}"
         )
@@ -312,7 +312,7 @@ class TestValidateModel:
         """
         responses_only = next(iter(RESPONSES_API_ONLY_MODELS))
         with pytest.raises(ValueError, match="Responses API") as exc_info:
-            OpenAI(model=responses_only, api_key="sk-test")
+            Completions(model=responses_only, api_key="sk-test")
         assert responses_only in str(exc_info.value), (
             f"Error should mention the model name, got: {exc_info.value}"
         )
@@ -328,8 +328,8 @@ class TestClassName:
         Test scenario:
             Calling class_name() should return the canonical provider string.
         """
-        assert OpenAI.class_name() == "openai", (
-            f"Expected 'openai', got '{OpenAI.class_name()}'"
+        assert Completions.class_name() == "openai", (
+            f"Expected 'openai', got '{Completions.class_name()}'"
         )
 
 
@@ -337,7 +337,7 @@ class TestClassName:
 class TestMetadata:
     """Tests for the OpenAI.metadata property."""
 
-    def test_chat_model_metadata(self, llm: OpenAI):
+    def test_chat_model_metadata(self, llm: Completions):
         """Test metadata for a standard chat model.
 
         Test scenario:
@@ -357,7 +357,7 @@ class TestMetadata:
             "Non-O1 models should use SYSTEM role"
         )
 
-    def test_o1_model_metadata_system_role(self, o1_llm: OpenAI):
+    def test_o1_model_metadata_system_role(self, o1_llm: Completions):
         """Test that O1 models report system_role as USER.
 
         Test scenario:
@@ -375,12 +375,12 @@ class TestMetadata:
         Test scenario:
             Setting max_tokens=100 should be reflected in metadata.num_output.
         """
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test", max_tokens=100)
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test", max_tokens=100)
         assert llm.metadata.num_output == 100, (
             f"Expected num_output=100, got {llm.metadata.num_output}"
         )
 
-    def test_metadata_num_output_default(self, llm: OpenAI):
+    def test_metadata_num_output_default(self, llm: Completions):
         """Test that num_output is -1 when max_tokens is None.
 
         Test scenario:
@@ -390,7 +390,7 @@ class TestMetadata:
             f"Expected num_output=-1, got {llm.metadata.num_output}"
         )
 
-    def test_completion_model_metadata(self, completion_llm: OpenAI):
+    def test_completion_model_metadata(self, completion_llm: Completions):
         """Test metadata for a legacy completion model.
 
         Test scenario:
@@ -406,7 +406,7 @@ class TestMetadata:
 class TestUseChatCompletions:
     """Tests for OpenAI._use_chat_completions."""
 
-    def test_override_true_in_kwargs(self, llm: OpenAI):
+    def test_override_true_in_kwargs(self, llm: Completions):
         """Test explicit use_chat_completions=True override.
 
         Test scenario:
@@ -416,7 +416,7 @@ class TestUseChatCompletions:
         result = llm._use_chat_completions({"use_chat_completions": True})
         assert result is True, "Explicit True override should return True"
 
-    def test_override_false_in_kwargs(self, llm: OpenAI):
+    def test_override_false_in_kwargs(self, llm: Completions):
         """Test explicit use_chat_completions=False override.
 
         Test scenario:
@@ -426,7 +426,7 @@ class TestUseChatCompletions:
         result = llm._use_chat_completions({"use_chat_completions": False})
         assert result is False, "Explicit False override should return False"
 
-    def test_fallback_to_metadata_chat_model(self, llm: OpenAI):
+    def test_fallback_to_metadata_chat_model(self, llm: Completions):
         """Test that a chat model defaults to chat completions.
 
         Test scenario:
@@ -435,7 +435,7 @@ class TestUseChatCompletions:
         result = llm._use_chat_completions({})
         assert result is True, "Chat model should default to chat completions"
 
-    def test_fallback_to_metadata_completion_model(self, completion_llm: OpenAI):
+    def test_fallback_to_metadata_completion_model(self, completion_llm: Completions):
         """Test that a completion model defaults to legacy completions.
 
         Test scenario:
@@ -449,7 +449,7 @@ class TestUseChatCompletions:
 class TestGetModelKwargs:
     """Tests for OpenAI._get_model_kwargs."""
 
-    def test_basic_kwargs(self, llm: OpenAI):
+    def test_basic_kwargs(self, llm: Completions):
         """Test basic kwargs include model and temperature.
 
         Test scenario:
@@ -467,13 +467,13 @@ class TestGetModelKwargs:
         Test scenario:
             Setting max_tokens=256 should include it in the output kwargs.
         """
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test", max_tokens=256)
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test", max_tokens=256)
         kwargs = llm._get_model_kwargs()
         assert kwargs["max_tokens"] == 256, (
             f"Expected max_tokens=256, got {kwargs.get('max_tokens')}"
         )
 
-    def test_max_tokens_omitted_when_none(self, llm: OpenAI):
+    def test_max_tokens_omitted_when_none(self, llm: Completions):
         """Test that max_tokens is omitted when None.
 
         Test scenario:
@@ -491,7 +491,7 @@ class TestGetModelKwargs:
             Setting logprobs=True and top_logprobs=5 on a chat model should
             inject both keys.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             logprobs=True, top_logprobs=5
         )
@@ -508,7 +508,7 @@ class TestGetModelKwargs:
             For non-chat models, logprobs should be set to the integer
             top_logprobs value (not a boolean).
         """
-        llm = OpenAI(
+        llm = Completions(
             model="text-davinci-003", api_key="sk-test",
             logprobs=True, top_logprobs=3
         )
@@ -517,7 +517,7 @@ class TestGetModelKwargs:
             f"For completion models logprobs should be int, got {kwargs['logprobs']}"
         )
 
-    def test_logprobs_not_set_when_false(self, llm: OpenAI):
+    def test_logprobs_not_set_when_false(self, llm: Completions):
         """Test that logprobs is not injected when set to False.
 
         Test scenario:
@@ -535,7 +535,7 @@ class TestGetModelKwargs:
             If additional_kwargs contains stream_options but stream is not in
             the final kwargs, stream_options should be removed.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             additional_kwargs={"stream_options": {"include_usage": True}},
         )
@@ -550,7 +550,7 @@ class TestGetModelKwargs:
         Test scenario:
             When stream=True is included in kwargs, stream_options should remain.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             additional_kwargs={"stream_options": {"include_usage": True}},
         )
@@ -559,7 +559,7 @@ class TestGetModelKwargs:
             "stream_options should be preserved when streaming"
         )
 
-    def test_o1_max_completion_tokens_rename(self, o1_llm: OpenAI):
+    def test_o1_max_completion_tokens_rename(self, o1_llm: Completions):
         """Test that O1 models rename max_tokens to max_completion_tokens.
 
         Test scenario:
@@ -584,7 +584,7 @@ class TestGetModelKwargs:
         Test scenario:
             Setting reasoning_effort on an O1 model should include it in kwargs.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="o1-mini", api_key="sk-test", reasoning_effort="high"
         )
         kwargs = llm._get_model_kwargs()
@@ -598,7 +598,7 @@ class TestGetModelKwargs:
         Test scenario:
             Setting modalities=["text", "audio"] should include it in kwargs.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             modalities=["text", "audio"]
         )
@@ -614,7 +614,7 @@ class TestGetModelKwargs:
             Setting audio_config should add an 'audio' key to kwargs.
         """
         audio_cfg = {"voice": "alloy", "format": "wav"}
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             audio_config=audio_cfg
         )
@@ -630,7 +630,7 @@ class TestGetModelKwargs:
             additional_kwargs like frequency_penalty should appear in the
             final kwargs dict.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             additional_kwargs={"frequency_penalty": 0.5}
         )
@@ -639,7 +639,7 @@ class TestGetModelKwargs:
             f"Expected frequency_penalty=0.5, got {kwargs.get('frequency_penalty')}"
         )
 
-    def test_runtime_kwargs_override(self, llm: OpenAI):
+    def test_runtime_kwargs_override(self, llm: Completions):
         """Test that per-call runtime kwargs override defaults.
 
         Test scenario:
@@ -654,7 +654,7 @@ class TestGetModelKwargs:
 
 @pytest.mark.unit
 class TestGetResponseTokenCounts:
-    """Tests for OpenAI._get_response_token_counts."""
+    """Tests for Completions._get_response_token_counts."""
 
     def test_with_usage_attribute(self):
         """Test extraction from an object with a .usage attribute.
@@ -663,7 +663,7 @@ class TestGetResponseTokenCounts:
             SDK response objects have .usage with prompt_tokens, etc.
         """
         response = _make_chat_completion()
-        counts = OpenAI._get_response_token_counts(response)
+        counts = Completions._get_response_token_counts(response)
         assert counts["prompt_tokens"] == 10, (
             f"Expected prompt_tokens=10, got {counts.get('prompt_tokens')}"
         )
@@ -687,7 +687,7 @@ class TestGetResponseTokenCounts:
                 "total_tokens": 30,
             }
         }
-        counts = OpenAI._get_response_token_counts(response)
+        counts = Completions._get_response_token_counts(response)
         assert counts["total_tokens"] == 30, (
             f"Expected total_tokens=30, got {counts.get('total_tokens')}"
         )
@@ -699,7 +699,7 @@ class TestGetResponseTokenCounts:
             Some providers may return usage=None in the dict.
         """
         response = {"usage": None}
-        counts = OpenAI._get_response_token_counts(response)
+        counts = Completions._get_response_token_counts(response)
         assert counts == {}, f"Expected empty dict, got {counts}"
 
     def test_with_missing_usage_attribute(self):
@@ -709,7 +709,7 @@ class TestGetResponseTokenCounts:
             Streaming chunks typically lack .usage, should return {}.
         """
         mock_response = MagicMock(spec=[])
-        counts = OpenAI._get_response_token_counts(mock_response)
+        counts = Completions._get_response_token_counts(mock_response)
         assert counts == {}, f"Expected empty dict, got {counts}"
 
     def test_with_usage_attribute_error(self):
@@ -728,7 +728,7 @@ class TestGetResponseTokenCounts:
         class BrokenResponse:
             usage = BrokenUsage()
 
-        counts = OpenAI._get_response_token_counts(BrokenResponse())
+        counts = Completions._get_response_token_counts(BrokenResponse())
         assert counts == {}, f"Expected empty dict on AttributeError, got {counts}"
 
     def test_with_dict_missing_usage_key(self):
@@ -738,7 +738,7 @@ class TestGetResponseTokenCounts:
             A dict without a 'usage' key defaults to empty usage dict,
             which returns zeroed token counts.
         """
-        counts = OpenAI._get_response_token_counts({})
+        counts = Completions._get_response_token_counts({})
         assert counts == {
             "prompt_tokens": 0,
             "completion_tokens": 0,
@@ -751,7 +751,7 @@ class TestGetResponseTokenCounts:
         Test scenario:
             Completely unexpected input type should return {}.
         """
-        counts = OpenAI._get_response_token_counts("unexpected")
+        counts = Completions._get_response_token_counts("unexpected")
         assert counts == {}, f"Expected empty dict, got {counts}"
 
 
@@ -759,7 +759,7 @@ class TestGetResponseTokenCounts:
 class TestUpdateMaxTokens:
     """Tests for OpenAI._update_max_tokens."""
 
-    def test_noop_when_max_tokens_set(self, completion_llm: OpenAI):
+    def test_noop_when_max_tokens_set(self, completion_llm: Completions):
         """Test that _update_max_tokens is a no-op when max_tokens is already set.
 
         Test scenario:
@@ -773,7 +773,7 @@ class TestUpdateMaxTokens:
             "Should not inject max_tokens when already set on instance"
         )
 
-    def test_calculates_from_context_window(self, completion_llm: OpenAI):
+    def test_calculates_from_context_window(self, completion_llm: Completions):
         """Test max_tokens calculation from context window minus prompt tokens.
 
         Test scenario:
@@ -787,7 +787,7 @@ class TestUpdateMaxTokens:
             f"Calculated max_tokens should be positive, got {kwargs['max_tokens']}"
         )
 
-    def test_prompt_exceeds_context_raises(self, completion_llm: OpenAI):
+    def test_prompt_exceeds_context_raises(self, completion_llm: Completions):
         """Test that a prompt exceeding the context window raises ValueError.
 
         Test scenario:
@@ -811,7 +811,7 @@ class TestCompleteAudioRejection:
             Calling complete() with modalities=["text","audio"] should
             raise ValueError.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             modalities=["text", "audio"]
         )
@@ -826,7 +826,7 @@ class TestCompleteAudioRejection:
             Calling acomplete() with modalities=["text","audio"] should
             raise ValueError.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             modalities=["text", "audio"]
         )
@@ -841,7 +841,7 @@ class TestCompleteAudioRejection:
         Test scenario:
             Calling chat(stream=True) with audio modality should raise ValueError.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             modalities=["text", "audio"]
         )
@@ -866,7 +866,7 @@ class TestChatRouting:
         mock_client = MockSyncOpenAI.return_value
         mock_client.chat.completions.create.return_value = _make_chat_completion()
 
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])])
 
         mock_client.chat.completions.create.assert_called_once()
@@ -885,7 +885,7 @@ class TestChatRouting:
         mock_client = MockSyncOpenAI.return_value
         mock_client.completions.create.return_value = _make_completion("Hi!")
 
-        llm = OpenAI(model="text-davinci-003", api_key="sk-test")
+        llm = Completions(model="text-davinci-003", api_key="sk-test")
         response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])])
 
         mock_client.completions.create.assert_called_once()
@@ -905,7 +905,7 @@ class TestChatRouting:
         mock_client = MockSyncOpenAI.return_value
         mock_client.chat.completions.create.return_value = _make_stream_chunks()
 
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         gen = llm.chat(
             [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])], stream=True
         )
@@ -936,7 +936,7 @@ class TestStreamChat:
             _make_tool_call_stream_chunks()
         )
 
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         gen = llm._stream_chat(
             [Message(role=MessageRole.USER, chunks=[TextChunk(content="search for test")])]
         )
@@ -974,7 +974,7 @@ class TestStreamChat:
         mock_client = MockSyncOpenAI.return_value
         mock_client.chat.completions.create.return_value = gen_with_empty()
 
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         chunks = list(
             llm._stream_chat(
                 [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
@@ -987,7 +987,7 @@ class TestStreamChat:
 class TestValidateChatWithToolsResponse:
     """Tests for OpenAI._validate_chat_with_tools_response."""
 
-    def test_allows_parallel_calls(self, llm: OpenAI):
+    def test_allows_parallel_calls(self, llm: Completions):
         """Test that parallel tool calls are preserved when allowed.
 
         Test scenario:
@@ -1017,7 +1017,7 @@ class TestValidateChatWithToolsResponse:
             f"Expected 2 tool calls when parallel allowed, got {len(tool_blocks)}"
         )
 
-    def test_forces_single_call_when_disallowed(self, llm: OpenAI):
+    def test_forces_single_call_when_disallowed(self, llm: Completions):
         """Test that parallel tool calls are trimmed when disallowed.
 
         Test scenario:
@@ -1055,7 +1055,7 @@ class TestValidateChatWithToolsResponse:
 class TestGetToolCallsFromResponse:
     """Tests for OpenAI.get_tool_calls_from_response."""
 
-    def test_extracts_from_tool_call_blocks(self, llm: OpenAI):
+    def test_extracts_from_tool_call_blocks(self, llm: Completions):
         """Test extraction from ToolCallBlock chunks (modern path).
 
         Test scenario:
@@ -1085,7 +1085,7 @@ class TestGetToolCallsFromResponse:
             f"Expected parsed dict kwargs, got {tool_calls[0].tool_kwargs}"
         )
 
-    def test_extracts_dict_kwargs_from_blocks(self, llm: OpenAI):
+    def test_extracts_dict_kwargs_from_blocks(self, llm: Completions):
         """Test extraction when ToolCallBlock has dict kwargs (already parsed).
 
         Test scenario:
@@ -1108,7 +1108,7 @@ class TestGetToolCallsFromResponse:
             f"Expected dict kwargs, got {tool_calls[0].tool_kwargs}"
         )
 
-    def test_handles_invalid_json_in_blocks(self, llm: OpenAI):
+    def test_handles_invalid_json_in_blocks(self, llm: Completions):
         """Test that invalid JSON in ToolCallBlock falls back to empty dict.
 
         Test scenario:
@@ -1131,7 +1131,7 @@ class TestGetToolCallsFromResponse:
             f"Expected empty dict for invalid JSON, got {tool_calls[0].tool_kwargs}"
         )
 
-    def test_legacy_path_extracts_from_additional_kwargs(self, llm: OpenAI):
+    def test_legacy_path_extracts_from_additional_kwargs(self, llm: Completions):
         """Test extraction via legacy additional_kwargs path.
 
         Test scenario:
@@ -1165,7 +1165,7 @@ class TestGetToolCallsFromResponse:
             f"Expected parsed kwargs, got {tool_calls[0].tool_kwargs}"
         )
 
-    def test_legacy_path_invalid_tool_type_raises(self, llm: OpenAI):
+    def test_legacy_path_invalid_tool_type_raises(self, llm: Completions):
         """Test that legacy path raises for non-function tool types.
 
         Test scenario:
@@ -1186,7 +1186,7 @@ class TestGetToolCallsFromResponse:
         with pytest.raises(ValueError, match="Invalid tool type"):
             llm.get_tool_calls_from_response(response)
 
-    def test_no_tool_calls_raises_when_required(self, llm: OpenAI):
+    def test_no_tool_calls_raises_when_required(self, llm: Completions):
         """Test that error_on_no_tool_call=True raises when no calls found.
 
         Test scenario:
@@ -1202,7 +1202,7 @@ class TestGetToolCallsFromResponse:
                 response, error_on_no_tool_call=True
             )
 
-    def test_no_tool_calls_returns_empty_when_optional(self, llm: OpenAI):
+    def test_no_tool_calls_returns_empty_when_optional(self, llm: Completions):
         """Test that error_on_no_tool_call=False returns empty list.
 
         Test scenario:
@@ -1224,7 +1224,7 @@ class TestPrepareChatWithTools:
     """Tests for OpenAI._prepare_chat_with_tools."""
 
     def test_strict_mode_sets_strict_and_additional_properties(
-        self, llm: OpenAI
+        self, llm: Completions
     ):
         """Test that strict=True injects strict and additionalProperties.
 
@@ -1244,7 +1244,7 @@ class TestPrepareChatWithTools:
             tool_spec["function"]["parameters"]["additionalProperties"] is False
         ), "Tool parameters should have additionalProperties=False"
 
-    def test_string_message_wrapped_in_message(self, llm: OpenAI):
+    def test_string_message_wrapped_in_message(self, llm: Completions):
         """Test that a string message is converted to a Message object.
 
         Test scenario:
@@ -1264,7 +1264,7 @@ class TestPrepareChatWithTools:
             f"Expected 'hello', got '{messages[0].content}'"
         )
 
-    def test_message_message_used_directly(self, llm: OpenAI):
+    def test_message_message_used_directly(self, llm: Completions):
         """Test that a Message message is used directly.
 
         Test scenario:
@@ -1277,7 +1277,7 @@ class TestPrepareChatWithTools:
         )
         assert result["messages"][-1] is msg, "Should use the exact Message object"
 
-    def test_chat_history_preserved(self, llm: OpenAI):
+    def test_chat_history_preserved(self, llm: Completions):
         """Test that chat_history messages are included.
 
         Test scenario:
@@ -1295,7 +1295,7 @@ class TestPrepareChatWithTools:
             f"Expected 2 messages, got {len(result['messages'])}"
         )
 
-    def test_none_message_does_not_append(self, llm: OpenAI):
+    def test_none_message_does_not_append(self, llm: Completions):
         """Test that None message does not add a message.
 
         Test scenario:
@@ -1329,7 +1329,7 @@ class TestAsyncChat:
         create_fn = AsyncMock(return_value=_make_chat_completion())
         mock_client.chat.completions.create = create_fn
 
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         response = await llm.achat(
             [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
         )
@@ -1353,7 +1353,7 @@ class TestAsyncChat:
         create_fn = AsyncMock(return_value=_make_completion("Hi!"))
         mock_client.completions.create = create_fn
 
-        llm = OpenAI(model="text-davinci-003", api_key="sk-test")
+        llm = Completions(model="text-davinci-003", api_key="sk-test")
         response = await llm.achat(
             [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
         )
@@ -1380,7 +1380,7 @@ class TestAsyncChat:
         create_fn = AsyncMock(return_value=mock_stream())
         mock_client.chat.completions.create = create_fn
 
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         gen = await llm.achat(
             [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])], stream=True
         )
@@ -1405,7 +1405,7 @@ class TestAsyncComplete:
         create_fn = AsyncMock(return_value=_make_chat_completion("result text"))
         mock_client.chat.completions.create = create_fn
 
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         response = await llm.acomplete("test prompt")
 
         assert response.text is not None, "Response text should not be None"
@@ -1424,7 +1424,7 @@ class TestAsyncComplete:
         create_fn = AsyncMock(return_value=_make_completion("result"))
         mock_client.completions.create = create_fn
 
-        llm = OpenAI(model="text-davinci-003", api_key="sk-test")
+        llm = Completions(model="text-davinci-003", api_key="sk-test")
         response = await llm.acomplete("test prompt")
 
         create_fn.assert_called_once()
@@ -1445,7 +1445,7 @@ class TestAStreamChatAudioRejection:
             Calling achat(stream=True) with audio modality should raise
             ValueError when the async generator is iterated.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             modalities=["text", "audio"]
         )
@@ -1470,7 +1470,7 @@ class TestPydanticFieldValidation:
         from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
-            OpenAI(model="gpt-4o-mini", api_key="sk-test", temperature=3.0)
+            Completions(model="gpt-4o-mini", api_key="sk-test", temperature=3.0)
 
     def test_temperature_too_low(self):
         """Test that temperature < 0.0 is rejected.
@@ -1481,7 +1481,7 @@ class TestPydanticFieldValidation:
         from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
-            OpenAI(model="gpt-4o-mini", api_key="sk-test", temperature=-0.1)
+            Completions(model="gpt-4o-mini", api_key="sk-test", temperature=-0.1)
 
     def test_top_logprobs_too_high(self):
         """Test that top_logprobs > 20 is rejected.
@@ -1492,7 +1492,7 @@ class TestPydanticFieldValidation:
         from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
-            OpenAI(model="gpt-4o-mini", api_key="sk-test", top_logprobs=21)
+            Completions(model="gpt-4o-mini", api_key="sk-test", top_logprobs=21)
 
     def test_max_tokens_must_be_positive(self):
         """Test that max_tokens=0 is rejected.
@@ -1503,7 +1503,7 @@ class TestPydanticFieldValidation:
         from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
-            OpenAI(model="gpt-4o-mini", api_key="sk-test", max_tokens=0)
+            Completions(model="gpt-4o-mini", api_key="sk-test", max_tokens=0)
 
     def test_extra_fields_forbidden(self):
         """Test that extra fields are rejected.
@@ -1514,12 +1514,12 @@ class TestPydanticFieldValidation:
         from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
-            OpenAI(
+            Completions(
                 model="gpt-4o-mini", api_key="sk-test",
                 nonexistent_field="value"
             )
 
-    def test_valid_construction(self, llm: OpenAI):
+    def test_valid_construction(self, llm: Completions):
         """Test that valid parameters produce a working instance.
 
         Test scenario:
@@ -1549,7 +1549,7 @@ class TestCompleteRouting:
             _make_chat_completion("Answer")
         )
 
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         response = llm.complete("What is 1+1?")
 
         mock_client.chat.completions.create.assert_called_once()
@@ -1567,7 +1567,7 @@ class TestCompleteRouting:
         mock_client = MockSyncOpenAI.return_value
         mock_client.completions.create.return_value = _make_completion("42")
 
-        llm = OpenAI(model="text-davinci-003", api_key="sk-test")
+        llm = Completions(model="text-davinci-003", api_key="sk-test")
         response = llm.complete("What is the meaning of life?")
 
         mock_client.completions.create.assert_called_once()
@@ -1602,7 +1602,7 @@ class TestCompleteRouting:
         mock_client = MockSyncOpenAI.return_value
         mock_client.completions.create.return_value = gen_completions()
 
-        llm = OpenAI(model="text-davinci-003", api_key="sk-test")
+        llm = Completions(model="text-davinci-003", api_key="sk-test")
         chunks = list(llm.complete("hi", stream=True))
 
         assert len(chunks) == 2, f"Expected 2 chunks, got {len(chunks)}"
@@ -1615,7 +1615,7 @@ class TestCompleteRouting:
 class TestModelMetadataHelper:
     """Tests for ModelMetadata._get_model_name inherited by OpenAI."""
 
-    def test_standard_model_name(self, llm: OpenAI):
+    def test_standard_model_name(self, llm: Completions):
         """Test that a standard model name is returned as-is.
 
         Test scenario:
@@ -1631,7 +1631,7 @@ class TestModelMetadataHelper:
         Test scenario:
             'curie:ft-acmeco-2021-03-03' should return 'curie'.
         """
-        llm = OpenAI(model="curie:ft-acmeco-2021-03-03", api_key="sk-test")
+        llm = Completions(model="curie:ft-acmeco-2021-03-03", api_key="sk-test")
         assert llm._get_model_name() == "curie", (
             f"Expected 'curie', got '{llm._get_model_name()}'"
         )
@@ -1642,7 +1642,7 @@ class TestModelMetadataHelper:
         Test scenario:
             'ft:gpt-4o-mini:org:custom:id' should return 'gpt-4o-mini'.
         """
-        llm = OpenAI(
+        llm = Completions(
             model="ft:gpt-4o-mini:org:custom:id", api_key="sk-test"
         )
         assert llm._get_model_name() == "gpt-4o-mini", (
@@ -1654,7 +1654,7 @@ class TestModelMetadataHelper:
 class TestTokenizer:
     """Tests for ModelMetadata._tokenizer property."""
 
-    def test_tokenizer_returns_encoder(self, llm: OpenAI):
+    def test_tokenizer_returns_encoder(self, llm: Completions):
         """Test that _tokenizer returns a tiktoken encoder.
 
         Test scenario:
@@ -1727,7 +1727,7 @@ class TestChatWithLogprobs:
         mock_client = MockSyncOpenAI.return_value
         mock_client.chat.completions.create.return_value = mock_response
 
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             logprobs=True, top_logprobs=1,
         )
@@ -1785,7 +1785,7 @@ class TestChatWithLogprobs:
         mock_client = MockSyncOpenAI.return_value
         mock_client.completions.create.return_value = mock_response
 
-        llm = OpenAI(
+        llm = Completions(
             model="text-davinci-003", api_key="sk-test",
             logprobs=True, top_logprobs=1,
         )
@@ -1833,7 +1833,7 @@ class TestStreamNullDelta:
         mock_client = MockSyncOpenAI.return_value
         mock_client.chat.completions.create.return_value = gen_chunks()
 
-        llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
+        llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         chunks = list(
             llm._stream_chat(
                 [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
@@ -1876,7 +1876,7 @@ class TestStreamCompleteEmptyChoices:
         mock_client = MockSyncOpenAI.return_value
         mock_client.completions.create.return_value = gen()
 
-        llm = OpenAI(model="text-davinci-003", api_key="sk-test")
+        llm = Completions(model="text-davinci-003", api_key="sk-test")
         chunks = list(llm._stream_complete("test"))
         assert len(chunks) == 2, f"Expected 2 chunks, got {len(chunks)}"
         assert chunks[0].delta == "", "Empty choices should yield empty delta"
@@ -1948,7 +1948,7 @@ class TestAsyncChatWithLogprobs:
         create_fn = AsyncMock(return_value=mock_response)
         mock_client.chat.completions.create = create_fn
 
-        llm = OpenAI(
+        llm = Completions(
             model="gpt-4o-mini", api_key="sk-test",
             logprobs=True, top_logprobs=1,
         )
@@ -2013,7 +2013,7 @@ class TestAsyncCompleteWithLogprobs:
         create_fn = AsyncMock(return_value=mock_response)
         mock_client.completions.create = create_fn
 
-        llm = OpenAI(
+        llm = Completions(
             model="text-davinci-003", api_key="sk-test",
             logprobs=True, top_logprobs=1,
         )
@@ -2060,7 +2060,7 @@ class TestAsyncStreamComplete:
         create_fn = AsyncMock(return_value=gen())
         mock_client.completions.create = create_fn
 
-        llm = OpenAI(model="text-davinci-003", api_key="sk-test")
+        llm = Completions(model="text-davinci-003", api_key="sk-test")
         result_gen = await llm.acomplete("hello", stream=True)
         chunks = [c async for c in result_gen]
 
@@ -2082,7 +2082,7 @@ class TestPrepareChatWithToolsNonFunctionCalling:
             For a non-function-calling model (text-davinci-003), the strict
             flag should not be injected into tool specs even when strict=True.
         """
-        llm = OpenAI(model="text-davinci-003", api_key="sk-test", strict=True)
+        llm = Completions(model="text-davinci-003", api_key="sk-test", strict=True)
         tool = _make_search_tool()
         result = llm._prepare_chat_with_tools(tools=[tool], message="test")
         tool_spec = result["tools"][0]

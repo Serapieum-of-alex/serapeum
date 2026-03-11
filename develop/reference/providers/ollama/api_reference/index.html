@@ -5736,7 +5736,7 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-636" name="__codelineno-0-636"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_chat_with_tools</span><span class="p">(</span>
 <a id="__codelineno-0-637" name="__codelineno-0-637"></a>        <span class="bp">self</span><span class="p">,</span>
 <a id="__codelineno-0-638" name="__codelineno-0-638"></a>        <span class="n">tools</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseTool</span><span class="p">],</span>
-<a id="__codelineno-0-639" name="__codelineno-0-639"></a>        <span class="n">user_msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Message</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-639" name="__codelineno-0-639"></a>        <span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Message</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-640" name="__codelineno-0-640"></a>        <span class="n">chat_history</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Message</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-641" name="__codelineno-0-641"></a>        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <a id="__codelineno-0-642" name="__codelineno-0-642"></a>        <span class="n">allow_parallel_tool_calls</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -5746,7 +5746,7 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-646" name="__codelineno-0-646"></a>
 <a id="__codelineno-0-647" name="__codelineno-0-647"></a><span class="sd">        Args:</span>
 <a id="__codelineno-0-648" name="__codelineno-0-648"></a><span class="sd">            tools (List[BaseTool]): Tools to expose to the model (converted using OpenAI schema).</span>
-<a id="__codelineno-0-649" name="__codelineno-0-649"></a><span class="sd">            user_msg (str | Message | None): Optional user message to append.</span>
+<a id="__codelineno-0-649" name="__codelineno-0-649"></a><span class="sd">            message (str | Message | None): Optional user message to append.</span>
 <a id="__codelineno-0-650" name="__codelineno-0-650"></a><span class="sd">            chat_history (list[Message] | None): Optional existing conversation history.</span>
 <a id="__codelineno-0-651" name="__codelineno-0-651"></a><span class="sd">            verbose (bool): Currently unused verbosity flag.</span>
 <a id="__codelineno-0-652" name="__codelineno-0-652"></a><span class="sd">            allow_parallel_tool_calls (bool): Indicator forwarded to validators.</span>
@@ -5770,7 +5770,7 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-670" name="__codelineno-0-670"></a><span class="sd">                &gt;&gt;&gt; llm = Ollama(model=&quot;m&quot;)</span>
 <a id="__codelineno-0-671" name="__codelineno-0-671"></a><span class="sd">                &gt;&gt;&gt; payload = llm._prepare_chat_with_tools(</span>
 <a id="__codelineno-0-672" name="__codelineno-0-672"></a><span class="sd">                ...     [T(&quot;t1&quot;)],</span>
-<a id="__codelineno-0-673" name="__codelineno-0-673"></a><span class="sd">                ...     user_msg=&quot;hi&quot;,</span>
+<a id="__codelineno-0-673" name="__codelineno-0-673"></a><span class="sd">                ...     message=&quot;hi&quot;,</span>
 <a id="__codelineno-0-674" name="__codelineno-0-674"></a><span class="sd">                ...     chat_history=[Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content=&quot;s&quot;)])],</span>
 <a id="__codelineno-0-675" name="__codelineno-0-675"></a><span class="sd">                ... )</span>
 <a id="__codelineno-0-676" name="__codelineno-0-676"></a><span class="sd">                &gt;&gt;&gt; len(payload[&quot;messages&quot;])</span>
@@ -5788,15 +5788,15 @@ alist_models: Async variant of list_models.</p>
 <a id="__codelineno-0-688" name="__codelineno-0-688"></a>            <span class="n">tool</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">to_openai_tool</span><span class="p">(</span><span class="n">skip_length_check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">tools</span>
 <a id="__codelineno-0-689" name="__codelineno-0-689"></a>        <span class="p">]</span>
 <a id="__codelineno-0-690" name="__codelineno-0-690"></a>
-<a id="__codelineno-0-691" name="__codelineno-0-691"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">user_msg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-0-692" name="__codelineno-0-692"></a>            <span class="n">user_msg</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span>
+<a id="__codelineno-0-691" name="__codelineno-0-691"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-0-692" name="__codelineno-0-692"></a>            <span class="n">message</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span>
 <a id="__codelineno-0-693" name="__codelineno-0-693"></a>                <span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span>
-<a id="__codelineno-0-694" name="__codelineno-0-694"></a>                <span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">TextChunk</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">user_msg</span><span class="p">)],</span>
+<a id="__codelineno-0-694" name="__codelineno-0-694"></a>                <span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">TextChunk</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">message</span><span class="p">)],</span>
 <a id="__codelineno-0-695" name="__codelineno-0-695"></a>            <span class="p">)</span>
 <a id="__codelineno-0-696" name="__codelineno-0-696"></a>
 <a id="__codelineno-0-697" name="__codelineno-0-697"></a>        <span class="n">messages</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">chat_history</span> <span class="ow">or</span> <span class="p">[])</span>
-<a id="__codelineno-0-698" name="__codelineno-0-698"></a>        <span class="k">if</span> <span class="n">user_msg</span><span class="p">:</span>
-<a id="__codelineno-0-699" name="__codelineno-0-699"></a>            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">user_msg</span><span class="p">)</span>
+<a id="__codelineno-0-698" name="__codelineno-0-698"></a>        <span class="k">if</span> <span class="n">message</span><span class="p">:</span>
+<a id="__codelineno-0-699" name="__codelineno-0-699"></a>            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 <a id="__codelineno-0-700" name="__codelineno-0-700"></a>
 <a id="__codelineno-0-701" name="__codelineno-0-701"></a>        <span class="k">return</span> <span class="p">{</span>
 <a id="__codelineno-0-702" name="__codelineno-0-702"></a>            <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="n">messages</span><span class="p">,</span>

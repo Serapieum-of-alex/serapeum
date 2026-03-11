@@ -313,7 +313,7 @@ def test_prepare_chat_with_tools(default_responses_llm):
 
     result = default_responses_llm._prepare_chat_with_tools(
         tools=[tool],
-        user_msg="What is 2+2?",
+        message="What is 2+2?",
         allow_parallel_tool_calls=False,
     )
 
@@ -588,7 +588,7 @@ search_tool = CallableTool.from_function(func=search)
 def test_tool_required():
     llm = OpenAIResponses(model="gpt-4.1-mini")
     response = llm.chat_with_tools(
-        user_msg="What is the capital of France?",
+        message="What is the capital of France?",
         tools=[search_tool],
         tool_required=True,
     )

@@ -54,7 +54,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     def _prepare_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
+        message: Optional[Union[str, Message]] = None,
         chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,

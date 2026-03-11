@@ -1211,9 +1211,9 @@ class TestToOpenaiMessageDicts:
         result = to_openai_message_dicts(messages, is_responses_api=True)
         assert isinstance(result, list), "Expected list result (not bare string)"
         # With two messages, the single-user-message shortcut doesn't apply
-        user_msgs = [m for m in result if isinstance(m, dict) and m.get("role") == "user"]
-        assert len(user_msgs) == 1, "Expected one user message dict"
-        assert user_msgs[0]["content"] == "hello", (
+        messages = [m for m in result if isinstance(m, dict) and m.get("role") == "user"]
+        assert len(messages) == 1, "Expected one user message dict"
+        assert messages[0]["content"] == "hello", (
             "Expected string content wrapped in user dict"
         )
 

@@ -694,7 +694,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
     def _prepare_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: str | Message | None = None,
+        message: str | Message | None = None,
         chat_history: list[Message] | None = None,
         allow_parallel_tool_calls: bool = True,
         tool_required: bool = False,
@@ -713,7 +713,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
 
         Args:
             tools: Tools whose specs are to be included in the request.
-            user_msg: Optional user message to append to the conversation.
+            message: Optional user message to append to the conversation.
                 Accepts a plain string or a
                 :class:`~serapeum.core.llms.Message`.
             chat_history: Prior conversation turns. Defaults to an empty list.
@@ -753,15 +753,15 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
                 tool_spec["strict"] = True
                 tool_spec["parameters"]["additionalProperties"] = False
 
-        if isinstance(user_msg, str):
-            user_msg = Message(
+        if isinstance(message, str):
+            message = Message(
                 role=MessageRole.USER,
-                chunks=[TextChunk(content=user_msg)],
+                chunks=[TextChunk(content=message)],
             )
 
         messages = chat_history or []
-        if user_msg:
-            messages.append(user_msg)
+        if message:
+            messages.append(message)
 
         return {
             "messages": messages,

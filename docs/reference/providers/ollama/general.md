@@ -442,14 +442,14 @@ from serapeum.ollama import Ollama
 
 # Define your output schema
 class Song(BaseModel):
-    title: str
-    duration: int  # in seconds
+  title: str
+  duration: int  # in seconds
 
 class Album(BaseModel):
-    title: str
-    artist: str
-    songs: list[Song]
-    
+  title: str
+  artist: str
+  songs: list[Song]
+
 llm = Ollama(
   model="qwen3.5:397b",
   api_key=os.environ.get("OLLAMA_API_KEY"),
@@ -460,7 +460,7 @@ llm = Ollama(
 tool = CallableTool.from_model(Album)
 
 # Get structured output via tool calling
-response = llm.generate_tool_calls(tools=[tool], user_msg="Create an album about rock")
+response = llm.generate_tool_calls(tools=[tool], message="Create an album about rock")
 
 # print(response.message.additional_kwargs["tool_calls"])
 # [

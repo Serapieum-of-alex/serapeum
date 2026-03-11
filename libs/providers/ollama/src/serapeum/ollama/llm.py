@@ -636,7 +636,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
     def _prepare_chat_with_tools(
         self,
         tools: list[BaseTool],
-        user_msg: str | Message | None = None,
+        message: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -646,7 +646,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
 
         Args:
             tools (List[BaseTool]): Tools to expose to the model (converted using OpenAI schema).
-            user_msg (str | Message | None): Optional user message to append.
+            message (str | Message | None): Optional user message to append.
             chat_history (list[Message] | None): Optional existing conversation history.
             verbose (bool): Currently unused verbosity flag.
             allow_parallel_tool_calls (bool): Indicator forwarded to validators.
@@ -670,7 +670,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 >>> llm = Ollama(model="m")
                 >>> payload = llm._prepare_chat_with_tools(
                 ...     [T("t1")],
-                ...     user_msg="hi",
+                ...     message="hi",
                 ...     chat_history=[Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="s")])],
                 ... )
                 >>> len(payload["messages"])
@@ -688,15 +688,15 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             tool.metadata.to_openai_tool(skip_length_check=True) for tool in tools
         ]
 
-        if isinstance(user_msg, str):
-            user_msg = Message(
+        if isinstance(message, str):
+            message = Message(
                 role=MessageRole.USER,
-                chunks=[TextChunk(content=user_msg)],
+                chunks=[TextChunk(content=message)],
             )
 
         messages = list(chat_history or [])
-        if user_msg:
-            messages.append(user_msg)
+        if message:
+            messages.append(message)
 
         return {
             "messages": messages,

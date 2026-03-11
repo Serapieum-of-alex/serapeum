@@ -98,7 +98,7 @@ weather_tool = CallableTool.from_function(get_weather)
 # Chat with tool calling
 response = llm.generate_tool_calls(
     tools=[weather_tool],
-    user_msg="What's the weather in San Francisco?"
+    message="What's the weather in San Francisco?"
 )
 print(response.message.additional_kwargs["tool_calls"])
 # [ToolCall(function=Function(name='get_weather', arguments={'city': 'San Francisco'}))]

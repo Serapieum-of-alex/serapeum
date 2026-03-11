@@ -35,7 +35,7 @@ class FunctionCallingLLM(LLM, ABC):
     def generate_tool_calls(
         self,
         tools: Sequence[BaseTool],
-        user_msg: str | Message | None = ...,
+        message: str | Message | None = ...,
         chat_history: list[Message] | None = ...,
         verbose: bool = ...,
         allow_parallel_tool_calls: bool = ...,
@@ -48,7 +48,7 @@ class FunctionCallingLLM(LLM, ABC):
     def generate_tool_calls(
         self,
         tools: Sequence[BaseTool],
-        user_msg: str | Message | None = ...,
+        message: str | Message | None = ...,
         chat_history: list[Message] | None = ...,
         verbose: bool = ...,
         allow_parallel_tool_calls: bool = ...,
@@ -60,7 +60,7 @@ class FunctionCallingLLM(LLM, ABC):
     def generate_tool_calls(
         self,
         tools: Sequence[BaseTool],
-        user_msg: str | Message | None = None,
+        message: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -71,7 +71,7 @@ class FunctionCallingLLM(LLM, ABC):
         """Chat with function calling."""
         chat_kwargs = self._prepare_chat_with_tools(
             tools,
-            user_msg=user_msg,
+            message=message,
             chat_history=chat_history,
             verbose=verbose,
             allow_parallel_tool_calls=allow_parallel_tool_calls,
@@ -91,7 +91,7 @@ class FunctionCallingLLM(LLM, ABC):
     async def agenerate_tool_calls(
         self,
         tools: Sequence[BaseTool],
-        user_msg: str | Message | None = ...,
+        message: str | Message | None = ...,
         chat_history: list[Message] | None = ...,
         verbose: bool = ...,
         allow_parallel_tool_calls: bool = ...,
@@ -104,7 +104,7 @@ class FunctionCallingLLM(LLM, ABC):
     async def agenerate_tool_calls(
         self,
         tools: Sequence[BaseTool],
-        user_msg: str | Message | None = ...,
+        message: str | Message | None = ...,
         chat_history: list[Message] | None = ...,
         verbose: bool = ...,
         allow_parallel_tool_calls: bool = ...,
@@ -116,7 +116,7 @@ class FunctionCallingLLM(LLM, ABC):
     async def agenerate_tool_calls(
         self,
         tools: Sequence[BaseTool],
-        user_msg: str | Message | None = None,
+        message: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -127,7 +127,7 @@ class FunctionCallingLLM(LLM, ABC):
         """Async chat with function calling."""
         chat_kwargs = self._prepare_chat_with_tools(
             tools,
-            user_msg=user_msg,
+            message=message,
             chat_history=chat_history,
             verbose=verbose,
             allow_parallel_tool_calls=allow_parallel_tool_calls,
@@ -147,7 +147,7 @@ class FunctionCallingLLM(LLM, ABC):
     def _prepare_chat_with_tools(
         self,
         tools: Sequence[BaseTool],
-        user_msg: str | Message | None = None,
+        message: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -223,7 +223,7 @@ class FunctionCallingLLM(LLM, ABC):
     def invoke_callable(
         self,
         tools: Sequence[BaseTool],
-        user_msg: str | Message | None = None,
+        message: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -234,7 +234,7 @@ class FunctionCallingLLM(LLM, ABC):
         """Predict and call the tool."""
         response = self.generate_tool_calls(
             tools,
-            user_msg=user_msg,
+            message=message,
             chat_history=chat_history,
             verbose=verbose,
             allow_parallel_tool_calls=allow_parallel_tool_calls,
@@ -256,7 +256,7 @@ class FunctionCallingLLM(LLM, ABC):
     async def ainvoke_callable(
         self,
         tools: Sequence[BaseTool],
-        user_msg: str | Message | None = None,
+        message: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -267,7 +267,7 @@ class FunctionCallingLLM(LLM, ABC):
         """Predict and call the tool."""
         response = await self.agenerate_tool_calls(
             tools,
-            user_msg=user_msg,
+            message=message,
             chat_history=chat_history,
             verbose=verbose,
             allow_parallel_tool_calls=allow_parallel_tool_calls,

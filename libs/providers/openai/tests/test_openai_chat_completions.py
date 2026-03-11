@@ -1234,7 +1234,7 @@ class TestPrepareChatWithTools:
         """
         tool = _make_search_tool()
         result = llm._prepare_chat_with_tools(
-            tools=[tool], user_msg="test", strict=True
+            tools=[tool], message="test", strict=True
         )
         tool_spec = result["tools"][0]
         assert tool_spec["function"]["strict"] is True, (
@@ -1244,16 +1244,16 @@ class TestPrepareChatWithTools:
             tool_spec["function"]["parameters"]["additionalProperties"] is False
         ), "Tool parameters should have additionalProperties=False"
 
-    def test_string_user_msg_wrapped_in_message(self, llm: OpenAI):
-        """Test that a string user_msg is converted to a Message object.
+    def test_string_message_wrapped_in_message(self, llm: OpenAI):
+        """Test that a string message is converted to a Message object.
 
         Test scenario:
-            Passing a plain string as user_msg should result in a Message
+            Passing a plain string as message should result in a Message
             with role=USER in the messages list.
         """
         tool = _make_search_tool()
         result = llm._prepare_chat_with_tools(
-            tools=[tool], user_msg="hello"
+            tools=[tool], message="hello"
         )
         messages = result["messages"]
         assert len(messages) == 1, f"Expected 1 message, got {len(messages)}"
@@ -1264,16 +1264,16 @@ class TestPrepareChatWithTools:
             f"Expected 'hello', got '{messages[0].content}'"
         )
 
-    def test_message_user_msg_used_directly(self, llm: OpenAI):
-        """Test that a Message user_msg is used directly.
+    def test_message_message_used_directly(self, llm: OpenAI):
+        """Test that a Message message is used directly.
 
         Test scenario:
-            Passing a Message object as user_msg should append it as-is.
+            Passing a Message object as message should append it as-is.
         """
         tool = _make_search_tool()
         msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi there")])
         result = llm._prepare_chat_with_tools(
-            tools=[tool], user_msg=msg
+            tools=[tool], message=msg
         )
         assert result["messages"][-1] is msg, "Should use the exact Message object"
 
@@ -1281,30 +1281,30 @@ class TestPrepareChatWithTools:
         """Test that chat_history messages are included.
 
         Test scenario:
-            Passing chat_history plus a user_msg should result in the
+            Passing chat_history plus a message should result in the
             history followed by the new message.
         """
         tool = _make_search_tool()
         history = [Message(role=MessageRole.USER, chunks=[TextChunk(content="previous")])]
         result = llm._prepare_chat_with_tools(
             tools=[tool],
-            user_msg="current",
+            message="current",
             chat_history=history,
         )
         assert len(result["messages"]) == 2, (
             f"Expected 2 messages, got {len(result['messages'])}"
         )
 
-    def test_none_user_msg_does_not_append(self, llm: OpenAI):
-        """Test that None user_msg does not add a message.
+    def test_none_message_does_not_append(self, llm: OpenAI):
+        """Test that None message does not add a message.
 
         Test scenario:
-            Passing user_msg=None with empty chat_history should result
+            Passing message=None with empty chat_history should result
             in an empty messages list.
         """
         tool = _make_search_tool()
         result = llm._prepare_chat_with_tools(
-            tools=[tool], user_msg=None
+            tools=[tool], message=None
         )
         assert len(result["messages"]) == 0, (
             f"Expected 0 messages, got {len(result['messages'])}"
@@ -2084,7 +2084,7 @@ class TestPrepareChatWithToolsNonFunctionCalling:
         """
         llm = OpenAI(model="text-davinci-003", api_key="sk-test", strict=True)
         tool = _make_search_tool()
-        result = llm._prepare_chat_with_tools(tools=[tool], user_msg="test")
+        result = llm._prepare_chat_with_tools(tools=[tool], message="test")
         tool_spec = result["tools"][0]
         assert "strict" not in tool_spec.get("function", {}), (
             "Non-FC model should not have strict in tool spec"

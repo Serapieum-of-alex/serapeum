@@ -602,7 +602,7 @@ class TestToolCallingSingleTool:
         """
         response = llm.generate_tool_calls(
             tools=[weather_tool],
-            user_msg="What is the weather in Paris?",
+            message="What is the weather in Paris?",
             tool_required=True,
         )
         tool_calls = llm.get_tool_calls_from_response(
@@ -626,7 +626,7 @@ class TestToolCallingSingleTool:
         """
         response = llm.generate_tool_calls(
             tools=[weather_tool],
-            user_msg="What is the weather in London?",
+            message="What is the weather in London?",
             tool_required=True,
         )
         tool_calls = llm.get_tool_calls_from_response(
@@ -643,7 +643,7 @@ class TestToolCallingSingleTool:
         """
         response = llm.generate_tool_calls(
             tools=[weather_tool],
-            user_msg="What is 2 + 2?",
+            message="What is 2 + 2?",
             tool_required=False,
         )
         assert response.message is not None, "Response message should exist"
@@ -658,7 +658,7 @@ class TestToolCallingSingleTool:
         """
         response = llm.generate_tool_calls(
             tools=[add_tool],
-            user_msg="Say hello.",
+            message="Say hello.",
             tool_required=False,
         )
         tool_calls_present = bool(response.message.tool_calls)
@@ -682,7 +682,7 @@ class TestToolCallingMultipleTools:
         """
         response = llm.generate_tool_calls(
             tools=[weather_tool, search_tool],
-            user_msg="Tell me about the Eiffel Tower",
+            message="Tell me about the Eiffel Tower",
             tool_choice="search_web",
         )
         tool_calls = llm.get_tool_calls_from_response(
@@ -703,7 +703,7 @@ class TestToolCallingMultipleTools:
         """
         response = llm.generate_tool_calls(
             tools=[weather_tool],
-            user_msg="What is the weather in Paris and London?",
+            message="What is the weather in Paris and London?",
             allow_parallel_tool_calls=True,
             tool_required=True,
         )
@@ -722,7 +722,7 @@ class TestToolCallingMultipleTools:
         """
         response = llm.generate_tool_calls(
             tools=[weather_tool],
-            user_msg="What is the weather in Tokyo?",
+            message="What is the weather in Tokyo?",
             tool_required=True,
             strict=True,
         )
@@ -753,7 +753,7 @@ class TestToolExecutionRoundTrip:
         """
         response = llm.generate_tool_calls(
             tools=[weather_tool],
-            user_msg="What is the weather in Paris?",
+            message="What is the weather in Paris?",
             tool_required=True,
         )
         tool_calls = llm.get_tool_calls_from_response(
@@ -798,7 +798,7 @@ class TestStreamingWithToolCalls:
         """
         prepared = llm._prepare_chat_with_tools(
             tools=[weather_tool],
-            user_msg="What is the weather in Berlin?",
+            message="What is the weather in Berlin?",
             tool_required=True,
         )
         messages = prepared.pop("messages")
@@ -826,7 +826,7 @@ class TestStreamingWithToolCalls:
         """
         prepared = llm._prepare_chat_with_tools(
             tools=[weather_tool],
-            user_msg="What is the weather in Berlin?",
+            message="What is the weather in Berlin?",
             tool_required=True,
         )
         messages = prepared.pop("messages")

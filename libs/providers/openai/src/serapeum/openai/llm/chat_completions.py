@@ -1088,7 +1088,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
     def _prepare_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: str | Message | None = None,
+        message: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -1101,11 +1101,11 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
 
         Converts each :class:`~serapeum.core.tools.BaseTool` into an OpenAI
         tool spec dict, applies ``strict`` mode if requested, and assembles the
-        ``messages`` list (appending *user_msg* to *chat_history*).
+        ``messages`` list (appending *message* to *chat_history*).
 
         Args:
             tools: Tools whose specs are to be included in the request.
-            user_msg: Optional user message to append to the conversation.
+            message: Optional user message to append to the conversation.
                 Accepts either a plain string (wrapped in a USER
                 :class:`~serapeum.core.llms.Message`) or an existing ``Message``
                 object.
@@ -1144,15 +1144,15 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                     # in current openai 1.40.0 it is always false.
                     tool_spec["function"]["parameters"]["additionalProperties"] = False
 
-        if isinstance(user_msg, str):
-            user_msg = Message(
+        if isinstance(message, str):
+            message = Message(
                 role=MessageRole.USER,
-                chunks=[TextChunk(content=user_msg)],
+                chunks=[TextChunk(content=message)],
             )
 
         messages = list(chat_history or [])
-        if user_msg:
-            messages.append(user_msg)
+        if message:
+            messages.append(message)
 
         return {
             "messages": messages,

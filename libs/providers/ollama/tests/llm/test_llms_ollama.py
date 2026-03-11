@@ -217,7 +217,7 @@ def test_chat_with_tools(mock_ollama_client, model_name) -> None:
     """
     mock_ollama_client.chat = MagicMock(return_value=response_for_tool_call)
     llm = Ollama(model=model_name, timeout=80)
-    response = llm.generate_tool_calls([tool], user_msg="Hello!")
+    response = llm.generate_tool_calls([tool], message="Hello!")
     tool_calls = llm.get_tool_calls_from_response(response)
     assert len(tool_calls) == 1
     assert tool_calls[0].tool_name == tool.metadata.name
@@ -240,7 +240,7 @@ async def test_async_chat_with_tools(mock_ollama_async_prop, model_name) -> None
     mock_ollama_async_client.chat = AsyncMock(return_value=response_for_tool_call)
     mock_ollama_async_prop.return_value = mock_ollama_async_client
     llm = Ollama(model=model_name)
-    response = await llm.agenerate_tool_calls([tool], user_msg="Hello!")
+    response = await llm.agenerate_tool_calls([tool], message="Hello!")
     tool_calls = llm.get_tool_calls_from_response(response)
     assert len(tool_calls) == 1
     assert tool_calls[0].tool_name == tool.metadata.name

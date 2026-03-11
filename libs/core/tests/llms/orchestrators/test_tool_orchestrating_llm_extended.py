@@ -94,7 +94,7 @@ class NonFunctionCallingMockLLM(MagicMock):
     def invoke_callable(
         self,
         tools: List["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
+        message: Optional[Union[str, Message]] = None,
         chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -110,7 +110,7 @@ class NonFunctionCallingMockLLM(MagicMock):
     async def ainvoke_callable(
         self,
         tools: List["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
+        message: Optional[Union[str, Message]] = None,
         chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -181,7 +181,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     def _prepare_chat_with_tools(  # type: ignore[override]
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
+        message: Optional[Union[str, Message]] = None,
         chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -190,11 +190,11 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         # Just forward the provided history/messages to the underlying chat methods
         if chat_history is not None:
             messages = chat_history
-        elif user_msg is not None:
+        elif message is not None:
             messages = [
-                Message(chunks=[TextChunk(content=user_msg)])
-                if isinstance(user_msg, str)
-                else user_msg
+                Message(chunks=[TextChunk(content=message)])
+                if isinstance(message, str)
+                else message
             ]
         else:
             messages = []

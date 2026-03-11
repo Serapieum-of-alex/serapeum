@@ -52,7 +52,7 @@ def test_prepare_chat_with_tools_tool_required():
     llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
-        tools=[search_tool], user_msg="Search for Python tutorials", tool_required=True
+        tools=[search_tool], message="Search for Python tutorials", tool_required=True
     )
 
     assert "messages" in result
@@ -69,7 +69,7 @@ def test_prepare_chat_with_tools_tool_not_required():
     llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
-        tools=[search_tool], user_msg="Search for Python tutorials", tool_required=False
+        tools=[search_tool], message="Search for Python tutorials", tool_required=False
     )
 
     assert "messages" in result
@@ -86,7 +86,7 @@ def test_prepare_chat_with_tools_default_behavior():
     llm = OpenAI(model="gpt-4o-mini", api_key="test-key")
 
     result = llm._prepare_chat_with_tools(
-        tools=[search_tool], user_msg="Search for Python tutorials"
+        tools=[search_tool], message="Search for Python tutorials"
     )
 
     assert "messages" in result
@@ -105,7 +105,7 @@ def test_prepare_chat_with_tools_no_tools():
 
     result = llm._prepare_chat_with_tools(
         tools=[],
-        user_msg="Just a regular message",
+        message="Just a regular message",
         tool_required=True,  # Should be ignored when no tools
     )
 
@@ -122,7 +122,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
     # Test that explicit tool_choice="none" overrides tool_required=True
     result = llm._prepare_chat_with_tools(
         tools=[search_tool],
-        user_msg="Search for Python tutorials",
+        message="Search for Python tutorials",
         tool_required=True,
         tool_choice="none",
     )
@@ -132,7 +132,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
     # Test with function name tool_choice
     result = llm._prepare_chat_with_tools(
         tools=[search_tool],
-        user_msg="Search for Python tutorials",
+        message="Search for Python tutorials",
         tool_required=True,
         tool_choice="search_tool",
     )
@@ -150,7 +150,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_required():
 
     result = llm._prepare_chat_with_tools(
         tools=[search_tool],
-        user_msg="Search for Python tutorials",
+        message="Search for Python tutorials",
         tool_required=False,
         tool_choice="required",
     )
@@ -165,7 +165,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_required():
 def test_tool_required():
     llm = OpenAI(model="gpt-4.1-mini")
     response = llm.chat_with_tools(
-        user_msg="What is the capital of France?",
+        message="What is the capital of France?",
         tools=[search_tool],
         tool_required=True,
     )

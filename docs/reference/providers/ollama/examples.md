@@ -473,7 +473,7 @@ message = Message(
     chunks=[TextChunk(content="Create a rock album with two songs")])
 
 # Call with tools
-response = llm.generate_tool_calls(tools=[tool], user_msg=message)
+response = llm.generate_tool_calls(tools=[tool], message=message)
 
 # Extract tool calls
 tool_calls = llm.get_tool_calls_from_response(response)
@@ -511,7 +511,7 @@ message = Message(
     role=MessageRole.USER,
     chunks=[TextChunk(content="Create a jazz album with title 'Blue Notes' by Miles Davis with 3 songs")])
 
-response = llm.generate_tool_calls(tools=[tool], user_msg=message)
+response = llm.generate_tool_calls(tools=[tool], message=message)
 
 # Extract and execute tool call
 tool_calls = llm.get_tool_calls_from_response(response)
@@ -553,7 +553,7 @@ message = Message(
 # Force single tool call
 response = llm.generate_tool_calls(
     tools=[tool],
-    user_msg=message,
+    message=message,
     allow_parallel_tool_calls=False,  # Only one tool call allowed
 )
 
@@ -593,7 +593,7 @@ message = Message(
 # Allow parallel tool calls
 response = llm.generate_tool_calls(
     tools=[tool],
-    user_msg=message,
+    message=message,
     allow_parallel_tool_calls=True,
 )
 
@@ -635,7 +635,7 @@ message = Message(
     chunks=[TextChunk(content="Create a pop album")])
 
 # Stream with tools
-for chunk in llm.generate_tool_calls(tools=[tool], user_msg=message, stream=True):
+for chunk in llm.generate_tool_calls(tools=[tool], message=message, stream=True):
     # Process streaming tool calls
     if chunk.message.additional_kwargs.get("tool_calls"):
         print(f"Tool call chunk: {chunk.message.additional_kwargs['tool_calls']}")

@@ -155,7 +155,7 @@ Output:
 ### 2. Chat Request
 ```python notest
 Input:
-  messages = [Message(role=MessageRole.USER, content="Say 'pong'.")]
+  messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Say 'pong'.")])]
   kwargs = {"temperature": 0.2}
 
 Transformations:
@@ -191,7 +191,7 @@ Transformations:
      ChatResponse(
        message=Message(
          role=MessageRole.ASSISTANT,
-         content="Pong!",
+         chunks=[TextChunk(content="Pong!")],
          additional_kwargs={}
        ),
        raw={...},
@@ -216,7 +216,7 @@ Input:
 
 Transformations:
   1. Decorator wraps prompt:
-     Message(role=MessageRole.USER, content="Say 'pong'.")
+     Message(role=MessageRole.USER, chunks=[TextChunk(content="Say 'pong'.")])
 
   2. Delegates to chat([message], **kwargs)
      [Follows Chat Request flow above]
@@ -238,7 +238,7 @@ Output:
 ### 4. Chat with Tools
 ```python notest
 Input:
-  messages = [Message(role=MessageRole.USER, content="Create album about rock")]
+  messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Create album about rock")])]
   tools = [CallableTool(fn=create_album, metadata=ToolMetadata(...))]
   kwargs = {}
 
@@ -295,7 +295,7 @@ Transformations:
   5. Parse tool_calls in message:
      Message(
        role=MessageRole.ASSISTANT,
-       content="",
+       chunks=[TextChunk(content="")],
        additional_kwargs={
          "tool_calls": [
            {
@@ -318,7 +318,7 @@ Output:
 ### 5. Streaming Chat
 ```python notest
 Input:
-  messages = [Message(role=MessageRole.USER, content="Count to 3")]
+  messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 3")])]
   stream = True
 
 Transformations:
@@ -328,15 +328,15 @@ Transformations:
 
   3. For each chunk:
      Chunk 1: {"message": {"content": "1"}, "done": False}
-       → ChatResponse(message=Message(content="1"), delta="1")
+       → ChatResponse(message=Message(chunks=[TextChunk(content="1")]), delta="1")
        → Yield
 
      Chunk 2: {"message": {"content": ", 2"}, "done": False}
-       → ChatResponse(message=Message(content=", 2"), delta=", 2")
+       → ChatResponse(message=Message(chunks=[TextChunk(content=", 2")]), delta=", 2")
        → Yield
 
      Chunk 3: {"message": {"content": ", 3"}, "done": True}
-       → ChatResponse(message=Message(content=", 3"), delta=", 3")
+       → ChatResponse(message=Message(chunks=[TextChunk(content=", 3")]), delta=", 3")
        → Yield
 
 Output:

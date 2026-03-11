@@ -288,12 +288,10 @@ llm = Ollama(model="llama3.1", timeout=80)
 messages = [
     Message(
         role=MessageRole.SYSTEM,
-        content="You are an expert code reviewer."
-    ),
+        chunks=[TextChunk(content="You are an expert code reviewer.")]),
     Message(
         role=MessageRole.USER,
-        content="Review this {language} code:\n\n{code}"
-    ),
+        chunks=[TextChunk(content="Review this {language} code:\n\n{code}")]),
 ]
 
 prompt = ChatPromptTemplate(message_templates=messages)

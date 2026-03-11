@@ -101,7 +101,7 @@ llm = LlamaCPP(
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
 
-messages = [Message(role=MessageRole.USER, content="What is 2+2?")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="What is 2+2?")])]
 response = llm.chat(messages)
 print(response.message.content)  # "4"
 ```
@@ -365,7 +365,7 @@ llm = LlamaCPP(
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
 
-messages = [Message(role=MessageRole.USER, content="What is 2+2?")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="What is 2+2?")])]
 response = llm.chat(messages)
 print(response.message.content)  # "4"
 print(response.message.role)     # MessageRole.ASSISTANT
@@ -391,9 +391,9 @@ llm = LlamaCPP(
 )
 
 messages = [
-    Message(role=MessageRole.USER, content="My name is Alex."),
-    Message(role=MessageRole.ASSISTANT, content="Nice to meet you, Alex!"),
-    Message(role=MessageRole.USER, content="What is my name?"),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="My name is Alex.")]),
+    Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="Nice to meet you, Alex!")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is my name?")]),
 ]
 
 response = llm.chat(messages)
@@ -420,8 +420,8 @@ llm = LlamaCPP(
 )
 
 messages = [
-    Message(role=MessageRole.SYSTEM, content="You are a helpful math tutor."),
-    Message(role=MessageRole.USER, content="What is the square root of 144?"),
+    Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are a helpful math tutor.")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is the square root of 144?")]),
 ]
 
 response = llm.chat(messages)
@@ -474,7 +474,7 @@ llm = LlamaCPP(
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
 
-messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Tell me a joke.")])]
 for chunk in llm.chat(messages, stream=True):
     print(chunk.delta, end="", flush=True)
 ```
@@ -570,7 +570,7 @@ async def main():
         completion_to_prompt=completion_to_prompt_v3_instruct,
     )
 
-    messages = [Message(role=MessageRole.USER, content="Hello!")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])]
     response = await llm.achat(messages)
     print(response.message.content)
 

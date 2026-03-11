@@ -77,7 +77,7 @@ llm = Ollama(
 )
 
 # Create a message
-messages = [Message(role=MessageRole.USER, content="Say 'pong'.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Say 'pong'.")])]
 
 # Send chat request
 response = llm.chat(messages)
@@ -198,7 +198,7 @@ llm = Ollama(
 )
 
 messages = [
-    Message(role=MessageRole.USER, content="What is 2+2?")
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is 2+2?")])
 ]
 
 response = llm.chat(messages)
@@ -221,10 +221,10 @@ llm = Ollama(
 )
 
 messages = [
-    Message(role=MessageRole.SYSTEM, content="You are a helpful math tutor."),
-    Message(role=MessageRole.USER, content="What is 2+2?"),
-    Message(role=MessageRole.ASSISTANT, content="2+2 equals 4."),
-    Message(role=MessageRole.USER, content="What about 3+3?"),
+    Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are a helpful math tutor.")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is 2+2?")]),
+    Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="2+2 equals 4.")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What about 3+3?")]),
 ]
 
 response = llm.chat(messages)
@@ -246,7 +246,7 @@ llm = Ollama(
     timeout=180
 )
 
-messages = [Message(role=MessageRole.USER, content="Write a creative story.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Write a creative story.")])]
 
 # Override default settings
 response = llm.chat(
@@ -279,7 +279,7 @@ image = Image(path=Path("docs/reference/providers/ollama/images/baharia-oasis.jp
 messages = [
     Message(
         role=MessageRole.USER,
-        content="What's in this image?",
+        chunks=[TextChunk(content="What's in this image?")],
     ),
     Message(
         chunks=[image],
@@ -374,7 +374,7 @@ llm = Ollama(
     timeout=180
 )
 
-messages = [Message(role=MessageRole.USER, content="Count from 1 to 5.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count from 1 to 5.")])]
 
 # Stream responses
 for chunk in llm.chat(messages, stream=True):
@@ -418,7 +418,7 @@ llm = Ollama(
     timeout=180
 )
 
-messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Tell me a joke.")])]
 
 full_response = ""
 for chunk in llm.chat(messages, stream=True):
@@ -470,8 +470,7 @@ tool = CallableTool.from_function(create_album)
 
 message = Message(
     role=MessageRole.USER,
-    content="Create a rock album with two songs"
-)
+    chunks=[TextChunk(content="Create a rock album with two songs")])
 
 # Call with tools
 response = llm.generate_tool_calls(tools=[tool], user_msg=message)
@@ -510,8 +509,7 @@ tool = CallableTool.from_model(Album)
 
 message = Message(
     role=MessageRole.USER,
-    content="Create a jazz album with title 'Blue Notes' by Miles Davis with 3 songs"
-)
+    chunks=[TextChunk(content="Create a jazz album with title 'Blue Notes' by Miles Davis with 3 songs")])
 
 response = llm.generate_tool_calls(tools=[tool], user_msg=message)
 
@@ -550,8 +548,7 @@ tool = CallableTool.from_model(Album)
 
 message = Message(
     role=MessageRole.USER,
-    content="Create two albums"
-)
+    chunks=[TextChunk(content="Create two albums")])
 
 # Force single tool call
 response = llm.generate_tool_calls(
@@ -591,8 +588,7 @@ tool = CallableTool.from_model(Album)
 
 message = Message(
     role=MessageRole.USER,
-    content="Create two albums: one rock album and one jazz album"
-)
+    chunks=[TextChunk(content="Create two albums: one rock album and one jazz album")])
 
 # Allow parallel tool calls
 response = llm.generate_tool_calls(
@@ -636,8 +632,7 @@ tool = CallableTool.from_model(Album)
 
 message = Message(
     role=MessageRole.USER,
-    content="Create a pop album"
-)
+    chunks=[TextChunk(content="Create a pop album")])
 
 # Stream with tools
 for chunk in llm.generate_tool_calls(tools=[tool], user_msg=message, stream=True):
@@ -821,7 +816,7 @@ async def async_chat_example():
         timeout=180
     )
 
-    messages = [Message(role=MessageRole.USER, content="Hello!")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])]
 
     response = await llm.achat(messages)
     print(response.message.content)
@@ -872,7 +867,7 @@ async def async_stream_example():
         timeout=180
     )
 
-    messages = [Message(role=MessageRole.USER, content="Count to 5")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 5")])]
 
     async for chunk in await llm.achat(messages, stream=True):
         print(chunk.message.content, end="", flush=True)
@@ -903,7 +898,7 @@ async def process_multiple():
 
     # Create tasks
     tasks = [
-        llm.achat([Message(role=MessageRole.USER, content=prompt)])
+        llm.achat([Message(role=MessageRole.USER, chunks=[TextChunk(content=prompt)])])
         for prompt in prompts
     ]
 
@@ -1015,8 +1010,8 @@ llm = Ollama(
 )
 
 # Reuse for multiple calls
-message_1 = Message(role=MessageRole.USER, content="hi")
-message_2 = Message(role=MessageRole.USER, content="How are you?")
+message_1 = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
+message_2 = Message(role=MessageRole.USER, chunks=[TextChunk(content="How are you?")])
 response1 = llm.chat([message_1])
 response2 = llm.chat([message_2])
 
@@ -1068,7 +1063,7 @@ llm = Ollama(
 )
 
 try:
-    response = llm.chat([Message(role=MessageRole.USER, content="Hello")])
+    response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])])
 except TimeoutError:
     print("Request timed out")
 except ConnectionError:
@@ -1111,7 +1106,7 @@ llm = Ollama(
     timeout=180
 )
 
-response = llm.chat([Message(role=MessageRole.USER, content="Hello")])
+response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])])
 
 # Access metadata
 print(f"Model: {response.additional_kwargs.get('model')}")

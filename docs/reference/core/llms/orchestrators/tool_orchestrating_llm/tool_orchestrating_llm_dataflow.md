@@ -125,7 +125,7 @@ Transformations:
      }
 
   3. format_messages(topic="songs")
-     → [Message(role=USER, content="This is a test album with songs")]
+     → [Message(role=USER, chunks=[TextChunk(content="This is a test album with songs")])]
 
   4. _extend_messages(messages)
      → [Message(role=SYSTEM, ...), Message(role=USER, ...)]

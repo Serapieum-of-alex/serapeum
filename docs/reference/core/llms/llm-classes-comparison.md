@@ -126,7 +126,7 @@ structured_llm = StructuredOutputLLM(
 
 # All responses will be PersonInfo instances
 response = structured_llm.chat([
-    Message(role="user", content="Tell me about Alice, a 30-year-old engineer")
+    Message(role="user", chunks=[TextChunk(content="Tell me about Alice, a 30-year-old engineer")])
 ])
 print(response.raw)
 # PersonInfo(name='Alice', age=30, occupation='Engineer')

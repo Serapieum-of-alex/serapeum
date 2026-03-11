@@ -271,7 +271,7 @@ User → Ollama.chat(messages, **kwargs)
 ```
 User → Ollama.complete(prompt, **kwargs)
   └─→ @chat_to_completion_decorator wrapper
-      ├─→ Convert prompt to Message(role=USER, content=prompt)
+      ├─→ Convert prompt to Message(role=USER, chunks=[TextChunk(content=prompt)])
       ├─→ Call self.chat([message], **kwargs)
       ├─→ Receive ChatResponse
       ├─→ Extract text = response.message.content

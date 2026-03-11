@@ -166,7 +166,7 @@ Depicts the lifecycle states and transitions.
 
 3. Format prompt:
    a. Apply template variables: topic="songs"
-   b. Create messages: [Message(role=USER, content="...")]
+   b. Create messages: [Message(role=USER, chunks=[TextChunk(content="...")])]
    c. Extend with system prompts
 
 4. Execute function calling:

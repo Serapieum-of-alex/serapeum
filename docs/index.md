@@ -71,7 +71,7 @@ llm = Ollama(model="gpt-oss:20b", api_key=os.environ.get("OLLAMA_API_KEY"))
 
 # Simple chat
 messages = [
-    Message(role=MessageRole.USER, content="What is Python?")
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is Python?")])
 ]
 response = llm.chat(messages)
 print(response.message.content)

@@ -28,7 +28,7 @@ llm = Ollama(
 )
 
 # Send chat request
-messages = [Message(role=MessageRole.USER, content="Say 'pong'.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Say 'pong'.")])]
 response = llm.chat(messages)
 print(response.message.content)  # "Pong!"
 ```
@@ -386,8 +386,8 @@ from serapeum.core.llms import Message, MessageRole
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # Reuse many times
-messages1 = [Message(role=MessageRole.USER, content="Hi!")]
-messages2 = [Message(role=MessageRole.USER, content="How are you?")]
+messages1 = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi!")])]
+messages2 = [Message(role=MessageRole.USER, chunks=[TextChunk(content="How are you?")])]
 response1 = llm.chat(messages1)
 response2 = llm.chat(messages2)
 print(response1.message.content)  # "Hi!"
@@ -404,7 +404,7 @@ llm = Ollama(
   api_key=os.environ.get("OLLAMA_API_KEY"),
   timeout=180
 )
-messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Tell me a joke.")])]
 for chunk in llm.chat(messages, stream=True):
     print(f"{chunk.message.content}\n", end="", flush=True)
 
@@ -501,9 +501,9 @@ async def main():
 
     # Prepare multiple message lists
     message_list = [
-        [Message(role=MessageRole.USER, content="What is 2+2?")],
-        [Message(role=MessageRole.USER, content="What is the capital of France?")],
-        [Message(role=MessageRole.USER, content="What is Python?")],
+        [Message(role=MessageRole.USER, chunks=[TextChunk(content="What is 2+2?")])],
+        [Message(role=MessageRole.USER, chunks=[TextChunk(content="What is the capital of France?")])],
+        [Message(role=MessageRole.USER, chunks=[TextChunk(content="What is Python?")])],
     ]
 
     # Process multiple requests concurrently

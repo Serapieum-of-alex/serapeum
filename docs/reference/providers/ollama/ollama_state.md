@@ -167,7 +167,7 @@ llm = Ollama(
 ```python
 from serapeum.core.llms import Message, MessageRole
 # First call triggers client creation
-response = llm.chat([Message(role=MessageRole.USER, content="Hello")])
+response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])])
 
 # Transition:
 # - Access self.client property
@@ -206,7 +206,7 @@ response = llm.complete(prompt)
 
 # Transition to ProcessingComplete:
 # 1. DecoratorWrap: @chat_to_completion_decorator intercepts
-# 2. ConvertToMessage: prompt → Message(role=USER, content=prompt)
+# 2. ConvertToMessage: prompt → Message(role=USER, chunks=[TextChunk(content=prompt)])
 # 3. DelegateToChat: Call self.chat([message])
 #    [Enters ProcessingChat state]
 # 4. DecoratorUnwrap: Extract message.content
@@ -366,7 +366,7 @@ done: bool = False
 chat_response = ChatResponse(
     message=Message(
         role=MessageRole.ASSISTANT,
-        content="...",
+        chunks=[TextChunk(content="...")],
         additional_kwargs={"tool_calls": [...]}
     ),
     raw={...},

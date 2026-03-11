@@ -1,10 +1,10 @@
 """Tool invocation utilities."""
-
+from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
 from typing import Any, Sequence
-from serapeum.core.llms import ToolCallArguments
+from serapeum.core.base.llms.types import ToolCallArguments
 from serapeum.core.tools.types import (
     BaseTool,
     ToolOutput,

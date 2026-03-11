@@ -450,8 +450,8 @@ class TestCompletionResponse:
             """
             cr = CompletionResponse(text="x")
             assert cr.raw is None, f"raw should default to None, got: {cr.raw}"
-            assert cr.likelihood_score is None, (
-                f"likelihood_score should default to None, got: {cr.likelihood_score}"
+            assert cr.logprob is None, (
+                f"likelihood_score should default to None, got: {cr.logprob}"
             )
             assert cr.additional_kwargs == {}, (
                 f"additional_kwargs should default to {{}}, got: {cr.additional_kwargs}"
@@ -491,11 +491,11 @@ class TestCompletionResponse:
             scores = [
                 [LogProb(token="hello", logprob=-0.5, bytes=[104, 101])]
             ]
-            cr = CompletionResponse(text="hello", likelihood_score=scores)
-            assert cr.likelihood_score == scores, (
-                f"Unexpected likelihood_score: {cr.likelihood_score}"
+            cr = CompletionResponse(text="hello", logprob=scores)
+            assert cr.logprob == scores, (
+                f"Unexpected likelihood_score: {cr.logprob}"
             )
-            assert cr.likelihood_score[0][0].token == "hello", (
+            assert cr.logprob[0][0].token == "hello", (
                 "First token should be 'hello'"
             )
 

@@ -1736,7 +1736,7 @@ class TestChatWithLogprobs:
         )
 
         MockLogProbParser.from_tokens.assert_called_once_with(logprob_data)
-        assert response.likelihood_score is not None, (
+        assert response.logprob is not None, (
             "likelihood_score should be set from LogProbParser result"
         )
 
@@ -1792,7 +1792,7 @@ class TestChatWithLogprobs:
         response = llm.complete("hi")
 
         MockLogProbParser.from_completions.assert_called_once_with(logprobs_obj)
-        assert response.likelihood_score is not None, (
+        assert response.logprob is not None, (
             "likelihood_score should be set from LogProbParser result"
         )
 
@@ -1957,7 +1957,7 @@ class TestAsyncChatWithLogprobs:
         )
 
         MockLogProbParser.from_tokens.assert_called_once_with(logprob_data)
-        assert response.likelihood_score is not None, (
+        assert response.logprob is not None, (
             "Async response should set likelihood_score from LogProbParser"
         )
 
@@ -2020,7 +2020,7 @@ class TestAsyncCompleteWithLogprobs:
         response = await llm.acomplete("hi")
 
         MockLogProbParser.from_completions.assert_called_once_with(logprobs_obj)
-        assert response.likelihood_score is not None, (
+        assert response.logprob is not None, (
             "Async completion should set likelihood_score from LogProbParser"
         )
 

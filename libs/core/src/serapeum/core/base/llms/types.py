@@ -592,7 +592,7 @@ class BaseResponse(BaseModel):
     """Base response."""
 
     raw: Any | None = None
-    likelihood_score: list[list[LogProb]] | None = None
+    logprob: list[list[LogProb]] | None = None
     additional_kwargs: dict = Field(default_factory=dict)
     delta: str | None = None
 
@@ -737,7 +737,7 @@ class CompletionResponse(BaseResponse):
         raw: Raw JSON payload returned by the provider, if available.
             Useful for accessing provider-specific metadata not otherwise
             surfaced.
-        likelihood_score: Per-token log-probability scores returned by
+        logprob: Per-token log-probability scores returned by
             the provider.  Outer list corresponds to choices; inner list
             to tokens within each choice.  ``None`` when not provided.
         additional_kwargs: Arbitrary provider-specific metadata such as

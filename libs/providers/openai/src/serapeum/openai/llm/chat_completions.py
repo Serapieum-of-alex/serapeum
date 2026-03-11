@@ -499,7 +499,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         return ChatResponse(
             message=message,
             raw=response,
-            likelihood_score=logprobs,
+            logprob=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 
@@ -630,7 +630,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         return CompletionResponse(
             text=text,
             raw=response,
-            likelihood_score=logprobs,
+            logprob=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 
@@ -896,7 +896,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         return ChatResponse(
             message=message,
             raw=response,
-            likelihood_score=logprobs,
+            logprob=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 
@@ -1036,7 +1036,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         return CompletionResponse(
             text=text,
             raw=response,
-            likelihood_score=logprobs,
+            logprob=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 

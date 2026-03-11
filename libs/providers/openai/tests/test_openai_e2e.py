@@ -920,10 +920,10 @@ class TestLogprobs:
                 chunks=[TextChunk(content="Say hi.")],
             )]
         )
-        assert response.likelihood_score is not None, (
+        assert response.logprob is not None, (
             "likelihood_score should be populated when logprobs=True"
         )
-        assert len(response.likelihood_score) > 0, (
+        assert len(response.logprob) > 0, (
             "likelihood_score should have at least one entry"
         )
 

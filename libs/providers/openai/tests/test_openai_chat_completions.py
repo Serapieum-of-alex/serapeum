@@ -1697,9 +1697,9 @@ class TestChatWithLogprobs:
                 bytes=None,
             ),
         ]
-        from serapeum.core.base.llms.types import LikelihoodScore
+        from serapeum.core.base.llms.types import LogProb
 
-        sentinel = [[LikelihoodScore(token="Hello", logprob=-0.5)]]
+        sentinel = [[LogProb(token="Hello", logprob=-0.5)]]
         MockLogProbParser.from_tokens.return_value = sentinel
 
         mock_response = ChatCompletion(
@@ -1759,9 +1759,9 @@ class TestChatWithLogprobs:
             top_logprobs=[{"Hello": -0.5}],
             text_offset=[0],
         )
-        from serapeum.core.base.llms.types import LikelihoodScore
+        from serapeum.core.base.llms.types import LogProb
 
-        sentinel = [[LikelihoodScore(token="Hello", logprob=-0.5)]]
+        sentinel = [[LogProb(token="Hello", logprob=-0.5)]]
         MockLogProbParser.from_completions.return_value = sentinel
 
         mock_response = Completion(
@@ -1917,9 +1917,9 @@ class TestAsyncChatWithLogprobs:
                 bytes=None,
             ),
         ]
-        from serapeum.core.base.llms.types import LikelihoodScore
+        from serapeum.core.base.llms.types import LogProb
 
-        sentinel = [[LikelihoodScore(token="Hi", logprob=-0.3)]]
+        sentinel = [[LogProb(token="Hi", logprob=-0.3)]]
         MockLogProbParser.from_tokens.return_value = sentinel
 
         mock_response = ChatCompletion(
@@ -1986,9 +1986,9 @@ class TestAsyncCompleteWithLogprobs:
             top_logprobs=[{"Hello": -0.5}],
             text_offset=[0],
         )
-        from serapeum.core.base.llms.types import LikelihoodScore
+        from serapeum.core.base.llms.types import LogProb
 
-        sentinel = [[LikelihoodScore(token="Hello", logprob=-0.5)]]
+        sentinel = [[LogProb(token="Hello", logprob=-0.5)]]
         MockLogProbParser.from_completions.return_value = sentinel
 
         mock_response = Completion(

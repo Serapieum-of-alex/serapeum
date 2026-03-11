@@ -14,7 +14,7 @@ from serapeum.core.base.llms.types import (
     ChatResponse,
     CompletionResponse,
     Image,
-    LikelihoodScore,
+    LogProb,
     Message,
     MessageList,
     MessageRole,
@@ -489,7 +489,7 @@ class TestCompletionResponse:
                 stored intact and accessible by index.
             """
             scores = [
-                [LikelihoodScore(token="hello", logprob=-0.5, bytes=[104, 101])]
+                [LogProb(token="hello", logprob=-0.5, bytes=[104, 101])]
             ]
             cr = CompletionResponse(text="hello", likelihood_score=scores)
             assert cr.likelihood_score == scores, (

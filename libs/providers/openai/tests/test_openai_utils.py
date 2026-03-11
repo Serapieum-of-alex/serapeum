@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from typing import List
 
@@ -45,10 +47,13 @@ from serapeum.openai.parsers import (
 @pytest.fixture()
 def chat_messages_with_function_calling() -> List[Message]:
     return [
-        Message(role=MessageRole.USER, content="test question with functions"),
+        Message(
+            role=MessageRole.USER,
+            chunks=[TextChunk(content="test question with functions")],
+        ),
         Message(
             role=MessageRole.ASSISTANT,
-            content=None,
+            chunks=[],
             additional_kwargs={
                 "function_call": {
                     "name": "get_current_weather",
@@ -58,7 +63,9 @@ def chat_messages_with_function_calling() -> List[Message]:
         ),
         Message(
             role=MessageRole.TOOL,
-            content='{"temperature": "22", "unit": "celsius", "description": "Sunny"}',
+            chunks=[TextChunk(
+                content='{"temperature": "22", "unit": "celsius", "description": "Sunny"}'
+            )],
             additional_kwargs={
                 "tool_call_id": "get_current_weather",
             },
@@ -145,8 +152,8 @@ def azure_chat_messages_with_function_calling() -> List[Message]:
 
 def test_to_openai_message_dicts_basic_enum() -> None:
     chat_messages = [
-        Message(role=MessageRole.USER, content="test question"),
-        Message(role=MessageRole.ASSISTANT, content="test answer"),
+        Message(role=MessageRole.USER, chunks=[TextChunk(content="test question")]),
+        Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="test answer")]),
     ]
     openai_messages = to_openai_message_dicts(
         chat_messages,
@@ -159,8 +166,8 @@ def test_to_openai_message_dicts_basic_enum() -> None:
 
 def test_to_openai_message_dicts_basic_string() -> None:
     chat_messages = [
-        Message(role="user", content="test question"),
-        Message(role="assistant", content="test answer"),
+        Message(role="user", chunks=[TextChunk(content="test question")]),
+        Message(role="assistant", chunks=[TextChunk(content="test answer")]),
     ]
     openai_messages = to_openai_message_dicts(
         chat_messages,
@@ -175,8 +182,8 @@ def test_to_openai_message_dicts_empty_content() -> None:
     """If neither `tool_calls` nor `function_call` is set, content must not be set to None,
     see: https://platform.openai.com/docs/api-reference/chat/create"""
     chat_messages = [
-        Message(role="user", content="test question"),
-        Message(role="assistant", content=""),
+        Message(role="user", chunks=[TextChunk(content="test question")]),
+        Message(role="assistant", chunks=[TextChunk(content="")]),
     ]
     openai_messages = to_openai_message_dicts(
         chat_messages,
@@ -361,7 +368,7 @@ def _build_chat_response(arguments: str) -> ChatResponse:
     return ChatResponse(
         message=Message(
             role=MessageRole.ASSISTANT,
-            content=None,
+            chunks=[],
             additional_kwargs={
                 "tool_calls": [
                     ChatCompletionMessageToolCall(

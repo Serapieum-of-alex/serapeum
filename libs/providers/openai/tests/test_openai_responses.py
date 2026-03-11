@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import httpx
 import pytest
@@ -413,7 +415,7 @@ def test_prepare_chat_with_tools_explicit_tool_choice_overrides_tool_required():
 def test_chat_with_api():
     """Test the chat method with real API call."""
     llm = OpenAIResponses(model="gpt-4o-mini")
-    messages = [Message(role=MessageRole.USER, content="Say hello")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Say hello")])]
 
     response = llm.chat(messages)
     assert response.message.role == MessageRole.ASSISTANT
@@ -434,7 +436,7 @@ def test_complete_with_api():
 def test_stream_chat_with_api():
     """Test the stream_chat method with real API call."""
     llm = OpenAIResponses(model="gpt-4o-mini")
-    messages = [Message(role=MessageRole.USER, content="Count to 3")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 3")])]
 
     response_gen = llm.chat(stream=True, messages=messages)
     responses = list(response_gen)
@@ -462,7 +464,7 @@ def test_stream_complete_with_api():
 async def test_achat_with_api():
     """Test the async chat method with real API call."""
     llm = OpenAIResponses(model="gpt-4o-mini")
-    messages = [Message(role=MessageRole.USER, content="Say hello")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Say hello")])]
 
     response = await llm.achat(messages)
     assert response.message.role == MessageRole.ASSISTANT
@@ -485,7 +487,7 @@ async def test_acomplete_with_api():
 async def test_astream_chat_with_api():
     """Test the async streaming chat method with real API call."""
     llm = OpenAIResponses(model="gpt-4o-mini")
-    messages = [Message(role=MessageRole.USER, content="Count to 3")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 3")])]
 
     response_gen = await llm.achat(stream=True, messages=messages)
     responses = [resp async for resp in response_gen]
@@ -537,7 +539,8 @@ def test_chat_with_built_in_tools():
 
     messages = [
         Message(
-            role=MessageRole.USER, content="What is the current time in New York City?"
+            role=MessageRole.USER,
+            chunks=[TextChunk(content="What is the current time in New York City?")],
         )
     ]
 
@@ -603,8 +606,14 @@ def test_tool_required():
 
 def test_messages_to_openai_responses_messages():
     messages = [
-        Message(role=MessageRole.SYSTEM, content="You are a helpful assistant."),
-        Message(role=MessageRole.USER, content="What is the capital of France?"),
+        Message(
+            role=MessageRole.SYSTEM,
+            chunks=[TextChunk(content="You are a helpful assistant.")],
+        ),
+        Message(
+            role=MessageRole.USER,
+            chunks=[TextChunk(content="What is the capital of France?")],
+        ),
         Message(
             role=MessageRole.ASSISTANT,
             chunks=[
@@ -615,8 +624,11 @@ def test_messages_to_openai_responses_messages():
                 )
             ],
         ),
-        Message(role=MessageRole.ASSISTANT, content="Paris"),
-        Message(role=MessageRole.USER, content="What is the capital of Germany?"),
+        Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="Paris")]),
+        Message(
+            role=MessageRole.USER,
+            chunks=[TextChunk(content="What is the capital of Germany?")],
+        ),
         Message(
             role=MessageRole.ASSISTANT,
             chunks=[

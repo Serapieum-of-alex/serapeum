@@ -267,11 +267,11 @@ class DictMessageParser:
         content = self._message_dict.get("content")
         if isinstance(content, list):
             self._parse_content_blocks(content)
-            content = None
+        elif content is not None:
+            self._blocks.insert(0, TextChunk(content=content))
         additional_kwargs = self._extract_additional_kwargs()
         return Message(
             role=self._message_dict["role"],
-            content=content,
             additional_kwargs=additional_kwargs,
             chunks=self._blocks,
         )

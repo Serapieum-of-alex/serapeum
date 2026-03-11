@@ -161,10 +161,10 @@ def _should_null_content(message: Message, has_tool_calls: bool) -> bool:
     Examples:
         - Returns True for assistant with tool_calls in additional_kwargs
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> msg = Message(
             ...     role=MessageRole.ASSISTANT,
-            ...     content="",
+            ...     chunks=[TextChunk(content="")],
             ...     additional_kwargs={"tool_calls": [{"id": "c1"}]},
             ... )
             >>> _should_null_content(msg, has_tool_calls=False)
@@ -173,14 +173,14 @@ def _should_null_content(message: Message, has_tool_calls: bool) -> bool:
             ```
         - Returns False for user messages regardless of tool_calls
             ```python
-            >>> msg = Message(role=MessageRole.USER, content="hi")
+            >>> msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
             >>> _should_null_content(msg, has_tool_calls=True)
             False
 
             ```
         - Returns False for assistant with no tool information
             ```python
-            >>> msg = Message(role=MessageRole.ASSISTANT, content="hello")
+            >>> msg = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="hello")])
             >>> _should_null_content(msg, has_tool_calls=False)
             False
 
@@ -685,9 +685,9 @@ class ChatMessageConverter:
     Examples:
         - Simple user message
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> result = ChatMessageConverter(
-            ...     Message(role=MessageRole.USER, content="hello")
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])
             ... ).build()
             >>> result
             {'role': 'user', 'content': 'hello'}
@@ -709,9 +709,9 @@ class ChatMessageConverter:
             ```
         - O1 model rewrites system to developer
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> result = ChatMessageConverter(
-            ...     Message(role=MessageRole.SYSTEM, content="be helpful"),
+            ...     Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="be helpful")]),
             ...     model="o3-mini",
             ... ).build()
             >>> result["role"]
@@ -755,9 +755,9 @@ class ChatMessageConverter:
         Examples:
             - Build a system message
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> ChatMessageConverter(
-                ...     Message(role=MessageRole.SYSTEM, content="You are helpful.")
+                ...     Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are helpful.")])
                 ... ).build()
                 {'role': 'system', 'content': 'You are helpful.'}
 
@@ -790,11 +790,11 @@ class ChatMessageConverter:
         Examples:
             - Returns dict for assistant with reference_audio_id
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> converter = ChatMessageConverter(
                 ...     Message(
                 ...         role=MessageRole.ASSISTANT,
-                ...         content="",
+                ...         chunks=[TextChunk(content="")],
                 ...         additional_kwargs={"reference_audio_id": "audio_123"},
                 ...     )
                 ... )
@@ -806,7 +806,7 @@ class ChatMessageConverter:
             - Returns None for user messages
                 ```python
                 >>> converter = ChatMessageConverter(
-                ...     Message(role=MessageRole.USER, content="hi")
+                ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
                 ... )
                 >>> converter._try_audio_reference() is None
                 True
@@ -955,9 +955,9 @@ class ResponsesMessageConverter:
     Examples:
         - Simple user message
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> ResponsesMessageConverter(
-            ...     Message(role=MessageRole.USER, content="hello")
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])
             ... ).build()
             {'role': 'user', 'content': 'hello'}
 
@@ -965,7 +965,7 @@ class ResponsesMessageConverter:
         - System message is always rewritten to developer
             ```python
             >>> result = ResponsesMessageConverter(
-            ...     Message(role=MessageRole.SYSTEM, content="be helpful")
+            ...     Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="be helpful")])
             ... ).build()
             >>> result["role"]
             'developer'
@@ -977,7 +977,7 @@ class ResponsesMessageConverter:
             >>> result = ResponsesMessageConverter(
             ...     Message(
             ...         role=MessageRole.TOOL,
-            ...         content="42",
+            ...         chunks=[TextChunk(content="42")],
             ...         additional_kwargs={"tool_call_id": "c1"},
             ...     )
             ... ).build()
@@ -1214,10 +1214,10 @@ def to_openai_message_dicts(
     Examples:
         - Chat Completions path (default)
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> msgs = [
-            ...     Message(role=MessageRole.USER, content="Hello"),
-            ...     Message(role=MessageRole.ASSISTANT, content="Hi"),
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")]),
+            ...     Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="Hi")]),
             ... ]
             >>> to_openai_message_dicts(msgs)
             [{'role': 'user', 'content': 'Hello'}, {'role': 'assistant', 'content': 'Hi'}]
@@ -1225,7 +1225,7 @@ def to_openai_message_dicts(
             ```
         - Responses API path — single user message returns a bare string
             ```python
-            >>> msgs = [Message(role=MessageRole.USER, content="Generate an image")]
+            >>> msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Generate an image")])]
             >>> result = to_openai_message_dicts(msgs, is_responses_api=True)
             >>> result
             'Generate an image'
@@ -1234,8 +1234,8 @@ def to_openai_message_dicts(
         - Responses API path — multiple messages return a list
             ```python
             >>> msgs = [
-            ...     Message(role=MessageRole.SYSTEM, content="You are helpful."),
-            ...     Message(role=MessageRole.USER, content="Hello"),
+            ...     Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are helpful.")]),
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")]),
             ... ]
             >>> result = to_openai_message_dicts(msgs, is_responses_api=True)
             >>> isinstance(result, list)
@@ -1246,7 +1246,7 @@ def to_openai_message_dicts(
             ```
         - O1 model rewrite via model parameter
             ```python
-            >>> msgs = [Message(role=MessageRole.SYSTEM, content="You are helpful.")]
+            >>> msgs = [Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are helpful.")])]
             >>> result = to_openai_message_dicts(msgs, model="o3-mini")
             >>> result[0]["role"]
             'developer'

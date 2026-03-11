@@ -128,7 +128,7 @@ class TestHelperFunctions:
         """Returns True for assistant with tool_calls in additional_kwargs."""
         message = Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={"tool_calls": [{"id": "1"}]},
         )
         result = _should_null_content(message, has_tool_calls=False)
@@ -140,7 +140,7 @@ class TestHelperFunctions:
         """Returns True for assistant with function_call in additional_kwargs."""
         message = Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={"function_call": {"name": "f"}},
         )
         result = _should_null_content(message, has_tool_calls=False)
@@ -150,7 +150,7 @@ class TestHelperFunctions:
 
     def test_should_null_content_assistant_with_has_tool_calls_flag(self) -> None:
         """Returns True for assistant when has_tool_calls is True."""
-        message = Message(role=MessageRole.ASSISTANT, content="")
+        message = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")])
         result = _should_null_content(message, has_tool_calls=True)
         assert result is True, (
             "Expected True when has_tool_calls flag is True for assistant"
@@ -161,7 +161,7 @@ class TestHelperFunctions:
         message = Message(
             role=MessageRole.USER,
             additional_kwargs={"tool_calls": [{"id": "1"}]},
-            content="hi",
+            chunks=[TextChunk(content="hi")],
         )
         result = _should_null_content(message, has_tool_calls=True)
         assert result is False, (
@@ -170,7 +170,7 @@ class TestHelperFunctions:
 
     def test_should_null_content_assistant_without_any_tool_info(self) -> None:
         """Returns False for assistant without tool_calls, function_call, or has_tool_calls."""
-        message = Message(role=MessageRole.ASSISTANT, content="hello")
+        message = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="hello")])
         result = _should_null_content(message, has_tool_calls=False)
         assert result is False, (
             "Expected False when assistant has no tool-related data"
@@ -359,7 +359,7 @@ class TestChatMessageConverterBuild:
         """Assistant message with reference_audio_id returns early with audio dict."""
         message = Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={"reference_audio_id": "audio_123"},
         )
         result = ChatMessageConverter(message).build()
@@ -372,7 +372,7 @@ class TestChatMessageConverterBuild:
         """reference_audio_id in user message does NOT trigger short-circuit."""
         message = Message(
             role=MessageRole.USER,
-            content="hi",
+            chunks=[TextChunk(content="hi")],
             additional_kwargs={"reference_audio_id": "audio_123"},
         )
         result = ChatMessageConverter(message).build()
@@ -386,7 +386,7 @@ class TestChatMessageConverterBuild:
         # This tests the code path but the role is assistant so no rewrite occurs.
         message = Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={"reference_audio_id": "audio_123"},
         )
         result = ChatMessageConverter(message, model="o3-mini").build()
@@ -398,7 +398,7 @@ class TestChatMessageConverterBuild:
         """Reference audio path respects drop_none."""
         message = Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={"reference_audio_id": "audio_123"},
         )
         result = ChatMessageConverter(message, drop_none=True).build()
@@ -410,7 +410,7 @@ class TestChatMessageConverterBuild:
 
     def test_system_message_string_content(self) -> None:
         """System messages always use string content."""
-        message = Message(role=MessageRole.SYSTEM, content="you are helpful")
+        message = Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="you are helpful")])
         result = ChatMessageConverter(message).build()
         assert result == {"role": "system", "content": "you are helpful"}, (
             "Expected string content for system message"
@@ -420,7 +420,7 @@ class TestChatMessageConverterBuild:
         """Tool messages use string content and include tool_call_id."""
         message = Message(
             role=MessageRole.TOOL,
-            content="result data",
+            chunks=[TextChunk(content="result data")],
             additional_kwargs={"tool_call_id": "call_1"},
         )
         result = ChatMessageConverter(message).build()
@@ -474,7 +474,7 @@ class TestChatMessageConverterBuild:
         bad_block.tool_call_id = None
 
         with patch.object(ChatFormat, "tool_call", side_effect=ValueError("bad")):
-            message = Message(role=MessageRole.ASSISTANT, content="hi")
+            message = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="hi")])
             message.chunks.append(bad_block)  # type: ignore[arg-type]
             with pytest.raises(ValueError, match="bad"):
                 ChatMessageConverter(message).build()
@@ -587,7 +587,7 @@ class TestChatMessageConverterBuild:
 
     def test_system_role_rewritten_to_developer_for_o3_mini(self) -> None:
         """System role is rewritten to developer when model is o3-mini."""
-        message = Message(role=MessageRole.SYSTEM, content="be helpful")
+        message = Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="be helpful")])
         result = ChatMessageConverter(message, model="o3-mini").build()
         assert result["role"] == "developer", (
             "Expected system to be rewritten to developer for o3-mini"
@@ -595,7 +595,7 @@ class TestChatMessageConverterBuild:
 
     def test_system_role_not_rewritten_for_o1_mini(self) -> None:
         """System role is NOT rewritten for o1-mini (in O1_MODELS_WITHOUT_FUNCTION_CALLING)."""
-        message = Message(role=MessageRole.SYSTEM, content="be helpful")
+        message = Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="be helpful")])
         result = ChatMessageConverter(message, model="o1-mini").build()
         assert result["role"] == "system", (
             "Expected system role to remain for o1-mini"
@@ -603,7 +603,7 @@ class TestChatMessageConverterBuild:
 
     def test_system_role_not_rewritten_for_gpt4o(self) -> None:
         """System role is NOT rewritten for standard models."""
-        message = Message(role=MessageRole.SYSTEM, content="be helpful")
+        message = Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="be helpful")])
         result = ChatMessageConverter(message, model="gpt-4o").build()
         assert result["role"] == "system", (
             "Expected system role to remain for gpt-4o"
@@ -615,7 +615,7 @@ class TestChatMessageConverterBuild:
         """When drop_none=True, keys with None values are removed."""
         message = Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={"function_call": {"name": "f"}},
         )
         result = ChatMessageConverter(message, drop_none=True).build()
@@ -627,7 +627,7 @@ class TestChatMessageConverterBuild:
         """When drop_none=False (default), None values remain."""
         message = Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={"function_call": {"name": "f"}},
         )
         result = ChatMessageConverter(message, drop_none=False).build()
@@ -644,7 +644,7 @@ class TestChatMessageConverterBuild:
         """Legacy tool_calls in additional_kwargs merge into dict when no ToolCallBlock chunks."""
         message = Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={
                 "tool_calls": [{"id": "tc_1", "type": "function", "function": {"name": "f"}}],
             },
@@ -683,7 +683,7 @@ class TestChatMessageConverterBuild:
         """tool_call_id in additional_kwargs is always added to the dict."""
         message = Message(
             role=MessageRole.TOOL,
-            content="output",
+            chunks=[TextChunk(content="output")],
             additional_kwargs={"tool_call_id": "call_42"},
         )
         result = ChatMessageConverter(message).build()
@@ -695,7 +695,7 @@ class TestChatMessageConverterBuild:
 
     def test_unsupported_block_type_raises_value_error(self) -> None:
         """An unrecognized block type raises ValueError."""
-        message = Message(role=MessageRole.ASSISTANT, content="placeholder")
+        message = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="placeholder")])
         # Inject a mock block that is not handled by any isinstance check
         fake_block = MagicMock()
         fake_block.__class__ = type("FakeBlock", (), {})
@@ -761,7 +761,7 @@ class TestToOpenaiResponsesMessageDict:
 
     def test_user_text_returns_dict(self) -> None:
         """Plain text user message returns a dict with role and string content."""
-        message = Message(role=MessageRole.USER, content="hello")
+        message = Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])
         result = ResponsesMessageConverter(message).build()
         assert isinstance(result, dict), "Expected dict for user message"
         assert result["role"] == "user", "Expected user role"
@@ -769,7 +769,7 @@ class TestToOpenaiResponsesMessageDict:
 
     def test_assistant_text_returns_dict(self) -> None:
         """Assistant text message returns a dict with role and string content."""
-        message = Message(role=MessageRole.ASSISTANT, content="response")
+        message = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="response")])
         result = ResponsesMessageConverter(message).build()
         assert isinstance(result, dict), "Expected dict for assistant message"
         assert result["role"] == "assistant", "Expected assistant role"
@@ -939,7 +939,7 @@ class TestToOpenaiResponsesMessageDict:
         legacy_call = {"type": "function", "id": "legacy_1", "function": {"name": "f"}}
         message = Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={"tool_calls": [legacy_call]},
         )
         result = ResponsesMessageConverter(message).build()
@@ -954,7 +954,7 @@ class TestToOpenaiResponsesMessageDict:
         """Tool message returns function_call_output dict."""
         message = Message(
             role=MessageRole.TOOL,
-            content="output data",
+            chunks=[TextChunk(content="output data")],
             additional_kwargs={"tool_call_id": "call_1"},
         )
         result = ResponsesMessageConverter(message).build()
@@ -969,7 +969,7 @@ class TestToOpenaiResponsesMessageDict:
         """Tool message also accepts call_id key in additional_kwargs."""
         message = Message(
             role=MessageRole.TOOL,
-            content="output",
+            chunks=[TextChunk(content="output")],
             additional_kwargs={"call_id": "call_2"},
         )
         result = ResponsesMessageConverter(message).build()
@@ -981,7 +981,7 @@ class TestToOpenaiResponsesMessageDict:
         """Tool message without tool_call_id or call_id raises ValueError."""
         message = Message(
             role=MessageRole.TOOL,
-            content="output",
+            chunks=[TextChunk(content="output")],
         )
         with pytest.raises(ValueError, match="tool_call_id or call_id is required"):
             ResponsesMessageConverter(message).build()
@@ -992,7 +992,7 @@ class TestToOpenaiResponsesMessageDict:
         """Assistant with empty content and function_call in additional_kwargs gets None content."""
         message = Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={"function_call": {"name": "f"}},
         )
         result = ResponsesMessageConverter(message).build()
@@ -1005,7 +1005,7 @@ class TestToOpenaiResponsesMessageDict:
 
     def test_system_message_string_content(self) -> None:
         """System message in Responses format uses string content."""
-        message = Message(role=MessageRole.SYSTEM, content="be helpful")
+        message = Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="be helpful")])
         result = ResponsesMessageConverter(message).build()
         assert isinstance(result, dict), "Expected dict for system message"
         assert result["content"] == "be helpful", (
@@ -1016,7 +1016,7 @@ class TestToOpenaiResponsesMessageDict:
 
     def test_system_rewritten_to_developer(self) -> None:
         """System role is unconditionally rewritten to developer in Responses API."""
-        message = Message(role=MessageRole.SYSTEM, content="be helpful")
+        message = Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="be helpful")])
         result = ResponsesMessageConverter(message, model="o3-mini").build()
         assert isinstance(result, dict), "Expected dict result"
         assert result["role"] == "developer", (
@@ -1029,7 +1029,7 @@ class TestToOpenaiResponsesMessageDict:
         """drop_none=True strips None-valued keys from the result dict."""
         message = Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={"function_call": {"name": "f"}},
         )
         result = ResponsesMessageConverter(message, drop_none=True).build()
@@ -1132,8 +1132,8 @@ class TestToOpenaiMessageDicts:
     def test_chat_path_delegates_to_message_dict(self) -> None:
         """Chat path (is_responses_api=False) delegates to to_openai_message_dict."""
         messages = [
-            Message(role=MessageRole.SYSTEM, content="system"),
-            Message(role=MessageRole.USER, content="user"),
+            Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="system")]),
+            Message(role=MessageRole.USER, chunks=[TextChunk(content="user")]),
         ]
         result = to_openai_message_dicts(messages, is_responses_api=False)
         assert isinstance(result, list), "Expected list result"
@@ -1143,7 +1143,7 @@ class TestToOpenaiMessageDicts:
 
     def test_chat_path_passes_model(self) -> None:
         """Chat path passes model parameter through."""
-        messages = [Message(role=MessageRole.SYSTEM, content="system")]
+        messages = [Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="system")])]
         result = to_openai_message_dicts(messages, model="o3-mini")
         assert result[0]["role"] == "developer", (
             "Expected system rewritten to developer via model param"
@@ -1154,7 +1154,7 @@ class TestToOpenaiMessageDicts:
         messages = [
             Message(
                 role=MessageRole.ASSISTANT,
-                content="",
+                chunks=[TextChunk(content="")],
                 additional_kwargs={"function_call": {"name": "f"}},
             ),
         ]
@@ -1173,8 +1173,8 @@ class TestToOpenaiMessageDicts:
     def test_responses_path_delegates_to_responses_dict(self) -> None:
         """Responses path (is_responses_api=True) delegates to responses converter."""
         messages = [
-            Message(role=MessageRole.SYSTEM, content="system"),
-            Message(role=MessageRole.USER, content="user"),
+            Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="system")]),
+            Message(role=MessageRole.USER, chunks=[TextChunk(content="user")]),
         ]
         result = to_openai_message_dicts(messages, is_responses_api=True)
         assert isinstance(result, list), "Expected list result"
@@ -1205,8 +1205,8 @@ class TestToOpenaiMessageDicts:
     def test_responses_path_string_results_wrapped(self) -> None:
         """Responses path: string results wrapped in role=user dict."""
         messages = [
-            Message(role=MessageRole.SYSTEM, content="system"),
-            Message(role=MessageRole.USER, content="hello"),
+            Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="system")]),
+            Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")]),
         ]
         result = to_openai_message_dicts(messages, is_responses_api=True)
         assert isinstance(result, list), "Expected list result (not bare string)"
@@ -1219,7 +1219,7 @@ class TestToOpenaiMessageDicts:
 
     def test_responses_path_single_user_message_bare_string(self) -> None:
         """Responses path: single user message returns bare string shortcut."""
-        messages = [Message(role=MessageRole.USER, content="hello")]
+        messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])]
         result = to_openai_message_dicts(messages, is_responses_api=True)
         assert result == "hello", (
             "Expected bare string for single user message in responses path"
@@ -1227,7 +1227,7 @@ class TestToOpenaiMessageDicts:
 
     def test_responses_path_system_rewritten_to_developer(self) -> None:
         """Responses path unconditionally rewrites system→developer."""
-        messages = [Message(role=MessageRole.SYSTEM, content="x")]
+        messages = [Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="x")])]
         result = to_openai_message_dicts(messages, is_responses_api=True)
         assert isinstance(result, list), "Expected list result"
         assert result[0]["role"] == "developer", (
@@ -1242,7 +1242,7 @@ class TestToOpenaiMessageDicts:
     def test_responses_path_dict_results_are_appended(self) -> None:
         """Responses path: dict results from converter are appended normally."""
         messages = [
-            Message(role=MessageRole.ASSISTANT, content="hello"),
+            Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="hello")]),
         ]
         result = to_openai_message_dicts(messages, is_responses_api=True)
         assert isinstance(result, list), "Expected list result"
@@ -1252,9 +1252,9 @@ class TestToOpenaiMessageDicts:
     def test_responses_path_multiple_messages_mix(self) -> None:
         """Responses path handles a mix of message types correctly."""
         messages = [
-            Message(role=MessageRole.SYSTEM, content="system prompt"),
-            Message(role=MessageRole.USER, content="question"),
-            Message(role=MessageRole.ASSISTANT, content="answer"),
+            Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="system prompt")]),
+            Message(role=MessageRole.USER, chunks=[TextChunk(content="question")]),
+            Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="answer")]),
         ]
         result = to_openai_message_dicts(messages, is_responses_api=True)
         assert isinstance(result, list), "Expected list result"
@@ -1266,7 +1266,7 @@ class TestToOpenaiMessageDicts:
 
     def test_responses_path_single_non_user_message_not_bare_string(self) -> None:
         """Responses path: single assistant message does NOT return bare string."""
-        messages = [Message(role=MessageRole.ASSISTANT, content="hello")]
+        messages = [Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="hello")])]
         result = to_openai_message_dicts(messages, is_responses_api=True)
         assert isinstance(result, list), (
             "Expected list (not string) for single assistant message"
@@ -1280,7 +1280,7 @@ class TestChatMessageConverterMethods:
 
     def test_init_stores_message_and_defaults(self) -> None:
         """Test __init__ stores message and sets defaults."""
-        msg = Message(role=MessageRole.USER, content="hi")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
         conv = ChatMessageConverter(msg)
         assert conv._message is msg, "Message not stored"
         assert conv._model is None, f"Expected model=None, got {conv._model}"
@@ -1291,7 +1291,7 @@ class TestChatMessageConverterMethods:
 
     def test_init_with_all_params(self) -> None:
         """Test __init__ stores model and drop_none when provided."""
-        msg = Message(role=MessageRole.USER, content="hi")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
         conv = ChatMessageConverter(msg, model="gpt-4o", drop_none=True)
         assert conv._model == "gpt-4o", f"Expected model 'gpt-4o', got {conv._model}"
         assert conv._drop_none is True, f"Expected drop_none=True, got {conv._drop_none}"
@@ -1299,7 +1299,7 @@ class TestChatMessageConverterMethods:
     def test_try_audio_reference_assistant_with_audio_id(self) -> None:
         """Test _try_audio_reference returns dict for assistant with reference_audio_id."""
         msg = Message(
-            role=MessageRole.ASSISTANT, content="",
+            role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")],
             additional_kwargs={"reference_audio_id": "audio_123"},
         )
         result = ChatMessageConverter(msg)._try_audio_reference()
@@ -1310,7 +1310,7 @@ class TestChatMessageConverterMethods:
     def test_try_audio_reference_none_for_user_role(self) -> None:
         """Test _try_audio_reference returns None for user role even with audio_id."""
         msg = Message(
-            role=MessageRole.USER, content="",
+            role=MessageRole.USER, chunks=[TextChunk(content="")],
             additional_kwargs={"reference_audio_id": "audio_123"},
         )
         result = ChatMessageConverter(msg)._try_audio_reference()
@@ -1318,19 +1318,19 @@ class TestChatMessageConverterMethods:
 
     def test_try_audio_reference_none_without_audio_id(self) -> None:
         """Test _try_audio_reference returns None when no reference_audio_id."""
-        msg = Message(role=MessageRole.ASSISTANT, content="hello")
+        msg = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="hello")])
         result = ChatMessageConverter(msg)._try_audio_reference()
         assert result is None, f"Expected None, got {result}"
 
     def test_try_audio_reference_none_for_empty_kwargs(self) -> None:
         """Test _try_audio_reference returns None when additional_kwargs is empty."""
-        msg = Message(role=MessageRole.ASSISTANT, content="")
+        msg = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")])
         result = ChatMessageConverter(msg)._try_audio_reference()
         assert result is None, f"Expected None, got {result}"
 
     def test_process_blocks_text_chunk(self) -> None:
         """Test _process_blocks populates _content and _content_txt for TextChunks."""
-        msg = Message(role=MessageRole.USER, content="hello")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])
         conv = ChatMessageConverter(msg)
         conv._process_blocks()
         assert len(conv._content) == 1, f"Expected 1 content item, got {len(conv._content)}"
@@ -1384,7 +1384,7 @@ class TestChatMessageConverterMethods:
 
     def test_process_blocks_unsupported_type_raises(self) -> None:
         """Test _process_blocks raises ValueError for unsupported block types."""
-        msg = Message(role=MessageRole.USER, content="placeholder")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="placeholder")])
         conv = ChatMessageConverter(msg)
         fake_block = MagicMock()
         fake_block.__class__ = type("FakeBlock", (), {})
@@ -1417,7 +1417,7 @@ class TestChatMessageConverterMethods:
 
     def test_resolve_content_string_for_assistant(self) -> None:
         """Test _resolve_content returns string for assistant role."""
-        msg = Message(role=MessageRole.ASSISTANT, content="answer")
+        msg = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="answer")])
         conv = ChatMessageConverter(msg)
         conv._content = [{"type": "text", "text": "answer"}]
         conv._content_txt = "answer"
@@ -1425,21 +1425,25 @@ class TestChatMessageConverterMethods:
 
     def test_resolve_content_string_for_system(self) -> None:
         """Test _resolve_content returns string for system role."""
-        msg = Message(role=MessageRole.SYSTEM, content="prompt")
+        msg = Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="prompt")])
         conv = ChatMessageConverter(msg)
         conv._content_txt = "prompt"
         assert conv._resolve_content() == "prompt", "System should get string content"
 
     def test_resolve_content_string_for_tool(self) -> None:
         """Test _resolve_content returns string for tool role."""
-        msg = Message(role=MessageRole.TOOL, content="result", additional_kwargs={"tool_call_id": "c1"})
+        msg = Message(
+            role=MessageRole.TOOL,
+            chunks=[TextChunk(content="result")],
+            additional_kwargs={"tool_call_id": "c1"},
+        )
         conv = ChatMessageConverter(msg)
         conv._content_txt = "result"
         assert conv._resolve_content() == "result", "Tool should get string content"
 
     def test_resolve_content_list_for_user_mixed_blocks(self) -> None:
         """Test _resolve_content returns list for user with mixed block types."""
-        msg = Message(role=MessageRole.USER, content="placeholder")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="placeholder")])
         conv = ChatMessageConverter(msg)
         mock_img = MagicMock(spec=Image)
         mock_img.__class__ = Image
@@ -1456,7 +1460,7 @@ class TestChatMessageConverterMethods:
 
     def test_resolve_content_string_for_user_only_text(self) -> None:
         """Test _resolve_content returns string for user with only TextChunks."""
-        msg = Message(role=MessageRole.USER, content="hello")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])
         conv = ChatMessageConverter(msg)
         conv._content_txt = "hello"
         assert conv._resolve_content() == "hello", "User with only text should get string"
@@ -1464,7 +1468,7 @@ class TestChatMessageConverterMethods:
     def test_resolve_content_none_for_assistant_with_tool_calls(self) -> None:
         """Test _resolve_content returns None for assistant with tool calls and empty text."""
         msg = Message(
-            role=MessageRole.ASSISTANT, content="",
+            role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")],
             additional_kwargs={"tool_calls": [{"id": "c1"}]},
         )
         conv = ChatMessageConverter(msg)
@@ -1474,14 +1478,14 @@ class TestChatMessageConverterMethods:
 
     def test_resolve_content_empty_string_without_tool_calls(self) -> None:
         """Test _resolve_content returns empty string for assistant without tool info."""
-        msg = Message(role=MessageRole.ASSISTANT, content="")
+        msg = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")])
         conv = ChatMessageConverter(msg)
         conv._content_txt = ""
         assert conv._resolve_content() == "", "Empty assistant without tools keeps empty string"
 
     def test_assemble_basic(self) -> None:
         """Test _assemble builds dict with role and content, no tool_calls key."""
-        msg = Message(role=MessageRole.USER, content="hi")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
         conv = ChatMessageConverter(msg)
         conv._content_txt = "hi"
         result = conv._assemble()
@@ -1506,7 +1510,7 @@ class TestChatMessageConverterMethods:
         """Test _merge_legacy_kwargs merges tool_calls when no ToolCallBlock chunks."""
         legacy_calls = [{"id": "c1", "function": {"name": "fn"}}]
         msg = Message(
-            role=MessageRole.ASSISTANT, content="",
+            role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")],
             additional_kwargs={"tool_calls": legacy_calls},
         )
         conv = ChatMessageConverter(msg)
@@ -1518,7 +1522,7 @@ class TestChatMessageConverterMethods:
         """Test _merge_legacy_kwargs merges function_call when no ToolCallBlock chunks."""
         fn_call = {"name": "get_weather", "arguments": '{"city": "Paris"}'}
         msg = Message(
-            role=MessageRole.ASSISTANT, content="",
+            role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")],
             additional_kwargs={"function_call": fn_call},
         )
         conv = ChatMessageConverter(msg)
@@ -1529,7 +1533,7 @@ class TestChatMessageConverterMethods:
     def test_merge_legacy_skipped_when_tool_call_blocks_exist(self) -> None:
         """Test _merge_legacy_kwargs skips merge when _tool_call_dicts is non-empty."""
         msg = Message(
-            role=MessageRole.ASSISTANT, content="",
+            role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")],
             additional_kwargs={"tool_calls": [{"id": "legacy"}]},
         )
         conv = ChatMessageConverter(msg)
@@ -1541,7 +1545,7 @@ class TestChatMessageConverterMethods:
     def test_merge_tool_call_id_passthrough(self) -> None:
         """Test _merge_legacy_kwargs passes through tool_call_id."""
         msg = Message(
-            role=MessageRole.TOOL, content="result",
+            role=MessageRole.TOOL, chunks=[TextChunk(content="result")],
             additional_kwargs={"tool_call_id": "call_42"},
         )
         conv = ChatMessageConverter(msg)
@@ -1551,7 +1555,7 @@ class TestChatMessageConverterMethods:
 
     def test_merge_no_tool_call_id_does_nothing(self) -> None:
         """Test _merge_legacy_kwargs does nothing when no tool_call_id."""
-        msg = Message(role=MessageRole.USER, content="hi")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
         conv = ChatMessageConverter(msg)
         result: dict[str, Any] = {"role": "user", "content": "hi"}
         conv._merge_legacy_kwargs(result)
@@ -1560,7 +1564,7 @@ class TestChatMessageConverterMethods:
     def test_build_audio_path_skips_process_blocks(self) -> None:
         """Test build() with audio reference skips block processing entirely."""
         msg = Message(
-            role=MessageRole.ASSISTANT, content="",
+            role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")],
             additional_kwargs={"reference_audio_id": "aud_1"},
         )
         conv = ChatMessageConverter(msg)
@@ -1571,7 +1575,7 @@ class TestChatMessageConverterMethods:
 
     def test_build_normal_path(self) -> None:
         """Test build() normal path populates state and returns correct dict."""
-        msg = Message(role=MessageRole.USER, content="test")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="test")])
         conv = ChatMessageConverter(msg)
         result = conv.build()
         assert result["role"] == "user", f"Expected 'user', got {result['role']}"
@@ -1590,7 +1594,7 @@ class TestResponsesMessageConverterMethods:
             Construct with only a message; verify all internal lists are
             empty and optional params default to None/False.
         """
-        msg = Message(role=MessageRole.USER, content="hi")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
         conv = ResponsesMessageConverter(msg)
         assert conv._message is msg, "Message not stored"
         assert conv._model is None, f"Expected model=None, got {conv._model}"
@@ -1607,7 +1611,7 @@ class TestResponsesMessageConverterMethods:
             Construct with model='o3-mini' and drop_none=True; verify both
             are stored correctly.
         """
-        msg = Message(role=MessageRole.USER, content="hi")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
         conv = ResponsesMessageConverter(msg, model="o3-mini", drop_none=True)
         assert conv._model == "o3-mini", f"Expected model 'o3-mini', got {conv._model}"
         assert conv._drop_none is True, f"Expected drop_none=True, got {conv._drop_none}"
@@ -1619,7 +1623,7 @@ class TestResponsesMessageConverterMethods:
             User message with a single TextChunk; verify _content gets an
             input_text dict and _content_txt accumulates the text.
         """
-        msg = Message(role=MessageRole.USER, content="hello")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])
         conv = ResponsesMessageConverter(msg)
         conv._process_blocks()
         assert len(conv._content) == 1, f"Expected 1 content item, got {len(conv._content)}"
@@ -1635,7 +1639,7 @@ class TestResponsesMessageConverterMethods:
             Assistant message with a single TextChunk; verify _content gets
             an output_text dict (not input_text).
         """
-        msg = Message(role=MessageRole.ASSISTANT, content="response")
+        msg = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="response")])
         conv = ResponsesMessageConverter(msg)
         conv._process_blocks()
         assert conv._content[0]["type"] == "output_text", (
@@ -1746,7 +1750,7 @@ class TestResponsesMessageConverterMethods:
             Audio block triggers explicit ValueError for Responses API.
         """
         audio_block = _make_audio_block()
-        msg = Message(role=MessageRole.USER, content="placeholder")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="placeholder")])
         conv = ResponsesMessageConverter(msg)
         conv._message = MagicMock(
             chunks=[audio_block], role=MessageRole.USER, additional_kwargs={},
@@ -1777,7 +1781,7 @@ class TestResponsesMessageConverterMethods:
             _should_null_content returns True, so content becomes None.
         """
         msg = Message(
-            role=MessageRole.ASSISTANT, content="",
+            role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")],
             additional_kwargs={"function_call": {"name": "f"}},
         )
         conv = ResponsesMessageConverter(msg)
@@ -1792,7 +1796,7 @@ class TestResponsesMessageConverterMethods:
             System message with text content; the system role is in the
             string-content roles, so content stays as string.
         """
-        msg = Message(role=MessageRole.SYSTEM, content="be helpful")
+        msg = Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="be helpful")])
         conv = ResponsesMessageConverter(msg)
         conv._content_txt = "be helpful"
         result = conv._resolve_content()
@@ -1805,7 +1809,7 @@ class TestResponsesMessageConverterMethods:
             User message with only TextChunks; the all(isinstance TextChunk)
             check passes, so content stays as the concatenated string.
         """
-        msg = Message(role=MessageRole.USER, content="hello")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])
         conv = ResponsesMessageConverter(msg)
         conv._content_txt = "hello"
         result = conv._resolve_content()
@@ -1860,7 +1864,7 @@ class TestResponsesMessageConverterMethods:
             Assistant with empty content and no tool_calls/function_call;
             _should_null_content returns False, so content stays as empty string.
         """
-        msg = Message(role=MessageRole.ASSISTANT, content="")
+        msg = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")])
         conv = ResponsesMessageConverter(msg)
         conv._content_txt = ""
         result = conv._resolve_content()
@@ -1874,7 +1878,7 @@ class TestResponsesMessageConverterMethods:
             function_call_output dict with the correct call_id and output.
         """
         msg = Message(
-            role=MessageRole.TOOL, content="result data",
+            role=MessageRole.TOOL, chunks=[TextChunk(content="result data")],
             additional_kwargs={"tool_call_id": "call_42"},
         )
         conv = ResponsesMessageConverter(msg)
@@ -1894,7 +1898,7 @@ class TestResponsesMessageConverterMethods:
             the fallback .get("call_id") should be used.
         """
         msg = Message(
-            role=MessageRole.TOOL, content="output",
+            role=MessageRole.TOOL, chunks=[TextChunk(content="output")],
             additional_kwargs={"call_id": "call_99"},
         )
         conv = ResponsesMessageConverter(msg)
@@ -1909,7 +1913,7 @@ class TestResponsesMessageConverterMethods:
             Tool message with neither tool_call_id nor call_id; should raise
             ValueError with a descriptive message.
         """
-        msg = Message(role=MessageRole.TOOL, content="output")
+        msg = Message(role=MessageRole.TOOL, chunks=[TextChunk(content="output")])
         conv = ResponsesMessageConverter(msg)
         conv._content_txt = "output"
         with pytest.raises(ValueError, match="tool_call_id or call_id is required"):
@@ -1922,7 +1926,7 @@ class TestResponsesMessageConverterMethods:
             Assistant message with string content and no reasoning; returns
             a plain dict (not wrapped in a list).
         """
-        msg = Message(role=MessageRole.ASSISTANT, content="answer")
+        msg = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="answer")])
         conv = ResponsesMessageConverter(msg)
         conv._content_txt = "answer"
         result = conv._assemble_message_dict()
@@ -1961,7 +1965,7 @@ class TestResponsesMessageConverterMethods:
             System message; the message dict should have role='developer'
             regardless of model (Responses API always uses developer role).
         """
-        msg = Message(role=MessageRole.SYSTEM, content="be helpful")
+        msg = Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="be helpful")])
         conv = ResponsesMessageConverter(msg)
         conv._content_txt = "be helpful"
         result = conv._assemble_message_dict()
@@ -1976,7 +1980,7 @@ class TestResponsesMessageConverterMethods:
             should be removed from the result dict.
         """
         msg = Message(
-            role=MessageRole.ASSISTANT, content="",
+            role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")],
             additional_kwargs={"function_call": {"name": "f"}},
         )
         conv = ResponsesMessageConverter(msg, drop_none=True)
@@ -1994,7 +1998,7 @@ class TestResponsesMessageConverterMethods:
         """
         legacy_call = {"type": "function", "id": "legacy_1", "function": {"name": "f"}}
         msg = Message(
-            role=MessageRole.ASSISTANT, content="",
+            role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")],
             additional_kwargs={"tool_calls": [legacy_call]},
         )
         conv = ResponsesMessageConverter(msg)
@@ -2014,7 +2018,7 @@ class TestResponsesMessageConverterMethods:
         """
         legacy_call = {"type": "function", "id": "legacy_1", "function": {"name": "f"}}
         msg = Message(
-            role=MessageRole.ASSISTANT, content="",
+            role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")],
             additional_kwargs={"tool_calls": [legacy_call]},
         )
         conv = ResponsesMessageConverter(msg)
@@ -2033,7 +2037,7 @@ class TestResponsesMessageConverterMethods:
         """
         legacy_call = {"type": "function", "id": "lg_1", "function": {"name": "f"}}
         msg = Message(
-            role=MessageRole.ASSISTANT, content="",
+            role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")],
             additional_kwargs={"tool_calls": [legacy_call]},
         )
         conv = ResponsesMessageConverter(msg)
@@ -2050,7 +2054,7 @@ class TestResponsesMessageConverterMethods:
             Assistant with ToolCallBlock-based _tool_call_dicts populated and
             no legacy tool_calls in kwargs.
         """
-        msg = Message(role=MessageRole.ASSISTANT, content="")
+        msg = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="")])
         conv = ResponsesMessageConverter(msg)
         conv._tool_call_dicts = [
             {"type": "function_call", "call_id": "c1", "name": "fn", "arguments": "{}"},
@@ -2067,7 +2071,7 @@ class TestResponsesMessageConverterMethods:
             function_call_output dict.
         """
         msg = Message(
-            role=MessageRole.TOOL, content="result",
+            role=MessageRole.TOOL, chunks=[TextChunk(content="result")],
             additional_kwargs={"tool_call_id": "call_1"},
         )
         conv = ResponsesMessageConverter(msg)
@@ -2085,7 +2089,7 @@ class TestResponsesMessageConverterMethods:
             User message with only input_text content items; _assemble
             falls through to _assemble_message_dict and returns a dict.
         """
-        msg = Message(role=MessageRole.USER, content="hello")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])
         conv = ResponsesMessageConverter(msg)
         conv._content = [{"type": "input_text", "text": "hello"}]
         conv._content_txt = "hello"
@@ -2101,7 +2105,7 @@ class TestResponsesMessageConverterMethods:
             Assistant message with text content; no tool calls, not user role,
             so falls through to _assemble_message_dict.
         """
-        msg = Message(role=MessageRole.ASSISTANT, content="answer")
+        msg = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="answer")])
         conv = ResponsesMessageConverter(msg)
         conv._content = [{"type": "output_text", "text": "answer"}]
         conv._content_txt = "answer"
@@ -2137,7 +2141,7 @@ class TestResponsesMessageConverterMethods:
             User message with text; verify build() populates internal state
             via _process_blocks and returns the assembled dict result.
         """
-        msg = Message(role=MessageRole.USER, content="test")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="test")])
         conv = ResponsesMessageConverter(msg)
         result = conv.build()
         assert isinstance(result, dict), f"Expected dict, got {type(result)}"
@@ -2178,7 +2182,7 @@ class TestResponsesMessageConverterMethods:
             The Responses API always uses 'developer' instead of 'system'.
             This is unconditional — not tied to any model family.
         """
-        msg = Message(role=MessageRole.SYSTEM, content="prompt")
+        msg = Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="prompt")])
         result = ResponsesMessageConverter(msg, model=model_name).build()
         assert isinstance(result, dict), f"Expected dict, got {type(result)}"
         assert result["role"] == "developer", (

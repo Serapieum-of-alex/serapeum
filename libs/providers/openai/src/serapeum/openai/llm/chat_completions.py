@@ -129,9 +129,11 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         - Basic chat completion
             ```python
             >>> from serapeum.openai import OpenAI
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-            >>> resp = llm.chat([Message(role=MessageRole.USER, content="Say hi")])  # doctest: +SKIP
+            >>> resp = llm.chat([  # doctest: +SKIP
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Say hi")])
+            ... ])
             >>> isinstance(resp.message.content, str)  # doctest: +SKIP
             True
 
@@ -1143,7 +1145,10 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                     tool_spec["function"]["parameters"]["additionalProperties"] = False
 
         if isinstance(user_msg, str):
-            user_msg = Message(role=MessageRole.USER, content=user_msg)
+            user_msg = Message(
+                role=MessageRole.USER,
+                chunks=[TextChunk(content=user_msg)],
+            )
 
         messages = list(chat_history or [])
         if user_msg:
@@ -1235,8 +1240,8 @@ def get_tool_calls_from_legacy_response(response: ChatResponse, error_on_no_tool
     legacy_tool_calls = response.message.additional_kwargs.get(
         "tool_calls", []
     )
+    result: list[ToolCallArguments] = []
     if legacy_tool_calls:
-        tool_selections: list[ToolCallArguments] = []
         for tool_call in legacy_tool_calls:
             if tool_call.type != "function":
                 raise ValueError(
@@ -1249,14 +1254,13 @@ def get_tool_calls_from_legacy_response(response: ChatResponse, error_on_no_tool
             except (ValueError, TypeError, JSONDecodeError):
                 argument_dict = {}
 
-            tool_selections.append(
+            result.append(
                 ToolCallArguments(
                     tool_id=tool_call.id,
                     tool_name=tool_call.function.name,
                     tool_kwargs=argument_dict,
                 )
             )
-        result = tool_selections
     elif error_on_no_tool_call:
         raise ValueError(
             "Expected at least one tool call, but got "

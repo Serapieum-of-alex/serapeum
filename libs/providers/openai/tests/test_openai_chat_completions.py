@@ -846,7 +846,9 @@ class TestCompleteAudioRejection:
             modalities=["text", "audio"]
         )
         with pytest.raises(ValueError, match="Audio is not supported"):
-            list(llm._stream_chat([Message(role=MessageRole.USER, content="hi")]))
+            list(llm._stream_chat([
+                Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
+            ]))
 
 
 @pytest.mark.unit
@@ -865,7 +867,7 @@ class TestChatRouting:
         mock_client.chat.completions.create.return_value = _make_chat_completion()
 
         llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
-        response = llm.chat([Message(role=MessageRole.USER, content="hi")])
+        response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])])
 
         mock_client.chat.completions.create.assert_called_once()
         assert response.message.content == "Hello!", (
@@ -884,7 +886,7 @@ class TestChatRouting:
         mock_client.completions.create.return_value = _make_completion("Hi!")
 
         llm = OpenAI(model="text-davinci-003", api_key="sk-test")
-        response = llm.chat([Message(role=MessageRole.USER, content="hi")])
+        response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])])
 
         mock_client.completions.create.assert_called_once()
         assert response.message.content == "Hi!", (
@@ -905,7 +907,7 @@ class TestChatRouting:
 
         llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
         gen = llm.chat(
-            [Message(role=MessageRole.USER, content="hi")], stream=True
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])], stream=True
         )
         chunks = list(gen)
 
@@ -936,7 +938,7 @@ class TestStreamChat:
 
         llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
         gen = llm._stream_chat(
-            [Message(role=MessageRole.USER, content="search for test")]
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="search for test")])]
         )
         chunks = list(gen)
 
@@ -975,7 +977,7 @@ class TestStreamChat:
         llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
         chunks = list(
             llm._stream_chat(
-                [Message(role=MessageRole.USER, content="hi")]
+                [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
             )
         )
         assert len(chunks) >= 3, f"Expected at least 3 chunks, got {len(chunks)}"
@@ -1139,7 +1141,7 @@ class TestGetToolCallsFromResponse:
         response = ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content=None,
+                chunks=[TextChunk(content=None)],
                 additional_kwargs={
                     "tool_calls": [
                         ChatCompletionMessageToolCall(
@@ -1177,7 +1179,7 @@ class TestGetToolCallsFromResponse:
         response = ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content=None,
+                chunks=[TextChunk(content=None)],
                 additional_kwargs={"tool_calls": [mock_tool_call]},
             )
         )
@@ -1193,8 +1195,7 @@ class TestGetToolCallsFromResponse:
         """
         response = ChatResponse(
             message=Message(
-                role=MessageRole.ASSISTANT, content="Just text."
-            )
+                role=MessageRole.ASSISTANT, chunks=[TextChunk(content="Just text.")])
         )
         with pytest.raises(ValueError, match="Expected at least one tool call"):
             llm.get_tool_calls_from_response(
@@ -1210,8 +1211,7 @@ class TestGetToolCallsFromResponse:
         """
         response = ChatResponse(
             message=Message(
-                role=MessageRole.ASSISTANT, content="Just text."
-            )
+                role=MessageRole.ASSISTANT, chunks=[TextChunk(content="Just text.")])
         )
         result = llm.get_tool_calls_from_response(
             response, error_on_no_tool_call=False
@@ -1271,7 +1271,7 @@ class TestPrepareChatWithTools:
             Passing a Message object as user_msg should append it as-is.
         """
         tool = _make_search_tool()
-        msg = Message(role=MessageRole.USER, content="hi there")
+        msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi there")])
         result = llm._prepare_chat_with_tools(
             tools=[tool], user_msg=msg
         )
@@ -1285,7 +1285,7 @@ class TestPrepareChatWithTools:
             history followed by the new message.
         """
         tool = _make_search_tool()
-        history = [Message(role=MessageRole.USER, content="previous")]
+        history = [Message(role=MessageRole.USER, chunks=[TextChunk(content="previous")])]
         result = llm._prepare_chat_with_tools(
             tools=[tool],
             user_msg="current",
@@ -1331,7 +1331,7 @@ class TestAsyncChat:
 
         llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
         response = await llm.achat(
-            [Message(role=MessageRole.USER, content="hi")]
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
         )
 
         create_fn.assert_called_once()
@@ -1355,7 +1355,7 @@ class TestAsyncChat:
 
         llm = OpenAI(model="text-davinci-003", api_key="sk-test")
         response = await llm.achat(
-            [Message(role=MessageRole.USER, content="hi")]
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
         )
 
         create_fn.assert_called_once()
@@ -1382,7 +1382,7 @@ class TestAsyncChat:
 
         llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
         gen = await llm.achat(
-            [Message(role=MessageRole.USER, content="hi")], stream=True
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])], stream=True
         )
         chunks = [chunk async for chunk in gen]
 
@@ -1450,7 +1450,7 @@ class TestAStreamChatAudioRejection:
             modalities=["text", "audio"]
         )
         gen = await llm.achat(
-            [Message(role=MessageRole.USER, content="hi")], stream=True
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])], stream=True
         )
         with pytest.raises(ValueError, match="Audio is not supported"):
             async for _ in gen:
@@ -1732,7 +1732,7 @@ class TestChatWithLogprobs:
             logprobs=True, top_logprobs=1,
         )
         response = llm.chat(
-            [Message(role=MessageRole.USER, content="hi")]
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
         )
 
         MockLogProbParser.from_tokens.assert_called_once_with(logprob_data)
@@ -1836,7 +1836,7 @@ class TestStreamNullDelta:
         llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")
         chunks = list(
             llm._stream_chat(
-                [Message(role=MessageRole.USER, content="hi")]
+                [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
             )
         )
         assert len(chunks) == 1, (
@@ -1953,7 +1953,7 @@ class TestAsyncChatWithLogprobs:
             logprobs=True, top_logprobs=1,
         )
         response = await llm.achat(
-            [Message(role=MessageRole.USER, content="hi")]
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
         )
 
         MockLogProbParser.from_tokens.assert_called_once_with(logprob_data)

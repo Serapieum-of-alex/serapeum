@@ -23,6 +23,7 @@ from serapeum.core.llms import (
     ChatResponseGen,
     Metadata,
     MessageRole,
+    TextChunk,
     ThinkingBlock,
     ToolCallBlock,
     ChatToCompletion,
@@ -139,14 +140,18 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
             ```
         - Stateful multi-turn conversation
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> llm = OpenAIResponses(  # doctest: +SKIP
             ...     model="gpt-4o-mini",
             ...     track_previous_responses=True,
             ...     api_key="sk-test",
             ... )
-            >>> r1 = llm.chat([Message(role=MessageRole.USER, content="Hello")])  # doctest: +SKIP
-            >>> r2 = llm.chat([Message(role=MessageRole.USER, content="What did I just say?")])  # doctest: +SKIP
+            >>> r1 = llm.chat([  # doctest: +SKIP
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])
+            ... ])
+            >>> r2 = llm.chat([  # doctest: +SKIP
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="What did I just say?")])
+            ... ])
 
             ```
         - Streaming with a built-in web search tool
@@ -156,7 +161,9 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
             ...     built_in_tools=[{"type": "web_search_preview"}],
             ...     api_key="sk-test",
             ... )
-            >>> messages = [Message(role=MessageRole.USER, content="Latest AI news")]  # doctest: +SKIP
+            >>> messages = [  # doctest: +SKIP
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Latest AI news")])
+            ... ]
             >>> for chunk in llm.chat(messages, stream=True):  # doctest: +SKIP
             ...     print(chunk.delta, end="", flush=True)
 
@@ -747,7 +754,10 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
                 tool_spec["parameters"]["additionalProperties"] = False
 
         if isinstance(user_msg, str):
-            user_msg = Message(role=MessageRole.USER, content=user_msg)
+            user_msg = Message(
+                role=MessageRole.USER,
+                chunks=[TextChunk(content=user_msg)],
+            )
 
         messages = chat_history or []
         if user_msg:

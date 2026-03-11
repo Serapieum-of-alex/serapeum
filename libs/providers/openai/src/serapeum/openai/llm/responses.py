@@ -7,12 +7,8 @@ from openai.types.responses import Response
 from typing import (
     TYPE_CHECKING,
     Any,
-    AsyncGenerator,
-    Generator,
     Literal,
     Sequence,
-    TypeVar,
-    cast,
     overload,
 )
 
@@ -25,23 +21,18 @@ from serapeum.core.llms import (
     MessageRole,
     TextChunk,
     ThinkingBlock,
-    ToolCallBlock,
     ChatToCompletion,
 )
 from pydantic import (
     Field,
     PrivateAttr,
-    BaseModel,
     model_validator,
 )
 from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
 )
 
-from serapeum.core.llms import FunctionCallingLLM, ToolCallArguments
-from serapeum.core.utils.schemas import parse_partial_json
-from serapeum.core.prompts import PromptTemplate
-from serapeum.core.llms import FlexibleModel
+from serapeum.core.llms import FunctionCallingLLM
 from serapeum.openai.data.models import (
     O1_MODELS,
     is_function_calling_model,
@@ -52,7 +43,7 @@ from serapeum.openai.parsers import (
     ResponsesStreamAccumulator,
     to_openai_message_dicts,
 )
-from serapeum.openai.llm.base import Client, ModelMetadata
+from serapeum.openai.llm.base import Client, ModelMetadata, StructuredOutput
 from serapeum.openai.retry import is_retryable
 from serapeum.openai.utils import resolve_tool_choice
 from serapeum.core.retry import retry
@@ -63,10 +54,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-Model = TypeVar("Model", bound=BaseModel)
 
-
-class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
+class OpenAIResponses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
     """OpenAI Responses API provider.
 
     Uses the ``/v1/responses`` endpoint, which is required for models such as
@@ -334,6 +323,18 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
             ),
             model_name=self.model,
         )
+
+    def _should_use_structure_outputs(self) -> bool:
+        """Return ``False`` — the Responses API always uses function-calling.
+
+        The Responses API does not support the Chat Completions
+        ``response_format`` parameter. All structured output requests go
+        through the tool-call forcing path (``tool_choice="required"``).
+
+        Returns:
+            bool: Always ``False``.
+        """
+        return False
 
     def _is_azure_client(self) -> bool:
         """Return whether the underlying SDK client targets Azure OpenAI.
@@ -773,179 +774,3 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
             **kwargs,
         }
 
-    def get_tool_calls_from_response(
-        self,
-        response: "ChatResponse",
-        error_on_no_tool_call: bool = True,
-        **kwargs: Any,
-    ) -> list[ToolCallArguments]:
-        """Extract parsed tool-call arguments from a Responses API chat response.
-
-        Collects :class:`~serapeum.core.llms.ToolCallBlock` entries from
-        ``response.message.chunks`` and parses each block's ``tool_kwargs``
-        through :func:`~serapeum.core.utils.schemas.parse_partial_json`.
-
-        Args:
-            response: A :class:`~serapeum.core.llms.ChatResponse` produced by
-                the Responses API that may contain tool calls.
-            error_on_no_tool_call: When ``True`` (default), raises
-                :exc:`ValueError` if no tool calls are found.
-            **kwargs: Accepted for interface compatibility; not forwarded.
-
-        Returns:
-            list[ToolCallArguments]: One entry per tool call, each carrying the
-                ``tool_id``, ``tool_name``, and parsed ``tool_kwargs``.
-
-        Raises:
-            ValueError: If *error_on_no_tool_call* is ``True`` and no tool
-                calls are present in the response.
-        """
-        tool_calls: list[ToolCallBlock] = [
-            block
-            for block in response.message.chunks
-            if isinstance(block, ToolCallBlock)
-        ]
-
-        if len(tool_calls) < 1:
-            if error_on_no_tool_call:
-                raise ValueError(
-                    f"Expected at least one tool call, but got {len(tool_calls)} tool calls."
-                )
-            else:
-                return []
-
-        tool_selections = []
-        for tool_call in tool_calls:
-            # this should handle both complete and partial jsons
-            try:
-                argument_dict = parse_partial_json(cast(str, tool_call.tool_kwargs))
-            except Exception:
-                argument_dict = {}
-
-            tool_selections.append(
-                ToolCallArguments(
-                    tool_id=tool_call.tool_call_id or "",
-                    tool_name=tool_call.tool_name,
-                    tool_kwargs=argument_dict,
-                )
-            )
-
-        return tool_selections
-
-    @overload
-    def structured_predict(
-        self, output_cls: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
-    ) -> Model: ...
-
-    @overload
-    def structured_predict(
-        self, output_cls: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
-    ) -> Generator[Model | FlexibleModel, None, None]: ...
-
-    def structured_predict(
-        self,
-        output_cls: type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        *,
-        stream: bool = False,
-        **prompt_args: Any,
-    ) -> Model | Generator[Model | FlexibleModel, None, None]:
-        """Predict a structured output using tool-call forcing.
-
-        Overrides the base implementation to ensure ``tool_choice="required"``
-        is set so the model always invokes the schema-bound tool. Delegates to
-        :meth:`~serapeum.core.llms.FunctionCallingLLM.stream_structured_predict`
-        for streaming or
-        :meth:`~serapeum.core.llms.FunctionCallingLLM.structured_predict` for
-        non-streaming.
-
-        Args:
-            output_cls: Pydantic model class defining the expected output schema.
-            prompt: Prompt template used to generate the model input.
-            llm_kwargs: Additional keyword arguments forwarded to the underlying
-                LLM call. Defaults to ``{}``.
-            stream: When ``True``, returns a generator that yields partial
-                :class:`~serapeum.core.llms.FlexibleModel` objects as the model
-                streams the tool arguments.
-            **prompt_args: Template variable values used to render *prompt*.
-
-        Returns:
-            Model | Generator[Model | FlexibleModel, None, None]: Fully parsed
-                Pydantic model instance, or a streaming generator of partial
-                instances.
-        """
-        llm_kwargs = llm_kwargs or {}
-
-        llm_kwargs["tool_choice"] = (
-            "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
-        )
-        if stream:
-            result: Model | Generator[Model | FlexibleModel, None, None] = (
-                super().stream_parse(
-                    output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-                )
-            )
-        else:
-            result = super().parse(
-                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-            )
-        return result
-
-    @overload
-    async def astructured_predict(
-        self, output_cls: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
-    ) -> Model: ...
-
-    @overload
-    async def astructured_predict(
-        self, output_cls: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
-    ) -> AsyncGenerator[Model | FlexibleModel, None]: ...
-
-    async def astructured_predict(
-        self,
-        output_cls: type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        *,
-        stream: bool = False,
-        **prompt_args: Any,
-    ) -> Model | AsyncGenerator[Model | FlexibleModel, None]:
-        """Asynchronously predict a structured output using tool-call forcing.
-
-        Async counterpart to :meth:`structured_predict`.
-
-        Args:
-            output_cls: Pydantic model class defining the expected output schema.
-            prompt: Prompt template used to generate the model input.
-            llm_kwargs: Additional keyword arguments forwarded to the underlying
-                LLM call. Defaults to ``{}``.
-            stream: When ``True``, returns an async generator that yields partial
-                :class:`~serapeum.core.llms.FlexibleModel` objects.
-            **prompt_args: Template variable values used to render *prompt*.
-
-        Returns:
-            Model | AsyncGenerator[Model | FlexibleModel, None]: Fully parsed
-                Pydantic model instance, or an async streaming generator of
-                partial instances.
-        """
-        llm_kwargs = llm_kwargs or {}
-
-        llm_kwargs["tool_choice"] = (
-            "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
-        )
-        if stream:
-            result: Model | AsyncGenerator[Model | FlexibleModel, None] = (
-                await super().astream_parse(
-                    output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-                )
-            )
-        else:
-            result = await super().aparse(
-                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-            )
-        return result

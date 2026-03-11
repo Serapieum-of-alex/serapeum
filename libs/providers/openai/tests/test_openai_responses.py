@@ -282,16 +282,23 @@ def test_responses_stream_accumulator_text_annotation():
 
 
 def test_get_tool_calls_from_response():
-    """Test extracting tool calls from a chat response."""
-    # Create a mock chat response with tool calls
-    chat_response = MagicMock()
-    chat_response.message.chunks = [
-        ToolCallBlock(
-            tool_call_id="123",
-            tool_name="test_function",
-            tool_kwargs='{"arg1": "value1", "arg2": 42}',
-        )
-    ]
+    """Test extracting tool calls from a chat response.
+
+    Uses the base FunctionCallingLLM.get_tool_calls_from_response via
+    Message.tool_calls property and ToolCallBlock.get_arguments().
+    """
+    chat_response = ChatResponse(
+        message=Message(
+            role=MessageRole.ASSISTANT,
+            chunks=[
+                ToolCallBlock(
+                    tool_call_id="123",
+                    tool_name="test_function",
+                    tool_kwargs='{"arg1": "value1", "arg2": 42}',
+                )
+            ],
+        ),
+    )
 
     llm = OpenAIResponses(model="gpt-4o-mini")
     tool_selections = llm.get_tool_calls_from_response(chat_response)
@@ -513,16 +520,16 @@ async def test_astream_complete_with_api():
 
 @pytest.mark.skipif(SKIP_OPENAI_TESTS, reason="OpenAI API key not available")
 def test_structured_prediction_with_api():
-    """Test structured prediction with real API call."""
+    """Test structured prediction with real API call via parse()."""
 
     class Person(BaseModel):
         name: str = Field(description="The person's name")
         age: int = Field(description="The person's age")
 
     llm = OpenAIResponses(model="gpt-4o-mini")
-    result = llm.structured_predict(
-        output_cls=Person,
-        prompt=PromptTemplate(
+    result = llm.parse(
+        Person,
+        PromptTemplate(
             "Create a profile for a person named Alice who is 25 years old"
         ),
     )

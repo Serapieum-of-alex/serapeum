@@ -1225,37 +1225,40 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         )
 
         if not result:
-            legacy_tool_calls = response.message.additional_kwargs.get(
-                "tool_calls", []
-            )
-            if legacy_tool_calls:
-                tool_selections: list[ToolCallArguments] = []
-                for tool_call in legacy_tool_calls:
-                    if tool_call.type != "function":
-                        raise ValueError(
-                            "Invalid tool type. Unsupported by OpenAI llm"
-                        )
-                    try:
-                        argument_dict = parse_partial_json(
-                            tool_call.function.arguments
-                        )
-                    except (ValueError, TypeError, JSONDecodeError):
-                        argument_dict = {}
-
-                    tool_selections.append(
-                        ToolCallArguments(
-                            tool_id=tool_call.id,
-                            tool_name=tool_call.function.name,
-                            tool_kwargs=argument_dict,
-                        )
-                    )
-                result = tool_selections
-            elif error_on_no_tool_call:
-                raise ValueError(
-                    "Expected at least one tool call, but got "
-                    f"{len(legacy_tool_calls)} tool calls."
-                )
-
+            result = get_tool_calls_from_legacy_response(response, error_on_no_tool_call)
         return result
 
 
+def get_tool_calls_from_legacy_response(response: ChatResponse, error_on_no_tool_call: bool = True) -> ChatResponse:
+    legacy_tool_calls = response.message.additional_kwargs.get(
+        "tool_calls", []
+    )
+    if legacy_tool_calls:
+        tool_selections: list[ToolCallArguments] = []
+        for tool_call in legacy_tool_calls:
+            if tool_call.type != "function":
+                raise ValueError(
+                    "Invalid tool type. Unsupported by OpenAI llm"
+                )
+            try:
+                argument_dict = parse_partial_json(
+                    tool_call.function.arguments
+                )
+            except (ValueError, TypeError, JSONDecodeError):
+                argument_dict = {}
+
+            tool_selections.append(
+                ToolCallArguments(
+                    tool_id=tool_call.id,
+                    tool_name=tool_call.function.name,
+                    tool_kwargs=argument_dict,
+                )
+            )
+        result = tool_selections
+    elif error_on_no_tool_call:
+        raise ValueError(
+            "Expected at least one tool call, but got "
+            f"{len(legacy_tool_calls)} tool calls."
+        )
+
+    return result

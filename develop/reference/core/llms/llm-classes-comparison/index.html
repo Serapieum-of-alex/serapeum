@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -3397,7 +3397,7 @@ structured_llm = StructuredOutputLLM(
 )</p>
 <h1 id="all-responses-will-be-personinfo-instances"><a class="toclink" href="#all-responses-will-be-personinfo-instances">All responses will be PersonInfo instances</a><a class="headerlink" href="#all-responses-will-be-personinfo-instances" title="Permanent link">#</a></h1>
 <p>response = structured_llm.chat([
-    Message(role="user", content="Tell me about Alice, a 30-year-old engineer")
+    Message(role="user", chunks=[TextChunk(content="Tell me about Alice, a 30-year-old engineer")])
 ])
 print(response.raw)</p>
 <h1 id="personinfonamealice-age30-occupationengineer"><a class="toclink" href="#personinfonamealice-age30-occupationengineer">PersonInfo(name='Alice', age=30, occupation='Engineer')</a><a class="headerlink" href="#personinfonamealice-age30-occupationengineer" title="Permanent link">#</a></h1>

@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -3181,7 +3181,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt=messages_to_prompt_v3_instruct,
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )</p>
-<p>messages = [Message(role=MessageRole.USER, content="Say hello.")]
+<p>messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Say hello.")])]
 response = llm.chat(messages)
 print(response.message.content)
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>## Understanding the Workflow

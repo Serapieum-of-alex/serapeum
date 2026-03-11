@@ -21,7 +21,7 @@
 <link href="../../../../assets/stylesheets/panzoom.css" rel="stylesheet"/>
 <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
 <body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
@@ -1537,7 +1537,7 @@ from serapeum.llama_cpp.formatters.llama3 import (
 <h3 id="3-ready-processingchat-ready"><a class="toclink" href="#3-ready-processingchat-ready">3. Ready → ProcessingChat → Ready</a><a class="headerlink" href="#3-ready-processingchat-ready" title="Permanent link">#</a></h3>
 <p>```python notest
 from serapeum.core.llms import Message, MessageRole</p>
-<p>messages = [Message(role=MessageRole.USER, content="Hello!")]
+<p>messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])]
 response = llm.chat(messages)</p>
 <h1 id="transition-to-processingchat"><a class="toclink" href="#transition-to-processingchat">Transition to ProcessingChat:</a><a class="headerlink" href="#transition-to-processingchat" title="Permanent link">#</a></h1>
 <h1 id="1-formatmessages-messages_to_prompt_v3_instructmessages-formatted-string"><a class="toclink" href="#1-formatmessages-messages_to_prompt_v3_instructmessages-formatted-string">1. FormatMessages: messages_to_prompt_v3_instruct(messages) → formatted string</a><a class="headerlink" href="#1-formatmessages-messages_to_prompt_v3_instructmessages-formatted-string" title="Permanent link">#</a></h1>

@@ -606,7 +606,10 @@ class ChatResponse(BaseResponse):
         """Convert a chat response to a completion response."""
         return CompletionResponse(
             text=self.message.content or "",
-            additional_kwargs=self.message.additional_kwargs,
+            additional_kwargs={
+                **self.message.additional_kwargs,
+                **self.additional_kwargs,
+            },
             raw=self.raw,
             delta=self.delta,
         )

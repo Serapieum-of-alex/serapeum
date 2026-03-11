@@ -289,21 +289,26 @@ class TestChatResponseToCompletionResponse:
     def test_to_completion_response(self):
         """Test conversion to CompletionResponse.
 
-        Inputs: ChatResponse with message text "Hello" and raw payload. The Message carries additional_kwargs; the ChatResponse also has its own additional_kwargs.
-        Expected: CompletionResponse.text == "Hello"; additional_kwargs are taken from the MESSAGE (not the response) per implementation; raw propagated.
-        Checks: Exact equality for text; verify precedence/selection of additional_kwargs.
+        Inputs: ChatResponse with message text "Hello" and raw payload.
+            The Message carries additional_kwargs; the ChatResponse also
+            has its own additional_kwargs.
+        Expected: CompletionResponse.text == "Hello"; additional_kwargs
+            are merged from message and response levels, with
+            response-level taking precedence; raw propagated.
+        Checks: Exact equality for text; verify merge precedence of
+            additional_kwargs.
         """
         msg = Message(
             role=MessageRole.ASSISTANT,
             chunks=[TextChunk(content="Hello")],
-            additional_kwargs={"from": "message"},
+            additional_kwargs={"from": "message", "msg_only": True},
         )
         cr = ChatResponse(
             message=msg, additional_kwargs={"from": "response"}, raw={"r": True}
         )
         out = cr.to_completion_response()
         assert out.text == "Hello"
-        assert out.additional_kwargs == {"from": "message"}
+        assert out.additional_kwargs == {"from": "response", "msg_only": True}
         assert out.raw == {"r": True}
 
     def test_when_none_text(self):

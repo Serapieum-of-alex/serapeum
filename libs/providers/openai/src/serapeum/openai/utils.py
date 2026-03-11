@@ -74,16 +74,3 @@ def resolve_tool_choice(
         result = tool_choice
 
     return result
-
-
-def force_single_tool_call(response: ChatResponse) -> None:
-    """Keep only the first tool call in a response, discarding extras."""
-    tool_calls = [
-        block for block in response.message.chunks if isinstance(block, ToolCallBlock)
-    ]
-    if len(tool_calls) > 1:
-        response.message.chunks = [
-            block
-            for block in response.message.chunks
-            if not isinstance(block, ToolCallBlock)
-        ] + [tool_calls[0]]

@@ -52,7 +52,7 @@ from serapeum.openai.parsers import (
 )
 from serapeum.openai.llm.base import Client, ModelMetadata, StructuredOutput
 from serapeum.openai.retry import is_retryable
-from serapeum.openai.utils import force_single_tool_call, resolve_tool_choice
+from serapeum.openai.utils import resolve_tool_choice
 from serapeum.core.retry import retry
 from openai.types.chat.chat_completion_chunk import ChoiceDelta
 from serapeum.core.base.llms.utils import (
@@ -1186,7 +1186,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                 contains more than one tool call.
         """
         if not allow_parallel_tool_calls:
-            force_single_tool_call(response)
+            response.force_single_tool_call()
         return response
 
     def get_tool_calls_from_response(

@@ -4370,12 +4370,13 @@ def client(self) -&gt; Client:
     return self._client
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>### 2. **Template Method Pattern**
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>FunctionCallingLLM defines workflow, Ollama implements specifics:
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>```python
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>def generate_tool_calls(self, messages, tools, **kwargs):
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    response = self.chat(prepared)
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    validated = self._validate_chat_with_tools_response(response, tools)  # Subclass
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    return validated
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>```python
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>def generate_tool_calls(self, messages, tools, **kwargs):
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    response = self.chat(prepared)
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    validated = self._validate_response(response, tools)  # Subclass
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    return validated
 </code></pre></div></p>
 <h3 id="3-adapter-pattern"><a class="toclink" href="#3-adapter-pattern">3. <strong>Adapter Pattern</strong></a><a class="headerlink" href="#3-adapter-pattern" title="Permanent link">#</a></h3>
 <p>Ollama adapts between internal types and Ollama server format:

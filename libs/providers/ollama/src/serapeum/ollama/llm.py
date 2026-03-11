@@ -719,45 +719,43 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         Examples:
             - Trim multiple tool calls down to the first one
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
+                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse, ToolCallBlock
                 >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="m")
                 >>> response = ChatResponse(
                 ...     message=Message(
-                ...         role=MessageRole.ASSISTANT, content="", additional_kwargs={
-                ...             "tool_calls": [
-                ...                 {"function": {"name": "a", "arguments": {}}},
-                ...                 {"function": {"name": "b", "arguments": {}}},
-                ...             ]
-                ...         }
+                ...         role=MessageRole.ASSISTANT,
+                ...         chunks=[
+                ...             ToolCallBlock(tool_name="a", tool_kwargs={}),
+                ...             ToolCallBlock(tool_name="b", tool_kwargs={}),
+                ...         ],
                 ...     )
                 ... )
                 >>> validated = llm._validate_chat_with_tools_response(
                 ...     response, tools=[], allow_parallel_tool_calls=False,
                 ... )
-                >>> validated.message.additional_kwargs["tool_calls"]
-                [{'function': {'name': 'a', 'arguments': {}}}]
+                >>> len(validated.message.tool_calls)
+                1
 
                 ```
             - Allow parallel tool calls to pass through untrimmed
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
+                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse, ToolCallBlock
                 >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="m")
                 >>> response = ChatResponse(
                 ...     message=Message(
-                ...         role=MessageRole.ASSISTANT, content="", additional_kwargs={
-                ...             "tool_calls": [
-                ...                 {"function": {"name": "a", "arguments": {}}},
-                ...                 {"function": {"name": "b", "arguments": {}}},
-                ...             ]
-                ...         }
+                ...         role=MessageRole.ASSISTANT,
+                ...         chunks=[
+                ...             ToolCallBlock(tool_name="a", tool_kwargs={}),
+                ...             ToolCallBlock(tool_name="b", tool_kwargs={}),
+                ...         ],
                 ...     )
                 ... )
                 >>> validated = llm._validate_chat_with_tools_response(
                 ...     response, tools=[], allow_parallel_tool_calls=True,
                 ... )
-                >>> [tc["function"]["name"] for tc in validated.message.additional_kwargs["tool_calls"]]
+                >>> [tc.tool_name for tc in validated.message.tool_calls]
                 ['a', 'b']
 
                 ```

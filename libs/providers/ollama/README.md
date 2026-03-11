@@ -644,18 +644,17 @@ Complete examples are available in the `examples/` directory:
 Run tests for the Ollama provider:
 
 ```bash
-# All tests
-cd libs/providers/ollama
-uv run pytest
+# All tests (from repo root)
+python -m pytest libs/providers/ollama/tests
 
 # Skip end-to-end tests (don't require Ollama server)
-uv run pytest -m "not e2e"
+python -m pytest libs/providers/ollama/tests -m "not e2e"
 
 # Only unit tests
-uv run pytest -m unit
+python -m pytest libs/providers/ollama/tests -m unit
 
 # With coverage
-uv run pytest --cov=serapeum.ollama
+python -m pytest libs/providers/ollama/tests --cov=serapeum.ollama
 ```
 
 **Note:** End-to-end tests require a running Ollama server with models available.

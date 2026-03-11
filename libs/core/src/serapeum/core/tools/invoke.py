@@ -4,10 +4,9 @@ import json
 import logging
 from dataclasses import dataclass
 from typing import Any, Sequence
-
+from serapeum.core.llms import ToolCallArguments
 from serapeum.core.tools.types import (
     BaseTool,
-    ToolCallArguments,
     ToolOutput,
     AsyncBaseTool,
 )

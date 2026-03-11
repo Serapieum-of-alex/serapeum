@@ -5,7 +5,6 @@ from serapeum.core.tools.callable_tool import CallableTool
 from serapeum.core.tools.invoke import ExecutionConfig, ToolExecutor
 from serapeum.core.tools.types import (
     ArgumentCoercer,
-    ToolCallArguments,
     ToolOutput,
     ToolMetadata,
     BaseTool,
@@ -15,7 +14,6 @@ from serapeum.core.tools.types import (
 __all__ = [
     "CallableTool",
     "ToolOutput",
-    "ToolCallArguments",
     "ArgumentCoercer",
     "ToolExecutor",
     "ExecutionConfig",

@@ -36,11 +36,12 @@ from serapeum.core.llms import (
     MessageRole,
     Metadata,
     TextChunk,
+    ToolCallBlock,
 )
 
 from serapeum.core.llms.orchestrators import StreamingObjectProcessor
 from serapeum.core.prompts import PromptTemplate
-from serapeum.core.tools import ArgumentCoercer, ToolCallArguments, ToolCallError
+from serapeum.core.tools import ArgumentCoercer
 from serapeum.core.types import StructuredOutputMode
 from serapeum.core.retry import retry
 from serapeum.ollama.client import Client

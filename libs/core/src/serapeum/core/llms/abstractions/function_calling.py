@@ -10,9 +10,10 @@ from serapeum.core.base.llms.types import (
     ChatResponseAsyncGen,
     ChatResponseGen,
     Message,
+    ToolCallBlock,
+    ToolCallArguments
 )
 from serapeum.core.llms.base import LLM
-from serapeum.core.tools.types import ToolCallArguments
 from serapeum.core.tools.invoke import ExecutionConfig, ToolExecutor
 from serapeum.core.chat import AgentChatResponse
 

@@ -23,10 +23,11 @@ from serapeum.core.llms import (
     Message,
     Metadata,
     ToolOrchestratingLLM,
+    ToolCallArguments
 )
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.tools import ToolOutput
-from serapeum.core.tools.types import BaseTool, ToolCallArguments
+from serapeum.core.tools.types import BaseTool
 
 
 class Song(BaseModel):

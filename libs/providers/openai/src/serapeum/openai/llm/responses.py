@@ -1,3 +1,14 @@
+"""OpenAI Responses API provider.
+
+Provides the :class:`Responses` class, which targets the ``/v1/responses``
+endpoint. This endpoint is required for reasoning-focused models such as
+``o3`` and ``o4-mini``, and also supports general-purpose models like
+``gpt-4o-mini``.  Key capabilities include streaming, built-in tools
+(file search, web search, code interpreter), stateful conversation
+continuation via ``track_previous_responses``, structured output via
+tool-call forcing, and reasoning-effort control.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -119,16 +130,20 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
             calls.
 
     Examples:
-        - Basic non-streaming completion
+        - Basic non-streaming completion with result exploration
             ```python
             >>> from serapeum.openai import Responses
             >>> llm = Responses(model="o3-mini", api_key="sk-test")  # doctest: +SKIP
             >>> resp = llm.complete("Explain recursion briefly")  # doctest: +SKIP
-            >>> print(resp.text)  # doctest: +SKIP
+            >>> resp.text  # doctest: +SKIP
+            'Recursion is a technique where a function calls itself...'
+            >>> resp.additional_kwargs["usage"].total_tokens  # doctest: +SKIP
+            85
 
             ```
         - Stateful multi-turn conversation
             ```python
+            >>> from serapeum.openai import Responses
             >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> llm = Responses(  # doctest: +SKIP
             ...     model="gpt-4o-mini",
@@ -136,15 +151,21 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
             ...     api_key="sk-test",
             ... )
             >>> r1 = llm.chat([  # doctest: +SKIP
-            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="My name is Alice")])
             ... ])
+            >>> r1.message.content  # doctest: +SKIP
+            'Nice to meet you, Alice!'
             >>> r2 = llm.chat([  # doctest: +SKIP
-            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="What did I just say?")])
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="What is my name?")])
             ... ])
+            >>> r2.message.content  # doctest: +SKIP
+            'Your name is Alice!'
 
             ```
         - Streaming with a built-in web search tool
             ```python
+            >>> from serapeum.openai import Responses
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> llm = Responses(  # doctest: +SKIP
             ...     model="gpt-4o-mini",
             ...     built_in_tools=[{"type": "web_search_preview"}],
@@ -157,13 +178,25 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
             ...     print(chunk.delta, end="", flush=True)
 
             ```
+        - Inspecting model metadata
+            ```python
+            >>> from serapeum.openai import Responses
+            >>> llm = Responses(model="o3-mini", api_key="sk-test")  # doctest: +SKIP
+            >>> llm.metadata.context_window  # doctest: +SKIP
+            200000
+            >>> llm.metadata.is_chat_model  # doctest: +SKIP
+            True
+            >>> llm.metadata.model_name  # doctest: +SKIP
+            'o3-mini'
+
+            ```
 
     See Also:
         Completions: Chat Completions API provider for models such as ``gpt-4o``.
         serapeum.openai.llm.base.Client: SDK client lifecycle management.
-        serapeum.openai.converters.ResponsesOutputParser: Parses Responses API
+        serapeum.openai.parsers.ResponsesOutputParser: Parses Responses API
             output items into a :class:`~serapeum.core.llms.ChatResponse`.
-        serapeum.openai.converters.ResponsesStreamAccumulator: Accumulates
+        serapeum.openai.parsers.ResponsesStreamAccumulator: Accumulates
             streaming Responses API events.
     """
 
@@ -296,6 +329,15 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
 
         Returns:
             str: The string ``"openai_responses_llm"``.
+
+        Examples:
+            - Retrieve the class identifier
+                ```python
+                >>> from serapeum.openai import Responses
+                >>> Responses.class_name()
+                'openai_responses_llm'
+
+                ```
         """
         return "openai_responses_llm"
 
@@ -312,6 +354,20 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
         Returns:
             Metadata: Populated metadata object including context window, output
                 token cap, capability flags, and model name.
+
+        Examples:
+            - Access metadata fields
+                ```python
+                >>> from serapeum.openai import Responses
+                >>> llm = Responses(model="o3-mini", api_key="sk-test")  # doctest: +SKIP
+                >>> llm.metadata.context_window  # doctest: +SKIP
+                200000
+                >>> llm.metadata.is_chat_model  # doctest: +SKIP
+                True
+                >>> llm.metadata.model_name  # doctest: +SKIP
+                'o3-mini'
+
+                ```
         """
         return Metadata(
             context_window=self.context_window
@@ -434,6 +490,35 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
         Returns:
             ChatResponse | ChatResponseGen: A complete response or a synchronous
                 token generator.
+
+        Examples:
+            - Non-streaming chat call
+                ```python
+                >>> from serapeum.openai import Responses
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
+                >>> llm = Responses(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
+                >>> msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])]
+                >>> resp = llm.chat(msgs)  # doctest: +SKIP
+                >>> resp.message.content  # doctest: +SKIP
+                'Hello! How can I help you today?'
+                >>> resp.message.role  # doctest: +SKIP
+                <MessageRole.ASSISTANT: 'assistant'>
+
+                ```
+            - Streaming chat call
+                ```python
+                >>> from serapeum.openai import Responses
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
+                >>> llm = Responses(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
+                >>> msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])]
+                >>> for chunk in llm.chat(msgs, stream=True):  # doctest: +SKIP
+                ...     print(chunk.delta, end="", flush=True)
+
+                ```
+
+        See Also:
+            achat: Async counterpart of this method.
+            complete: Text completion interface for prompt strings.
         """
         result: ChatResponse | ChatResponseGen = (
             self._stream_chat(messages, **kwargs)
@@ -586,6 +671,36 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
         Returns:
             ChatResponse | ChatResponseAsyncGen: A complete response or an async
                 token generator.
+
+        Examples:
+            - Async non-streaming chat
+                ```python
+                >>> import asyncio
+                >>> from serapeum.openai import Responses
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
+                >>> llm = Responses(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
+                >>> msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])]
+                >>> resp = asyncio.run(llm.achat(msgs))  # doctest: +SKIP
+                >>> resp.message.content  # doctest: +SKIP
+                'Hello! How can I help you?'
+
+                ```
+            - Async streaming chat
+                ```python
+                >>> import asyncio
+                >>> from serapeum.openai import Responses
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
+                >>> async def stream_demo():  # doctest: +SKIP
+                ...     llm = Responses(model="gpt-4o-mini", api_key="sk-test")
+                ...     msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi")])]
+                ...     async for chunk in await llm.achat(msgs, stream=True):
+                ...         print(chunk.delta, end="")
+                >>> asyncio.run(stream_demo())  # doctest: +SKIP
+
+                ```
+
+        See Also:
+            chat: Synchronous counterpart of this method.
         """
         result: ChatResponse | ChatResponseAsyncGen = (
             await self._astream_chat(messages, **kwargs)
@@ -733,6 +848,31 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
             dict[str, Any]: Payload dict with keys ``"messages"``, ``"tools"``,
                 ``"tool_choice"``, ``"parallel_tool_calls"``, and any extra
                 *kwargs*.
+
+        Examples:
+            - Prepare a tool-calling payload
+                ```python
+                >>> from serapeum.openai import Responses
+                >>> from serapeum.core.tools import CallableTool
+                >>> def search(query: str) -> str:
+                ...     '''Search the web.'''
+                ...     return f"Results for {query}"
+                >>> tool = CallableTool.from_function(search)  # doctest: +SKIP
+                >>> llm = Responses(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
+                >>> payload = llm._prepare_chat_with_tools(  # doctest: +SKIP
+                ...     tools=[tool],
+                ...     message="Find the latest Python release",
+                ... )
+                >>> len(payload["tools"])  # doctest: +SKIP
+                1
+                >>> payload["tools"][0]["type"]  # doctest: +SKIP
+                'function'
+
+                ```
+
+        See Also:
+            Completions._prepare_chat_with_tools: Chat Completions API variant
+                that uses the nested tool-spec format.
         """
 
         # openai responses api has a slightly different tool spec format

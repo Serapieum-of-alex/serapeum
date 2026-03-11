@@ -1,11 +1,22 @@
-"""Inbound Chat Completions API parsers — OpenAI response types to serapeum types.
+"""Inbound Chat Completions API parsers that convert OpenAI response types to serapeum types.
 
-Classes:
+This module handles the *inbound* direction: parsing data received from the OpenAI
+Chat Completions API (both typed SDK objects and raw dicts) into serapeum's internal
+:class:`~serapeum.core.llms.Message` and :class:`~serapeum.core.llms.LogProb` types.
 
-- :class:`ChatMessageParser` — typed ``ChatCompletionMessage`` → serapeum ``Message``
-- :class:`DictMessageParser` — raw message dict → serapeum ``Message``
-- :class:`LogProbParser` — OpenAI logprob types → :class:`~serapeum.core.llms.LogProb` lists
-- :class:`ToolCallAccumulator` — streaming ``ChoiceDeltaToolCall`` chunks → accumulated tool calls
+Parsers:
+    - :class:`ChatMessageParser` -- converts a typed
+      :class:`~openai.types.chat.chat_completion_message.ChatCompletionMessage` into a
+      serapeum :class:`~serapeum.core.llms.Message`, handling text, tool calls, and audio.
+    - :class:`DictMessageParser` -- converts a raw message dict (as used in Responses API
+      round-trips and legacy storage) into a serapeum :class:`~serapeum.core.llms.Message`.
+    - :class:`LogProbParser` -- converts OpenAI logprob types (both Chat Completions
+      token logprobs and legacy completion logprobs) into nested lists of
+      :class:`~serapeum.core.llms.LogProb`.
+
+Streaming accumulator:
+    - :class:`ToolCallAccumulator` -- incrementally reassembles streaming
+      ``ChoiceDeltaToolCall`` chunks into complete tool-call objects.
 """
 
 from __future__ import annotations
@@ -36,41 +47,50 @@ OpenAIToolCall = ChatCompletionMessageToolCall | ChoiceDeltaToolCall
 
 
 class ChatMessageParser:
-    """Parses a Chat Completions API :class:`~openai.types.chat.ChatCompletionMessage` into a serapeum :class:`~serapeum.core.llms.Message`.
+    """Parse a typed ``ChatCompletionMessage`` from the OpenAI SDK into a serapeum ``Message``.
 
-    Use the builder pattern: construct with the OpenAI message and the list of
-    active modalities, then call :meth:`build`.
+    Follows the builder pattern: construct an instance with the OpenAI message
+    object and the list of active modalities, then call :meth:`build` to produce
+    the serapeum :class:`~serapeum.core.llms.Message`.
 
-    Modalities control which content types are extracted:
+    **Modalities** control which content types are extracted:
 
-    - ``"text"`` — enables text extraction from ``content``
-    - ``"audio"`` — enables audio extraction from the ``audio`` field
+    - ``"text"`` -- enables text extraction from the ``content`` field.
+    - ``"audio"`` -- enables audio extraction from the ``audio`` field.
 
-    Tool calls are always extracted when present regardless of modalities.
+    Tool calls are **always** extracted when present, regardless of modalities.
 
     Args:
-        openai_message: The typed ``ChatCompletionMessage`` returned by the SDK.
-        modalities: Active modalities for this request (e.g. ``["text"]`` or
-            ``["text", "audio"]``).
+        openai_message: The typed
+            :class:`~openai.types.chat.chat_completion_message.ChatCompletionMessage`
+            returned by the OpenAI SDK.
+        modalities: A list of active modality strings for this request
+            (e.g. ``["text"]`` or ``["text", "audio"]``).
 
     Examples:
-        - Parse a text response
+        - Parse a text-only response (requires a live SDK object, skipped):
             ```python
             >>> # parser = ChatMessageParser(openai_msg, ["text"])  # doctest: +SKIP
             >>> # message = parser.build()
+            >>> # message.role
+            >>> # 'assistant'
             >>> # message.chunks[0].content
             >>> # 'Hello'
 
             ```
-        - Parse multiple messages at once
+        - Batch-parse multiple messages at once (requires SDK objects, skipped):
             ```python
             >>> # messages = ChatMessageParser.batch(openai_msgs, ["text"])  # doctest: +SKIP
+            >>> # len(messages)
+            >>> # 3
 
             ```
 
     See Also:
-        :class:`DictMessageParser`: Parses raw dict messages instead of typed SDK objects.
-        :class:`ChatMessageConverter`: The reverse direction (serapeum → OpenAI).
+        :class:`DictMessageParser`:
+            Parses raw message dicts instead of typed SDK objects.
+        :class:`~serapeum.openai.parsers.formatters.ChatMessageConverter`:
+            The reverse direction -- serapeum ``Message`` to OpenAI API dict.
     """
 
     def __init__(self, openai_message: ChatCompletionMessage, modalities: list[str]) -> None:
@@ -80,15 +100,20 @@ class ChatMessageParser:
         self._additional_kwargs: dict[str, Any] = {}
 
     def build(self) -> Message:
-        """Parse the OpenAI message and return a serapeum :class:`~serapeum.core.llms.Message`.
+        """Execute all extraction steps and assemble the final serapeum ``Message``.
 
-        Calls :meth:`_extract_text_content`, :meth:`_extract_tool_calls`, and
-        :meth:`_extract_audio` in order, then assembles the result.
+        Runs three extraction passes in order:
+
+        1. :meth:`_extract_text_content` -- text from ``content`` (if ``"text"``
+           modality is active).
+        2. :meth:`_extract_tool_calls` -- tool calls (always extracted).
+        3. :meth:`_extract_audio` -- audio data (if ``"audio"`` modality is active).
 
         Returns:
-            A :class:`~serapeum.core.llms.Message` with the extracted blocks and
-            ``additional_kwargs`` (includes raw ``tool_calls`` and/or ``reference_audio_id``
-            when applicable).
+            A :class:`~serapeum.core.llms.Message` whose ``role`` matches the
+            OpenAI message, ``chunks`` contains the extracted content blocks,
+            and ``additional_kwargs`` carries raw SDK objects (``tool_calls``
+            list and/or ``reference_audio_id``) for downstream use.
         """
         self._extract_text_content()
         self._extract_tool_calls()
@@ -100,16 +125,16 @@ class ChatMessageParser:
         )
 
     def _extract_text_content(self) -> None:
-        """Extract ``content`` as a :class:`~serapeum.core.llms.TextChunk` when conditions are met.
+        """Extract the ``content`` string as a :class:`~serapeum.core.llms.TextChunk`.
 
-        A :class:`~serapeum.core.llms.TextChunk` is appended to :attr:`_blocks` only
-        when **both** of the following hold:
+        A :class:`~serapeum.core.llms.TextChunk` is appended to :attr:`_blocks`
+        only when **both** conditions are satisfied:
 
-        - ``"text"`` is in :attr:`_modalities`
-        - ``openai_message.content`` is truthy (non-empty, non-None)
+        1. ``"text"`` is in :attr:`_modalities`.
+        2. ``openai_message.content`` is truthy (non-empty, non-``None``).
 
-        This handles Azure OpenAI's behaviour of omitting the ``content`` key on
-        function-calling messages.
+        The truthy check also handles Azure OpenAI's behaviour of omitting the
+        ``content`` key entirely on function-calling messages.
         """
         # NOTE: Azure OpenAI returns function calling messages without a content key
         if "text" in self._modalities and self._openai_message.content:
@@ -118,10 +143,13 @@ class ChatMessageParser:
     def _extract_tool_calls(self) -> None:
         """Extract tool calls into :class:`~serapeum.core.llms.ToolCallBlock` chunks.
 
-        For each tool call in ``openai_message.tool_calls`` where ``function``
-        is non-None, appends a :class:`~serapeum.core.llms.ToolCallBlock` to
-        :attr:`_blocks`. The raw list of tool call objects is also stored in
-        :attr:`_additional_kwargs` under ``"tool_calls"``.
+        For each ``ChatCompletionMessageToolCall`` in
+        ``openai_message.tool_calls`` whose ``function`` attribute is non-``None``,
+        a :class:`~serapeum.core.llms.ToolCallBlock` is appended to
+        :attr:`_blocks`.  The raw list of SDK tool-call objects is also stored
+        in :attr:`_additional_kwargs` under the ``"tool_calls"`` key so that
+        downstream code (e.g. :class:`~serapeum.openai.parsers.formatters.ChatMessageConverter`)
+        can pass them through without re-parsing.
         """
         if self._openai_message.tool_calls:
             tool_calls: list[ChatCompletionMessageToolCall] = self._openai_message.tool_calls
@@ -137,17 +165,17 @@ class ChatMessageParser:
             self._additional_kwargs.update(tool_calls=tool_calls)
 
     def _extract_audio(self) -> None:
-        """Extract audio data into an :class:`~serapeum.core.llms.Audio` block.
+        """Extract audio data into an :class:`~serapeum.core.llms.Audio` content block.
 
-        Appends an :class:`~serapeum.core.llms.Audio` block to :attr:`_blocks` and
-        stores the ``reference_audio_id`` in :attr:`_additional_kwargs` when
-        **both** of the following hold:
+        An :class:`~serapeum.core.llms.Audio` block is appended to :attr:`_blocks`
+        and the ``reference_audio_id`` is stored in :attr:`_additional_kwargs`
+        when **both** conditions are met:
 
-        - ``openai_message.audio`` is non-None
-        - ``"audio"`` is in :attr:`_modalities`
+        1. ``openai_message.audio`` is non-``None`` (the response includes audio).
+        2. ``"audio"`` is in :attr:`_modalities` (the caller requested audio).
 
-        The audio format is hard-coded to ``"mp3"`` (the format returned by
-        OpenAI's audio modality endpoint).
+        The audio format is hard-coded to ``"mp3"`` because that is the format
+        returned by OpenAI's audio modality endpoint.
         """
         if self._openai_message.audio and "audio" in self._modalities:
             reference_audio_id = self._openai_message.audio.id
@@ -157,24 +185,31 @@ class ChatMessageParser:
 
     @classmethod
     def batch(cls, messages: Sequence[ChatCompletionMessage], modalities: list[str]) -> list[Message]:
-        """Parse a sequence of OpenAI messages into serapeum messages.
+        """Parse a sequence of ``ChatCompletionMessage`` objects into serapeum messages.
 
-        Convenience classmethod that applies :meth:`build` to each message.
+        Convenience classmethod that constructs a :class:`ChatMessageParser` for
+        each input message and calls :meth:`build` on it.
 
         Args:
-            messages: The sequence of ``ChatCompletionMessage`` objects to parse.
-            modalities: Active modalities forwarded to each :class:`ChatMessageParser`
-                instance (e.g. ``["text"]`` or ``["text", "audio"]``).
+            messages: The sequence of
+                :class:`~openai.types.chat.chat_completion_message.ChatCompletionMessage`
+                objects to parse.
+            modalities: Active modality strings forwarded to each
+                :class:`ChatMessageParser` instance (e.g. ``["text"]`` or
+                ``["text", "audio"]``).
 
         Returns:
-            A list of :class:`~serapeum.core.llms.Message` objects, one per input.
+            A list of :class:`~serapeum.core.llms.Message` objects, one per
+            input message, in the same order.
 
         Examples:
-            - Parse a batch of messages (skipped — requires SDK objects)
+            - Batch-parse messages (requires SDK objects, skipped in tests):
                 ```python
                 >>> # messages = ChatMessageParser.batch(openai_msgs, ["text"])  # doctest: +SKIP
                 >>> # len(messages)
                 >>> # 2
+                >>> # messages[0].role
+                >>> # 'assistant'
 
                 ```
         """
@@ -182,34 +217,36 @@ class ChatMessageParser:
 
 
 class DictMessageParser:
-    """Parses a raw OpenAI message dict into a serapeum :class:`~serapeum.core.llms.Message`.
+    """Parse a raw OpenAI message dict into a serapeum :class:`~serapeum.core.llms.Message`.
 
-    Handles the raw dict format used in Responses API round-trips and legacy
-    function-calling storage (where messages are stored as plain dicts rather
-    than typed SDK objects).
+    This parser handles the raw dict format used in Responses API round-trips,
+    legacy function-calling storage, and any other context where messages are
+    plain dicts rather than typed SDK objects.
 
-    Content blocks in the ``"content"`` list are dispatched via the
+    When ``"content"`` is a **list**, each element is dispatched through the
     :attr:`_BLOCK_PARSERS` class-level dispatch table, which maps ``"type"``
-    strings to static parser methods. Supported types:
+    strings to static parser methods.  Supported type tags:
 
-    - ``"text"`` / ``"input_text"`` / ``"output_text"`` → :class:`~serapeum.core.llms.TextChunk`
-    - ``"image_url"`` → :class:`~serapeum.core.llms.Image`
-    - ``"function_call"`` → :class:`~serapeum.core.llms.ToolCallBlock`
+    - ``"text"`` / ``"input_text"`` / ``"output_text"`` --
+      :class:`~serapeum.core.llms.TextChunk`
+    - ``"image_url"`` -- :class:`~serapeum.core.llms.Image`
+    - ``"function_call"`` -- :class:`~serapeum.core.llms.ToolCallBlock`
 
-    When ``"content"`` is a string (not a list), it is passed through as the
-    ``Message.content`` field without parsing.
+    When ``"content"`` is a **string**, it is wrapped in a
+    :class:`~serapeum.core.llms.TextChunk` and placed in ``chunks``.
 
     Args:
-        message_dict: The raw message dict to parse. Must contain a ``"role"`` key.
+        message_dict: The raw message dict to parse.  Must contain at least a
+            ``"role"`` key.
 
     Examples:
-        - Parse a simple text message
+        - Parse a simple text message and access its content:
             ```python
             >>> DictMessageParser({"role": "user", "content": "hello"}).build().content
             'hello'
 
             ```
-        - Parse a message with content blocks
+        - Parse a message with structured content blocks:
             ```python
             >>> msg = DictMessageParser({
             ...     "role": "user",
@@ -219,7 +256,7 @@ class DictMessageParser:
             'hi'
 
             ```
-        - Parse multiple messages at once
+        - Batch-parse multiple dicts at once:
             ```python
             >>> dicts = [
             ...     {"role": "user", "content": "q"},
@@ -228,19 +265,25 @@ class DictMessageParser:
             >>> results = DictMessageParser.batch(dicts)
             >>> len(results)
             2
+            >>> results[0].content
+            'q'
 
             ```
 
     See Also:
-        :class:`ChatMessageParser`: Parses typed ``ChatCompletionMessage`` objects.
-        :class:`ChatMessageConverter`: The reverse direction (serapeum → OpenAI dict).
+        :class:`ChatMessageParser`:
+            Parses typed ``ChatCompletionMessage`` SDK objects instead of dicts.
+        :class:`~serapeum.openai.parsers.formatters.ChatMessageConverter`:
+            The reverse direction -- serapeum ``Message`` to OpenAI API dict.
     """
 
     _BLOCK_PARSERS: dict[str, Callable[..., ContentBlock]] = {}
-    """Dispatch table mapping ``"type"`` strings to static block-parser methods.
+    """Dispatch table mapping content-block ``"type"`` strings to static parser methods.
 
-    Populated after class definition at module scope. Keys:
-    ``"text"``, ``"image_url"``, ``"function_call"``, ``"output_text"``, ``"input_text"``.
+    Populated after the class definition at module scope.  Keys:
+    ``"text"``, ``"input_text"``, ``"output_text"``, ``"image_url"``, ``"function_call"``.
+    Each value is a ``Callable[[dict], ContentBlock]`` that parses a single
+    content-block dict into the corresponding serapeum block type.
     """
 
     def __init__(self, message_dict: dict[str, Any]) -> None:
@@ -248,20 +291,27 @@ class DictMessageParser:
         self._blocks: list[ContentBlock] = []
 
     def build(self) -> Message:
-        """Parse the message dict and return a serapeum :class:`~serapeum.core.llms.Message`.
+        """Parse the raw message dict and return a serapeum :class:`~serapeum.core.llms.Message`.
 
-        When ``"content"`` is a list, delegates to :meth:`_parse_content_blocks`
-        and sets ``content=None`` on the resulting :class:`~serapeum.core.llms.Message`
-        (blocks are the canonical representation). When ``"content"`` is a string
-        or ``None``, passes it through directly.
+        Handles two content shapes:
+
+        - **List content** -- each element is dispatched through
+          :meth:`_parse_content_blocks`; the resulting blocks are stored in
+          ``chunks`` and ``content`` is derived from any text blocks.
+        - **String / None content** -- the value is wrapped in a
+          :class:`~serapeum.core.llms.TextChunk` (if non-``None``) and placed
+          in ``chunks``.
+
+        All dict keys other than ``"role"`` and ``"content"`` are passed through
+        in ``additional_kwargs``.
 
         Returns:
-            A :class:`~serapeum.core.llms.Message` with role, content, blocks, and
-            ``additional_kwargs`` (all keys except ``"role"`` and ``"content"``).
+            A :class:`~serapeum.core.llms.Message` with ``role``, ``chunks``,
+            and ``additional_kwargs`` populated from the source dict.
 
         Raises:
-            ValueError: If the content list contains a block with an unsupported
-                ``"type"`` value (including ``None``).
+            ValueError: If the ``"content"`` list contains a block whose
+                ``"type"`` value is not recognised by :attr:`_BLOCK_PARSERS`.
             KeyError: If the dict does not contain a ``"role"`` key.
         """
         content = self._message_dict.get("content")
@@ -277,15 +327,18 @@ class DictMessageParser:
         )
 
     def _parse_content_blocks(self, content: list[dict[str, Any]]) -> None:
-        """Parse each element of a content list and append to :attr:`_blocks`.
+        """Iterate a content-block list and append parsed blocks to :attr:`_blocks`.
 
-        Dispatches each element to the appropriate parser via :attr:`_BLOCK_PARSERS`.
+        Each element's ``"type"`` key is looked up in :attr:`_BLOCK_PARSERS` to
+        find the correct parser function.  The parser converts the raw dict into
+        a serapeum :class:`~serapeum.core.llms.ContentBlock` subclass.
 
         Args:
-            content: The list of content block dicts to parse.
+            content: A list of content-block dicts, each containing at least a
+                ``"type"`` key.
 
         Raises:
-            ValueError: If an element's ``"type"`` value is not in
+            ValueError: If any element's ``"type"`` value is not found in
                 :attr:`_BLOCK_PARSERS` (including ``None``).
         """
         for elem in content:
@@ -297,12 +350,16 @@ class DictMessageParser:
                 raise ValueError(f"Unsupported message type: {t}")
 
     def _extract_additional_kwargs(self) -> dict[str, Any]:
-        """Extract ``additional_kwargs`` by copying the dict and removing ``role`` / ``content``.
+        """Build the ``additional_kwargs`` dict from the source message dict.
+
+        Creates a shallow copy of :attr:`_message_dict` and removes the
+        ``"role"`` and ``"content"`` keys (which are handled separately).
+        All remaining keys (e.g. ``"function_call"``, ``"tool_call_id"``,
+        ``"call_id"``) are preserved for downstream use.
 
         Returns:
-            A copy of :attr:`_message_dict` with ``"role"`` and ``"content"``
-            removed. All remaining keys (e.g. ``function_call``, ``tool_call_id``)
-            are preserved.
+            A dict containing every key from the source message dict except
+            ``"role"`` and ``"content"``.
         """
         additional_kwargs = self._message_dict.copy()
         additional_kwargs.pop("role")
@@ -311,23 +368,31 @@ class DictMessageParser:
 
     @classmethod
     def batch(cls, dicts: Sequence[dict[str, Any]]) -> list[Message]:
-        """Parse a sequence of message dicts into serapeum messages.
+        """Parse a sequence of raw message dicts into serapeum messages.
+
+        Convenience classmethod that constructs a :class:`DictMessageParser`
+        for each input dict and calls :meth:`build` on it.
 
         Args:
-            dicts: Sequence of raw message dicts, each with at least a ``"role"`` key.
+            dicts: A sequence of raw message dicts.  Each dict must contain
+                at least a ``"role"`` key.
 
         Returns:
-            A list of :class:`~serapeum.core.llms.Message` objects, one per input.
+            A list of :class:`~serapeum.core.llms.Message` objects, one per
+            input dict, in the same order.
 
         Examples:
-            - Batch parse
+            - Batch-parse two messages and inspect content:
                 ```python
                 >>> dicts = [
                 ...     {"role": "user", "content": "q1"},
                 ...     {"role": "assistant", "content": "a1"},
                 ... ]
-                >>> [m.content for m in DictMessageParser.batch(dicts)]
-                ['q1', 'a1']
+                >>> messages = DictMessageParser.batch(dicts)
+                >>> messages[0].content
+                'q1'
+                >>> messages[1].content
+                'a1'
 
                 ```
         """
@@ -337,25 +402,27 @@ class DictMessageParser:
 
     @staticmethod
     def _parse_text(elem: dict[str, Any]) -> TextChunk:
-        """Parse a text content block into a :class:`~serapeum.core.llms.TextChunk`.
+        """Parse a text content-block dict into a :class:`~serapeum.core.llms.TextChunk`.
 
-        Handles ``"text"``, ``"input_text"``, and ``"output_text"`` type tags.
+        Handles the ``"text"``, ``"input_text"``, and ``"output_text"`` type
+        tags uniformly -- all three are stored in the same ``"text"`` key.
 
         Args:
-            elem: A content block dict containing an optional ``"text"`` key.
+            elem: A content-block dict.  The ``"text"`` key provides the string
+                content; if absent, defaults to ``""``.
 
         Returns:
-            A :class:`~serapeum.core.llms.TextChunk` with the text content, or an
-            empty string when the key is absent.
+            A :class:`~serapeum.core.llms.TextChunk` containing the extracted
+            text, or an empty string when the ``"text"`` key is missing.
 
         Examples:
-            - Basic text block
+            - Standard text block:
                 ```python
                 >>> DictMessageParser._parse_text({"type": "text", "text": "hello"}).content
                 'hello'
 
                 ```
-            - Missing text key defaults to empty string
+            - Missing ``"text"`` key defaults to empty string:
                 ```python
                 >>> DictMessageParser._parse_text({"type": "text"}).content
                 ''
@@ -366,21 +433,27 @@ class DictMessageParser:
 
     @staticmethod
     def _parse_image(elem: dict[str, Any]) -> Image:
-        """Parse an image_url content block into an :class:`~serapeum.core.llms.Image`.
+        """Parse an ``image_url`` content-block dict into a serapeum :class:`~serapeum.core.llms.Image`.
 
-        When the URL starts with ``"data:"``, stores it as inline content
-        (``Image(content=...)``). Otherwise stores it as a URL (``Image(url=...)``).
+        The URL is examined to determine storage mode:
+
+        - URLs starting with ``"data:"`` are treated as **inline** base64 data
+          and stored in ``Image(content=...)``.
+        - All other URLs are stored as remote references in ``Image(url=...)``.
+
+        The optional ``"detail"`` field (``"low"``, ``"high"``, ``"auto"``) is
+        preserved when present.
 
         Args:
-            elem: A content block dict with an ``"image_url"`` sub-dict containing
-                ``"url"`` and optionally ``"detail"``.
+            elem: A content-block dict with an ``"image_url"`` sub-dict that
+                contains ``"url"`` (required) and optionally ``"detail"``.
 
         Returns:
             An :class:`~serapeum.core.llms.Image` block with either ``url`` or
-            ``content`` set, and optional ``detail``.
+            ``content`` set, plus optional ``detail``.
 
         Examples:
-            - Image from URL
+            - Parse an image from a remote URL with detail:
                 ```python
                 >>> img = DictMessageParser._parse_image({
                 ...     "type": "image_url",
@@ -403,19 +476,29 @@ class DictMessageParser:
 
     @staticmethod
     def _parse_function_call(elem: dict[str, Any]) -> ToolCallBlock:
-        """Parse a function_call content block into a :class:`~serapeum.core.llms.ToolCallBlock`.
+        """Parse a ``function_call`` content-block dict into a :class:`~serapeum.core.llms.ToolCallBlock`.
+
+        Maps the Responses API ``function_call`` schema to serapeum's
+        :class:`~serapeum.core.llms.ToolCallBlock` fields:
+
+        - ``"call_id"`` --> ``tool_call_id``
+        - ``"name"`` --> ``tool_name``
+        - ``"arguments"`` --> ``tool_kwargs``
+
+        All keys are optional in the input dict; missing values default to
+        ``None`` (for ``call_id``), ``""`` (for ``name``), or ``{}`` (for
+        ``arguments``).
 
         Args:
-            elem: A content block dict with optional keys ``"call_id"``, ``"name"``,
-                and ``"arguments"``.
+            elem: A content-block dict with optional keys ``"call_id"``,
+                ``"name"``, and ``"arguments"``.
 
         Returns:
-            A :class:`~serapeum.core.llms.ToolCallBlock` with the parsed fields.
-            Missing fields default to ``None`` (``call_id``), ``""`` (``name``),
-            or ``{}`` (``arguments``).
+            A :class:`~serapeum.core.llms.ToolCallBlock` populated from the
+            input dict.
 
         Examples:
-            - Parse a function call block
+            - Parse a complete function call block:
                 ```python
                 >>> tc = DictMessageParser._parse_function_call({
                 ...     "type": "function_call",
@@ -427,6 +510,8 @@ class DictMessageParser:
                 'c1'
                 >>> tc.tool_name
                 'search'
+                >>> tc.tool_kwargs
+                {'q': 'test'}
 
                 ```
         """
@@ -447,50 +532,70 @@ DictMessageParser._BLOCK_PARSERS = {
 
 
 class LogProbParser:
-    """Namespace of static methods that convert OpenAI logprob types to serapeum :class:`~serapeum.core.llms.LogProb` lists.
+    """Static converters that transform OpenAI logprob types into serapeum :class:`~serapeum.core.llms.LogProb` lists.
 
-    Provides four converters covering both the Chat Completions and legacy
-    completion logprob formats:
+    Provides four converters covering both API flavours:
 
-    - :meth:`from_token` / :meth:`from_tokens` — Chat Completions token-level logprobs
-    - :meth:`from_completion` / :meth:`from_completions` — legacy completion-style logprobs
+    **Chat Completions token logprobs** (typed SDK objects):
+        - :meth:`from_token` -- single ``ChatCompletionTokenLogprob`` to
+          ``list[LogProb]``.
+        - :meth:`from_tokens` -- sequence of token logprobs to
+          ``list[list[LogProb]]``.
 
-    All methods return empty lists (never raise) when input data is absent.
+    **Legacy completion logprobs** (plain dicts):
+        - :meth:`from_completion` -- single ``{token: logprob}`` dict to
+          ``list[LogProb]``.
+        - :meth:`from_completions` -- ``Logprobs`` object to
+          ``list[list[LogProb]]``.
+
+    All methods return empty lists (and never raise) when input data is absent
+    or ``None``.
 
     Examples:
-        - Parse token logprobs from a chat response
+        - Parse Chat Completions token logprobs (requires a live response, skipped):
             ```python
-            >>> # logprobs = LogProbParser.from_tokens(response.choices[0].logprobs.content)  # doctest: +SKIP
+            >>> # logprobs = LogProbParser.from_tokens(  # doctest: +SKIP
+            >>> #     response.choices[0].logprobs.content
+            >>> # )
+            >>> # len(logprobs)
+            >>> # 5
 
             ```
-        - Parse completion logprobs from a completion response
+        - Parse a legacy completion logprob dict directly:
             ```python
-            >>> # logprobs = LogProbParser.from_completions(response.choices[0].logprobs)  # doctest: +SKIP
+            >>> result = LogProbParser.from_completion({"hello": -0.5, "hi": -1.2})
+            >>> result[0].token
+            'hello'
+            >>> result[0].logprob
+            -0.5
 
             ```
 
     See Also:
-        :class:`~serapeum.core.llms.LogProb`: The serapeum logprob type.
+        :class:`~serapeum.core.llms.LogProb`:
+            The serapeum logprob data model.
     """
 
     @staticmethod
     def from_token(openai_token_logprob: ChatCompletionTokenLogprob) -> list[LogProb]:
-        """Convert a single Chat Completions token logprob to a list of :class:`~serapeum.core.llms.LogProb`.
+        """Convert a single Chat Completions token logprob into a list of serapeum :class:`~serapeum.core.llms.LogProb`.
 
-        Extracts the ``top_logprobs`` list (the per-token probability distribution)
-        into serapeum :class:`~serapeum.core.llms.LogProb` objects. Returns an
-        empty list when ``top_logprobs`` is ``None`` or empty.
+        Extracts the ``top_logprobs`` field (the per-position probability
+        distribution over candidate tokens) and maps each entry to a serapeum
+        :class:`~serapeum.core.llms.LogProb`.  Returns an empty list when
+        ``top_logprobs`` is ``None`` or empty.
 
         Args:
-            openai_token_logprob: A single ``ChatCompletionTokenLogprob`` object
-                from the OpenAI SDK response.
+            openai_token_logprob: A single
+                :class:`~openai.types.chat.chat_completion_token_logprob.ChatCompletionTokenLogprob`
+                object from the OpenAI SDK response.
 
         Returns:
-            A list of :class:`~serapeum.core.llms.LogProb` objects, one per entry
-            in ``top_logprobs``. Empty when ``top_logprobs`` is absent.
+            A list of :class:`~serapeum.core.llms.LogProb` objects, one per
+            entry in ``top_logprobs``.  Empty when ``top_logprobs`` is absent.
 
         Examples:
-            - Returns empty list for None top_logprobs
+            - ``None`` top_logprobs yields an empty list:
                 ```python
                 >>> from openai.types.chat.chat_completion_token_logprob import ChatCompletionTokenLogprob
                 >>> logprob = ChatCompletionTokenLogprob(token="hi", logprob=-0.5, top_logprobs=[])
@@ -501,7 +606,8 @@ class LogProbParser:
                 ```
 
         See Also:
-            :meth:`from_tokens`: Batch version for a sequence of token logprobs.
+            :meth:`from_tokens`:
+                Batch version that processes a sequence of token logprobs.
         """
         result: list[LogProb] = []
         if openai_token_logprob.top_logprobs:
@@ -513,21 +619,26 @@ class LogProbParser:
 
     @staticmethod
     def from_tokens(openai_token_logprobs: Sequence[ChatCompletionTokenLogprob]) -> list[list[LogProb]]:
-        """Convert a sequence of Chat Completions token logprobs to a nested list.
+        """Convert a sequence of Chat Completions token logprobs into a nested list.
 
-        Applies :meth:`from_token` to each element, filtering out tokens that
-        produce an empty list (i.e. tokens whose ``top_logprobs`` is absent).
+        Applies :meth:`from_token` to each element and collects the results,
+        **filtering out** tokens whose ``top_logprobs`` is ``None`` or empty
+        (these produce empty inner lists that are excluded from the output).
 
         Args:
             openai_token_logprobs: The ``content`` field of a
-                ``ChoiceLogprobs`` object from the SDK response.
+                ``ChoiceLogprobs`` object from the SDK response -- a sequence
+                of :class:`~openai.types.chat.chat_completion_token_logprob.ChatCompletionTokenLogprob`
+                objects.
 
         Returns:
-            A list of lists — one inner list per token that had ``top_logprobs``
-            data. Tokens without data are excluded from the result.
+            A list of lists.  Each inner list contains
+            :class:`~serapeum.core.llms.LogProb` objects for one token
+            position.  Positions whose ``top_logprobs`` was absent are
+            excluded entirely.
 
         Examples:
-            - Filters tokens with no top_logprobs
+            - Tokens without ``top_logprobs`` are excluded:
                 ```python
                 >>> from openai.types.chat.chat_completion_token_logprob import ChatCompletionTokenLogprob
                 >>> logprob = ChatCompletionTokenLogprob(token="hi", logprob=-0.5, top_logprobs=[])
@@ -538,7 +649,8 @@ class LogProbParser:
                 ```
 
         See Also:
-            :meth:`from_token`: Single-token version.
+            :meth:`from_token`:
+                Single-token version.
         """
         result: list[list[LogProb]] = []
         for token_logprob in openai_token_logprobs:
@@ -548,32 +660,36 @@ class LogProbParser:
 
     @staticmethod
     def from_completion(openai_completion_logprob: dict[str, float]) -> list[LogProb]:
-        """Convert a single legacy completion logprob dict to a list of :class:`~serapeum.core.llms.LogProb`.
+        """Convert a single legacy completion logprob dict into a list of serapeum :class:`~serapeum.core.llms.LogProb`.
 
-        The legacy completions API returns logprobs as ``{token: logprob}`` dicts
-        rather than typed objects. Bytes are set to ``[]`` since the legacy format
-        does not provide byte-level information.
+        The legacy completions API returns logprobs as plain ``{token: logprob}``
+        dicts rather than typed SDK objects.  Each entry is converted to a
+        :class:`~serapeum.core.llms.LogProb` with ``bytes`` set to ``[]`` (the
+        legacy format does not provide byte-level information).
 
         Args:
             openai_completion_logprob: A dict mapping token strings to their
                 log-probability float values.
 
         Returns:
-            A list of :class:`~serapeum.core.llms.LogProb` objects with empty ``bytes``.
+            A list of :class:`~serapeum.core.llms.LogProb` objects, one per
+            dict entry.  Empty when the input dict is empty.
 
         Examples:
-            - Convert a token→logprob dict
+            - Convert a token-to-logprob dict and inspect the results:
                 ```python
                 >>> result = LogProbParser.from_completion({"hello": -0.5, "hi": -1.2})
                 >>> len(result)
                 2
                 >>> result[0].token
                 'hello'
+                >>> result[0].logprob
+                -0.5
                 >>> result[0].bytes
                 []
 
                 ```
-            - Empty dict returns empty list
+            - Empty dict yields an empty list:
                 ```python
                 >>> LogProbParser.from_completion({})
                 []
@@ -581,7 +697,8 @@ class LogProbParser:
                 ```
 
         See Also:
-            :meth:`from_completions`: Batch version for legacy ``Logprobs`` objects.
+            :meth:`from_completions`:
+                Batch version for legacy ``Logprobs`` objects.
         """
         return [
             LogProb(token=t, logprob=v, bytes=[])
@@ -590,20 +707,24 @@ class LogProbParser:
 
     @staticmethod
     def from_completions(openai_completion_logprobs: Logprobs) -> list[list[LogProb]]:
-        """Convert a legacy completion :class:`~openai.types.completion_choice.Logprobs` to a nested list.
+        """Convert a legacy :class:`~openai.types.completion_choice.Logprobs` object into a nested list.
 
-        Applies :meth:`from_completion` to each element of ``top_logprobs``.
-        Returns an empty list when ``top_logprobs`` is ``None``.
+        Applies :meth:`from_completion` to each element of ``top_logprobs``,
+        producing one inner list per token position.  Returns an empty list
+        when ``top_logprobs`` is ``None``.
 
         Args:
-            openai_completion_logprobs: A ``Logprobs`` object from the legacy
-                completions API response.
+            openai_completion_logprobs: A
+                :class:`~openai.types.completion_choice.Logprobs` object from
+                the legacy completions API response.
 
         Returns:
-            A list of lists — one inner list per position in ``top_logprobs``.
+            A list of lists.  Each inner list contains
+            :class:`~serapeum.core.llms.LogProb` objects for one token
+            position.  Empty when ``top_logprobs`` is ``None``.
 
         Examples:
-            - Returns empty list for None top_logprobs
+            - ``None`` top_logprobs yields an empty list:
                 ```python
                 >>> from openai.types.completion_choice import Logprobs
                 >>> LogProbParser.from_completions(Logprobs(top_logprobs=None))
@@ -612,7 +733,8 @@ class LogProbParser:
                 ```
 
         See Also:
-            :meth:`from_completion`: Single-position version.
+            :meth:`from_completion`:
+                Single-position version for a single ``{token: logprob}`` dict.
         """
         result: list[list[LogProb]] = []
         if openai_completion_logprobs.top_logprobs:

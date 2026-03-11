@@ -1,10 +1,19 @@
-"""Inbound Responses API parsers — OpenAI Responses output to serapeum types.
+"""Parsers that convert OpenAI Responses API output into serapeum types.
 
-Classes:
+This module bridges the gap between the OpenAI Responses API wire format
+and the provider-agnostic :mod:`serapeum.core.llms` data model.  It provides
+two complementary strategies:
 
-- :class:`ResponsesOutputParser` — parses ``Response.output`` items into a ``ChatResponse``
-- :class:`ResponsesStreamAccumulator` — accumulates streaming ``ResponseStreamEvent`` instances
-- :func:`_build_reasoning_content` — extracts text from a ``ResponseReasoningItem``
+- :class:`ResponsesOutputParser` -- parse a **complete** ``Response.output``
+  list into a single :class:`~serapeum.core.llms.ChatResponse`.
+- :class:`ResponsesStreamAccumulator` -- incrementally accumulate
+  ``ResponseStreamEvent`` instances emitted during streaming and produce
+  content blocks on each event.
+
+Helper:
+
+- :func:`_build_reasoning_content` -- extract concatenated text from a
+  ``ResponseReasoningItem``'s ``content`` and ``summary`` fields.
 """
 
 from __future__ import annotations
@@ -49,13 +58,19 @@ from serapeum.core.llms import (
 )
 
 def _build_reasoning_content(item: ResponseReasoningItem) -> str | None:
-    """Extract text from a reasoning item's content and summary fields.
+    """Extract and concatenate text from a reasoning item's ``content`` and ``summary`` fields.
+
+    When both ``content`` and ``summary`` are present, their texts are joined
+    with a newline separator (content first, then summary).  If only one is
+    present, that field's text is returned alone.
 
     Args:
-        item: A ``ResponseReasoningItem`` from the Responses API.
+        item: A :class:`~openai.types.responses.ResponseReasoningItem` from
+            the Responses API.
 
     Returns:
-        Concatenated text from content and summary, or ``None`` if both are empty.
+        The concatenated reasoning text, or ``None`` when both ``content``
+        and ``summary`` are empty or absent.
     """
     content: str | None = None
     if item.content:
@@ -69,31 +84,65 @@ def _build_reasoning_content(item: ResponseReasoningItem) -> str | None:
 
 
 class ResponsesOutputParser:
-    """Parse OpenAI Responses API output items into a :class:`~serapeum.core.llms.ChatResponse`.
+    """Parse a complete OpenAI Responses API output into a :class:`~serapeum.core.llms.ChatResponse`.
 
-    Handles all ``ResponseOutputItem`` subtypes returned by the Responses API:
+    Iterates over the ``ResponseOutputItem`` list returned in
+    ``Response.output`` and converts each subtype into the corresponding
+    serapeum content block:
 
-    - ``ResponseOutputMessage`` — text content, annotations, refusal
-    - ``ResponseFunctionToolCall`` — function tool calls → :class:`~serapeum.core.llms.ToolCallBlock`
-    - ``ResponseReasoningItem`` — reasoning content/summary → :class:`~serapeum.core.llms.ThinkingBlock`
-    - ``ImageGenerationCall`` — base64 image → :class:`~serapeum.core.llms.Image`
-    - Built-in tool calls (file search, web search, code interpreter, computer, MCP) →
-      stored in ``additional_kwargs["built_in_tool_calls"]``
+    +-------------------------------------+----------------------------------------------------+
+    | Responses API type                  | Serapeum type                                      |
+    +=====================================+====================================================+
+    | ``ResponseOutputMessage``           | :class:`~serapeum.core.llms.TextChunk`             |
+    +-------------------------------------+----------------------------------------------------+
+    | ``ResponseFunctionToolCall``        | :class:`~serapeum.core.llms.ToolCallBlock`         |
+    +-------------------------------------+----------------------------------------------------+
+    | ``ResponseReasoningItem``           | :class:`~serapeum.core.llms.ThinkingBlock`         |
+    +-------------------------------------+----------------------------------------------------+
+    | ``ImageGenerationCall``             | :class:`~serapeum.core.llms.Image`                 |
+    +-------------------------------------+----------------------------------------------------+
+    | Built-in tool calls (file search,   | Stored in                                          |
+    | web search, code interpreter,       | ``additional_kwargs["built_in_tool_calls"]``        |
+    | computer, MCP)                      |                                                    |
+    +-------------------------------------+----------------------------------------------------+
 
-    This is the Responses API counterpart of :class:`ChatMessageParser`, which
-    handles Chat Completions API responses.
+    Annotations and refusal strings are stored in ``additional_kwargs``
+    under the keys ``"annotations"`` and ``"refusal"`` respectively.
+
+    Args:
+        output: List of ``ResponseOutputItem`` instances from the Responses API
+            response (i.e. ``response.output``).
 
     Examples:
-        - Parse a Responses API output (requires SDK objects)
+        - Build a ChatResponse from a Responses API response:
             ```python
-            >>> # response = client.responses.create(...)  # doctest: +SKIP
-            >>> # chat_response = ResponsesOutputParser.parse(response.output)
+            >>> from serapeum.openai.parsers.response_parsers import ResponsesOutputParser
+            >>> # response = client.responses.create(  # doctest: +SKIP
+            >>> #     model="gpt-4o",
+            >>> #     input="Hello!"
+            >>> # )
+            >>> # parser = ResponsesOutputParser(response.output)
+            >>> # chat_response = parser.build()
+            >>> # chat_response.message.content  # doctest: +SKIP
+
+            ```
+
+        - Access tool calls from the parsed response:
+            ```python
+            >>> from serapeum.openai.parsers.response_parsers import ResponsesOutputParser
+            >>> # parser = ResponsesOutputParser(response.output)  # doctest: +SKIP
+            >>> # chat_response = parser.build()
+            >>> # tool_blocks = [
+            >>> #     chunk for chunk in chat_response.message.chunks
+            >>> #     if hasattr(chunk, 'tool_name')
+            >>> # ]
+            >>> # tool_blocks[0].tool_name  # doctest: +SKIP
 
             ```
 
     See Also:
-        :class:`ChatMessageParser`: Parser for Chat Completions API responses.
-        :class:`ResponsesStreamAccumulator`: Streaming counterpart for event-based parsing.
+        :class:`ResponsesStreamAccumulator`: Streaming counterpart that
+            processes events incrementally.
     """
 
     _BUILT_IN_TOOL_TYPES = (
@@ -105,16 +154,45 @@ class ResponsesOutputParser:
     )
 
     def __init__(self, output: list[ResponseOutputItem]) -> None:
+        """Initialise the parser with a list of Responses API output items.
+
+        Args:
+            output: The ``response.output`` list from an OpenAI Responses API
+                response object.
+        """
         self._output = output
         self._message = Message(role=MessageRole.ASSISTANT)
         self._additional_kwargs: dict[str, Any] = {"built_in_tool_calls": []}
 
     def build(self) -> ChatResponse:
-        """Parse the output items and return a ChatResponse.
+        """Iterate over all output items and assemble a :class:`~serapeum.core.llms.ChatResponse`.
+
+        Each ``ResponseOutputItem`` in the stored output list is dispatched to
+        the appropriate private handler (``_parse_message``,
+        ``_parse_function_tool_call``, etc.).  The resulting content blocks are
+        collected into a single :class:`~serapeum.core.llms.Message` with role
+        ``ASSISTANT``.
 
         Returns:
-            A :class:`~serapeum.core.llms.ChatResponse` with the parsed message, content blocks,
-            and additional kwargs (``built_in_tool_calls``, ``annotations``, ``refusal``).
+            A :class:`~serapeum.core.llms.ChatResponse` whose ``message``
+            carries the parsed content blocks and whose
+            ``additional_kwargs`` dict may contain:
+
+            - ``"built_in_tool_calls"`` -- list of built-in tool call objects
+              (file search, web search, code interpreter, etc.).
+            - ``"annotations"`` -- response text annotations, if present.
+            - ``"refusal"`` -- refusal string, if the model declined.
+
+        Examples:
+            - Parse output and inspect the message content:
+                ```python
+                >>> from serapeum.openai.parsers.response_parsers import ResponsesOutputParser
+                >>> # parser = ResponsesOutputParser(response.output)  # doctest: +SKIP
+                >>> # result = parser.build()
+                >>> # result.message.role  # doctest: +SKIP
+                >>> # result.message.content  # doctest: +SKIP
+
+                ```
         """
         for item in self._output:
             if isinstance(item, ResponseOutputMessage):
@@ -130,6 +208,7 @@ class ResponsesOutputParser:
         return ChatResponse(message=self._message, additional_kwargs=self._additional_kwargs)
 
     def _parse_message(self, item: ResponseOutputMessage) -> None:
+        """Extract text chunks, annotations, and refusal from a message output item."""
         blocks: list[ContentBlock] = []
         for part in item.content:
             if hasattr(part, "text"):
@@ -141,6 +220,7 @@ class ResponsesOutputParser:
         self._message.chunks.extend(blocks)
 
     def _parse_image_generation(self, item: ImageGenerationCall) -> None:
+        """Decode a base64 image result and append an Image block (skips failed calls)."""
         if item.status != "failed":
             self._additional_kwargs["built_in_tool_calls"].append(item)
             if item.result is not None:
@@ -148,6 +228,7 @@ class ResponsesOutputParser:
                 self._message.chunks.append(Image(content=image_bytes))
 
     def _parse_function_tool_call(self, item: ResponseFunctionToolCall) -> None:
+        """Convert a function tool call into a ToolCallBlock and append it to the message."""
         self._message.chunks.append(
             ToolCallBlock(
                 tool_name=item.name,
@@ -157,6 +238,7 @@ class ResponsesOutputParser:
         )
 
     def _parse_reasoning(self, item: ResponseReasoningItem) -> None:
+        """Convert a reasoning item into a ThinkingBlock and append it to the message."""
         self._message.chunks.append(
             ThinkingBlock(
                 content=_build_reasoning_content(item),
@@ -168,32 +250,63 @@ class ResponsesOutputParser:
 
 
 class ResponsesStreamAccumulator:
-    """Accumulate streaming Responses API events into content blocks.
+    """Accumulate streaming Responses API events into serapeum content blocks.
 
-    Encapsulates the mutable state needed during Responses API streaming:
-    built-in tool calls, the current in-progress function tool call,
-    additional kwargs (annotations, usage), and the previous response ID.
+    Encapsulates the mutable state needed while iterating over a Responses API
+    server-sent-event stream.  On each call to :meth:`update`, the
+    accumulator processes a single :class:`~openai.types.responses.ResponseStreamEvent`
+    and returns the content blocks and text delta it produced.
 
-    This is the Responses API counterpart of :class:`ToolCallAccumulator`,
-    which handles Chat Completions streaming deltas.
+    Tracked state includes:
+
+    - **Built-in tool calls** (file search, web search, etc.) -- collected in
+      :attr:`built_in_tool_calls`.
+    - **Current in-progress function tool call** -- argument deltas are
+      appended until the call completes, at which point a
+      :class:`~serapeum.core.llms.ToolCallBlock` is emitted.
+    - **Additional kwargs** (annotations, usage) -- accessible via
+      :attr:`additional_kwargs`.
+    - **Previous response ID** -- optionally tracked for stateful
+      conversation continuation.
 
     Args:
-        track_previous_responses: Whether to track the response ID for
-            stateful conversation continuation.
-        previous_response_id: Initial previous response ID, if any.
+        track_previous_responses: If ``True``, store the response ID from
+            ``ResponseCreatedEvent`` / ``ResponseInProgressEvent`` so that
+            subsequent requests can reference it.
+        previous_response_id: An initial response ID to seed the tracker
+            (useful when resuming an existing conversation).
 
     Examples:
-        - Accumulate events from a streaming response
+        - Process a streaming response event by event:
             ```python
-            >>> accumulator = ResponsesStreamAccumulator()
+            >>> from serapeum.openai.parsers.response_parsers import (
+            ...     ResponsesStreamAccumulator,
+            ... )
+            >>> acc = ResponsesStreamAccumulator(track_previous_responses=True)
+            >>> # stream = client.responses.create(..., stream=True)  # doctest: +SKIP
             >>> # for event in stream:  # doctest: +SKIP
-            >>> #     blocks, delta = accumulator.update(event)
+            >>> #     blocks, delta = acc.update(event)
+            >>> #     if delta:
+            >>> #         print(delta, end="")
+
+            ```
+
+        - Retrieve accumulated metadata after the stream ends:
+            ```python
+            >>> from serapeum.openai.parsers.response_parsers import (
+            ...     ResponsesStreamAccumulator,
+            ... )
+            >>> acc = ResponsesStreamAccumulator()
+            >>> # ... process events ...  # doctest: +SKIP
+            >>> # acc.additional_kwargs  # doctest: +SKIP
+            >>> # acc.built_in_tool_calls  # doctest: +SKIP
+            >>> # acc.previous_response_id  # doctest: +SKIP
 
             ```
 
     See Also:
-        :class:`ToolCallAccumulator`: Streaming accumulator for Chat Completions API.
-        :class:`ResponsesOutputParser`: Non-streaming parser for complete responses.
+        :class:`ResponsesOutputParser`: Non-streaming parser for complete
+            ``Response.output`` lists.
     """
 
     def __init__(
@@ -201,6 +314,14 @@ class ResponsesStreamAccumulator:
         track_previous_responses: bool = False,
         previous_response_id: str | None = None,
     ) -> None:
+        """Initialise the accumulator with optional response-ID tracking.
+
+        Args:
+            track_previous_responses: If ``True``, capture the response ID
+                from created/in-progress events so callers can chain
+                follow-up requests.
+            previous_response_id: Seed value for :attr:`previous_response_id`.
+        """
         self._built_in_tool_calls: list[Any] = []
         self._additional_kwargs: dict[str, Any] = {"built_in_tool_calls": []}
         self._current_tool_call: ResponseFunctionToolCall | None = None
@@ -209,14 +330,58 @@ class ResponsesStreamAccumulator:
 
     @property
     def built_in_tool_calls(self) -> list[Any]:
-        """The accumulated built-in tool call events."""
+        """List of accumulated built-in tool-call events.
+
+        Built-in tool calls include file-search completions, web-search
+        completions, and other non-function tool invocations that are
+        collected as events arrive.
+
+        Returns:
+            A mutable list of tool-call event objects gathered so far.
+
+        Examples:
+            - Inspect built-in tool calls after streaming:
+                ```python
+                >>> from serapeum.openai.parsers.response_parsers import (
+                ...     ResponsesStreamAccumulator,
+                ... )
+                >>> acc = ResponsesStreamAccumulator()
+                >>> acc.built_in_tool_calls
+                []
+
+                ```
+        """
         return self._built_in_tool_calls
 
     @property
     def additional_kwargs(self) -> dict[str, Any]:
-        """Additional kwargs accumulated from events (annotations, usage, built-in tool calls).
+        """Metadata accumulated from stream events.
 
-        Returns a fresh dict each call, merging ``built_in_tool_calls`` when non-empty.
+        Returns a **fresh** dict on each access.  When
+        :attr:`built_in_tool_calls` is non-empty, it is merged into the
+        returned dict under the ``"built_in_tool_calls"`` key.
+
+        Possible keys include:
+
+        - ``"built_in_tool_calls"`` -- list of built-in tool call objects.
+        - ``"annotations"`` -- text annotations added during streaming.
+        - ``"usage"`` -- token usage reported by the ``ResponseCompletedEvent``.
+
+        Returns:
+            A dict of additional metadata suitable for passing into
+            :class:`~serapeum.core.llms.ChatResponse`.
+
+        Examples:
+            - Access additional kwargs from a fresh accumulator:
+                ```python
+                >>> from serapeum.openai.parsers.response_parsers import (
+                ...     ResponsesStreamAccumulator,
+                ... )
+                >>> acc = ResponsesStreamAccumulator()
+                >>> "built_in_tool_calls" in acc.additional_kwargs
+                True
+
+                ```
         """
         result = dict(self._additional_kwargs)
         if self._built_in_tool_calls:
@@ -225,19 +390,91 @@ class ResponsesStreamAccumulator:
 
     @property
     def previous_response_id(self) -> str | None:
-        """The most recently observed response ID (for stateful tracking)."""
+        """The most recently observed response ID, or ``None``.
+
+        Only populated when the accumulator was created with
+        ``track_previous_responses=True`` and a
+        ``ResponseCreatedEvent`` or ``ResponseInProgressEvent`` has been
+        processed.
+
+        Returns:
+            The response ID string, or ``None`` if tracking is disabled or
+            no response event has been seen yet.
+
+        Examples:
+            - Check the response ID before any events:
+                ```python
+                >>> from serapeum.openai.parsers.response_parsers import (
+                ...     ResponsesStreamAccumulator,
+                ... )
+                >>> acc = ResponsesStreamAccumulator()
+                >>> acc.previous_response_id is None
+                True
+
+                ```
+
+            - Seed with an initial response ID:
+                ```python
+                >>> from serapeum.openai.parsers.response_parsers import (
+                ...     ResponsesStreamAccumulator,
+                ... )
+                >>> acc = ResponsesStreamAccumulator(
+                ...     previous_response_id="resp_abc123"
+                ... )
+                >>> acc.previous_response_id
+                'resp_abc123'
+
+                ```
+        """
         return self._previous_response_id
 
     def update(self, event: ResponseStreamEvent) -> tuple[list[ContentBlock], str]:
-        """Process a single streaming event and update internal state.
+        """Process a single streaming event and return produced content.
+
+        Dispatches the event by type and updates internal state accordingly.
+        The following event types produce visible output:
+
+        - ``ResponseTextDeltaEvent`` -- yields a
+          :class:`~serapeum.core.llms.TextChunk` and a non-empty *delta*.
+        - ``ResponseFunctionCallArgumentsDoneEvent`` -- yields a
+          :class:`~serapeum.core.llms.ToolCallBlock` for the completed call.
+        - ``ResponseImageGenCallPartialImageEvent`` -- yields an
+          :class:`~serapeum.core.llms.Image` with the partial base64 data.
+        - ``ResponseOutputItemDoneEvent`` (reasoning) -- yields a
+          :class:`~serapeum.core.llms.ThinkingBlock`.
+        - ``ResponseCompletedEvent`` -- yields the full set of blocks from the
+          completed response (parsed via :class:`ResponsesOutputParser`).
+
+        All other event types update internal bookkeeping (tool-call argument
+        accumulation, annotation collection, response-ID tracking) without
+        producing blocks.
 
         Args:
-            event: A ``ResponseStreamEvent`` from the Responses API stream.
+            event: A single
+                :class:`~openai.types.responses.ResponseStreamEvent` from the
+                server-sent-event stream.
 
         Returns:
-            A tuple of ``(blocks, delta)`` where ``blocks`` is a list of content
-            blocks produced by this event and ``delta`` is the text delta string
-            (empty if not a text event).
+            A two-element tuple ``(blocks, delta)`` where:
+
+            - *blocks* is a (possibly empty) list of
+              :class:`~serapeum.core.llms.ContentBlock` instances produced by
+              this event.
+            - *delta* is the raw text delta string (non-empty only for
+              ``ResponseTextDeltaEvent``; empty string otherwise).
+
+        Examples:
+            - Process a text delta event:
+                ```python
+                >>> from serapeum.openai.parsers.response_parsers import (
+                ...     ResponsesStreamAccumulator,
+                ... )
+                >>> acc = ResponsesStreamAccumulator()
+                >>> # blocks, delta = acc.update(text_delta_event)  # doctest: +SKIP
+                >>> # delta  # the raw text fragment  # doctest: +SKIP
+                >>> # blocks[0].content  # same text as a TextChunk  # doctest: +SKIP
+
+                ```
         """
         delta = ""
         blocks: list[ContentBlock] = []

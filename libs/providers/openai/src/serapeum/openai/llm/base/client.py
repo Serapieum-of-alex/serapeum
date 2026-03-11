@@ -1,4 +1,14 @@
-"""Shared OpenAI connection configuration and client mixin."""
+"""Shared OpenAI connection configuration and client lifecycle management.
+
+Provides :class:`Client`, a Pydantic mixin that owns API credentials
+(``api_key``, ``api_base``, ``api_version``), connection parameters
+(``timeout``, ``max_retries``, ``default_headers``), and lazy-initialised
+synchronous / asynchronous OpenAI SDK clients.
+
+The mixin is designed for multiple inheritance: concrete provider classes
+such as ``Completions`` and ``Responses`` inherit from ``Client`` to gain
+connection management without duplicating configuration fields.
+"""
 
 from __future__ import annotations
 
@@ -20,14 +30,78 @@ __all__ = ["Client"]
 class Client(Retry, BaseModel):
     """Shared connection fields and client management for OpenAI provider classes.
 
-    Owns the API credential configuration (api_key, api_base, api_version),
-    connection parameters (timeout, max_retries, default_headers), and SDK
-    client lifecycle. Supports injecting pre-built SDK clients via constructor
-    kwargs for testing.
+    Owns the API credential configuration (``api_key``, ``api_base``,
+    ``api_version``), connection parameters (``timeout``, ``max_retries``,
+    ``default_headers``), and the OpenAI SDK client lifecycle.  Both the
+    synchronous and asynchronous SDK clients are lazily initialised on first
+    access via :pyattr:`client` and :pyattr:`async_client`.
 
-    The ``async_client`` property tracks the asyncio event loop and automatically
-    recreates the client when the loop has been closed (e.g. across pytest-asyncio
-    tests).
+    Pre-built SDK clients can be injected through the constructor keyword
+    arguments ``openai_client``, ``async_openai_client``, ``http_client``,
+    and ``async_http_client``.  This is useful for testing or for sharing a
+    single HTTP connection pool across multiple provider instances.
+
+    The :pyattr:`async_client` property tracks the asyncio event loop and
+    automatically recreates the SDK client when the loop has been closed
+    (e.g. between ``pytest-asyncio`` test functions).
+
+    Inherits ``max_retries`` from :class:`~serapeum.core.retry.Retry`.
+
+    Args:
+        api_key: OpenAI API key.  Resolved from the ``OPENAI_API_KEY``
+            environment variable when not provided explicitly.
+        api_base: Base URL for the OpenAI API.  Defaults to
+            ``https://api.openai.com/v1`` when not set.
+        api_version: API version string.  Typically left empty for the
+            standard OpenAI endpoint; required for Azure OpenAI.
+        timeout: Timeout in seconds for each HTTP request.  Defaults to
+            ``60.0``.  Must be >= 0.
+        default_headers: Optional mapping of HTTP headers sent with every
+            request.
+        max_retries: Maximum number of retry attempts for transient errors.
+            Inherited from :class:`~serapeum.core.retry.Retry`.
+            Defaults to ``3``.
+
+    Examples:
+        - Create a client with explicit credentials and inspect defaults:
+            ```python
+            >>> from serapeum.openai.llm.base import Client  # doctest: +SKIP
+            >>> c = Client(api_key="sk-test")  # doctest: +SKIP
+            >>> c.timeout  # doctest: +SKIP
+            60.0
+            >>> c.api_base  # doctest: +SKIP
+            'https://api.openai.com/v1'
+
+            ```
+        - Override the timeout and add custom headers:
+            ```python
+            >>> from serapeum.openai.llm.base import Client  # doctest: +SKIP
+            >>> c = Client(  # doctest: +SKIP
+            ...     api_key="sk-test",
+            ...     timeout=120.0,
+            ...     default_headers={"X-Custom": "value"},
+            ... )
+            >>> c.timeout  # doctest: +SKIP
+            120.0
+            >>> c.default_headers["X-Custom"]  # doctest: +SKIP
+            'value'
+
+            ```
+        - Inject a pre-built synchronous client for testing:
+            ```python
+            >>> from unittest.mock import MagicMock  # doctest: +SKIP
+            >>> from serapeum.openai.llm.base import Client  # doctest: +SKIP
+            >>> mock_sdk = MagicMock()  # doctest: +SKIP
+            >>> c = Client(api_key="sk-test", openai_client=mock_sdk)  # doctest: +SKIP
+            >>> c.client is mock_sdk  # doctest: +SKIP
+            True
+
+            ```
+
+    See Also:
+        serapeum.core.retry.Retry: Mixin providing ``max_retries``.
+        serapeum.openai.utils.resolve_openai_credentials: Credential
+            resolution logic used during validation.
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -152,18 +226,68 @@ class Client(Retry, BaseModel):
 
     @property
     def client(self) -> SyncOpenAI:
-        """Synchronous OpenAI client, lazily created on first access."""
+        """Synchronous OpenAI SDK client, lazily created on first access.
+
+        On the first call the client is built via :meth:`_build_sync_client`
+        using the credentials and connection settings from this instance.
+        Subsequent calls return the cached client.  If a pre-built client was
+        injected through the ``openai_client`` constructor kwarg, that object
+        is returned directly.
+
+        Returns:
+            The synchronous ``openai.OpenAI`` SDK client configured for this
+            instance.
+
+        Examples:
+            - Access the lazily-initialised synchronous client:
+                ```python
+                >>> from serapeum.openai.llm.base import Client  # doctest: +SKIP
+                >>> c = Client(api_key="sk-test")  # doctest: +SKIP
+                >>> sdk = c.client  # doctest: +SKIP
+                >>> sdk.base_url  # doctest: +SKIP
+                URL('https://api.openai.com/v1/')
+
+                ```
+
+        See Also:
+            async_client: Asynchronous counterpart with event-loop safety.
+        """
         if self._client is None:
             self._client = self._build_sync_client(**self._get_credential_kwargs())
         return self._client
 
     @property
     def async_client(self) -> AsyncOpenAI:
-        """Asynchronous OpenAI client with event-loop safety.
+        """Asynchronous OpenAI SDK client with event-loop safety.
 
-        Lazily creates the client on first access and tracks the asyncio event
-        loop it was created on. If the loop has been closed (e.g. between
-        pytest-asyncio test functions), the client is automatically recreated.
+        Lazily creates the client on first access via
+        :meth:`_build_async_client` and records the running asyncio event
+        loop.  On subsequent accesses the cached client is returned unless
+        the event loop it was created on has been closed, in which case a
+        fresh client is built automatically.  This prevents
+        ``RuntimeError: Event loop is closed`` errors that arise when
+        reusing a client across ``pytest-asyncio`` test functions.
+
+        Returns:
+            The asynchronous ``openai.AsyncOpenAI`` SDK client configured
+            for this instance.
+
+        Examples:
+            - Access the lazily-initialised async client inside a coroutine:
+                ```python
+                >>> import asyncio  # doctest: +SKIP
+                >>> from serapeum.openai.llm.base import Client  # doctest: +SKIP
+                >>> c = Client(api_key="sk-test")  # doctest: +SKIP
+                >>> async def demo():  # doctest: +SKIP
+                ...     sdk = c.async_client
+                ...     return str(sdk.base_url)
+                >>> asyncio.run(demo())  # doctest: +SKIP
+                'https://api.openai.com/v1/'
+
+                ```
+
+        See Also:
+            client: Synchronous counterpart.
         """
         try:
             current_loop = asyncio.get_running_loop()

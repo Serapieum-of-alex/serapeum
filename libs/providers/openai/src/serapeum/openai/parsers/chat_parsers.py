@@ -746,21 +746,23 @@ class LogProbParser:
 
 
 class ToolCallAccumulator:
-    """Accumulates streaming ``ChoiceDeltaToolCall`` chunks into complete tool calls.
+    """Incrementally reassemble streaming ``ChoiceDeltaToolCall`` chunks into complete tool calls.
 
     The OpenAI streaming API delivers tool calls across multiple chunks:
 
-    - The first chunk for a given tool call contains the ``id``, ``name``, and
-      the start of ``arguments``
-    - Subsequent chunks for the same tool call append to ``arguments``
-    - When the model calls multiple tools in one turn, each tool is identified by
-      a monotonically increasing ``index`` field
+    - The **first** chunk for a given tool call carries the ``id``, ``name``,
+      and the beginning of ``arguments``.
+    - **Subsequent** chunks for the same tool call append additional characters
+      to ``arguments`` (and sometimes to ``name`` / ``id``).
+    - When the model invokes **multiple** tools in a single turn, each tool is
+      identified by a monotonically increasing ``index`` field.
 
-    This class encapsulates the mutable accumulation state.  Call :meth:`update`
-    once per streaming chunk, then read :attr:`tool_calls` after the stream ends.
+    This class encapsulates the mutable accumulation state.  Feed each
+    streaming chunk to :meth:`update`, then read the final results from the
+    :attr:`tool_calls` property after the stream ends.
 
     Examples:
-        - Accumulate a single tool call across two chunks
+        - Accumulate a single tool call across two streaming chunks:
             ```python
             >>> from openai.types.chat.chat_completion_chunk import (
             ...     ChoiceDeltaToolCall, ChoiceDeltaToolCallFunction
@@ -776,10 +778,15 @@ class ToolCallAccumulator:
             ... )])
             >>> acc.tool_calls[0].function.arguments
             '{"q":"x"}'
+            >>> acc.tool_calls[0].function.name
+            'search'
 
             ```
-        - Multiple tool calls (different index values create new entries)
+        - Multiple tool calls with different ``index`` values create separate entries:
             ```python
+            >>> from openai.types.chat.chat_completion_chunk import (
+            ...     ChoiceDeltaToolCall, ChoiceDeltaToolCallFunction
+            ... )
             >>> acc = ToolCallAccumulator()
             >>> acc.update([ChoiceDeltaToolCall(
             ...     index=0, id="c1", type="function",
@@ -791,11 +798,14 @@ class ToolCallAccumulator:
             ... )])
             >>> len(acc.tool_calls)
             2
+            >>> acc.tool_calls[1].function.name
+            'fetch'
 
             ```
 
     See Also:
-        :class:`ChatMessageParser`: Uses the accumulated tool calls when parsing a response.
+        :class:`ChatMessageParser`:
+            Uses accumulated tool calls when parsing a complete response.
     """
 
     def __init__(self) -> None:
@@ -803,33 +813,41 @@ class ToolCallAccumulator:
 
     @property
     def tool_calls(self) -> list[ChoiceDeltaToolCall]:
-        """The accumulated list of tool calls built from streaming deltas.
+        """The accumulated tool calls reassembled from streaming deltas.
+
+        The list grows as :meth:`update` is called.  Each entry is a
+        :class:`~openai.types.chat.chat_completion_chunk.ChoiceDeltaToolCall`
+        whose ``function.arguments``, ``function.name``, and ``id`` fields
+        contain the concatenated strings from all chunks seen so far.
 
         Returns:
-            A list of :class:`~openai.types.chat.chat_completion_chunk.ChoiceDeltaToolCall`
-            objects. The list grows as :meth:`update` is called. Each entry
-            represents one complete (or in-progress) tool call.
+            A mutable list of
+            :class:`~openai.types.chat.chat_completion_chunk.ChoiceDeltaToolCall`
+            objects.  Each entry represents one complete (or in-progress)
+            tool call.
         """
         return self._tool_calls
 
     def update(self, tool_calls_delta: list[ChoiceDeltaToolCall] | None) -> None:
-        """Merge a streaming delta into the accumulated tool call list.
+        """Merge a streaming tool-call delta into the accumulated state.
 
-        Each call to this method processes the first element of *tool_calls_delta*
-        (OpenAI emits exactly one delta per chunk):
+        Each call processes the **first** element of *tool_calls_delta* (the
+        OpenAI streaming API emits exactly one delta per chunk):
 
-        - If :attr:`_tool_calls` is empty, appends the delta as a new entry.
-        - If the delta's ``index`` differs from the last entry's ``index``,
-          appends it as a new tool call (the model is starting a second tool).
-        - Otherwise, calls :meth:`_merge_into_existing` to accumulate the delta's
-          fields onto the last entry.
+        - If :attr:`_tool_calls` is empty -- the delta is appended as a new
+          entry (first tool call seen).
+        - If the delta's ``index`` differs from the last entry's ``index`` --
+          the delta is appended as a new tool call (the model is starting an
+          additional tool invocation).
+        - Otherwise -- :meth:`_merge_into_existing` concatenates the delta's
+          ``arguments``, ``name``, and ``id`` onto the existing entry.
 
-        This method intentionally returns ``None`` — the caller reads the
-        accumulated state via :attr:`tool_calls`.
+        This method intentionally returns ``None``; the caller reads the
+        accumulated state via the :attr:`tool_calls` property.
 
         Args:
             tool_calls_delta: The ``tool_calls`` field from a streaming
-                ``ChoiceDelta``. ``None`` or empty list is a no-op.
+                ``ChoiceDelta``.  ``None`` or an empty list is a no-op.
         """
         if tool_calls_delta and len(tool_calls_delta) > 0:
             tc_delta = tool_calls_delta[0]
@@ -842,16 +860,21 @@ class ToolCallAccumulator:
 
     @staticmethod
     def _merge_into_existing(existing: ChoiceDeltaToolCall, delta: ChoiceDeltaToolCall) -> None:
-        """Merge *delta* fields into *existing*, accumulating string values.
+        """Merge *delta*'s string fields into *existing* by concatenation.
 
-        Initialises ``arguments``, ``name``, and ``id`` to empty strings when
-        they are ``None`` on the existing entry (this happens for the initial
-        chunk which may not contain all fields).  Then appends the delta's
-        ``arguments`` / ``name`` / ``id`` to the existing values.
+        Fields that are ``None`` on the *existing* entry are initialised to
+        empty strings before concatenation (this handles the initial chunk
+        which may not populate all fields).  The three accumulated fields are:
+
+        - ``function.arguments`` -- the JSON arguments string.
+        - ``function.name`` -- the function name (usually complete after the
+          first chunk, but the API does not guarantee this).
+        - ``id`` -- the tool-call identifier.
 
         Args:
-            existing: The tool call entry to mutate in place.
-            delta: The incoming chunk delta whose values are appended.
+            existing: The in-progress tool-call entry to mutate in place.
+            delta: The incoming streaming delta whose string values are
+                appended to *existing*.
         """
         existing_fn = cast(ChoiceDeltaToolCallFunction, existing.function)
         delta_fn = cast(ChoiceDeltaToolCallFunction, delta.function)

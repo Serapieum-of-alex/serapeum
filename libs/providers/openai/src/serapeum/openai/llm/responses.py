@@ -55,7 +55,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class OpenAIResponses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
+class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
     """OpenAI Responses API provider.
 
     Uses the ``/v1/responses`` endpoint, which is required for models such as
@@ -121,8 +121,8 @@ class OpenAIResponses(StructuredOutput, ModelMetadata, Client, ChatToCompletion,
     Examples:
         - Basic non-streaming completion
             ```python
-            >>> from serapeum.openai import OpenAIResponses
-            >>> llm = OpenAIResponses(model="o3-mini", api_key="sk-test")  # doctest: +SKIP
+            >>> from serapeum.openai import Responses
+            >>> llm = Responses(model="o3-mini", api_key="sk-test")  # doctest: +SKIP
             >>> resp = llm.complete("Explain recursion briefly")  # doctest: +SKIP
             >>> print(resp.text)  # doctest: +SKIP
 
@@ -130,7 +130,7 @@ class OpenAIResponses(StructuredOutput, ModelMetadata, Client, ChatToCompletion,
         - Stateful multi-turn conversation
             ```python
             >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-            >>> llm = OpenAIResponses(  # doctest: +SKIP
+            >>> llm = Responses(  # doctest: +SKIP
             ...     model="gpt-4o-mini",
             ...     track_previous_responses=True,
             ...     api_key="sk-test",
@@ -145,7 +145,7 @@ class OpenAIResponses(StructuredOutput, ModelMetadata, Client, ChatToCompletion,
             ```
         - Streaming with a built-in web search tool
             ```python
-            >>> llm = OpenAIResponses(  # doctest: +SKIP
+            >>> llm = Responses(  # doctest: +SKIP
             ...     model="gpt-4o-mini",
             ...     built_in_tools=[{"type": "web_search_preview"}],
             ...     api_key="sk-test",
@@ -159,7 +159,7 @@ class OpenAIResponses(StructuredOutput, ModelMetadata, Client, ChatToCompletion,
             ```
 
     See Also:
-        OpenAI: Chat Completions API provider for models such as ``gpt-4o``.
+        Completions: Chat Completions API provider for models such as ``gpt-4o``.
         serapeum.openai.llm.base.Client: SDK client lifecycle management.
         serapeum.openai.converters.ResponsesOutputParser: Parses Responses API
             output items into a :class:`~serapeum.core.llms.ChatResponse`.
@@ -240,7 +240,7 @@ class OpenAIResponses(StructuredOutput, ModelMetadata, Client, ChatToCompletion,
     @classmethod
     def _inject_response_state(
         cls, data: Any, handler: Any
-    ) -> OpenAIResponses:
+    ) -> Responses:
         """Extract ``previous_response_id`` before Pydantic validation.
 
         A ``mode="wrap"`` validator that pops the ``"previous_response_id"`` key
@@ -271,7 +271,7 @@ class OpenAIResponses(StructuredOutput, ModelMetadata, Client, ChatToCompletion,
         return instance
 
     @model_validator(mode="after")
-    def _validate_model(self) -> OpenAIResponses:
+    def _validate_model(self) -> Responses:
         """Enforce O1 temperature and sync ``store`` with ``track_previous_responses``.
 
         Sets ``temperature`` to ``1.0`` for O1 reasoning models (whose API
@@ -774,3 +774,6 @@ class OpenAIResponses(StructuredOutput, ModelMetadata, Client, ChatToCompletion,
             **kwargs,
         }
 
+
+# Backward-compatible alias
+OpenAIResponses = Responses

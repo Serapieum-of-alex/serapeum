@@ -13,13 +13,13 @@ from serapeum.azure_openai.utils import (
     resolve_from_aliases,
 )
 from serapeum.core.base.llms.utils import get_from_param_or_env
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 from serapeum.openai.utils import DEFAULT_OPENAI_API_BASE
 
 __all__ = ["AzureOpenAI", "SyncAzureOpenAI", "AsyncAzureOpenAI"]
 
 
-class AzureOpenAI(OpenAI):
+class AzureOpenAI(Completions):
     """Azure OpenAI.
 
     To use this, you must first deploy a model on Azure OpenAI.

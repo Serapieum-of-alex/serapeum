@@ -67,7 +67,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
+class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
     """OpenAI Chat Completions and Completions API provider.
 
     Routes requests to either the Chat Completions API (for chat models such as
@@ -86,7 +86,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
     Args:
         model: OpenAI model identifier (e.g. ``"gpt-4o"``, ``"gpt-4-turbo"``).
             Models that are exclusive to the Responses API (e.g. ``"o3"``) are
-            rejected at construction time; use :class:`OpenAIResponses` instead.
+            rejected at construction time; use :class:`Responses` instead.
         temperature: Sampling temperature in ``[0.0, 2.0]``. Higher values produce
             more creative, less deterministic output. Automatically forced to
             ``1.0`` for O1 reasoning models. Defaults to
@@ -128,9 +128,9 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
     Examples:
         - Basic chat completion
             ```python
-            >>> from serapeum.openai import OpenAI
+            >>> from serapeum.openai import Completions
             >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-            >>> llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
+            >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
             >>> resp = llm.chat([  # doctest: +SKIP
             ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Say hi")])
             ... ])
@@ -140,7 +140,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             ```
         - Streaming text completion
             ```python
-            >>> llm = OpenAI(model="gpt-3.5-turbo-instruct", api_key="sk-test")  # doctest: +SKIP
+            >>> llm = Completions(model="gpt-3.5-turbo-instruct", api_key="sk-test")  # doctest: +SKIP
             >>> for chunk in llm.complete("Once upon a time", stream=True):  # doctest: +SKIP
             ...     print(chunk.delta, end="", flush=True)
 
@@ -152,7 +152,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             >>> class Summary(BaseModel):
             ...     title: str
             ...     points: list[str]
-            >>> llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
+            >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
             >>> tmpl = PromptTemplate("Summarise: {text}")  # doctest: +SKIP
             >>> out = llm.parse(Summary, tmpl, text="…")  # doctest: +SKIP
             >>> isinstance(out, Summary)  # doctest: +SKIP
@@ -161,7 +161,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             ```
 
     See Also:
-        OpenAIResponses: Responses API provider for models exclusive to that API.
+        Responses: Responses API provider for models exclusive to that API.
         serapeum.openai.llm.base.Client: OpenAI SDK client lifecycle management.
         serapeum.openai.llm.base.StructuredOutput: Native JSON-schema structured outputs.
         serapeum.openai.llm.base.ModelMetadata: Model name normalisation and tokenizer.
@@ -212,7 +212,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
     )
 
     @model_validator(mode="after")
-    def _validate_model(self) -> OpenAI:
+    def _validate_model(self) -> Completions:
         """Force O1 temperature and validate model is Chat Completions-compatible.
 
         Sets ``temperature`` to ``1.0`` for O1 reasoning models whose API does
@@ -233,7 +233,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         if not is_chatcomp_api_supported(self.model):
             raise ValueError(
                 f"Cannot use model {self.model} as it is only supported by the "
-                "Responses API. Use the OpenAIResponses class for it."
+                "Responses API. Use the Responses class for it."
             )
 
         return self

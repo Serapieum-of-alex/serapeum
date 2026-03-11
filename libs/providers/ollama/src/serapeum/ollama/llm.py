@@ -765,105 +765,6 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             response.force_single_tool_call()
         return response
 
-    def get_tool_calls_from_response(
-        self,
-        response: ChatResponse,
-        error_on_no_tool_call: bool = True,
-    ) -> list[ToolCallArguments]:
-        """Extract tool call selections from a chat response.
-
-        Args:
-            response (ChatResponse): Response potentially containing tool calls.
-            error_on_no_tool_call (bool): Whether to raise when no tool calls are present.
-
-        Returns:
-            list[ToolCallArguments]: Parsed tool selections (empty when allowed and none present).
-
-        Raises:
-            ValueError: When ``error_on_no_tool_call`` is ``True`` and no tool calls exist.
-
-        Examples:
-            - Parse a single tool call and explore its fields
-                ```python
-                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-                >>> from serapeum.ollama import Ollama  # type: ignore
-                >>> llm = Ollama(model="m")
-                >>> r = ChatResponse(
-                ...     message=Message(
-                ...         role=MessageRole.ASSISTANT,
-                ...         content="",
-                ...         additional_kwargs={
-                ...             "tool_calls": [
-                ...                 {"function": {"name": "run", "arguments": {"a": 1}}}
-                ...             ]
-                ...         },
-                ...     )
-                ... )
-                >>> calls = llm.get_tool_calls_from_response(r)
-                >>> calls[0].tool_name
-                'run'
-                >>> calls[0].tool_id
-                'run'
-                >>> calls[0].tool_kwargs
-                {'a': 1}
-
-                ```
-            - Gracefully return empty list when no tool calls and errors disabled
-                ```python
-                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-                >>> from serapeum.ollama import Ollama  # type: ignore
-                >>> llm = Ollama(model="m")
-                >>> empty = ChatResponse(
-                ...     message=Message(role=MessageRole.ASSISTANT, content="No tools needed.")
-                ... )
-                >>> calls = llm.get_tool_calls_from_response(empty, error_on_no_tool_call=False)
-                >>> calls
-                []
-
-                ```
-            - Raise ToolCallError when no tool call is present and errors are enabled
-                ```python
-                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-                >>> from serapeum.ollama import Ollama  # type: ignore
-                >>> llm = Ollama(model="m")
-                >>> empty = ChatResponse(
-                ...     message=Message(role=MessageRole.ASSISTANT, content="")
-                ... )
-                >>> llm.get_tool_calls_from_response(empty, error_on_no_tool_call=True)
-                Traceback (most recent call last):
-                    ...
-                serapeum.core.tools.types.ToolCallError: Expected at least one tool call, but the LLM response contained 0 tool calls.
-
-                ```
-        """
-        tool_calls = response.message.additional_kwargs.get("tool_calls", [])
-
-        tool_selections = []
-        if not tool_calls or len(tool_calls) < 1:
-            if error_on_no_tool_call:
-                raise ToolCallError(
-                    f"Expected at least one tool call, but the LLM response contained "
-                    f"{len(tool_calls) if tool_calls else 0} tool calls.",
-                    tool_name=None,
-                )
-        else:
-            coercer = ArgumentCoercer()
-            for tool_call in tool_calls:
-                # Coerce arguments to proper types (handles JSON strings, type mismatches, etc.)
-                raw_arguments = tool_call["function"]["arguments"]
-                argument_dict = coercer.coerce(raw_arguments)
-
-                tool_selections.append(
-                    ToolCallArguments(
-                        # tool ids not provided by Ollama
-                        tool_id=tool_call["function"]["name"],
-                        tool_name=tool_call["function"]["name"],
-                        tool_kwargs=argument_dict,
-                    )
-                )
-
-        return tool_selections
-
     @staticmethod
     def _build_chat_response(raw: Any) -> ChatResponse:
         """Build a ``ChatResponse`` from a raw (non-streaming) Ollama API response.
@@ -889,7 +790,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 'Hi'
                 >>> resp.message.role
                 <MessageRole.ASSISTANT: 'assistant'>
-                >>> resp.message.additional_kwargs["tool_calls"]
+                >>> resp.message.tool_calls
                 []
 
                 ```
@@ -908,15 +809,31 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ```
         """
         raw = dict(raw)
-        tool_calls = raw["message"].get("tool_calls") or []
+        raw_tool_calls = raw["message"].get("tool_calls") or []
         token_counts = Ollama._get_response_token_counts(raw)
         if token_counts:
             raw["usage"] = token_counts
+
+        chunks: list = []
+        content = raw["message"]["content"]
+        if content:
+            chunks.append(TextChunk(content=content))
+
+        coercer = ArgumentCoercer()
+        for tc in raw_tool_calls:
+            func = tc["function"]
+            chunks.append(
+                ToolCallBlock(
+                    tool_call_id=func["name"],
+                    tool_name=func["name"],
+                    tool_kwargs=coercer.coerce(func["arguments"]),
+                )
+            )
+
         return ChatResponse(
             message=Message(
-                content=raw["message"]["content"],
+                chunks=chunks,
                 role=raw["message"]["role"],
-                additional_kwargs={"tool_calls": tool_calls},
             ),
             raw=raw,
         )
@@ -1080,22 +997,33 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
 
         tools_dict["response_txt"] += r["message"]["content"]
         new_tool_calls = [dict(t) for t in (r["message"].get("tool_calls", []) or [])]
+        coercer = ArgumentCoercer()
         for tool_call in new_tool_calls:
             func_name = str(tool_call["function"]["name"])
             func_args = str(tool_call["function"]["arguments"])
             if (func_name, func_args) not in tools_dict["seen_tool_calls"]:
                 tools_dict["seen_tool_calls"].add((func_name, func_args))
-                tools_dict["all_tool_calls"].append(tool_call)
+                tools_dict["all_tool_calls"].append(
+                    ToolCallBlock(
+                        tool_call_id=func_name,
+                        tool_name=func_name,
+                        tool_kwargs=coercer.coerce(tool_call["function"]["arguments"]),
+                    )
+                )
 
         token_counts = Ollama._get_response_token_counts(r)
         if token_counts:
             r["usage"] = token_counts
 
+        chunks: list = []
+        if tools_dict["response_txt"]:
+            chunks.append(TextChunk(content=tools_dict["response_txt"]))
+        chunks.extend(tools_dict["all_tool_calls"])
+
         return ChatResponse(
             message=Message(
-                content=tools_dict["response_txt"],
+                chunks=chunks,
                 role=r["message"]["role"],
-                additional_kwargs={"tool_calls": tools_dict["all_tool_calls"]},
             ),
             delta=r["message"]["content"],
             raw=r,

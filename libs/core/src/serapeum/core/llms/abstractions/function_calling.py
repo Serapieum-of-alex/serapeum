@@ -176,10 +176,43 @@ class FunctionCallingLLM(LLM, ABC):
         error_on_no_tool_call: bool = True,
         **kwargs: Any,
     ) -> list[ToolCallArguments]:
-        """Predict and call the tool."""
-        raise NotImplementedError(
-            "get_tool_calls_from_response is not supported by default."
-        )
+        """Extract parsed tool-call arguments from a chat response.
+
+        Reads :class:`~serapeum.core.base.llms.types.ToolCallBlock` entries
+        from ``response.message.tool_calls``.  For each block, ``tool_kwargs``
+        is parsed from JSON when stored as a string, or used directly when
+        already a dict.
+
+        Subclasses may override to add provider-specific fallback paths
+        (e.g. reading from ``additional_kwargs``).
+
+        Args:
+            response: A :class:`~serapeum.core.base.llms.types.ChatResponse`
+                that may contain tool calls.
+            error_on_no_tool_call: When ``True`` (default), raises
+                :exc:`ValueError` if no tool calls are found.
+            **kwargs: Accepted for interface compatibility.
+
+        Returns:
+            One entry per tool call with ``tool_id``, ``tool_name``, and
+            parsed ``tool_kwargs``.
+
+        Raises:
+            ValueError: If *error_on_no_tool_call* is ``True`` and no tool
+                calls are present.
+        """
+        tool_call_blocks = response.message.tool_calls
+
+        if tool_call_blocks:
+            result = [tool_call.get_arguments() for tool_call in tool_call_blocks]
+        elif error_on_no_tool_call:
+            raise ValueError(
+                "Expected at least one tool call, but got 0 tool calls."
+            )
+        else:
+            result = []
+
+        return result
 
     def invoke_callable(
         self,

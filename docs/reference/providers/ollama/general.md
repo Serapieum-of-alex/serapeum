@@ -17,7 +17,7 @@ The `Ollama` class is a production-ready LLM integration that provides:
 
 ```python
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 # Initialize Ollama
@@ -398,7 +398,7 @@ print(response2.message.content)  # "How are you?"
 ### Pattern 2: Streaming for Long Responses
 ```python
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 llm = Ollama(
   model="qwen3.5:397b",
@@ -489,7 +489,7 @@ response = llm.generate_tool_calls(tools=[tool], message="Create an album about 
 ```python
 import os
 import asyncio
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 

@@ -165,7 +165,7 @@ llm = Ollama(
 
 ### 2. Configured → ClientInitialized (Lazy)
 ```python
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 # First call triggers client creation
 response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])])
 

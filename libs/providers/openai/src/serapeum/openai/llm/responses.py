@@ -66,7 +66,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
+class Responses(
+    StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM
+):
     """OpenAI Responses API provider.
 
     Uses the ``/v1/responses`` endpoint, which is required for models such as
@@ -132,62 +134,68 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
     Examples:
         - Basic non-streaming completion with result exploration
             ```python
-            >>> from serapeum.openai import Responses
-            >>> llm = Responses(model="o3-mini", api_key="sk-test")  # doctest: +SKIP
-            >>> resp = llm.complete("Explain recursion briefly")  # doctest: +SKIP
-            >>> resp.text  # doctest: +SKIP
-            'Recursion is a technique where a function calls itself...'
-            >>> resp.additional_kwargs["usage"].total_tokens  # doctest: +SKIP
-            85
+            from serapeum.openai import Responses
+
+            llm = Responses(model="o3-mini", api_key="sk-test")
+            resp = llm.complete("Explain recursion briefly")
+            resp.text  # 'Recursion is a technique where a function calls itself...'
+            resp.additional_kwargs["usage"].total_tokens  # 85
 
             ```
         - Stateful multi-turn conversation
             ```python
-            >>> from serapeum.openai import Responses
-            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-            >>> llm = Responses(  # doctest: +SKIP
-            ...     model="gpt-4o-mini",
-            ...     track_previous_responses=True,
-            ...     api_key="sk-test",
-            ... )
-            >>> r1 = llm.chat([  # doctest: +SKIP
-            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="My name is Alice")])
-            ... ])
-            >>> r1.message.content  # doctest: +SKIP
-            'Nice to meet you, Alice!'
-            >>> r2 = llm.chat([  # doctest: +SKIP
-            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="What is my name?")])
-            ... ])
-            >>> r2.message.content  # doctest: +SKIP
-            'Your name is Alice!'
+            from serapeum.openai import Responses
+            from serapeum.core.llms import Message, MessageRole, TextChunk
+
+            llm = Responses(
+                model="gpt-4o-mini",
+                track_previous_responses=True,
+                api_key="sk-test",
+            )
+            r1 = llm.chat([
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="My name is Alice")],
+                )
+            ])
+            r1.message.content  # 'Nice to meet you, Alice!'
+            r2 = llm.chat([
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="What is my name?")],
+                )
+            ])
+            r2.message.content  # 'Your name is Alice!'
 
             ```
         - Streaming with a built-in web search tool
             ```python
-            >>> from serapeum.openai import Responses
-            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-            >>> llm = Responses(  # doctest: +SKIP
-            ...     model="gpt-4o-mini",
-            ...     built_in_tools=[{"type": "web_search_preview"}],
-            ...     api_key="sk-test",
-            ... )
-            >>> messages = [  # doctest: +SKIP
-            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Latest AI news")])
-            ... ]
-            >>> for chunk in llm.chat(messages, stream=True):  # doctest: +SKIP
-            ...     print(chunk.delta, end="", flush=True)
+            from serapeum.openai import Responses
+            from serapeum.core.llms import Message, MessageRole, TextChunk
+
+            llm = Responses(
+                model="gpt-4o-mini",
+                built_in_tools=[{"type": "web_search_preview"}],
+                api_key="sk-test",
+            )
+            messages = [
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Latest AI news")],
+                )
+            ]
+            for chunk in llm.chat(messages, stream=True):
+                print(chunk.delta, end="", flush=True)
 
             ```
         - Inspecting model metadata
             ```python
-            >>> from serapeum.openai import Responses
-            >>> llm = Responses(model="o3-mini", api_key="sk-test")  # doctest: +SKIP
-            >>> llm.metadata.context_window  # doctest: +SKIP
-            200000
-            >>> llm.metadata.is_chat_model  # doctest: +SKIP
-            True
-            >>> llm.metadata.model_name  # doctest: +SKIP
-            'o3-mini'
+            from serapeum.openai import Responses
+
+            llm = Responses(model="o3-mini", api_key="sk-test")
+            llm.metadata.context_window  # 200000
+            llm.metadata.is_chat_model  # True
+            llm.metadata.model_name  # 'o3-mini'
 
             ```
 
@@ -271,9 +279,7 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
 
     @model_validator(mode="wrap")
     @classmethod
-    def _inject_response_state(
-        cls, data: Any, handler: Any
-    ) -> Responses:
+    def _inject_response_state(cls, data: Any, handler: Any) -> Responses:
         """Extract ``previous_response_id`` before Pydantic validation.
 
         A ``mode="wrap"`` validator that pops the ``"previous_response_id"`` key
@@ -358,14 +364,12 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
         Examples:
             - Access metadata fields
                 ```python
-                >>> from serapeum.openai import Responses
-                >>> llm = Responses(model="o3-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> llm.metadata.context_window  # doctest: +SKIP
-                200000
-                >>> llm.metadata.is_chat_model  # doctest: +SKIP
-                True
-                >>> llm.metadata.model_name  # doctest: +SKIP
-                'o3-mini'
+                from serapeum.openai import Responses
+
+                llm = Responses(model="o3-mini", api_key="sk-test")
+                llm.metadata.context_window  # 200000
+                llm.metadata.is_chat_model  # True
+                llm.metadata.model_name  # 'o3-mini'
 
                 ```
         """
@@ -462,12 +466,20 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
 
     @overload
     def chat(
-        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> ChatResponse: ...
 
     @overload
     def chat(
-        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> ChatResponseGen: ...
 
     def chat(
@@ -494,25 +506,35 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
         Examples:
             - Non-streaming chat call
                 ```python
-                >>> from serapeum.openai import Responses
-                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-                >>> llm = Responses(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])]
-                >>> resp = llm.chat(msgs)  # doctest: +SKIP
-                >>> resp.message.content  # doctest: +SKIP
-                'Hello! How can I help you today?'
-                >>> resp.message.role  # doctest: +SKIP
-                <MessageRole.ASSISTANT: 'assistant'>
+                from serapeum.openai import Responses
+                from serapeum.core.llms import Message, MessageRole, TextChunk
+
+                llm = Responses(model="gpt-4o-mini", api_key="sk-test")
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                resp = llm.chat(msgs)
+                resp.message.content  # 'Hello! How can I help you today?'
+                resp.message.role  # <MessageRole.ASSISTANT: 'assistant'>
 
                 ```
             - Streaming chat call
                 ```python
-                >>> from serapeum.openai import Responses
-                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-                >>> llm = Responses(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])]
-                >>> for chunk in llm.chat(msgs, stream=True):  # doctest: +SKIP
-                ...     print(chunk.delta, end="", flush=True)
+                from serapeum.openai import Responses
+                from serapeum.core.llms import Message, MessageRole, TextChunk
+
+                llm = Responses(model="gpt-4o-mini", api_key="sk-test")
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                for chunk in llm.chat(msgs, stream=True):
+                    print(chunk.delta, end="", flush=True)
 
                 ```
 
@@ -641,12 +663,20 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
 
     @overload
     async def achat(
-        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> ChatResponse: ...
 
     @overload
     async def achat(
-        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> ChatResponseAsyncGen: ...
 
     async def achat(
@@ -675,27 +705,41 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
         Examples:
             - Async non-streaming chat
                 ```python
-                >>> import asyncio
-                >>> from serapeum.openai import Responses
-                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-                >>> llm = Responses(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])]
-                >>> resp = asyncio.run(llm.achat(msgs))  # doctest: +SKIP
-                >>> resp.message.content  # doctest: +SKIP
-                'Hello! How can I help you?'
+                import asyncio
+                from serapeum.openai import Responses
+                from serapeum.core.llms import Message, MessageRole, TextChunk
+
+                llm = Responses(model="gpt-4o-mini", api_key="sk-test")
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                resp = asyncio.run(llm.achat(msgs))
+                resp.message.content  # 'Hello! How can I help you?'
 
                 ```
             - Async streaming chat
                 ```python
-                >>> import asyncio
-                >>> from serapeum.openai import Responses
-                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-                >>> async def stream_demo():  # doctest: +SKIP
-                ...     llm = Responses(model="gpt-4o-mini", api_key="sk-test")
-                ...     msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi")])]
-                ...     async for chunk in await llm.achat(msgs, stream=True):
-                ...         print(chunk.delta, end="")
-                >>> asyncio.run(stream_demo())  # doctest: +SKIP
+                import asyncio
+                from serapeum.openai import Responses
+                from serapeum.core.llms import Message, MessageRole, TextChunk
+
+                async def stream_demo():
+                    llm = Responses(
+                        model="gpt-4o-mini", api_key="sk-test",
+                    )
+                    msgs = [
+                        Message(
+                            role=MessageRole.USER,
+                            chunks=[TextChunk(content="Hi")],
+                        )
+                    ]
+                    async for chunk in await llm.achat(msgs, stream=True):
+                        print(chunk.delta, end="")
+
+                asyncio.run(stream_demo())
 
                 ```
 
@@ -710,9 +754,7 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
         return result
 
     @retry(is_retryable, logger)
-    async def _achat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponse:
+    async def _achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         """Send a non-streaming async Responses API request.
 
         Async counterpart to :meth:`_chat`. Decorated with
@@ -852,21 +894,21 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
         Examples:
             - Prepare a tool-calling payload
                 ```python
-                >>> from serapeum.openai import Responses
-                >>> from serapeum.core.tools import CallableTool
-                >>> def search(query: str) -> str:
-                ...     '''Search the web.'''
-                ...     return f"Results for {query}"
-                >>> tool = CallableTool.from_function(search)  # doctest: +SKIP
-                >>> llm = Responses(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> payload = llm._prepare_chat_with_tools(  # doctest: +SKIP
-                ...     tools=[tool],
-                ...     message="Find the latest Python release",
-                ... )
-                >>> len(payload["tools"])  # doctest: +SKIP
-                1
-                >>> payload["tools"][0]["type"]  # doctest: +SKIP
-                'function'
+                from serapeum.openai import Responses
+                from serapeum.core.tools import CallableTool
+
+                def search(query: str) -> str:
+                    "Search the web."
+                    return f"Results for {query}"
+
+                tool = CallableTool.from_function(search)
+                llm = Responses(model="gpt-4o-mini", api_key="sk-test")
+                payload = llm._prepare_chat_with_tools(
+                    tools=[tool],
+                    message="Find the latest Python release",
+                )
+                len(payload["tools"])  # 1
+                payload["tools"][0]["type"]  # 'function'
 
                 ```
 
@@ -907,9 +949,9 @@ class Responses(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Funct
         return {
             "messages": messages,
             "tools": tool_specs or None,
-            "tool_choice": resolve_tool_choice(tool_choice, tool_required)
-            if tool_specs
-            else None,
+            "tool_choice": (
+                resolve_tool_choice(tool_choice, tool_required) if tool_specs else None
+            ),
             "parallel_tool_calls": allow_parallel_tool_calls,
             **kwargs,
         }

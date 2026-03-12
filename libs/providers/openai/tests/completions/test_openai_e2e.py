@@ -85,12 +85,14 @@ def llm_with_logprobs(model):
 
 class Person(BaseModel):
     """A person with name and age."""
+
     name: str = Field(description="The person's name")
     age: int = Field(description="The person's age")
 
 
 class Address(BaseModel):
     """A physical address."""
+
     street: str = Field(description="Street address")
     city: str = Field(description="City name")
     country: str = Field(description="Country name")
@@ -98,6 +100,7 @@ class Address(BaseModel):
 
 class PersonWithAddress(BaseModel):
     """A person with a nested address."""
+
     name: str = Field(description="The person's name")
     age: int = Field(description="The person's age")
     address: Address = Field(description="The person's home address")
@@ -148,17 +151,19 @@ class TestSyncChat:
             the correct role, and contains at least one TextChunk.
         """
         response = llm.chat(
-            [Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(content="Say hello in one word.")],
-            )]
+            [
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Say hello in one word.")],
+                )
+            ]
         )
-        assert isinstance(response, ChatResponse), (
-            f"Expected ChatResponse, got {type(response)}"
-        )
-        assert response.message.role == MessageRole.ASSISTANT, (
-            f"Expected ASSISTANT role, got {response.message.role}"
-        )
+        assert isinstance(
+            response, ChatResponse
+        ), f"Expected ChatResponse, got {type(response)}"
+        assert (
+            response.message.role == MessageRole.ASSISTANT
+        ), f"Expected ASSISTANT role, got {response.message.role}"
         assert response.message.content is not None, "Content should not be None"
         assert len(response.message.content) > 0, "Content should not be empty"
         text_chunks = [c for c in response.message.chunks if isinstance(c, TextChunk)]
@@ -174,9 +179,9 @@ class TestSyncChat:
         messages = [
             Message(
                 role=MessageRole.SYSTEM,
-                chunks=[TextChunk(
-                    content="You are a pirate. Always respond like a pirate."
-                )],
+                chunks=[
+                    TextChunk(content="You are a pirate. Always respond like a pirate.")
+                ],
             ),
             Message(
                 role=MessageRole.USER,
@@ -208,9 +213,9 @@ class TestSyncChat:
             ),
         ]
         response = llm.chat(messages)
-        assert "Alice" in response.message.content, (
-            f"Expected 'Alice' in response, got: {response.message.content}"
-        )
+        assert (
+            "Alice" in response.message.content
+        ), f"Expected 'Alice' in response, got: {response.message.content}"
 
     def test_raw_response_populated(self, llm):
         """Test that the raw API response object is attached.
@@ -219,10 +224,12 @@ class TestSyncChat:
             The raw field should contain the original SDK response object.
         """
         response = llm.chat(
-            [Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(content="Say hi.")],
-            )]
+            [
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Say hi.")],
+                )
+            ]
         )
         assert response.raw is not None, "raw should contain the SDK response"
 
@@ -240,14 +247,16 @@ class TestAsyncChat:
             Same as sync test but via achat.
         """
         response = await llm.achat(
-            [Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(content="Say hello in one word.")],
-            )]
+            [
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Say hello in one word.")],
+                )
+            ]
         )
-        assert isinstance(response, ChatResponse), (
-            f"Expected ChatResponse, got {type(response)}"
-        )
+        assert isinstance(
+            response, ChatResponse
+        ), f"Expected ChatResponse, got {type(response)}"
         assert response.message.content is not None, "Content should not be None"
         assert len(response.message.content) > 0, "Content should not be empty"
 
@@ -273,9 +282,9 @@ class TestAsyncChat:
             ),
         ]
         response = await llm.achat(messages)
-        assert "Bob" in response.message.content, (
-            f"Expected 'Bob' in response, got: {response.message.content}"
-        )
+        assert (
+            "Bob" in response.message.content
+        ), f"Expected 'Bob' in response, got: {response.message.content}"
 
 
 @pytest.mark.e2e
@@ -291,16 +300,16 @@ class TestSyncStreamChat:
             with non-empty deltas.
         """
         gen = llm.chat(
-            messages=[Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(content="Count from 1 to 5.")],
-            )],
+            messages=[
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Count from 1 to 5.")],
+                )
+            ],
             stream=True,
         )
         chunks = list(gen)
-        assert len(chunks) > 1, (
-            f"Expected multiple chunks, got {len(chunks)}"
-        )
+        assert len(chunks) > 1, f"Expected multiple chunks, got {len(chunks)}"
         deltas = [c.delta for c in chunks if c.delta]
         assert len(deltas) > 0, "At least one chunk should have a non-empty delta"
 
@@ -312,19 +321,21 @@ class TestSyncStreamChat:
             (never shrink), and the final chunk should contain all text.
         """
         gen = llm.chat(
-            messages=[Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(content="Say the word 'hello'.")],
-            )],
+            messages=[
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Say the word 'hello'.")],
+                )
+            ],
             stream=True,
         )
         chunks = list(gen)
         prev_len = 0
         for chunk in chunks:
             content = chunk.message.content or ""
-            assert len(content) >= prev_len, (
-                f"Content length should not decrease: {len(content)} < {prev_len}"
-            )
+            assert (
+                len(content) >= prev_len
+            ), f"Content length should not decrease: {len(content)} < {prev_len}"
             prev_len = len(content)
         final = chunks[-1]
         assert final.message.content is not None, "Final chunk should have content"
@@ -337,10 +348,12 @@ class TestSyncStreamChat:
             underlying SDK chunk object.
         """
         gen = llm.chat(
-            messages=[Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(content="Hi.")],
-            )],
+            messages=[
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Hi.")],
+                )
+            ],
             stream=True,
         )
         for chunk in gen:
@@ -360,18 +373,18 @@ class TestAsyncStreamChat:
             Same as sync streaming test but via achat(stream=True).
         """
         gen = await llm.achat(
-            messages=[Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(content="Count from 1 to 5.")],
-            )],
+            messages=[
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Count from 1 to 5.")],
+                )
+            ],
             stream=True,
         )
         chunks = []
         async for chunk in gen:
             chunks.append(chunk)
-        assert len(chunks) > 1, (
-            f"Expected multiple chunks, got {len(chunks)}"
-        )
+        assert len(chunks) > 1, f"Expected multiple chunks, got {len(chunks)}"
         deltas = [c.delta for c in chunks if c.delta]
         assert len(deltas) > 0, "At least one chunk should have a non-empty delta"
 
@@ -383,18 +396,20 @@ class TestAsyncStreamChat:
             Each chunk's content length should be >= the previous one.
         """
         gen = await llm.achat(
-            messages=[Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(content="Say 'world'.")],
-            )],
+            messages=[
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Say 'world'.")],
+                )
+            ],
             stream=True,
         )
         prev_len = 0
         async for chunk in gen:
             content = chunk.message.content or ""
-            assert len(content) >= prev_len, (
-                f"Content length should not decrease: {len(content)} < {prev_len}"
-            )
+            assert (
+                len(content) >= prev_len
+            ), f"Content length should not decrease: {len(content)} < {prev_len}"
             prev_len = len(content)
 
 
@@ -422,9 +437,7 @@ class TestSyncCompletion:
         """
         gen = llm.complete(prompt="Count from 1 to 5:", stream=True)
         chunks = list(gen)
-        assert len(chunks) > 1, (
-            f"Expected multiple chunks, got {len(chunks)}"
-        )
+        assert len(chunks) > 1, f"Expected multiple chunks, got {len(chunks)}"
         final_text = chunks[-1].text
         assert final_text is not None, "Final text should not be None"
         assert len(final_text) > 0, "Final text should not be empty"
@@ -469,9 +482,7 @@ class TestAsyncCompletion:
         chunks = []
         async for chunk in gen:
             chunks.append(chunk)
-        assert len(chunks) > 1, (
-            f"Expected multiple chunks, got {len(chunks)}"
-        )
+        assert len(chunks) > 1, f"Expected multiple chunks, got {len(chunks)}"
         assert chunks[-1].text is not None, "Final text should not be None"
 
 
@@ -510,16 +521,10 @@ class TestParseJsonSchema:
         Test scenario:
             Ask the model to create a person, verify type and fields.
         """
-        prompt = PromptTemplate(
-            "Create a person named Alice who is 30 years old."
-        )
+        prompt = PromptTemplate("Create a person named Alice who is 30 years old.")
         result = llm.parse(schema=Person, prompt=prompt)
-        assert isinstance(result, Person), (
-            f"Expected Person, got {type(result)}"
-        )
-        assert result.name == "Alice", (
-            f"Expected name 'Alice', got '{result.name}'"
-        )
+        assert isinstance(result, Person), f"Expected Person, got {type(result)}"
+        assert result.name == "Alice", f"Expected name 'Alice', got '{result.name}'"
         assert result.age == 30, f"Expected age 30, got {result.age}"
 
     def test_parse_nested_model(self, llm):
@@ -533,15 +538,13 @@ class TestParseJsonSchema:
             "123 Main St, New York, USA."
         )
         result = llm.parse(schema=PersonWithAddress, prompt=prompt)
-        assert isinstance(result, PersonWithAddress), (
-            f"Expected PersonWithAddress, got {type(result)}"
-        )
-        assert result.name == "Bob", (
-            f"Expected name 'Bob', got '{result.name}'"
-        )
-        assert result.address.city == "New York", (
-            f"Expected city 'New York', got '{result.address.city}'"
-        )
+        assert isinstance(
+            result, PersonWithAddress
+        ), f"Expected PersonWithAddress, got {type(result)}"
+        assert result.name == "Bob", f"Expected name 'Bob', got '{result.name}'"
+        assert (
+            result.address.city == "New York"
+        ), f"Expected city 'New York', got '{result.address.city}'"
 
     def test_parse_with_prompt_args(self, llm):
         """Test JSON-schema parse with template variables via prompt_args.
@@ -550,16 +553,10 @@ class TestParseJsonSchema:
             Use a PromptTemplate with a variable and pass it through
             prompt_args to verify the template is rendered.
         """
-        prompt = PromptTemplate(
-            "Create a person named {name} who is 28 years old."
-        )
+        prompt = PromptTemplate("Create a person named {name} who is 28 years old.")
         result = llm.parse(schema=Person, prompt=prompt, name="Zara")
-        assert isinstance(result, Person), (
-            f"Expected Person, got {type(result)}"
-        )
-        assert result.name == "Zara", (
-            f"Expected name 'Zara', got '{result.name}'"
-        )
+        assert isinstance(result, Person), f"Expected Person, got {type(result)}"
+        assert result.name == "Zara", f"Expected name 'Zara', got '{result.name}'"
         assert result.age == 28, f"Expected age 28, got {result.age}"
 
     def test_parse_streaming_yields_partials(self, llm):
@@ -569,22 +566,14 @@ class TestParseJsonSchema:
             Streaming parse should yield at least one result; the final one
             should be a valid Person instance with correct fields.
         """
-        prompt = PromptTemplate(
-            "Create a person named Dave who is 50 years old."
-        )
-        results = list(
-            llm.parse(schema=Person, prompt=prompt, stream=True)
-        )
-        assert len(results) > 0, (
-            "Streaming parse should yield at least one result"
-        )
+        prompt = PromptTemplate("Create a person named Dave who is 50 years old.")
+        results = list(llm.parse(schema=Person, prompt=prompt, stream=True))
+        assert len(results) > 0, "Streaming parse should yield at least one result"
         final = results[-1]
-        assert isinstance(final, Person), (
-            f"Final streamed object should be Person, got {type(final)}"
-        )
-        assert final.name == "Dave", (
-            f"Expected name 'Dave', got '{final.name}'"
-        )
+        assert isinstance(
+            final, Person
+        ), f"Final streamed object should be Person, got {type(final)}"
+        assert final.name == "Dave", f"Expected name 'Dave', got '{final.name}'"
 
     @pytest.mark.asyncio()
     async def test_aparse_flat_model(self, llm):
@@ -593,16 +582,10 @@ class TestParseJsonSchema:
         Test scenario:
             Same as sync parse but via aparse.
         """
-        prompt = PromptTemplate(
-            "Create a person named Carol who is 40 years old."
-        )
+        prompt = PromptTemplate("Create a person named Carol who is 40 years old.")
         result = await llm.aparse(schema=Person, prompt=prompt)
-        assert isinstance(result, Person), (
-            f"Expected Person, got {type(result)}"
-        )
-        assert result.name == "Carol", (
-            f"Expected name 'Carol', got '{result.name}'"
-        )
+        assert isinstance(result, Person), f"Expected Person, got {type(result)}"
+        assert result.name == "Carol", f"Expected name 'Carol', got '{result.name}'"
         assert result.age == 40, f"Expected age 40, got {result.age}"
 
     @pytest.mark.asyncio()
@@ -613,24 +596,18 @@ class TestParseJsonSchema:
             Async streaming parse should yield at least one result; the
             final one should be a valid Person.
         """
-        prompt = PromptTemplate(
-            "Create a person named Eve who is 35 years old."
-        )
+        prompt = PromptTemplate("Create a person named Eve who is 35 years old.")
         results = []
         async for partial in await llm.aparse(
             schema=Person, prompt=prompt, stream=True
         ):
             results.append(partial)
-        assert len(results) > 0, (
-            "Async streaming parse should yield at least one result"
-        )
+        assert (
+            len(results) > 0
+        ), "Async streaming parse should yield at least one result"
         final = results[-1]
-        assert isinstance(final, Person), (
-            f"Expected Person, got {type(final)}"
-        )
-        assert final.name == "Eve", (
-            f"Expected name 'Eve', got '{final.name}'"
-        )
+        assert isinstance(final, Person), f"Expected Person, got {type(final)}"
+        assert final.name == "Eve", f"Expected name 'Eve', got '{final.name}'"
 
     def test_parse_custom_tool_choice_passthrough(self, llm):
         """Test that custom tool_choice in llm_kwargs is not overwritten.
@@ -641,20 +618,14 @@ class TestParseJsonSchema:
             doesn't use tools). Verify the call still succeeds even when
             ``tool_choice`` is passed — it gets stripped, not errored.
         """
-        prompt = PromptTemplate(
-            "Create a person named Grace who is 22 years old."
-        )
+        prompt = PromptTemplate("Create a person named Grace who is 22 years old.")
         result = llm.parse(
             schema=Person,
             prompt=prompt,
             llm_kwargs={"tool_choice": "auto"},
         )
-        assert isinstance(result, Person), (
-            f"Expected Person, got {type(result)}"
-        )
-        assert result.name == "Grace", (
-            f"Expected name 'Grace', got '{result.name}'"
-        )
+        assert isinstance(result, Person), f"Expected Person, got {type(result)}"
+        assert result.name == "Grace", f"Expected name 'Grace', got '{result.name}'"
 
 
 @pytest.mark.e2e
@@ -674,16 +645,10 @@ class TestParseFunctionCalling:
             With JSON-schema disabled, parse should fall back to the
             function-calling tool-use path and still produce a valid model.
         """
-        prompt = PromptTemplate(
-            "Create a person named Frank who is 45 years old."
-        )
+        prompt = PromptTemplate("Create a person named Frank who is 45 years old.")
         result = llm_function_calling.parse(schema=Person, prompt=prompt)
-        assert isinstance(result, Person), (
-            f"Expected Person, got {type(result)}"
-        )
-        assert result.name == "Frank", (
-            f"Expected name 'Frank', got '{result.name}'"
-        )
+        assert isinstance(result, Person), f"Expected Person, got {type(result)}"
+        assert result.name == "Frank", f"Expected name 'Frank', got '{result.name}'"
         assert result.age == 45, f"Expected age 45, got {result.age}"
 
     def test_parse_nested_model(self, llm_function_calling):
@@ -693,21 +658,16 @@ class TestParseFunctionCalling:
             Verify nested Pydantic models work through the tool-use path.
         """
         prompt = PromptTemplate(
-            "Create a person named Hank, age 33, at "
-            "456 Oak Ave, London, UK."
+            "Create a person named Hank, age 33, at " "456 Oak Ave, London, UK."
         )
-        result = llm_function_calling.parse(
-            schema=PersonWithAddress, prompt=prompt
-        )
-        assert isinstance(result, PersonWithAddress), (
-            f"Expected PersonWithAddress, got {type(result)}"
-        )
-        assert result.name == "Hank", (
-            f"Expected name 'Hank', got '{result.name}'"
-        )
-        assert result.address.city == "London", (
-            f"Expected city 'London', got '{result.address.city}'"
-        )
+        result = llm_function_calling.parse(schema=PersonWithAddress, prompt=prompt)
+        assert isinstance(
+            result, PersonWithAddress
+        ), f"Expected PersonWithAddress, got {type(result)}"
+        assert result.name == "Hank", f"Expected name 'Hank', got '{result.name}'"
+        assert (
+            result.address.city == "London"
+        ), f"Expected city 'London', got '{result.address.city}'"
 
     def test_parse_default_tool_choice_is_required(self, llm_function_calling):
         """Test that function-calling path defaults tool_choice to required.
@@ -717,16 +677,10 @@ class TestParseFunctionCalling:
             set ``tool_choice="required"`` and the model must produce a
             valid structured output.
         """
-        prompt = PromptTemplate(
-            "Create a person named Iris who is 29 years old."
-        )
+        prompt = PromptTemplate("Create a person named Iris who is 29 years old.")
         result = llm_function_calling.parse(schema=Person, prompt=prompt)
-        assert isinstance(result, Person), (
-            f"Expected Person, got {type(result)}"
-        )
-        assert result.name == "Iris", (
-            f"Expected name 'Iris', got '{result.name}'"
-        )
+        assert isinstance(result, Person), f"Expected Person, got {type(result)}"
+        assert result.name == "Iris", f"Expected name 'Iris', got '{result.name}'"
 
     def test_parse_custom_tool_choice_preserved(self, llm_function_calling):
         """Test that explicit tool_choice in llm_kwargs is not overwritten.
@@ -736,20 +690,14 @@ class TestParseFunctionCalling:
             and verify it works (i.e. ``_ensure_tool_choice`` doesn't
             clobber the existing value).
         """
-        prompt = PromptTemplate(
-            "Create a person named Jack who is 55 years old."
-        )
+        prompt = PromptTemplate("Create a person named Jack who is 55 years old.")
         result = llm_function_calling.parse(
             schema=Person,
             prompt=prompt,
             llm_kwargs={"tool_choice": "required"},
         )
-        assert isinstance(result, Person), (
-            f"Expected Person, got {type(result)}"
-        )
-        assert result.name == "Jack", (
-            f"Expected name 'Jack', got '{result.name}'"
-        )
+        assert isinstance(result, Person), f"Expected Person, got {type(result)}"
+        assert result.name == "Jack", f"Expected name 'Jack', got '{result.name}'"
 
     def test_parse_streaming(self, llm_function_calling):
         """Test streaming function-calling parse yields partial objects.
@@ -758,24 +706,16 @@ class TestParseFunctionCalling:
             Streaming through the function-calling path should yield at
             least one result converging to a valid Person.
         """
-        prompt = PromptTemplate(
-            "Create a person named Kate who is 38 years old."
-        )
+        prompt = PromptTemplate("Create a person named Kate who is 38 years old.")
         results = list(
-            llm_function_calling.parse(
-                schema=Person, prompt=prompt, stream=True
-            )
+            llm_function_calling.parse(schema=Person, prompt=prompt, stream=True)
         )
-        assert len(results) > 0, (
-            "Streaming parse should yield at least one result"
-        )
+        assert len(results) > 0, "Streaming parse should yield at least one result"
         final = results[-1]
-        assert isinstance(final, Person), (
-            f"Final streamed object should be Person, got {type(final)}"
-        )
-        assert final.name == "Kate", (
-            f"Expected name 'Kate', got '{final.name}'"
-        )
+        assert isinstance(
+            final, Person
+        ), f"Final streamed object should be Person, got {type(final)}"
+        assert final.name == "Kate", f"Expected name 'Kate', got '{final.name}'"
 
     @pytest.mark.asyncio()
     async def test_aparse_flat_model(self, llm_function_calling):
@@ -784,18 +724,10 @@ class TestParseFunctionCalling:
         Test scenario:
             Async variant of the function-calling fallback path.
         """
-        prompt = PromptTemplate(
-            "Create a person named Leo who is 60 years old."
-        )
-        result = await llm_function_calling.aparse(
-            schema=Person, prompt=prompt
-        )
-        assert isinstance(result, Person), (
-            f"Expected Person, got {type(result)}"
-        )
-        assert result.name == "Leo", (
-            f"Expected name 'Leo', got '{result.name}'"
-        )
+        prompt = PromptTemplate("Create a person named Leo who is 60 years old.")
+        result = await llm_function_calling.aparse(schema=Person, prompt=prompt)
+        assert isinstance(result, Person), f"Expected Person, got {type(result)}"
+        assert result.name == "Leo", f"Expected name 'Leo', got '{result.name}'"
         assert result.age == 60, f"Expected age 60, got {result.age}"
 
     @pytest.mark.asyncio()
@@ -806,24 +738,18 @@ class TestParseFunctionCalling:
             Async streaming through the function-calling path should yield
             at least one result converging to a valid Person.
         """
-        prompt = PromptTemplate(
-            "Create a person named Mia who is 27 years old."
-        )
+        prompt = PromptTemplate("Create a person named Mia who is 27 years old.")
         results = []
         async for partial in await llm_function_calling.aparse(
             schema=Person, prompt=prompt, stream=True
         ):
             results.append(partial)
-        assert len(results) > 0, (
-            "Async streaming parse should yield at least one result"
-        )
+        assert (
+            len(results) > 0
+        ), "Async streaming parse should yield at least one result"
         final = results[-1]
-        assert isinstance(final, Person), (
-            f"Expected Person, got {type(final)}"
-        )
-        assert final.name == "Mia", (
-            f"Expected name 'Mia', got '{final.name}'"
-        )
+        assert isinstance(final, Person), f"Expected Person, got {type(final)}"
+        assert final.name == "Mia", f"Expected name 'Mia', got '{final.name}'"
 
 
 @pytest.mark.e2e
@@ -846,15 +772,15 @@ class TestToolCallingSingleTool:
         tool_calls = llm.get_tool_calls_from_response(
             response, error_on_no_tool_call=True
         )
-        assert len(tool_calls) >= 1, (
-            f"Expected at least one tool call, got {len(tool_calls)}"
-        )
-        assert tool_calls[0].tool_name == "get_weather", (
-            f"Expected tool 'get_weather', got '{tool_calls[0].tool_name}'"
-        )
-        assert "city" in tool_calls[0].tool_kwargs, (
-            f"Expected 'city' in kwargs, got keys: {list(tool_calls[0].tool_kwargs)}"
-        )
+        assert (
+            len(tool_calls) >= 1
+        ), f"Expected at least one tool call, got {len(tool_calls)}"
+        assert (
+            tool_calls[0].tool_name == "get_weather"
+        ), f"Expected tool 'get_weather', got '{tool_calls[0].tool_name}'"
+        assert (
+            "city" in tool_calls[0].tool_kwargs
+        ), f"Expected 'city' in kwargs, got keys: {list(tool_calls[0].tool_kwargs)}"
 
     def test_tool_call_id_populated(self, llm):
         """Test that each tool call has a non-empty tool_id.
@@ -902,9 +828,7 @@ class TestToolCallingSingleTool:
         tool_calls_present = bool(response.message.tool_calls)
         if not tool_calls_present:
             with pytest.raises(ValueError, match="Expected at least one tool call"):
-                llm.get_tool_calls_from_response(
-                    response, error_on_no_tool_call=True
-                )
+                llm.get_tool_calls_from_response(response, error_on_no_tool_call=True)
 
 
 @pytest.mark.e2e
@@ -926,12 +850,12 @@ class TestToolCallingMultipleTools:
         tool_calls = llm.get_tool_calls_from_response(
             response, error_on_no_tool_call=True
         )
-        assert len(tool_calls) >= 1, (
-            f"Expected at least one tool call, got {len(tool_calls)}"
-        )
-        assert tool_calls[0].tool_name == "search_web", (
-            f"Expected 'search_web', got '{tool_calls[0].tool_name}'"
-        )
+        assert (
+            len(tool_calls) >= 1
+        ), f"Expected at least one tool call, got {len(tool_calls)}"
+        assert (
+            tool_calls[0].tool_name == "search_web"
+        ), f"Expected 'search_web', got '{tool_calls[0].tool_name}'"
 
     def test_parallel_tool_calls(self, llm):
         """Test that parallel tool calls returns multiple calls.
@@ -948,9 +872,9 @@ class TestToolCallingMultipleTools:
         tool_calls = llm.get_tool_calls_from_response(
             response, error_on_no_tool_call=True
         )
-        assert len(tool_calls) >= 2, (
-            f"Expected at least 2 tool calls, got {len(tool_calls)}"
-        )
+        assert (
+            len(tool_calls) >= 2
+        ), f"Expected at least 2 tool calls, got {len(tool_calls)}"
 
     def test_strict_mode(self, llm):
         """Test that strict=True produces valid tool calls.
@@ -967,12 +891,12 @@ class TestToolCallingMultipleTools:
         tool_calls = llm.get_tool_calls_from_response(
             response, error_on_no_tool_call=True
         )
-        assert len(tool_calls) >= 1, (
-            f"Expected at least one tool call, got {len(tool_calls)}"
-        )
-        assert tool_calls[0].tool_name == "get_weather", (
-            f"Expected 'get_weather', got '{tool_calls[0].tool_name}'"
-        )
+        assert (
+            len(tool_calls) >= 1
+        ), f"Expected at least one tool call, got {len(tool_calls)}"
+        assert (
+            tool_calls[0].tool_name == "get_weather"
+        ), f"Expected 'get_weather', got '{tool_calls[0].tool_name}'"
 
 
 @pytest.mark.e2e
@@ -1013,12 +937,12 @@ class TestToolExecutionRoundTrip:
             ),
         ]
         final_response = llm.chat(messages)
-        assert final_response.message.content is not None, (
-            "Final response should have content"
-        )
-        assert len(final_response.message.content) > 0, (
-            "Final response should not be empty"
-        )
+        assert (
+            final_response.message.content is not None
+        ), "Final response should have content"
+        assert (
+            len(final_response.message.content) > 0
+        ), "Final response should not be empty"
 
 
 @pytest.mark.e2e
@@ -1048,12 +972,12 @@ class TestStreamingWithToolCalls:
         tool_call_chunks = [
             c for c in final.message.chunks if isinstance(c, ToolCallBlock)
         ]
-        assert len(tool_call_chunks) >= 1, (
-            f"Final chunk should have tool call blocks, got {len(tool_call_chunks)}"
-        )
-        assert tool_call_chunks[0].tool_name == "get_weather", (
-            f"Expected 'get_weather', got '{tool_call_chunks[0].tool_name}'"
-        )
+        assert (
+            len(tool_call_chunks) >= 1
+        ), f"Final chunk should have tool call blocks, got {len(tool_call_chunks)}"
+        assert (
+            tool_call_chunks[0].tool_name == "get_weather"
+        ), f"Expected 'get_weather', got '{tool_call_chunks[0].tool_name}'"
 
     @pytest.mark.asyncio()
     async def test_async_stream_with_tool_calls(self, llm):
@@ -1078,9 +1002,9 @@ class TestStreamingWithToolCalls:
         tool_call_chunks = [
             c for c in final.message.chunks if isinstance(c, ToolCallBlock)
         ]
-        assert len(tool_call_chunks) >= 1, (
-            f"Final chunk should have tool call blocks, got {len(tool_call_chunks)}"
-        )
+        assert (
+            len(tool_call_chunks) >= 1
+        ), f"Final chunk should have tool call blocks, got {len(tool_call_chunks)}"
 
 
 @pytest.mark.e2e
@@ -1096,10 +1020,12 @@ class TestTokenUsage:
             total should equal prompt + completion.
         """
         response = llm.chat(
-            [Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(content="Say hi.")],
-            )]
+            [
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Say hi.")],
+                )
+            ]
         )
         kwargs = response.additional_kwargs
         assert "prompt_tokens" in kwargs, "prompt_tokens should be present"
@@ -1130,10 +1056,12 @@ class TestTokenUsage:
             Token usage should be present in async responses as well.
         """
         response = await llm.achat(
-            [Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(content="Say hi.")],
-            )]
+            [
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Say hi.")],
+                )
+            ]
         )
         kwargs = response.additional_kwargs
         assert "prompt_tokens" in kwargs, "prompt_tokens should be present"
@@ -1153,17 +1081,19 @@ class TestLogprobs:
             contain likelihood_score data.
         """
         response = llm_with_logprobs.chat(
-            [Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(content="Say hi.")],
-            )]
+            [
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Say hi.")],
+                )
+            ]
         )
-        assert response.logprob is not None, (
-            "likelihood_score should be populated when logprobs=True"
-        )
-        assert len(response.logprob) > 0, (
-            "likelihood_score should have at least one entry"
-        )
+        assert (
+            response.logprob is not None
+        ), "likelihood_score should be populated when logprobs=True"
+        assert (
+            len(response.logprob) > 0
+        ), "likelihood_score should have at least one entry"
 
 
 @pytest.mark.e2e
@@ -1179,13 +1109,11 @@ class TestConfiguration:
             match expectations for the configured model.
         """
         meta = llm.metadata
-        assert meta.model_name == model, (
-            f"Expected model_name '{model}', got '{meta.model_name}'"
-        )
+        assert (
+            meta.model_name == model
+        ), f"Expected model_name '{model}', got '{meta.model_name}'"
         assert meta.is_chat_model is True, "Should be a chat model"
-        assert meta.is_function_calling_model is True, (
-            "Should support function calling"
-        )
+        assert meta.is_function_calling_model is True, "Should support function calling"
         assert meta.context_window > 0, "Context window should be positive"
 
     def test_custom_temperature(self):
@@ -1195,9 +1123,9 @@ class TestConfiguration:
             Non-O1 models should preserve the user-specified temperature.
         """
         llm = Completions(model="gpt-4o-mini", temperature=0.9)
-        assert llm.temperature == 0.9, (
-            f"Expected temperature 0.9, got {llm.temperature}"
-        )
+        assert (
+            llm.temperature == 0.9
+        ), f"Expected temperature 0.9, got {llm.temperature}"
 
     def test_o1_model_forces_temperature(self):
         """Test that O1 models force temperature to 1.0.
@@ -1206,9 +1134,9 @@ class TestConfiguration:
             Creating an O1 model with temperature=0.5 should override to 1.0.
         """
         llm = Completions(model="o1-mini", api_key="sk-test", temperature=0.5)
-        assert llm.temperature == 1.0, (
-            f"O1 model should force temperature to 1.0, got {llm.temperature}"
-        )
+        assert (
+            llm.temperature == 1.0
+        ), f"O1 model should force temperature to 1.0, got {llm.temperature}"
 
     def test_responses_only_model_rejected(self):
         """Test that Responses API-only models are rejected.
@@ -1232,18 +1160,22 @@ class TestConfiguration:
         """
         llm = Completions(model=model, max_tokens=5)
         response = llm.chat(
-            [Message(
-                role=MessageRole.USER,
-                chunks=[TextChunk(
-                    content="Write a very long essay about the history of France."
-                )],
-            )]
+            [
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[
+                        TextChunk(
+                            content="Write a very long essay about the history of France."
+                        )
+                    ],
+                )
+            ]
         )
         assert response.message.content is not None, "Content should not be None"
         words = response.message.content.split()
-        assert len(words) <= 20, (
-            f"With max_tokens=5, expected <= 20 words, got {len(words)}"
-        )
+        assert (
+            len(words) <= 20
+        ), f"With max_tokens=5, expected <= 20 words, got {len(words)}"
 
     def test_audio_modality_rejects_complete(self):
         """Test that complete raises ValueError when audio modality is set.
@@ -1271,13 +1203,17 @@ class TestConfiguration:
             modalities=["text", "audio"],
         )
         with pytest.raises(ValueError, match="Audio is not supported"):
-            list(llm.chat(
-                messages=[Message(
-                    role=MessageRole.USER,
-                    chunks=[TextChunk(content="Hi")],
-                )],
-                stream=True,
-            ))
+            list(
+                llm.chat(
+                    messages=[
+                        Message(
+                            role=MessageRole.USER,
+                            chunks=[TextChunk(content="Hi")],
+                        )
+                    ],
+                    stream=True,
+                )
+            )
 
     @pytest.mark.asyncio()
     async def test_audio_modality_rejects_acomplete(self):
@@ -1300,9 +1236,9 @@ class TestConfiguration:
         Test scenario:
             The canonical provider identifier should be 'openai'.
         """
-        assert Completions.class_name() == "openai", (
-            f"Expected 'openai', got '{Completions.class_name()}'"
-        )
+        assert (
+            Completions.class_name() == "openai"
+        ), f"Expected 'openai', got '{Completions.class_name()}'"
 
     def test_system_role_for_o1(self):
         """Test that O1 models report system_role as USER.
@@ -1312,9 +1248,9 @@ class TestConfiguration:
             should be MessageRole.USER.
         """
         llm = Completions(model="o1-mini", api_key="sk-test")
-        assert llm.metadata.system_role == MessageRole.USER, (
-            f"Expected USER system_role for O1, got {llm.metadata.system_role}"
-        )
+        assert (
+            llm.metadata.system_role == MessageRole.USER
+        ), f"Expected USER system_role for O1, got {llm.metadata.system_role}"
 
     def test_system_role_for_chat_model(self):
         """Test that standard chat models report system_role as SYSTEM.
@@ -1324,6 +1260,6 @@ class TestConfiguration:
             Uses a hardcoded non-O1 model to avoid env-var interference.
         """
         llm = Completions(model="gpt-4o-mini", api_key="sk-test")
-        assert llm.metadata.system_role == MessageRole.SYSTEM, (
-            f"Expected SYSTEM role, got {llm.metadata.system_role}"
-        )
+        assert (
+            llm.metadata.system_role == MessageRole.SYSTEM
+        ), f"Expected SYSTEM role, got {llm.metadata.system_role}"

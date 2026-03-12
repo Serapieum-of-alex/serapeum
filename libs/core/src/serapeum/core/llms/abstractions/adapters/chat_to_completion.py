@@ -120,7 +120,12 @@ class ChatToCompletion:
     ) -> CompletionResponseGen: ...
 
     def complete(
-        self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs: Any
+        self,
+        prompt: str,
+        formatted: bool = False,
+        *,
+        stream: bool = False,
+        **kwargs: Any,
     ) -> CompletionResponse | CompletionResponseGen:
         """Implement completion by delegating to the chat method.
 
@@ -215,7 +220,12 @@ class ChatToCompletion:
     ) -> CompletionResponseAsyncGen: ...
 
     async def acomplete(
-        self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs: Any
+        self,
+        prompt: str,
+        formatted: bool = False,
+        *,
+        stream: bool = False,
+        **kwargs: Any,
     ) -> CompletionResponse | CompletionResponseAsyncGen:
         """Implement async completion by delegating to the achat method.
 

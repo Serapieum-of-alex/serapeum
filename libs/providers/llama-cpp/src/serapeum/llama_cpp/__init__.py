@@ -37,7 +37,6 @@ See Also:
     serapeum.llama_cpp.formatters.llama3: Prompt formatters for Llama 3 Instruct models.
 """
 
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

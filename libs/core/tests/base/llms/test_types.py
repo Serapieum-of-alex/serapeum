@@ -430,9 +430,9 @@ class TestCompletionResponse:
             """
             with pytest.raises(ValidationError) as exc_info:
                 CompletionResponse()  # type: ignore[call-arg]
-            assert "text" in str(exc_info.value), (
-                f"Expected 'text' in validation error, got: {exc_info.value}"
-            )
+            assert "text" in str(
+                exc_info.value
+            ), f"Expected 'text' in validation error, got: {exc_info.value}"
 
         @pytest.mark.unit
         def test_init_empty_string_text_is_valid(self):
@@ -455,12 +455,12 @@ class TestCompletionResponse:
             """
             cr = CompletionResponse(text="x")
             assert cr.raw is None, f"raw should default to None, got: {cr.raw}"
-            assert cr.logprob is None, (
-                f"likelihood_score should default to None, got: {cr.logprob}"
-            )
-            assert cr.additional_kwargs == {}, (
-                f"additional_kwargs should default to {{}}, got: {cr.additional_kwargs}"
-            )
+            assert (
+                cr.logprob is None
+            ), f"likelihood_score should default to None, got: {cr.logprob}"
+            assert (
+                cr.additional_kwargs == {}
+            ), f"additional_kwargs should default to {{}}, got: {cr.additional_kwargs}"
             assert cr.delta is None, f"delta should default to None, got: {cr.delta}"
 
         @pytest.mark.unit
@@ -481,9 +481,9 @@ class TestCompletionResponse:
             assert cr.text == "result", f"Unexpected text: {cr.text!r}"
             assert cr.raw == raw_payload, f"Unexpected raw: {cr.raw}"
             assert cr.delta == "res", f"Unexpected delta: {cr.delta!r}"
-            assert cr.additional_kwargs == {"usage": {"input": 10}}, (
-                f"Unexpected additional_kwargs: {cr.additional_kwargs}"
-            )
+            assert cr.additional_kwargs == {
+                "usage": {"input": 10}
+            }, f"Unexpected additional_kwargs: {cr.additional_kwargs}"
 
         @pytest.mark.unit
         def test_init_with_likelihood_scores(self):
@@ -493,16 +493,10 @@ class TestCompletionResponse:
                 Passing a list-of-lists of LikelihoodScore objects should be
                 stored intact and accessible by index.
             """
-            scores = [
-                [LogProb(token="hello", logprob=-0.5, bytes=[104, 101])]
-            ]
+            scores = [[LogProb(token="hello", logprob=-0.5, bytes=[104, 101])]]
             cr = CompletionResponse(text="hello", logprob=scores)
-            assert cr.logprob == scores, (
-                f"Unexpected likelihood_score: {cr.logprob}"
-            )
-            assert cr.logprob[0][0].token == "hello", (
-                "First token should be 'hello'"
-            )
+            assert cr.logprob == scores, f"Unexpected likelihood_score: {cr.logprob}"
+            assert cr.logprob[0][0].token == "hello", "First token should be 'hello'"
 
     class TestStr:
 
@@ -528,14 +522,16 @@ class TestCompletionResponse:
                 value, including empty, multiline, unicode, and padded strings.
             """
             cr = CompletionResponse(text=text)
-            assert str(cr) == text, (
-                f"Expected str representation {text!r}, got {str(cr)!r}"
-            )
+            assert (
+                str(cr) == text
+            ), f"Expected str representation {text!r}, got {str(cr)!r}"
 
     class TestToChatResponse:
 
         @pytest.mark.unit
-        def test_to_chat_response_text_becomes_message_content(self, basic: CompletionResponse):
+        def test_to_chat_response_text_becomes_message_content(
+            self, basic: CompletionResponse
+        ):
             """Test that text maps to the ChatResponse message content.
 
             Args:
@@ -546,12 +542,14 @@ class TestCompletionResponse:
                 original CompletionResponse.text.
             """
             chat = basic.to_chat_response()
-            assert chat.message.content == basic.text, (
-                f"Expected message.content={basic.text!r}, got {chat.message.content!r}"
-            )
+            assert (
+                chat.message.content == basic.text
+            ), f"Expected message.content={basic.text!r}, got {chat.message.content!r}"
 
         @pytest.mark.unit
-        def test_to_chat_response_message_role_is_assistant(self, basic: CompletionResponse):
+        def test_to_chat_response_message_role_is_assistant(
+            self, basic: CompletionResponse
+        ):
             """Test that the resulting ChatResponse message role is ASSISTANT.
 
             Args:
@@ -562,9 +560,9 @@ class TestCompletionResponse:
                 regardless of any other fields.
             """
             chat = basic.to_chat_response()
-            assert chat.message.role == MessageRole.ASSISTANT, (
-                f"Expected role=ASSISTANT, got {chat.message.role!r}"
-            )
+            assert (
+                chat.message.role == MessageRole.ASSISTANT
+            ), f"Expected role=ASSISTANT, got {chat.message.role!r}"
 
         @pytest.mark.unit
         def test_to_chat_response_raw_propagated(self):
@@ -589,14 +587,16 @@ class TestCompletionResponse:
                 remain an empty dict because to_chat_response does not forward
                 it to the response level.
             """
-            cr = CompletionResponse(text="data", additional_kwargs={"usage": {"tokens": 5}})
+            cr = CompletionResponse(
+                text="data", additional_kwargs={"usage": {"tokens": 5}}
+            )
             chat = cr.to_chat_response()
-            assert chat.message.additional_kwargs == {"usage": {"tokens": 5}}, (
-                f"Expected message-level kwargs, got {chat.message.additional_kwargs}"
-            )
-            assert chat.additional_kwargs == {}, (
-                f"ChatResponse.additional_kwargs should be empty, got {chat.additional_kwargs}"
-            )
+            assert chat.message.additional_kwargs == {
+                "usage": {"tokens": 5}
+            }, f"Expected message-level kwargs, got {chat.message.additional_kwargs}"
+            assert (
+                chat.additional_kwargs == {}
+            ), f"ChatResponse.additional_kwargs should be empty, got {chat.additional_kwargs}"
 
         @pytest.mark.unit
         def test_to_chat_response_delta_not_propagated(self):
@@ -609,9 +609,9 @@ class TestCompletionResponse:
             """
             cr = CompletionResponse(text="tok", delta="d")
             chat = cr.to_chat_response()
-            assert chat.delta is None, (
-                f"delta should not propagate via to_chat_response, got {chat.delta!r}"
-            )
+            assert (
+                chat.delta is None
+            ), f"delta should not propagate via to_chat_response, got {chat.delta!r}"
 
         @pytest.mark.unit
         def test_to_chat_response_empty_text(self):
@@ -623,9 +623,9 @@ class TestCompletionResponse:
             """
             cr = CompletionResponse(text="")
             chat = cr.to_chat_response()
-            assert chat.message.content == "", (
-                f"Expected empty content, got {chat.message.content!r}"
-            )
+            assert (
+                chat.message.content == ""
+            ), f"Expected empty content, got {chat.message.content!r}"
 
         @pytest.mark.integration
         def test_to_chat_response_round_trip(self):
@@ -643,16 +643,16 @@ class TestCompletionResponse:
                 delta="d",
             )
             restored = original.to_chat_response().to_completion_response()
-            assert restored.text == original.text, (
-                f"text not preserved: {restored.text!r}"
-            )
+            assert (
+                restored.text == original.text
+            ), f"text not preserved: {restored.text!r}"
             assert restored.raw == original.raw, f"raw not preserved: {restored.raw}"
-            assert restored.additional_kwargs == original.additional_kwargs, (
-                f"additional_kwargs not preserved: {restored.additional_kwargs}"
-            )
-            assert restored.delta is None, (
-                f"delta should be lost in round-trip via to_chat_response, got {restored.delta!r}"
-            )
+            assert (
+                restored.additional_kwargs == original.additional_kwargs
+            ), f"additional_kwargs not preserved: {restored.additional_kwargs}"
+            assert (
+                restored.delta is None
+            ), f"delta should be lost in round-trip via to_chat_response, got {restored.delta!r}"
 
     class TestStreamToChatResponse:
         """Tests for stream_to_chat_response."""
@@ -672,12 +672,12 @@ class TestCompletionResponse:
 
             results = list(CompletionResponse.stream_to_chat_response(comp_gen()))
             assert len(results) == 2, f"Expected 2 results, got {len(results)}"
-            assert results[0].message.content == "A", (
-                f"Expected 'A', got {results[0].message.content!r}"
-            )
-            assert results[1].message.content == "B", (
-                f"Expected 'B', got {results[1].message.content!r}"
-            )
+            assert (
+                results[0].message.content == "A"
+            ), f"Expected 'A', got {results[0].message.content!r}"
+            assert (
+                results[1].message.content == "B"
+            ), f"Expected 'B', got {results[1].message.content!r}"
 
         @pytest.mark.unit
         def test_stream_to_chat_response_empty_generator(self):
@@ -716,8 +716,12 @@ class TestCompletionResponse:
 
             results = list(CompletionResponse.stream_to_chat_response(comp_gen()))
             assert results[0].message.content == "tok1"
-            assert results[0].delta == "d1", f"Expected delta='d1', got {results[0].delta!r}"
-            assert results[0].raw == {"i": 0}, f"Expected raw={{'i':0}}, got {results[0].raw}"
+            assert (
+                results[0].delta == "d1"
+            ), f"Expected delta='d1', got {results[0].delta!r}"
+            assert results[0].raw == {
+                "i": 0
+            }, f"Expected raw={{'i':0}}, got {results[0].raw}"
             assert results[0].message.additional_kwargs == {"a": 1}
             assert results[1].message.content == "tok2"
             assert results[1].delta == "d2"
@@ -739,9 +743,9 @@ class TestCompletionResponse:
 
             results = list(CompletionResponse.stream_to_chat_response(comp_gen()))
             roles = [r.message.role for r in results]
-            assert all(role == MessageRole.ASSISTANT for role in roles), (
-                f"All roles should be ASSISTANT, got {roles}"
-            )
+            assert all(
+                role == MessageRole.ASSISTANT for role in roles
+            ), f"All roles should be ASSISTANT, got {roles}"
 
         @pytest.mark.unit
         def test_stream_to_chat_response_returns_generator(self):
@@ -757,9 +761,9 @@ class TestCompletionResponse:
                 yield CompletionResponse(text="a")
 
             result = CompletionResponse.stream_to_chat_response(comp_gen())
-            assert isinstance(result, _types.GeneratorType), (
-                f"Expected GeneratorType, got {type(result)}"
-            )
+            assert isinstance(
+                result, _types.GeneratorType
+            ), f"Expected GeneratorType, got {type(result)}"
 
     class TestAstreamToChatResponse:
         """Tests for astream_to_chat_response."""
@@ -782,12 +786,12 @@ class TestCompletionResponse:
             async for item in CompletionResponse.astream_to_chat_response(comp_agen()):
                 results.append(item)
             assert len(results) == 2, f"Expected 2 results, got {len(results)}"
-            assert results[0].message.content == "X", (
-                f"Expected 'X', got {results[0].message.content!r}"
-            )
-            assert results[1].message.content == "Y", (
-                f"Expected 'Y', got {results[1].message.content!r}"
-            )
+            assert (
+                results[0].message.content == "X"
+            ), f"Expected 'X', got {results[0].message.content!r}"
+            assert (
+                results[1].message.content == "Y"
+            ), f"Expected 'Y', got {results[1].message.content!r}"
 
         @pytest.mark.asyncio
         @pytest.mark.unit
@@ -829,7 +833,9 @@ class TestCompletionResponse:
             async for item in CompletionResponse.astream_to_chat_response(comp_agen()):
                 results.append(item)
             assert results[0].message.content == "a1"
-            assert results[0].delta == "da1", f"Expected delta='da1', got {results[0].delta!r}"
+            assert (
+                results[0].delta == "da1"
+            ), f"Expected delta='da1', got {results[0].delta!r}"
             assert results[0].raw == {"seq": 0}
             assert results[0].message.additional_kwargs == {"p": 10}
             assert results[1].message.content == "a2"
@@ -855,12 +861,13 @@ class TestCompletionResponse:
             async for item in CompletionResponse.astream_to_chat_response(comp_agen()):
                 results.append(item)
             roles = [r.message.role for r in results]
-            assert all(role == MessageRole.ASSISTANT for role in roles), (
-                f"All roles should be ASSISTANT, got {roles}"
-            )
+            assert all(
+                role == MessageRole.ASSISTANT for role in roles
+            ), f"All roles should be ASSISTANT, got {roles}"
 
     class TestPydanticModelMethods:
         """Tests for Pydantic model methods."""
+
         @pytest.mark.unit
         def test_model_dump_contains_all_keys(self, basic: CompletionResponse):
             """Test that model_dump returns a dict with all expected keys.
@@ -874,12 +881,12 @@ class TestCompletionResponse:
             """
             dumped = basic.model_dump()
             for key in ("text", "raw", "logprob", "additional_kwargs", "delta"):
-                assert key in dumped, (
-                    f"Key '{key}' missing from model_dump; keys present: {list(dumped.keys())}"
-                )
-            assert dumped["text"] == "Hello world", (
-                f"Unexpected text in dump: {dumped['text']!r}"
-            )
+                assert (
+                    key in dumped
+                ), f"Key '{key}' missing from model_dump; keys present: {list(dumped.keys())}"
+            assert (
+                dumped["text"] == "Hello world"
+            ), f"Unexpected text in dump: {dumped['text']!r}"
 
         @pytest.mark.unit
         def test_model_validate_roundtrip(self, basic: CompletionResponse):

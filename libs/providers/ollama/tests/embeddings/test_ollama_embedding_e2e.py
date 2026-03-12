@@ -24,6 +24,7 @@ SKIP = pytest.mark.skipif(
     ),
 )
 
+
 class TestBasicEmbedding:
     """Basic E2E Tests."""
 

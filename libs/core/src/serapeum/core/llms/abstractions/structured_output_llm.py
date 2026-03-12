@@ -1,4 +1,5 @@
 """Structured output wrapper and helpers around the core LLM API."""
+
 from __future__ import annotations
 from typing import Any, Literal, Sequence, Type, overload
 
@@ -58,14 +59,18 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
         **kwargs: Any,
     ) -> ChatResponseGen: ...
 
-    def _stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponseGen:
+    def _stream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> ChatResponseGen:
         chat_prompt = ChatPromptTemplate(message_templates=messages)
         for partial_output in self.llm.stream_parse(
             schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
         ):
             yield ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, chunks=[TextChunk(content=partial_output.json())]),
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content=partial_output.json())],
+                ),
                 raw=partial_output,
             )
 
@@ -82,7 +87,9 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
             )
             result = ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, chunks=[TextChunk(content=output.model_dump_json())]),
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content=output.model_dump_json())],
+                ),
                 raw=output,
             )
         return result
@@ -114,7 +121,9 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
         ):
             yield ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, chunks=[TextChunk(content=partial_output.json())]),
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content=partial_output.json())],
+                ),
                 raw=partial_output,
             )
 
@@ -135,7 +144,9 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
             )
             result = ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, chunks=[TextChunk(content=output.model_dump_json())]),
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content=output.model_dump_json())],
+                ),
                 raw=output,
             )
         return result

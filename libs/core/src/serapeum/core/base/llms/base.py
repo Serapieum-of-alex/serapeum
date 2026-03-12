@@ -62,11 +62,7 @@ class BaseLLM(SerializableModel, ABC):
 
     @abstractmethod
     def chat(
-        self,
-        messages: Sequence[Message],
-        *,
-        stream: bool = False,
-        **kwargs: Any
+        self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
     ) -> ChatResponse | ChatResponseGen:
         pass
 
@@ -77,19 +73,14 @@ class BaseLLM(SerializableModel, ABC):
         formatted: bool = False,
         *,
         stream: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> CompletionResponse | CompletionResponseGen:
         pass
 
     @abstractmethod
     async def achat(
-        self,
-        messages: Sequence[Message],
-        *,
-        stream: bool = False,
-        **kwargs: Any
-    ) -> (ChatResponse |
-                                                                                         ChatResponseAsyncGen):
+        self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
+    ) -> ChatResponse | ChatResponseAsyncGen:
         pass
 
     @abstractmethod
@@ -99,6 +90,6 @@ class BaseLLM(SerializableModel, ABC):
         formatted: bool = False,
         *,
         stream: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> CompletionResponse | CompletionResponseAsyncGen:
         pass

@@ -68,9 +68,9 @@ orchestrator.stream_call(**kwargs)        → orchestrator(**kwargs, stream=True
 - ci:finalize release to pypi.org (#27)
 - ci(release): wire pypi-release to trigger on github-release completion (#24)
 - ci(release): wire pypi-release to trigger on github-release completion
-  
-  - Rename github-release workflow (required for workflow_run reference)                                                                                                            
-  - Replace release: event with workflow_run trigger on github-release                                                                                                   
+
+  - Rename github-release workflow (required for workflow_run reference)  
+  - Replace release: event with workflow_run trigger on github-release  
   - Add workflow_dispatch inputs for manual publish (package + registry)
   - Resolve package name from most recent serapeum-{pkg}-* tag on auto runs
   - Delegate build and publish to composite pypi action
@@ -85,11 +85,11 @@ orchestrator.stream_call(**kwargs)        → orchestrator(**kwargs, stream=True
   - Fix sdist packaging configuration
 - feat(embeddings): add embedding support with Ollama provider implementation (#11)
 - feat(embeddings): add embedding support with Ollama provider implementation
-                                                                                                                                                                                                                              
-  - Add BaseEmbedding abstraction in serapeum-core with sync/async interfaces                                                                                                                                                 
-  - Implement OllamaEmbedding with support for query, text, and batch operations                                                                                                                                              
-  - Add embedding data models (BaseNode, TextNode, ImageNode, LinkedNodes, NodeInfo)                                                                                                                                          
-  - Refactor provider structure to move ollama from serapeum.llms.ollama to serapeum.ollama                                                                                                                                   
+
+  - Add BaseEmbedding abstraction in serapeum-core with sync/async interfaces  
+  - Implement OllamaEmbedding with support for query, text, and batch operations  
+  - Add embedding data models (BaseNode, TextNode, ImageNode, LinkedNodes, NodeInfo)  
+  - Refactor provider structure to move ollama from serapeum.llms.ollama to serapeum.ollama  
   - Add comprehensive test suite (unit, e2e, pydantic validation) with 3200+ test lines
   - Add pytest-xdist and pytest-benchmark for parallel testing and benchmarking
   - Update documentation and READMEs for embedding functionality

@@ -63,9 +63,11 @@ def chat_messages_with_function_calling() -> List[Message]:
         ),
         Message(
             role=MessageRole.TOOL,
-            chunks=[TextChunk(
-                content='{"temperature": "22", "unit": "celsius", "description": "Sunny"}'
-            )],
+            chunks=[
+                TextChunk(
+                    content='{"temperature": "22", "unit": "celsius", "description": "Sunny"}'
+                )
+            ],
             additional_kwargs={
                 "tool_call_id": "get_current_weather",
             },
@@ -431,9 +433,9 @@ def test_is_json_schema_supported_o1_mini_excluded() -> None:
     ]
 
     for model in o1_mini_models:
-        assert is_json_schema_supported(model) is False, (
-            f"Model {model} should be excluded"
-        )
+        assert (
+            is_json_schema_supported(model) is False
+        ), f"Model {model} should be excluded"
 
 
 def test_is_json_schema_supported_unsupported_models() -> None:
@@ -447,9 +449,9 @@ def test_is_json_schema_supported_unsupported_models() -> None:
     ]
 
     for model in unsupported_models:
-        assert is_json_schema_supported(model) is False, (
-            f"Model {model} should not be supported"
-        )
+        assert (
+            is_json_schema_supported(model) is False
+        ), f"Model {model} should not be supported"
 
 
 def test_gpt_5_chat_latest_model_support() -> None:
@@ -457,25 +459,25 @@ def test_gpt_5_chat_latest_model_support() -> None:
     model_name = "gpt-5-chat-latest"
 
     # Test that model is in available models
-    assert model_name in ALL_AVAILABLE_MODELS, (
-        f"{model_name} should be in ALL_AVAILABLE_MODELS"
-    )
+    assert (
+        model_name in ALL_AVAILABLE_MODELS
+    ), f"{model_name} should be in ALL_AVAILABLE_MODELS"
 
     # Test that model is recognized as a chat model
-    assert is_chat_model(model_name) is True, (
-        f"{model_name} should be recognized as a chat model"
-    )
+    assert (
+        is_chat_model(model_name) is True
+    ), f"{model_name} should be recognized as a chat model"
 
     # Test that model supports function calling
-    assert is_function_calling_model(model_name) is True, (
-        f"{model_name} should support function calling"
-    )
+    assert (
+        is_function_calling_model(model_name) is True
+    ), f"{model_name} should support function calling"
 
     # Test that model has correct context size
     context_size = openai_modelname_to_contextsize(model_name)
-    assert context_size == 128000, (
-        f"{model_name} should have 128000 tokens context, got {context_size}"
-    )
+    assert (
+        context_size == 128000
+    ), f"{model_name} should have 128000 tokens context, got {context_size}"
 
     # Test that model is in CHAT_MODELS
     assert model_name in CHAT_MODELS, f"{model_name} should be in CHAT_MODELS"

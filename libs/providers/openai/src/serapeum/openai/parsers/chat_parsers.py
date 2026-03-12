@@ -68,21 +68,21 @@ class ChatMessageParser:
             (e.g. ``["text"]`` or ``["text", "audio"]``).
 
     Examples:
-        - Parse a text-only response (requires a live SDK object, skipped):
+        - Parse a text-only response (requires a live SDK object):
             ```python
-            >>> # parser = ChatMessageParser(openai_msg, ["text"])  # doctest: +SKIP
-            >>> # message = parser.build()
-            >>> # message.role
-            >>> # 'assistant'
-            >>> # message.chunks[0].content
-            >>> # 'Hello'
+            # parser = ChatMessageParser(openai_msg, ["text"])
+            # message = parser.build()
+            # message.role
+            # 'assistant'
+            # message.chunks[0].content
+            # 'Hello'
 
             ```
-        - Batch-parse multiple messages at once (requires SDK objects, skipped):
+        - Batch-parse multiple messages at once (requires SDK objects):
             ```python
-            >>> # messages = ChatMessageParser.batch(openai_msgs, ["text"])  # doctest: +SKIP
-            >>> # len(messages)
-            >>> # 3
+            # messages = ChatMessageParser.batch(openai_msgs, ["text"])
+            # len(messages)
+            # 3
 
             ```
 
@@ -93,7 +93,9 @@ class ChatMessageParser:
             The reverse direction -- serapeum ``Message`` to OpenAI API dict.
     """
 
-    def __init__(self, openai_message: ChatCompletionMessage, modalities: list[str]) -> None:
+    def __init__(
+        self, openai_message: ChatCompletionMessage, modalities: list[str]
+    ) -> None:
         self._openai_message = openai_message
         self._modalities = modalities
         self._blocks: list[ContentBlock] = []
@@ -152,7 +154,9 @@ class ChatMessageParser:
         can pass them through without re-parsing.
         """
         if self._openai_message.tool_calls:
-            tool_calls: list[ChatCompletionMessageToolCall] = self._openai_message.tool_calls
+            tool_calls: list[ChatCompletionMessageToolCall] = (
+                self._openai_message.tool_calls
+            )
             for tool_call in tool_calls:
                 if tool_call.function:
                     self._blocks.append(
@@ -184,7 +188,9 @@ class ChatMessageParser:
             self._blocks.append(Audio(content=audio_data, format="mp3"))
 
     @classmethod
-    def batch(cls, messages: Sequence[ChatCompletionMessage], modalities: list[str]) -> list[Message]:
+    def batch(
+        cls, messages: Sequence[ChatCompletionMessage], modalities: list[str]
+    ) -> list[Message]:
         """Parse a sequence of ``ChatCompletionMessage`` objects into serapeum messages.
 
         Convenience classmethod that constructs a :class:`ChatMessageParser` for
@@ -203,13 +209,13 @@ class ChatMessageParser:
             input message, in the same order.
 
         Examples:
-            - Batch-parse messages (requires SDK objects, skipped in tests):
+            - Batch-parse messages (requires SDK objects):
                 ```python
-                >>> # messages = ChatMessageParser.batch(openai_msgs, ["text"])  # doctest: +SKIP
-                >>> # len(messages)
-                >>> # 2
-                >>> # messages[0].role
-                >>> # 'assistant'
+                # messages = ChatMessageParser.batch(openai_msgs, ["text"])
+                # len(messages)
+                # 2
+                # messages[0].role
+                # 'assistant'
 
                 ```
         """
@@ -552,13 +558,13 @@ class LogProbParser:
     or ``None``.
 
     Examples:
-        - Parse Chat Completions token logprobs (requires a live response, skipped):
+        - Parse Chat Completions token logprobs (requires a live response):
             ```python
-            >>> # logprobs = LogProbParser.from_tokens(  # doctest: +SKIP
-            >>> #     response.choices[0].logprobs.content
-            >>> # )
-            >>> # len(logprobs)
-            >>> # 5
+            # logprobs = LogProbParser.from_tokens(
+            #     response.choices[0].logprobs.content
+            # )
+            # len(logprobs)
+            # 5
 
             ```
         - Parse a legacy completion logprob dict directly:
@@ -618,7 +624,9 @@ class LogProbParser:
         return result
 
     @staticmethod
-    def from_tokens(openai_token_logprobs: Sequence[ChatCompletionTokenLogprob]) -> list[list[LogProb]]:
+    def from_tokens(
+        openai_token_logprobs: Sequence[ChatCompletionTokenLogprob],
+    ) -> list[list[LogProb]]:
         """Convert a sequence of Chat Completions token logprobs into a nested list.
 
         Applies :meth:`from_token` to each element and collects the results,
@@ -859,7 +867,9 @@ class ToolCallAccumulator:
                 self._merge_into_existing(self._tool_calls[-1], tc_delta)
 
     @staticmethod
-    def _merge_into_existing(existing: ChoiceDeltaToolCall, delta: ChoiceDeltaToolCall) -> None:
+    def _merge_into_existing(
+        existing: ChoiceDeltaToolCall, delta: ChoiceDeltaToolCall
+    ) -> None:
         """Merge *delta*'s string fields into *existing* by concatenation.
 
         Fields that are ``None`` on the *existing* entry are initialised to

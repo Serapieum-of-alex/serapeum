@@ -161,7 +161,9 @@ class TestMessagesToPrompt:
             Note: a lone SYSTEM message does NOT raise — it is consumed as the
             system block, leaving ``remaining`` empty.
         """
-        messages = [Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="wrong")])]
+        messages = [
+            Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="wrong")])
+        ]
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt(messages)
         assert "Expected a USER message at position 0" in str(
@@ -190,7 +192,9 @@ class TestMessagesToPrompt:
             the error message must identify the unexpected role so users can
             diagnose the issue without reading source code.
         """
-        messages = [Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="wrong")])]
+        messages = [
+            Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="wrong")])
+        ]
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt(messages)
         error_text = str(exc_info.value)

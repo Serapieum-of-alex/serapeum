@@ -150,7 +150,9 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
             return self._stream_chat(messages, **kwargs)
         return ChatResponse(message=Message(chunks=[TextChunk(content="ok")]))
 
-    def _stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator[ChatResponse, None, None]:
+    def _stream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> Generator[ChatResponse, None, None]:
         yield ChatResponse(
             message=Message(chunks=[TextChunk(content="chunk-1")]),
         )
@@ -166,7 +168,9 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
             return self._astream_chat(messages, **kwargs)
         return ChatResponse(message=Message(chunks=[TextChunk(content="ok")]))
 
-    async def _astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> AsyncGenerator[ChatResponse, None]:
+    async def _astream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> AsyncGenerator[ChatResponse, None]:
         yield ChatResponse(
             message=Message(chunks=[TextChunk(content="chunk-1")]),
         )
@@ -192,9 +196,11 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
             messages = chat_history
         elif message is not None:
             messages = [
-                Message(chunks=[TextChunk(content=message)])
-                if isinstance(message, str)
-                else message
+                (
+                    Message(chunks=[TextChunk(content=message)])
+                    if isinstance(message, str)
+                    else message
+                )
             ]
         else:
             messages = []
@@ -424,9 +430,7 @@ class TestToolOrchestratingLLMStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(
-            schema=Album, prompt="Album {topic}", llm=llm
-        )
+        tools_llm = ToolOrchestratingLLM(schema=Album, prompt="Album {topic}", llm=llm)
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:
@@ -493,9 +497,7 @@ class TestToolOrchestratingLLMAStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(
-            schema=Album, prompt="Album {topic}", llm=llm
-        )
+        tools_llm = ToolOrchestratingLLM(schema=Album, prompt="Album {topic}", llm=llm)
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:

@@ -466,16 +466,16 @@ response = llm.generate_tool_calls(tools=[tool], message="Create an album about 
 # [
 #   ToolCall(
 #       function=Function(
-#           name='Album', 
-#           arguments={'title': 'Thunder & Lightning', 'artist': 'The Rock Legends', 
+#           name='Album',
+#           arguments={'title': 'Thunder & Lightning', 'artist': 'The Rock Legends',
 #           'songs': [
-#               {'duration': 245, 'title': 'Electric Storm'}, 
-#               {'duration': 312, 'title': 'Midnight Rider'}, 
-#               {'duration': 278, 'title': 'Breaking Chains'}, 
-#               {'duration': 295, 'title': 'Highway to Glory'}, 
-#               {'duration': 267, 'title': 'Rebel Heart'}, 
-#               {'duration': 334, 'title': 'Stone Cold Blues'}, 
-#               {'duration': 289, 'title': 'Rise Up'}, 
+#               {'duration': 245, 'title': 'Electric Storm'},
+#               {'duration': 312, 'title': 'Midnight Rider'},
+#               {'duration': 278, 'title': 'Breaking Chains'},
+#               {'duration': 295, 'title': 'Highway to Glory'},
+#               {'duration': 267, 'title': 'Rebel Heart'},
+#               {'duration': 334, 'title': 'Stone Cold Blues'},
+#               {'duration': 289, 'title': 'Rise Up'},
 #               {'duration': 356, 'title': 'Last Stand'}
 #           ]
 #        }

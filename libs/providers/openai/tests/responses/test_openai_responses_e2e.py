@@ -41,7 +41,9 @@ _api_base = os.environ.get("OPENAI_API_BASE", "")
 _is_azure = "azure" in _api_base.lower() or "cognitiveservices" in _api_base.lower()
 _skip = not _has_key or _is_azure
 
-skip_no_key = pytest.mark.skipif(_skip, reason="OPENAI_API_KEY not set or Azure endpoint")
+skip_no_key = pytest.mark.skipif(
+    _skip, reason="OPENAI_API_KEY not set or Azure endpoint"
+)
 
 
 # ---------------------------------------------------------------------------
@@ -51,23 +53,24 @@ skip_no_key = pytest.mark.skipif(_skip, reason="OPENAI_API_KEY not set or Azure 
 
 class Person(BaseModel):
     """Simple person model for structured output tests."""
+
     name: str = Field(description="The person's name")
     age: int = Field(description="The person's age")
 
 
 class MathResult(BaseModel):
     """Math operation result for structured output tests."""
+
     operation: str = Field(description="The math operation performed")
     result: float = Field(description="The numeric result")
 
 
 class CityInfo(BaseModel):
     """City information for structured output tests."""
+
     name: str = Field(description="The city name")
     country: str = Field(description="The country the city is in")
-    population: int | None = Field(
-        default=None, description="Approximate population"
-    )
+    population: int | None = Field(default=None, description="Approximate population")
 
 
 # ---------------------------------------------------------------------------
@@ -181,12 +184,12 @@ class TestResponsesChat:
         ]
         response = llm.chat(messages)
 
-        assert isinstance(response, ChatResponse), (
-            f"Expected ChatResponse, got {type(response)}"
-        )
-        assert response.message.role == MessageRole.ASSISTANT, (
-            f"Expected ASSISTANT, got {response.message.role}"
-        )
+        assert isinstance(
+            response, ChatResponse
+        ), f"Expected ChatResponse, got {type(response)}"
+        assert (
+            response.message.role == MessageRole.ASSISTANT
+        ), f"Expected ASSISTANT, got {response.message.role}"
         assert len(response.message.chunks) > 0, "Response should have chunks"
         assert response.message.content, "Response should have content"
 
@@ -210,12 +213,8 @@ class TestResponsesChat:
         assert all(
             c.message.role == MessageRole.ASSISTANT for c in chunks
         ), "All chunks should have ASSISTANT role"
-        accumulated = "".join(
-            c.delta for c in chunks if c.delta is not None
-        )
-        assert len(accumulated) > 0, (
-            "Accumulated content should not be empty"
-        )
+        accumulated = "".join(c.delta for c in chunks if c.delta is not None)
+        assert len(accumulated) > 0, "Accumulated content should not be empty"
 
     @skip_no_key
     def test_chat_with_system_message(self, llm: Responses):
@@ -229,9 +228,7 @@ class TestResponsesChat:
             Message(
                 role=MessageRole.SYSTEM,
                 chunks=[
-                    TextChunk(
-                        content="You must always respond in uppercase only."
-                    )
+                    TextChunk(content="You must always respond in uppercase only.")
                 ],
             ),
             Message(
@@ -256,9 +253,9 @@ class TestResponsesChat:
             )
         ]
         response = llm.chat(messages)
-        assert "usage" in response.additional_kwargs, (
-            "Response should include usage metadata"
-        )
+        assert (
+            "usage" in response.additional_kwargs
+        ), "Response should include usage metadata"
 
     @skip_no_key
     def test_chat_response_has_raw(self, llm: Responses):
@@ -302,12 +299,12 @@ class TestResponsesAChat:
         ]
         response = await llm.achat(messages)
 
-        assert isinstance(response, ChatResponse), (
-            f"Expected ChatResponse, got {type(response)}"
-        )
-        assert response.message.role == MessageRole.ASSISTANT, (
-            f"Expected ASSISTANT, got {response.message.role}"
-        )
+        assert isinstance(
+            response, ChatResponse
+        ), f"Expected ChatResponse, got {type(response)}"
+        assert (
+            response.message.role == MessageRole.ASSISTANT
+        ), f"Expected ASSISTANT, got {response.message.role}"
         assert response.message.content, "Response should have content"
 
     @skip_no_key
@@ -331,12 +328,8 @@ class TestResponsesAChat:
         assert all(
             c.message.role == MessageRole.ASSISTANT for c in chunks
         ), "All chunks should have ASSISTANT role"
-        accumulated = "".join(
-            c.delta for c in chunks if c.delta is not None
-        )
-        assert len(accumulated) > 0, (
-            "Accumulated content should not be empty"
-        )
+        accumulated = "".join(c.delta for c in chunks if c.delta is not None)
+        assert len(accumulated) > 0, "Accumulated content should not be empty"
 
 
 # ===========================================================================
@@ -389,9 +382,7 @@ class TestResponsesAComplete:
         Test scenario:
             Simple async completion; verify text.
         """
-        response = await llm.acomplete(
-            "Write a one-sentence summary of Python."
-        )
+        response = await llm.acomplete("Write a one-sentence summary of Python.")
         assert response.text is not None, "text should not be None"
         assert len(response.text) > 0, "text should not be empty"
 
@@ -403,9 +394,7 @@ class TestResponsesAComplete:
         Test scenario:
             Stream async completion; verify chunks.
         """
-        gen = await llm.acomplete(
-            stream=True, prompt="Count to 3 briefly."
-        )
+        gen = await llm.acomplete(stream=True, prompt="Count to 3 briefly.")
         chunks = [c async for c in gen]
         assert len(chunks) > 0, "Should yield at least one chunk"
         assert chunks[-1].text is not None, "Last chunk should have text"
@@ -433,9 +422,7 @@ class TestResponsesParse:
                 "Create a profile for a person named Alice who is 25 years old"
             ),
         )
-        assert isinstance(result, Person), (
-            f"Expected Person, got {type(result)}"
-        )
+        assert isinstance(result, Person), f"Expected Person, got {type(result)}"
         assert result.name == "Alice", f"Expected 'Alice', got '{result.name}'"
         assert result.age == 25, f"Expected 25, got {result.age}"
 
@@ -449,19 +436,16 @@ class TestResponsesParse:
         result = llm.parse(
             CityInfo,
             PromptTemplate(
-                "Give me info about Paris, France. "
-                "It has about 2 million people."
+                "Give me info about Paris, France. " "It has about 2 million people."
             ),
         )
-        assert isinstance(result, CityInfo), (
-            f"Expected CityInfo, got {type(result)}"
-        )
-        assert "paris" in result.name.lower(), (
-            f"Expected 'Paris' in name, got '{result.name}'"
-        )
-        assert "france" in result.country.lower(), (
-            f"Expected 'France' in country, got '{result.country}'"
-        )
+        assert isinstance(result, CityInfo), f"Expected CityInfo, got {type(result)}"
+        assert (
+            "paris" in result.name.lower()
+        ), f"Expected 'Paris' in name, got '{result.name}'"
+        assert (
+            "france" in result.country.lower()
+        ), f"Expected 'France' in country, got '{result.country}'"
 
     @skip_no_key
     def test_parse_streaming(self, llm: Responses):
@@ -472,9 +456,7 @@ class TestResponsesParse:
         """
         gen = llm.parse(
             Person,
-            PromptTemplate(
-                "Create a profile for Bob who is 30 years old"
-            ),
+            PromptTemplate("Create a profile for Bob who is 30 years old"),
             stream=True,
         )
         chunks = list(gen)
@@ -491,16 +473,12 @@ class TestResponsesParse:
         """
         result = llm.parse(
             MathResult,
-            PromptTemplate(
-                "What is 7 + 3? Respond with the operation and result."
-            ),
+            PromptTemplate("What is 7 + 3? Respond with the operation and result."),
         )
-        assert isinstance(result, MathResult), (
-            f"Expected MathResult, got {type(result)}"
-        )
-        assert result.result == 10.0, (
-            f"Expected 10.0, got {result.result}"
-        )
+        assert isinstance(
+            result, MathResult
+        ), f"Expected MathResult, got {type(result)}"
+        assert result.result == 10.0, f"Expected 10.0, got {result.result}"
 
 
 # ===========================================================================
@@ -526,9 +504,7 @@ class TestResponsesAParse:
                 "Create a profile for a person named Bob who is 40 years old"
             ),
         )
-        assert isinstance(result, Person), (
-            f"Expected Person, got {type(result)}"
-        )
+        assert isinstance(result, Person), f"Expected Person, got {type(result)}"
         assert result.name == "Bob", f"Expected 'Bob', got '{result.name}'"
         assert result.age == 40, f"Expected 40, got {result.age}"
 
@@ -542,9 +518,7 @@ class TestResponsesAParse:
         """
         gen = await llm.aparse(
             Person,
-            PromptTemplate(
-                "Create a profile for Carol who is 35 years old"
-            ),
+            PromptTemplate("Create a profile for Carol who is 35 years old"),
             stream=True,
         )
         chunks = [c async for c in gen]
@@ -572,12 +546,12 @@ class TestResponsesFunctionCalling:
             message="What is 2 + 3?",
         )
         tool_calls = response.message.tool_calls
-        assert len(tool_calls) >= 1, (
-            f"Expected at least 1 tool call, got {len(tool_calls)}"
-        )
-        assert tool_calls[0].tool_name == "add", (
-            f"Expected 'add', got '{tool_calls[0].tool_name}'"
-        )
+        assert (
+            len(tool_calls) >= 1
+        ), f"Expected at least 1 tool call, got {len(tool_calls)}"
+        assert (
+            tool_calls[0].tool_name == "add"
+        ), f"Expected 'add', got '{tool_calls[0].tool_name}'"
 
     @skip_no_key
     def test_generate_tool_calls_with_tool_required(self, llm: Responses):
@@ -592,9 +566,9 @@ class TestResponsesFunctionCalling:
             tool_required=True,
         )
         tool_calls = response.message.tool_calls
-        assert len(tool_calls) >= 1, (
-            f"Expected at least 1 tool call, got {len(tool_calls)}"
-        )
+        assert (
+            len(tool_calls) >= 1
+        ), f"Expected at least 1 tool call, got {len(tool_calls)}"
 
     @skip_no_key
     def test_generate_tool_calls_parallel(self, llm: Responses):
@@ -613,9 +587,9 @@ class TestResponsesFunctionCalling:
             tool_required=True,
         )
         tool_calls = response.message.tool_calls
-        assert len(tool_calls) >= 2, (
-            f"Expected at least 2 tool calls, got {len(tool_calls)}"
-        )
+        assert (
+            len(tool_calls) >= 2
+        ), f"Expected at least 2 tool calls, got {len(tool_calls)}"
 
     @skip_no_key
     def test_generate_tool_calls_streaming(self, llm: Responses):
@@ -646,19 +620,15 @@ class TestResponsesFunctionCalling:
             tool_required=True,
         )
         selections = llm.get_tool_calls_from_response(response)
-        assert len(selections) >= 1, (
-            f"Expected at least 1, got {len(selections)}"
-        )
-        assert selections[0].tool_name == "add", (
-            f"Expected 'add', got '{selections[0].tool_name}'"
-        )
+        assert len(selections) >= 1, f"Expected at least 1, got {len(selections)}"
+        assert (
+            selections[0].tool_name == "add"
+        ), f"Expected 'add', got '{selections[0].tool_name}'"
         kwargs = selections[0].tool_kwargs
-        assert isinstance(kwargs, dict), (
-            f"Expected dict, got {type(kwargs)}"
-        )
-        assert "a" in kwargs and "b" in kwargs, (
-            f"Expected 'a' and 'b' keys, got {kwargs}"
-        )
+        assert isinstance(kwargs, dict), f"Expected dict, got {type(kwargs)}"
+        assert (
+            "a" in kwargs and "b" in kwargs
+        ), f"Expected 'a' and 'b' keys, got {kwargs}"
 
     @skip_no_key
     def test_invoke_callable_round_trip(self, llm: Responses):
@@ -672,9 +642,9 @@ class TestResponsesFunctionCalling:
             message="What is 100 + 200?",
             tool_required=True,
         )
-        assert "300" in result.response, (
-            f"Expected '300' in response, got '{result.response}'"
-        )
+        assert (
+            "300" in result.response
+        ), f"Expected '300' in response, got '{result.response}'"
 
     @skip_no_key
     def test_strict_mode_tool_calling(self, llm_strict: Responses):
@@ -689,9 +659,9 @@ class TestResponsesFunctionCalling:
             tool_required=True,
         )
         tool_calls = response.message.tool_calls
-        assert len(tool_calls) >= 1, (
-            f"Expected at least 1 tool call, got {len(tool_calls)}"
-        )
+        assert (
+            len(tool_calls) >= 1
+        ), f"Expected at least 1 tool call, got {len(tool_calls)}"
 
 
 # ===========================================================================
@@ -717,12 +687,10 @@ class TestResponsesAsyncFunctionCalling:
             tool_required=True,
         )
         tool_calls = response.message.tool_calls
-        assert len(tool_calls) >= 1, (
-            f"Expected at least 1, got {len(tool_calls)}"
-        )
-        assert tool_calls[0].tool_name == "add", (
-            f"Expected 'add', got '{tool_calls[0].tool_name}'"
-        )
+        assert len(tool_calls) >= 1, f"Expected at least 1, got {len(tool_calls)}"
+        assert (
+            tool_calls[0].tool_name == "add"
+        ), f"Expected 'add', got '{tool_calls[0].tool_name}'"
 
     @skip_no_key
     @pytest.mark.asyncio
@@ -754,9 +722,9 @@ class TestResponsesAsyncFunctionCalling:
             message="What is 50 + 50?",
             tool_required=True,
         )
-        assert "100" in result.response, (
-            f"Expected '100' in response, got '{result.response}'"
-        )
+        assert (
+            "100" in result.response
+        ), f"Expected '100' in response, got '{result.response}'"
 
 
 # ===========================================================================
@@ -780,42 +748,40 @@ class TestResponsesTrackPreviousResponses:
             model="gpt-4o-mini",
             track_previous_responses=True,
         )
-        assert llm.store is True, (
-            "store should be True when tracking responses"
-        )
+        assert llm.store is True, "store should be True when tracking responses"
 
-        r1 = llm.chat([
-            Message(
-                role=MessageRole.USER,
-                chunks=[
-                    TextChunk(
-                        content="My secret code word is 'pineapple'. "
-                        "Remember it."
-                    )
-                ],
-            )
-        ])
-        assert llm._previous_response_id is not None, (
-            "Should have a previous response ID after first call"
+        r1 = llm.chat(
+            [
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[
+                        TextChunk(
+                            content="My secret code word is 'pineapple'. "
+                            "Remember it."
+                        )
+                    ],
+                )
+            ]
         )
+        assert (
+            llm._previous_response_id is not None
+        ), "Should have a previous response ID after first call"
         first_id = llm._previous_response_id
 
-        r2 = llm.chat([
-            Message(
-                role=MessageRole.USER,
-                chunks=[
-                    TextChunk(
-                        content="What was my secret code word?"
-                    )
-                ],
-            )
-        ])
-        assert "pineapple" in r2.message.content.lower(), (
-            f"Model should remember 'pineapple', got: {r2.message.content}"
+        r2 = llm.chat(
+            [
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="What was my secret code word?")],
+                )
+            ]
         )
-        assert llm._previous_response_id != first_id, (
-            "Previous response ID should be updated after second call"
-        )
+        assert (
+            "pineapple" in r2.message.content.lower()
+        ), f"Model should remember 'pineapple', got: {r2.message.content}"
+        assert (
+            llm._previous_response_id != first_id
+        ), "Previous response ID should be updated after second call"
 
 
 # ===========================================================================
@@ -845,9 +811,9 @@ class TestResponsesBuiltInTools:
             )
         ]
         response = llm.chat(messages)
-        assert response.message.role == MessageRole.ASSISTANT, (
-            f"Expected ASSISTANT, got {response.message.role}"
-        )
+        assert (
+            response.message.role == MessageRole.ASSISTANT
+        ), f"Expected ASSISTANT, got {response.message.role}"
         assert len(response.message.chunks) > 0, "Should have chunks"
 
 
@@ -867,9 +833,7 @@ class TestResponsesMetadata:
         Test scenario:
             Verify the canonical class name string.
         """
-        assert llm.class_name() == "openai_responses_llm", (
-            f"Got '{llm.class_name()}'"
-        )
+        assert llm.class_name() == "openai_responses_llm", f"Got '{llm.class_name()}'"
 
     @skip_no_key
     def test_metadata_properties(self, llm: Responses):
@@ -880,12 +844,12 @@ class TestResponsesMetadata:
         """
         meta = llm.metadata
         assert meta.is_chat_model is True, "Should be a chat model"
-        assert meta.context_window > 0, (
-            f"Expected positive context window, got {meta.context_window}"
-        )
-        assert meta.model_name == llm.model, (
-            f"Expected '{llm.model}', got '{meta.model_name}'"
-        )
+        assert (
+            meta.context_window > 0
+        ), f"Expected positive context window, got {meta.context_window}"
+        assert (
+            meta.model_name == llm.model
+        ), f"Expected '{llm.model}', got '{meta.model_name}'"
 
     @skip_no_key
     def test_should_use_structure_outputs_false(self, llm: Responses):
@@ -894,6 +858,6 @@ class TestResponsesMetadata:
         Test scenario:
             Responses API never uses native JSON-schema path.
         """
-        assert llm._should_use_structure_outputs() is False, (
-            "Should always be False for Responses API"
-        )
+        assert (
+            llm._should_use_structure_outputs() is False
+        ), "Should always be False for Responses API"

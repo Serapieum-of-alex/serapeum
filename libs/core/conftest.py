@@ -92,7 +92,8 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config, items: list[pytest.Item],
+    config: pytest.Config,
+    items: list[pytest.Item],
 ) -> None:
     """Post-collection hooks: --no-skip-doctest and --md-marker filtering."""
     # -- doctest SKIP removal ------------------------------------------------

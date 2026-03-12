@@ -102,7 +102,7 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 - You need structured outputs without manually handling parsing
 
 #### Example
-```python function_calling 
+```python function_calling
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama

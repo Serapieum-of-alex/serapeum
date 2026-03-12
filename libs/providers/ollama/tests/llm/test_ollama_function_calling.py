@@ -245,6 +245,7 @@ class TestOllamaE2E:
 
         Expected: Should generate valid dict output from function via LLM.
         """
+
         def extract_info(name: str, age: int, city: str) -> dict:
             """Extract person information."""
             return {
@@ -273,6 +274,7 @@ class TestOllamaE2E:
 
         Expected: Should execute async function via LLM successfully.
         """
+
         async def async_processor(text: str, multiplier: int) -> dict:
             """Process text asynchronously."""
             await asyncio.sleep(0.01)

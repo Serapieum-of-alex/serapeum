@@ -71,6 +71,7 @@ def o1_llm() -> Completions:
 
 def _make_search_tool() -> CallableTool:
     """Create a simple search tool for testing."""
+
     def search(query: str) -> str:
         """Search for information about a query."""
         return f"Results for {query}"
@@ -89,9 +90,7 @@ def _make_chat_completion(
         object="chat.completion",
         created=1700000000,
         model="gpt-4o-mini",
-        usage=CompletionUsage(
-            prompt_tokens=10, completion_tokens=5, total_tokens=15
-        ),
+        usage=CompletionUsage(prompt_tokens=10, completion_tokens=5, total_tokens=15),
         choices=[
             Choice(
                 message=ChatCompletionMessage(role=role, content=content),
@@ -109,14 +108,8 @@ def _make_completion(text: str = "Hello!") -> Completion:
         object="text_completion",
         created=1700000000,
         model="text-davinci-003",
-        usage=CompletionUsage(
-            prompt_tokens=10, completion_tokens=5, total_tokens=15
-        ),
-        choices=[
-            CompletionChoice(
-                text=text, finish_reason="stop", index=0
-            )
-        ],
+        usage=CompletionUsage(prompt_tokens=10, completion_tokens=5, total_tokens=15),
+        choices=[CompletionChoice(text=text, finish_reason="stop", index=0)],
     )
 
 
@@ -250,9 +243,7 @@ def _make_chat_completion_with_tool_calls(
         object="chat.completion",
         created=1700000000,
         model="gpt-4o-mini",
-        usage=CompletionUsage(
-            prompt_tokens=10, completion_tokens=5, total_tokens=15
-        ),
+        usage=CompletionUsage(prompt_tokens=10, completion_tokens=5, total_tokens=15),
         choices=[
             Choice(
                 message=ChatCompletionMessage(
@@ -262,9 +253,7 @@ def _make_chat_completion_with_tool_calls(
                         ChatCompletionMessageToolCall(
                             id="call_123",
                             type=tool_type,
-                            function=Function(
-                                name=tool_name, arguments=arguments
-                            ),
+                            function=Function(name=tool_name, arguments=arguments),
                         )
                     ],
                 ),
@@ -287,9 +276,9 @@ class TestValidateModel:
             should override the temperature to 1.0.
         """
         llm = Completions(model="o1-mini", api_key="sk-test", temperature=0.5)
-        assert llm.temperature == 1.0, (
-            f"O1 model should force temperature to 1.0, got {llm.temperature}"
-        )
+        assert (
+            llm.temperature == 1.0
+        ), f"O1 model should force temperature to 1.0, got {llm.temperature}"
 
     def test_non_o1_model_preserves_temperature(self):
         """Test that non-O1 models preserve custom temperature.
@@ -299,9 +288,9 @@ class TestValidateModel:
             temperature should keep the custom value.
         """
         llm = Completions(model="gpt-4o-mini", api_key="sk-test", temperature=0.7)
-        assert llm.temperature == 0.7, (
-            f"Non-O1 model should preserve temperature, got {llm.temperature}"
-        )
+        assert (
+            llm.temperature == 0.7
+        ), f"Non-O1 model should preserve temperature, got {llm.temperature}"
 
     def test_responses_only_model_raises_valueerror(self):
         """Test that models exclusive to the Responses API are rejected.
@@ -313,9 +302,9 @@ class TestValidateModel:
         responses_only = next(iter(RESPONSES_API_ONLY_MODELS))
         with pytest.raises(ValueError, match="Responses API") as exc_info:
             Completions(model=responses_only, api_key="sk-test")
-        assert responses_only in str(exc_info.value), (
-            f"Error should mention the model name, got: {exc_info.value}"
-        )
+        assert responses_only in str(
+            exc_info.value
+        ), f"Error should mention the model name, got: {exc_info.value}"
 
 
 @pytest.mark.unit
@@ -328,9 +317,9 @@ class TestClassName:
         Test scenario:
             Calling class_name() should return the canonical provider string.
         """
-        assert Completions.class_name() == "openai", (
-            f"Expected 'openai', got '{Completions.class_name()}'"
-        )
+        assert (
+            Completions.class_name() == "openai"
+        ), f"Expected 'openai', got '{Completions.class_name()}'"
 
 
 @pytest.mark.unit
@@ -345,17 +334,17 @@ class TestMetadata:
             support and the correct context window.
         """
         meta = llm.metadata
-        assert meta.model_name == "gpt-4o-mini", (
-            f"Expected model_name 'gpt-4o-mini', got '{meta.model_name}'"
-        )
+        assert (
+            meta.model_name == "gpt-4o-mini"
+        ), f"Expected model_name 'gpt-4o-mini', got '{meta.model_name}'"
         assert meta.is_chat_model is True, "gpt-4o-mini should be a chat model"
-        assert meta.is_function_calling_model is True, (
-            "gpt-4o-mini should support function calling"
-        )
+        assert (
+            meta.is_function_calling_model is True
+        ), "gpt-4o-mini should support function calling"
         assert meta.context_window > 0, "Context window should be positive"
-        assert meta.system_role == MessageRole.SYSTEM, (
-            "Non-O1 models should use SYSTEM role"
-        )
+        assert (
+            meta.system_role == MessageRole.SYSTEM
+        ), "Non-O1 models should use SYSTEM role"
 
     def test_o1_model_metadata_system_role(self, o1_llm: Completions):
         """Test that O1 models report system_role as USER.
@@ -365,9 +354,9 @@ class TestMetadata:
             should be set to MessageRole.USER.
         """
         meta = o1_llm.metadata
-        assert meta.system_role == MessageRole.USER, (
-            f"O1 models should use USER system_role, got {meta.system_role}"
-        )
+        assert (
+            meta.system_role == MessageRole.USER
+        ), f"O1 models should use USER system_role, got {meta.system_role}"
 
     def test_metadata_num_output_with_max_tokens(self):
         """Test that num_output reflects max_tokens when set.
@@ -376,9 +365,9 @@ class TestMetadata:
             Setting max_tokens=100 should be reflected in metadata.num_output.
         """
         llm = Completions(model="gpt-4o-mini", api_key="sk-test", max_tokens=100)
-        assert llm.metadata.num_output == 100, (
-            f"Expected num_output=100, got {llm.metadata.num_output}"
-        )
+        assert (
+            llm.metadata.num_output == 100
+        ), f"Expected num_output=100, got {llm.metadata.num_output}"
 
     def test_metadata_num_output_default(self, llm: Completions):
         """Test that num_output is -1 when max_tokens is None.
@@ -386,9 +375,9 @@ class TestMetadata:
         Test scenario:
             When max_tokens is not set, num_output defaults to -1.
         """
-        assert llm.metadata.num_output == -1, (
-            f"Expected num_output=-1, got {llm.metadata.num_output}"
-        )
+        assert (
+            llm.metadata.num_output == -1
+        ), f"Expected num_output=-1, got {llm.metadata.num_output}"
 
     def test_completion_model_metadata(self, completion_llm: Completions):
         """Test metadata for a legacy completion model.
@@ -397,9 +386,9 @@ class TestMetadata:
             text-davinci-003 should not be identified as a chat model.
         """
         meta = completion_llm.metadata
-        assert meta.is_chat_model is False, (
-            "text-davinci-003 should not be a chat model"
-        )
+        assert (
+            meta.is_chat_model is False
+        ), "text-davinci-003 should not be a chat model"
 
 
 @pytest.mark.unit
@@ -456,9 +445,9 @@ class TestGetModelKwargs:
             Default kwargs should contain model and temperature keys.
         """
         kwargs = llm._get_model_kwargs()
-        assert kwargs["model"] == "gpt-4o-mini", (
-            f"Expected model 'gpt-4o-mini', got {kwargs['model']}"
-        )
+        assert (
+            kwargs["model"] == "gpt-4o-mini"
+        ), f"Expected model 'gpt-4o-mini', got {kwargs['model']}"
         assert "temperature" in kwargs, "temperature should be present"
 
     def test_max_tokens_included_when_set(self):
@@ -469,9 +458,9 @@ class TestGetModelKwargs:
         """
         llm = Completions(model="gpt-4o-mini", api_key="sk-test", max_tokens=256)
         kwargs = llm._get_model_kwargs()
-        assert kwargs["max_tokens"] == 256, (
-            f"Expected max_tokens=256, got {kwargs.get('max_tokens')}"
-        )
+        assert (
+            kwargs["max_tokens"] == 256
+        ), f"Expected max_tokens=256, got {kwargs.get('max_tokens')}"
 
     def test_max_tokens_omitted_when_none(self, llm: Completions):
         """Test that max_tokens is omitted when None.
@@ -480,9 +469,9 @@ class TestGetModelKwargs:
             When max_tokens is None (default), it should not appear in kwargs.
         """
         kwargs = llm._get_model_kwargs()
-        assert "max_tokens" not in kwargs, (
-            "max_tokens should not be in kwargs when None"
-        )
+        assert (
+            "max_tokens" not in kwargs
+        ), "max_tokens should not be in kwargs when None"
 
     def test_logprobs_for_chat_model(self):
         """Test logprobs injection for chat models.
@@ -492,14 +481,13 @@ class TestGetModelKwargs:
             inject both keys.
         """
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
-            logprobs=True, top_logprobs=5
+            model="gpt-4o-mini", api_key="sk-test", logprobs=True, top_logprobs=5
         )
         kwargs = llm._get_model_kwargs()
         assert kwargs["logprobs"] is True, "logprobs should be True"
-        assert kwargs["top_logprobs"] == 5, (
-            f"Expected top_logprobs=5, got {kwargs['top_logprobs']}"
-        )
+        assert (
+            kwargs["top_logprobs"] == 5
+        ), f"Expected top_logprobs=5, got {kwargs['top_logprobs']}"
 
     def test_logprobs_for_completion_model(self):
         """Test logprobs injection for legacy completion models.
@@ -509,13 +497,12 @@ class TestGetModelKwargs:
             top_logprobs value (not a boolean).
         """
         llm = Completions(
-            model="text-davinci-003", api_key="sk-test",
-            logprobs=True, top_logprobs=3
+            model="text-davinci-003", api_key="sk-test", logprobs=True, top_logprobs=3
         )
         kwargs = llm._get_model_kwargs()
-        assert kwargs["logprobs"] == 3, (
-            f"For completion models logprobs should be int, got {kwargs['logprobs']}"
-        )
+        assert (
+            kwargs["logprobs"] == 3
+        ), f"For completion models logprobs should be int, got {kwargs['logprobs']}"
 
     def test_logprobs_not_set_when_false(self, llm: Completions):
         """Test that logprobs is not injected when set to False.
@@ -524,9 +511,9 @@ class TestGetModelKwargs:
             logprobs=False (or None default) should not add logprobs to kwargs.
         """
         kwargs = llm._get_model_kwargs()
-        assert "logprobs" not in kwargs, (
-            "logprobs should not be in kwargs when not enabled"
-        )
+        assert (
+            "logprobs" not in kwargs
+        ), "logprobs should not be in kwargs when not enabled"
 
     def test_stream_options_removed_when_not_streaming(self):
         """Test that stream_options is removed when stream is not in kwargs.
@@ -536,13 +523,14 @@ class TestGetModelKwargs:
             the final kwargs, stream_options should be removed.
         """
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
+            model="gpt-4o-mini",
+            api_key="sk-test",
             additional_kwargs={"stream_options": {"include_usage": True}},
         )
         kwargs = llm._get_model_kwargs()
-        assert "stream_options" not in kwargs, (
-            "stream_options should be removed when not streaming"
-        )
+        assert (
+            "stream_options" not in kwargs
+        ), "stream_options should be removed when not streaming"
 
     def test_stream_options_preserved_when_streaming(self):
         """Test that stream_options is preserved when stream is in kwargs.
@@ -551,13 +539,14 @@ class TestGetModelKwargs:
             When stream=True is included in kwargs, stream_options should remain.
         """
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
+            model="gpt-4o-mini",
+            api_key="sk-test",
             additional_kwargs={"stream_options": {"include_usage": True}},
         )
         kwargs = llm._get_model_kwargs(stream=True)
-        assert "stream_options" in kwargs, (
-            "stream_options should be preserved when streaming"
-        )
+        assert (
+            "stream_options" in kwargs
+        ), "stream_options should be preserved when streaming"
 
     def test_o1_max_completion_tokens_rename(self, o1_llm: Completions):
         """Test that O1 models rename max_tokens to max_completion_tokens.
@@ -568,15 +557,13 @@ class TestGetModelKwargs:
         """
         o1_llm.max_tokens = 100
         kwargs = o1_llm._get_model_kwargs()
-        assert "max_completion_tokens" in kwargs, (
-            "O1 model should have max_completion_tokens"
-        )
-        assert kwargs["max_completion_tokens"] == 100, (
-            f"Expected 100, got {kwargs['max_completion_tokens']}"
-        )
-        assert "max_tokens" not in kwargs, (
-            "max_tokens should be removed for O1 models"
-        )
+        assert (
+            "max_completion_tokens" in kwargs
+        ), "O1 model should have max_completion_tokens"
+        assert (
+            kwargs["max_completion_tokens"] == 100
+        ), f"Expected 100, got {kwargs['max_completion_tokens']}"
+        assert "max_tokens" not in kwargs, "max_tokens should be removed for O1 models"
 
     def test_o1_reasoning_effort_injected(self):
         """Test that reasoning_effort is injected for O1 models.
@@ -584,13 +571,11 @@ class TestGetModelKwargs:
         Test scenario:
             Setting reasoning_effort on an O1 model should include it in kwargs.
         """
-        llm = Completions(
-            model="o1-mini", api_key="sk-test", reasoning_effort="high"
-        )
+        llm = Completions(model="o1-mini", api_key="sk-test", reasoning_effort="high")
         kwargs = llm._get_model_kwargs()
-        assert kwargs["reasoning_effort"] == "high", (
-            f"Expected reasoning_effort='high', got {kwargs.get('reasoning_effort')}"
-        )
+        assert (
+            kwargs["reasoning_effort"] == "high"
+        ), f"Expected reasoning_effort='high', got {kwargs.get('reasoning_effort')}"
 
     def test_modalities_injection(self):
         """Test that modalities are injected into kwargs.
@@ -599,13 +584,13 @@ class TestGetModelKwargs:
             Setting modalities=["text", "audio"] should include it in kwargs.
         """
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
-            modalities=["text", "audio"]
+            model="gpt-4o-mini", api_key="sk-test", modalities=["text", "audio"]
         )
         kwargs = llm._get_model_kwargs()
-        assert kwargs["modalities"] == ["text", "audio"], (
-            f"Expected modalities list, got {kwargs.get('modalities')}"
-        )
+        assert kwargs["modalities"] == [
+            "text",
+            "audio",
+        ], f"Expected modalities list, got {kwargs.get('modalities')}"
 
     def test_audio_config_injection(self):
         """Test that audio_config is injected as 'audio' key.
@@ -615,13 +600,12 @@ class TestGetModelKwargs:
         """
         audio_cfg = {"voice": "alloy", "format": "wav"}
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
-            audio_config=audio_cfg
+            model="gpt-4o-mini", api_key="sk-test", audio_config=audio_cfg
         )
         kwargs = llm._get_model_kwargs()
-        assert kwargs["audio"] == audio_cfg, (
-            f"Expected audio config, got {kwargs.get('audio')}"
-        )
+        assert (
+            kwargs["audio"] == audio_cfg
+        ), f"Expected audio config, got {kwargs.get('audio')}"
 
     def test_additional_kwargs_merged(self):
         """Test that additional_kwargs are merged into the output.
@@ -631,13 +615,14 @@ class TestGetModelKwargs:
             final kwargs dict.
         """
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
-            additional_kwargs={"frequency_penalty": 0.5}
+            model="gpt-4o-mini",
+            api_key="sk-test",
+            additional_kwargs={"frequency_penalty": 0.5},
         )
         kwargs = llm._get_model_kwargs()
-        assert kwargs["frequency_penalty"] == 0.5, (
-            f"Expected frequency_penalty=0.5, got {kwargs.get('frequency_penalty')}"
-        )
+        assert (
+            kwargs["frequency_penalty"] == 0.5
+        ), f"Expected frequency_penalty=0.5, got {kwargs.get('frequency_penalty')}"
 
     def test_runtime_kwargs_override(self, llm: Completions):
         """Test that per-call runtime kwargs override defaults.
@@ -647,9 +632,9 @@ class TestGetModelKwargs:
             instance-level temperature.
         """
         kwargs = llm._get_model_kwargs(temperature=0.9)
-        assert kwargs["temperature"] == 0.9, (
-            f"Expected runtime override temperature=0.9, got {kwargs['temperature']}"
-        )
+        assert (
+            kwargs["temperature"] == 0.9
+        ), f"Expected runtime override temperature=0.9, got {kwargs['temperature']}"
 
 
 @pytest.mark.unit
@@ -664,15 +649,15 @@ class TestGetResponseTokenCounts:
         """
         response = _make_chat_completion()
         counts = Completions._get_response_token_counts(response)
-        assert counts["prompt_tokens"] == 10, (
-            f"Expected prompt_tokens=10, got {counts.get('prompt_tokens')}"
-        )
-        assert counts["completion_tokens"] == 5, (
-            f"Expected completion_tokens=5, got {counts.get('completion_tokens')}"
-        )
-        assert counts["total_tokens"] == 15, (
-            f"Expected total_tokens=15, got {counts.get('total_tokens')}"
-        )
+        assert (
+            counts["prompt_tokens"] == 10
+        ), f"Expected prompt_tokens=10, got {counts.get('prompt_tokens')}"
+        assert (
+            counts["completion_tokens"] == 5
+        ), f"Expected completion_tokens=5, got {counts.get('completion_tokens')}"
+        assert (
+            counts["total_tokens"] == 15
+        ), f"Expected total_tokens=15, got {counts.get('total_tokens')}"
 
     def test_with_dict_input(self):
         """Test extraction from a dict response.
@@ -688,9 +673,9 @@ class TestGetResponseTokenCounts:
             }
         }
         counts = Completions._get_response_token_counts(response)
-        assert counts["total_tokens"] == 30, (
-            f"Expected total_tokens=30, got {counts.get('total_tokens')}"
-        )
+        assert (
+            counts["total_tokens"] == 30
+        ), f"Expected total_tokens=30, got {counts.get('total_tokens')}"
 
     def test_with_none_usage_in_dict(self):
         """Test that None usage in dict returns empty dict.
@@ -769,9 +754,9 @@ class TestUpdateMaxTokens:
         completion_llm.max_tokens = 100
         kwargs: dict[str, Any] = {}
         completion_llm._update_max_tokens(kwargs, "short prompt")
-        assert "max_tokens" not in kwargs, (
-            "Should not inject max_tokens when already set on instance"
-        )
+        assert (
+            "max_tokens" not in kwargs
+        ), "Should not inject max_tokens when already set on instance"
 
     def test_calculates_from_context_window(self, completion_llm: Completions):
         """Test max_tokens calculation from context window minus prompt tokens.
@@ -783,9 +768,9 @@ class TestUpdateMaxTokens:
         kwargs: dict[str, Any] = {}
         completion_llm._update_max_tokens(kwargs, "hello world")
         assert "max_tokens" in kwargs, "Should inject max_tokens"
-        assert kwargs["max_tokens"] > 0, (
-            f"Calculated max_tokens should be positive, got {kwargs['max_tokens']}"
-        )
+        assert (
+            kwargs["max_tokens"] > 0
+        ), f"Calculated max_tokens should be positive, got {kwargs['max_tokens']}"
 
     def test_prompt_exceeds_context_raises(self, completion_llm: Completions):
         """Test that a prompt exceeding the context window raises ValueError.
@@ -812,8 +797,7 @@ class TestCompleteAudioRejection:
             raise ValueError.
         """
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
-            modalities=["text", "audio"]
+            model="gpt-4o-mini", api_key="sk-test", modalities=["text", "audio"]
         )
         with pytest.raises(ValueError, match="Audio is not supported"):
             llm.complete("test prompt")
@@ -827,8 +811,7 @@ class TestCompleteAudioRejection:
             raise ValueError.
         """
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
-            modalities=["text", "audio"]
+            model="gpt-4o-mini", api_key="sk-test", modalities=["text", "audio"]
         )
         with pytest.raises(ValueError, match="Audio is not supported"):
             await llm.acomplete("test prompt")
@@ -842,13 +825,14 @@ class TestCompleteAudioRejection:
             Calling chat(stream=True) with audio modality should raise ValueError.
         """
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
-            modalities=["text", "audio"]
+            model="gpt-4o-mini", api_key="sk-test", modalities=["text", "audio"]
         )
         with pytest.raises(ValueError, match="Audio is not supported"):
-            list(llm._stream_chat([
-                Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
-            ]))
+            list(
+                llm._stream_chat(
+                    [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
+                )
+            )
 
 
 @pytest.mark.unit
@@ -867,12 +851,14 @@ class TestChatRouting:
         mock_client.chat.completions.create.return_value = _make_chat_completion()
 
         llm = Completions(model="gpt-4o-mini", api_key="sk-test")
-        response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])])
+        response = llm.chat(
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
+        )
 
         mock_client.chat.completions.create.assert_called_once()
-        assert response.message.content == "Hello!", (
-            f"Expected 'Hello!', got '{response.message.content}'"
-        )
+        assert (
+            response.message.content == "Hello!"
+        ), f"Expected 'Hello!', got '{response.message.content}'"
 
     @patch("serapeum.openai.llm.base.client.SyncOpenAI")
     def test_chat_routes_to_completions(self, MockSyncOpenAI: MagicMock):
@@ -886,17 +872,17 @@ class TestChatRouting:
         mock_client.completions.create.return_value = _make_completion("Hi!")
 
         llm = Completions(model="text-davinci-003", api_key="sk-test")
-        response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])])
-
-        mock_client.completions.create.assert_called_once()
-        assert response.message.content == "Hi!", (
-            f"Expected 'Hi!', got '{response.message.content}'"
+        response = llm.chat(
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
         )
 
+        mock_client.completions.create.assert_called_once()
+        assert (
+            response.message.content == "Hi!"
+        ), f"Expected 'Hi!', got '{response.message.content}'"
+
     @patch("serapeum.openai.llm.base.client.SyncOpenAI")
-    def test_chat_streaming_routes_to_stream_chat(
-        self, MockSyncOpenAI: MagicMock
-    ):
+    def test_chat_streaming_routes_to_stream_chat(self, MockSyncOpenAI: MagicMock):
         """Test that chat(stream=True) routes to _stream_chat for chat models.
 
         Test scenario:
@@ -907,7 +893,8 @@ class TestChatRouting:
 
         llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         gen = llm.chat(
-            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])], stream=True
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])],
+            stream=True,
         )
         chunks = list(gen)
 
@@ -938,18 +925,19 @@ class TestStreamChat:
 
         llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         gen = llm._stream_chat(
-            [Message(role=MessageRole.USER, chunks=[TextChunk(content="search for test")])]
+            [
+                Message(
+                    role=MessageRole.USER, chunks=[TextChunk(content="search for test")]
+                )
+            ]
         )
         chunks = list(gen)
 
         # The first two chunks should have tool calls in additional_kwargs
         tool_chunks = [
-            c for c in chunks
-            if c.message.additional_kwargs.get("tool_calls")
+            c for c in chunks if c.message.additional_kwargs.get("tool_calls")
         ]
-        assert len(tool_chunks) >= 1, (
-            "Should have at least one chunk with tool_calls"
-        )
+        assert len(tool_chunks) >= 1, "Should have at least one chunk with tool_calls"
 
     @patch("serapeum.openai.llm.base.client.SyncOpenAI")
     def test_stream_empty_choices_handled(self, MockSyncOpenAI: MagicMock):
@@ -998,24 +986,16 @@ class TestValidateChatWithToolsResponse:
             message=Message(
                 role=MessageRole.ASSISTANT,
                 chunks=[
-                    ToolCallBlock(
-                        tool_call_id="1", tool_name="a", tool_kwargs="{}"
-                    ),
-                    ToolCallBlock(
-                        tool_call_id="2", tool_name="b", tool_kwargs="{}"
-                    ),
+                    ToolCallBlock(tool_call_id="1", tool_name="a", tool_kwargs="{}"),
+                    ToolCallBlock(tool_call_id="2", tool_name="b", tool_kwargs="{}"),
                 ],
             )
         )
-        result = llm._validate_response(
-            response, allow_parallel_tool_calls=True
-        )
-        tool_blocks = [
-            b for b in result.message.chunks if isinstance(b, ToolCallBlock)
-        ]
-        assert len(tool_blocks) == 2, (
-            f"Expected 2 tool calls when parallel allowed, got {len(tool_blocks)}"
-        )
+        result = llm._validate_response(response, allow_parallel_tool_calls=True)
+        tool_blocks = [b for b in result.message.chunks if isinstance(b, ToolCallBlock)]
+        assert (
+            len(tool_blocks) == 2
+        ), f"Expected 2 tool calls when parallel allowed, got {len(tool_blocks)}"
 
     def test_forces_single_call_when_disallowed(self, llm: Completions):
         """Test that parallel tool calls are trimmed when disallowed.
@@ -1028,27 +1008,17 @@ class TestValidateChatWithToolsResponse:
             message=Message(
                 role=MessageRole.ASSISTANT,
                 chunks=[
-                    ToolCallBlock(
-                        tool_call_id="1", tool_name="a", tool_kwargs="{}"
-                    ),
-                    ToolCallBlock(
-                        tool_call_id="2", tool_name="b", tool_kwargs="{}"
-                    ),
+                    ToolCallBlock(tool_call_id="1", tool_name="a", tool_kwargs="{}"),
+                    ToolCallBlock(tool_call_id="2", tool_name="b", tool_kwargs="{}"),
                 ],
             )
         )
-        result = llm._validate_response(
-            response, allow_parallel_tool_calls=False
-        )
-        tool_blocks = [
-            b for b in result.message.chunks if isinstance(b, ToolCallBlock)
-        ]
-        assert len(tool_blocks) == 1, (
-            f"Expected 1 tool call when parallel disallowed, got {len(tool_blocks)}"
-        )
-        assert tool_blocks[0].tool_call_id == "1", (
-            "Should keep the first tool call"
-        )
+        result = llm._validate_response(response, allow_parallel_tool_calls=False)
+        tool_blocks = [b for b in result.message.chunks if isinstance(b, ToolCallBlock)]
+        assert (
+            len(tool_blocks) == 1
+        ), f"Expected 1 tool call when parallel disallowed, got {len(tool_blocks)}"
+        assert tool_blocks[0].tool_call_id == "1", "Should keep the first tool call"
 
 
 @pytest.mark.unit
@@ -1075,15 +1045,13 @@ class TestGetToolCallsFromResponse:
             )
         )
         tool_calls = llm.get_tool_calls_from_response(response)
-        assert len(tool_calls) == 1, (
-            f"Expected 1 tool call, got {len(tool_calls)}"
-        )
-        assert tool_calls[0].tool_name == "search", (
-            f"Expected tool name 'search', got '{tool_calls[0].tool_name}'"
-        )
-        assert tool_calls[0].tool_kwargs == {"query": "hello"}, (
-            f"Expected parsed dict kwargs, got {tool_calls[0].tool_kwargs}"
-        )
+        assert len(tool_calls) == 1, f"Expected 1 tool call, got {len(tool_calls)}"
+        assert (
+            tool_calls[0].tool_name == "search"
+        ), f"Expected tool name 'search', got '{tool_calls[0].tool_name}'"
+        assert tool_calls[0].tool_kwargs == {
+            "query": "hello"
+        }, f"Expected parsed dict kwargs, got {tool_calls[0].tool_kwargs}"
 
     def test_extracts_dict_kwargs_from_blocks(self, llm: Completions):
         """Test extraction when ToolCallBlock has dict kwargs (already parsed).
@@ -1104,9 +1072,9 @@ class TestGetToolCallsFromResponse:
             )
         )
         tool_calls = llm.get_tool_calls_from_response(response)
-        assert tool_calls[0].tool_kwargs == {"query": "hello"}, (
-            f"Expected dict kwargs, got {tool_calls[0].tool_kwargs}"
-        )
+        assert tool_calls[0].tool_kwargs == {
+            "query": "hello"
+        }, f"Expected dict kwargs, got {tool_calls[0].tool_kwargs}"
 
     def test_handles_invalid_json_in_blocks(self, llm: Completions):
         """Test that invalid JSON in ToolCallBlock falls back to empty dict.
@@ -1127,9 +1095,9 @@ class TestGetToolCallsFromResponse:
             )
         )
         tool_calls = llm.get_tool_calls_from_response(response)
-        assert tool_calls[0].tool_kwargs == {}, (
-            f"Expected empty dict for invalid JSON, got {tool_calls[0].tool_kwargs}"
-        )
+        assert (
+            tool_calls[0].tool_kwargs == {}
+        ), f"Expected empty dict for invalid JSON, got {tool_calls[0].tool_kwargs}"
 
     def test_legacy_path_extracts_from_additional_kwargs(self, llm: Completions):
         """Test extraction via legacy additional_kwargs path.
@@ -1158,12 +1126,12 @@ class TestGetToolCallsFromResponse:
         )
         tool_calls = llm.get_tool_calls_from_response(response)
         assert len(tool_calls) == 1, f"Expected 1 tool call, got {len(tool_calls)}"
-        assert tool_calls[0].tool_name == "search", (
-            f"Expected 'search', got '{tool_calls[0].tool_name}'"
-        )
-        assert tool_calls[0].tool_kwargs == {"query": "test"}, (
-            f"Expected parsed kwargs, got {tool_calls[0].tool_kwargs}"
-        )
+        assert (
+            tool_calls[0].tool_name == "search"
+        ), f"Expected 'search', got '{tool_calls[0].tool_name}'"
+        assert tool_calls[0].tool_kwargs == {
+            "query": "test"
+        }, f"Expected parsed kwargs, got {tool_calls[0].tool_kwargs}"
 
     def test_legacy_path_invalid_tool_type_raises(self, llm: Completions):
         """Test that legacy path raises for non-function tool types.
@@ -1195,12 +1163,11 @@ class TestGetToolCallsFromResponse:
         """
         response = ChatResponse(
             message=Message(
-                role=MessageRole.ASSISTANT, chunks=[TextChunk(content="Just text.")])
+                role=MessageRole.ASSISTANT, chunks=[TextChunk(content="Just text.")]
+            )
         )
         with pytest.raises(ValueError, match="Expected at least one tool call"):
-            llm.get_tool_calls_from_response(
-                response, error_on_no_tool_call=True
-            )
+            llm.get_tool_calls_from_response(response, error_on_no_tool_call=True)
 
     def test_no_tool_calls_returns_empty_when_optional(self, llm: Completions):
         """Test that error_on_no_tool_call=False returns empty list.
@@ -1211,11 +1178,10 @@ class TestGetToolCallsFromResponse:
         """
         response = ChatResponse(
             message=Message(
-                role=MessageRole.ASSISTANT, chunks=[TextChunk(content="Just text.")])
+                role=MessageRole.ASSISTANT, chunks=[TextChunk(content="Just text.")]
+            )
         )
-        result = llm.get_tool_calls_from_response(
-            response, error_on_no_tool_call=False
-        )
+        result = llm.get_tool_calls_from_response(response, error_on_no_tool_call=False)
         assert result == [], f"Expected empty list, got {result}"
 
 
@@ -1223,9 +1189,7 @@ class TestGetToolCallsFromResponse:
 class TestPrepareChatWithTools:
     """Tests for OpenAI._prepare_chat_with_tools."""
 
-    def test_strict_mode_sets_strict_and_additional_properties(
-        self, llm: Completions
-    ):
+    def test_strict_mode_sets_strict_and_additional_properties(self, llm: Completions):
         """Test that strict=True injects strict and additionalProperties.
 
         Test scenario:
@@ -1233,13 +1197,9 @@ class TestPrepareChatWithTools:
             additionalProperties=False in the function parameters.
         """
         tool = _make_search_tool()
-        result = llm._prepare_chat_with_tools(
-            tools=[tool], message="test", strict=True
-        )
+        result = llm._prepare_chat_with_tools(tools=[tool], message="test", strict=True)
         tool_spec = result["tools"][0]
-        assert tool_spec["function"]["strict"] is True, (
-            "Tool should have strict=True"
-        )
+        assert tool_spec["function"]["strict"] is True, "Tool should have strict=True"
         assert (
             tool_spec["function"]["parameters"]["additionalProperties"] is False
         ), "Tool parameters should have additionalProperties=False"
@@ -1252,17 +1212,15 @@ class TestPrepareChatWithTools:
             with role=USER in the messages list.
         """
         tool = _make_search_tool()
-        result = llm._prepare_chat_with_tools(
-            tools=[tool], message="hello"
-        )
+        result = llm._prepare_chat_with_tools(tools=[tool], message="hello")
         messages = result["messages"]
         assert len(messages) == 1, f"Expected 1 message, got {len(messages)}"
-        assert messages[0].role == MessageRole.USER, (
-            f"Expected USER role, got {messages[0].role}"
-        )
-        assert messages[0].content == "hello", (
-            f"Expected 'hello', got '{messages[0].content}'"
-        )
+        assert (
+            messages[0].role == MessageRole.USER
+        ), f"Expected USER role, got {messages[0].role}"
+        assert (
+            messages[0].content == "hello"
+        ), f"Expected 'hello', got '{messages[0].content}'"
 
     def test_message_message_used_directly(self, llm: Completions):
         """Test that a Message message is used directly.
@@ -1272,9 +1230,7 @@ class TestPrepareChatWithTools:
         """
         tool = _make_search_tool()
         msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi there")])
-        result = llm._prepare_chat_with_tools(
-            tools=[tool], message=msg
-        )
+        result = llm._prepare_chat_with_tools(tools=[tool], message=msg)
         assert result["messages"][-1] is msg, "Should use the exact Message object"
 
     def test_chat_history_preserved(self, llm: Completions):
@@ -1285,15 +1241,17 @@ class TestPrepareChatWithTools:
             history followed by the new message.
         """
         tool = _make_search_tool()
-        history = [Message(role=MessageRole.USER, chunks=[TextChunk(content="previous")])]
+        history = [
+            Message(role=MessageRole.USER, chunks=[TextChunk(content="previous")])
+        ]
         result = llm._prepare_chat_with_tools(
             tools=[tool],
             message="current",
             chat_history=history,
         )
-        assert len(result["messages"]) == 2, (
-            f"Expected 2 messages, got {len(result['messages'])}"
-        )
+        assert (
+            len(result["messages"]) == 2
+        ), f"Expected 2 messages, got {len(result['messages'])}"
 
     def test_none_message_does_not_append(self, llm: Completions):
         """Test that None message does not add a message.
@@ -1303,12 +1261,10 @@ class TestPrepareChatWithTools:
             in an empty messages list.
         """
         tool = _make_search_tool()
-        result = llm._prepare_chat_with_tools(
-            tools=[tool], message=None
-        )
-        assert len(result["messages"]) == 0, (
-            f"Expected 0 messages, got {len(result['messages'])}"
-        )
+        result = llm._prepare_chat_with_tools(tools=[tool], message=None)
+        assert (
+            len(result["messages"]) == 0
+        ), f"Expected 0 messages, got {len(result['messages'])}"
 
 
 @pytest.mark.unit
@@ -1317,9 +1273,7 @@ class TestAsyncChat:
 
     @pytest.mark.asyncio()
     @patch("serapeum.openai.llm.base.client.AsyncOpenAI")
-    async def test_achat_routes_to_chat_completions(
-        self, MockAsyncOpenAI: MagicMock
-    ):
+    async def test_achat_routes_to_chat_completions(self, MockAsyncOpenAI: MagicMock):
         """Test that achat() routes to async chat completions.
 
         Test scenario:
@@ -1335,15 +1289,13 @@ class TestAsyncChat:
         )
 
         create_fn.assert_called_once()
-        assert response.message.content == "Hello!", (
-            f"Expected 'Hello!', got '{response.message.content}'"
-        )
+        assert (
+            response.message.content == "Hello!"
+        ), f"Expected 'Hello!', got '{response.message.content}'"
 
     @pytest.mark.asyncio()
     @patch("serapeum.openai.llm.base.client.AsyncOpenAI")
-    async def test_achat_routes_to_legacy_completions(
-        self, MockAsyncOpenAI: MagicMock
-    ):
+    async def test_achat_routes_to_legacy_completions(self, MockAsyncOpenAI: MagicMock):
         """Test that achat() routes to legacy completions for non-chat models.
 
         Test scenario:
@@ -1359,9 +1311,9 @@ class TestAsyncChat:
         )
 
         create_fn.assert_called_once()
-        assert response.message.content == "Hi!", (
-            f"Expected 'Hi!', got '{response.message.content}'"
-        )
+        assert (
+            response.message.content == "Hi!"
+        ), f"Expected 'Hi!', got '{response.message.content}'"
 
     @pytest.mark.asyncio()
     @patch("serapeum.openai.llm.base.client.AsyncOpenAI")
@@ -1372,6 +1324,7 @@ class TestAsyncChat:
             Streaming achat should return an async generator that yields
             ChatResponse chunks.
         """
+
         async def mock_stream():
             for chunk in _make_stream_chunks():
                 yield chunk
@@ -1382,7 +1335,8 @@ class TestAsyncChat:
 
         llm = Completions(model="gpt-4o-mini", api_key="sk-test")
         gen = await llm.achat(
-            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])], stream=True
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])],
+            stream=True,
         )
         chunks = [chunk async for chunk in gen]
 
@@ -1412,9 +1366,7 @@ class TestAsyncComplete:
 
     @pytest.mark.asyncio()
     @patch("serapeum.openai.llm.base.client.AsyncOpenAI")
-    async def test_acomplete_completion_model(
-        self, MockAsyncOpenAI: MagicMock
-    ):
+    async def test_acomplete_completion_model(self, MockAsyncOpenAI: MagicMock):
         """Test that acomplete calls completions.create for legacy models.
 
         Test scenario:
@@ -1428,9 +1380,7 @@ class TestAsyncComplete:
         response = await llm.acomplete("test prompt")
 
         create_fn.assert_called_once()
-        assert response.text == "result", (
-            f"Expected 'result', got '{response.text}'"
-        )
+        assert response.text == "result", f"Expected 'result', got '{response.text}'"
 
 
 @pytest.mark.unit
@@ -1446,11 +1396,11 @@ class TestAStreamChatAudioRejection:
             ValueError when the async generator is iterated.
         """
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
-            modalities=["text", "audio"]
+            model="gpt-4o-mini", api_key="sk-test", modalities=["text", "audio"]
         )
         gen = await llm.achat(
-            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])], stream=True
+            [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])],
+            stream=True,
         )
         with pytest.raises(ValueError, match="Audio is not supported"):
             async for _ in gen:
@@ -1515,8 +1465,7 @@ class TestPydanticFieldValidation:
 
         with pytest.raises(ValidationError):
             Completions(
-                model="gpt-4o-mini", api_key="sk-test",
-                nonexistent_field="value"
+                model="gpt-4o-mini", api_key="sk-test", nonexistent_field="value"
             )
 
     def test_valid_construction(self, llm: Completions):
@@ -1525,9 +1474,9 @@ class TestPydanticFieldValidation:
         Test scenario:
             Standard parameters should construct without error.
         """
-        assert llm.model == "gpt-4o-mini", (
-            f"Expected model 'gpt-4o-mini', got '{llm.model}'"
-        )
+        assert (
+            llm.model == "gpt-4o-mini"
+        ), f"Expected model 'gpt-4o-mini', got '{llm.model}'"
 
 
 @pytest.mark.mock
@@ -1535,9 +1484,7 @@ class TestCompleteRouting:
     """Tests for OpenAI.complete routing."""
 
     @patch("serapeum.openai.llm.base.client.SyncOpenAI")
-    def test_complete_chat_model_delegates_to_super(
-        self, MockSyncOpenAI: MagicMock
-    ):
+    def test_complete_chat_model_delegates_to_super(self, MockSyncOpenAI: MagicMock):
         """Test that complete() delegates to super().complete for chat models.
 
         Test scenario:
@@ -1545,8 +1492,8 @@ class TestCompleteRouting:
             chat.completions.create internally.
         """
         mock_client = MockSyncOpenAI.return_value
-        mock_client.chat.completions.create.return_value = (
-            _make_chat_completion("Answer")
+        mock_client.chat.completions.create.return_value = _make_chat_completion(
+            "Answer"
         )
 
         llm = Completions(model="gpt-4o-mini", api_key="sk-test")
@@ -1556,9 +1503,7 @@ class TestCompleteRouting:
         assert response.text is not None, "Response text should not be None"
 
     @patch("serapeum.openai.llm.base.client.SyncOpenAI")
-    def test_complete_legacy_model_calls_completions(
-        self, MockSyncOpenAI: MagicMock
-    ):
+    def test_complete_legacy_model_calls_completions(self, MockSyncOpenAI: MagicMock):
         """Test that complete() calls completions.create for legacy models.
 
         Test scenario:
@@ -1571,9 +1516,7 @@ class TestCompleteRouting:
         response = llm.complete("What is the meaning of life?")
 
         mock_client.completions.create.assert_called_once()
-        assert response.text == "42", (
-            f"Expected '42', got '{response.text}'"
-        )
+        assert response.text == "42", f"Expected '42', got '{response.text}'"
 
     @patch("serapeum.openai.llm.base.client.SyncOpenAI")
     def test_complete_stream_legacy_model(self, MockSyncOpenAI: MagicMock):
@@ -1583,20 +1526,21 @@ class TestCompleteRouting:
             text-davinci-003 with stream=True should yield CompletionResponse
             chunks from the legacy endpoint.
         """
+
         def gen_completions():
             yield Completion(
-                id="cmpl-test", object="text_completion", created=1700000000,
+                id="cmpl-test",
+                object="text_completion",
+                created=1700000000,
                 model="text-davinci-003",
-                choices=[
-                    CompletionChoice(text="Hel", finish_reason="length", index=0)
-                ],
+                choices=[CompletionChoice(text="Hel", finish_reason="length", index=0)],
             )
             yield Completion(
-                id="cmpl-test", object="text_completion", created=1700000000,
+                id="cmpl-test",
+                object="text_completion",
+                created=1700000000,
                 model="text-davinci-003",
-                choices=[
-                    CompletionChoice(text="lo", finish_reason="stop", index=0)
-                ],
+                choices=[CompletionChoice(text="lo", finish_reason="stop", index=0)],
             )
 
         mock_client = MockSyncOpenAI.return_value
@@ -1606,9 +1550,9 @@ class TestCompleteRouting:
         chunks = list(llm.complete("hi", stream=True))
 
         assert len(chunks) == 2, f"Expected 2 chunks, got {len(chunks)}"
-        assert chunks[-1].text == "Hello", (
-            f"Expected accumulated text 'Hello', got '{chunks[-1].text}'"
-        )
+        assert (
+            chunks[-1].text == "Hello"
+        ), f"Expected accumulated text 'Hello', got '{chunks[-1].text}'"
 
 
 @pytest.mark.unit
@@ -1621,9 +1565,9 @@ class TestModelMetadataHelper:
         Test scenario:
             'gpt-4o-mini' should be returned unchanged.
         """
-        assert llm._get_model_name() == "gpt-4o-mini", (
-            f"Expected 'gpt-4o-mini', got '{llm._get_model_name()}'"
-        )
+        assert (
+            llm._get_model_name() == "gpt-4o-mini"
+        ), f"Expected 'gpt-4o-mini', got '{llm._get_model_name()}'"
 
     def test_legacy_fine_tuning_strips_suffix(self):
         """Test that legacy fine-tuning format strips the suffix.
@@ -1632,9 +1576,9 @@ class TestModelMetadataHelper:
             'curie:ft-acmeco-2021-03-03' should return 'curie'.
         """
         llm = Completions(model="curie:ft-acmeco-2021-03-03", api_key="sk-test")
-        assert llm._get_model_name() == "curie", (
-            f"Expected 'curie', got '{llm._get_model_name()}'"
-        )
+        assert (
+            llm._get_model_name() == "curie"
+        ), f"Expected 'curie', got '{llm._get_model_name()}'"
 
     def test_new_fine_tuning_extracts_base(self):
         """Test that new fine-tuning format extracts the base model.
@@ -1642,12 +1586,10 @@ class TestModelMetadataHelper:
         Test scenario:
             'ft:gpt-4o-mini:org:custom:id' should return 'gpt-4o-mini'.
         """
-        llm = Completions(
-            model="ft:gpt-4o-mini:org:custom:id", api_key="sk-test"
-        )
-        assert llm._get_model_name() == "gpt-4o-mini", (
-            f"Expected 'gpt-4o-mini', got '{llm._get_model_name()}'"
-        )
+        llm = Completions(model="ft:gpt-4o-mini:org:custom:id", api_key="sk-test")
+        assert (
+            llm._get_model_name() == "gpt-4o-mini"
+        ), f"Expected 'gpt-4o-mini', got '{llm._get_model_name()}'"
 
 
 @pytest.mark.unit
@@ -1691,9 +1633,7 @@ class TestChatWithLogprobs:
             ChatCompletionTokenLogprob(
                 token="Hello",
                 logprob=-0.5,
-                top_logprobs=[
-                    TopLogprob(token="Hello", logprob=-0.5, bytes=None)
-                ],
+                top_logprobs=[TopLogprob(token="Hello", logprob=-0.5, bytes=None)],
                 bytes=None,
             ),
         ]
@@ -1712,14 +1652,10 @@ class TestChatWithLogprobs:
             ),
             choices=[
                 Choice(
-                    message=ChatCompletionMessage(
-                        role="assistant", content="Hello"
-                    ),
+                    message=ChatCompletionMessage(role="assistant", content="Hello"),
                     finish_reason="stop",
                     index=0,
-                    logprobs=ChoiceLogprobs(
-                        content=logprob_data, refusal=None
-                    ),
+                    logprobs=ChoiceLogprobs(content=logprob_data, refusal=None),
                 )
             ],
         )
@@ -1728,17 +1664,19 @@ class TestChatWithLogprobs:
         mock_client.chat.completions.create.return_value = mock_response
 
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
-            logprobs=True, top_logprobs=1,
+            model="gpt-4o-mini",
+            api_key="sk-test",
+            logprobs=True,
+            top_logprobs=1,
         )
         response = llm.chat(
             [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
         )
 
         MockLogProbParser.from_tokens.assert_called_once_with(logprob_data)
-        assert response.logprob is not None, (
-            "likelihood_score should be set from LogProbParser result"
-        )
+        assert (
+            response.logprob is not None
+        ), "likelihood_score should be set from LogProbParser result"
 
     @patch("serapeum.openai.llm.chat_completions.LogProbParser")
     @patch("serapeum.openai.llm.base.client.SyncOpenAI")
@@ -1786,15 +1724,17 @@ class TestChatWithLogprobs:
         mock_client.completions.create.return_value = mock_response
 
         llm = Completions(
-            model="text-davinci-003", api_key="sk-test",
-            logprobs=True, top_logprobs=1,
+            model="text-davinci-003",
+            api_key="sk-test",
+            logprobs=True,
+            top_logprobs=1,
         )
         response = llm.complete("hi")
 
         MockLogProbParser.from_completions.assert_called_once_with(logprobs_obj)
-        assert response.logprob is not None, (
-            "likelihood_score should be set from LogProbParser result"
-        )
+        assert (
+            response.logprob is not None
+        ), "likelihood_score should be set from LogProbParser result"
 
 
 @pytest.mark.mock
@@ -1839,9 +1779,7 @@ class TestStreamNullDelta:
                 [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
             )
         )
-        assert len(chunks) == 1, (
-            f"Expected 1 non-null-delta chunk, got {len(chunks)}"
-        )
+        assert len(chunks) == 1, f"Expected 1 non-null-delta chunk, got {len(chunks)}"
 
 
 @pytest.mark.mock
@@ -1857,16 +1795,18 @@ class TestStreamCompleteEmptyChoices:
             delta string.
         """
         empty_chunk = Completion(
-            id="cmpl-test", object="text_completion", created=1700000000,
+            id="cmpl-test",
+            object="text_completion",
+            created=1700000000,
             model="text-davinci-003",
             choices=[],
         )
         normal_chunk = Completion(
-            id="cmpl-test", object="text_completion", created=1700000000,
+            id="cmpl-test",
+            object="text_completion",
+            created=1700000000,
             model="text-davinci-003",
-            choices=[
-                CompletionChoice(text="Hi", finish_reason="stop", index=0)
-            ],
+            choices=[CompletionChoice(text="Hi", finish_reason="stop", index=0)],
         )
 
         def gen():
@@ -1880,9 +1820,9 @@ class TestStreamCompleteEmptyChoices:
         chunks = list(llm._stream_complete("test"))
         assert len(chunks) == 2, f"Expected 2 chunks, got {len(chunks)}"
         assert chunks[0].delta == "", "Empty choices should yield empty delta"
-        assert chunks[1].text == "Hi", (
-            f"Expected accumulated text 'Hi', got '{chunks[1].text}'"
-        )
+        assert (
+            chunks[1].text == "Hi"
+        ), f"Expected accumulated text 'Hi', got '{chunks[1].text}'"
 
 
 @pytest.mark.mock
@@ -1911,9 +1851,7 @@ class TestAsyncChatWithLogprobs:
             ChatCompletionTokenLogprob(
                 token="Hi",
                 logprob=-0.3,
-                top_logprobs=[
-                    TopLogprob(token="Hi", logprob=-0.3, bytes=None)
-                ],
+                top_logprobs=[TopLogprob(token="Hi", logprob=-0.3, bytes=None)],
                 bytes=None,
             ),
         ]
@@ -1932,14 +1870,10 @@ class TestAsyncChatWithLogprobs:
             ),
             choices=[
                 Choice(
-                    message=ChatCompletionMessage(
-                        role="assistant", content="Hi"
-                    ),
+                    message=ChatCompletionMessage(role="assistant", content="Hi"),
                     finish_reason="stop",
                     index=0,
-                    logprobs=ChoiceLogprobs(
-                        content=logprob_data, refusal=None
-                    ),
+                    logprobs=ChoiceLogprobs(content=logprob_data, refusal=None),
                 )
             ],
         )
@@ -1949,17 +1883,19 @@ class TestAsyncChatWithLogprobs:
         mock_client.chat.completions.create = create_fn
 
         llm = Completions(
-            model="gpt-4o-mini", api_key="sk-test",
-            logprobs=True, top_logprobs=1,
+            model="gpt-4o-mini",
+            api_key="sk-test",
+            logprobs=True,
+            top_logprobs=1,
         )
         response = await llm.achat(
             [Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])]
         )
 
         MockLogProbParser.from_tokens.assert_called_once_with(logprob_data)
-        assert response.logprob is not None, (
-            "Async response should set likelihood_score from LogProbParser"
-        )
+        assert (
+            response.logprob is not None
+        ), "Async response should set likelihood_score from LogProbParser"
 
 
 @pytest.mark.mock
@@ -2014,15 +1950,17 @@ class TestAsyncCompleteWithLogprobs:
         mock_client.completions.create = create_fn
 
         llm = Completions(
-            model="text-davinci-003", api_key="sk-test",
-            logprobs=True, top_logprobs=1,
+            model="text-davinci-003",
+            api_key="sk-test",
+            logprobs=True,
+            top_logprobs=1,
         )
         response = await llm.acomplete("hi")
 
         MockLogProbParser.from_completions.assert_called_once_with(logprobs_obj)
-        assert response.logprob is not None, (
-            "Async completion should set likelihood_score from LogProbParser"
-        )
+        assert (
+            response.logprob is not None
+        ), "Async completion should set likelihood_score from LogProbParser"
 
 
 @pytest.mark.mock
@@ -2031,9 +1969,7 @@ class TestAsyncStreamComplete:
 
     @pytest.mark.asyncio()
     @patch("serapeum.openai.llm.base.client.AsyncOpenAI")
-    async def test_astream_complete_empty_choices(
-        self, MockAsyncOpenAI: MagicMock
-    ):
+    async def test_astream_complete_empty_choices(self, MockAsyncOpenAI: MagicMock):
         """Test that async streaming complete handles empty choices.
 
         Test scenario:
@@ -2042,18 +1978,18 @@ class TestAsyncStreamComplete:
 
         async def gen():
             yield Completion(
-                id="cmpl-test", object="text_completion", created=1700000000,
+                id="cmpl-test",
+                object="text_completion",
+                created=1700000000,
                 model="text-davinci-003",
                 choices=[],
             )
             yield Completion(
-                id="cmpl-test", object="text_completion", created=1700000000,
+                id="cmpl-test",
+                object="text_completion",
+                created=1700000000,
                 model="text-davinci-003",
-                choices=[
-                    CompletionChoice(
-                        text="world", finish_reason="stop", index=0
-                    )
-                ],
+                choices=[CompletionChoice(text="world", finish_reason="stop", index=0)],
             )
 
         mock_client = MockAsyncOpenAI.return_value
@@ -2066,9 +2002,9 @@ class TestAsyncStreamComplete:
 
         assert len(chunks) == 2, f"Expected 2 chunks, got {len(chunks)}"
         assert chunks[0].delta == "", "Empty choices should yield empty delta"
-        assert chunks[1].text == "world", (
-            f"Expected accumulated 'world', got '{chunks[1].text}'"
-        )
+        assert (
+            chunks[1].text == "world"
+        ), f"Expected accumulated 'world', got '{chunks[1].text}'"
 
 
 @pytest.mark.unit
@@ -2086,6 +2022,6 @@ class TestPrepareChatWithToolsNonFunctionCalling:
         tool = _make_search_tool()
         result = llm._prepare_chat_with_tools(tools=[tool], message="test")
         tool_spec = result["tools"][0]
-        assert "strict" not in tool_spec.get("function", {}), (
-            "Non-FC model should not have strict in tool spec"
-        )
+        assert "strict" not in tool_spec.get(
+            "function", {}
+        ), "Non-FC model should not have strict in tool spec"

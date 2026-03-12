@@ -11,10 +11,10 @@ environment variables to be set:
 
 Skip markers ensure these tests are excluded from regular CI runs.
 """
+
 from __future__ import annotations
 
 import os
-from typing import Any
 
 import pytest
 
@@ -94,11 +94,13 @@ class TestCompletionsE2E:
             A single user message should produce a ChatResponse with
             role='assistant' and non-empty content.
         """
-        message = Message(role="user", chunks=[TextChunk(content="Say hello in one word.")])
-        response = completions_llm.chat([message])
-        assert response.message.role == "assistant", (
-            f"Expected role 'assistant', got '{response.message.role}'"
+        message = Message(
+            role="user", chunks=[TextChunk(content="Say hello in one word.")]
         )
+        response = completions_llm.chat([message])
+        assert (
+            response.message.role == "assistant"
+        ), f"Expected role 'assistant', got '{response.message.role}'"
         assert response.message.content, "Expected non-empty message content"
 
     def test_chat_streaming(self, completions_llm: Completions) -> None:
@@ -108,13 +110,15 @@ class TestCompletionsE2E:
             A streaming chat call should yield ChatResponse chunks with
             the final chunk having non-empty assistant content.
         """
-        message = Message(role="user", chunks=[TextChunk(content="Say hello in one word.")])
+        message = Message(
+            role="user", chunks=[TextChunk(content="Say hello in one word.")]
+        )
         chat_gen = completions_llm.chat([message], stream=True)
         chat_responses = list(chat_gen)
         assert len(chat_responses) > 0, "Expected at least one streaming chunk"
-        assert chat_responses[-1].message.content, (
-            "Final chunk should have accumulated content"
-        )
+        assert chat_responses[
+            -1
+        ].message.content, "Final chunk should have accumulated content"
 
     @pytest.mark.asyncio
     async def test_acomplete_non_streaming(self, completions_llm: Completions) -> None:
@@ -133,7 +137,9 @@ class TestCompletionsE2E:
         Test scenario:
             achat() should return an assistant message from the real endpoint.
         """
-        message = Message(role="user", chunks=[TextChunk(content="Say hello in one word.")])
+        message = Message(
+            role="user", chunks=[TextChunk(content="Say hello in one word.")]
+        )
         response = await completions_llm.achat([message])
         assert response.message.role == "assistant"
         assert response.message.content, "Expected non-empty message content"
@@ -145,7 +151,9 @@ class TestCompletionsE2E:
         Test scenario:
             acomplete(stream=True) should yield at least one chunk.
         """
-        response_gen = await completions_llm.acomplete("Say hello in one word.", stream=True)
+        response_gen = await completions_llm.acomplete(
+            "Say hello in one word.", stream=True
+        )
         responses = [item async for item in response_gen]
         assert len(responses) > 0, "Expected at least one streaming chunk"
         assert responses[-1].text, "Final chunk should have accumulated text"
@@ -157,13 +165,15 @@ class TestCompletionsE2E:
         Test scenario:
             achat(stream=True) should yield at least one chunk.
         """
-        message = Message(role="user", chunks=[TextChunk(content="Say hello in one word.")])
+        message = Message(
+            role="user", chunks=[TextChunk(content="Say hello in one word.")]
+        )
         chat_gen = await completions_llm.achat([message], stream=True)
         chat_responses = [item async for item in chat_gen]
         assert len(chat_responses) > 0, "Expected at least one streaming chunk"
-        assert chat_responses[-1].message.content, (
-            "Final chunk should have accumulated content"
-        )
+        assert chat_responses[
+            -1
+        ].message.content, "Final chunk should have accumulated content"
 
 
 @pytest.mark.e2e
@@ -198,11 +208,13 @@ class TestResponsesE2E:
             A single user message should produce a ChatResponse with
             role='assistant' and non-empty content.
         """
-        message = Message(role="user", chunks=[TextChunk(content="Say hello in one word.")])
-        response = responses_llm.chat([message])
-        assert response.message.role == "assistant", (
-            f"Expected role 'assistant', got '{response.message.role}'"
+        message = Message(
+            role="user", chunks=[TextChunk(content="Say hello in one word.")]
         )
+        response = responses_llm.chat([message])
+        assert (
+            response.message.role == "assistant"
+        ), f"Expected role 'assistant', got '{response.message.role}'"
         assert response.message.content, "Expected non-empty message content"
 
     def test_chat_streaming(self, responses_llm: Responses) -> None:
@@ -212,13 +224,15 @@ class TestResponsesE2E:
             A streaming chat call should yield ChatResponse chunks with
             non-empty final content.
         """
-        message = Message(role="user", chunks=[TextChunk(content="Say hello in one word.")])
+        message = Message(
+            role="user", chunks=[TextChunk(content="Say hello in one word.")]
+        )
         chat_gen = responses_llm.chat([message], stream=True)
         chat_responses = list(chat_gen)
         assert len(chat_responses) > 0, "Expected at least one streaming chunk"
-        assert chat_responses[-1].message.content, (
-            "Final chunk should have accumulated content"
-        )
+        assert chat_responses[
+            -1
+        ].message.content, "Final chunk should have accumulated content"
 
     @pytest.mark.asyncio
     async def test_acomplete_non_streaming(self, responses_llm: Responses) -> None:
@@ -237,7 +251,9 @@ class TestResponsesE2E:
         Test scenario:
             achat() should return an assistant message from the real endpoint.
         """
-        message = Message(role="user", chunks=[TextChunk(content="Say hello in one word.")])
+        message = Message(
+            role="user", chunks=[TextChunk(content="Say hello in one word.")]
+        )
         response = await responses_llm.achat([message])
         assert response.message.role == "assistant"
         assert response.message.content, "Expected non-empty message content"
@@ -249,7 +265,9 @@ class TestResponsesE2E:
         Test scenario:
             acomplete(stream=True) should yield at least one chunk.
         """
-        response_gen = await responses_llm.acomplete("Say hello in one word.", stream=True)
+        response_gen = await responses_llm.acomplete(
+            "Say hello in one word.", stream=True
+        )
         responses = [item async for item in response_gen]
         assert len(responses) > 0, "Expected at least one streaming chunk"
         assert responses[-1].text, "Final chunk should have accumulated text"
@@ -261,10 +279,12 @@ class TestResponsesE2E:
         Test scenario:
             achat(stream=True) should yield at least one chunk.
         """
-        message = Message(role="user", chunks=[TextChunk(content="Say hello in one word.")])
+        message = Message(
+            role="user", chunks=[TextChunk(content="Say hello in one word.")]
+        )
         chat_gen = await responses_llm.achat([message], stream=True)
         chat_responses = [item async for item in chat_gen]
         assert len(chat_responses) > 0, "Expected at least one streaming chunk"
-        assert chat_responses[-1].message.content, (
-            "Final chunk should have accumulated content"
-        )
+        assert chat_responses[
+            -1
+        ].message.content, "Final chunk should have accumulated content"

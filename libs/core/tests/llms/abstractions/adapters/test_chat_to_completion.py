@@ -213,4 +213,8 @@ class TestChatToCompletion:
         llm = KwargsCapturingLLM()
         llm.complete("Test", temperature=0.7, max_tokens=100)
 
-        assert llm.captured_kwargs == {"stream": False, "temperature": 0.7, "max_tokens": 100}
+        assert llm.captured_kwargs == {
+            "stream": False,
+            "temperature": 0.7,
+            "max_tokens": 100,
+        }

@@ -33,7 +33,9 @@ class _Configs:
         return self.llm.structured_output_mode
 
     @structured_output_mode.setter
-    def structured_output_mode(self, structured_output_mode: StructuredOutputMode) -> None:
+    def structured_output_mode(
+        self, structured_output_mode: StructuredOutputMode
+    ) -> None:
         """Set the pydantic program mode."""
         self.llm.structured_output_mode = structured_output_mode
 

@@ -65,36 +65,34 @@ class Client(Retry, BaseModel):
     Examples:
         - Create a client with explicit credentials and inspect defaults:
             ```python
-            >>> from serapeum.openai.llm.base import Client  # doctest: +SKIP
-            >>> c = Client(api_key="sk-test")  # doctest: +SKIP
-            >>> c.timeout  # doctest: +SKIP
-            60.0
-            >>> c.api_base  # doctest: +SKIP
-            'https://api.openai.com/v1'
+            from serapeum.openai.llm.base import Client
+
+            c = Client(api_key="sk-test")
+            c.timeout  # 60.0
+            c.api_base  # 'https://api.openai.com/v1'
 
             ```
         - Override the timeout and add custom headers:
             ```python
-            >>> from serapeum.openai.llm.base import Client  # doctest: +SKIP
-            >>> c = Client(  # doctest: +SKIP
-            ...     api_key="sk-test",
-            ...     timeout=120.0,
-            ...     default_headers={"X-Custom": "value"},
-            ... )
-            >>> c.timeout  # doctest: +SKIP
-            120.0
-            >>> c.default_headers["X-Custom"]  # doctest: +SKIP
-            'value'
+            from serapeum.openai.llm.base import Client
+
+            c = Client(
+                api_key="sk-test",
+                timeout=120.0,
+                default_headers={"X-Custom": "value"},
+            )
+            c.timeout  # 120.0
+            c.default_headers["X-Custom"]  # 'value'
 
             ```
         - Inject a pre-built synchronous client for testing:
             ```python
-            >>> from unittest.mock import MagicMock  # doctest: +SKIP
-            >>> from serapeum.openai.llm.base import Client  # doctest: +SKIP
-            >>> mock_sdk = MagicMock()  # doctest: +SKIP
-            >>> c = Client(api_key="sk-test", openai_client=mock_sdk)  # doctest: +SKIP
-            >>> c.client is mock_sdk  # doctest: +SKIP
-            True
+            from unittest.mock import MagicMock
+            from serapeum.openai.llm.base import Client
+
+            mock_sdk = MagicMock()
+            c = Client(api_key="sk-test", openai_client=mock_sdk)
+            c.client is mock_sdk  # True
 
             ```
 
@@ -132,9 +130,7 @@ class Client(Retry, BaseModel):
 
     @model_validator(mode="wrap")
     @classmethod
-    def _inject_clients(
-        cls, data: Any, handler: Any
-    ) -> Client:
+    def _inject_clients(cls, data: Any, handler: Any) -> Client:
         """Intercept client kwargs before Pydantic validation.
 
         Pops ``openai_client``, ``async_openai_client``, ``http_client``, and
@@ -241,11 +237,11 @@ class Client(Retry, BaseModel):
         Examples:
             - Access the lazily-initialised synchronous client:
                 ```python
-                >>> from serapeum.openai.llm.base import Client  # doctest: +SKIP
-                >>> c = Client(api_key="sk-test")  # doctest: +SKIP
-                >>> sdk = c.client  # doctest: +SKIP
-                >>> sdk.base_url  # doctest: +SKIP
-                URL('https://api.openai.com/v1/')
+                from serapeum.openai.llm.base import Client
+
+                c = Client(api_key="sk-test")
+                sdk = c.client
+                sdk.base_url  # URL('https://api.openai.com/v1/')
 
                 ```
 
@@ -275,14 +271,16 @@ class Client(Retry, BaseModel):
         Examples:
             - Access the lazily-initialised async client inside a coroutine:
                 ```python
-                >>> import asyncio  # doctest: +SKIP
-                >>> from serapeum.openai.llm.base import Client  # doctest: +SKIP
-                >>> c = Client(api_key="sk-test")  # doctest: +SKIP
-                >>> async def demo():  # doctest: +SKIP
-                ...     sdk = c.async_client
-                ...     return str(sdk.base_url)
-                >>> asyncio.run(demo())  # doctest: +SKIP
-                'https://api.openai.com/v1/'
+                import asyncio
+                from serapeum.openai.llm.base import Client
+
+                c = Client(api_key="sk-test")
+
+                async def demo():
+                    sdk = c.async_client
+                    return str(sdk.base_url)
+
+                asyncio.run(demo())  # 'https://api.openai.com/v1/'
 
                 ```
 

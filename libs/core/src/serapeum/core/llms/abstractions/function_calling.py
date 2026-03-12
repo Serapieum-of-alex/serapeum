@@ -10,7 +10,7 @@ from serapeum.core.base.llms.types import (
     ChatResponseAsyncGen,
     ChatResponseGen,
     Message,
-    ToolCallArguments
+    ToolCallArguments,
 )
 from serapeum.core.llms.base import LLM
 from serapeum.core.tools.invoke import ExecutionConfig, ToolExecutor
@@ -212,9 +212,7 @@ class FunctionCallingLLM(LLM, ABC):
         if tool_call_blocks:
             result = [tool_call.get_arguments() for tool_call in tool_call_blocks]
         elif error_on_no_tool_call:
-            raise ValueError(
-                "Expected at least one tool call, but got 0 tool calls."
-            )
+            raise ValueError("Expected at least one tool call, but got 0 tool calls.")
         else:
             result = []
 
@@ -311,9 +309,7 @@ class FunctionCallingLLM(LLM, ABC):
             output_text = "\n\n".join(
                 [tool_output.content for tool_output in tool_outputs]
             )
-            result = AgentChatResponse(
-                response=output_text, sources=tool_outputs
-            )
+            result = AgentChatResponse(response=output_text, sources=tool_outputs)
         elif len(tool_outputs) > 1:
             raise ValueError("Invalid")
         elif len(tool_outputs) == 0:

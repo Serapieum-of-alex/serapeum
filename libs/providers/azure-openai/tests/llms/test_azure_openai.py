@@ -199,9 +199,7 @@ class TestCompletions:
 
     def test_default_model(self) -> None:
         """Default model is gpt-35-turbo."""
-        llm = Completions(
-            engine="dep", api_key="k", api_version="2024-02-01"
-        )
+        llm = Completions(engine="dep", api_key="k", api_version="2024-02-01")
         assert llm.model == "gpt-35-turbo"
 
     def test_engine_alias_azure_deployment(self) -> None:
@@ -216,9 +214,7 @@ class TestCompletions:
             api_key="k",
             api_version="2024-02-01",
         )
-        assert llm.engine == "az-dep", (
-            f"Expected engine 'az-dep', got '{llm.engine}'"
-        )
+        assert llm.engine == "az-dep", f"Expected engine 'az-dep', got '{llm.engine}'"
 
     def test_custom_model(self) -> None:
         """A custom model name is preserved.
@@ -229,9 +225,7 @@ class TestCompletions:
         llm = Completions(
             engine="dep", api_key="k", api_version="2024-02-01", model="gpt-4o"
         )
-        assert llm.model == "gpt-4o", (
-            f"Expected 'gpt-4o', got '{llm.model}'"
-        )
+        assert llm.model == "gpt-4o", f"Expected 'gpt-4o', got '{llm.model}'"
 
     def test_use_azure_ad_default_false(self) -> None:
         """use_azure_ad defaults to False.
@@ -240,9 +234,9 @@ class TestCompletions:
             Without explicit opt-in, Azure AD authentication is disabled.
         """
         llm = Completions(engine="dep", api_key="k", api_version="2024-02-01")
-        assert llm.use_azure_ad is False, (
-            f"Expected use_azure_ad=False, got {llm.use_azure_ad}"
-        )
+        assert (
+            llm.use_azure_ad is False
+        ), f"Expected use_azure_ad=False, got {llm.use_azure_ad}"
 
     def test_azure_deployment_field_preserved(self) -> None:
         """azure_deployment field is stored separately from engine.
@@ -256,14 +250,12 @@ class TestCompletions:
             api_version="2024-02-01",
             azure_deployment="az-dep-id",
         )
-        assert llm.azure_deployment == "az-dep-id", (
-            f"Expected 'az-dep-id', got '{llm.azure_deployment}'"
-        )
+        assert (
+            llm.azure_deployment == "az-dep-id"
+        ), f"Expected 'az-dep-id', got '{llm.azure_deployment}'"
 
     @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
-    def test_get_model_kwargs_uses_engine(
-        self, sync_mock: MagicMock
-    ) -> None:
+    def test_get_model_kwargs_uses_engine(self, sync_mock: MagicMock) -> None:
         """_get_model_kwargs substitutes engine for model."""
         llm = Completions(
             engine="my-deployment",
@@ -284,9 +276,7 @@ class TestCompletionsCredentials:
     ) -> None:
         """API key is resolved from AZURE_OPENAI_API_KEY env var."""
         monkeypatch.setenv("AZURE_OPENAI_API_KEY", "env-key")
-        llm = Completions(
-            engine="dep", api_version="2024-02-01"
-        )
+        llm = Completions(engine="dep", api_version="2024-02-01")
         key = llm._resolve_api_key()
         assert key == "env-key"
 
@@ -297,18 +287,14 @@ class TestCompletionsCredentials:
         """Missing API key raises ValueError."""
         monkeypatch.delenv("AZURE_OPENAI_API_KEY", raising=False)
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-        llm = Completions(
-            engine="dep", api_version="2024-02-01"
-        )
+        llm = Completions(engine="dep", api_version="2024-02-01")
         # Clear any key resolved during init
         llm.api_key = None
         with pytest.raises(ValueError, match="api_key"):
             llm._resolve_api_key()
 
     @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
-    def test_azure_ad_token_provider_sets_key(
-        self, sync_mock: MagicMock
-    ) -> None:
+    def test_azure_ad_token_provider_sets_key(self, sync_mock: MagicMock) -> None:
         """Azure AD token provider callback is invoked to set api_key."""
         llm = Completions(
             engine="dep",
@@ -375,13 +361,9 @@ class TestCompletionsCredentials:
         )
 
     @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
-    def test_client_property_returns_azure_client(
-        self, sync_mock: MagicMock
-    ) -> None:
+    def test_client_property_returns_azure_client(self, sync_mock: MagicMock) -> None:
         """client property creates a SyncAzureOpenAI instance."""
-        llm = Completions(
-            engine="dep", api_key="k", api_version="2024-02-01"
-        )
+        llm = Completions(engine="dep", api_key="k", api_version="2024-02-01")
         _ = llm.client
         sync_mock.assert_called_once()
 
@@ -401,9 +383,7 @@ class TestCompletionsCredentials:
         async_mock.assert_called_once()
 
     @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
-    def test_build_sync_client_returns_sync_azure(
-        self, sync_mock: MagicMock
-    ) -> None:
+    def test_build_sync_client_returns_sync_azure(self, sync_mock: MagicMock) -> None:
         """_build_sync_client returns a SyncAzureOpenAI instance.
 
         Test scenario:
@@ -514,9 +494,9 @@ class TestCompletionsWithMocks:
 
         llm = Completions(engine="dep", api_key="mock", api_version="2024-02-01")
         response = llm.complete("test prompt")
-        assert response.text == "\n\nThis is a test!", (
-            f"Expected '\\n\\nThis is a test!', got '{response.text}'"
-        )
+        assert (
+            response.text == "\n\nThis is a test!"
+        ), f"Expected '\\n\\nThis is a test!', got '{response.text}'"
 
     @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
     def test_non_streaming_chat(self, sync_azure_openai_mock: MagicMock) -> None:
@@ -532,9 +512,9 @@ class TestCompletionsWithMocks:
         llm = Completions(engine="dep", api_key="mock", api_version="2024-02-01")
         message = Message(role="user", chunks=[TextChunk(content="hello")])
         response = llm.chat([message])
-        assert response.message.content == "\n\nThis is a test!", (
-            f"Expected '\\n\\nThis is a test!', got '{response.message.content}'"
-        )
+        assert (
+            response.message.content == "\n\nThis is a test!"
+        ), f"Expected '\\n\\nThis is a test!', got '{response.message.content}'"
         assert response.message.role == "assistant"
 
     @pytest.mark.asyncio
@@ -556,9 +536,9 @@ class TestCompletionsWithMocks:
 
         llm = Completions(engine="dep", api_key="mock", api_version="2024-02-01")
         response = await llm.acomplete("test prompt")
-        assert response.text == "\n\nThis is a test!", (
-            f"Expected '\\n\\nThis is a test!', got '{response.text}'"
-        )
+        assert (
+            response.text == "\n\nThis is a test!"
+        ), f"Expected '\\n\\nThis is a test!', got '{response.text}'"
 
     @pytest.mark.asyncio
     @patch("serapeum.azure_openai.llm.AsyncAzureOpenAI")
@@ -580,9 +560,9 @@ class TestCompletionsWithMocks:
         llm = Completions(engine="dep", api_key="mock", api_version="2024-02-01")
         message = Message(role="user", chunks=[TextChunk(content="hello")])
         response = await llm.achat([message])
-        assert response.message.content == "\n\nThis is a test!", (
-            f"Expected '\\n\\nThis is a test!', got '{response.message.content}'"
-        )
+        assert (
+            response.message.content == "\n\nThis is a test!"
+        ), f"Expected '\\n\\nThis is a test!', got '{response.message.content}'"
         assert response.message.role == "assistant"
 
     @pytest.mark.asyncio

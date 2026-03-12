@@ -136,17 +136,17 @@ def is_json_schema_supported(model: str) -> bool:
     Examples:
         - GPT-4o supports JSON schema:
             ```python
-            >>> from serapeum.openai.data.models import is_json_schema_supported
-            >>> is_json_schema_supported("gpt-4o")  # doctest: +SKIP
-            True
+            from serapeum.openai.data.models import is_json_schema_supported
+            is_json_schema_supported("gpt-4o")
+            # True
 
             ```
 
         - o1-mini does not support JSON schema:
             ```python
-            >>> from serapeum.openai.data.models import is_json_schema_supported
-            >>> is_json_schema_supported("o1-mini")  # doctest: +SKIP
-            False
+            from serapeum.openai.data.models import is_json_schema_supported
+            is_json_schema_supported("o1-mini")
+            # False
 
             ```
 
@@ -208,11 +208,11 @@ def openai_modelname_to_contextsize(modelname: str) -> int:
 
         - Discontinued models raise an error:
             ```python
-            >>> from serapeum.openai.data.models import openai_modelname_to_contextsize
-            >>> openai_modelname_to_contextsize("code-davinci-002")  # doctest: +SKIP
-            Traceback (most recent call last):
-                ...
-            ValueError: OpenAI model code-davinci-002 has been discontinued. ...
+            from serapeum.openai.data.models import openai_modelname_to_contextsize
+            openai_modelname_to_contextsize("code-davinci-002")
+            # Traceback (most recent call last):
+            #     ...
+            # ValueError: OpenAI model code-davinci-002 has been discontinued. ...
 
             ```
 

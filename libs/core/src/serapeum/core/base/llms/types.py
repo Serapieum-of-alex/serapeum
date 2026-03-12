@@ -23,7 +23,7 @@ from pydantic import (
     field_serializer,
     field_validator,
     model_validator,
-    ValidationError
+    ValidationError,
 )
 from typing_extensions import Self
 
@@ -416,6 +416,7 @@ class ToolCallBlock(BaseModel):
             tool_kwargs=self.parsed_kwargs,
         )
 
+
 class ThinkingBlock(BaseModel):
     """A representation of the content streamed from reasoning/thinking processes by LLMs"""
 
@@ -433,9 +434,10 @@ class ThinkingBlock(BaseModel):
         default_factory=dict,
     )
 
+
 ChunkType = Annotated[
     TextChunk | Image | Audio | DocumentBlock | ToolCallBlock | ThinkingBlock,
-    Field(discriminator="type")
+    Field(discriminator="type"),
 ]
 
 
@@ -490,7 +492,6 @@ class Message(BaseModel):
     def __str__(self) -> str:
         """Return a human-readable representation of the message."""
         return f"{self.role.value}: {self.content}"
-
 
     def _recursive_serialization(self, value: Any) -> Any:
         if isinstance(value, BaseModel):
@@ -712,10 +713,10 @@ class ChatResponse(BaseResponse):
         ]
         if len(tool_calls) > 1:
             self.message.chunks = [
-                  block
-                  for block in self.message.chunks
-                  if not isinstance(block, ToolCallBlock)
-              ] + [tool_calls[0]]
+                block
+                for block in self.message.chunks
+                if not isinstance(block, ToolCallBlock)
+            ] + [tool_calls[0]]
 
 
 ChatResponseGen = Generator[ChatResponse, None, None]
@@ -1112,7 +1113,6 @@ def resolve_binary(
 
     buffer = BytesIO(base64.b64encode(resolved) if as_base64 else resolved)
     return buffer
-
 
 
 ContentBlock = Annotated[

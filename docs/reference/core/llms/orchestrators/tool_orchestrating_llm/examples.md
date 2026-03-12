@@ -270,7 +270,7 @@ result = tools_llm(text="AI is transforming industries worldwide")
 Use structured message templates for complex prompts:
 
 ```python function_calling
-import os 
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import Message, MessageRole, ToolOrchestratingLLM
 from serapeum.core.prompts import ChatPromptTemplate

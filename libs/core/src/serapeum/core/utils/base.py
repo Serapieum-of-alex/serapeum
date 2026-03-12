@@ -9,7 +9,6 @@ from typing import Iterable, Any, Coroutine, TypeVar
 from pathlib import Path
 
 
-
 DEFAULT_NUM_WORKERS = 4
 
 T = TypeVar("T")
@@ -141,7 +140,9 @@ def get_cache_dir() -> str:
         path = Path(os.environ["SERAPEUM_CACHE_DIR"])
     else:
         if sys.platform == "win32":
-            base = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+            base = Path(
+                os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")
+            )
             path = base / "serapeum" / "Cache"
         elif sys.platform == "darwin":
             path = Path.home() / "Library" / "Caches" / "serapeum"

@@ -130,8 +130,12 @@ class Measurement(BaseModel):
 class ConstrainedProduct(BaseModel):
     """Model with annotated constraints — schema has minLength, minimum, maximum."""
 
-    sku: Annotated[str, Field(min_length=3, max_length=20, description="Stock-keeping unit")]
-    price_usd: Annotated[float, Field(ge=0.0, description="Price, must be non-negative")]
+    sku: Annotated[
+        str, Field(min_length=3, max_length=20, description="Stock-keeping unit")
+    ]
+    price_usd: Annotated[
+        float, Field(ge=0.0, description="Price, must be non-negative")
+    ]
     stock: Annotated[int, Field(ge=0, le=10_000, description="Units in stock")]
 
 
@@ -170,7 +174,9 @@ class Profile(BaseModel):
 
     username: str = Field(description="Display name")
     bio: Optional[str] = Field(default=None, description="Short biography")
-    address: Optional[Address] = Field(default=None, description="Home address if provided")
+    address: Optional[Address] = Field(
+        default=None, description="Home address if provided"
+    )
 
 
 # 13. Dict field  (produces additionalProperties in schema)
@@ -214,12 +220,16 @@ _SKIP = pytest.mark.skipif(
 
 def _assert_valid_instance(result: BaseModel, cls: type[BaseModel]) -> None:
     """Assert result is a fully initialised instance of cls with all required fields set."""
-    assert isinstance(result, cls), f"Expected {cls.__name__}, got {type(result).__name__}"
+    assert isinstance(
+        result, cls
+    ), f"Expected {cls.__name__}, got {type(result).__name__}"
     schema = cls.model_json_schema()
     required = schema.get("required", [])
     for field_name in required:
         val = getattr(result, field_name, None)
-        assert val is not None, f"Required field '{field_name}' is None on {cls.__name__}"
+        assert (
+            val is not None
+        ), f"Required field '{field_name}' is None on {cls.__name__}"
 
 
 # ---------------------------------------------------------------------------
@@ -245,7 +255,9 @@ class TestStructuredPredictSync:
             "Text: {text}"
         )
         result = llm_model.parse(
-            PersonBasic, prompt, text="Jane Smith is 34 years old, 1.72 m tall, and works as a nurse."
+            PersonBasic,
+            prompt,
+            text="Jane Smith is 34 years old, 1.72 m tall, and works as a nurse.",
         )
         _assert_valid_instance(result, PersonBasic)
         assert isinstance(result.name, str) and result.name.strip()
@@ -262,9 +274,7 @@ class TestStructuredPredictSync:
         Expected: Contact with email and phone set; website may be None.
         Checks: email is a non-empty string; result is Contact.
         """
-        prompt = PromptTemplate(
-            "Extract contact details from the text.\nText: {text}"
-        )
+        prompt = PromptTemplate("Extract contact details from the text.\nText: {text}")
         result = llm_model.parse(
             Contact,
             prompt,
@@ -282,9 +292,7 @@ class TestStructuredPredictSync:
         Expected: Contact.phone and Contact.website are either None or unset.
         Checks: result.email is populated; optional fields may be None.
         """
-        prompt = PromptTemplate(
-            "Extract contact details from the text.\nText: {text}"
-        )
+        prompt = PromptTemplate("Extract contact details from the text.\nText: {text}")
         result = llm_model.parse(
             Contact,
             prompt,
@@ -576,9 +584,7 @@ class TestStructuredPredictSync:
         Expected: PersonBasic instance returned without exception.
         Checks: result is a valid PersonBasic.
         """
-        prompt = PromptTemplate(
-            "Extract person info from the text.\nText: {text}"
-        )
+        prompt = PromptTemplate("Extract person info from the text.\nText: {text}")
         result = llm_model.parse(
             PersonBasic,
             prompt,
@@ -760,9 +766,7 @@ class TestStreamStructuredPredict:
         Expected: Last yielded Contact has email populated.
         Checks: result.email contains '@'.
         """
-        prompt = PromptTemplate(
-            "Extract contact details from the text.\nText: {text}"
-        )
+        prompt = PromptTemplate("Extract contact details from the text.\nText: {text}")
         gen = llm_model.parse(
             Contact,
             prompt,
@@ -998,7 +1002,9 @@ class TestAsyncStreamStructuredPredict:
         assert len(results) >= 1, "Expected at least one yielded item"
         last = results[-1]
         final = last[0] if isinstance(last, list) else last
-        assert isinstance(final, PersonBasic), f"Expected PersonBasic, got {type(final)}"
+        assert isinstance(
+            final, PersonBasic
+        ), f"Expected PersonBasic, got {type(final)}"
 
     @pytest.mark.e2e
     @pytest.mark.asyncio()
@@ -1010,9 +1016,7 @@ class TestAsyncStreamStructuredPredict:
         Expected: Last yielded Contact has email containing '@'.
         Checks: email field is non-empty and contains '@'.
         """
-        prompt = PromptTemplate(
-            "Extract contact details from the text.\nText: {text}"
-        )
+        prompt = PromptTemplate("Extract contact details from the text.\nText: {text}")
         gen = await llm_model.aparse(
             Contact,
             prompt,
@@ -1054,9 +1058,9 @@ class TestAsyncStreamStructuredPredict:
         last = results[-1]
         final = last[0] if isinstance(last, list) else last
         assert isinstance(final, Review), f"Expected Review, got {type(final)}"
-        assert isinstance(final.sentiment, Sentiment), (
-            f"Expected Sentiment, got {type(final.sentiment)}"
-        )
+        assert isinstance(
+            final.sentiment, Sentiment
+        ), f"Expected Sentiment, got {type(final.sentiment)}"
 
     @pytest.mark.e2e
     @pytest.mark.asyncio()
@@ -1117,9 +1121,9 @@ class TestAsyncStreamStructuredPredict:
         last = results[-1]
         final = last[0] if isinstance(last, list) else last
         assert isinstance(final, Keywords), f"Expected Keywords, got {type(final)}"
-        assert isinstance(final.keywords, list), (
-            f"keywords should be a list, got {type(final.keywords)}"
-        )
+        assert isinstance(
+            final.keywords, list
+        ), f"keywords should be a list, got {type(final.keywords)}"
         assert len(final.keywords) >= 1, "Expected at least one keyword"
 
     @pytest.mark.e2e

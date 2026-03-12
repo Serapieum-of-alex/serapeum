@@ -36,13 +36,9 @@ from serapeum.core.llms import (
     MessageRole,
     ToolCallBlock,
     TextChunk,
-    ChatToCompletion
+    ChatToCompletion,
 )
-from pydantic import (
-    Field,
-    model_validator,
-    ConfigDict
-)
+from pydantic import Field, model_validator, ConfigDict
 
 from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
@@ -72,7 +68,7 @@ from serapeum.core.base.llms.utils import (
     completion_to_chat_decorator,
     stream_completion_to_chat_decorator,
     acompletion_to_chat_decorator,
-    astream_completion_to_chat_decorator
+    astream_completion_to_chat_decorator,
 )
 
 if TYPE_CHECKING:
@@ -81,7 +77,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
+class Completions(
+    StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM
+):
     """OpenAI Chat Completions and Completions API provider.
 
     Routes requests to either the Chat Completions API (for chat models such as
@@ -142,54 +140,64 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
     Examples:
         - Basic chat completion with result exploration
             ```python
-            >>> from serapeum.openai import Completions
-            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-            >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-            >>> resp = llm.chat([  # doctest: +SKIP
-            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Say hi")])
-            ... ])
-            >>> resp.message.content  # doctest: +SKIP
-            'Hi! How can I help you today?'
-            >>> resp.additional_kwargs["total_tokens"]  # doctest: +SKIP
-            25
+            from serapeum.openai import Completions
+            from serapeum.core.llms import Message, MessageRole, TextChunk
+
+            llm = Completions(model="gpt-4o-mini", api_key="sk-test")
+            resp = llm.chat([
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Say hi")],
+                )
+            ])
+            resp.message.content  # 'Hi! How can I help you today?'
+            resp.additional_kwargs["total_tokens"]  # 25
 
             ```
         - Streaming text completion and collecting tokens
             ```python
-            >>> from serapeum.openai import Completions
-            >>> llm = Completions(  # doctest: +SKIP
-            ...     model="gpt-3.5-turbo-instruct",
-            ...     api_key="sk-test",
-            ... )
-            >>> for chunk in llm.complete("Once upon a time", stream=True):  # doctest: +SKIP
-            ...     print(chunk.delta, end="", flush=True)
+            from serapeum.openai import Completions
+
+            llm = Completions(
+                model="gpt-3.5-turbo-instruct",
+                api_key="sk-test",
+            )
+            for chunk in llm.complete(
+                "Once upon a time", stream=True
+            ):
+                print(chunk.delta, end="", flush=True)
 
             ```
         - Structured output prediction with result exploration
             ```python
-            >>> from pydantic import BaseModel
-            >>> from serapeum.openai import Completions
-            >>> from serapeum.core.prompts import PromptTemplate
-            >>> class Summary(BaseModel):
-            ...     title: str
-            ...     points: list[str]
-            >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-            >>> tmpl = PromptTemplate("Summarise: {text}")  # doctest: +SKIP
-            >>> out = llm.parse(Summary, tmpl, text="AI is transforming...")  # doctest: +SKIP
-            >>> out.title  # doctest: +SKIP
-            'AI Transformation'
-            >>> len(out.points)  # doctest: +SKIP
-            3
+            from pydantic import BaseModel
+            from serapeum.openai import Completions
+            from serapeum.core.prompts import PromptTemplate
+
+            class Summary(BaseModel):
+                title: str
+                points: list[str]
+
+            llm = Completions(
+                model="gpt-4o-mini", api_key="sk-test"
+            )
+            tmpl = PromptTemplate("Summarise: {text}")
+            out = llm.parse(
+                Summary, tmpl, text="AI is transforming..."
+            )
+            out.title  # 'AI Transformation'
+            len(out.points)  # 3
 
             ```
         - Inspecting model metadata
             ```python
-            >>> from serapeum.openai import Completions
-            >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-            >>> llm.metadata.context_window  # doctest: +SKIP
-            128000
-            >>> llm.metadata.model_name  # doctest: +SKIP
-            'gpt-4o-mini'
+            from serapeum.openai import Completions
+
+            llm = Completions(
+                model="gpt-4o-mini", api_key="sk-test"
+            )
+            llm.metadata.context_window  # 128000
+            llm.metadata.model_name  # 'gpt-4o-mini'
 
             ```
 
@@ -231,7 +239,9 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         default=False,
         description="Whether to use strict mode for invoking tools/using schemas.",
     )
-    reasoning_effort: Literal["none", "minimal", "low", "medium", "high", "xhigh"] | None = Field(
+    reasoning_effort: (
+        Literal["none", "minimal", "low", "medium", "high", "xhigh"] | None
+    ) = Field(
         default=None,
         description="The effort to use for reasoning models.",
     )
@@ -305,16 +315,15 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         Examples:
             - Access metadata fields
                 ```python
-                >>> from serapeum.openai import Completions
-                >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> llm.metadata.context_window  # doctest: +SKIP
-                128000
-                >>> llm.metadata.is_chat_model  # doctest: +SKIP
-                True
-                >>> llm.metadata.is_function_calling_model  # doctest: +SKIP
-                True
-                >>> llm.metadata.model_name  # doctest: +SKIP
-                'gpt-4o-mini'
+                from serapeum.openai import Completions
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                llm.metadata.context_window  # 128000
+                llm.metadata.is_chat_model  # True
+                llm.metadata.is_function_calling_model  # True
+                llm.metadata.model_name  # 'gpt-4o-mini'
 
                 ```
         """
@@ -326,19 +335,27 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
                 model=self._get_model_name()
             ),
             model_name=self.model,
-            system_role=MessageRole.USER
-            if self.model in O1_MODELS
-            else MessageRole.SYSTEM,
+            system_role=(
+                MessageRole.USER if self.model in O1_MODELS else MessageRole.SYSTEM
+            ),
         )
 
     @overload
     def chat(
-        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> ChatResponse: ...
 
     @overload
     def chat(
-        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> ChatResponseGen: ...
 
     def chat(
@@ -368,25 +385,43 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         Examples:
             - Non-streaming chat call
                 ```python
-                >>> from serapeum.openai import Completions
-                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-                >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])]
-                >>> resp = llm.chat(msgs)  # doctest: +SKIP
-                >>> resp.message.content  # doctest: +SKIP
-                'Hello! How can I help you today?'
-                >>> resp.message.role  # doctest: +SKIP
-                <MessageRole.ASSISTANT: 'assistant'>
+                from serapeum.openai import Completions
+                from serapeum.core.llms import (
+                    Message, MessageRole, TextChunk,
+                )
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                resp = llm.chat(msgs)
+                resp.message.content  # 'Hello! ...'
+                resp.message.role  # MessageRole.ASSISTANT
 
                 ```
             - Streaming chat call
                 ```python
-                >>> from serapeum.openai import Completions
-                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-                >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])]
-                >>> for chunk in llm.chat(msgs, stream=True):  # doctest: +SKIP
-                ...     print(chunk.delta, end="", flush=True)
+                from serapeum.openai import Completions
+                from serapeum.core.llms import (
+                    Message, MessageRole, TextChunk,
+                )
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                for chunk in llm.chat(msgs, stream=True):
+                    print(chunk.delta, end="", flush=True)
 
                 ```
 
@@ -411,12 +446,22 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
 
     @overload
     def complete(
-        self, prompt: str, formatted: bool = ..., *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> CompletionResponse: ...
 
     @overload
     def complete(
-        self, prompt: str, formatted: bool = ..., *, stream: Literal[True], **kwargs: Any,
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> CompletionResponseGen: ...
 
     def complete(
@@ -453,24 +498,31 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         Examples:
             - Non-streaming text completion
                 ```python
-                >>> from serapeum.openai import Completions
-                >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> resp = llm.complete("Explain recursion in one sentence")  # doctest: +SKIP
-                >>> resp.text  # doctest: +SKIP
-                'Recursion is when a function calls itself to solve smaller ...'
-                >>> resp.additional_kwargs["total_tokens"]  # doctest: +SKIP
-                42
+                from serapeum.openai import Completions
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                resp = llm.complete(
+                    "Explain recursion in one sentence"
+                )
+                resp.text  # 'Recursion is when a function ...'
+                resp.additional_kwargs["total_tokens"]  # 42
 
                 ```
             - Streaming text completion
                 ```python
-                >>> from serapeum.openai import Completions
-                >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> collected = []
-                >>> for chunk in llm.complete("Once upon a time", stream=True):  # doctest: +SKIP
-                ...     collected.append(chunk.delta)
-                >>> "".join(collected)  # doctest: +SKIP
-                ', in a land far away, there lived a brave knight...'
+                from serapeum.openai import Completions
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                collected = []
+                for chunk in llm.complete(
+                    "Once upon a time", stream=True
+                ):
+                    collected.append(chunk.delta)
+                "".join(collected)  # ', in a land far away, ...'
 
                 ```
 
@@ -513,7 +565,6 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         else:
             val = self.metadata.is_chat_model
         return val
-
 
     def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         """Build the keyword-argument dict for an OpenAI API call.
@@ -863,15 +914,22 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
             "total_tokens": total_tokens,
         }
 
-
     @overload
     async def achat(
-        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> ChatResponse: ...
 
     @overload
     async def achat(
-        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> ChatResponseAsyncGen: ...
 
     async def achat(
@@ -901,27 +959,52 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         Examples:
             - Async non-streaming chat
                 ```python
-                >>> import asyncio
-                >>> from serapeum.openai import Completions
-                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-                >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])]
-                >>> resp = asyncio.run(llm.achat(msgs))  # doctest: +SKIP
-                >>> resp.message.content  # doctest: +SKIP
-                'Hello! How can I help you?'
+                import asyncio
+                from serapeum.openai import Completions
+                from serapeum.core.llms import (
+                    Message, MessageRole, TextChunk,
+                )
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                resp = asyncio.run(llm.achat(msgs))
+                resp.message.content  # 'Hello! ...'
 
                 ```
             - Async streaming chat
                 ```python
-                >>> import asyncio
-                >>> from serapeum.openai import Completions
-                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-                >>> async def stream_demo():  # doctest: +SKIP
-                ...     llm = Completions(model="gpt-4o-mini", api_key="sk-test")
-                ...     msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi")])]
-                ...     async for chunk in await llm.achat(msgs, stream=True):
-                ...         print(chunk.delta, end="")
-                >>> asyncio.run(stream_demo())  # doctest: +SKIP
+                import asyncio
+                from serapeum.openai import Completions
+                from serapeum.core.llms import (
+                    Message, MessageRole, TextChunk,
+                )
+
+                async def stream_demo():
+                    llm = Completions(
+                        model="gpt-4o-mini",
+                        api_key="sk-test",
+                    )
+                    msgs = [
+                        Message(
+                            role=MessageRole.USER,
+                            chunks=[
+                                TextChunk(content="Hi")
+                            ],
+                        )
+                    ]
+                    async for chunk in await llm.achat(
+                        msgs, stream=True
+                    ):
+                        print(chunk.delta, end="")
+
+                asyncio.run(stream_demo())
 
                 ```
 
@@ -931,8 +1014,8 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         """
         if stream:
             if self._use_chat_completions(kwargs):
-                result: ChatResponse | ChatResponseAsyncGen = (
-                    await self._astream_chat(messages, **kwargs)
+                result: ChatResponse | ChatResponseAsyncGen = await self._astream_chat(
+                    messages, **kwargs
                 )
             else:
                 result = await astream_completion_to_chat_decorator(
@@ -948,12 +1031,22 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
 
     @overload
     async def acomplete(
-        self, prompt: str, formatted: bool = ..., *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> CompletionResponse: ...
 
     @overload
     async def acomplete(
-        self, prompt: str, formatted: bool = ..., *, stream: Literal[True], **kwargs: Any,
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> CompletionResponseAsyncGen: ...
 
     async def acomplete(
@@ -986,12 +1079,16 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         Examples:
             - Async non-streaming completion
                 ```python
-                >>> import asyncio
-                >>> from serapeum.openai import Completions
-                >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> resp = asyncio.run(llm.acomplete("Explain gravity"))  # doctest: +SKIP
-                >>> resp.text  # doctest: +SKIP
-                'Gravity is a fundamental force that attracts objects...'
+                import asyncio
+                from serapeum.openai import Completions
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                resp = asyncio.run(
+                    llm.acomplete("Explain gravity")
+                )
+                resp.text  # 'Gravity is a fundamental ...'
 
                 ```
 
@@ -1016,9 +1113,7 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         return result
 
     @retry(is_retryable, logger)
-    async def _achat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponse:
+    async def _achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         """Send a non-streaming async chat-completions request.
 
         Async counterpart to :meth:`_chat`. Decorated with
@@ -1292,21 +1387,24 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         Examples:
             - Prepare a tool-calling payload
                 ```python
-                >>> from serapeum.openai import Completions
-                >>> from serapeum.core.tools import CallableTool
-                >>> def get_weather(city: str) -> str:
-                ...     '''Get weather for a city.'''
-                ...     return f"Sunny in {city}"
-                >>> tool = CallableTool.from_function(get_weather)  # doctest: +SKIP
-                >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> payload = llm._prepare_chat_with_tools(  # doctest: +SKIP
-                ...     tools=[tool],
-                ...     message="What's the weather in London?",
-                ... )
-                >>> len(payload["tools"])  # doctest: +SKIP
-                1
-                >>> payload["messages"][-1].content  # doctest: +SKIP
-                "What's the weather in London?"
+                from serapeum.openai import Completions
+                from serapeum.core.tools import CallableTool
+
+                def get_weather(city: str) -> str:
+                    '''Get weather for a city.'''
+                    return f"Sunny in {city}"
+
+                tool = CallableTool.from_function(get_weather)
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                payload = llm._prepare_chat_with_tools(
+                    tools=[tool],
+                    message="What's the weather in London?",
+                )
+                len(payload["tools"])  # 1
+                payload["messages"][-1].content
+                # "What's the weather in London?"
 
                 ```
 
@@ -1345,9 +1443,9 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         return {
             "messages": messages,
             "tools": tool_specs or None,
-            "tool_choice": resolve_tool_choice(tool_choice, tool_required)
-            if tool_specs
-            else None,
+            "tool_choice": (
+                resolve_tool_choice(tool_choice, tool_required) if tool_specs else None
+            ),
             **kwargs,
         }
 
@@ -1386,24 +1484,28 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         Examples:
             - Extract tool calls from a response
                 ```python
-                >>> from serapeum.openai import Completions
-                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
-                >>> from serapeum.core.tools import CallableTool
-                >>> def get_weather(city: str) -> str:
-                ...     '''Get weather for a city.'''
-                ...     return f"Sunny in {city}"
-                >>> tool = CallableTool.from_function(get_weather)  # doctest: +SKIP
-                >>> llm = Completions(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-                >>> payload = llm._prepare_chat_with_tools(  # doctest: +SKIP
-                ...     tools=[tool],
-                ...     message="What's the weather in Paris?",
-                ... )
-                >>> resp = llm.chat(**payload)  # doctest: +SKIP
-                >>> calls = llm.get_tool_calls_from_response(resp)  # doctest: +SKIP
-                >>> calls[0].tool_name  # doctest: +SKIP
-                'get_weather'
-                >>> calls[0].tool_kwargs  # doctest: +SKIP
-                {'city': 'Paris'}
+                from serapeum.openai import Completions
+                from serapeum.core.llms import (
+                    Message, MessageRole, TextChunk,
+                )
+                from serapeum.core.tools import CallableTool
+
+                def get_weather(city: str) -> str:
+                    '''Get weather for a city.'''
+                    return f"Sunny in {city}"
+
+                tool = CallableTool.from_function(get_weather)
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                payload = llm._prepare_chat_with_tools(
+                    tools=[tool],
+                    message="What's the weather in Paris?",
+                )
+                resp = llm.chat(**payload)
+                calls = llm.get_tool_calls_from_response(resp)
+                calls[0].tool_name  # 'get_weather'
+                calls[0].tool_kwargs  # {'city': 'Paris'}
 
                 ```
 
@@ -1417,7 +1519,9 @@ class Completions(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Fun
         )
 
         if not result:
-            result = get_tool_calls_from_legacy_response(response, error_on_no_tool_call)
+            result = get_tool_calls_from_legacy_response(
+                response, error_on_no_tool_call
+            )
         return result
 
 
@@ -1453,14 +1557,13 @@ def get_tool_calls_from_legacy_response(
     Examples:
         - Parse tool calls from a legacy response
             ```python
-            >>> from serapeum.openai.llm.chat_completions import (  # doctest: +SKIP
-            ...     get_tool_calls_from_legacy_response,
-            ... )
-            >>> calls = get_tool_calls_from_legacy_response(response)  # doctest: +SKIP
-            >>> calls[0].tool_name  # doctest: +SKIP
-            'get_weather'
-            >>> calls[0].tool_kwargs["city"]  # doctest: +SKIP
-            'London'
+            from serapeum.openai.llm.chat_completions import (
+                get_tool_calls_from_legacy_response,
+            )
+
+            calls = get_tool_calls_from_legacy_response(response)
+            calls[0].tool_name  # 'get_weather'
+            calls[0].tool_kwargs["city"]  # 'London'
 
             ```
 
@@ -1468,20 +1571,14 @@ def get_tool_calls_from_legacy_response(
         Completions.get_tool_calls_from_response: High-level extraction that
             tries the modern path first, then falls back to this function.
     """
-    legacy_tool_calls = response.message.additional_kwargs.get(
-        "tool_calls", []
-    )
+    legacy_tool_calls = response.message.additional_kwargs.get("tool_calls", [])
     result: list[ToolCallArguments] = []
     if legacy_tool_calls:
         for tool_call in legacy_tool_calls:
             if tool_call.type != "function":
-                raise ValueError(
-                    "Invalid tool type. Unsupported by OpenAI llm"
-                )
+                raise ValueError("Invalid tool type. Unsupported by OpenAI llm")
             try:
-                argument_dict = parse_partial_json(
-                    tool_call.function.arguments
-                )
+                argument_dict = parse_partial_json(tool_call.function.arguments)
             except (ValueError, TypeError, JSONDecodeError):
                 argument_dict = {}
 

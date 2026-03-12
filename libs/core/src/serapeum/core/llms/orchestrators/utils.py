@@ -348,10 +348,12 @@ def _extract_partial_list_progress(
 
                 for field_name, list_content in matches:
                     if (
-                            hasattr(output_cls, "model_fields")
-                            and field_name in output_cls.model_fields
+                        hasattr(output_cls, "model_fields")
+                        and field_name in output_cls.model_fields
                     ):
-                        items = _parse_partial_list_items(list_content, field_name, output_cls)
+                        items = _parse_partial_list_items(
+                            list_content, field_name, output_cls
+                        )
                         if items:
                             current_data[field_name] = items
 
@@ -390,6 +392,8 @@ def _parse_partial_list_items(
                     continue
 
     except (ValueError, TypeError) as exc:
-        _logger.debug("Failed to parse partial list items for field '%s': %s", field_name, exc)
+        _logger.debug(
+            "Failed to parse partial list items for field '%s': %s", field_name, exc
+        )
 
     return items

@@ -18,7 +18,15 @@ from __future__ import annotations
 import asyncio
 import inspect
 import logging
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Generator, Literal, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncGenerator,
+    Callable,
+    Generator,
+    Literal,
+    overload,
+)
 
 import ollama as ollama_sdk  # type: ignore[attr-defined]
 from pydantic import BaseModel, Field, PrivateAttr, ConfigDict
@@ -849,7 +857,11 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
 
                 ```
         """
-        result = self._stream_chat(messages, **kwargs) if stream else self._chat(messages, **kwargs)
+        result = (
+            self._stream_chat(messages, **kwargs)
+            if stream
+            else self._chat(messages, **kwargs)
+        )
         return result
 
     @retry(is_retryable, logger)
@@ -1087,7 +1099,11 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         See Also:
             chat: Synchronous variant.
         """
-        result = await self._astream_chat(messages, **kwargs) if stream else await self._achat(messages, **kwargs)
+        result = (
+            await self._astream_chat(messages, **kwargs)
+            if stream
+            else await self._achat(messages, **kwargs)
+        )
         return result
 
     @retry(is_retryable, logger)

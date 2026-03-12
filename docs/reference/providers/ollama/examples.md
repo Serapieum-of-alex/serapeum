@@ -434,8 +434,8 @@ print(f"\n\nFull response: {full_response}")
 
 ## Tool/Function Calling
 
-- For function calling we are going to use llama3.1 model from the local server, so make sure to pull the model 
-  first: `ollama pull llama3.1`, then restart the server. 
+- For function calling we are going to use llama3.1 model from the local server, so make sure to pull the model
+  first: `ollama pull llama3.1`, then restart the server.
 
 ### 1. Basic Tool Calling
 

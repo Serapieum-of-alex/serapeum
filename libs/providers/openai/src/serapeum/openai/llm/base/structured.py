@@ -57,31 +57,31 @@ class StructuredOutput(LLM):
     Examples:
         - Use parse to get a validated Pydantic model from a prompt:
             ```python
-            >>> from pydantic import BaseModel
-            >>> from serapeum.core.prompts import PromptTemplate
-            >>> class City(BaseModel):
-            ...     name: str
-            ...     country: str
-            ...
-            >>> # llm = OpenAI(model="gpt-4o")  # doctest: +SKIP
-            >>> # city = llm.parse(City, PromptTemplate("Capital of {country}"), country="France")
-            >>> # city.name  # doctest: +SKIP
-            >>> # city.country  # doctest: +SKIP
+            from pydantic import BaseModel
+            from serapeum.core.prompts import PromptTemplate
 
+            class City(BaseModel):
+                name: str
+                country: str
+
+            llm = OpenAI(model="gpt-4o")
+            city = llm.parse(City, PromptTemplate("Capital of {country}"), country="France")
+            city.name
+            city.country
             ```
 
         - Stream partial structured output as it arrives:
             ```python
-            >>> from pydantic import BaseModel
-            >>> from serapeum.core.prompts import PromptTemplate
-            >>> class Story(BaseModel):
-            ...     title: str
-            ...     body: str
-            ...
-            >>> # llm = OpenAI(model="gpt-4o")  # doctest: +SKIP
-            >>> # for partial in llm.parse(Story, PromptTemplate("Write a story"), stream=True):
-            >>> #     print(partial.title if partial else "...")  # doctest: +SKIP
+            from pydantic import BaseModel
+            from serapeum.core.prompts import PromptTemplate
 
+            class Story(BaseModel):
+                title: str
+                body: str
+
+            llm = OpenAI(model="gpt-4o")
+            for partial in llm.parse(Story, PromptTemplate("Write a story"), stream=True):
+                print(partial.title if partial else "...")
             ```
 
     See Also:
@@ -190,14 +190,24 @@ class StructuredOutput(LLM):
 
     @overload
     def parse(
-        self, schema: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
+        self,
+        schema: type[Model],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ...,
+        *,
+        stream: Literal[False] = ...,
+        **prompt_args: Any,
     ) -> Model: ...
 
     @overload
     def parse(
-        self, schema: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
+        self,
+        schema: type[Model],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ...,
+        *,
+        stream: Literal[True],
+        **prompt_args: Any,
     ) -> Generator[Model | FlexibleModel | None, None, None]: ...
 
     def parse(
@@ -238,37 +248,37 @@ class StructuredOutput(LLM):
         Examples:
             - Obtain a structured result synchronously:
                 ```python
-                >>> from pydantic import BaseModel
-                >>> from serapeum.core.prompts import PromptTemplate
-                >>> class Sentiment(BaseModel):
-                ...     label: str
-                ...     score: float
-                ...
-                >>> # llm = OpenAI(model="gpt-4o")  # doctest: +SKIP
-                >>> # result = llm.parse(
-                >>> #     Sentiment,
-                >>> #     PromptTemplate("Sentiment of: {text}"),
-                >>> #     text="I love this!"
-                >>> # )  # doctest: +SKIP
-                >>> # result.label  # doctest: +SKIP
-                >>> # result.score  # doctest: +SKIP
+                from pydantic import BaseModel
+                from serapeum.core.prompts import PromptTemplate
 
+                class Sentiment(BaseModel):
+                    label: str
+                    score: float
+
+                llm = OpenAI(model="gpt-4o")
+                result = llm.parse(
+                    Sentiment,
+                    PromptTemplate("Sentiment of: {text}"),
+                    text="I love this!"
+                )
+                result.label
+                result.score
                 ```
 
             - Stream partial results:
                 ```python
-                >>> from pydantic import BaseModel
-                >>> from serapeum.core.prompts import PromptTemplate
-                >>> class Summary(BaseModel):
-                ...     text: str
-                ...
-                >>> # llm = OpenAI(model="gpt-4o")  # doctest: +SKIP
-                >>> # for partial in llm.parse(
-                >>> #     Summary, PromptTemplate("Summarize: {doc}"),
-                >>> #     stream=True, doc="..."
-                >>> # ):  # doctest: +SKIP
-                >>> #     print(partial.text if partial else "")  # doctest: +SKIP
+                from pydantic import BaseModel
+                from serapeum.core.prompts import PromptTemplate
 
+                class Summary(BaseModel):
+                    text: str
+
+                llm = OpenAI(model="gpt-4o")
+                for partial in llm.parse(
+                    Summary, PromptTemplate("Summarize: {doc}"),
+                    stream=True, doc="..."
+                ):
+                    print(partial.text if partial else "")
                 ```
 
         See Also:
@@ -289,9 +299,7 @@ class StructuredOutput(LLM):
             result = schema.model_validate_json(str(response.message.content))
         else:
             self._ensure_tool_choice(llm_kwargs)
-            result = super().parse(
-                schema, prompt, llm_kwargs=llm_kwargs, **prompt_args
-            )
+            result = super().parse(schema, prompt, llm_kwargs=llm_kwargs, **prompt_args)
         return result
 
     def _parse_stream_call(
@@ -336,14 +344,24 @@ class StructuredOutput(LLM):
 
     @overload
     async def aparse(
-        self, schema: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
+        self,
+        schema: type[Model],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ...,
+        *,
+        stream: Literal[False] = ...,
+        **prompt_args: Any,
     ) -> Model: ...
 
     @overload
     async def aparse(
-        self, schema: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
+        self,
+        schema: type[Model],
+        prompt: PromptTemplate,
+        llm_kwargs: dict[str, Any] | None = ...,
+        *,
+        stream: Literal[True],
+        **prompt_args: Any,
     ) -> AsyncGenerator[Model | FlexibleModel, None]: ...
 
     async def aparse(
@@ -383,40 +401,40 @@ class StructuredOutput(LLM):
         Examples:
             - Await a structured result:
                 ```python
-                >>> import asyncio
-                >>> from pydantic import BaseModel
-                >>> from serapeum.core.prompts import PromptTemplate
-                >>> class Entity(BaseModel):
-                ...     name: str
-                ...     kind: str
-                ...
-                >>> # async def main():  # doctest: +SKIP
-                >>> #     llm = OpenAI(model="gpt-4o")
-                >>> #     entity = await llm.aparse(
-                >>> #         Entity, PromptTemplate("Extract entity from: {text}"),
-                >>> #         text="Paris is a city"
-                >>> #     )
-                >>> #     print(entity.name, entity.kind)
+                import asyncio
+                from pydantic import BaseModel
+                from serapeum.core.prompts import PromptTemplate
 
+                class Entity(BaseModel):
+                    name: str
+                    kind: str
+
+                async def main():
+                    llm = OpenAI(model="gpt-4o")
+                    entity = await llm.aparse(
+                        Entity, PromptTemplate("Extract entity from: {text}"),
+                        text="Paris is a city"
+                    )
+                    print(entity.name, entity.kind)
                 ```
 
             - Stream partial results asynchronously:
                 ```python
-                >>> import asyncio
-                >>> from pydantic import BaseModel
-                >>> from serapeum.core.prompts import PromptTemplate
-                >>> class Report(BaseModel):
-                ...     title: str
-                ...     content: str
-                ...
-                >>> # async def main():  # doctest: +SKIP
-                >>> #     llm = OpenAI(model="gpt-4o")
-                >>> #     async for partial in await llm.aparse(
-                >>> #         Report, PromptTemplate("Report on {topic}"),
-                >>> #         stream=True, topic="AI"
-                >>> #     ):
-                >>> #         print(partial.title if partial else "...")
+                import asyncio
+                from pydantic import BaseModel
+                from serapeum.core.prompts import PromptTemplate
 
+                class Report(BaseModel):
+                    title: str
+                    content: str
+
+                async def main():
+                    llm = OpenAI(model="gpt-4o")
+                    async for partial in await llm.aparse(
+                        Report, PromptTemplate("Report on {topic}"),
+                        stream=True, topic="AI"
+                    ):
+                        print(partial.title if partial else "...")
                 ```
 
         See Also:
@@ -482,10 +500,10 @@ class StructuredOutput(LLM):
                     schema, prompt, llm_kwargs or {}, **prompt_args
                 )
                 curr = None
-                async for response in await self.achat(stream=True, messages=messages, **llm_kwargs):
-                    curr = process_streaming_content_incremental(
-                        response, schema, curr
-                    )
+                async for response in await self.achat(
+                    stream=True, messages=messages, **llm_kwargs
+                ):
+                    curr = process_streaming_content_incremental(response, schema, curr)
                     yield curr
 
             result = gen()

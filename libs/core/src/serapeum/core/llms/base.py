@@ -6,7 +6,15 @@ streaming, and structured outputs.
 
 from __future__ import annotations
 from abc import ABC
-from typing import Any, AsyncGenerator, Generator, Protocol, TYPE_CHECKING, runtime_checkable, Sequence
+from typing import (
+    Any,
+    AsyncGenerator,
+    Generator,
+    Protocol,
+    TYPE_CHECKING,
+    runtime_checkable,
+    Sequence,
+)
 from typing_extensions import Annotated
 
 from pydantic import BaseModel, Field, WithJsonSchema, field_validator, model_validator
@@ -1373,7 +1381,9 @@ class LLM(BaseLLM, ABC):
         """
         structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
-        result = await structured_output_tool.acall(llm_kwargs=llm_kwargs, **prompt_args)
+        result = await structured_output_tool.acall(
+            llm_kwargs=llm_kwargs, **prompt_args
+        )
 
         return result
 
@@ -1494,7 +1504,9 @@ class LLM(BaseLLM, ABC):
         """
         structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
-        result = structured_output_tool(stream=True, llm_kwargs=llm_kwargs, **prompt_args)
+        result = structured_output_tool(
+            stream=True, llm_kwargs=llm_kwargs, **prompt_args
+        )
         for r in result:
             yield r
 
@@ -1704,7 +1716,9 @@ class LLM(BaseLLM, ABC):
         async def gen() -> AsyncGenerator[Model | list[Model], None]:
             structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
-            result = await structured_output_tool.acall(stream=True, llm_kwargs=llm_kwargs, **prompt_args)
+            result = await structured_output_tool.acall(
+                stream=True, llm_kwargs=llm_kwargs, **prompt_args
+            )
             async for r in result:
                 yield r
 
@@ -1914,7 +1928,9 @@ class LLM(BaseLLM, ABC):
             stream_tokens = stream_response_to_tokens(chat_response)
         else:
             formatted_prompt = self._get_prompt(prompt, **prompt_args)
-            stream_response = self.complete(formatted_prompt, formatted=True, stream=True)
+            stream_response = self.complete(
+                formatted_prompt, formatted=True, stream=True
+            )
             stream_tokens = stream_response_to_tokens(stream_response)
 
         if prompt.output_parser is not None or self.output_parser is not None:

@@ -185,7 +185,9 @@ class TestCloudChat:
         Expected: Non-empty assistant content string.
         Checks: Response object is valid; message content is non-empty.
         """
-        response = cloud_llm.chat([Message(role="user", chunks=[TextChunk(content="Say hello.")])])
+        response = cloud_llm.chat(
+            [Message(role="user", chunks=[TextChunk(content="Say hello.")])]
+        )
 
         assert response is not None
         assert response.message.content is not None
@@ -220,7 +222,10 @@ class TestCloudChat:
         Checks: Streaming protocol works correctly against the cloud backend.
         """
         chunks = list(
-            cloud_llm.chat([Message(role="user", chunks=[TextChunk(content="Count to 3.")])], stream=True)
+            cloud_llm.chat(
+                [Message(role="user", chunks=[TextChunk(content="Count to 3.")])],
+                stream=True,
+            )
         )
 
         assert len(chunks) > 0
@@ -239,7 +244,9 @@ class TestCloudChat:
         Expected: Non-empty assistant content string.
         Checks: Async chat works through the cloud backend.
         """
-        response = await cloud_llm.achat([Message(role="user", chunks=[TextChunk(content="Say hello.")])])
+        response = await cloud_llm.achat(
+            [Message(role="user", chunks=[TextChunk(content="Say hello.")])]
+        )
 
         assert response is not None
         assert response.message.content is not None
@@ -262,7 +269,8 @@ class TestCloudChat:
         """
         chunks = []
         async for chunk in await cloud_llm.achat(
-            [Message(role="user", chunks=[TextChunk(content="Count to 3.")])], stream=True
+            [Message(role="user", chunks=[TextChunk(content="Count to 3.")])],
+            stream=True,
         ):
             chunks.append(chunk)
 

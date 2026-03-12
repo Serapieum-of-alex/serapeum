@@ -100,7 +100,9 @@ def is_retryable(exc: BaseException) -> bool:
     """
     if isinstance(exc, ConnectionError):
         result = True
-    elif isinstance(exc, (httpx.TimeoutException, httpx.StreamError, httpx.ConnectError)):
+    elif isinstance(
+        exc, (httpx.TimeoutException, httpx.StreamError, httpx.ConnectError)
+    ):
         result = True
     elif isinstance(exc, ollama_sdk.ResponseError):
         result = getattr(exc, "status_code", 0) in _RETRYABLE_STATUS_CODES

@@ -20,7 +20,9 @@ Public classes:
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+import httpx
 
 from openai import AsyncAzureOpenAI
 from openai import AzureOpenAI as SyncAzureOpenAI
@@ -118,6 +120,15 @@ class AzureClient:
         Responses: Concrete Azure Responses API provider.
     """
 
+    if TYPE_CHECKING:
+        api_key: str | None
+        api_base: str | None
+        api_version: str | None
+        timeout: float
+        default_headers: dict[str, str] | None
+        _http_client: httpx.Client | None
+        _async_http_client: httpx.AsyncClient | None
+
     model: str = Field(default="gpt-35-turbo", description="The OpenAI model name.")
     engine: str = Field(description="The name of the deployed azure engine.")
     azure_endpoint: str | None = Field(
@@ -165,10 +176,7 @@ class AzureClient:
                 "azure_endpoint", None, "AZURE_OPENAI_ENDPOINT", ""
             )
 
-        if (
-            api_base == DEFAULT_OPENAI_API_BASE
-            and azure_endpoint is None
-        ):
+        if api_base == DEFAULT_OPENAI_API_BASE and azure_endpoint is None:
             raise ValueError(
                 "You must set OPENAI_API_BASE to your Azure endpoint. "
                 "It should look like https://YOUR_RESOURCE_NAME.openai.azure.com/"
@@ -196,6 +204,7 @@ class AzureClient:
         Raises:
             ValueError: If no API key can be resolved from any source.
         """
+        api_key: str | None
         if self.use_azure_ad:
             if self.azure_ad_token_provider:
                 api_key = self.azure_ad_token_provider()
@@ -242,12 +251,12 @@ class AzureClient:
 
     def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         """Swap ``model`` for the Azure ``engine`` deployment name."""
-        model_kwargs = super()._get_model_kwargs(**kwargs)
+        model_kwargs: dict[str, Any] = super()._get_model_kwargs(**kwargs)  # type: ignore[misc]
         model_kwargs["model"] = self.engine
         return model_kwargs
 
 
-class Completions(AzureClient, OpenAICompletions):
+class Completions(AzureClient, OpenAICompletions):  # type: ignore[misc]
     """Azure OpenAI Chat Completions API provider.
 
     Combines Azure-specific connection management from
@@ -363,7 +372,7 @@ class Completions(AzureClient, OpenAICompletions):
         return "azure_openai_completions"
 
 
-class Responses(AzureClient, OpenAIResponses):
+class Responses(AzureClient, OpenAIResponses):  # type: ignore[misc]
     """Azure OpenAI Responses API provider.
 
     Combines Azure-specific connection management from

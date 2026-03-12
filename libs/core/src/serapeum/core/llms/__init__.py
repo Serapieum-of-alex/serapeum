@@ -29,7 +29,7 @@ from serapeum.core.base.llms.types import (
     ThinkingBlock,
     DocumentBlock,
     ContentBlock,
-    LogProb
+    LogProb,
 )
 
 # Core LLM abstractions

@@ -37,7 +37,11 @@ class MockChatLLM(MagicMock):
     def chat(self, prompt: str) -> ChatResponse:
         test_object = {"hello": "chat"}
         text = json.dumps(test_object)
-        return ChatResponse(message=Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content=text)]))
+        return ChatResponse(
+            message=Message(
+                role=MessageRole.ASSISTANT, chunks=[TextChunk(content=text)]
+            )
+        )
 
     @property
     def metadata(self) -> Metadata:

@@ -57,6 +57,7 @@ from serapeum.core.llms import (
     ToolCallBlock,
 )
 
+
 def _build_reasoning_content(item: ResponseReasoningItem) -> str | None:
     """Extract and concatenate text from a reasoning item's ``content`` and ``summary`` fields.
 
@@ -116,27 +117,25 @@ class ResponsesOutputParser:
     Examples:
         - Build a ChatResponse from a Responses API response:
             ```python
-            >>> from serapeum.openai.parsers.response_parsers import ResponsesOutputParser
-            >>> # response = client.responses.create(  # doctest: +SKIP
-            >>> #     model="gpt-4o",
-            >>> #     input="Hello!"
-            >>> # )
-            >>> # parser = ResponsesOutputParser(response.output)
-            >>> # chat_response = parser.build()
-            >>> # chat_response.message.content  # doctest: +SKIP
+            # response = client.responses.create(
+            #     model="gpt-4o",
+            #     input="Hello!"
+            # )
+            # parser = ResponsesOutputParser(response.output)
+            # chat_response = parser.build()
+            # chat_response.message.content
 
             ```
 
         - Access tool calls from the parsed response:
             ```python
-            >>> from serapeum.openai.parsers.response_parsers import ResponsesOutputParser
-            >>> # parser = ResponsesOutputParser(response.output)  # doctest: +SKIP
-            >>> # chat_response = parser.build()
-            >>> # tool_blocks = [
-            >>> #     chunk for chunk in chat_response.message.chunks
-            >>> #     if hasattr(chunk, 'tool_name')
-            >>> # ]
-            >>> # tool_blocks[0].tool_name  # doctest: +SKIP
+            # parser = ResponsesOutputParser(response.output)
+            # chat_response = parser.build()
+            # tool_blocks = [
+            #     chunk for chunk in chat_response.message.chunks
+            #     if hasattr(chunk, 'tool_name')
+            # ]
+            # tool_blocks[0].tool_name
 
             ```
 
@@ -186,11 +185,10 @@ class ResponsesOutputParser:
         Examples:
             - Parse output and inspect the message content:
                 ```python
-                >>> from serapeum.openai.parsers.response_parsers import ResponsesOutputParser
-                >>> # parser = ResponsesOutputParser(response.output)  # doctest: +SKIP
-                >>> # result = parser.build()
-                >>> # result.message.role  # doctest: +SKIP
-                >>> # result.message.content  # doctest: +SKIP
+                # parser = ResponsesOutputParser(response.output)
+                # result = parser.build()
+                # result.message.role
+                # result.message.content
 
                 ```
         """
@@ -205,7 +203,9 @@ class ResponsesOutputParser:
                 self._parse_function_tool_call(item)
             elif isinstance(item, ResponseReasoningItem):
                 self._parse_reasoning(item)
-        return ChatResponse(message=self._message, additional_kwargs=self._additional_kwargs)
+        return ChatResponse(
+            message=self._message, additional_kwargs=self._additional_kwargs
+        )
 
     def _parse_message(self, item: ResponseOutputMessage) -> None:
         """Extract text chunks, annotations, and refusal from a message output item."""
@@ -242,9 +242,7 @@ class ResponsesOutputParser:
         self._message.chunks.append(
             ThinkingBlock(
                 content=_build_reasoning_content(item),
-                additional_information=item.model_dump(
-                    exclude={"content", "summary"}
-                ),
+                additional_information=item.model_dump(exclude={"content", "summary"}),
             )
         )
 
@@ -279,28 +277,28 @@ class ResponsesStreamAccumulator:
     Examples:
         - Process a streaming response event by event:
             ```python
-            >>> from serapeum.openai.parsers.response_parsers import (
-            ...     ResponsesStreamAccumulator,
-            ... )
-            >>> acc = ResponsesStreamAccumulator(track_previous_responses=True)
-            >>> # stream = client.responses.create(..., stream=True)  # doctest: +SKIP
-            >>> # for event in stream:  # doctest: +SKIP
-            >>> #     blocks, delta = acc.update(event)
-            >>> #     if delta:
-            >>> #         print(delta, end="")
+            from serapeum.openai.parsers.response_parsers import (
+                ResponsesStreamAccumulator,
+            )
+            acc = ResponsesStreamAccumulator(track_previous_responses=True)
+            # stream = client.responses.create(..., stream=True)
+            # for event in stream:
+            #     blocks, delta = acc.update(event)
+            #     if delta:
+            #         print(delta, end="")
 
             ```
 
         - Retrieve accumulated metadata after the stream ends:
             ```python
-            >>> from serapeum.openai.parsers.response_parsers import (
-            ...     ResponsesStreamAccumulator,
-            ... )
-            >>> acc = ResponsesStreamAccumulator()
-            >>> # ... process events ...  # doctest: +SKIP
-            >>> # acc.additional_kwargs  # doctest: +SKIP
-            >>> # acc.built_in_tool_calls  # doctest: +SKIP
-            >>> # acc.previous_response_id  # doctest: +SKIP
+            from serapeum.openai.parsers.response_parsers import (
+                ResponsesStreamAccumulator,
+            )
+            acc = ResponsesStreamAccumulator()
+            # ... process events ...
+            # acc.additional_kwargs
+            # acc.built_in_tool_calls
+            # acc.previous_response_id
 
             ```
 
@@ -466,13 +464,10 @@ class ResponsesStreamAccumulator:
         Examples:
             - Process a text delta event:
                 ```python
-                >>> from serapeum.openai.parsers.response_parsers import (
-                ...     ResponsesStreamAccumulator,
-                ... )
-                >>> acc = ResponsesStreamAccumulator()
-                >>> # blocks, delta = acc.update(text_delta_event)  # doctest: +SKIP
-                >>> # delta  # the raw text fragment  # doctest: +SKIP
-                >>> # blocks[0].content  # same text as a TextChunk  # doctest: +SKIP
+                # acc = ResponsesStreamAccumulator()
+                # blocks, delta = acc.update(text_delta_event)
+                # delta  # the raw text fragment
+                # blocks[0].content  # same text as a TextChunk
 
                 ```
         """

@@ -101,6 +101,7 @@ class ChatStubLLM(LLM):
         self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
     ) -> ChatResponse | ChatResponseGen:
         if stream:
+
             def gen() -> ChatResponseGen:
                 yield ChatResponse(
                     message=Message(
@@ -135,6 +136,7 @@ class ChatStubLLM(LLM):
         self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
     ) -> ChatResponse | ChatResponseAsyncGen:
         if stream:
+
             async def agen() -> ChatResponseAsyncGen:
                 yield ChatResponse(
                     message=Message(

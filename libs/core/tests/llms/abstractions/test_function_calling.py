@@ -35,9 +35,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     ) -> CompletionResponse:
         pass
 
-    async def achat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponse:
+    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         return ChatResponse(
             message=Message(role="user", chunks=[TextChunk(content="")]),
         )

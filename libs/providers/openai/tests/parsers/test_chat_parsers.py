@@ -61,18 +61,16 @@ class TestChatMessageParser:
         openai_msg = ChatCompletionMessage(role="assistant", content="hello")
         parser = ChatMessageParser(openai_msg, modalities=["text"])
 
-        assert parser._openai_message is openai_msg, (
-            "Expected _openai_message to be stored"
-        )
-        assert parser._modalities == ["text"], (
-            f"Expected modalities ['text'], got {parser._modalities}"
-        )
-        assert parser._blocks == [], (
-            f"Expected empty blocks, got {parser._blocks}"
-        )
-        assert parser._additional_kwargs == {}, (
-            f"Expected empty additional_kwargs, got {parser._additional_kwargs}"
-        )
+        assert (
+            parser._openai_message is openai_msg
+        ), "Expected _openai_message to be stored"
+        assert parser._modalities == [
+            "text"
+        ], f"Expected modalities ['text'], got {parser._modalities}"
+        assert parser._blocks == [], f"Expected empty blocks, got {parser._blocks}"
+        assert (
+            parser._additional_kwargs == {}
+        ), f"Expected empty additional_kwargs, got {parser._additional_kwargs}"
 
     def test_build_text_message(self) -> None:
         """Build a simple text message and verify the resulting Message.
@@ -84,18 +82,16 @@ class TestChatMessageParser:
         openai_msg = ChatCompletionMessage(role="assistant", content="hello world")
         result = ChatMessageParser(openai_msg, modalities=["text"]).build()
 
-        assert result.role == "assistant", (
-            f"Expected role 'assistant', got '{result.role}'"
-        )
-        assert len(result.chunks) == 1, (
-            f"Expected 1 chunk, got {len(result.chunks)}"
-        )
-        assert isinstance(result.chunks[0], TextChunk), (
-            f"Expected TextChunk, got {type(result.chunks[0])}"
-        )
-        assert result.chunks[0].content == "hello world", (
-            f"Expected content 'hello world', got '{result.chunks[0].content}'"
-        )
+        assert (
+            result.role == "assistant"
+        ), f"Expected role 'assistant', got '{result.role}'"
+        assert len(result.chunks) == 1, f"Expected 1 chunk, got {len(result.chunks)}"
+        assert isinstance(
+            result.chunks[0], TextChunk
+        ), f"Expected TextChunk, got {type(result.chunks[0])}"
+        assert (
+            result.chunks[0].content == "hello world"
+        ), f"Expected content 'hello world', got '{result.chunks[0].content}'"
 
     def test_build_no_text_modality_skips_content(self) -> None:
         """When 'text' is not in modalities, content is not extracted to blocks.
@@ -107,9 +103,9 @@ class TestChatMessageParser:
         openai_msg = ChatCompletionMessage(role="assistant", content="hello")
         result = ChatMessageParser(openai_msg, modalities=["audio"]).build()
 
-        assert len(result.chunks) == 0, (
-            f"Expected 0 chunks when text not in modalities, got {len(result.chunks)}"
-        )
+        assert (
+            len(result.chunks) == 0
+        ), f"Expected 0 chunks when text not in modalities, got {len(result.chunks)}"
 
     def test_build_none_content_skips_text(self) -> None:
         """When content is None, no TextChunk is created even with 'text' modality.
@@ -121,9 +117,9 @@ class TestChatMessageParser:
         result = ChatMessageParser(openai_msg, modalities=["text"]).build()
 
         text_chunks = [b for b in result.chunks if isinstance(b, TextChunk)]
-        assert len(text_chunks) == 0, (
-            f"Expected 0 TextChunks for None content, got {len(text_chunks)}"
-        )
+        assert (
+            len(text_chunks) == 0
+        ), f"Expected 0 TextChunks for None content, got {len(text_chunks)}"
 
     def test_build_empty_content_skips_text(self) -> None:
         """When content is empty string, no TextChunk is created.
@@ -135,9 +131,9 @@ class TestChatMessageParser:
         result = ChatMessageParser(openai_msg, modalities=["text"]).build()
 
         text_chunks = [b for b in result.chunks if isinstance(b, TextChunk)]
-        assert len(text_chunks) == 0, (
-            f"Expected 0 TextChunks for empty content, got {len(text_chunks)}"
-        )
+        assert (
+            len(text_chunks) == 0
+        ), f"Expected 0 TextChunks for empty content, got {len(text_chunks)}"
 
     def test_extract_tool_calls_creates_blocks_and_kwargs(self) -> None:
         """Tool calls are extracted into both ToolCallBlock chunks and additional_kwargs.
@@ -160,18 +156,18 @@ class TestChatMessageParser:
         result = ChatMessageParser(openai_msg, modalities=["text"]).build()
 
         tool_blocks = [b for b in result.chunks if isinstance(b, ToolCallBlock)]
-        assert len(tool_blocks) == 1, (
-            f"Expected 1 ToolCallBlock, got {len(tool_blocks)}"
-        )
-        assert tool_blocks[0].tool_call_id == "call_1", (
-            f"Expected tool_call_id 'call_1', got '{tool_blocks[0].tool_call_id}'"
-        )
-        assert tool_blocks[0].tool_name == "search", (
-            f"Expected tool_name 'search', got '{tool_blocks[0].tool_name}'"
-        )
-        assert "tool_calls" in result.additional_kwargs, (
-            "Expected tool_calls in additional_kwargs"
-        )
+        assert (
+            len(tool_blocks) == 1
+        ), f"Expected 1 ToolCallBlock, got {len(tool_blocks)}"
+        assert (
+            tool_blocks[0].tool_call_id == "call_1"
+        ), f"Expected tool_call_id 'call_1', got '{tool_blocks[0].tool_call_id}'"
+        assert (
+            tool_blocks[0].tool_name == "search"
+        ), f"Expected tool_name 'search', got '{tool_blocks[0].tool_name}'"
+        assert (
+            "tool_calls" in result.additional_kwargs
+        ), "Expected tool_calls in additional_kwargs"
 
     def test_extract_tool_calls_multiple(self) -> None:
         """Multiple tool calls are all extracted.
@@ -198,9 +194,9 @@ class TestChatMessageParser:
         result = ChatMessageParser(openai_msg, modalities=["text"]).build()
 
         tool_blocks = [b for b in result.chunks if isinstance(b, ToolCallBlock)]
-        assert len(tool_blocks) == 2, (
-            f"Expected 2 ToolCallBlocks, got {len(tool_blocks)}"
-        )
+        assert (
+            len(tool_blocks) == 2
+        ), f"Expected 2 ToolCallBlocks, got {len(tool_blocks)}"
 
     def test_extract_tool_calls_no_function_skipped(self) -> None:
         """Tool call with function=None is skipped but still in additional_kwargs.
@@ -221,12 +217,12 @@ class TestChatMessageParser:
         result = ChatMessageParser(openai_msg, modalities=["text"]).build()
 
         tool_blocks = [b for b in result.chunks if isinstance(b, ToolCallBlock)]
-        assert len(tool_blocks) == 0, (
-            f"Expected 0 ToolCallBlocks for function=None, got {len(tool_blocks)}"
-        )
-        assert "tool_calls" in result.additional_kwargs, (
-            "Expected raw tool_calls still in additional_kwargs"
-        )
+        assert (
+            len(tool_blocks) == 0
+        ), f"Expected 0 ToolCallBlocks for function=None, got {len(tool_blocks)}"
+        assert (
+            "tool_calls" in result.additional_kwargs
+        ), "Expected raw tool_calls still in additional_kwargs"
 
     def test_extract_audio_with_audio_modality(self) -> None:
         """Audio data is extracted when 'audio' is in modalities.
@@ -245,15 +241,15 @@ class TestChatMessageParser:
         result = ChatMessageParser(openai_msg, modalities=["text", "audio"]).build()
 
         audio_blocks = [b for b in result.chunks if isinstance(b, Audio)]
-        assert len(audio_blocks) == 1, (
-            f"Expected 1 Audio block, got {len(audio_blocks)}"
-        )
-        assert audio_blocks[0].content == "base64audiobytes", (
-            f"Expected audio content 'base64audiobytes', got '{audio_blocks[0].content}'"
-        )
-        assert result.additional_kwargs.get("reference_audio_id") == "audio_123", (
-            f"Expected reference_audio_id 'audio_123', got '{result.additional_kwargs.get('reference_audio_id')}'"
-        )
+        assert (
+            len(audio_blocks) == 1
+        ), f"Expected 1 Audio block, got {len(audio_blocks)}"
+        assert (
+            audio_blocks[0].content == "base64audiobytes"
+        ), f"Expected audio content 'base64audiobytes', got '{audio_blocks[0].content}'"
+        assert (
+            result.additional_kwargs.get("reference_audio_id") == "audio_123"
+        ), f"Expected reference_audio_id 'audio_123', got '{result.additional_kwargs.get('reference_audio_id')}'"
 
     def test_extract_audio_without_audio_modality_skipped(self) -> None:
         """Audio data is not extracted when 'audio' is not in modalities.
@@ -271,9 +267,9 @@ class TestChatMessageParser:
         result = ChatMessageParser(openai_msg, modalities=["text"]).build()
 
         audio_blocks = [b for b in result.chunks if isinstance(b, Audio)]
-        assert len(audio_blocks) == 0, (
-            f"Expected 0 Audio blocks without audio modality, got {len(audio_blocks)}"
-        )
+        assert (
+            len(audio_blocks) == 0
+        ), f"Expected 0 Audio blocks without audio modality, got {len(audio_blocks)}"
 
     def test_extract_audio_none_audio_field(self) -> None:
         """No audio extraction when audio field is None.
@@ -285,9 +281,9 @@ class TestChatMessageParser:
         result = ChatMessageParser(openai_msg, modalities=["text", "audio"]).build()
 
         audio_blocks = [b for b in result.chunks if isinstance(b, Audio)]
-        assert len(audio_blocks) == 0, (
-            f"Expected 0 Audio blocks for None audio, got {len(audio_blocks)}"
-        )
+        assert (
+            len(audio_blocks) == 0
+        ), f"Expected 0 Audio blocks for None audio, got {len(audio_blocks)}"
 
     def test_build_text_and_tool_calls_together(self) -> None:
         """Build message with both text and tool calls.
@@ -311,12 +307,10 @@ class TestChatMessageParser:
 
         text_chunks = [b for b in result.chunks if isinstance(b, TextChunk)]
         tool_blocks = [b for b in result.chunks if isinstance(b, ToolCallBlock)]
-        assert len(text_chunks) == 1, (
-            f"Expected 1 TextChunk, got {len(text_chunks)}"
-        )
-        assert len(tool_blocks) == 1, (
-            f"Expected 1 ToolCallBlock, got {len(tool_blocks)}"
-        )
+        assert len(text_chunks) == 1, f"Expected 1 TextChunk, got {len(text_chunks)}"
+        assert (
+            len(tool_blocks) == 1
+        ), f"Expected 1 ToolCallBlock, got {len(tool_blocks)}"
 
     def test_batch_converts_multiple_messages(self) -> None:
         """Batch classmethod converts a sequence of messages.
@@ -331,12 +325,12 @@ class TestChatMessageParser:
         results = ChatMessageParser.batch(messages, modalities=["text"])
 
         assert len(results) == 2, f"Expected 2 messages, got {len(results)}"
-        assert results[0].chunks[0].content == "first", (
-            f"Expected first message content 'first', got '{results[0].chunks[0].content}'"
-        )
-        assert results[1].chunks[0].content == "second", (
-            f"Expected second message content 'second', got '{results[1].chunks[0].content}'"
-        )
+        assert (
+            results[0].chunks[0].content == "first"
+        ), f"Expected first message content 'first', got '{results[0].chunks[0].content}'"
+        assert (
+            results[1].chunks[0].content == "second"
+        ), f"Expected second message content 'second', got '{results[1].chunks[0].content}'"
 
     def test_batch_empty_list(self) -> None:
         """Batch with empty sequence returns empty list.
@@ -357,7 +351,9 @@ class TestChatMessageParser:
         openai_msg = ChatCompletionMessage(role="assistant", content="hello")
         result = ChatMessageParser(openai_msg, modalities=["text"]).build()
 
-        assert result.role == "assistant", f"Expected role 'assistant', got '{result.role}'"
+        assert (
+            result.role == "assistant"
+        ), f"Expected role 'assistant', got '{result.role}'"
 
 
 # ---------------------------------------------------------------------------
@@ -389,9 +385,9 @@ class TestDictMessageParser:
         """
         result = DictMessageParser({"role": "user", "content": "hello"}).build()
         assert result.role == "user", f"Expected role 'user', got '{result.role}'"
-        assert result.content == "hello", (
-            f"Expected content 'hello', got '{result.content}'"
-        )
+        assert (
+            result.content == "hello"
+        ), f"Expected content 'hello', got '{result.content}'"
 
     def test_build_none_content(self) -> None:
         """Build with None content returns Message with content=None.
@@ -399,17 +395,17 @@ class TestDictMessageParser:
         Test scenario:
             Dict with None content (e.g., assistant with function_call only).
         """
-        result = DictMessageParser({
-            "role": "assistant",
-            "content": None,
-            "function_call": {"name": "f"},
-        }).build()
-        assert result.content is None, (
-            f"Expected content None, got '{result.content}'"
-        )
-        assert result.additional_kwargs.get("function_call") == {"name": "f"}, (
-            "Expected function_call in additional_kwargs"
-        )
+        result = DictMessageParser(
+            {
+                "role": "assistant",
+                "content": None,
+                "function_call": {"name": "f"},
+            }
+        ).build()
+        assert result.content is None, f"Expected content None, got '{result.content}'"
+        assert result.additional_kwargs.get("function_call") == {
+            "name": "f"
+        }, "Expected function_call in additional_kwargs"
 
     def test_build_list_content_text_blocks(self) -> None:
         """Build with list content dispatches to block parsers.
@@ -418,23 +414,23 @@ class TestDictMessageParser:
             Dict with list content containing text blocks creates TextChunks.
             Message auto-derives content from chunks.
         """
-        result = DictMessageParser({
-            "role": "user",
-            "content": [
-                {"type": "text", "text": "hello"},
-                {"type": "text", "text": "world"},
-            ],
-        }).build()
+        result = DictMessageParser(
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "hello"},
+                    {"type": "text", "text": "world"},
+                ],
+            }
+        ).build()
 
-        assert len(result.chunks) == 2, (
-            f"Expected 2 chunks, got {len(result.chunks)}"
-        )
-        assert all(isinstance(b, TextChunk) for b in result.chunks), (
-            "Expected all chunks to be TextChunk"
-        )
-        assert result.chunks[0].content == "hello", (
-            f"Expected first chunk content 'hello', got '{result.chunks[0].content}'"
-        )
+        assert len(result.chunks) == 2, f"Expected 2 chunks, got {len(result.chunks)}"
+        assert all(
+            isinstance(b, TextChunk) for b in result.chunks
+        ), "Expected all chunks to be TextChunk"
+        assert (
+            result.chunks[0].content == "hello"
+        ), f"Expected first chunk content 'hello', got '{result.chunks[0].content}'"
 
     def test_build_list_content_image_url_block(self) -> None:
         """Image URL content blocks are parsed into Image objects.
@@ -442,25 +438,27 @@ class TestDictMessageParser:
         Test scenario:
             Dict with image_url block containing a URL creates an Image with url field.
         """
-        result = DictMessageParser({
-            "role": "user",
-            "content": [
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": "https://example.com/img.png",
-                        "detail": "high",
+        result = DictMessageParser(
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": "https://example.com/img.png",
+                            "detail": "high",
+                        },
                     },
-                },
-            ],
-        }).build()
+                ],
+            }
+        ).build()
 
         assert len(result.chunks) == 1, f"Expected 1 chunk, got {len(result.chunks)}"
         img = result.chunks[0]
         assert isinstance(img, Image), f"Expected Image, got {type(img)}"
-        assert str(img.url) == "https://example.com/img.png", (
-            f"Expected URL 'https://example.com/img.png', got '{img.url}'"
-        )
+        assert (
+            str(img.url) == "https://example.com/img.png"
+        ), f"Expected URL 'https://example.com/img.png', got '{img.url}'"
         assert img.detail == "high", f"Expected detail 'high', got '{img.detail}'"
 
     def test_build_list_content_image_data_uri(self) -> None:
@@ -470,18 +468,20 @@ class TestDictMessageParser:
             Dict with image_url block containing data: URI creates Image
             with content (stored as bytes by the Image model).
         """
-        result = DictMessageParser({
-            "role": "user",
-            "content": [
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": "data:image/png;base64,abc123",
-                        "detail": "low",
+        result = DictMessageParser(
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": "data:image/png;base64,abc123",
+                            "detail": "low",
+                        },
                     },
-                },
-            ],
-        }).build()
+                ],
+            }
+        ).build()
 
         img = result.chunks[0]
         assert isinstance(img, Image), f"Expected Image, got {type(img)}"
@@ -495,27 +495,29 @@ class TestDictMessageParser:
         Test scenario:
             Dict with function_call block creates a ToolCallBlock.
         """
-        result = DictMessageParser({
-            "role": "assistant",
-            "content": [
-                {
-                    "type": "function_call",
-                    "call_id": "call_1",
-                    "name": "search",
-                    "arguments": {"q": "test"},
-                },
-            ],
-        }).build()
+        result = DictMessageParser(
+            {
+                "role": "assistant",
+                "content": [
+                    {
+                        "type": "function_call",
+                        "call_id": "call_1",
+                        "name": "search",
+                        "arguments": {"q": "test"},
+                    },
+                ],
+            }
+        ).build()
 
         assert len(result.chunks) == 1, f"Expected 1 chunk, got {len(result.chunks)}"
         tc = result.chunks[0]
         assert isinstance(tc, ToolCallBlock), f"Expected ToolCallBlock, got {type(tc)}"
-        assert tc.tool_call_id == "call_1", (
-            f"Expected tool_call_id 'call_1', got '{tc.tool_call_id}'"
-        )
-        assert tc.tool_name == "search", (
-            f"Expected tool_name 'search', got '{tc.tool_name}'"
-        )
+        assert (
+            tc.tool_call_id == "call_1"
+        ), f"Expected tool_call_id 'call_1', got '{tc.tool_call_id}'"
+        assert (
+            tc.tool_name == "search"
+        ), f"Expected tool_name 'search', got '{tc.tool_name}'"
 
     def test_build_list_content_output_text_block(self) -> None:
         """output_text type is handled by the same parser as text.
@@ -523,18 +525,20 @@ class TestDictMessageParser:
         Test scenario:
             Responses API output_text blocks are parsed as TextChunks.
         """
-        result = DictMessageParser({
-            "role": "assistant",
-            "content": [{"type": "output_text", "text": "response"}],
-        }).build()
+        result = DictMessageParser(
+            {
+                "role": "assistant",
+                "content": [{"type": "output_text", "text": "response"}],
+            }
+        ).build()
 
         assert len(result.chunks) == 1, f"Expected 1 chunk, got {len(result.chunks)}"
-        assert isinstance(result.chunks[0], TextChunk), (
-            f"Expected TextChunk, got {type(result.chunks[0])}"
-        )
-        assert result.chunks[0].content == "response", (
-            f"Expected content 'response', got '{result.chunks[0].content}'"
-        )
+        assert isinstance(
+            result.chunks[0], TextChunk
+        ), f"Expected TextChunk, got {type(result.chunks[0])}"
+        assert (
+            result.chunks[0].content == "response"
+        ), f"Expected content 'response', got '{result.chunks[0].content}'"
 
     def test_build_list_content_input_text_block(self) -> None:
         """input_text type is handled by the same parser as text.
@@ -542,15 +546,17 @@ class TestDictMessageParser:
         Test scenario:
             Responses API input_text blocks are parsed as TextChunks.
         """
-        result = DictMessageParser({
-            "role": "user",
-            "content": [{"type": "input_text", "text": "question"}],
-        }).build()
+        result = DictMessageParser(
+            {
+                "role": "user",
+                "content": [{"type": "input_text", "text": "question"}],
+            }
+        ).build()
 
         assert len(result.chunks) == 1, f"Expected 1 chunk, got {len(result.chunks)}"
-        assert result.chunks[0].content == "question", (
-            f"Expected content 'question', got '{result.chunks[0].content}'"
-        )
+        assert (
+            result.chunks[0].content == "question"
+        ), f"Expected content 'question', got '{result.chunks[0].content}'"
 
     def test_build_list_content_unsupported_type_raises(self) -> None:
         """Unsupported block type raises ValueError.
@@ -559,10 +565,12 @@ class TestDictMessageParser:
             A content block with type "video" should raise ValueError.
         """
         with pytest.raises(ValueError, match="Unsupported message type: video"):
-            DictMessageParser({
-                "role": "user",
-                "content": [{"type": "video", "data": "..."}],
-            }).build()
+            DictMessageParser(
+                {
+                    "role": "user",
+                    "content": [{"type": "video", "data": "..."}],
+                }
+            ).build()
 
     def test_build_list_content_none_type_raises(self) -> None:
         """Content block with missing type raises ValueError.
@@ -572,10 +580,12 @@ class TestDictMessageParser:
             and triggers unsupported type error.
         """
         with pytest.raises(ValueError, match="Unsupported message type: None"):
-            DictMessageParser({
-                "role": "user",
-                "content": [{"text": "no type key"}],
-            }).build()
+            DictMessageParser(
+                {
+                    "role": "user",
+                    "content": [{"text": "no type key"}],
+                }
+            ).build()
 
     def test_extract_additional_kwargs_strips_role_and_content(self) -> None:
         """additional_kwargs contains all keys except role and content.
@@ -584,25 +594,27 @@ class TestDictMessageParser:
             Dict with role, content, function_call, and custom_key returns
             additional_kwargs with only function_call and custom_key.
         """
-        result = DictMessageParser({
-            "role": "assistant",
-            "content": None,
-            "function_call": {"name": "f"},
-            "custom_key": "value",
-        }).build()
+        result = DictMessageParser(
+            {
+                "role": "assistant",
+                "content": None,
+                "function_call": {"name": "f"},
+                "custom_key": "value",
+            }
+        ).build()
 
-        assert "role" not in result.additional_kwargs, (
-            "Expected 'role' to be stripped from additional_kwargs"
-        )
-        assert "content" not in result.additional_kwargs, (
-            "Expected 'content' to be stripped from additional_kwargs"
-        )
-        assert result.additional_kwargs["function_call"] == {"name": "f"}, (
-            "Expected function_call in additional_kwargs"
-        )
-        assert result.additional_kwargs["custom_key"] == "value", (
-            "Expected custom_key in additional_kwargs"
-        )
+        assert (
+            "role" not in result.additional_kwargs
+        ), "Expected 'role' to be stripped from additional_kwargs"
+        assert (
+            "content" not in result.additional_kwargs
+        ), "Expected 'content' to be stripped from additional_kwargs"
+        assert result.additional_kwargs["function_call"] == {
+            "name": "f"
+        }, "Expected function_call in additional_kwargs"
+        assert (
+            result.additional_kwargs["custom_key"] == "value"
+        ), "Expected custom_key in additional_kwargs"
 
     def test_extract_additional_kwargs_empty(self) -> None:
         """Dict with only role and content produces empty additional_kwargs.
@@ -611,9 +623,9 @@ class TestDictMessageParser:
             Minimal dict with just role and content.
         """
         result = DictMessageParser({"role": "user", "content": "hi"}).build()
-        assert result.additional_kwargs == {}, (
-            f"Expected empty additional_kwargs, got {result.additional_kwargs}"
-        )
+        assert (
+            result.additional_kwargs == {}
+        ), f"Expected empty additional_kwargs, got {result.additional_kwargs}"
 
     def test_batch_converts_multiple_dicts(self) -> None:
         """Batch classmethod converts a sequence of dicts.
@@ -629,12 +641,12 @@ class TestDictMessageParser:
         results = DictMessageParser.batch(dicts)
 
         assert len(results) == 3, f"Expected 3 messages, got {len(results)}"
-        assert results[0].content == "q1", (
-            f"Expected first content 'q1', got '{results[0].content}'"
-        )
-        assert results[1].role == "assistant", (
-            f"Expected second role 'assistant', got '{results[1].role}'"
-        )
+        assert (
+            results[0].content == "q1"
+        ), f"Expected first content 'q1', got '{results[0].content}'"
+        assert (
+            results[1].role == "assistant"
+        ), f"Expected second role 'assistant', got '{results[1].role}'"
 
     def test_batch_empty_list(self) -> None:
         """Batch with empty sequence returns empty list.
@@ -652,9 +664,9 @@ class TestDictMessageParser:
             A text block without a 'text' key uses the default empty string.
         """
         result = DictMessageParser._parse_text({"type": "text"})
-        assert result.content == "", (
-            f"Expected empty string content, got '{result.content}'"
-        )
+        assert (
+            result.content == ""
+        ), f"Expected empty string content, got '{result.content}'"
 
     def test_parse_image_without_detail(self) -> None:
         """_parse_image handles missing detail key gracefully.
@@ -662,14 +674,14 @@ class TestDictMessageParser:
         Test scenario:
             image_url dict without a 'detail' key produces Image with detail=None.
         """
-        result = DictMessageParser._parse_image({
-            "type": "image_url",
-            "image_url": {"url": "https://example.com/img.png"},
-        })
-        assert isinstance(result, Image), f"Expected Image, got {type(result)}"
-        assert result.detail is None, (
-            f"Expected detail None, got '{result.detail}'"
+        result = DictMessageParser._parse_image(
+            {
+                "type": "image_url",
+                "image_url": {"url": "https://example.com/img.png"},
+            }
         )
+        assert isinstance(result, Image), f"Expected Image, got {type(result)}"
+        assert result.detail is None, f"Expected detail None, got '{result.detail}'"
 
     def test_parse_function_call_missing_fields(self) -> None:
         """_parse_function_call handles missing optional fields.
@@ -679,15 +691,15 @@ class TestDictMessageParser:
             uses defaults.
         """
         result = DictMessageParser._parse_function_call({"type": "function_call"})
-        assert isinstance(result, ToolCallBlock), (
-            f"Expected ToolCallBlock, got {type(result)}"
-        )
-        assert result.tool_call_id is None, (
-            f"Expected tool_call_id None, got '{result.tool_call_id}'"
-        )
-        assert result.tool_name == "", (
-            f"Expected tool_name '', got '{result.tool_name}'"
-        )
+        assert isinstance(
+            result, ToolCallBlock
+        ), f"Expected ToolCallBlock, got {type(result)}"
+        assert (
+            result.tool_call_id is None
+        ), f"Expected tool_call_id None, got '{result.tool_call_id}'"
+        assert (
+            result.tool_name == ""
+        ), f"Expected tool_name '', got '{result.tool_name}'"
 
     def test_block_parsers_dict_populated(self) -> None:
         """_BLOCK_PARSERS class dict is populated with expected keys.
@@ -695,11 +707,17 @@ class TestDictMessageParser:
         Test scenario:
             Verify all expected block type strings are in the dispatch dict.
         """
-        expected_keys = {"text", "image_url", "function_call", "output_text", "input_text"}
+        expected_keys = {
+            "text",
+            "image_url",
+            "function_call",
+            "output_text",
+            "input_text",
+        }
         actual_keys = set(DictMessageParser._BLOCK_PARSERS.keys())
-        assert actual_keys == expected_keys, (
-            f"Expected keys {expected_keys}, got {actual_keys}"
-        )
+        assert (
+            actual_keys == expected_keys
+        ), f"Expected keys {expected_keys}, got {actual_keys}"
 
 
 # ---------------------------------------------------------------------------
@@ -729,18 +747,17 @@ class TestLogProbParser:
         result = LogProbParser.from_token(logprob)
 
         assert len(result) == 2, f"Expected 2 LogProbs, got {len(result)}"
-        assert result[0].token == "hello", (
-            f"Expected token 'hello', got '{result[0].token}'"
-        )
-        assert result[0].logprob == -0.5, (
-            f"Expected logprob -0.5, got {result[0].logprob}"
-        )
-        assert result[0].bytes == [104, 101], (
-            f"Expected bytes [104, 101], got {result[0].bytes}"
-        )
-        assert result[1].token == "hi", (
-            f"Expected token 'hi', got '{result[1].token}'"
-        )
+        assert (
+            result[0].token == "hello"
+        ), f"Expected token 'hello', got '{result[0].token}'"
+        assert (
+            result[0].logprob == -0.5
+        ), f"Expected logprob -0.5, got {result[0].logprob}"
+        assert result[0].bytes == [
+            104,
+            101,
+        ], f"Expected bytes [104, 101], got {result[0].bytes}"
+        assert result[1].token == "hi", f"Expected token 'hi', got '{result[1].token}'"
 
     def test_from_token_none_top_logprobs(self) -> None:
         """from_token returns empty list when top_logprobs is None.
@@ -777,9 +794,9 @@ class TestLogProbParser:
             ],
         )
         result = LogProbParser.from_token(logprob)
-        assert result[0].bytes == [], (
-            f"Expected empty bytes for None, got {result[0].bytes}"
-        )
+        assert (
+            result[0].bytes == []
+        ), f"Expected empty bytes for None, got {result[0].bytes}"
 
     def test_from_tokens_with_data(self) -> None:
         """from_tokens converts a sequence of token logprobs.
@@ -789,23 +806,25 @@ class TestLogProbParser:
         """
         logprobs = [
             ChatCompletionTokenLogprob(
-                token="a", logprob=-0.1,
+                token="a",
+                logprob=-0.1,
                 top_logprobs=[TopLogprob(token="a", logprob=-0.1, bytes=[97])],
             ),
             ChatCompletionTokenLogprob(
-                token="b", logprob=-0.2,
+                token="b",
+                logprob=-0.2,
                 top_logprobs=[TopLogprob(token="b", logprob=-0.2, bytes=[98])],
             ),
         ]
         result = LogProbParser.from_tokens(logprobs)
 
         assert len(result) == 2, f"Expected 2 token logprob lists, got {len(result)}"
-        assert result[0][0].token == "a", (
-            f"Expected first token 'a', got '{result[0][0].token}'"
-        )
-        assert result[1][0].token == "b", (
-            f"Expected second token 'b', got '{result[1][0].token}'"
-        )
+        assert (
+            result[0][0].token == "a"
+        ), f"Expected first token 'a', got '{result[0][0].token}'"
+        assert (
+            result[1][0].token == "b"
+        ), f"Expected second token 'b', got '{result[1][0].token}'"
 
     def test_from_tokens_filters_empty(self) -> None:
         """from_tokens filters out tokens with no top_logprobs.
@@ -814,18 +833,19 @@ class TestLogProbParser:
             One token with data and one with None top_logprobs → only one entry.
         """
         logprob_with_data = ChatCompletionTokenLogprob(
-            token="a", logprob=-0.1,
+            token="a",
+            logprob=-0.1,
             top_logprobs=[TopLogprob(token="a", logprob=-0.1, bytes=[97])],
         )
         logprob_none = ChatCompletionTokenLogprob(
-            token="b", logprob=-0.2, top_logprobs=[],
+            token="b",
+            logprob=-0.2,
+            top_logprobs=[],
         )
         logprob_none.top_logprobs = None
 
         result = LogProbParser.from_tokens([logprob_with_data, logprob_none])
-        assert len(result) == 1, (
-            f"Expected 1 entry (filtered None), got {len(result)}"
-        )
+        assert len(result) == 1, f"Expected 1 entry (filtered None), got {len(result)}"
 
     def test_from_tokens_empty_sequence(self) -> None:
         """from_tokens with empty sequence returns empty list.
@@ -845,15 +865,13 @@ class TestLogProbParser:
         result = LogProbParser.from_completion({"hello": -0.5, "world": -1.0})
 
         assert len(result) == 2, f"Expected 2 LogProbs, got {len(result)}"
-        assert result[0].token == "hello", (
-            f"Expected token 'hello', got '{result[0].token}'"
-        )
-        assert result[0].logprob == -0.5, (
-            f"Expected logprob -0.5, got {result[0].logprob}"
-        )
-        assert result[0].bytes == [], (
-            f"Expected empty bytes, got {result[0].bytes}"
-        )
+        assert (
+            result[0].token == "hello"
+        ), f"Expected token 'hello', got '{result[0].token}'"
+        assert (
+            result[0].logprob == -0.5
+        ), f"Expected logprob -0.5, got {result[0].logprob}"
+        assert result[0].bytes == [], f"Expected empty bytes, got {result[0].bytes}"
 
     def test_from_completion_empty_dict(self) -> None:
         """from_completion with empty dict returns empty list.
@@ -880,8 +898,12 @@ class TestLogProbParser:
         result = LogProbParser.from_completions(logprobs)
 
         assert len(result) == 2, f"Expected 2 entries, got {len(result)}"
-        assert len(result[0]) == 2, f"Expected 2 LogProbs in first, got {len(result[0])}"
-        assert len(result[1]) == 1, f"Expected 1 LogProb in second, got {len(result[1])}"
+        assert (
+            len(result[0]) == 2
+        ), f"Expected 2 LogProbs in first, got {len(result[0])}"
+        assert (
+            len(result[1]) == 1
+        ), f"Expected 1 LogProb in second, got {len(result[1])}"
 
     def test_from_completions_none_top_logprobs(self) -> None:
         """from_completions returns empty list when top_logprobs is None.
@@ -925,9 +947,7 @@ class TestToolCallAccumulator:
             Fresh ToolCallAccumulator has no tool calls.
         """
         acc = ToolCallAccumulator()
-        assert acc.tool_calls == [], (
-            f"Expected empty tool_calls, got {acc.tool_calls}"
-        )
+        assert acc.tool_calls == [], f"Expected empty tool_calls, got {acc.tool_calls}"
 
     def test_tool_calls_property_returns_internal_list(self) -> None:
         """tool_calls property returns the internal list.
@@ -936,9 +956,9 @@ class TestToolCallAccumulator:
             Property getter returns the same list object.
         """
         acc = ToolCallAccumulator()
-        assert acc.tool_calls is acc._tool_calls, (
-            "Expected property to return internal list"
-        )
+        assert (
+            acc.tool_calls is acc._tool_calls
+        ), "Expected property to return internal list"
 
     def test_update_none_delta_noop(self) -> None:
         """Update with None delta does nothing.
@@ -948,9 +968,9 @@ class TestToolCallAccumulator:
         """
         acc = ToolCallAccumulator()
         acc.update(None)
-        assert acc.tool_calls == [], (
-            f"Expected empty after None delta, got {acc.tool_calls}"
-        )
+        assert (
+            acc.tool_calls == []
+        ), f"Expected empty after None delta, got {acc.tool_calls}"
 
     def test_update_empty_list_noop(self) -> None:
         """Update with empty list does nothing.
@@ -960,9 +980,9 @@ class TestToolCallAccumulator:
         """
         acc = ToolCallAccumulator()
         acc.update([])
-        assert acc.tool_calls == [], (
-            f"Expected empty after empty delta, got {acc.tool_calls}"
-        )
+        assert (
+            acc.tool_calls == []
+        ), f"Expected empty after empty delta, got {acc.tool_calls}"
 
     def test_update_first_delta_appends(self) -> None:
         """First delta is appended as a new tool call.
@@ -974,12 +994,12 @@ class TestToolCallAccumulator:
         delta = _make_delta(0, name="search", arguments="{", call_id="call_1")
         acc.update([delta])
 
-        assert len(acc.tool_calls) == 1, (
-            f"Expected 1 tool call, got {len(acc.tool_calls)}"
-        )
-        assert acc.tool_calls[0].id == "call_1", (
-            f"Expected id 'call_1', got '{acc.tool_calls[0].id}'"
-        )
+        assert (
+            len(acc.tool_calls) == 1
+        ), f"Expected 1 tool call, got {len(acc.tool_calls)}"
+        assert (
+            acc.tool_calls[0].id == "call_1"
+        ), f"Expected id 'call_1', got '{acc.tool_calls[0].id}'"
 
     def test_update_same_index_merges(self) -> None:
         """Deltas with the same index are merged into one tool call.
@@ -991,18 +1011,18 @@ class TestToolCallAccumulator:
         acc.update([_make_delta(0, name="search", arguments='{"q":', call_id="call_1")])
         acc.update([_make_delta(0, name="", arguments=' "test"}', call_id="")])
 
-        assert len(acc.tool_calls) == 1, (
-            f"Expected 1 tool call after merge, got {len(acc.tool_calls)}"
-        )
-        assert acc.tool_calls[0].function.arguments == '{"q": "test"}', (
-            f"Expected merged arguments, got '{acc.tool_calls[0].function.arguments}'"
-        )
-        assert acc.tool_calls[0].function.name == "search", (
-            f"Expected merged name 'search', got '{acc.tool_calls[0].function.name}'"
-        )
-        assert acc.tool_calls[0].id == "call_1", (
-            f"Expected merged id 'call_1', got '{acc.tool_calls[0].id}'"
-        )
+        assert (
+            len(acc.tool_calls) == 1
+        ), f"Expected 1 tool call after merge, got {len(acc.tool_calls)}"
+        assert (
+            acc.tool_calls[0].function.arguments == '{"q": "test"}'
+        ), f"Expected merged arguments, got '{acc.tool_calls[0].function.arguments}'"
+        assert (
+            acc.tool_calls[0].function.name == "search"
+        ), f"Expected merged name 'search', got '{acc.tool_calls[0].function.name}'"
+        assert (
+            acc.tool_calls[0].id == "call_1"
+        ), f"Expected merged id 'call_1', got '{acc.tool_calls[0].id}'"
 
     def test_update_different_index_creates_new(self) -> None:
         """Deltas with different indices create separate tool calls.
@@ -1014,15 +1034,15 @@ class TestToolCallAccumulator:
         acc.update([_make_delta(0, name="search", arguments="{}", call_id="call_1")])
         acc.update([_make_delta(1, name="fetch", arguments="{}", call_id="call_2")])
 
-        assert len(acc.tool_calls) == 2, (
-            f"Expected 2 tool calls, got {len(acc.tool_calls)}"
-        )
-        assert acc.tool_calls[0].function.name == "search", (
-            f"Expected first name 'search', got '{acc.tool_calls[0].function.name}'"
-        )
-        assert acc.tool_calls[1].function.name == "fetch", (
-            f"Expected second name 'fetch', got '{acc.tool_calls[1].function.name}'"
-        )
+        assert (
+            len(acc.tool_calls) == 2
+        ), f"Expected 2 tool calls, got {len(acc.tool_calls)}"
+        assert (
+            acc.tool_calls[0].function.name == "search"
+        ), f"Expected first name 'search', got '{acc.tool_calls[0].function.name}'"
+        assert (
+            acc.tool_calls[1].function.name == "fetch"
+        ), f"Expected second name 'fetch', got '{acc.tool_calls[1].function.name}'"
 
     def test_update_multi_tool_streaming_sequence(self) -> None:
         """Full multi-tool streaming sequence accumulates correctly.
@@ -1038,21 +1058,21 @@ class TestToolCallAccumulator:
         acc.update([_make_delta(1, name="calc", arguments='{"', call_id="c2")])
         acc.update([_make_delta(1, name="", arguments='n":1}', call_id="")])
 
-        assert len(acc.tool_calls) == 2, (
-            f"Expected 2 tool calls, got {len(acc.tool_calls)}"
-        )
-        assert acc.tool_calls[0].function.arguments == '{"q":"x"}', (
-            f"Expected first args, got '{acc.tool_calls[0].function.arguments}'"
-        )
-        assert acc.tool_calls[0].id == "c1", (
-            f"Expected first id 'c1', got '{acc.tool_calls[0].id}'"
-        )
-        assert acc.tool_calls[1].function.arguments == '{"n":1}', (
-            f"Expected second args, got '{acc.tool_calls[1].function.arguments}'"
-        )
-        assert acc.tool_calls[1].function.name == "calc", (
-            f"Expected second name 'calc', got '{acc.tool_calls[1].function.name}'"
-        )
+        assert (
+            len(acc.tool_calls) == 2
+        ), f"Expected 2 tool calls, got {len(acc.tool_calls)}"
+        assert (
+            acc.tool_calls[0].function.arguments == '{"q":"x"}'
+        ), f"Expected first args, got '{acc.tool_calls[0].function.arguments}'"
+        assert (
+            acc.tool_calls[0].id == "c1"
+        ), f"Expected first id 'c1', got '{acc.tool_calls[0].id}'"
+        assert (
+            acc.tool_calls[1].function.arguments == '{"n":1}'
+        ), f"Expected second args, got '{acc.tool_calls[1].function.arguments}'"
+        assert (
+            acc.tool_calls[1].function.name == "calc"
+        ), f"Expected second name 'calc', got '{acc.tool_calls[1].function.name}'"
 
     def test_merge_into_existing_initializes_none_fields(self) -> None:
         """_merge_into_existing initialises None fields before merging.
@@ -1073,15 +1093,15 @@ class TestToolCallAccumulator:
         delta = _make_delta(0, name="search", arguments="{}", call_id="c1")
         acc.update([delta])
 
-        assert acc.tool_calls[0].function.arguments == "{}", (
-            f"Expected arguments '{{}}', got '{acc.tool_calls[0].function.arguments}'"
-        )
-        assert acc.tool_calls[0].function.name == "search", (
-            f"Expected name 'search', got '{acc.tool_calls[0].function.name}'"
-        )
-        assert acc.tool_calls[0].id == "c1", (
-            f"Expected id 'c1', got '{acc.tool_calls[0].id}'"
-        )
+        assert (
+            acc.tool_calls[0].function.arguments == "{}"
+        ), f"Expected arguments '{{}}', got '{acc.tool_calls[0].function.arguments}'"
+        assert (
+            acc.tool_calls[0].function.name == "search"
+        ), f"Expected name 'search', got '{acc.tool_calls[0].function.name}'"
+        assert (
+            acc.tool_calls[0].id == "c1"
+        ), f"Expected id 'c1', got '{acc.tool_calls[0].id}'"
 
     def test_merge_delta_with_none_values(self) -> None:
         """Merging a delta with None arguments/name/id appends empty strings.
@@ -1100,15 +1120,15 @@ class TestToolCallAccumulator:
         )
         acc.update([delta])
 
-        assert acc.tool_calls[0].function.arguments == '{"q":', (
-            f"Expected unchanged args, got '{acc.tool_calls[0].function.arguments}'"
-        )
-        assert acc.tool_calls[0].function.name == "search", (
-            f"Expected unchanged name, got '{acc.tool_calls[0].function.name}'"
-        )
-        assert acc.tool_calls[0].id == "c1", (
-            f"Expected unchanged id, got '{acc.tool_calls[0].id}'"
-        )
+        assert (
+            acc.tool_calls[0].function.arguments == '{"q":'
+        ), f"Expected unchanged args, got '{acc.tool_calls[0].function.arguments}'"
+        assert (
+            acc.tool_calls[0].function.name == "search"
+        ), f"Expected unchanged name, got '{acc.tool_calls[0].function.name}'"
+        assert (
+            acc.tool_calls[0].id == "c1"
+        ), f"Expected unchanged id, got '{acc.tool_calls[0].id}'"
 
     def test_update_returns_none(self) -> None:
         """update() method returns None (no return value).
@@ -1136,13 +1156,14 @@ class TestToOpenaiTool:
         Test scenario:
             Model without docstring, description provided as argument.
         """
+
         class MyTool(BaseModel):
             arg: str
 
         result = to_openai_tool(MyTool, description="Custom desc")
-        assert result["function"]["description"] == "Custom desc", (
-            f"Expected 'Custom desc', got '{result['function']['description']}'"
-        )
+        assert (
+            result["function"]["description"] == "Custom desc"
+        ), f"Expected 'Custom desc', got '{result['function']['description']}'"
 
     def test_with_model_docstring(self) -> None:
         """Model docstring is used when no explicit description provided.
@@ -1150,14 +1171,16 @@ class TestToOpenaiTool:
         Test scenario:
             Model with docstring, no description argument.
         """
+
         class MyTool(BaseModel):
             """Tool docstring."""
+
             arg: str
 
         result = to_openai_tool(MyTool)
-        assert result["function"]["description"] == "Tool docstring.", (
-            f"Expected 'Tool docstring.', got '{result['function']['description']}'"
-        )
+        assert (
+            result["function"]["description"] == "Tool docstring."
+        ), f"Expected 'Tool docstring.', got '{result['function']['description']}'"
 
     def test_provided_description_overrides_docstring(self) -> None:
         """Provided description overrides model docstring.
@@ -1167,14 +1190,16 @@ class TestToOpenaiTool:
             from schema is used because it's truthy and comes first in
             the `or` chain.
         """
+
         class MyTool(BaseModel):
             """Model doc."""
+
             arg: str
 
         result = to_openai_tool(MyTool, description="Provided")
-        assert result["function"]["description"] == "Model doc.", (
-            f"Expected 'Model doc.' (schema docstring wins), got '{result['function']['description']}'"
-        )
+        assert (
+            result["function"]["description"] == "Model doc."
+        ), f"Expected 'Model doc.' (schema docstring wins), got '{result['function']['description']}'"
 
     def test_no_description_at_all(self) -> None:
         """No docstring and no provided description yields None.
@@ -1182,13 +1207,14 @@ class TestToOpenaiTool:
         Test scenario:
             Model without docstring, description=None (default).
         """
+
         class MyTool(BaseModel):
             arg: str
 
         result = to_openai_tool(MyTool)
-        assert result["function"]["description"] is None, (
-            f"Expected None description, got '{result['function']['description']}'"
-        )
+        assert (
+            result["function"]["description"] is None
+        ), f"Expected None description, got '{result['function']['description']}'"
 
     def test_result_structure(self) -> None:
         """Result has correct top-level structure.
@@ -1196,20 +1222,22 @@ class TestToOpenaiTool:
         Test scenario:
             Verify type, function.name, function.description, function.parameters.
         """
+
         class SearchTool(BaseModel):
             """Search for stuff."""
+
             query: str
 
         result = to_openai_tool(SearchTool)
 
-        assert result["type"] == "function", (
-            f"Expected type 'function', got '{result['type']}'"
-        )
+        assert (
+            result["type"] == "function"
+        ), f"Expected type 'function', got '{result['type']}'"
         assert "function" in result, "Expected 'function' key"
         func = result["function"]
-        assert func["name"] == "SearchTool", (
-            f"Expected name 'SearchTool', got '{func['name']}'"
-        )
+        assert (
+            func["name"] == "SearchTool"
+        ), f"Expected name 'SearchTool', got '{func['name']}'"
         assert "parameters" in func, "Expected 'parameters' key"
 
     def test_schema_reused_not_called_twice(self) -> None:
@@ -1219,11 +1247,12 @@ class TestToOpenaiTool:
             The 'parameters' value should be the same dict object as
             what model_json_schema() returns.
         """
+
         class MyTool(BaseModel):
             arg: str
 
         result = to_openai_tool(MyTool)
         expected_schema = MyTool.model_json_schema()
-        assert result["function"]["parameters"] == expected_schema, (
-            "Expected parameters to equal model_json_schema() output"
-        )
+        assert (
+            result["function"]["parameters"] == expected_schema
+        ), "Expected parameters to equal model_json_schema() output"

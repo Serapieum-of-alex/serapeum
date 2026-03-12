@@ -118,8 +118,8 @@ uv pip install "git+https://github.com/Serapieum-of-alex/serapeum.git@v0.1.0"
 
 ## Syncing Provider Dev Dependencies
 
-Each workspace member (provider package/subpackage) has its own dev dependency group. The root-level `uv sync --dev --active` 
-only installs root-level dev dependencies. 
+Each workspace member (provider package/subpackage) has its own dev dependency group. The root-level `uv sync --dev --active`
+only installs root-level dev dependencies.
 
 To install a specific provider's dev dependencies (e.g. type stubs, test plugins), sync that package explicitly:
 

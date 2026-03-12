@@ -12,7 +12,7 @@ __all__ = [
     "Schema",
     "JsonParser",
     "PYDANTIC_FORMAT_TMPL",
-    "parse_partial_json"
+    "parse_partial_json",
 ]
 
 PYDANTIC_FORMAT_TMPL = """

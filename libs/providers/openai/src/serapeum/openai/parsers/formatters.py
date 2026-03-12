@@ -216,13 +216,10 @@ def _should_null_content(message: Message, has_tool_calls: bool) -> bool:
         :meth:`ResponsesMessageConverter._resolve_content`:
             Calls this to decide the Responses API ``content`` value.
     """
-    return (
-        message.role == MessageRole.ASSISTANT
-        and (
-            "function_call" in message.additional_kwargs
-            or "tool_calls" in message.additional_kwargs
-            or has_tool_calls
-        )
+    return message.role == MessageRole.ASSISTANT and (
+        "function_call" in message.additional_kwargs
+        or "tool_calls" in message.additional_kwargs
+        or has_tool_calls
     )
 
 
@@ -324,13 +321,13 @@ class ChatFormat:
             ``"file_data"`` (a ``data:<mimetype>;base64,...`` URI string).
 
         Examples:
-            - Convert a PDF document block (requires filesystem, skipped in tests):
+            - Convert a PDF document block (requires filesystem):
                 ```python
-                >>> # result = ChatFormat.document(doc_block)  # doctest: +SKIP
-                >>> # result["type"]
-                >>> # 'file'
-                >>> # result["filename"]
-                >>> # 'report.pdf'
+                # result = ChatFormat.document(doc_block)
+                # result["type"]
+                # 'file'
+                # result["filename"]
+                # 'report.pdf'
 
                 ```
         """
@@ -411,13 +408,13 @@ class ChatFormat:
             ``{"type": "input_audio", "input_audio": {"data": <b64_str>, "format": <fmt>}}``.
 
         Examples:
-            - Convert an audio block (requires I/O, skipped in tests):
+            - Convert an audio block (requires I/O):
                 ```python
-                >>> # result = ChatFormat.audio(audio_block)  # doctest: +SKIP
-                >>> # result["type"]
-                >>> # 'input_audio'
-                >>> # result["input_audio"]["format"]
-                >>> # 'mp3'
+                # result = ChatFormat.audio(audio_block)
+                # result["type"]
+                # 'input_audio'
+                # result["input_audio"]["format"]
+                # 'mp3'
 
                 ```
         """
@@ -607,13 +604,13 @@ class ResponsesFormat:
             ``"file_data"`` (a ``data:<mimetype>;base64,...`` URI string).
 
         Examples:
-            - Convert a document block (requires filesystem, skipped in tests):
+            - Convert a document block (requires filesystem):
                 ```python
-                >>> # result = ResponsesFormat.document(doc_block)  # doctest: +SKIP
-                >>> # result["type"]
-                >>> # 'input_file'
-                >>> # result["filename"]
-                >>> # 'notes.pdf'
+                # result = ResponsesFormat.document(doc_block)
+                # result["type"]
+                # 'input_file'
+                # result["filename"]
+                # 'notes.pdf'
 
                 ```
         """
@@ -741,9 +738,7 @@ class ResponsesFormat:
             return {
                 "type": "reasoning",
                 "id": block.additional_information["id"],
-                "summary": [
-                    {"type": "summary_text", "text": block.content or ""}
-                ],
+                "summary": [{"type": "summary_text", "text": block.content or ""}],
             }
         return None
 
@@ -1060,12 +1055,15 @@ class ChatMessageConverter:
         has_tool_calls = len(self._tool_call_dicts) > 0
         content: str | list[dict[str, Any]] | None = self._content_txt
 
-        if self._content_txt == "" and _should_null_content(self._message, has_tool_calls):
-            content = None
-        elif (
-            self._message.role.value not in ("assistant", "tool", "system")
-            and not all(isinstance(b, TextChunk) for b in self._message.chunks)
+        if self._content_txt == "" and _should_null_content(
+            self._message, has_tool_calls
         ):
+            content = None
+        elif self._message.role.value not in (
+            "assistant",
+            "tool",
+            "system",
+        ) and not all(isinstance(b, TextChunk) for b in self._message.chunks):
             content = self._content
 
         return content
@@ -1265,9 +1263,7 @@ class ResponsesMessageConverter:
             elif isinstance(block, ToolCallBlock):
                 self._tool_call_dicts.append(ResponsesFormat.tool_call(block))
             elif isinstance(block, Audio):
-                raise ValueError(
-                    "Audio blocks are not supported in the Responses API"
-                )
+                raise ValueError("Audio blocks are not supported in the Responses API")
             else:
                 converter = ResponsesFormat.content_converters.get(type(block))
                 if converter:
@@ -1297,12 +1293,13 @@ class ResponsesMessageConverter:
         """
         has_tool_calls = len(self._tool_call_dicts) > 0
         content: str | list[dict[str, Any]] | None = self._content_txt
-        if self._content_txt == "" and _should_null_content(self._message, has_tool_calls):
+        if self._content_txt == "" and _should_null_content(
+            self._message, has_tool_calls
+        ):
             content = None
         elif (
-            (content is not None and self._message.role.value in ("system", "developer"))
-            or all(isinstance(block, TextChunk) for block in self._message.chunks)
-        ):
+            content is not None and self._message.role.value in ("system", "developer")
+        ) or all(isinstance(block, TextChunk) for block in self._message.chunks):
             pass  # content is already the string form
         else:
             content = self._content
@@ -1386,7 +1383,8 @@ class ResponsesMessageConverter:
         """
         if self._tool_call_dicts:
             result: dict[str, Any] | list[dict[str, Any]] = [
-                *self._reasoning, *self._tool_call_dicts
+                *self._reasoning,
+                *self._tool_call_dicts,
             ]
         elif "tool_calls" in self._message.additional_kwargs:
             legacy_calls = [
@@ -1510,9 +1508,9 @@ def to_openai_message_dicts(
             and final_message_dicts[0]["role"] == "user"
             and isinstance(final_message_dicts[0]["content"], str)
         ):
-            result: list[ChatCompletionMessageParam] | str = (
-                final_message_dicts[0]["content"]
-            )
+            result: list[ChatCompletionMessageParam] | str = final_message_dicts[0][
+                "content"
+            ]
         else:
             result = final_message_dicts
     else:

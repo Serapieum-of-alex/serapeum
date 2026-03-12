@@ -15,6 +15,7 @@ from serapeum.ollama import Ollama
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_ollama(*, max_retries: int = 3, client: MagicMock | None = None) -> Ollama:
     """Create an Ollama instance with an injected mock client."""
     mock_client = client or MagicMock()

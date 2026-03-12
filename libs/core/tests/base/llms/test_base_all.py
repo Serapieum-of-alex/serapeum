@@ -65,7 +65,12 @@ class _RecordingLLM(LLM):
         raise NotImplementedError()
 
     def complete(
-        self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs: Any
+        self,
+        prompt: str,
+        formatted: bool = False,
+        *,
+        stream: bool = False,
+        **kwargs: Any,
     ) -> CompletionResponse | Generator[CompletionResponse, None, None]:
         if stream:
             self.last_stream_complete = (prompt, formatted, kwargs)
@@ -83,7 +88,12 @@ class _RecordingLLM(LLM):
         raise NotImplementedError()
 
     async def acomplete(
-        self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs: Any
+        self,
+        prompt: str,
+        formatted: bool = False,
+        *,
+        stream: bool = False,
+        **kwargs: Any,
     ) -> CompletionResponse | AsyncGenerator[CompletionResponse, None]:
         if stream:
             self.last_astream_complete = (prompt, formatted, kwargs)
@@ -694,12 +704,12 @@ class TestStructuredPredict:
         def fake_program(llm_kwargs: dict | None = None, **kwargs: Any) -> _OutputModel:
             return _OutputModel(name=f"{kwargs['name']}:{llm_kwargs['temp']}")
 
-        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: fake_program)
+        monkeypatch.setattr(
+            llm, "_get_structured_output_tool", lambda *args, **kwargs: fake_program
+        )
 
         # act
-        result = llm.parse(
-            _OutputModel, prompt, llm_kwargs={"temp": 0.3}, name="ada"
-        )
+        result = llm.parse(_OutputModel, prompt, llm_kwargs={"temp": 0.3}, name="ada")
 
         # assert
         assert result.name == "ada:0.3"
@@ -723,7 +733,9 @@ class TestAStructuredPredict:
             ) -> _OutputModel:
                 return _OutputModel(name=f"{kwargs['name']}:{llm_kwargs['seed']}")
 
-        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
+        monkeypatch.setattr(
+            llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram()
+        )
 
         # act
         result = await llm.aparse(
@@ -746,19 +758,26 @@ class TestStreamStructuredPredict:
         prompt = PromptTemplate("{name}")
 
         class FakeProgram:
-            def __call__(self, *args: Any, stream: bool = False, llm_kwargs: dict | None = None, **kwargs: Any):
+            def __call__(
+                self,
+                *args: Any,
+                stream: bool = False,
+                llm_kwargs: dict | None = None,
+                **kwargs: Any,
+            ):
                 def _gen():
                     yield _OutputModel(name=kwargs["name"])
                     yield _OutputModel(name=kwargs["name"].upper())
 
                 return _gen()
 
-        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
+        monkeypatch.setattr(
+            llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram()
+        )
 
         # act
         results = [
-            item.name
-            for item in llm.stream_parse(_OutputModel, prompt, name="flow")
+            item.name for item in llm.stream_parse(_OutputModel, prompt, name="flow")
         ]
 
         # assert
@@ -780,14 +799,22 @@ class TestStructuredAstreamCall:
         prompt = PromptTemplate("{name}")
 
         class FakeProgram:
-            async def acall(self, *args: Any, stream: bool = False, llm_kwargs: dict | None = None, **kwargs: Any):
+            async def acall(
+                self,
+                *args: Any,
+                stream: bool = False,
+                llm_kwargs: dict | None = None,
+                **kwargs: Any,
+            ):
                 async def gen() -> AsyncGenerator[_OutputModel, None]:
                     yield _OutputModel(name=kwargs["name"])
                     yield _OutputModel(name=kwargs["name"].upper())
 
                 return gen()
 
-        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
+        monkeypatch.setattr(
+            llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram()
+        )
 
         # act
         stream = await llm._structured_astream_call(_OutputModel, prompt, name="ada")
@@ -812,14 +839,22 @@ class TestAstreamStructuredPredict:
         prompt = PromptTemplate("{name}")
 
         class FakeProgram:
-            async def acall(self, *args: Any, stream: bool = False, llm_kwargs: dict | None = None, **kwargs: Any):
+            async def acall(
+                self,
+                *args: Any,
+                stream: bool = False,
+                llm_kwargs: dict | None = None,
+                **kwargs: Any,
+            ):
                 async def gen() -> AsyncGenerator[_OutputModel, None]:
                     yield _OutputModel(name=kwargs["name"])
                     yield _OutputModel(name=kwargs["name"].upper())
 
                 return gen()
 
-        monkeypatch.setattr(llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram())
+        monkeypatch.setattr(
+            llm, "_get_structured_output_tool", lambda *args, **kwargs: FakeProgram()
+        )
 
         # act
         stream = await llm.astream_parse(_OutputModel, prompt, name="eta")

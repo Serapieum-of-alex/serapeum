@@ -216,9 +216,7 @@ class LlamaCPP(Retry, CompletionToChat, LLM):  # type: ignore[misc]
     def _validate_model_url(cls, v: str | None) -> str | None:
         """Reject empty-string model_url to prevent silent fallback to default."""
         if v is not None and not v.strip():
-            raise ValueError(
-                "model_url must be a valid URL, not an empty string."
-            )
+            raise ValueError("model_url must be a valid URL, not an empty string.")
         return v
 
     @field_validator("model_path")

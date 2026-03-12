@@ -9,11 +9,14 @@ Azure OpenAI Service deployments. It provides:
   support
 - **Deployment Management**: Routes requests to your named Azure
   deployments
-- **Full Feature Parity**: Inherits all chat, streaming, tool calling, and
-  structured output capabilities from the OpenAI provider
+- **Full Feature Parity**: Uses the same chat, streaming, tool calling, and
+  structured output capabilities as the OpenAI provider via shared base
+  classes
 
-The `AzureOpenAI` class extends `serapeum.openai.OpenAI`, so all features
-from the OpenAI provider work transparently with Azure deployments.
+The public classes are `Completions` and `Responses`, which are built from
+an `AzureClient` mixin combined with the corresponding `serapeum.openai`
+base classes (`OpenAICompletions` and `OpenAIResponses`), so all OpenAI
+provider features work transparently with Azure deployments.
 
 ## Installation
 
@@ -48,10 +51,10 @@ export OPENAI_API_VERSION="2024-02-01"
 ### API Key Authentication
 
 ```python
-from serapeum.azure_openai import AzureOpenAI
+from serapeum.azure_openai import Completions
 from serapeum.core.llms import Message, MessageRole
 
-llm = AzureOpenAI(
+llm = Completions(
     engine="my-gpt4o-deployment",
     model="gpt-4o",
     api_key="your-azure-api-key",
@@ -66,18 +69,32 @@ response = llm.chat(messages)
 print(response.message.content)
 ```
 
+### Using the Responses API
+
+```python
+from serapeum.azure_openai import Responses
+
+llm = Responses(
+    engine="my-gpt4o-deployment",
+    model="gpt-4o",
+    api_key="your-azure-api-key",
+    azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+    api_version="2024-02-01",
+)
+```
+
 ### Microsoft Entra ID (Azure AD) Authentication
 
 ```python
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-from serapeum.azure_openai import AzureOpenAI
+from serapeum.azure_openai import Completions
 
 credential = DefaultAzureCredential()
 token_provider = get_bearer_token_provider(
     credential, "https://cognitiveservices.azure.com/.default"
 )
 
-llm = AzureOpenAI(
+llm = Completions(
     engine="my-gpt4o-deployment",
     model="gpt-4o",
     azure_ad_token_provider=token_provider,
@@ -89,8 +106,8 @@ llm = AzureOpenAI(
 
 ## Features
 
-Since `AzureOpenAI` extends the OpenAI provider, all features from
-`serapeum-openai` are available. See the
+Since `Completions` and `Responses` share the same base classes as the
+OpenAI provider, all features from `serapeum-openai` are available. See the
 [OpenAI provider README](../openai/README.md) for full usage examples of:
 
 - Streaming (sync and async)
@@ -98,20 +115,21 @@ Since `AzureOpenAI` extends the OpenAI provider, all features from
 - Structured outputs with Pydantic models
 - Completion-style usage with prompt templates
 
-The only difference is initialization: use `AzureOpenAI` with your
-deployment name and Azure endpoint instead of `OpenAI` with an API key.
+The only difference is initialization: use `Completions` or `Responses` with
+your deployment name and Azure endpoint instead of the OpenAI equivalents
+with an API key.
 
 ## Configuration
 
 ```python
-from serapeum.azure_openai import AzureOpenAI
+from serapeum.azure_openai import Completions
 
-llm = AzureOpenAI(
+llm = Completions(
     engine="my-deployment",                # Required: Azure deployment name
     model="gpt-4o",                        # Required: model name
     azure_endpoint="https://...",          # Azure resource endpoint
     api_key="...",                         # Azure API key (or env var)
-    api_version="2024-02-01",             # API version
+    api_version="2024-02-01",             # Required: API version
     use_azure_ad=False,                    # Use Entra ID authentication
     azure_ad_token_provider=None,          # Custom token provider callable
     temperature=0.7,                       # Sampling temperature
@@ -124,12 +142,24 @@ llm = AzureOpenAI(
 The `engine` parameter accepts several aliases: `deployment_name`,
 `deployment_id`, `deployment`, or `azure_deployment`.
 
+## Class Hierarchy
+
+```
+AzureClient (mixin)
+├── Completions(AzureClient, OpenAICompletions)  ─── Chat Completions API
+└── Responses(AzureClient, OpenAIResponses)      ─── Responses API
+```
+
+`AzureClient` handles Azure-specific fields (`engine`, `azure_endpoint`,
+`use_azure_ad`, `azure_ad_token_provider`) and overrides SDK client
+construction to target Azure OpenAI endpoints.
+
 ## Package Layout
 
 ```
 src/serapeum/azure_openai/
-├── __init__.py    # Lazy imports (AzureOpenAI, SyncAzureOpenAI, AsyncAzureOpenAI)
-├── llm.py         # AzureOpenAI class (extends OpenAI)
+├── __init__.py    # Lazy imports (AzureClient, Completions, Responses, SyncAzureOpenAI, AsyncAzureOpenAI)
+├── llm.py         # AzureClient mixin, Completions, and Responses classes
 └── utils.py       # Azure AD token refresh, alias resolution
 ```
 

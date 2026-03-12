@@ -63,6 +63,6 @@ jobs:
           pypi-password: ${{ secrets.PYPI_PUBLISH }}
           python-version: '3.12'
           package-manager: 'uv'
-          install-groups: 'dev'
+          install-groups: "groups: dev"
           verify-lock: 'false'
           # pypi-repository-url: 'https://test.pypi.org/legacy/'

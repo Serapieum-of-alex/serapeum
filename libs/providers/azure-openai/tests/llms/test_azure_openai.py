@@ -314,7 +314,7 @@ class TestCompletionsCredentials:
     ) -> None:
         """Without token provider, falls back to refresh_openai_azuread_token."""
         mock_token = MagicMock()
-        mock_token.token = "refreshed-token"
+        mock_token.token = "refreshed-token"  # nosec B105
         refresh_mock.return_value = mock_token
 
         llm = Completions(

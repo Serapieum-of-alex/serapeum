@@ -1332,7 +1332,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 objects = processor.process(response, cur_objects)
                 cur_objects = objects if isinstance(objects, list) else [objects]
                 yield objects
-            except Exception:
+            except Exception:  # nosec B112
                 continue
 
     @overload
@@ -1504,5 +1504,5 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 objects = processor.process(response, cur_objects)
                 cur_objects = objects if isinstance(objects, list) else [objects]
                 yield objects
-            except Exception:
+            except Exception:  # nosec B112
                 continue

@@ -352,7 +352,7 @@ class TestResponsesCredentials:
             uses refresh_openai_azure_ad_token to obtain a token.
         """
         mock_token = MagicMock()
-        mock_token.token = "refreshed-token"
+        mock_token.token = "refreshed-token"  # nosec B105
         refresh_mock.return_value = mock_token
 
         llm = Responses(

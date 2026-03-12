@@ -50,7 +50,7 @@ def pdf_url() -> str:
 @pytest.fixture()
 def mock_pdf_bytes(pdf_url) -> bytes:
     """Returns a byte string representing a very simple, minimal PDF file."""
-    return urlopen(pdf_url).read()
+    return urlopen(pdf_url).read()  # nosec B310
 
 
 @pytest.fixture()
@@ -493,10 +493,14 @@ class TestCompletionResponse:
                 Passing a list-of-lists of LikelihoodScore objects should be
                 stored intact and accessible by index.
             """
-            scores = [[LogProb(token="hello", logprob=-0.5, bytes=[104, 101])]]
+            scores = [
+                [LogProb(token="hello", logprob=-0.5, bytes=[104, 101])]
+            ]  # nosec B106
             cr = CompletionResponse(text="hello", logprob=scores)
             assert cr.logprob == scores, f"Unexpected likelihood_score: {cr.logprob}"
-            assert cr.logprob[0][0].token == "hello", "First token should be 'hello'"
+            assert (
+                cr.logprob[0][0].token == "hello"
+            ), "First token should be 'hello'"  # nosec B105
 
     class TestStr:
 

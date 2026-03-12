@@ -1633,15 +1633,17 @@ class TestChatWithLogprobs:
 
         logprob_data = [
             ChatCompletionTokenLogprob(
-                token="Hello",
+                token="Hello",  # nosec B106
                 logprob=-0.5,
-                top_logprobs=[TopLogprob(token="Hello", logprob=-0.5, bytes=None)],
+                top_logprobs=[
+                    TopLogprob(token="Hello", logprob=-0.5, bytes=None)
+                ],  # nosec B106
                 bytes=None,
             ),
         ]
         from serapeum.core.base.llms.types import LogProb
 
-        sentinel = [[LogProb(token="Hello", logprob=-0.5)]]
+        sentinel = [[LogProb(token="Hello", logprob=-0.5)]]  # nosec B106
         MockLogProbParser.from_tokens.return_value = sentinel
 
         mock_response = ChatCompletion(
@@ -1701,7 +1703,7 @@ class TestChatWithLogprobs:
         )
         from serapeum.core.base.llms.types import LogProb
 
-        sentinel = [[LogProb(token="Hello", logprob=-0.5)]]
+        sentinel = [[LogProb(token="Hello", logprob=-0.5)]]  # nosec B106
         MockLogProbParser.from_completions.return_value = sentinel
 
         mock_response = Completion(
@@ -1851,15 +1853,17 @@ class TestAsyncChatWithLogprobs:
 
         logprob_data = [
             ChatCompletionTokenLogprob(
-                token="Hi",
+                token="Hi",  # nosec B106
                 logprob=-0.3,
-                top_logprobs=[TopLogprob(token="Hi", logprob=-0.3, bytes=None)],
+                top_logprobs=[
+                    TopLogprob(token="Hi", logprob=-0.3, bytes=None)
+                ],  # nosec B106
                 bytes=None,
             ),
         ]
         from serapeum.core.base.llms.types import LogProb
 
-        sentinel = [[LogProb(token="Hi", logprob=-0.3)]]
+        sentinel = [[LogProb(token="Hi", logprob=-0.3)]]  # nosec B106
         MockLogProbParser.from_tokens.return_value = sentinel
 
         mock_response = ChatCompletion(
@@ -1926,7 +1930,7 @@ class TestAsyncCompleteWithLogprobs:
         )
         from serapeum.core.base.llms.types import LogProb
 
-        sentinel = [[LogProb(token="Hello", logprob=-0.5)]]
+        sentinel = [[LogProb(token="Hello", logprob=-0.5)]]  # nosec B106
         MockLogProbParser.from_completions.return_value = sentinel
 
         mock_response = Completion(

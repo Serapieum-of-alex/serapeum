@@ -163,7 +163,7 @@ def run_async_tasks(
         # run the operation w/o tqdm on hitting a fatal
         # may occur in some environments where tqdm.asyncio
         # is not supported
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     async def _gather() -> list[Any]:

@@ -347,14 +347,18 @@ def test_to_openai_message_dicts_with_content_blocks_with_detail() -> None:
 
 
 def test_from_openai_token_logprob_none_top_logprob() -> None:
-    logprob = ChatCompletionTokenLogprob(token="", logprob=1.0, top_logprobs=[])
+    logprob = ChatCompletionTokenLogprob(
+        token="", logprob=1.0, top_logprobs=[]
+    )  # nosec B106
     logprob.top_logprobs = None
     result: List[LogProb] = LogProbParser.from_token(logprob)
     assert isinstance(result, list)
 
 
 def test_from_openai_token_logprobs_none_top_logprobs() -> None:
-    logprob = ChatCompletionTokenLogprob(token="", logprob=1.0, top_logprobs=[])
+    logprob = ChatCompletionTokenLogprob(
+        token="", logprob=1.0, top_logprobs=[]
+    )  # nosec B106
     logprob.top_logprobs = None
     result: List[LogProb] = LogProbParser.from_tokens([logprob])
     assert isinstance(result, list)

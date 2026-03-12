@@ -1109,9 +1109,3 @@ def resolve_binary(
 
     buffer = BytesIO(base64.b64encode(resolved) if as_base64 else resolved)
     return buffer
-
-
-ContentBlock = Annotated[
-    TextChunk | Image | Audio | ThinkingBlock | ToolCallBlock, DocumentBlock,
-    Field(discriminator="type"),
-]

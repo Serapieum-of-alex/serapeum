@@ -48,7 +48,7 @@ from openai.types.responses.response_output_item import ImageGenerationCall, Mcp
 
 from serapeum.core.llms import (
     ChatResponse,
-    ContentBlock,
+    ChunkType,
     Image,
     Message,
     MessageRole,
@@ -209,7 +209,7 @@ class ResponsesOutputParser:
 
     def _parse_message(self, item: ResponseOutputMessage) -> None:
         """Extract text chunks, annotations, and refusal from a message output item."""
-        blocks: list[ContentBlock] = []
+        blocks: list[ChunkType] = []
         for part in item.content:
             if hasattr(part, "text"):
                 blocks.append(TextChunk(content=part.text))
@@ -426,7 +426,7 @@ class ResponsesStreamAccumulator:
         """
         return self._previous_response_id
 
-    def update(self, event: ResponseStreamEvent) -> tuple[list[ContentBlock], str]:
+    def update(self, event: ResponseStreamEvent) -> tuple[list[ChunkType], str]:
         """Process a single streaming event and return produced content.
 
         Dispatches the event by type and updates internal state accordingly.
@@ -456,7 +456,7 @@ class ResponsesStreamAccumulator:
             A two-element tuple ``(blocks, delta)`` where:
 
             - *blocks* is a (possibly empty) list of
-              :class:`~serapeum.core.llms.ContentBlock` instances produced by
+              :class:`~serapeum.core.llms.ChunkType` instances produced by
               this event.
             - *delta* is the raw text delta string (non-empty only for
               ``ResponseTextDeltaEvent``; empty string otherwise).
@@ -472,7 +472,7 @@ class ResponsesStreamAccumulator:
                 ```
         """
         delta = ""
-        blocks: list[ContentBlock] = []
+        blocks: list[ChunkType] = []
 
         if isinstance(event, (ResponseCreatedEvent, ResponseInProgressEvent)):
             if self._track_previous_responses:

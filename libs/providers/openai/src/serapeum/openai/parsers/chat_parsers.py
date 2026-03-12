@@ -35,7 +35,7 @@ from openai.types.completion_choice import Logprobs
 
 from serapeum.core.llms import (
     Audio,
-    ContentBlock,
+    ChunkType,
     Image,
     LogProb,
     Message,
@@ -99,7 +99,7 @@ class ChatMessageParser:
         """Initialize ChatMessageParser."""
         self._openai_message = openai_message
         self._modalities = modalities
-        self._blocks: list[ContentBlock] = []
+        self._blocks: list[ChunkType] = []
         self._additional_kwargs: dict[str, Any] = {}
 
     def build(self) -> Message:
@@ -284,19 +284,19 @@ class DictMessageParser:
             The reverse direction -- serapeum ``Message`` to OpenAI API dict.
     """
 
-    _BLOCK_PARSERS: dict[str, Callable[..., ContentBlock]] = {}
+    _BLOCK_PARSERS: dict[str, Callable[..., ChunkType]] = {}
     """Dispatch table mapping content-block ``"type"`` strings to static parser methods.
 
     Populated after the class definition at module scope.  Keys:
     ``"text"``, ``"input_text"``, ``"output_text"``, ``"image_url"``, ``"function_call"``.
-    Each value is a ``Callable[[dict], ContentBlock]`` that parses a single
+    Each value is a ``Callable[[dict], ChunkType]`` that parses a single
     content-block dict into the corresponding serapeum block type.
     """
 
     def __init__(self, message_dict: dict[str, Any]) -> None:
         """Initialize DictMessageParser."""
         self._message_dict = message_dict
-        self._blocks: list[ContentBlock] = []
+        self._blocks: list[ChunkType] = []
 
     def build(self) -> Message:
         """Parse the raw message dict and return a serapeum :class:`~serapeum.core.llms.Message`.
@@ -339,7 +339,7 @@ class DictMessageParser:
 
         Each element's ``"type"`` key is looked up in :attr:`_BLOCK_PARSERS` to
         find the correct parser function.  The parser converts the raw dict into
-        a serapeum :class:`~serapeum.core.llms.ContentBlock` subclass.
+        a serapeum :class:`~serapeum.core.llms.ChunkType` subclass.
 
         Args:
             content: A list of content-block dicts, each containing at least a

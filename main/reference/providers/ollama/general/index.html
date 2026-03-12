@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -493,8 +493,6 @@
     
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--nested">
@@ -580,8 +578,6 @@
     
     
       
-      
-        
       
     
     
@@ -736,8 +732,6 @@
     
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--nested">
@@ -796,8 +790,6 @@
     
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--nested">
@@ -853,8 +845,6 @@
     
     
       
-      
-        
       
     
     
@@ -940,8 +930,6 @@
     
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--nested">
@@ -1007,8 +995,6 @@
     
     
       
-      
-        
       
     
     
@@ -1279,8 +1265,6 @@
     
     
       
-      
-        
       
     
     
@@ -1556,8 +1540,6 @@
     
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--nested">
@@ -1649,8 +1631,6 @@
     
     
       
-      
-        
       
     
     
@@ -1794,8 +1774,6 @@
         
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
@@ -1866,21 +1844,16 @@
     
       
       
-        
-          
-          
-        
-      
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1" checked>
         
           
-          <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
             
   
   
@@ -2806,21 +2779,16 @@
     
       
       
-        
-          
-          
-        
-      
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
             
   
   
@@ -3097,21 +3065,16 @@
     
       
       
-        
-          
-          
-        
-      
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
         
           
-          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
             
   
   
@@ -3204,8 +3167,6 @@
     
     
       
-      
-        
       
     
     
@@ -3383,8 +3344,6 @@
     
     
       
-      
-        
       
     
     
@@ -4185,7 +4144,7 @@
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span>
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="c1"># Send chat request</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Say &#39;pong&#39;.&quot;</span><span class="p">)]</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">TextChunk</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;Say &#39;pong&#39;.&quot;</span><span class="p">)])]</span>
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>  <span class="c1"># &quot;Pong!&quot;</span>
 </code></pre></div>
@@ -4370,12 +4329,13 @@ def client(self) -&gt; Client:
     return self._client
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>### 2. **Template Method Pattern**
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>FunctionCallingLLM defines workflow, Ollama implements specifics:
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>```python
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>def generate_tool_calls(self, messages, tools, **kwargs):
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    response = self.chat(prepared)
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    validated = self._validate_chat_with_tools_response(response, tools)  # Subclass
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    return validated
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>```python
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>def generate_tool_calls(self, messages, tools, **kwargs):
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    response = self.chat(prepared)
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    validated = self._validate_response(response, tools)  # Subclass
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    return validated
 </code></pre></div></p>
 <h3 id="3-adapter-pattern"><a class="toclink" href="#3-adapter-pattern">3. <strong>Adapter Pattern</strong></a><a class="headerlink" href="#3-adapter-pattern" title="Permanent link">#</a></h3>
 <p>Ollama adapts between internal types and Ollama server format:
@@ -4478,12 +4438,12 @@ def client(self) -&gt; Client:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Create once</span>
 <a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen3.5:397b&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OLLAMA_API_KEY&quot;</span><span class="p">),</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
 <a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
 <a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="c1"># Reuse many times</span>
-<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="n">messages1</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Hi!&quot;</span><span class="p">)]</span>
-<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="n">messages2</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;How are you?&quot;</span><span class="p">)]</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="n">messages1</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">TextChunk</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;Hi!&quot;</span><span class="p">)])]</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="n">messages2</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">TextChunk</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;How are you?&quot;</span><span class="p">)])]</span>
 <a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="n">response1</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages1</span><span class="p">)</span>
 <a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="n">response2</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages2</span><span class="p">)</span>
 <a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="nb">print</span><span class="p">(</span><span class="n">response1</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>  <span class="c1"># &quot;Hi!&quot;</span>
@@ -4498,7 +4458,7 @@ def client(self) -&gt; Client:
 <a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>  <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OLLAMA_API_KEY&quot;</span><span class="p">),</span>
 <a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>  <span class="n">timeout</span><span class="o">=</span><span class="mi">180</span>
 <a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="p">)</span>
-<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Tell me a joke.&quot;</span><span class="p">)]</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">TextChunk</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;Tell me a joke.&quot;</span><span class="p">)])]</span>
 <a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">chunk</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>
@@ -4532,13 +4492,13 @@ def client(self) -&gt; Client:
 <a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
 <a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1"># Define your output schema</span>
 <a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">Song</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>    <span class="n">duration</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1"># in seconds</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>  <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>  <span class="n">duration</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1"># in seconds</span>
 <a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>
 <a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="k">class</span><span class="w"> </span><span class="nc">Album</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>    <span class="n">artist</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>    <span class="n">songs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Song</span><span class="p">]</span>
+<a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>  <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>  <span class="n">artist</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>  <span class="n">songs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Song</span><span class="p">]</span>
 <a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a>
 <a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
 <a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a>  <span class="n">model</span><span class="o">=</span><span class="s2">&quot;qwen3.5:397b&quot;</span><span class="p">,</span>
@@ -4550,22 +4510,22 @@ def client(self) -&gt; Client:
 <a id="__codelineno-19-24" name="__codelineno-19-24" href="#__codelineno-19-24"></a><span class="n">tool</span> <span class="o">=</span> <span class="n">CallableTool</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="n">Album</span><span class="p">)</span>
 <a id="__codelineno-19-25" name="__codelineno-19-25" href="#__codelineno-19-25"></a>
 <a id="__codelineno-19-26" name="__codelineno-19-26" href="#__codelineno-19-26"></a><span class="c1"># Get structured output via tool calling</span>
-<a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate_tool_calls</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span> <span class="n">user_msg</span><span class="o">=</span><span class="s2">&quot;Create an album about rock&quot;</span><span class="p">)</span>
+<a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate_tool_calls</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Create an album about rock&quot;</span><span class="p">)</span>
 <a id="__codelineno-19-28" name="__codelineno-19-28" href="#__codelineno-19-28"></a>
 <a id="__codelineno-19-29" name="__codelineno-19-29" href="#__codelineno-19-29"></a><span class="c1"># print(response.message.additional_kwargs[&quot;tool_calls&quot;])</span>
 <a id="__codelineno-19-30" name="__codelineno-19-30" href="#__codelineno-19-30"></a><span class="c1"># [</span>
 <a id="__codelineno-19-31" name="__codelineno-19-31" href="#__codelineno-19-31"></a><span class="c1">#   ToolCall(</span>
 <a id="__codelineno-19-32" name="__codelineno-19-32" href="#__codelineno-19-32"></a><span class="c1">#       function=Function(</span>
-<a id="__codelineno-19-33" name="__codelineno-19-33" href="#__codelineno-19-33"></a><span class="c1">#           name=&#39;Album&#39;, </span>
-<a id="__codelineno-19-34" name="__codelineno-19-34" href="#__codelineno-19-34"></a><span class="c1">#           arguments={&#39;title&#39;: &#39;Thunder &amp; Lightning&#39;, &#39;artist&#39;: &#39;The Rock Legends&#39;, </span>
+<a id="__codelineno-19-33" name="__codelineno-19-33" href="#__codelineno-19-33"></a><span class="c1">#           name=&#39;Album&#39;,</span>
+<a id="__codelineno-19-34" name="__codelineno-19-34" href="#__codelineno-19-34"></a><span class="c1">#           arguments={&#39;title&#39;: &#39;Thunder &amp; Lightning&#39;, &#39;artist&#39;: &#39;The Rock Legends&#39;,</span>
 <a id="__codelineno-19-35" name="__codelineno-19-35" href="#__codelineno-19-35"></a><span class="c1">#           &#39;songs&#39;: [</span>
-<a id="__codelineno-19-36" name="__codelineno-19-36" href="#__codelineno-19-36"></a><span class="c1">#               {&#39;duration&#39;: 245, &#39;title&#39;: &#39;Electric Storm&#39;}, </span>
-<a id="__codelineno-19-37" name="__codelineno-19-37" href="#__codelineno-19-37"></a><span class="c1">#               {&#39;duration&#39;: 312, &#39;title&#39;: &#39;Midnight Rider&#39;}, </span>
-<a id="__codelineno-19-38" name="__codelineno-19-38" href="#__codelineno-19-38"></a><span class="c1">#               {&#39;duration&#39;: 278, &#39;title&#39;: &#39;Breaking Chains&#39;}, </span>
-<a id="__codelineno-19-39" name="__codelineno-19-39" href="#__codelineno-19-39"></a><span class="c1">#               {&#39;duration&#39;: 295, &#39;title&#39;: &#39;Highway to Glory&#39;}, </span>
-<a id="__codelineno-19-40" name="__codelineno-19-40" href="#__codelineno-19-40"></a><span class="c1">#               {&#39;duration&#39;: 267, &#39;title&#39;: &#39;Rebel Heart&#39;}, </span>
-<a id="__codelineno-19-41" name="__codelineno-19-41" href="#__codelineno-19-41"></a><span class="c1">#               {&#39;duration&#39;: 334, &#39;title&#39;: &#39;Stone Cold Blues&#39;}, </span>
-<a id="__codelineno-19-42" name="__codelineno-19-42" href="#__codelineno-19-42"></a><span class="c1">#               {&#39;duration&#39;: 289, &#39;title&#39;: &#39;Rise Up&#39;}, </span>
+<a id="__codelineno-19-36" name="__codelineno-19-36" href="#__codelineno-19-36"></a><span class="c1">#               {&#39;duration&#39;: 245, &#39;title&#39;: &#39;Electric Storm&#39;},</span>
+<a id="__codelineno-19-37" name="__codelineno-19-37" href="#__codelineno-19-37"></a><span class="c1">#               {&#39;duration&#39;: 312, &#39;title&#39;: &#39;Midnight Rider&#39;},</span>
+<a id="__codelineno-19-38" name="__codelineno-19-38" href="#__codelineno-19-38"></a><span class="c1">#               {&#39;duration&#39;: 278, &#39;title&#39;: &#39;Breaking Chains&#39;},</span>
+<a id="__codelineno-19-39" name="__codelineno-19-39" href="#__codelineno-19-39"></a><span class="c1">#               {&#39;duration&#39;: 295, &#39;title&#39;: &#39;Highway to Glory&#39;},</span>
+<a id="__codelineno-19-40" name="__codelineno-19-40" href="#__codelineno-19-40"></a><span class="c1">#               {&#39;duration&#39;: 267, &#39;title&#39;: &#39;Rebel Heart&#39;},</span>
+<a id="__codelineno-19-41" name="__codelineno-19-41" href="#__codelineno-19-41"></a><span class="c1">#               {&#39;duration&#39;: 334, &#39;title&#39;: &#39;Stone Cold Blues&#39;},</span>
+<a id="__codelineno-19-42" name="__codelineno-19-42" href="#__codelineno-19-42"></a><span class="c1">#               {&#39;duration&#39;: 289, &#39;title&#39;: &#39;Rise Up&#39;},</span>
 <a id="__codelineno-19-43" name="__codelineno-19-43" href="#__codelineno-19-43"></a><span class="c1">#               {&#39;duration&#39;: 356, &#39;title&#39;: &#39;Last Stand&#39;}</span>
 <a id="__codelineno-19-44" name="__codelineno-19-44" href="#__codelineno-19-44"></a><span class="c1">#           ]</span>
 <a id="__codelineno-19-45" name="__codelineno-19-45" href="#__codelineno-19-45"></a><span class="c1">#        }</span>
@@ -4589,9 +4549,9 @@ def client(self) -&gt; Client:
 <a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>
 <a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>    <span class="c1"># Prepare multiple message lists</span>
 <a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a>    <span class="n">message_list</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>        <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;What is 2+2?&quot;</span><span class="p">)],</span>
-<a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a>        <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;What is the capital of France?&quot;</span><span class="p">)],</span>
-<a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a>        <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;What is Python?&quot;</span><span class="p">)],</span>
+<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>        <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">TextChunk</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;What is 2+2?&quot;</span><span class="p">)])],</span>
+<a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a>        <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">TextChunk</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;What is the capital of France?&quot;</span><span class="p">)])],</span>
+<a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a>        <span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">MessageRole</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">TextChunk</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;What is Python?&quot;</span><span class="p">)])],</span>
 <a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a>    <span class="p">]</span>
 <a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a>
 <a id="__codelineno-20-21" name="__codelineno-20-21" href="#__codelineno-20-21"></a>    <span class="c1"># Process multiple requests concurrently</span>
@@ -4784,7 +4744,7 @@ def client(self) -&gt; Client:
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.indexes", "navigation.footer", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
       <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>

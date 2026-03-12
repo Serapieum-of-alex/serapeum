@@ -64,7 +64,7 @@
     
     
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -495,8 +495,6 @@
     
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--nested">
@@ -582,8 +580,6 @@
     
     
       
-      
-        
       
     
     
@@ -743,8 +739,6 @@
         
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
@@ -805,21 +799,16 @@
     
       
       
-        
-          
-          
-        
-      
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" checked>
         
           
-          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
             
   
   
@@ -867,8 +856,6 @@
     
     
       
-      
-        
       
     
     
@@ -1151,8 +1138,6 @@
     
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--nested">
@@ -1218,8 +1203,6 @@
     
     
       
-      
-        
       
     
     
@@ -1490,8 +1473,6 @@
     
     
       
-      
-        
       
     
     
@@ -1767,8 +1748,6 @@
     
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--nested">
@@ -1860,8 +1839,6 @@
     
     
       
-      
-        
       
     
     
@@ -2000,8 +1977,6 @@
     
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--nested">
@@ -2069,8 +2044,6 @@
     
     
       
-      
-        
       
     
     
@@ -2372,8 +2345,6 @@
     
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--nested">
@@ -2660,8 +2631,6 @@
     
       
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--nested">
@@ -2764,8 +2733,6 @@
     
     
       
-      
-        
       
     
     
@@ -2943,8 +2910,6 @@
     
     
       
-      
-        
       
     
     
@@ -3376,7 +3341,7 @@
 <li>You need structured outputs without manually handling parsing</li>
 </ul>
 <h4 id="example_1"><a class="toclink" href="#example_1">Example</a><a class="headerlink" href="#example_1" title="Permanent link">#</a></h4>
-<p>```python function_calling 
+<p>```python function_calling
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
@@ -3397,7 +3362,7 @@ structured_llm = StructuredOutputLLM(
 )</p>
 <h1 id="all-responses-will-be-personinfo-instances"><a class="toclink" href="#all-responses-will-be-personinfo-instances">All responses will be PersonInfo instances</a><a class="headerlink" href="#all-responses-will-be-personinfo-instances" title="Permanent link">#</a></h1>
 <p>response = structured_llm.chat([
-    Message(role="user", content="Tell me about Alice, a 30-year-old engineer")
+    Message(role="user", chunks=[TextChunk(content="Tell me about Alice, a 30-year-old engineer")])
 ])
 print(response.raw)</p>
 <h1 id="personinfonamealice-age30-occupationengineer"><a class="toclink" href="#personinfonamealice-age30-occupationengineer">PersonInfo(name='Alice', age=30, occupation='Engineer')</a><a class="headerlink" href="#personinfonamealice-age30-occupationengineer" title="Permanent link">#</a></h1>
@@ -3840,7 +3805,7 @@ print(result)</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.indexes", "navigation.footer", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.indexes", "navigation.footer", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tooltips", "search.highlight", "search.suggest", "toc.follow", "announce.dismiss"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
       <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>

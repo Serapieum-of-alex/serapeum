@@ -3850,7 +3850,7 @@
 <h2 id="basic-usage"><a class="toclink" href="#basic-usage">Basic Usage</a><a class="headerlink" href="#basic-usage" title="Permanent link">#</a></h2>
 <h3 id="simple-completion"><a class="toclink" href="#simple-completion">Simple Completion</a><a class="headerlink" href="#simple-completion" title="Permanent link">#</a></h3>
 <p>The most straightforward way to use <code>LlamaCPP</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llama_cpp</span><span class="w"> </span><span class="kn">import</span> <span class="n">LlamaCPP</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.llama_cpp.formatters.llama3</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">messages_to_prompt_v3_instruct</span><span class="p">,</span>
@@ -3983,7 +3983,7 @@ from serapeum.llama_cpp.formatters.llama2 import (
 <a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
 <a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>Simple text completion:
 <a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>```python 
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>```python
 <a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>import os
 <a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>from serapeum.llama_cpp import LlamaCPP
 <a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>from serapeum.llama_cpp.formatters.llama3 import (
@@ -4378,7 +4378,7 @@ print(result.value)  # "input"
 <a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>
 <a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>#### Llama 2 / Mistral
 <a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a>
-<a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a>```python 
+<a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a>```python
 <a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a>from serapeum.llama_cpp.formatters.llama2 import (
 <a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a>    messages_to_prompt,
 <a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a>    completion_to_prompt,
@@ -4407,7 +4407,7 @@ string. Handles system, user, and assistant roles, including multi-turn conversa
 with a default system prompt.</p>
 <h3 id="custom-formatters"><a class="toclink" href="#custom-formatters">Custom Formatters</a><a class="headerlink" href="#custom-formatters" title="Permanent link">#</a></h3>
 <p>You can write your own formatters for other model families:</p>
-<p>```python notest 
+<p>```python notest
 from collections.abc import Sequence
 from serapeum.core.llms import Message, MessageRole
 from serapeum.llama_cpp import LlamaCPP</p>
@@ -4487,7 +4487,7 @@ response2 = llm.complete("How are you?")</p>
 <a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>
 <a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>Always use the correct formatter for your model family:
 <a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>
-<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>```python 
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>```python
 <a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>from serapeum.llama_cpp import LlamaCPP
 <a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a># Llama 2 / Mistral models
 <a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>from serapeum.llama_cpp.formatters.llama2 import messages_to_prompt, completion_to_prompt

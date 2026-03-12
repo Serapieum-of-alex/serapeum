@@ -1569,8 +1569,8 @@
 </code></pre></div></li>
 </ul>
 <h2 id="syncing-provider-dev-dependencies"><a class="toclink" href="#syncing-provider-dev-dependencies">Syncing Provider Dev Dependencies</a><a class="headerlink" href="#syncing-provider-dev-dependencies" title="Permanent link">#</a></h2>
-<p>Each workspace member (provider package/subpackage) has its own dev dependency group. The root-level <code>uv sync --dev --active</code> 
-only installs root-level dev dependencies. </p>
+<p>Each workspace member (provider package/subpackage) has its own dev dependency group. The root-level <code>uv sync --dev --active</code>
+only installs root-level dev dependencies.</p>
 <p>To install a specific provider's dev dependencies (e.g. type stubs, test plugins), sync that package explicitly:</p>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-15-1" id="__codelineno-15-1" name="__codelineno-15-1"></a><span class="c1"># Sync dev deps for a specific sub-package</span>
 <a href="#__codelineno-15-2" id="__codelineno-15-2" name="__codelineno-15-2"></a>uv<span class="w"> </span>sync<span class="w"> </span>--package<span class="w"> </span>serapeum-llama-cpp<span class="w"> </span>--dev<span class="w"> </span>--active

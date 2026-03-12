@@ -3695,7 +3695,7 @@ dev = [
 
 [[package]]
 name = "serapeum-openai"
-version = "0.0.0"
+version = "0.1.0"
 source = { editable = "libs/providers/openai" }
 dependencies = [
     { name = "openai" },

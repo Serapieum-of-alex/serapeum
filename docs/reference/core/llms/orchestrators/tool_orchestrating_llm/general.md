@@ -125,7 +125,7 @@ Shows component boundaries and interaction patterns.
 Depicts the lifecycle states and transitions.
 
 **Best for**:
-- Understanding instance lifecycle
+- Understanding the instance lifecycle
 - Seeing state transitions
 - Identifying error states
 
@@ -222,16 +222,16 @@ Supports multiple execution modes:
 
 ## Comparison with TextCompletionLLM
 
-| Feature | ToolOrchestratingLLM | TextCompletionLLM |
-|---------|---------------------|-------------------|
-| **Method** | Function calling | Text completion with parsing |
-| **LLM Requirement** | Must support function calling | Any chat/completion model |
-| **Schema Handling** | Native tool schemas | JSON in prompt |
-| **Validation** | Before execution (by LLM) | After generation (by parser) |
-| **Reliability** | Higher (structured by design) | Depends on LLM output quality |
-| **Parallel Outputs** | Native support | Not supported |
-| **Streaming** | Partial tool_calls | Not applicable |
-| **Use Case** | When function calling available | Fallback for non-function-calling models |
+| Feature              | ToolOrchestratingLLM            | TextCompletionLLM                        |
+|----------------------|---------------------------------|------------------------------------------|
+| **Method**           | Function calling                | Text completion with parsing             |
+| **LLM Requirement**  | Must support function calling   | Any chat/completion model                |
+| **Schema Handling**  | Native tool schemas             | JSON in prompt                           |
+| **Validation**       | Before execution (by LLM)       | After generation (by parser)             |
+| **Reliability**      | Higher (structured by design)   | Depends on LLM output quality            |
+| **Parallel Outputs** | Native support                  | Not supported                            |
+| **Streaming**        | Partial tool_calls              | Not applicable                           |
+| **Use Case**         | When function calling available | Fallback for non-function-calling models |
 
 ## Performance Considerations
 

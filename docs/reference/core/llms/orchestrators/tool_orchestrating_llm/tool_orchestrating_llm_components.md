@@ -229,16 +229,16 @@ graph TB
 
 ## Component Responsibilities Matrix
 
-| Component | Initialization | Execution | Parsing | Streaming |
-|-----------|---------------|-----------|---------|-----------|
-| **ToolOrchestratingLLM** | Validates & stores components | Routes to invoke_callable | Extracts from AgentChatResponse | Processes with StreamingObjectProcessor |
-| **CallableTool** | - | Created from Pydantic model | Validates tool arguments | - |
-| **PromptTemplate** | Created/validated | Formats with variables | - | - |
-| **Ollama** | Validated for function calling | Executes invoke_callable | - | Streams generate_tool_calls |
-| **AgentChatResponse** | - | Created by LLM | Contains ToolOutputs | - |
-| **ToolOutput** | - | Created by tool execution | Contains raw_output (Pydantic) | - |
-| **MockAlbum** | Defines schema | - | Validates parsed data | Progressively built |
-| **StreamingObjectProcessor** | - | - | - | Parses partial responses |
+| Component                    | Initialization                 | Execution                   | Parsing                         | Streaming                               |
+|------------------------------|--------------------------------|-----------------------------|---------------------------------|-----------------------------------------|
+| **ToolOrchestratingLLM**     | Validates & stores components  | Routes to invoke_callable   | Extracts from AgentChatResponse | Processes with StreamingObjectProcessor |
+| **CallableTool**             | -                              | Created from Pydantic model | Validates tool arguments        | -                                       |
+| **PromptTemplate**           | Created/validated              | Formats with variables      | -                               | -                                       |
+| **Ollama**                   | Validated for function calling | Executes invoke_callable    | -                               | Streams generate_tool_calls             |
+| **AgentChatResponse**        | -                              | Created by LLM              | Contains ToolOutputs            | -                                       |
+| **ToolOutput**               | -                              | Created by tool execution   | Contains raw_output (Pydantic)  | -                                       |
+| **MockAlbum**                | Defines schema                 | -                           | Validates parsed data           | Progressively built                     |
+| **StreamingObjectProcessor** | -                              | -                           | -                               | Parses partial responses                |
 
 ## Interaction Patterns
 

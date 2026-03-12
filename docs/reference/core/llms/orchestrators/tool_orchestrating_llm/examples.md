@@ -272,7 +272,7 @@ Use structured message templates for complex prompts:
 ```python function_calling
 import os
 from pydantic import BaseModel
-from serapeum.core.llms import Message, MessageRole, ToolOrchestratingLLM
+from serapeum.core.llms import Message, MessageRole, ToolOrchestratingLLM, TextChunk
 from serapeum.core.prompts import ChatPromptTemplate
 from serapeum.ollama import Ollama
 
@@ -333,7 +333,14 @@ tools_llm = ToolOrchestratingLLM(
 )
 
 text = """
-The ancient Egyptian pyramids, built over 4,500 years ago, stand as some of humanity's most remarkable architectural achievements. The Great Pyramid of Giza, constructed for Pharaoh Khufu, was the tallest man-made structure in the world for nearly 4,000 years. These massive tombs were built using millions of limestone blocks, each weighing several tons, transported and assembled with astonishing precision. The pyramids served as elaborate burial chambers designed to protect pharaohs and their treasures for the afterlife. Today, they remain the only surviving wonder of the ancient world, drawing millions of visitors each year.
+The ancient Egyptian pyramids, built over 4,500 years ago, stand as some of humanity's most remarkable architectural 
+achievements. 
+
+The Great Pyramid of Giza, constructed for Pharaoh Khufu, was the tallest man-made structure in the world for nearly 
+4,000 years. These massive tombs were built using millions of limestone blocks, each weighing several tons, transported 
+and assembled with astonishing precision. The pyramids served as elaborate burial chambers designed to protect pharaohs 
+and their treasures for the afterlife. Today, they remain the only surviving wonder of the ancient world, drawing 
+millions of visitors each year.
 """
 # Synchronous call using __call__
 result = tools_llm(text=text)

@@ -1027,12 +1027,17 @@ class ArgumentCoercer:
 class ToolCallError(Exception):
     """Exception raised when a tool call fails.
 
+    ``str(exc)`` returns *message* unchanged.  ``tool_name`` is stored as
+    instance metadata and does **not** appear in ``exc.args`` or the
+    string representation.
+
     Args:
-        message (str): Description of the failure.
+        message (str): Human-readable description of the failure.
         tool_name (str | None): Name of the tool that failed, if known.
+            Accessible via ``exc.tool_name``.
     """
 
     def __init__(self, message: str, tool_name: str | None = None) -> None:
         """Initialize a ToolCallError with a message and optional tool name."""
-        super().__init__(message, tool_name)
+        super().__init__(message)
         self.tool_name = tool_name

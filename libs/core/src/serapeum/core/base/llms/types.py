@@ -1100,7 +1100,7 @@ def resolve_binary(
                 resolved = url_data.encode("utf-8")
         else:
             # HTTP(S) URLs
-            response = requests.get(url, headers={})
+            response = requests.get(url, headers={}, timeout=120)
             response.raise_for_status()
             resolved = response.content
 

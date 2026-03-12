@@ -75,13 +75,14 @@ ollama list
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 
 # Initialize the model
 llm = Ollama(model="llama3.1", timeout=120)
 
 # Simple chat
-messages = [Message(role=MessageRole.USER, content="Explain quantum computing in one sentence.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Explain quantum computing in one sentence.")])]
+
 response = llm.chat(messages)
 print(response.message.content)
 ```
@@ -94,7 +95,7 @@ The `Ollama` class provides a complete chat interface:
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole, MessageList
+from serapeum.core.llms import Message, MessageRole, MessageList, TextChunk
 
 llm = Ollama(
     model="llama3.1",
@@ -104,19 +105,19 @@ llm = Ollama(
 
 # Single message
 response = llm.chat([
-    Message(role=MessageRole.USER, content="What is the capital of France?")
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is the capital of France?")])
 ])
 print(response.message.content)  # "The capital of France is Paris."
 
 # Multi-turn conversation
 conversation = [
-    Message(role=MessageRole.SYSTEM, content="You are a helpful assistant."),
-    Message(role=MessageRole.USER, content="What's 2+2?"),
-    Message(role=MessageRole.ASSISTANT, content="4"),
-    Message(role=MessageRole.USER, content="And if I add 3?"),
+    Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are a helpful assistant.")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What's 2+2?")]),
+    Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="4")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="And if I add 3?")]),
 ]
 
-response = llm.chat(MessageList.from_list(conversation))
+response = llm.chat(MessageList(messages=conversation))
 print(response.message.content)  # "7"
 
 # Access token usage
@@ -130,11 +131,11 @@ Stream responses token-by-token for real-time feedback:
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 
 llm = Ollama(model="llama3.1")
 
-messages = [Message(role=MessageRole.USER, content="Write a haiku about coding.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Write a haiku about coding.")])]
 
 # Synchronous streaming
 print("Streaming response: ", end="")
@@ -153,19 +154,19 @@ Full async support for concurrent operations:
 ```python
 import asyncio
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 
 async def main():
     llm = Ollama(model="llama3.1")
 
     # Async chat
     response = await llm.achat([
-        Message(role=MessageRole.USER, content="Hello!")
+        Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])
     ])
     print(response.message.content)
 
     # Async streaming
-    messages = [Message(role=MessageRole.USER, content="Count to 5.")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 5.")])]
     stream = await llm.achat(messages, stream=True)
 
     async for chunk in stream:
@@ -504,7 +505,7 @@ Combine embeddings with LLMs for RAG (Retrieval-Augmented Generation):
 
 ```python
 from serapeum.ollama import Ollama, OllamaEmbedding
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 
 # Initialize both LLM and embeddings
 llm = Ollama(model="llama3.1")
@@ -541,9 +542,9 @@ context = similarities[0][0]
 messages = [
     Message(
         role=MessageRole.SYSTEM,
-        content=f"Answer based on this context: {context}"
+        chunks=[TextChunk(content=f"Answer based on this context: {context}")]
     ),
-    Message(role=MessageRole.USER, content=query)
+    Message(role=MessageRole.USER, chunks=[TextChunk(content=query)])
 ]
 
 response = llm.chat(messages)

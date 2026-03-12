@@ -1,6 +1,6 @@
 [project]
 name = "serapeum-llama-cpp"
-version = "0.1.0"
+version = "0.2.0"
 description = "llama cpp integration for serapeum"
 readme = "README.md"
 license = {text = "GNU General Public License v3"}

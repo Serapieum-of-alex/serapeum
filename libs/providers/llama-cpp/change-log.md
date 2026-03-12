@@ -1,3 +1,67 @@
+## serapeum-llama-cpp-0.2.0 (2026-03-12)
+
+
+- build: sync uv.lock after serapeum-ollama version bump
+- build: sync uv.lock after serapeum-core version bump
+- refactor(api)!: unify provider API surface across core, OpenAI, Azure, and Ollama (#48)
+- - Move shared logic (tool-call extraction, response validation) from                                               
+    individual providers into FunctionCallingLLM base class
+  - Rename `structured_predict` to `parse` across all providers
+  - Rename `LikelihoodScore` to `LogProb` for accuracy
+  - Replace `ContentBlock` discriminated union with `ChunkType`
+  - Store tool calls in `Message.chunks` instead of `additional_kwargs`
+  - Merge `force_single_tool_call` into `ChatResponse`
+  - Add `ToolCallBlock.get_arguments()` and move `ToolCallArguments`
+    to `core.base.llms.types`
+  - Remove `Message.from_str` and `MessageList.from_list` constructors;
+    convert `Message` constructor to a Pydantic validator
+  - Rename `_validate_chat_with_tools_response` to `_validate_response`
+    and lift it to base class
+  - Refactor OpenAI provider: rename classes, restructure Responses API,
+    reorganize tests into completions/ and responses/ directories
+  - Add Azure OpenAI README, docstrings, and e2e/responses test suites
+  - Add timeout to `requests.get` calls and resolve Bandit findings
+  - Remove Claude code-review CI workflows
+  - Fix install-groups parameter in all test workflows
+-   BREAKING CHANGE: `structured_predict` renamed to `parse`;
+  `LikelihoodScore` renamed to `LogProb`; `ContentBlock` replaced by
+  `ChunkType`; `Message.from_str` and `MessageList.from_list` removed;
+  tool calls now stored in `Message.chunks` instead of
+  `additional_kwargs`; `force_single_tool_call` merged into
+  `ChatResponse`; OpenAI class names updated
+- ref: #50, #51, #52, #53, #54, #55, #56, #57, #58
+- feat: add OpenAI and Azure OpenAI providers with retry framework (#15)
+- - Add serapeum-openai provider with chat completions and responses API
+    support, structured outputs, tool calling, and streaming
+  - Add serapeum-azure-openai provider extending OpenAI with Azure
+    endpoint, deployment, and Entra ID authentication support
+  - Add core retry framework with sync/async/streaming wrappers and
+    per-provider retryable-exception classifiers (core, ollama, llama-cpp,
+    openai)
+  - Refactor OpenAI class into composable base classes (Client,
+    ModelMetadata, StructuredOutput) under llm/base/ with factory methods
+    for subclass client creation
+  - Add parsers subpackage splitting formatters, chat parsers, and
+    response parsers into dedicated modules
+  - Rename core abstractions/mixins to abstractions/adapters and merge
+    stream methods into chat/complete with a stream parameter
+  - Harden existing providers: forbid extra attributes, rename
+    request_timeout to timeout, disable SDK retries in favour of @retry
+    decorator
+  - Add CI workflows for openai and azure-openai test suites
+  - Add conftest SDK pre-import guards for all providers to prevent
+    namespace collisions during doctest collection
+  - Add streaming object processor utilities for incremental structured
+    output parsing in orchestrators
+-   BREAKING CHANGE: `serapeum.core.llms.abstractions.mixins` renamed to
+  `serapeum.core.llms.abstractions.adapters`; `ChatToCompletionMixin`
+  renamed to `ChatToCompletion`, `CompletionToChatMixin` renamed to
+  `CompletionToChat`; `stream_chat`/`astream_chat`/`stream_complete`/
+  `astream_complete` removed in favour of `stream=True` parameter on
+  `chat`/`achat`/`complete`/`acomplete`.
+-   Closes #42, #43, #44, #45, #46
+- build: sync uv.lock after serapeum-llama-cpp version bump
+
 ## serapeum-llama-cpp-0.1.0 (2026-03-02)
 
 

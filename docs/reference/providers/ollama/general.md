@@ -383,7 +383,7 @@ uv pip install -e libs/providers/serapeum-ollama
 # Create once
 import os
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # Reuse many times

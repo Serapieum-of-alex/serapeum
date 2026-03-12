@@ -3345,8 +3345,7 @@
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
-from serapeum.core.llms import StructuredOutputLLM
-from serapeum.core.llms import Message</p>
+from serapeum.core.llms import StructuredOutputLLM, Message, TextChunk</p>
 <p>class PersonInfo(BaseModel):
     name: str
     age: int
@@ -3539,7 +3538,7 @@ print(result)</p>
 <a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
 <a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="n">result</span> <span class="o">=</span> <span class="n">product_extractor</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;iPhone 15 Pro - $999&quot;</span><span class="p">)</span>
 <a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="n">result</span>
-<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="n">Product</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;iPhone 15 Pro&#39;</span><span class="p">,</span> <span class="n">price</span><span class="o">=</span><span class="mf">999.0</span><span class="p">)</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="c1"># Product(name=&#39;iPhone 15 Pro&#39;, price=999.0)</span>
 </code></pre></div>
 <hr />
 <h2 id="comparison-matrix"><a class="toclink" href="#comparison-matrix">Comparison Matrix</a><a class="headerlink" href="#comparison-matrix" title="Permanent link">#</a></h2>

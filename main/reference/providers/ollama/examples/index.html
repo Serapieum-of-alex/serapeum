@@ -3551,7 +3551,7 @@ from dotenv import load_dotenv</p>
 <a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>
 <a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>```python
 <a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>import os
-<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>from serapeum.core.llms import Message, MessageRole
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>from serapeum.core.llms import Message, MessageRole, TextChunk
 <a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>from serapeum.ollama import Ollama
 <a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>
 <a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a># Initialize Ollama LLM
@@ -3645,7 +3645,7 @@ from dotenv import load_dotenv</p>
 <h3 id="1-single-turn-chat"><a class="toclink" href="#1-single-turn-chat">1. Single Turn Chat</a><a class="headerlink" href="#1-single-turn-chat" title="Permanent link">#</a></h3>
 <p>Basic conversation:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
@@ -3664,7 +3664,7 @@ from dotenv import load_dotenv</p>
 <h3 id="2-multi-turn-conversation"><a class="toclink" href="#2-multi-turn-conversation">2. Multi-turn Conversation</a><a class="headerlink" href="#2-multi-turn-conversation" title="Permanent link">#</a></h3>
 <p>With conversation history:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
@@ -3686,7 +3686,7 @@ from dotenv import load_dotenv</p>
 <h3 id="3-chat-with-parameters"><a class="toclink" href="#3-chat-with-parameters">3. Chat with Parameters</a><a class="headerlink" href="#3-chat-with-parameters" title="Permanent link">#</a></h3>
 <p>Passing custom parameters:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
@@ -3709,7 +3709,7 @@ from dotenv import load_dotenv</p>
 <p>Multi-modal input (if supported by model):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">Image</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">Image</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
 <a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
@@ -3790,7 +3790,7 @@ from dotenv import load_dotenv</p>
 <h3 id="1-stream-chat"><a class="toclink" href="#1-stream-chat">1. Stream Chat</a><a class="headerlink" href="#1-stream-chat" title="Permanent link">#</a></h3>
 <p>Real-time streaming chat:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
 <a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
@@ -3826,7 +3826,7 @@ from dotenv import load_dotenv</p>
 <h3 id="3-processing-stream-with-delta"><a class="toclink" href="#3-processing-stream-with-delta">3. Processing Stream with Delta</a><a class="headerlink" href="#3-processing-stream-with-delta" title="Permanent link">#</a></h3>
 <p>Access incremental content:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>
 <a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
@@ -3857,7 +3857,7 @@ from dotenv import load_dotenv</p>
 <p>```python notest
 import os
 from pydantic import BaseModel
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama</p>
 <p>class Album(BaseModel):
@@ -3888,7 +3888,7 @@ print(tool_calls)
 <a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>```python
 <a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>import os
 <a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>from pydantic import BaseModel, Field
-<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>from serapeum.core.llms import Message, MessageRole
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>from serapeum.core.llms import Message, MessageRole, TextChunk
 <a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>from serapeum.core.tools import CallableTool
 <a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>from serapeum.ollama import Ollama
 <a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>
@@ -3925,7 +3925,7 @@ print(tool_calls)
 <p>Force single tool call:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallableTool</span>
 <a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>
@@ -3961,7 +3961,7 @@ print(tool_calls)
 <p>Allow multiple tool calls:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallableTool</span>
 <a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>
@@ -4001,7 +4001,7 @@ print(tool_calls)
 <p>Stream tool calls:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallableTool</span>
 <a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>
@@ -4170,7 +4170,7 @@ print(tool_calls)
 <p>Non-blocking chat:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>
 <a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>
@@ -4213,7 +4213,7 @@ print(tool_calls)
 <p>Non-blocking streaming:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>
 <a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>
@@ -4236,7 +4236,7 @@ print(tool_calls)
 <p>Process multiple requests concurrently:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>
 <a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>
@@ -4341,7 +4341,7 @@ print(tool_calls)
 <p>```python notest
 import os
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole</p>
+from serapeum.core.llms import Message, MessageRole, TextChunk</p>
 <h1 id="good-create-once"><a class="toclink" href="#good-create-once">✓ Good: Create once</a><a class="headerlink" href="#good-create-once" title="Permanent link">#</a></h1>
 <p>llm = Ollama(
     model="qwen3.5:397b",
@@ -4385,7 +4385,7 @@ response2 = llm.chat([message_2])</p>
 <h3 id="3-handle-errors-gracefully"><a class="toclink" href="#3-handle-errors-gracefully">3. Handle Errors Gracefully</a><a class="headerlink" href="#3-handle-errors-gracefully" title="Permanent link">#</a></h3>
 <p>Always handle potential errors:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>
 <a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>
@@ -4421,7 +4421,7 @@ response2 = llm.chat([message_2])</p>
 <h3 id="5-monitor-response-metadata"><a class="toclink" href="#5-monitor-response-metadata">5. Monitor Response Metadata</a><a class="headerlink" href="#5-monitor-response-metadata" title="Permanent link">#</a></h3>
 <p>Use metadata for monitoring:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span>
+<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.core.llms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageRole</span><span class="p">,</span> <span class="n">TextChunk</span>
 <a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">serapeum.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ollama</span>
 <a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a>
 <a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">Ollama</span><span class="p">(</span>

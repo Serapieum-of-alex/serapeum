@@ -112,4 +112,9 @@ class ModelMetadata:
         Resolves the encoding via ``tiktoken.encoding_for_model`` using
         the base model name returned by :meth:`_get_model_name`.
         """
-        return tiktoken.encoding_for_model(self._get_model_name())
+        try:
+            value = tiktoken.encoding_for_model(self._get_model_name())
+        except KeyError:
+            value = None
+
+        return value

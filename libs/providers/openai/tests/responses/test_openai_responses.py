@@ -35,6 +35,7 @@ from openai.types.responses import (
     ResponseReasoningItem,
     ResponseTextDeltaEvent,
 )
+from openai import AzureOpenAI
 from openai.types.responses.response_reasoning_item import Content, Summary
 
 from serapeum.core.base.llms.types import (
@@ -53,10 +54,6 @@ from serapeum.openai.parsers import (
     ResponsesStreamAccumulator,
     to_openai_message_dicts,
 )
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 
 def _make_llm(**overrides: Any) -> Responses:
@@ -152,11 +149,6 @@ def _user_messages(text: str = "Say hello") -> list[Message]:
     return [Message(role=MessageRole.USER, chunks=[TextChunk(content=text)])]
 
 
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
-
 @pytest.fixture
 def llm() -> Responses:
     """Create a default Responses instance with a fake API key."""
@@ -169,11 +161,6 @@ def llm_with_mocked_client(llm: Responses) -> Responses:
     llm._client = MagicMock()
     llm._async_client = AsyncMock()
     return llm
-
-
-# ===========================================================================
-# TestResponsesInit
-# ===========================================================================
 
 
 @pytest.mark.unit
@@ -312,11 +299,6 @@ class TestResponsesInit:
             _make_llm(max_output_tokens=0)
 
 
-# ===========================================================================
-# TestClassName
-# ===========================================================================
-
-
 @pytest.mark.unit
 class TestClassName:
     """Tests for Responses.class_name()."""
@@ -330,11 +312,6 @@ class TestClassName:
         assert (
             Responses.class_name() == "openai_responses_llm"
         ), f"Expected 'openai_responses_llm', got '{Responses.class_name()}'"
-
-
-# ===========================================================================
-# TestMetadata
-# ===========================================================================
 
 
 @pytest.mark.unit
@@ -395,11 +372,6 @@ class TestMetadata:
         ), "gpt-4o-mini should be a function calling model"
 
 
-# ===========================================================================
-# TestShouldUseStructuredOutputs
-# ===========================================================================
-
-
 @pytest.mark.unit
 class TestShouldUseStructuredOutputs:
     """Tests for Responses._should_use_structure_outputs()."""
@@ -413,11 +385,6 @@ class TestShouldUseStructuredOutputs:
         assert (
             llm._should_use_structure_outputs() is False
         ), "Responses API should always return False"
-
-
-# ===========================================================================
-# TestIsAzureClient
-# ===========================================================================
 
 
 @pytest.mark.unit
@@ -440,17 +407,10 @@ class TestIsAzureClient:
         Test scenario:
             Spec the mock as AzureOpenAI; should return True.
         """
-        from openai import AzureOpenAI
-
         llm_with_mocked_client._client = MagicMock(spec=AzureOpenAI)
         assert (
             llm_with_mocked_client._is_azure_client() is True
         ), "AzureOpenAI client should be detected"
-
-
-# ===========================================================================
-# TestGetModelKwargs
-# ===========================================================================
 
 
 @pytest.mark.unit
@@ -585,11 +545,6 @@ class TestGetModelKwargs:
         assert kwargs["instructions"] == "Be brief", f"Got '{kwargs['instructions']}'"
 
 
-# ===========================================================================
-# TestChat (delegation)
-# ===========================================================================
-
-
 @pytest.mark.mock
 class TestChat:
     """Tests for Responses.chat() — delegation to _chat / _stream_chat."""
@@ -635,11 +590,6 @@ class TestChat:
         mock_stream.assert_called_once()
         assert len(chunks) == 1, f"Expected 1 chunk, got {len(chunks)}"
         assert chunks[0].delta == "Hi", f"Got delta '{chunks[0].delta}'"
-
-
-# ===========================================================================
-# TestChatInternal (_chat)
-# ===========================================================================
 
 
 @pytest.mark.mock
@@ -760,11 +710,6 @@ class TestChatInternal:
         ), f"Got model '{call_kwargs.kwargs['model']}'"
 
 
-# ===========================================================================
-# TestStreamChat (_stream_chat)
-# ===========================================================================
-
-
 @pytest.mark.mock
 class TestStreamChat:
     """Tests for Responses._stream_chat() with mocked streaming events."""
@@ -856,11 +801,6 @@ class TestStreamChat:
         ), "stream should be True for _stream_chat"
 
 
-# ===========================================================================
-# TestAChat (async delegation)
-# ===========================================================================
-
-
 @pytest.mark.mock
 class TestAChat:
     """Tests for Responses.achat() — async delegation."""
@@ -911,11 +851,6 @@ class TestAChat:
             chunks = [c async for c in gen]
         mock_astream.assert_called_once()
         assert len(chunks) == 1, f"Expected 1 chunk, got {len(chunks)}"
-
-
-# ===========================================================================
-# TestAChatInternal (_achat)
-# ===========================================================================
 
 
 @pytest.mark.mock
@@ -1002,11 +937,6 @@ class TestAStreamChat:
         assert (
             chunks[1].delta == " world"
         ), f"Second delta should be ' world', got '{chunks[1].delta}'"
-
-
-# ===========================================================================
-# TestPrepareChatWithTools
-# ===========================================================================
 
 
 @pytest.mark.unit
@@ -1205,11 +1135,6 @@ class TestPrepareChatWithTools:
         ), f"Expected 42, got {result.get('extra_param')}"
 
 
-# ===========================================================================
-# TestGetToolCallsFromResponse
-# ===========================================================================
-
-
 @pytest.mark.unit
 class TestGetToolCallsFromResponse:
     """Tests for Responses.get_tool_calls_from_response() (inherited)."""
@@ -1300,11 +1225,6 @@ class TestGetToolCallsFromResponse:
         assert result == [], f"Expected empty list, got {result}"
 
 
-# ===========================================================================
-# TestGenerateToolCalls
-# ===========================================================================
-
-
 @pytest.mark.mock
 class TestGenerateToolCalls:
     """Tests for generate_tool_calls() (inherited from FunctionCallingLLM)."""
@@ -1370,11 +1290,6 @@ class TestGenerateToolCalls:
             )
             chunks = list(gen)
         assert len(chunks) == 1, f"Expected 1, got {len(chunks)}"
-
-
-# ===========================================================================
-# TestResponsesOutputParser
-# ===========================================================================
 
 
 @pytest.mark.unit
@@ -1548,11 +1463,6 @@ class TestResponsesOutputParser:
         assert thinking[0].content == "hello\nworld", f"Got '{thinking[0].content}'"
 
 
-# ===========================================================================
-# TestResponsesStreamAccumulator
-# ===========================================================================
-
-
 @pytest.mark.unit
 class TestResponsesStreamAccumulator:
     """Tests for ResponsesStreamAccumulator."""
@@ -1710,11 +1620,6 @@ class TestResponsesStreamAccumulator:
         assert thinking[0].content == "first\nsecond", f"Got '{thinking[0].content}'"
 
 
-# ===========================================================================
-# TestMessageConversion
-# ===========================================================================
-
-
 @pytest.mark.unit
 class TestMessageConversion:
     """Tests for to_openai_message_dicts with is_responses_api=True."""
@@ -1866,11 +1771,6 @@ class TestMessageConversion:
         assert result[1]["role"] == "user", f"Got '{result[1]['role']}'"
         assert result[2]["type"] == "function_call", f"Got '{result[2].get('type')}'"
         assert result[3]["role"] == "assistant", f"Got '{result[3]['role']}'"
-
-
-# ===========================================================================
-# TestGetModelName (from ModelMetadata mixin)
-# ===========================================================================
 
 
 @pytest.mark.unit

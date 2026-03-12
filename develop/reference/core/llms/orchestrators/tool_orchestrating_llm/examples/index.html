@@ -3276,7 +3276,7 @@ from serapeum.ollama import Ollama</p>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>```python function_calling
 <a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>import os
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>from pydantic import BaseModel
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>from serapeum.core.llms import Message, MessageRole, ToolOrchestratingLLM
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>from serapeum.core.llms import Message, MessageRole, ToolOrchestratingLLM, TextChunk
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>from serapeum.core.prompts import ChatPromptTemplate
 <a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>from serapeum.ollama import Ollama
 <a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
@@ -3327,7 +3327,13 @@ from serapeum.ollama import Ollama</p>
     llm=llm,
 )</p>
 <p>text = """
-The ancient Egyptian pyramids, built over 4,500 years ago, stand as some of humanity's most remarkable architectural achievements. The Great Pyramid of Giza, constructed for Pharaoh Khufu, was the tallest man-made structure in the world for nearly 4,000 years. These massive tombs were built using millions of limestone blocks, each weighing several tons, transported and assembled with astonishing precision. The pyramids served as elaborate burial chambers designed to protect pharaohs and their treasures for the afterlife. Today, they remain the only surviving wonder of the ancient world, drawing millions of visitors each year.
+The ancient Egyptian pyramids, built over 4,500 years ago, stand as some of humanity's most remarkable architectural 
+achievements. </p>
+<p>The Great Pyramid of Giza, constructed for Pharaoh Khufu, was the tallest man-made structure in the world for nearly 
+4,000 years. These massive tombs were built using millions of limestone blocks, each weighing several tons, transported 
+and assembled with astonishing precision. The pyramids served as elaborate burial chambers designed to protect pharaohs 
+and their treasures for the afterlife. Today, they remain the only surviving wonder of the ancient world, drawing 
+millions of visitors each year.
 """</p>
 <h1 id="synchronous-call-using-call"><a class="toclink" href="#synchronous-call-using-call">Synchronous call using <strong>call</strong></a><a class="headerlink" href="#synchronous-call-using-call" title="Permanent link">#</a></h1>
 <p>result = tools_llm(text=text)

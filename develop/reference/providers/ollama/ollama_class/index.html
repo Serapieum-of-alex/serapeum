@@ -1828,7 +1828,7 @@ def client(self) -&gt; Client:
 <a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>def generate_tool_calls(self, messages, tools, **kwargs):
 <a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a>    prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass implements
 <a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a>    response = self.chat(prepared)
-<a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a>    validated = self._validate_response(response, tools)  # Subclass implements
+<a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a>    validated = self._validate_response(response, allow_parallel_tool_calls=False)  # Subclass implements
 <a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a>    return validated
 </code></pre></div></p>
 <h3 id="3-protocol-based-tools"><a class="toclink" href="#3-protocol-based-tools">3. Protocol-Based Tools</a><a class="headerlink" href="#3-protocol-based-tools" title="Permanent link">#</a></h3>

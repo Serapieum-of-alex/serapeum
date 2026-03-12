@@ -204,6 +204,62 @@ class TestCompletions:
         )
         assert llm.model == "gpt-35-turbo"
 
+    def test_engine_alias_azure_deployment(self) -> None:
+        """Engine can be set via the azure_deployment field.
+
+        Test scenario:
+            azure_deployment is accepted as an alias for engine when
+            engine itself is not provided.
+        """
+        llm = Completions(
+            azure_deployment="az-dep",
+            api_key="k",
+            api_version="2024-02-01",
+        )
+        assert llm.engine == "az-dep", (
+            f"Expected engine 'az-dep', got '{llm.engine}'"
+        )
+
+    def test_custom_model(self) -> None:
+        """A custom model name is preserved.
+
+        Test scenario:
+            Explicitly passing model='gpt-4o' should override the default.
+        """
+        llm = Completions(
+            engine="dep", api_key="k", api_version="2024-02-01", model="gpt-4o"
+        )
+        assert llm.model == "gpt-4o", (
+            f"Expected 'gpt-4o', got '{llm.model}'"
+        )
+
+    def test_use_azure_ad_default_false(self) -> None:
+        """use_azure_ad defaults to False.
+
+        Test scenario:
+            Without explicit opt-in, Azure AD authentication is disabled.
+        """
+        llm = Completions(engine="dep", api_key="k", api_version="2024-02-01")
+        assert llm.use_azure_ad is False, (
+            f"Expected use_azure_ad=False, got {llm.use_azure_ad}"
+        )
+
+    def test_azure_deployment_field_preserved(self) -> None:
+        """azure_deployment field is stored separately from engine.
+
+        Test scenario:
+            Both engine and azure_deployment can be set independently.
+        """
+        llm = Completions(
+            engine="dep",
+            api_key="k",
+            api_version="2024-02-01",
+            azure_deployment="az-dep-id",
+        )
+        assert llm.azure_deployment == "az-dep-id", (
+            f"Expected 'az-dep-id', got '{llm.azure_deployment}'"
+        )
+
     @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
     def test_get_model_kwargs_uses_engine(
         self, sync_mock: MagicMock
@@ -264,7 +320,7 @@ class TestCompletionsCredentials:
         assert key == "ad-token"
         assert llm.api_key == "ad-token"
 
-    @patch("serapeum.azure_openai.llm.refresh_openai_azuread_token")
+    @patch("serapeum.azure_openai.llm.refresh_openai_azure_ad_token")
     @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
     def test_azure_ad_refresh_fallback(
         self, sync_mock: MagicMock, refresh_mock: MagicMock
@@ -302,6 +358,23 @@ class TestCompletionsCredentials:
         assert kwargs["api_key"] == "k"
 
     @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
+    def test_get_credential_kwargs_async_uses_async_http_client(
+        self, sync_mock: MagicMock
+    ) -> None:
+        """_get_credential_kwargs with is_async=True uses async http client.
+
+        Test scenario:
+            Passing is_async=True should select _async_http_client instead
+            of _http_client for the http_client kwarg.
+        """
+        llm = Completions(engine="dep", api_key="k", api_version="2024-02-01")
+        sync_kwargs = llm._get_credential_kwargs(is_async=False)
+        async_kwargs = llm._get_credential_kwargs(is_async=True)
+        assert sync_kwargs["http_client"] is not async_kwargs["http_client"] or (
+            sync_kwargs["http_client"] is None and async_kwargs["http_client"] is None
+        )
+
+    @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
     def test_client_property_returns_azure_client(
         self, sync_mock: MagicMock
     ) -> None:
@@ -311,6 +384,49 @@ class TestCompletionsCredentials:
         )
         _ = llm.client
         sync_mock.assert_called_once()
+
+    @patch("serapeum.azure_openai.llm.AsyncAzureOpenAI")
+    @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
+    def test_async_client_property_returns_azure_async_client(
+        self, sync_mock: MagicMock, async_mock: MagicMock
+    ) -> None:
+        """async_client property creates an AsyncAzureOpenAI instance.
+
+        Test scenario:
+            Accessing .async_client should call _build_async_client which
+            constructs an AsyncAzureOpenAI (mocked here).
+        """
+        llm = Completions(engine="dep", api_key="k", api_version="2024-02-01")
+        _ = llm.async_client
+        async_mock.assert_called_once()
+
+    @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
+    def test_build_sync_client_returns_sync_azure(
+        self, sync_mock: MagicMock
+    ) -> None:
+        """_build_sync_client returns a SyncAzureOpenAI instance.
+
+        Test scenario:
+            The method delegates to the SyncAzureOpenAI constructor.
+        """
+        llm = Completions(engine="dep", api_key="k", api_version="2024-02-01")
+        result = llm._build_sync_client(api_key="k", azure_endpoint="https://e.com/")
+        sync_mock.assert_called_with(api_key="k", azure_endpoint="https://e.com/")
+        assert result == sync_mock.return_value
+
+    @patch("serapeum.azure_openai.llm.AsyncAzureOpenAI")
+    def test_build_async_client_returns_async_azure(
+        self, async_mock: MagicMock
+    ) -> None:
+        """_build_async_client returns an AsyncAzureOpenAI instance.
+
+        Test scenario:
+            The method delegates to the AsyncAzureOpenAI constructor.
+        """
+        llm = Completions(engine="dep", api_key="k", api_version="2024-02-01")
+        result = llm._build_async_client(api_key="k", azure_endpoint="https://e.com/")
+        async_mock.assert_called_once_with(api_key="k", azure_endpoint="https://e.com/")
+        assert result == async_mock.return_value
 
 
 @pytest.mark.mock
@@ -384,6 +500,90 @@ class TestCompletionsWithMocks:
         chat_responses = list(chat_response_gen)
         assert chat_responses[-1].message.content == "Hello from\nAzure"
         assert chat_responses[-1].message.role == "assistant"
+
+    @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
+    def test_non_streaming_complete(self, sync_azure_openai_mock: MagicMock) -> None:
+        """Non-streaming complete returns a CompletionResponse.
+
+        Test scenario:
+            A non-streaming call to complete() should return a single
+            CompletionResponse with the response text.
+        """
+        mock_instance = sync_azure_openai_mock.return_value
+        mock_instance.chat.completions.create.return_value = mock_chat_completion_v1()
+
+        llm = Completions(engine="dep", api_key="mock", api_version="2024-02-01")
+        response = llm.complete("test prompt")
+        assert response.text == "\n\nThis is a test!", (
+            f"Expected '\\n\\nThis is a test!', got '{response.text}'"
+        )
+
+    @patch("serapeum.azure_openai.llm.SyncAzureOpenAI")
+    def test_non_streaming_chat(self, sync_azure_openai_mock: MagicMock) -> None:
+        """Non-streaming chat returns a ChatResponse.
+
+        Test scenario:
+            A non-streaming call to chat() should return a ChatResponse
+            with the assistant's message content.
+        """
+        mock_instance = sync_azure_openai_mock.return_value
+        mock_instance.chat.completions.create.return_value = mock_chat_completion_v1()
+
+        llm = Completions(engine="dep", api_key="mock", api_version="2024-02-01")
+        message = Message(role="user", chunks=[TextChunk(content="hello")])
+        response = llm.chat([message])
+        assert response.message.content == "\n\nThis is a test!", (
+            f"Expected '\\n\\nThis is a test!', got '{response.message.content}'"
+        )
+        assert response.message.role == "assistant"
+
+    @pytest.mark.asyncio
+    @patch("serapeum.azure_openai.llm.AsyncAzureOpenAI")
+    async def test_async_non_streaming_complete(
+        self, async_azure_openai_mock: MagicMock
+    ) -> None:
+        """Async non-streaming complete returns a CompletionResponse.
+
+        Test scenario:
+            acomplete() without streaming returns a single CompletionResponse.
+        """
+        mock_instance = MagicMock(spec=AsyncAzureOpenAI)
+        async_azure_openai_mock.return_value = mock_instance
+        create_fn = AsyncMock(return_value=mock_chat_completion_v1())
+        chat_mock = MagicMock()
+        chat_mock.completions.create = create_fn
+        mock_instance.chat = chat_mock
+
+        llm = Completions(engine="dep", api_key="mock", api_version="2024-02-01")
+        response = await llm.acomplete("test prompt")
+        assert response.text == "\n\nThis is a test!", (
+            f"Expected '\\n\\nThis is a test!', got '{response.text}'"
+        )
+
+    @pytest.mark.asyncio
+    @patch("serapeum.azure_openai.llm.AsyncAzureOpenAI")
+    async def test_async_non_streaming_chat(
+        self, async_azure_openai_mock: MagicMock
+    ) -> None:
+        """Async non-streaming chat returns a ChatResponse.
+
+        Test scenario:
+            achat() without streaming returns a ChatResponse with content.
+        """
+        mock_instance = MagicMock(spec=AsyncAzureOpenAI)
+        async_azure_openai_mock.return_value = mock_instance
+        create_fn = AsyncMock(return_value=mock_chat_completion_v1())
+        chat_mock = MagicMock()
+        chat_mock.completions.create = create_fn
+        mock_instance.chat = chat_mock
+
+        llm = Completions(engine="dep", api_key="mock", api_version="2024-02-01")
+        message = Message(role="user", chunks=[TextChunk(content="hello")])
+        response = await llm.achat([message])
+        assert response.message.content == "\n\nThis is a test!", (
+            f"Expected '\\n\\nThis is a test!', got '{response.message.content}'"
+        )
+        assert response.message.role == "assistant"
 
     @pytest.mark.asyncio
     @patch("serapeum.azure_openai.llm.AsyncAzureOpenAI")

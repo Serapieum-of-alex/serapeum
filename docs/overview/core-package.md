@@ -497,7 +497,7 @@ classDiagram
 
     class Message {
         +role: MessageRole
-        +content: str | List~ContentBlock~
+        +content: str | List~ChunkType~
         +metadata: Dict
         +additional_kwargs: Dict
     }

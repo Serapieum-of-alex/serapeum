@@ -20,7 +20,6 @@ import os
 import openai
 
 from serapeum.core.base.llms.utils import get_from_param_or_env
-from serapeum.core.llms import ChatResponse, ToolCallBlock
 
 DEFAULT_OPENAI_API_TYPE = "open_ai"
 DEFAULT_OPENAI_API_BASE = "https://api.openai.com/v1"

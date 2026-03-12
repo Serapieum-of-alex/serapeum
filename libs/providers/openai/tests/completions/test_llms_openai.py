@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 
 import pytest
+
 from serapeum.core.llms import ToolCallBlock
 from serapeum.core.tools import CallableTool
 from serapeum.openai import Completions

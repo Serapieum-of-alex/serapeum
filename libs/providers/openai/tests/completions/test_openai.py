@@ -4,21 +4,22 @@ import os
 from typing import Any, AsyncGenerator, Generator, Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-from serapeum.core.base.llms.types import TextChunk
-from serapeum.core.llms import Message
-from serapeum.openai import Completions
-from serapeum.openai.data.models import O1_MODELS
-
 import openai
+import pytest
 from openai.types.chat.chat_completion import (
     ChatCompletion,
     ChatCompletionMessage,
     Choice,
 )
-from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, ChoiceDelta
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
+from openai.types.chat.chat_completion_chunk import ChoiceDelta
 from openai.types.completion import Completion, CompletionChoice, CompletionUsage
+
+from serapeum.core.base.llms.types import TextChunk
+from serapeum.core.llms import Message
+from serapeum.openai import Completions
+from serapeum.openai.data.models import O1_MODELS
 
 
 class CachedOpenAIApiKeys:
@@ -485,6 +486,7 @@ def test_ensure_chat_message_is_serializable(MockSyncOpenAI: MagicMock) -> None:
 def test_structured_chat_simple(MockSyncOpenAI: MagicMock):
     """Simple test for structured output using as_structured_llm."""
     from pydantic import BaseModel, Field
+
     from serapeum.core.base.llms.types import Message
 
     class Person(BaseModel):
@@ -552,6 +554,7 @@ def test_prepare_schema_sanitizes_json_schema_name() -> None:
 async def test_structured_chat_simple_async(MockAsyncOpenAI: MagicMock):
     """Simple async test for structured output using as_structured_llm."""
     from pydantic import BaseModel, Field
+
     from serapeum.core.base.llms.types import Message
 
     class Person(BaseModel):

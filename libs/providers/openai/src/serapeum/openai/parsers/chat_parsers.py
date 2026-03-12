@@ -96,6 +96,7 @@ class ChatMessageParser:
     def __init__(
         self, openai_message: ChatCompletionMessage, modalities: list[str]
     ) -> None:
+        """Initialize ChatMessageParser."""
         self._openai_message = openai_message
         self._modalities = modalities
         self._blocks: list[ContentBlock] = []
@@ -293,6 +294,7 @@ class DictMessageParser:
     """
 
     def __init__(self, message_dict: dict[str, Any]) -> None:
+        """Initialize DictMessageParser."""
         self._message_dict = message_dict
         self._blocks: list[ContentBlock] = []
 
@@ -817,6 +819,7 @@ class ToolCallAccumulator:
     """
 
     def __init__(self) -> None:
+        """Initialize ToolCallAccumulator."""
         self._tool_calls: list[ChoiceDeltaToolCall] = []
 
     @property

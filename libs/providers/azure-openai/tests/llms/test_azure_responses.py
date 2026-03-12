@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, AsyncGenerator, Generator
+from typing import Any, AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
 from openai import AsyncAzureOpenAI
-from openai import AzureOpenAI as SyncAzureOpenAI
 from openai.types.responses import (
     ResponseOutputMessage,
     ResponseTextDeltaEvent,
@@ -15,7 +14,6 @@ from openai.types.responses import (
 from serapeum.azure_openai import Responses
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.llms import Message, TextChunk
-
 
 AZURE_DEFAULTS: dict[str, Any] = {
     "engine": "my-deployment",

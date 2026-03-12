@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import ollama as ollama_sdk
 import pytest
 
 from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
-
 
 # ---------------------------------------------------------------------------
 # Helpers

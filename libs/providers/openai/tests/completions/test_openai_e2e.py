@@ -33,8 +33,8 @@ from serapeum.core.llms import (
 )
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import CallableTool
-from serapeum.openai import Completions
 from serapeum.core.types import StructuredOutputMode
+from serapeum.openai import Completions
 from serapeum.openai.data.models import RESPONSES_API_ONLY_MODELS
 
 load_dotenv()

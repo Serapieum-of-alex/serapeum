@@ -18,18 +18,18 @@ from serapeum.core.base.llms.types import (
     CompletionResponse,
     CompletionResponseAsyncGen,
     CompletionResponseGen,
+    ContentBlock,
+    DocumentBlock,
     Image,
+    LogProb,
     Message,
     MessageList,
     MessageRole,
     Metadata,
     TextChunk,
-    ToolCallBlock,
-    ToolCallArguments,
     ThinkingBlock,
-    DocumentBlock,
-    ContentBlock,
-    LogProb,
+    ToolCallArguments,
+    ToolCallBlock,
 )
 
 # Core LLM abstractions
@@ -39,7 +39,6 @@ from serapeum.core.llms.abstractions import (
     FunctionCallingLLM,
     StructuredOutputLLM,
 )
-from serapeum.core.llms.orchestrators.utils import FlexibleModel
 from serapeum.core.llms.base import LLM
 
 # High-level orchestrators
@@ -47,6 +46,7 @@ from serapeum.core.llms.orchestrators import (
     TextCompletionLLM,
     ToolOrchestratingLLM,
 )
+from serapeum.core.llms.orchestrators.utils import FlexibleModel
 
 __all__ = [
     # Base LLM and types

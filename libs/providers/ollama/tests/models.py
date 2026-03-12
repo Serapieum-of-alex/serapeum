@@ -1,10 +1,10 @@
 """Test data models for Ollama integration tests."""
 
 from __future__ import annotations
+
 import os
 
 import ollama as ollama_sdk
-
 
 # created clients in this test file are used in the pytest.mark.skipif decorator and can not be made as fixtures
 # so keep them as they are.

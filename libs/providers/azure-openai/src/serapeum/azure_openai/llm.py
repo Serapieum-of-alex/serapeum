@@ -23,7 +23,6 @@ import os
 from typing import TYPE_CHECKING, Any
 
 import httpx
-
 from openai import AsyncAzureOpenAI
 from openai import AzureOpenAI as SyncAzureOpenAI
 from openai.lib.azure import AzureADTokenProvider
@@ -256,7 +255,7 @@ class AzureClient:
         return model_kwargs
 
 
-class Completions(AzureClient, OpenAICompletions):  # type: ignore[misc]
+class Completions(AzureClient, OpenAICompletions):
     """Azure OpenAI Chat Completions API provider.
 
     Combines Azure-specific connection management from

@@ -54,20 +54,23 @@ See Also:
 """
 
 from __future__ import annotations
-from typing import Any, Annotated, Sequence
-import uuid
-from abc import abstractmethod, ABC
+
 import textwrap
+import uuid
+from abc import ABC, abstractmethod
 from enum import Enum
+from typing import Annotated, Any, Sequence
+
 from pydantic import (
     ConfigDict,
     Field,
     PlainSerializer,
-    model_validator,
     field_validator,
+    model_validator,
 )
-from serapeum.core.utils.base import truncate_text
+
 from serapeum.core.types import SerializableModel
+from serapeum.core.utils.base import truncate_text
 
 TRUNCATE_LENGTH = 350
 """Maximum length for truncating node text in string representations."""

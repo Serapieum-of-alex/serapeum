@@ -14,6 +14,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from openai.types.responses import (
+    Response,
     ResponseCodeInterpreterToolCall,
     ResponseCompletedEvent,
     ResponseComputerToolCall,
@@ -30,20 +31,18 @@ from openai.types.responses import (
     ResponseOutputItemDoneEvent,
     ResponseOutputMessage,
     ResponseOutputText,
+    ResponseOutputTextAnnotationAddedEvent,
     ResponseReasoningItem,
     ResponseStreamEvent,
     ResponseTextDeltaEvent,
     ResponseWebSearchCallCompletedEvent,
-    ResponseOutputTextAnnotationAddedEvent,
 )
-from openai.types.responses import Response
 from openai.types.responses.response_output_item import ImageGenerationCall, McpCall
 from openai.types.responses.response_reasoning_item import Content, Summary
 
 from serapeum.core.base.llms.types import (
     ChatResponse,
     Image,
-    Message,
     MessageRole,
     TextChunk,
     ThinkingBlock,

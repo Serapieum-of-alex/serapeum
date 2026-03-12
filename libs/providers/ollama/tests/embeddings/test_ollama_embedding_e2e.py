@@ -13,8 +13,8 @@ import pytest
 
 from serapeum.core.base.embeddings.base import BaseEmbedding
 from serapeum.ollama import OllamaEmbedding
-from ..models import client, is_ci
 
+from ..models import client, is_ci
 
 SKIP = pytest.mark.skipif(
     client is None or is_ci,

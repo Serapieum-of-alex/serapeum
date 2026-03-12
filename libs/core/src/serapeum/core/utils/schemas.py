@@ -1,6 +1,7 @@
 """Utilities for working with JSON schemas and LLMs."""
 
 from __future__ import annotations
+
 import copy
 import json
 import re
@@ -255,7 +256,7 @@ class SchemaFormatter:
         excluded_keys: list[str] | None = None,
         escape_json: bool = True,
     ) -> str:
-        """Format a schema dictionary for inclusion in an LLM prompt.
+        r"""Format a schema dictionary for inclusion in an LLM prompt.
 
         Args:
             schema_dict: Full JSON Schema dictionary.

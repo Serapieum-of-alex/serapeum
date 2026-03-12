@@ -12,14 +12,14 @@ OllamaEmbedding class, targeting ≥95% code coverage with focus on:
 from __future__ import annotations
 
 import asyncio
-import pytest
 from typing import Sequence
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import ollama as ollama_sdk
+import pytest
 from pydantic import ValidationError
 
-from serapeum.core.base.embeddings.base import BaseEmbedding, DEFAULT_EMBED_BATCH_SIZE
+from serapeum.core.base.embeddings.base import DEFAULT_EMBED_BATCH_SIZE, BaseEmbedding
 from serapeum.ollama.embedding import OllamaEmbedding
 
 
@@ -1995,24 +1995,24 @@ class TestBaseEmbeddingIntegration:
 
         # Check sync methods
         assert hasattr(embedder, "_get_query_embedding")
-        assert callable(getattr(embedder, "_get_query_embedding"))
+        assert callable(embedder._get_query_embedding)
 
         assert hasattr(embedder, "_get_text_embedding")
-        assert callable(getattr(embedder, "_get_text_embedding"))
+        assert callable(embedder._get_text_embedding)
 
         # Check async methods
         assert hasattr(embedder, "_aget_query_embedding")
-        assert callable(getattr(embedder, "_aget_query_embedding"))
+        assert callable(embedder._aget_query_embedding)
 
         assert hasattr(embedder, "_aget_text_embedding")
-        assert callable(getattr(embedder, "_aget_text_embedding"))
+        assert callable(embedder._aget_text_embedding)
 
         # Check batch methods
         assert hasattr(embedder, "_get_text_embeddings")
-        assert callable(getattr(embedder, "_get_text_embeddings"))
+        assert callable(embedder._get_text_embeddings)
 
         assert hasattr(embedder, "_aget_text_embeddings")
-        assert callable(getattr(embedder, "_aget_text_embeddings"))
+        assert callable(embedder._aget_text_embeddings)
 
     def test_model_name_accessible(self, embedder_factory) -> None:
         """Test that model_name from BaseEmbedding is accessible.

@@ -25,7 +25,6 @@ Private helpers:
 
 from __future__ import annotations
 
-import base64
 import logging
 from collections.abc import Callable
 from typing import Any, Sequence, Type, cast
@@ -36,7 +35,6 @@ from pydantic import BaseModel
 
 from serapeum.core.llms import (
     Audio,
-    ContentBlock,
     DocumentBlock,
     Image,
     Message,
@@ -894,6 +892,7 @@ class ChatMessageConverter:
         drop_none: bool = False,
         model: str | None = None,
     ) -> None:
+        """Initialize ChatMessageConverter."""
         self._message = message
         self._model = model
         self._drop_none = drop_none
@@ -1197,6 +1196,7 @@ class ResponsesMessageConverter:
         drop_none: bool = False,
         model: str | None = None,
     ) -> None:
+        """Initialize ResponsesMessageConverter."""
         self._message = message
         self._model = model
         self._drop_none = drop_none

@@ -3,27 +3,27 @@
 from __future__ import annotations
 
 import base64
+from binascii import Error as BinasciiError
 from collections.abc import Sequence as ABCSequence
 from enum import Enum
 from io import BytesIO, IOBase
-from binascii import Error as BinasciiError
 from pathlib import Path
 from typing import Annotated, Any, AsyncGenerator, Generator, Iterator, Literal
 from urllib.parse import urlparse
 
 import requests
-from filetype import guess as filetype_guess
 from filetype import get_type
+from filetype import guess as filetype_guess
 from pydantic import (
     AnyUrl,
     BaseModel,
     ConfigDict,
     Field,
     FilePath,
+    ValidationError,
     field_serializer,
     field_validator,
     model_validator,
-    ValidationError,
 )
 from typing_extensions import Self
 
@@ -242,9 +242,7 @@ class DocumentBlock(BaseModel):
         return result
 
     def resolve_document(self) -> IOBase:
-        """
-        Resolve a document such that it is represented by a BufferIO object.
-        """
+        """Resolve a document such that it is represented by a BufferIO object."""
         data_buffer = (
             self.data
             if isinstance(self.data, IOBase)
@@ -265,16 +263,12 @@ class DocumentBlock(BaseModel):
         return data_buffer
 
     def _get_b64_string(self, data_buffer: IOBase) -> str:
-        """
-        Get base64-encoded string from a IOBase buffer.
-        """
+        """Get base64-encoded string from a IOBase buffer."""
         data = data_buffer.read()
         return base64.b64encode(data).decode("utf-8")
 
     def _get_b64_bytes(self, data_buffer: IOBase) -> bytes:
-        """
-        Get base64-encoded bytes from a IOBase buffer.
-        """
+        """Get base64-encoded bytes from a IOBase buffer."""
         data = data_buffer.read()
         return base64.b64encode(data)
 
@@ -387,6 +381,8 @@ class ToolCallArguments(BaseModel):
 
 
 class ToolCallBlock(BaseModel):
+    """A representation of a tool call block within a message."""
+
     type: Literal["tool_call"] = "tool_call"
     tool_call_id: str | None = Field(
         default=None, description="ID of the tool call, if provided"
@@ -418,7 +414,7 @@ class ToolCallBlock(BaseModel):
 
 
 class ThinkingBlock(BaseModel):
-    """A representation of the content streamed from reasoning/thinking processes by LLMs"""
+    """A representation of the content streamed from reasoning/thinking processes by LLMs."""
 
     type: Literal["thinking"] = "thinking"
     content: str | None = Field(

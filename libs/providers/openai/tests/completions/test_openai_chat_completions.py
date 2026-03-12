@@ -18,9 +18,11 @@ from openai.types.chat.chat_completion import (
 )
 from openai.types.chat.chat_completion_chunk import (
     ChatCompletionChunk,
-    ChoiceDelta,
 )
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
+from openai.types.chat.chat_completion_chunk import (
+    ChoiceDelta,
+)
 from openai.types.chat.chat_completion_message_tool_call import (
     ChatCompletionMessageToolCall,
     Function,

@@ -28,9 +28,6 @@ from pydantic import BaseModel
 from serapeum.core.base.llms.types import (
     Audio,
     Image,
-    LogProb,
-    Message,
-    MessageRole,
     TextChunk,
     ToolCallBlock,
 )
@@ -41,7 +38,6 @@ from serapeum.openai.parsers import (
     ToolCallAccumulator,
     to_openai_tool,
 )
-
 
 # ---------------------------------------------------------------------------
 # ChatMessageParser

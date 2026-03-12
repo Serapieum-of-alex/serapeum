@@ -1,17 +1,19 @@
 """Tests for Ollama LLM integration and related functionality."""
 
 from __future__ import annotations
+
 from copy import deepcopy
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
-import pytest
 import ollama as ollama_sdk
+import pytest
 from pydantic import BaseModel
 
 from serapeum.core.base.llms.types import TextChunk
 from serapeum.core.llms import BaseLLM, Message
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
+
 from ..models import client
 
 response_dict = {

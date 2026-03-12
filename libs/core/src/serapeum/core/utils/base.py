@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
 import sys
-import asyncio
-from typing import Iterable, Any, Coroutine, TypeVar
 from pathlib import Path
-
+from typing import Any, Coroutine, Iterable, TypeVar
 
 DEFAULT_NUM_WORKERS = 4
 
@@ -24,9 +23,7 @@ def truncate_text(text: str, max_length: int) -> str:
 def get_tqdm_iterable(
     items: Iterable, show_progress: bool, desc: str, total: int | None = None
 ) -> Iterable:
-    """
-    Optionally get a tqdm iterable. Ensures tqdm.auto is used.
-    """
+    """Optionally get a tqdm iterable. Ensures tqdm.auto is used."""
     _iterator = items
     if show_progress:
         try:
@@ -131,9 +128,9 @@ async def run_jobs(
 
 
 def get_cache_dir() -> str:
-    """
-    Locate a platform-appropriate cache directory for serapeum,
-    and create it if it doesn't yet exist.
+    """Locate a platform-appropriate cache directory for serapeum.
+
+    Create the directory if it doesn't yet exist.
     """
     # User override
     if "SERAPEUM_CACHE_DIR" in os.environ:

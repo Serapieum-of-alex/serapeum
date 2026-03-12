@@ -13,25 +13,27 @@ batching and progress tracking for large-scale embedding tasks.
 """
 
 from __future__ import annotations
+
 import asyncio
-import uuid
 import json
+import uuid
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Callable, Coroutine, Sequence
-from tqdm.asyncio import tqdm_asyncio
+
 import numpy as np
 from pydantic import (
-    Field,
     ConfigDict,
+    Field,
 )
+from tqdm.asyncio import tqdm_asyncio
 
-from serapeum.core.types import SerializableModel
 from serapeum.core.base.embeddings.types import (
     BaseNode,
-    MetadataMode,
     CallMixin,
+    MetadataMode,
 )
+from serapeum.core.types import SerializableModel
 from serapeum.core.utils.base import get_tqdm_iterable, run_jobs
 
 Embedding = list[float]

@@ -18,21 +18,20 @@ from __future__ import annotations
 from collections.abc import Callable
 from types import AsyncGeneratorType, GeneratorType
 
-
-async def _async_gen(*items):  # type: ignore[return]
-    """Async generator yielding items in order — used as astream_chat mock return."""
-    for item in items:
-        yield item
-
-
 import pytest
-from pytest_mock import MockerFixture
 from pydantic import BaseModel
+from pytest_mock import MockerFixture
 
 from serapeum.core.llms.base import LLM
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.types import StructuredOutputMode
 from serapeum.ollama import Ollama
+
+
+async def _async_gen(*items):  # type: ignore[return]
+    """Async generator yielding items in order — used as astream_chat mock return."""
+    for item in items:
+        yield item
 
 
 class Simple(BaseModel):

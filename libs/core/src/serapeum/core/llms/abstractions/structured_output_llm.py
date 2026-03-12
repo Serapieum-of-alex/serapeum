@@ -1,6 +1,7 @@
 """Structured output wrapper and helpers around the core LLM API."""
 
 from __future__ import annotations
+
 from typing import Any, Literal, Sequence, Type, overload
 
 from pydantic import BaseModel, Field, SerializeAsAny
@@ -14,7 +15,6 @@ from serapeum.core.base.llms.types import (
     Metadata,
     TextChunk,
 )
-
 from serapeum.core.llms.abstractions.adapters import ChatToCompletion
 from serapeum.core.llms.base import LLM
 from serapeum.core.prompts.base import ChatPromptTemplate

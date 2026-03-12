@@ -34,7 +34,6 @@ from serapeum.core.llms import (
 )
 from serapeum.llama_cpp import LlamaCPP
 
-
 HF_MODEL_ID_ENV = "LLAMA_CPP_HF_MODEL_ID"
 HF_FILENAME_ENV = "LLAMA_CPP_HF_FILENAME"
 

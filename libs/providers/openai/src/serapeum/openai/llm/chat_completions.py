@@ -24,27 +24,35 @@ from typing import (
     overload,
 )
 
-from serapeum.core.llms import (
-    Message,
-    ChatResponse,
-    ChatResponseAsyncGen,
-    ChatResponseGen,
-    CompletionResponse,
-    CompletionResponseAsyncGen,
-    CompletionResponseGen,
-    Metadata,
-    MessageRole,
-    ToolCallBlock,
-    TextChunk,
-    ChatToCompletion,
-)
-from pydantic import Field, model_validator, ConfigDict
+from openai.types.chat.chat_completion_chunk import ChoiceDelta
+from pydantic import ConfigDict, Field, model_validator
 
+from serapeum.core.base.llms.utils import (
+    acompletion_to_chat_decorator,
+    astream_completion_to_chat_decorator,
+    completion_to_chat_decorator,
+    stream_completion_to_chat_decorator,
+)
 from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
 )
-
-from serapeum.core.llms import FunctionCallingLLM, ToolCallArguments
+from serapeum.core.llms import (
+    ChatResponse,
+    ChatResponseAsyncGen,
+    ChatResponseGen,
+    ChatToCompletion,
+    CompletionResponse,
+    CompletionResponseAsyncGen,
+    CompletionResponseGen,
+    FunctionCallingLLM,
+    Message,
+    MessageRole,
+    Metadata,
+    TextChunk,
+    ToolCallArguments,
+    ToolCallBlock,
+)
+from serapeum.core.retry import retry
 from serapeum.core.utils.schemas import parse_partial_json
 from serapeum.openai.data.models import (
     O1_MODELS,
@@ -53,23 +61,15 @@ from serapeum.openai.data.models import (
     is_function_calling_model,
     openai_modelname_to_contextsize,
 )
+from serapeum.openai.llm.base import Client, ModelMetadata, StructuredOutput
 from serapeum.openai.parsers import (
     ChatMessageParser,
     LogProbParser,
     ToolCallAccumulator,
     to_openai_message_dicts,
 )
-from serapeum.openai.llm.base import Client, ModelMetadata, StructuredOutput
 from serapeum.openai.retry import is_retryable
 from serapeum.openai.utils import resolve_tool_choice
-from serapeum.core.retry import retry
-from openai.types.chat.chat_completion_chunk import ChoiceDelta
-from serapeum.core.base.llms.utils import (
-    completion_to_chat_decorator,
-    stream_completion_to_chat_decorator,
-    acompletion_to_chat_decorator,
-    astream_completion_to_chat_decorator,
-)
 
 if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool

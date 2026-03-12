@@ -23,7 +23,6 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 from serapeum.core.retry import Retry
 from serapeum.openai.utils import resolve_openai_credentials
 
-
 __all__ = ["Client"]
 
 

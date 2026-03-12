@@ -1,6 +1,7 @@
 """tools module."""
 
 from __future__ import annotations
+
 import asyncio
 import json
 from abc import abstractmethod
@@ -11,7 +12,6 @@ from pydantic import BaseModel, ValidationError
 
 from serapeum.core.base.llms.types import ChunkType, TextChunk
 from serapeum.core.utils.schemas import Schema
-
 
 __all__ = [
     "MinimalToolSchema",
@@ -1033,5 +1033,6 @@ class ToolCallError(Exception):
     """
 
     def __init__(self, message: str, tool_name: str | None = None) -> None:
-        super().__init__(message)
+        """Initialize a ToolCallError with a message and optional tool name."""
+        super().__init__(message, tool_name)
         self.tool_name = tool_name

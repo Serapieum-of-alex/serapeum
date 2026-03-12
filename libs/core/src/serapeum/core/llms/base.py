@@ -5,19 +5,20 @@ streaming, and structured outputs.
 """
 
 from __future__ import annotations
+
 from abc import ABC
 from typing import (
+    TYPE_CHECKING,
     Any,
     AsyncGenerator,
     Generator,
     Protocol,
-    TYPE_CHECKING,
     runtime_checkable,
-    Sequence,
 )
-from typing_extensions import Annotated
 
 from pydantic import BaseModel, Field, WithJsonSchema, field_validator, model_validator
+from typing_extensions import Annotated
+
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.types import (
     ChatResponseAsyncGen,
@@ -27,12 +28,10 @@ from serapeum.core.base.llms.types import (
     Message,
     MessageList,
     MessageRole,
-    CompletionResponse,
     TextChunk,
 )
 from serapeum.core.output_parsers import BaseParser, TokenAsyncGen, TokenGen
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
-
 from serapeum.core.types import Model, StructuredOutputMode
 
 if TYPE_CHECKING:

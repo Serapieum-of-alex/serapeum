@@ -14,17 +14,17 @@ from openai.types.chat.chat_completion_message_tool_call import (
 )
 from openai.types.chat.chat_completion_token_logprob import ChatCompletionTokenLogprob
 from openai.types.completion_choice import Logprobs
+from pydantic import BaseModel
 
 from serapeum.core.base.llms.types import (
-    Message,
     ChatResponse,
     Image,
     LogProb,
+    Message,
     MessageRole,
     TextChunk,
     ToolCallBlock,
 )
-from pydantic import BaseModel
 from serapeum.openai import Completions
 from serapeum.openai.data.models import (
     ALL_AVAILABLE_MODELS,

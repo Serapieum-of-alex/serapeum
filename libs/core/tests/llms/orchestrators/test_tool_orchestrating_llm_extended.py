@@ -16,15 +16,15 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import BaseModel
 
-from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.base.llms.types import TextChunk
+from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.llms import (
     ChatResponse,
     FunctionCallingLLM,
     Message,
     Metadata,
-    ToolOrchestratingLLM,
     ToolCallArguments,
+    ToolOrchestratingLLM,
 )
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.tools import ToolOutput

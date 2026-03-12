@@ -24,13 +24,11 @@ from typing import (
 from pydantic import BaseModel
 
 from serapeum.core.base.llms.types import Message
-from serapeum.core.types import StructuredOutputMode
-from serapeum.core.llms import FlexibleModel
-from serapeum.core.prompts import PromptTemplate
-from serapeum.openai.data.models import is_json_schema_supported
+from serapeum.core.llms import LLM, FlexibleModel
 from serapeum.core.llms.orchestrators.utils import process_streaming_content_incremental
-from serapeum.core.llms import LLM
-
+from serapeum.core.prompts import PromptTemplate
+from serapeum.core.types import StructuredOutputMode
+from serapeum.openai.data.models import is_json_schema_supported
 
 Model = TypeVar("Model", bound=BaseModel)
 

@@ -4,6 +4,12 @@ Re-exports all public symbols so that ``from serapeum.openai.parsers import ...`
 works as a drop-in replacement for the former ``serapeum.openai.converters`` module.
 """
 
+from serapeum.openai.parsers.chat_parsers import (
+    ChatMessageParser,
+    DictMessageParser,
+    LogProbParser,
+    ToolCallAccumulator,
+)
 from serapeum.openai.parsers.formatters import (
     ChatFormat,
     ChatMessageConverter,
@@ -15,12 +21,6 @@ from serapeum.openai.parsers.formatters import (
     _strip_none_keys,
     to_openai_message_dicts,
     to_openai_tool,
-)
-from serapeum.openai.parsers.chat_parsers import (
-    ChatMessageParser,
-    DictMessageParser,
-    LogProbParser,
-    ToolCallAccumulator,
 )
 from serapeum.openai.parsers.response_parsers import (
     ResponsesOutputParser,

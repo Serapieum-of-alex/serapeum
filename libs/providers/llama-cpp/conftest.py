@@ -20,7 +20,7 @@ _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 pytest_addoption = _mod.pytest_addoption  # noqa: F401
 pytest_collection_modifyitems = _mod.pytest_collection_modifyitems  # noqa: F401
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv()
 

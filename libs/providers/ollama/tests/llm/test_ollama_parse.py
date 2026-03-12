@@ -12,7 +12,7 @@ deterministic extraction.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Annotated, Optional, Union
+from typing import Annotated, Literal, Optional, Union
 
 import pytest
 from pydantic import BaseModel, Field, field_validator
@@ -21,7 +21,6 @@ from serapeum.core.prompts import PromptTemplate
 from serapeum.ollama import Ollama
 
 from ..models import client
-
 
 # ---------------------------------------------------------------------------
 # Schema stress-test models
@@ -107,7 +106,6 @@ class Review(BaseModel):
 
 
 # 7. Literal field  (produces 'const' / single-value enum in schema)
-from typing import Literal
 
 
 class TrafficLight(BaseModel):

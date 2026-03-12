@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from serapeum.core.llms import Message, MessageRole, TextChunk
+from serapeum.core.llms import Message, MessageRole
 
 BOS, EOS = "<s>", "</s>"
 B_INST, E_INST = "[INST]", "[/INST]"

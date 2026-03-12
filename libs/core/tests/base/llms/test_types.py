@@ -912,7 +912,7 @@ class TestCompletionResponse:
             """
             a = CompletionResponse(text="abc", delta="x", additional_kwargs={"k": 1})
             b = CompletionResponse(text="abc", delta="x", additional_kwargs={"k": 1})
-            assert a == b, f"Expected equal instances"
+            assert a == b, "Expected equal instances"
 
         @pytest.mark.unit
         def test_equality_different_text(self):

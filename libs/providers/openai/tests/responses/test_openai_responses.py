@@ -22,8 +22,20 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
-from pydantic import BaseModel, Field
+from openai.types.responses import (
+    ResponseFunctionCallArgumentsDeltaEvent,
+    ResponseFunctionCallArgumentsDoneEvent,
+    ResponseFunctionToolCall,
+    ResponseOutputItem,
+    ResponseOutputItemAddedEvent,
+    ResponseOutputItemDoneEvent,
+    ResponseOutputMessage,
+    ResponseOutputText,
+    ResponseOutputTextAnnotationAddedEvent,
+    ResponseReasoningItem,
+    ResponseTextDeltaEvent,
+)
+from openai.types.responses.response_reasoning_item import Content, Summary
 
 from serapeum.core.base.llms.types import (
     ChatResponse,
@@ -32,33 +44,15 @@ from serapeum.core.base.llms.types import (
     TextChunk,
     ThinkingBlock,
     ToolCallBlock,
-    DocumentBlock,
 )
 from serapeum.core.tools import CallableTool
-from serapeum.core.prompts import PromptTemplate
-from serapeum.openai.llm.responses import Responses
 from serapeum.openai.data.models import O1_MODELS
+from serapeum.openai.llm.responses import Responses
 from serapeum.openai.parsers import (
     ResponsesOutputParser,
     ResponsesStreamAccumulator,
     to_openai_message_dicts,
 )
-
-from openai.types.responses import (
-    ResponseOutputMessage,
-    ResponseTextDeltaEvent,
-    ResponseFunctionCallArgumentsDeltaEvent,
-    ResponseOutputTextAnnotationAddedEvent,
-    ResponseFunctionCallArgumentsDoneEvent,
-    ResponseReasoningItem,
-    ResponseOutputItem,
-    ResponseOutputText,
-    ResponseOutputItemDoneEvent,
-    ResponseOutputItemAddedEvent,
-    ResponseFunctionToolCall,
-)
-from openai.types.responses.response_reasoning_item import Content, Summary
-
 
 # ---------------------------------------------------------------------------
 # Helpers

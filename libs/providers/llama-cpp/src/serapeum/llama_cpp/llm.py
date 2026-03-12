@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Any, Literal, overload
 
 from llama_cpp import Llama
-from pydantic import Field, PrivateAttr, field_validator, model_validator, ConfigDict
+from pydantic import ConfigDict, Field, PrivateAttr, field_validator, model_validator
 
 from serapeum.core.configs.defaults import (
     DEFAULT_CONTEXT_WINDOW,

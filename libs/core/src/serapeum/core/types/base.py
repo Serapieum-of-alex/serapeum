@@ -8,7 +8,7 @@ import logging
 import pickle  # nosec B403
 from enum import Enum
 from typing import Any, TypeVar
-from typing_extensions import Self
+
 from pydantic import (
     BaseModel,
     GetJsonSchemaHandler,
@@ -18,6 +18,7 @@ from pydantic import (
 )
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import CoreSchema
+from typing_extensions import Self
 
 Model = TypeVar("Model", bound=BaseModel)
 

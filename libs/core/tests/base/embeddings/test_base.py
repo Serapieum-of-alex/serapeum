@@ -2,6 +2,7 @@
 
 from typing import Any, List
 from unittest.mock import patch
+
 import pytest
 
 from serapeum.core.base.embeddings.base import SimilarityMode, mean_agg

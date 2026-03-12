@@ -12,8 +12,9 @@ from openai.types.chat.chat_completion import (
     ChatCompletionMessage,
     Choice,
 )
-from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, ChoiceDelta
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
+from openai.types.chat.chat_completion_chunk import ChoiceDelta
 from openai.types.completion import CompletionUsage
 
 from serapeum.azure_openai import Completions

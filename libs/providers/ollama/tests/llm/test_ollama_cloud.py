@@ -22,6 +22,7 @@ from serapeum.core.base.llms.types import TextChunk
 from serapeum.core.llms import Message
 from serapeum.ollama import Ollama
 from serapeum.ollama.client import DEFAULT_BASE_URL, OLLAMA_CLOUD_BASE_URL
+
 from ..models import cloud_client
 
 

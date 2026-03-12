@@ -8,9 +8,9 @@ from serapeum.core.base.embeddings.types import (
     CallMixin,
     LinkedNodes,
     MetadataMode,
+    NodeContentType,
     NodeInfo,
     NodeType,
-    NodeContentType,
 )
 
 

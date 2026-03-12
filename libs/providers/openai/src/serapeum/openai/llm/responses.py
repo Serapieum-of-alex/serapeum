@@ -12,9 +12,6 @@ tool-call forcing, and reasoning-effort control.
 from __future__ import annotations
 
 import logging
-
-from openai import AzureOpenAI
-from openai.types.responses import Response
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -23,42 +20,43 @@ from typing import (
     overload,
 )
 
-from serapeum.core.llms import (
-    Message,
-    ChatResponse,
-    ChatResponseAsyncGen,
-    ChatResponseGen,
-    Metadata,
-    MessageRole,
-    TextChunk,
-    ThinkingBlock,
-    ChatToCompletion,
-)
+from openai import AzureOpenAI
+from openai.types.responses import Response
 from pydantic import (
     Field,
     PrivateAttr,
     model_validator,
 )
+
 from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
 )
-
-from serapeum.core.llms import FunctionCallingLLM
+from serapeum.core.llms import (
+    ChatResponse,
+    ChatResponseAsyncGen,
+    ChatResponseGen,
+    ChatToCompletion,
+    FunctionCallingLLM,
+    Message,
+    MessageRole,
+    Metadata,
+    TextChunk,
+    ThinkingBlock,
+)
+from serapeum.core.retry import retry
 from serapeum.openai.data.models import (
     O1_MODELS,
     is_function_calling_model,
     openai_modelname_to_contextsize,
 )
+from serapeum.openai.llm.base import Client, ModelMetadata, StructuredOutput
 from serapeum.openai.parsers import (
     ResponsesOutputParser,
     ResponsesStreamAccumulator,
     to_openai_message_dicts,
 )
-from serapeum.openai.llm.base import Client, ModelMetadata, StructuredOutput
 from serapeum.openai.retry import is_retryable
 from serapeum.openai.utils import resolve_tool_choice
-from serapeum.core.retry import retry
-
 
 if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool
@@ -916,7 +914,6 @@ class Responses(
             Completions._prepare_chat_with_tools: Chat Completions API variant
                 that uses the nested tool-spec format.
         """
-
         # openai responses api has a slightly different tool spec format
         tool_specs = [
             {

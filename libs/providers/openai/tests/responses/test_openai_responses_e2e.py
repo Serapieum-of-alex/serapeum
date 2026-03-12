@@ -28,7 +28,6 @@ from serapeum.core.llms import (
     Message,
     MessageRole,
     TextChunk,
-    ToolCallBlock,
 )
 from serapeum.core.prompts import PromptTemplate
 from serapeum.core.tools import CallableTool
@@ -750,7 +749,7 @@ class TestResponsesTrackPreviousResponses:
         )
         assert llm.store is True, "store should be True when tracking responses"
 
-        r1 = llm.chat(
+        llm.chat(
             [
                 Message(
                     role=MessageRole.USER,

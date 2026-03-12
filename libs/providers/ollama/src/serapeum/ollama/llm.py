@@ -29,7 +29,7 @@ from typing import (
 )
 
 import ollama as ollama_sdk  # type: ignore[attr-defined]
-from pydantic import BaseModel, Field, PrivateAttr, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llms import (
@@ -46,12 +46,11 @@ from serapeum.core.llms import (
     TextChunk,
     ToolCallBlock,
 )
-
 from serapeum.core.llms.orchestrators import StreamingObjectProcessor
 from serapeum.core.prompts import PromptTemplate
+from serapeum.core.retry import retry
 from serapeum.core.tools import ArgumentCoercer
 from serapeum.core.types import StructuredOutputMode
-from serapeum.core.retry import retry
 from serapeum.ollama.client import Client
 from serapeum.ollama.retry import is_retryable
 

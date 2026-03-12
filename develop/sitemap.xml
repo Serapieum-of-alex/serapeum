@@ -17,22 +17,6 @@
          <lastmod>2026-03-12</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Serapeum/develop/llm-sdk-api-comparison/</loc>
-         <lastmod>2026-03-12</lastmod>
-    </url>
-    <url>
-         <loc>https://serapieum-of-alex.github.io/Serapeum/develop/architecture/diagrams/</loc>
-         <lastmod>2026-03-12</lastmod>
-    </url>
-    <url>
-         <loc>https://serapieum-of-alex.github.io/Serapeum/develop/architecture/integration-guide/</loc>
-         <lastmod>2026-03-12</lastmod>
-    </url>
-    <url>
-         <loc>https://serapieum-of-alex.github.io/Serapeum/develop/architecture/legend/</loc>
-         <lastmod>2026-03-12</lastmod>
-    </url>
-    <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/develop/developer-guide/SECURITY/</loc>
          <lastmod>2026-03-12</lastmod>
     </url>
@@ -50,10 +34,6 @@
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/develop/developer-guide/testing-docs/</loc>
-         <lastmod>2026-03-12</lastmod>
-    </url>
-    <url>
-         <loc>https://serapieum-of-alex.github.io/Serapeum/develop/developer-guide/worktree/</loc>
          <lastmod>2026-03-12</lastmod>
     </url>
     <url>
@@ -149,10 +129,6 @@
          <lastmod>2026-03-12</lastmod>
     </url>
     <url>
-         <loc>https://serapieum-of-alex.github.io/Serapeum/develop/reference/providers/provider-api-comparison/</loc>
-         <lastmod>2026-03-12</lastmod>
-    </url>
-    <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/develop/reference/providers/llama-cpp/api_reference/</loc>
          <lastmod>2026-03-12</lastmod>
     </url>
@@ -214,10 +190,6 @@
     </url>
     <url>
          <loc>https://serapieum-of-alex.github.io/Serapeum/develop/reference/providers/ollama/ollama_state/</loc>
-         <lastmod>2026-03-12</lastmod>
-    </url>
-    <url>
-         <loc>https://serapieum-of-alex.github.io/Serapeum/develop/reference/providers/openai/openai-vs-responses/</loc>
          <lastmod>2026-03-12</lastmod>
     </url>
 </urlset>

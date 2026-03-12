@@ -1,0 +1,60 @@
+%% Package Dependency Graph (Layered)
+flowchart TB
+  classDef layer1 fill:#ede7f6,stroke:#5e35b1
+  classDef layer2 fill:#e0f7fa,stroke:#00838f
+  classDef layer3 fill:#fff3e0,stroke:#ef6c00
+  classDef layer4 fill:#e3f2fd,stroke:#1565c0
+  classDef external fill:#ffebee,stroke:#c62828
+
+  subgraph L1[Layer 1 Base Models and Utilities]
+    direction TB
+    L1A[core.base.llms.types]:::layer1
+    L1B[core.base.llms.base]:::layer1
+  end
+
+  subgraph L2[Layer 2 Core Abstractions]
+    direction TB
+    L2A[core.llms.base]:::layer2
+    L2B[core.prompts.base]:::layer2
+    L2C[core.output_parsers]:::layer2
+  end
+
+  subgraph L3[Layer 3 High level Orchestration]
+    direction TB
+    L3A[core.llms.function_calling]:::layer3
+    L3B[core.llms.structured_output_llm]:::layer3
+    L3C[core.llms.orchestrators]:::layer3
+    L3D[core.tools.callable_tool]:::layer3
+    L3E[core.chat.types]:::layer3
+  end
+
+  subgraph L4[Layer 4 Concrete Implementations]
+    direction TB
+    L4A[ollama.base]:::layer4
+  end
+
+  PY[Pydantic]:::external
+  OL[ollama]:::external
+  AS[asyncio]:::external
+
+  %% Layer dependencies
+  L2A --> L1A
+  L2A --> L1B
+  L2B --> L1A
+  L3A --> L2A
+  L3A --> L2B
+  L3B --> L2A
+  L3B --> L2B
+  L3C --> L3A
+  L3C --> L3D
+  L3D --> L2B
+  L3E --> L1A
+  L4A --> L3A
+
+  %% External deps
+  PY -.-> L1A
+  PY -.-> L3B
+  PY -.-> L3C
+  OL -.-> L4A
+  AS -.-> L3A
+  AS -.-> L4A

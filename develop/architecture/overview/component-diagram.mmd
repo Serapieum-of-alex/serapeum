@@ -1,0 +1,59 @@
+%% Architecture Overview: Component Diagram
+flowchart TB
+  classDef abstract fill:#f5f5f5,stroke:#666,stroke-dasharray: 5 3
+  classDef concrete fill:#e3f2fd,stroke:#1565c0
+  classDef interface fill:#fffde7,stroke:#f9a825
+  classDef datamodel fill:#e8f5e9,stroke:#2e7d32
+  classDef external fill:#ffebee,stroke:#c62828
+
+  U[User App]:::external
+
+  subgraph CBLLMs[Core.Base.LLMs]
+    BaseLLM[BaseLLM metadata chat/complete stream async]:::abstract
+    Models[Models Message MessageList ChatResponse CompletionResponse Metadata]:::datamodel
+  end
+
+  subgraph CLLM[Core.LLM]
+    LLM[LLM predict apredict stream astream parse astream_parse]:::abstract
+    FCLLM[FunctionCallingLLM generate_tool_calls invoke_callable stream astream]:::concrete
+    SLLM[StructuredOutputLLM wrapper]:::concrete
+  end
+
+  subgraph CTools[Core.Tools]
+    Tools[CallableTool ToolMetadata ToolOutput ToolCallArguments SyncAsyncConverter]:::concrete
+  end
+
+  subgraph CSTools[Core.StructuredTools]
+    TLLM[ToolOrchestratingLLM]:::concrete
+  end
+
+  subgraph CPrompts[Core.Prompts]
+    PT[PromptTemplate]:::concrete
+    CPT[ChatPromptTemplate]:::concrete
+  end
+
+  subgraph CChat[Core.Chat]
+    ACR[AgentChatResponse]:::concrete
+  end
+
+  subgraph LOllama[ollama]
+    Ollama[Ollama chat complete stream astream structured]:::concrete
+  end
+
+  Server[Ollama Server HTTP]:::external
+  Pyd[Pydantic Models]:::external
+
+  %% interactions
+  U --> PT
+  U --> CPT
+  PT --> LLM
+  CPT --> LLM
+  LLM --> Models
+  FCLLM --> Tools
+  TLLM --> FCLLM
+  TLLM --> Tools
+  SLLM --> LLM
+  SLLM --> Pyd
+  FCLLM --> ACR
+  Ollama --> FCLLM
+  Ollama -.-> Server

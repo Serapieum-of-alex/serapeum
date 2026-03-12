@@ -1,0 +1,28 @@
+%% Component Interaction Diagram
+flowchart TB
+  classDef process fill:#e3f2fd,stroke:#1565c0
+  classDef datamodel fill:#e8f5e9,stroke:#2e7d32
+  classDef external fill:#ffebee,stroke:#c62828
+
+  PT[Prompt Templates]:::process
+  L[LLM]:::process
+  OP[Output Parsers]:::process
+  F[FunctionCallingLLM]:::process
+  T[Tools System]:::process
+  ACR[AgentChatResponse]:::datamodel
+  TO[ToolOrchestratingLLM]:::process
+  CT[CallableTool]:::process
+  P[Pydantic Models]:::external
+
+  PT -- format --> L
+  L -- uses --> OP
+  F -- extends --> L
+  F -- calls --> T
+  T -- returns --> ACR
+  F -- builds --> ACR
+  TO -- wraps --> L
+  TO -- creates --> CT
+  CT -- validates --> P
+  TO -- validates --> P
+  TO -- delegates --> F
+  L -- returns --> ACR

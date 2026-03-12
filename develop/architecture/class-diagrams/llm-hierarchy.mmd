@@ -1,0 +1,70 @@
+%% Class Diagram: LLM Hierarchy
+classDiagram
+  class SerializableModel
+
+  class BaseLLM {
+    +metadata() Metadata
+    +chat(messages, stream=false) ChatResponse | ChatResponseGen
+    +complete(prompt, formatted=false, stream=false) CompletionResponse | CompletionResponseGen
+    +achat(messages, stream=false) ChatResponse | ChatResponseAsyncGen
+    +acomplete(prompt, formatted=false, stream=false) CompletionResponse | CompletionResponseAsyncGen
+    +convert_chat_messages(messages) List[Any]
+  }
+
+  class LLM {
+    +predict(prompt) str
+    +stream(prompt) CompletionResponseGen
+    +apredict(prompt) str
+    +astream(prompt) CompletionResponseAsyncGen
+    +parse(schema, prompt, llm_kwargs=None, **prompt_args) BaseModel
+    +aparse(schema, prompt, llm_kwargs=None, **prompt_args) BaseModel
+    +stream_parse(schema, prompt, llm_kwargs=None, **prompt_args) BaseModelGen
+    +astream_parse(schema, prompt, llm_kwargs=None, **prompt_args) BaseModelAsyncGen
+    +_get_prompt(prompt, **prompt_args)
+    +_get_messages(prompt, **prompt_args)
+    +_parse_output(output) Any
+    +_extend_prompt(formatted_prompt) str
+    +_extend_messages(messages) List[Message]
+  }
+
+  class FunctionCallingLLM {
+    +generate_tool_calls(tools, user_msg, chat_history, verbose, allow_parallel_tool_calls, stream)
+    +agenerate_tool_calls(tools, user_msg, chat_history, verbose, allow_parallel_tool_calls, stream)
+    +invoke_callable(tools, ...)
+    +ainvoke_callable(tools, ...)
+    +get_tool_calls_from_response(response, error_on_no_tool_call)
+  }
+
+  class StructuredOutputLLM {
+    +llm: LLM
+    +output_cls: Type[BaseModel]
+    +chat(messages, stream=false) ChatResponse | ChatResponseGen
+    +achat(messages, stream=false) ChatResponse | ChatResponseAsyncGen
+    +complete(prompt, stream=false) CompletionResponse | CompletionResponseGen
+    +acomplete(prompt, stream=false) CompletionResponse | CompletionResponseAsyncGen
+  }
+
+  class Ollama {
+    +chat(messages, stream=false) ChatResponse | ChatResponseGen
+    +achat(messages, stream=false) ChatResponse | ChatResponseAsyncGen
+    +complete(prompt, stream=false) CompletionResponse | CompletionResponseGen
+    +acomplete(prompt, stream=false) CompletionResponse | CompletionResponseAsyncGen
+    +parse(...)
+    +aparse(...)
+  }
+
+  class Message
+  class ChatResponse
+  class CompletionResponse
+
+  SerializableModel <|-- BaseLLM
+  BaseLLM <|-- LLM
+  LLM <|-- FunctionCallingLLM
+  LLM <|-- StructuredOutputLLM
+  FunctionCallingLLM <|-- Ollama
+
+  BaseLLM ..> Message : uses
+  LLM ..> Message : uses
+  BaseLLM ..> ChatResponse : returns
+  BaseLLM ..> CompletionResponse : returns
+  StructuredOutputLLM ..> LLM : wraps

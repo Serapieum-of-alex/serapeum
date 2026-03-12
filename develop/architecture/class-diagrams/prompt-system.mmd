@@ -1,0 +1,35 @@
+%% Class Diagram: Prompt System
+classDiagram
+  class BasePromptTemplate {
+    +partial_format(**kwargs) BasePromptTemplate
+    +format(llm=None, **kwargs) str
+    +format_messages(llm=None, **kwargs) List[Message]
+    +get_template(llm=None) Any
+    -_map_template_vars(kwargs)
+    -_map_function_vars(kwargs)
+    -_map_all_vars(kwargs)
+  }
+
+  class PromptTemplate {
+    +partial_format(**kwargs) PromptTemplate
+    +format(llm=None, completion_to_prompt=None, **kwargs) str
+    +format_messages(llm=None, **kwargs) List[Message]
+    +get_template(llm=None) str
+  }
+
+  class ChatPromptTemplate {
+    +from_messages(message_templates) ChatPromptTemplate
+    +partial_format(**kwargs) ChatPromptTemplate
+    +format(llm=None, messages_to_prompt=None, **kwargs) str
+    +format_messages(llm=None, **kwargs) List[Message]
+    +get_template(llm=None) List[Message]
+  }
+
+  class Message
+  class MessageList
+
+  BasePromptTemplate <|-- PromptTemplate
+  BasePromptTemplate <|-- ChatPromptTemplate
+  ChatPromptTemplate ..> Message : uses
+  ChatPromptTemplate ..> MessageList : produces
+  PromptTemplate ..> Message : produces via LLM

@@ -181,6 +181,7 @@ asyncio.run(main())
 Extract structured data using Pydantic models:
 
 ```python
+import asyncio
 from pydantic import BaseModel, Field
 from serapeum.ollama import Ollama
 from serapeum.core.prompts import PromptTemplate
@@ -206,7 +207,7 @@ person = llm.parse(
 )
 
 print(f"{person.name}, {person.age}, works as {person.occupation}")
-# Output: John Doe, 32, works as software engineer
+# Output: John Doe, 32, works as a software engineer
 
 # Streaming structured outputs
 for partial in llm.parse(
@@ -221,14 +222,12 @@ for partial in llm.parse(
 
 # Async structured prediction
 async def get_structured():
-  person = await llm.aparse(
+  extracted_person = await llm.aparse(
     schema=Person,
     prompt=prompt,
     text="Alice Johnson is 45 and works as a CEO."
   )
-  return person
-
-import asyncio
+  return extracted_person
 
 
 result = asyncio.run(get_structured())
@@ -243,6 +242,7 @@ Create tools from functions or Pydantic models and let the LLM use them:
 from pydantic import BaseModel, Field
 from serapeum.ollama import Ollama
 from serapeum.core.tools import CallableTool
+from serapeum.core.llms import TextChunk
 from serapeum.core.llms.orchestrators import ToolOrchestratingLLM
 from serapeum.core.prompts import PromptTemplate
 
@@ -291,7 +291,7 @@ from serapeum.core.tools import CallableTool
 
 
 calculator_tool = CallableTool.from_function(calculate)
-messages = [Message(role=MessageRole.USER, content="What's 25 + 17?")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="What's 25 + 17?")])]
 response = llm.generate_tool_calls(
   tools=[calculator_tool],
   chat_history=messages,
@@ -353,16 +353,15 @@ prompt = PromptTemplate(
     output_parser=parser
 )
 
-llm_json = Ollama(model="llama3.1", json_mode=True)
+llm_json = Ollama(model="llama3.1") #, json_mode=True
 summary = llm_json.predict(
     prompt,
     text="Artificial intelligence is transforming industries. It automates tasks, "
          "provides insights, and enables new capabilities. However, it also raises "
          "ethical concerns about privacy and job displacement."
 )
-print(summary.title)
-print(summary.main_points)
-print(summary.conclusion)
+
+print(summary)
 ```
 
 ## Embeddings
@@ -479,7 +478,7 @@ embed_model = OllamaEmbedding(
     model_name="nomic-embed-text",
     base_url="http://localhost:11434",
     batch_size=16,
-    keep_alive="10m",  # Keep model loaded for 10 minutes
+    keep_alive="10m",  # Keep the model loaded for 10 minutes
     query_instruction="Represent this query for retrieving relevant documents: ",
     text_instruction="Represent this document for retrieval: ",
     ollama_additional_kwargs={
@@ -520,7 +519,7 @@ knowledge_base = [
 ]
 
 # Generate embeddings for knowledge base
-kb_embeddings = embed_model.get_text_embeddings(knowledge_base)
+kb_embeddings = embed_model.get_text_embedding_batch(knowledge_base)
 
 # User query
 query = "Where is the Eiffel Tower?"
@@ -569,7 +568,7 @@ llm = Ollama(
     timeout=60.0,                # Request timeout in seconds
     json_mode=False,                     # Enable JSON formatting
     is_function_calling_model=True,      # Whether model supports tools
-    keep_alive="5m",                     # How long to keep model loaded
+    keep_alive="5m",                     # How long to keep the model loaded
     additional_kwargs={                  # Provider-specific options
         "num_predict": 100,              # Max tokens to generate
         "top_k": 40,                     # Top-k sampling

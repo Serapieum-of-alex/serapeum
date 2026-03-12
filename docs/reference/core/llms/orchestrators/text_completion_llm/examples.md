@@ -94,7 +94,7 @@ llm = Ollama(
 # Create output parser
 output_parser = PydanticParser(output_cls=Greeting)
 
-# Create TextCompletionLLM with string prompt
+# Create TextCompletionLLM with a string prompt
 text_llm = TextCompletionLLM(
     output_parser=output_parser,
     prompt="Generate a greeting in {language} for {name}. Return as JSON.",
@@ -269,9 +269,8 @@ Use structured message templates for chat models:
 ```python
 import os
 from pydantic import BaseModel
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk, TextCompletionLLM
 from serapeum.core.prompts import ChatPromptTemplate
-from serapeum.core.llms import TextCompletionLLM
 from serapeum.ollama import Ollama
 
 class Translation(BaseModel):

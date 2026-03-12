@@ -11,6 +11,8 @@ on:
           - serapeum-core
           - serapeum-ollama
           - serapeum-llama-cpp
+          - serapeum-azure-openai
+          - serapeum-openai
       increment:
         description: 'Version increment type'
         required: true
@@ -69,6 +71,8 @@ jobs:
             serapeum-core)      echo "PACKAGE_PATH=libs/core"              >> $GITHUB_ENV ;;
             serapeum-ollama)    echo "PACKAGE_PATH=libs/providers/ollama"   >> $GITHUB_ENV ;;
             serapeum-llama-cpp) echo "PACKAGE_PATH=libs/providers/llama-cpp" >> $GITHUB_ENV ;;
+            serapeum-azure-openai) echo "PACKAGE_PATH=libs/providers/azure-openai" >> $GITHUB_ENV ;;
+            serapeum-openai) echo "PACKAGE_PATH=libs/providers/openai" >> $GITHUB_ENV ;;
           esac
 
       - name: Create GitHub Release

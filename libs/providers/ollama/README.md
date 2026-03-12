@@ -75,13 +75,14 @@ ollama list
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 
 # Initialize the model
 llm = Ollama(model="llama3.1", timeout=120)
 
 # Simple chat
-messages = [Message(role=MessageRole.USER, content="Explain quantum computing in one sentence.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Explain quantum computing in one sentence.")])]
+
 response = llm.chat(messages)
 print(response.message.content)
 ```
@@ -94,7 +95,7 @@ The `Ollama` class provides a complete chat interface:
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole, MessageList
+from serapeum.core.llms import Message, MessageRole, MessageList, TextChunk
 
 llm = Ollama(
     model="llama3.1",
@@ -104,19 +105,19 @@ llm = Ollama(
 
 # Single message
 response = llm.chat([
-    Message(role=MessageRole.USER, content="What is the capital of France?")
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is the capital of France?")])
 ])
 print(response.message.content)  # "The capital of France is Paris."
 
 # Multi-turn conversation
 conversation = [
-    Message(role=MessageRole.SYSTEM, content="You are a helpful assistant."),
-    Message(role=MessageRole.USER, content="What's 2+2?"),
-    Message(role=MessageRole.ASSISTANT, content="4"),
-    Message(role=MessageRole.USER, content="And if I add 3?"),
+    Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are a helpful assistant.")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What's 2+2?")]),
+    Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="4")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="And if I add 3?")]),
 ]
 
-response = llm.chat(MessageList.from_list(conversation))
+response = llm.chat(MessageList(messages=conversation))
 print(response.message.content)  # "7"
 
 # Access token usage
@@ -130,11 +131,11 @@ Stream responses token-by-token for real-time feedback:
 
 ```python
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 
 llm = Ollama(model="llama3.1")
 
-messages = [Message(role=MessageRole.USER, content="Write a haiku about coding.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Write a haiku about coding.")])]
 
 # Synchronous streaming
 print("Streaming response: ", end="")
@@ -153,19 +154,19 @@ Full async support for concurrent operations:
 ```python
 import asyncio
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 
 async def main():
     llm = Ollama(model="llama3.1")
 
     # Async chat
     response = await llm.achat([
-        Message(role=MessageRole.USER, content="Hello!")
+        Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])
     ])
     print(response.message.content)
 
     # Async streaming
-    messages = [Message(role=MessageRole.USER, content="Count to 5.")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 5.")])]
     stream = await llm.achat(messages, stream=True)
 
     async for chunk in stream:
@@ -180,6 +181,7 @@ asyncio.run(main())
 Extract structured data using Pydantic models:
 
 ```python
+import asyncio
 from pydantic import BaseModel, Field
 from serapeum.ollama import Ollama
 from serapeum.core.prompts import PromptTemplate
@@ -205,7 +207,7 @@ person = llm.parse(
 )
 
 print(f"{person.name}, {person.age}, works as {person.occupation}")
-# Output: John Doe, 32, works as software engineer
+# Output: John Doe, 32, works as a software engineer
 
 # Streaming structured outputs
 for partial in llm.parse(
@@ -220,14 +222,12 @@ for partial in llm.parse(
 
 # Async structured prediction
 async def get_structured():
-  person = await llm.aparse(
+  extracted_person = await llm.aparse(
     schema=Person,
     prompt=prompt,
     text="Alice Johnson is 45 and works as a CEO."
   )
-  return person
-
-import asyncio
+  return extracted_person
 
 
 result = asyncio.run(get_structured())
@@ -242,6 +242,7 @@ Create tools from functions or Pydantic models and let the LLM use them:
 from pydantic import BaseModel, Field
 from serapeum.ollama import Ollama
 from serapeum.core.tools import CallableTool
+from serapeum.core.llms import TextChunk
 from serapeum.core.llms.orchestrators import ToolOrchestratingLLM
 from serapeum.core.prompts import PromptTemplate
 
@@ -290,7 +291,7 @@ from serapeum.core.tools import CallableTool
 
 
 calculator_tool = CallableTool.from_function(calculate)
-messages = [Message(role=MessageRole.USER, content="What's 25 + 17?")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="What's 25 + 17?")])]
 response = llm.generate_tool_calls(
   tools=[calculator_tool],
   chat_history=messages,
@@ -352,16 +353,15 @@ prompt = PromptTemplate(
     output_parser=parser
 )
 
-llm_json = Ollama(model="llama3.1", json_mode=True)
+llm_json = Ollama(model="llama3.1") #, json_mode=True
 summary = llm_json.predict(
     prompt,
     text="Artificial intelligence is transforming industries. It automates tasks, "
          "provides insights, and enables new capabilities. However, it also raises "
          "ethical concerns about privacy and job displacement."
 )
-print(summary.title)
-print(summary.main_points)
-print(summary.conclusion)
+
+print(summary)
 ```
 
 ## Embeddings
@@ -478,7 +478,7 @@ embed_model = OllamaEmbedding(
     model_name="nomic-embed-text",
     base_url="http://localhost:11434",
     batch_size=16,
-    keep_alive="10m",  # Keep model loaded for 10 minutes
+    keep_alive="10m",  # Keep the model loaded for 10 minutes
     query_instruction="Represent this query for retrieving relevant documents: ",
     text_instruction="Represent this document for retrieval: ",
     ollama_additional_kwargs={
@@ -504,7 +504,7 @@ Combine embeddings with LLMs for RAG (Retrieval-Augmented Generation):
 
 ```python
 from serapeum.ollama import Ollama, OllamaEmbedding
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 
 # Initialize both LLM and embeddings
 llm = Ollama(model="llama3.1")
@@ -519,7 +519,7 @@ knowledge_base = [
 ]
 
 # Generate embeddings for knowledge base
-kb_embeddings = embed_model.get_text_embeddings(knowledge_base)
+kb_embeddings = embed_model.get_text_embedding_batch(knowledge_base)
 
 # User query
 query = "Where is the Eiffel Tower?"
@@ -541,9 +541,9 @@ context = similarities[0][0]
 messages = [
     Message(
         role=MessageRole.SYSTEM,
-        content=f"Answer based on this context: {context}"
+        chunks=[TextChunk(content=f"Answer based on this context: {context}")]
     ),
-    Message(role=MessageRole.USER, content=query)
+    Message(role=MessageRole.USER, chunks=[TextChunk(content=query)])
 ]
 
 response = llm.chat(messages)
@@ -568,7 +568,7 @@ llm = Ollama(
     timeout=60.0,                # Request timeout in seconds
     json_mode=False,                     # Enable JSON formatting
     is_function_calling_model=True,      # Whether model supports tools
-    keep_alive="5m",                     # How long to keep model loaded
+    keep_alive="5m",                     # How long to keep the model loaded
     additional_kwargs={                  # Provider-specific options
         "num_predict": 100,              # Max tokens to generate
         "top_k": 40,                     # Top-k sampling

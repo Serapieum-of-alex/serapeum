@@ -66,7 +66,7 @@ The most straightforward way to use `Ollama`:
 
 ```python
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 # Initialize Ollama LLM
@@ -188,7 +188,7 @@ Basic conversation:
 
 ```python
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 llm = Ollama(
@@ -211,7 +211,7 @@ With conversation history:
 
 ```python
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 llm = Ollama(
@@ -237,7 +237,7 @@ Passing custom parameters:
 
 ```python
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 llm = Ollama(
@@ -264,7 +264,7 @@ Multi-modal input (if supported by model):
 ```python
 import os
 from pathlib import Path
-from serapeum.core.llms import Message, MessageRole, Image
+from serapeum.core.llms import Message, MessageRole, Image, TextChunk
 from serapeum.ollama import Ollama
 
 llm = Ollama(
@@ -365,7 +365,7 @@ Real-time streaming chat:
 
 ```python
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 llm = Ollama(
@@ -409,7 +409,7 @@ Access incremental content:
 
 ```python
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 llm = Ollama(
@@ -444,7 +444,7 @@ Using tools with Ollama:
 ```python notest
 import os
 from pydantic import BaseModel
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
 
@@ -487,7 +487,7 @@ Create tools from Pydantic models:
 ```python
 import os
 from pydantic import BaseModel, Field
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
 
@@ -528,7 +528,7 @@ Force single tool call:
 ```python
 import os
 from pydantic import BaseModel
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
 
@@ -568,7 +568,7 @@ Allow multiple tool calls:
 ```python
 import os
 from pydantic import BaseModel
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
 
@@ -612,7 +612,7 @@ Stream tool calls:
 ```python
 import os
 from pydantic import BaseModel
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
 
@@ -805,7 +805,7 @@ Non-blocking chat:
 ```python
 import asyncio
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 
@@ -856,7 +856,7 @@ Non-blocking streaming:
 ```python
 import asyncio
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 
@@ -883,7 +883,7 @@ Process multiple requests concurrently:
 ```python
 import asyncio
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 
@@ -1001,7 +1001,7 @@ Create once, use many times:
 ```python notest
 import os
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 # ✓ Good: Create once
 llm = Ollama(
     model="qwen3.5:397b",
@@ -1053,7 +1053,7 @@ Always handle potential errors:
 
 ```python
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 llm = Ollama(
@@ -1097,7 +1097,7 @@ Use metadata for monitoring:
 
 ```python
 import os
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
 
 llm = Ollama(

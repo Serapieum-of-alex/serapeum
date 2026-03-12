@@ -106,8 +106,7 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
-from serapeum.core.llms import StructuredOutputLLM
-from serapeum.core.llms import Message
+from serapeum.core.llms import StructuredOutputLLM, Message, TextChunk
 
 class PersonInfo(BaseModel):
     name: str
@@ -319,25 +318,25 @@ product_extractor = TextCompletionLLM(
 
 result = product_extractor(description="iPhone 15 Pro - $999")
 result
-Product(name='iPhone 15 Pro', price=999.0)
+# Product(name='iPhone 15 Pro', price=999.0)
 ```
 
 ---
 
 ## Comparison Matrix
 
-| Feature | FunctionCallingLLM | StructuredOutputLLM | ToolOrchestratingLLM | TextCompletionLLM |
-|---------|-------------------|---------------|---------------------|------------------|
-| **Layer** | LLM | LLM | Orchestration | Orchestration |
-| **Type** | Base class | Wrapper | Orchestrator | Pipeline |
-| **Requires Function Calling** | N/A | No | Yes | No |
-| **Primary Use Case** | Building providers | Enforcing output format | Structured outputs (recommended) | Text-based structured outputs |
-| **Input** | N/A | LLM + output_cls | output_cls + prompt + LLM | prompt + parser + LLM |
-| **Output** | ChatResponse | ChatResponse (with Pydantic in raw) | Pydantic model(s) | Pydantic model |
-| **Streaming Support** | Yes | Yes | Yes | No |
-| **Parallel Tool Calls** | N/A | No | Yes | No |
-| **Complexity** | High (abstract) | Low | Medium | Low |
-| **Flexibility** | High | Low | High | Medium |
+| Feature                       | FunctionCallingLLM | StructuredOutputLLM                 | ToolOrchestratingLLM             | TextCompletionLLM             |
+|-------------------------------|--------------------|-------------------------------------|----------------------------------|-------------------------------|
+| **Layer**                     | LLM                | LLM                                 | Orchestration                    | Orchestration                 |
+| **Type**                      | Base class         | Wrapper                             | Orchestrator                     | Pipeline                      |
+| **Requires Function Calling** | N/A                | No                                  | Yes                              | No                            |
+| **Primary Use Case**          | Building providers | Enforcing output format             | Structured outputs (recommended) | Text-based structured outputs |
+| **Input**                     | N/A                | LLM + output_cls                    | output_cls + prompt + LLM        | prompt + parser + LLM         |
+| **Output**                    | ChatResponse       | ChatResponse (with Pydantic in raw) | Pydantic model(s)                | Pydantic model                |
+| **Streaming Support**         | Yes                | Yes                                 | Yes                              | No                            |
+| **Parallel Tool Calls**       | N/A                | No                                  | Yes                              | No                            |
+| **Complexity**                | High (abstract)    | Low                                 | Medium                           | Low                           |
+| **Flexibility**               | High               | Low                                 | High                             | Medium                        |
 
 ## Decision Tree: Which Class Should I Use?
 

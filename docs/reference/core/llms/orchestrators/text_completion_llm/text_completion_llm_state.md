@@ -75,51 +75,51 @@ stateDiagram-v2
 
 ### Initialization States
 
-| State | Description | Exit Conditions |
-|-------|-------------|-----------------|
-| **Uninitialized** | Object construction in progress | `__init__` called |
-| **ValidatingParser** | Checking output_parser and output_cls compatibility | Valid: → ValidatingLLM<br>Invalid: → InitError |
-| **ValidatingLLM** | Ensuring LLM instance is available | Valid: → ValidatingPrompt<br>Missing: → InitError |
-| **ValidatingPrompt** | Converting/validating prompt template | Valid: → Ready<br>Invalid: → InitError |
-| **Ready** | Instance fully initialized and ready for calls | User calls instance |
+| State                | Description                                         | Exit Conditions                                   |
+|----------------------|-----------------------------------------------------|---------------------------------------------------|
+| **Uninitialized**    | Object construction in progress                     | `__init__` called                                 |
+| **ValidatingParser** | Checking output_parser and output_cls compatibility | Valid: → ValidatingLLM<br>Invalid: → InitError    |
+| **ValidatingLLM**    | Ensuring LLM instance is available                  | Valid: → ValidatingPrompt<br>Missing: → InitError |
+| **ValidatingPrompt** | Converting/validating prompt template               | Valid: → Ready<br>Invalid: → InitError            |
+| **Ready**            | Instance fully initialized and ready for calls      | User calls instance                               |
 
 ### Execution States (Chat Path)
 
-| State | Description | Exit Conditions |
-|-------|-------------|-----------------|
-| **ExecutingChat** | Entry point for chat model execution | → FormattingMessages |
-| **FormattingMessages** | Converting prompt to message list | → ExtendingMessages |
-| **ExtendingMessages** | Applying template variables to messages | → CallingChatAPI |
-| **CallingChatAPI** | Invoking Ollama.chat method | → WaitingChatResponse |
-| **WaitingChatResponse** | HTTP request in flight | Success: → ParsingOutput<br>Error: → ExecutionError |
+| State                   | Description                             | Exit Conditions                                     |
+|-------------------------|-----------------------------------------|-----------------------------------------------------|
+| **ExecutingChat**       | Entry point for chat model execution    | → FormattingMessages                                |
+| **FormattingMessages**  | Converting prompt to message list       | → ExtendingMessages                                 |
+| **ExtendingMessages**   | Applying template variables to messages | → CallingChatAPI                                    |
+| **CallingChatAPI**      | Invoking Ollama.chat method             | → WaitingChatResponse                               |
+| **WaitingChatResponse** | HTTP request in flight                  | Success: → ParsingOutput<br>Error: → ExecutionError |
 
 ### Execution States (Completion Path)
 
-| State | Description | Exit Conditions |
-|-------|-------------|-----------------|
-| **ExecutingComplete** | Entry point for completion model execution | → FormattingPrompt |
-| **FormattingPrompt** | Converting prompt to string | → ExtendingPrompt |
-| **ExtendingPrompt** | Applying template variables to prompt | → CallingCompleteAPI |
-| **CallingCompleteAPI** | Invoking Ollama.complete method | → WaitingCompleteResponse |
-| **WaitingCompleteResponse** | HTTP request in flight | Success: → ParsingOutput<br>Error: → ExecutionError |
+| State                       | Description                                | Exit Conditions                                     |
+|-----------------------------|--------------------------------------------|-----------------------------------------------------|
+| **ExecutingComplete**       | Entry point for completion model execution | → FormattingPrompt                                  |
+| **FormattingPrompt**        | Converting prompt to string                | → ExtendingPrompt                                   |
+| **ExtendingPrompt**         | Applying template variables to prompt      | → CallingCompleteAPI                                |
+| **CallingCompleteAPI**      | Invoking Ollama.complete method            | → WaitingCompleteResponse                           |
+| **WaitingCompleteResponse** | HTTP request in flight                     | Success: → ParsingOutput<br>Error: → ExecutionError |
 
 ### Parsing States
 
-| State | Description | Exit Conditions |
-|-------|-------------|-----------------|
-| **ParsingOutput** | Starting output parsing process | → ExtractingJSON |
-| **ExtractingJSON** | Extracting JSON from raw text | Valid JSON: → ValidatingSchema<br>Invalid: → ParsingError |
-| **ValidatingSchema** | Validating against Pydantic schema | Valid: → TypeChecking<br>Invalid: → ParsingError |
-| **TypeChecking** | Verifying output matches output_cls | Match: → Completed<br>Mismatch: → ParsingError |
-| **Completed** | Successful execution with valid output | → Ready (return result) |
+| State                | Description                            | Exit Conditions                                           |
+|----------------------|----------------------------------------|-----------------------------------------------------------|
+| **ParsingOutput**    | Starting output parsing process        | → ExtractingJSON                                          |
+| **ExtractingJSON**   | Extracting JSON from raw text          | Valid JSON: → ValidatingSchema<br>Invalid: → ParsingError |
+| **ValidatingSchema** | Validating against Pydantic schema     | Valid: → TypeChecking<br>Invalid: → ParsingError          |
+| **TypeChecking**     | Verifying output matches output_cls    | Match: → Completed<br>Mismatch: → ParsingError            |
+| **Completed**        | Successful execution with valid output | → Ready (return result)                                   |
 
 ### Error States
 
-| State | Description | Exceptions Raised |
-|-------|-------------|-------------------|
-| **InitError** | Initialization validation failed | ValueError, AssertionError |
-| **ExecutionError** | LLM execution failed | ConnectionError, TimeoutError, HTTPError |
-| **ParsingError** | Output parsing/validation failed | ValueError, ValidationError |
+| State              | Description                      | Exceptions Raised                        |
+|--------------------|----------------------------------|------------------------------------------|
+| **InitError**      | Initialization validation failed | ValueError, AssertionError               |
+| **ExecutionError** | LLM execution failed             | ConnectionError, TimeoutError, HTTPError |
+| **ParsingError**   | Output parsing/validation failed | ValueError, ValidationError              |
 
 ## State Transitions Example
 

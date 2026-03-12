@@ -1113,5 +1113,5 @@ def resolve_binary(
 
 ContentBlock = Annotated[
     TextChunk | Image | Audio | ThinkingBlock | ToolCallBlock,
-    Field(discriminator="block_type"),
+    Field(discriminator="type"),
 ]

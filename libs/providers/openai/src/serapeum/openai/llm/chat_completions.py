@@ -678,9 +678,8 @@ class Completions(
         Decorated with :func:`~serapeum.core.retry.retry`. Each yielded chunk
         carries the cumulative text so far plus the per-step delta. Tool-call
         fragments are merged incrementally by
-        :class:`~serapeum.openai.converters.ToolCallAccumulator` so that
-        ``additional_kwargs["tool_calls"]`` always reflects the latest accumulated
-        state.
+        :class:`~serapeum.openai.converters.ToolCallAccumulator` and stored as
+        :class:`~serapeum.core.llms.ToolCallBlock` entries in ``message.chunks``.
 
         Audio output is not supported in streaming mode.
 
@@ -715,7 +714,6 @@ class Completions(
             **self._get_model_kwargs(stream=True, **kwargs),
         ):
             blocks = []
-            response = response
             if len(response.choices) > 0:
                 delta = response.choices[0].delta
             else:
@@ -734,11 +732,9 @@ class Completions(
             content += content_delta
             blocks.append(TextChunk(content=content))
 
-            additional_kwargs = {}
             if is_function:
                 accumulator.update(delta.tool_calls)
                 if accumulator.tool_calls:
-                    additional_kwargs["tool_calls"] = accumulator.tool_calls
                     for tool_call in accumulator.tool_calls:
                         if tool_call.function:
                             blocks.append(
@@ -753,7 +749,6 @@ class Completions(
                 message=Message(
                     role=role,
                     chunks=blocks,
-                    additional_kwargs=additional_kwargs,
                 ),
                 delta=content_delta,
                 raw=response,
@@ -1230,11 +1225,9 @@ class Completions(
                 content += content_delta
                 blocks.append(TextChunk(content=content))
 
-                additional_kwargs = {}
                 if is_function:
                     accumulator.update(delta.tool_calls)
                     if accumulator.tool_calls:
-                        additional_kwargs["tool_calls"] = accumulator.tool_calls
                         for tool_call in accumulator.tool_calls:
                             if tool_call.function:
                                 blocks.append(
@@ -1249,7 +1242,6 @@ class Completions(
                     message=Message(
                         role=role,
                         chunks=blocks,
-                        additional_kwargs=additional_kwargs,
                     ),
                     delta=content_delta,
                     raw=response,

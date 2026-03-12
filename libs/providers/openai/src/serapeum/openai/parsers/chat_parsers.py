@@ -149,10 +149,7 @@ class ChatMessageParser:
         For each ``ChatCompletionMessageToolCall`` in
         ``openai_message.tool_calls`` whose ``function`` attribute is non-``None``,
         a :class:`~serapeum.core.llms.ToolCallBlock` is appended to
-        :attr:`_blocks`.  The raw list of SDK tool-call objects is also stored
-        in :attr:`_additional_kwargs` under the ``"tool_calls"`` key so that
-        downstream code (e.g. :class:`~serapeum.openai.parsers.formatters.ChatMessageConverter`)
-        can pass them through without re-parsing.
+        :attr:`_blocks`.
         """
         if self._openai_message.tool_calls:
             tool_calls: list[ChatCompletionMessageToolCall] = (
@@ -167,7 +164,6 @@ class ChatMessageParser:
                             tool_kwargs=tool_call.function.arguments or {},
                         )
                     )
-            self._additional_kwargs.update(tool_calls=tool_calls)
 
     def _extract_audio(self) -> None:
         """Extract audio data into an :class:`~serapeum.core.llms.Audio` content block.

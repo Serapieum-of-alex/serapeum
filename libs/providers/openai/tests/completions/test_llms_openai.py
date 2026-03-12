@@ -171,7 +171,7 @@ def test_tool_required():
         tool_required=True,
     )
     print(repr(response))
-    assert len(response.message.additional_kwargs["tool_calls"]) == 1
+    assert len(response.message.tool_calls) == 1
     assert (
         len(
             [

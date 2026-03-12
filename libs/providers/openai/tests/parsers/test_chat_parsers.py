@@ -162,8 +162,8 @@ class TestChatMessageParser:
             tool_blocks[0].tool_name == "search"
         ), f"Expected tool_name 'search', got '{tool_blocks[0].tool_name}'"
         assert (
-            "tool_calls" in result.additional_kwargs
-        ), "Expected tool_calls in additional_kwargs"
+            "tool_calls" not in result.additional_kwargs
+        ), "tool_calls should only be stored as ToolCallBlock chunks, not in additional_kwargs"
 
     def test_extract_tool_calls_multiple(self) -> None:
         """Multiple tool calls are all extracted.
@@ -195,7 +195,7 @@ class TestChatMessageParser:
         ), f"Expected 2 ToolCallBlocks, got {len(tool_blocks)}"
 
     def test_extract_tool_calls_no_function_skipped(self) -> None:
-        """Tool call with function=None is skipped but still in additional_kwargs.
+        """Tool call with function=None is skipped and no ToolCallBlock created.
 
         Test scenario:
             A tool call object where function is None does not create a ToolCallBlock.
@@ -217,8 +217,8 @@ class TestChatMessageParser:
             len(tool_blocks) == 0
         ), f"Expected 0 ToolCallBlocks for function=None, got {len(tool_blocks)}"
         assert (
-            "tool_calls" in result.additional_kwargs
-        ), "Expected raw tool_calls still in additional_kwargs"
+            "tool_calls" not in result.additional_kwargs
+        ), "tool_calls should not be stored in additional_kwargs"
 
     def test_extract_audio_with_audio_modality(self) -> None:
         """Audio data is extracted when 'audio' is in modalities.

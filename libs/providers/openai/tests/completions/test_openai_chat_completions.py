@@ -935,10 +935,8 @@ class TestStreamChat:
         )
         chunks = list(gen)
 
-        # The first two chunks should have tool calls in additional_kwargs
-        tool_chunks = [
-            c for c in chunks if c.message.additional_kwargs.get("tool_calls")
-        ]
+        # At least one chunk should have ToolCallBlock entries
+        tool_chunks = [c for c in chunks if c.message.tool_calls]
         assert len(tool_chunks) >= 1, "Should have at least one chunk with tool_calls"
 
     @patch("serapeum.openai.llm.base.client.SyncOpenAI")

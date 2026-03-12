@@ -1,3 +1,115 @@
+## serapeum-ollama-0.5.0 (2026-03-12)
+
+
+- build: sync uv.lock after serapeum-core version bump
+- refactor(api)!: unify provider API surface across core, OpenAI, Azure, and Ollama (#48)
+- - Move shared logic (tool-call extraction, response validation) from                                               
+    individual providers into FunctionCallingLLM base class
+  - Rename `structured_predict` to `parse` across all providers
+  - Rename `LikelihoodScore` to `LogProb` for accuracy
+  - Replace `ContentBlock` discriminated union with `ChunkType`
+  - Store tool calls in `Message.chunks` instead of `additional_kwargs`
+  - Merge `force_single_tool_call` into `ChatResponse`
+  - Add `ToolCallBlock.get_arguments()` and move `ToolCallArguments`
+    to `core.base.llms.types`
+  - Remove `Message.from_str` and `MessageList.from_list` constructors;
+    convert `Message` constructor to a Pydantic validator
+  - Rename `_validate_chat_with_tools_response` to `_validate_response`
+    and lift it to base class
+  - Refactor OpenAI provider: rename classes, restructure Responses API,
+    reorganize tests into completions/ and responses/ directories
+  - Add Azure OpenAI README, docstrings, and e2e/responses test suites
+  - Add timeout to `requests.get` calls and resolve Bandit findings
+  - Remove Claude code-review CI workflows
+  - Fix install-groups parameter in all test workflows
+-   BREAKING CHANGE: `structured_predict` renamed to `parse`;
+  `LikelihoodScore` renamed to `LogProb`; `ContentBlock` replaced by
+  `ChunkType`; `Message.from_str` and `MessageList.from_list` removed;
+  tool calls now stored in `Message.chunks` instead of
+  `additional_kwargs`; `force_single_tool_call` merged into
+  `ChatResponse`; OpenAI class names updated
+- ref: #50, #51, #52, #53, #54, #55, #56, #57, #58
+- feat: add OpenAI and Azure OpenAI providers with retry framework (#15)
+- - Add serapeum-openai provider with chat completions and responses API
+    support, structured outputs, tool calling, and streaming
+  - Add serapeum-azure-openai provider extending OpenAI with Azure
+    endpoint, deployment, and Entra ID authentication support
+  - Add core retry framework with sync/async/streaming wrappers and
+    per-provider retryable-exception classifiers (core, ollama, llama-cpp,
+    openai)
+  - Refactor OpenAI class into composable base classes (Client,
+    ModelMetadata, StructuredOutput) under llm/base/ with factory methods
+    for subclass client creation
+  - Add parsers subpackage splitting formatters, chat parsers, and
+    response parsers into dedicated modules
+  - Rename core abstractions/mixins to abstractions/adapters and merge
+    stream methods into chat/complete with a stream parameter
+  - Harden existing providers: forbid extra attributes, rename
+    request_timeout to timeout, disable SDK retries in favour of @retry
+    decorator
+  - Add CI workflows for openai and azure-openai test suites
+  - Add conftest SDK pre-import guards for all providers to prevent
+    namespace collisions during doctest collection
+  - Add streaming object processor utilities for incremental structured
+    output parsing in orchestrators
+-   BREAKING CHANGE: `serapeum.core.llms.abstractions.mixins` renamed to
+  `serapeum.core.llms.abstractions.adapters`; `ChatToCompletionMixin`
+  renamed to `ChatToCompletion`, `CompletionToChatMixin` renamed to
+  `CompletionToChat`; `stream_chat`/`astream_chat`/`stream_complete`/
+  `astream_complete` removed in favour of `stream=True` parameter on
+  `chat`/`achat`/`complete`/`acomplete`.
+-   Closes #42, #43, #44, #45, #46
+- build: sync uv.lock after serapeum-llama-cpp version bump
+- fix(release): add missing change log file (#40)
+- ci(release): add `serapeum-llama-cpp` to the github-release workflow (#39)
+- fix(ollama,ci): stabilize e2e tests and split CI into separate workflows (#37)
+- fix(ollama,ci): stabilize e2e tests and split CI into separate workflows
+-   - Fix streaming completion tests to assert on final chunk only, not
+    every chunk — cloud models emit empty-content chunks that cause
+    str(r).strip() to return "" on intermediate responses
+  - Add function_calling pytest marker to all ToolOrchestratingLLM and
+    structured-predict tests; exclude them from cloud CI with
+    -m "e2e and not function_calling" since Ollama Cloud does not
+    support the tools API reliably
+  - Change streaming count assertion from == 2 to >= 1 (count is
+    model-dependent, not a framework contract)
+  - Skip embedding e2e tests in CI (no embedding models on Ollama Cloud)
+  - Split test-core.yml and introduce test-ollama.yml so Ollama Cloud
+    failures no longer block core CI
+  - Update cloud model default from qwen3-next:80b to mistral-large-3:675b
+  - Register function_calling marker in pyproject.toml
+-  ref: #38
+- feat(llama-cpp): add serapeum-llama-cpp provider package (#12)
+- feat(llama-cpp): add serapeum-llama-cpp provider package
+-   - Add new `serapeum-llama-cpp` provider package under                                                       
+    `libs/providers/llama-cpp/` with full src layout and namespace
+    package `serapeum.llama_cpp`
+  - Implement `LlamaCPP` class inheriting from `LLM` +               
+    `CompletionToChatMixin` for running quantised GGUF models locally
+  - Add `CompletionToChatMixin` to core, bridging completion-based
+    providers into the chat interface automatically
+  - Add model formatters for Llama 2 and Llama 3 prompt templates
+    under `serapeum.llama_cpp.formatters`
+  - Add utility helpers: GGUF model file fetching from URL or
+    HuggingFace Hub, caching, download progress, and timeout handling
+  - Add `n_gpu_layers`, `stop`, `tokenize()`, `count_tokens()`, and
+    context-window methods to `LlamaCPP`
+  - Add error handling for empty choices, stalled downloads, missing
+    headers, and non-serialisable `model_kwargs`
+  - Add HuggingFace Hub integration as an optional download backend
+  - Add comprehensive unit, mock, integration, and e2e test suites
+    (~2 600 lines across formatters, llm, and utils)
+  - Add dedicated CI workflow `test-llama-cpp.yml`; split core tests
+    into a separate `test-core.yml`; remove the old monolithic
+    `test.yml`
+  - Extend core `CompletionResponse` / `BaseLLM` types to support the
+    completion-to-chat bridge
+  - Use lazy `__getattr__` in provider `__init__` modules to prevent
+    circular-import issues when third-party SDK names collide with
+    namespace sub-packages
+  - Add full MkDocs reference documentation for the llama-cpp provider
+- ref: #35
+
 ## serapeum-ollama-0.4.0 (2026-02-26)
 
 

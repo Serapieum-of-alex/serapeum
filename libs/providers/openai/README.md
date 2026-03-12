@@ -5,9 +5,9 @@
 The `serapeum-openai` package provides complete OpenAI backend support for
 Serapeum, with two main classes covering both OpenAI APIs:
 
-- **`OpenAI`**: Chat Completions API for GPT-4o, GPT-4, GPT-3.5, and
+- **`Completions`**: Chat Completions API for GPT-4o, GPT-4, GPT-3.5, and
   instruct models
-- **`OpenAIResponses`**: Responses API for reasoning models (o3, o4-mini)
+- **`Responses`**: Responses API for reasoning models (o3, o4-mini)
   with built-in tools and stateful conversations
 
 Both classes implement the `serapeum.core.llms.FunctionCallingLLM` interface,
@@ -57,10 +57,10 @@ Or pass it directly when creating the LLM instance.
 ### Chat Completions API
 
 ```python
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 from serapeum.core.llms import Message, MessageRole
 
-llm = OpenAI(model="gpt-4o", temperature=0.7)
+llm = Completions(model="gpt-4o", temperature=0.7)
 
 messages = [
     Message(role=MessageRole.USER, content="Explain quantum computing in one sentence.")
@@ -72,10 +72,10 @@ print(response.message.content)
 ### Responses API
 
 ```python
-from serapeum.openai import OpenAIResponses
+from serapeum.openai import Responses
 from serapeum.core.llms import Message, MessageRole
 
-llm = OpenAIResponses(model="o3", reasoning_options={"effort": "medium"})
+llm = Responses(model="o3", reasoning_options={"effort": "medium"})
 
 messages = [
     Message(role=MessageRole.USER, content="Solve this step by step: what is 2^10?")
@@ -89,10 +89,10 @@ print(response.message.content)
 ### Streaming
 
 ```python
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 from serapeum.core.llms import Message, MessageRole
 
-llm = OpenAI(model="gpt-4o")
+llm = Completions(model="gpt-4o")
 
 messages = [Message(role=MessageRole.USER, content="Write a haiku about coding.")]
 
@@ -105,10 +105,10 @@ print()
 
 ```python
 import asyncio
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 from serapeum.core.llms import Message, MessageRole
 
-llm = OpenAI(model="gpt-4o")
+llm = Completions(model="gpt-4o")
 
 async def main():
     response = await llm.achat([
@@ -134,7 +134,7 @@ and later), native JSON-schema mode is used automatically:
 
 ```python
 from pydantic import BaseModel, Field
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 from serapeum.core.prompts import PromptTemplate
 
 
@@ -144,7 +144,7 @@ class Person(BaseModel):
     occupation: str = Field(description="Person's job title")
 
 
-llm = OpenAI(model="gpt-4o")
+llm = Completions(model="gpt-4o")
 
 person = llm.parse(
     schema=Person,
@@ -158,7 +158,7 @@ print(f"{person.name}, {person.age}, works as {person.occupation}")
 ### Tool Calling
 
 ```python
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 from serapeum.core.tools import CallableTool
 from serapeum.core.llms import Message, MessageRole
 
@@ -168,7 +168,7 @@ def get_weather(location: str, unit: str = "celsius") -> str:
     return f"The weather in {location} is 22 {unit} and sunny."
 
 
-llm = OpenAI(model="gpt-4o")
+llm = Completions(model="gpt-4o")
 
 weather_tool = CallableTool.from_function(get_weather)
 messages = [Message(role=MessageRole.USER, content="What's the weather in Paris?")]
@@ -189,10 +189,10 @@ if tool_calls:
 ### Responses API with Built-in Tools
 
 ```python
-from serapeum.openai import OpenAIResponses
+from serapeum.openai import Responses
 from serapeum.core.llms import Message, MessageRole
 
-llm = OpenAIResponses(
+llm = Responses(
     model="o3",
     reasoning_options={"effort": "medium"},
     built_in_tools=[{"type": "web_search_preview"}],
@@ -207,19 +207,21 @@ print(response.message.content)
 
 ## Configuration
 
-### OpenAI (Chat Completions)
+### Completions (Chat Completions API)
 
 ```python
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 
-llm = OpenAI(
+llm = Completions(
     model="gpt-4o",                       # Required: model name
     temperature=0.7,                       # Sampling temperature (0.0-2.0)
     max_tokens=1024,                       # Max tokens to generate
-    logprobs=False,                        # Return log probabilities
-    top_logprobs=None,                     # Number of top logprobs per token
+    logprobs=None,                         # Return log probabilities (None/True/False)
+    top_logprobs=0,                        # Number of top logprobs per token (0-20)
     strict=False,                          # Strict JSON-schema mode
-    reasoning_effort=None,                 # For reasoning models
+    reasoning_effort=None,                 # For O1 models: "low"/"medium"/"high"/etc.
+    modalities=None,                       # Output modalities, e.g. ["text", "audio"]
+    audio_config=None,                     # Audio output config (voice, format, etc.)
     api_key="sk-...",                      # API key (or OPENAI_API_KEY env)
     api_base=None,                         # Custom API base URL
     timeout=60.0,                          # Request timeout in seconds
@@ -228,22 +230,27 @@ llm = OpenAI(
 )
 ```
 
-### OpenAIResponses (Responses API)
+### Responses (Responses API)
 
 ```python
-from serapeum.openai import OpenAIResponses
+from serapeum.openai import Responses
 
-llm = OpenAIResponses(
+llm = Responses(
     model="o3",                            # Required: model name
-    temperature=1.0,                       # Sampling temperature
-    top_p=1.0,                             # Nucleus sampling
+    temperature=0.1,                       # Sampling temperature (omitted when reasoning_options set)
+    top_p=1.0,                             # Nucleus sampling (omitted when reasoning_options set)
     max_output_tokens=None,                # Max output tokens
-    reasoning_options={"effort": "medium"},# Reasoning effort control
+    reasoning_options={"effort": "medium"},# Reasoning effort control for O1 models
+    include=None,                          # Additional output fields, e.g. ["reasoning.encrypted_content"]
     instructions=None,                     # System-level instructions
     built_in_tools=None,                   # Built-in tools list
-    store=True,                            # Store responses server-side
-    track_previous_responses=False,        # Stateful conversation tracking
+    store=False,                           # Store responses server-side
+    track_previous_responses=False,        # Stateful conversation tracking (forces store=True)
+    truncation="disabled",                 # Input truncation strategy
+    user=None,                             # End-user identifier for abuse monitoring
+    call_metadata=None,                    # Metadata forwarded in the "metadata" field
     strict=False,                          # Strict JSON-schema mode
+    context_window=None,                   # Manual context-window override in tokens
     api_key="sk-...",                      # API key (or OPENAI_API_KEY env)
     api_base=None,                         # Custom API base URL
     timeout=60.0,                          # Request timeout
@@ -254,10 +261,10 @@ llm = OpenAIResponses(
 
 ```
 src/serapeum/openai/
-├── __init__.py              # Lazy imports (OpenAI, OpenAIResponses)
+├── __init__.py              # Lazy imports (Completions, Responses)
 ├── llm/
-│   ├── chat_completions.py  # OpenAI class (Chat Completions API)
-│   ├── responses.py         # OpenAIResponses class (Responses API)
+│   ├── chat_completions.py  # Completions class (Chat Completions API)
+│   ├── responses.py         # Responses class (Responses API)
 │   └── base/
 │       ├── client.py        # SDK client lifecycle and credentials
 │       ├── model.py         # Model metadata and tokenizer

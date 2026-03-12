@@ -732,19 +732,19 @@ class TestLogProbParser:
             A ChatCompletionTokenLogprob with two top_logprobs produces
             two LogProb objects with correct token, logprob, and bytes.
         """
-        logprob = ChatCompletionTokenLogprob(
+        logprob = ChatCompletionTokenLogprob(  # nosec B106
             token="hello",
             logprob=-0.5,
             top_logprobs=[
-                TopLogprob(token="hello", logprob=-0.5, bytes=[104, 101]),
-                TopLogprob(token="hi", logprob=-1.2, bytes=[104, 105]),
+                TopLogprob(token="hello", logprob=-0.5, bytes=[104, 101]),  # nosec B106
+                TopLogprob(token="hi", logprob=-1.2, bytes=[104, 105]),  # nosec B106
             ],
         )
         result = LogProbParser.from_token(logprob)
 
         assert len(result) == 2, f"Expected 2 LogProbs, got {len(result)}"
         assert (
-            result[0].token == "hello"
+            result[0].token == "hello"  # nosec B105
         ), f"Expected token 'hello', got '{result[0].token}'"
         assert (
             result[0].logprob == -0.5
@@ -753,7 +753,9 @@ class TestLogProbParser:
             104,
             101,
         ], f"Expected bytes [104, 101], got {result[0].bytes}"
-        assert result[1].token == "hi", f"Expected token 'hi', got '{result[1].token}'"
+        assert (
+            result[1].token == "hi"
+        ), f"Expected token 'hi', got '{result[1].token}'"  # nosec B105
 
     def test_from_token_none_top_logprobs(self) -> None:
         """from_token returns empty list when top_logprobs is None.
@@ -761,7 +763,9 @@ class TestLogProbParser:
         Test scenario:
             No top_logprobs data → empty result.
         """
-        logprob = ChatCompletionTokenLogprob(token="x", logprob=0.0, top_logprobs=[])
+        logprob = ChatCompletionTokenLogprob(
+            token="x", logprob=0.0, top_logprobs=[]
+        )  # nosec B106
         logprob.top_logprobs = None
         result = LogProbParser.from_token(logprob)
         assert result == [], f"Expected empty list, got {result}"
@@ -772,7 +776,9 @@ class TestLogProbParser:
         Test scenario:
             Empty top_logprobs list → empty result.
         """
-        logprob = ChatCompletionTokenLogprob(token="x", logprob=0.0, top_logprobs=[])
+        logprob = ChatCompletionTokenLogprob(
+            token="x", logprob=0.0, top_logprobs=[]
+        )  # nosec B106
         result = LogProbParser.from_token(logprob)
         assert result == [], f"Expected empty list, got {result}"
 
@@ -782,11 +788,11 @@ class TestLogProbParser:
         Test scenario:
             TopLogprob with bytes=None produces LogProb with bytes=[].
         """
-        logprob = ChatCompletionTokenLogprob(
+        logprob = ChatCompletionTokenLogprob(  # nosec B106
             token="a",
             logprob=-0.1,
             top_logprobs=[
-                TopLogprob(token="a", logprob=-0.1, bytes=None),
+                TopLogprob(token="a", logprob=-0.1, bytes=None),  # nosec B106
             ],
         )
         result = LogProbParser.from_token(logprob)
@@ -801,25 +807,29 @@ class TestLogProbParser:
             Two tokens with top_logprobs each produce a nested list of LogProbs.
         """
         logprobs = [
-            ChatCompletionTokenLogprob(
+            ChatCompletionTokenLogprob(  # nosec B106
                 token="a",
                 logprob=-0.1,
-                top_logprobs=[TopLogprob(token="a", logprob=-0.1, bytes=[97])],
+                top_logprobs=[
+                    TopLogprob(token="a", logprob=-0.1, bytes=[97])
+                ],  # nosec B106
             ),
-            ChatCompletionTokenLogprob(
+            ChatCompletionTokenLogprob(  # nosec B106
                 token="b",
                 logprob=-0.2,
-                top_logprobs=[TopLogprob(token="b", logprob=-0.2, bytes=[98])],
+                top_logprobs=[
+                    TopLogprob(token="b", logprob=-0.2, bytes=[98])
+                ],  # nosec B106
             ),
         ]
         result = LogProbParser.from_tokens(logprobs)
 
         assert len(result) == 2, f"Expected 2 token logprob lists, got {len(result)}"
         assert (
-            result[0][0].token == "a"
+            result[0][0].token == "a"  # nosec B105
         ), f"Expected first token 'a', got '{result[0][0].token}'"
         assert (
-            result[1][0].token == "b"
+            result[1][0].token == "b"  # nosec B105
         ), f"Expected second token 'b', got '{result[1][0].token}'"
 
     def test_from_tokens_filters_empty(self) -> None:
@@ -828,12 +838,14 @@ class TestLogProbParser:
         Test scenario:
             One token with data and one with None top_logprobs → only one entry.
         """
-        logprob_with_data = ChatCompletionTokenLogprob(
+        logprob_with_data = ChatCompletionTokenLogprob(  # nosec B106
             token="a",
             logprob=-0.1,
-            top_logprobs=[TopLogprob(token="a", logprob=-0.1, bytes=[97])],
+            top_logprobs=[
+                TopLogprob(token="a", logprob=-0.1, bytes=[97])
+            ],  # nosec B106
         )
-        logprob_none = ChatCompletionTokenLogprob(
+        logprob_none = ChatCompletionTokenLogprob(  # nosec B106
             token="b",
             logprob=-0.2,
             top_logprobs=[],
@@ -862,7 +874,7 @@ class TestLogProbParser:
 
         assert len(result) == 2, f"Expected 2 LogProbs, got {len(result)}"
         assert (
-            result[0].token == "hello"
+            result[0].token == "hello"  # nosec B105
         ), f"Expected token 'hello', got '{result[0].token}'"
         assert (
             result[0].logprob == -0.5

@@ -269,12 +269,13 @@ class SchemaFormatter:
 
         Examples:
             >>> from pydantic import BaseModel
+            >>> from serapeum.core.utils.schemas import SchemaFormatter
             >>> class Task(BaseModel):
             ...     title: str
             ...     done: bool = False
             >>> schema = Task.model_json_schema()
             >>> prompt = SchemaFormatter.format_for_llm(schema, escape_json=False)
-            >>> prompt.split('\\n')[1]
+            >>> prompt.split('\n')[1]
             "Here's a JSON schema to follow strictly:"
         """
         simplified_schema = SchemaFormatter.simplify(schema_dict, excluded_keys)

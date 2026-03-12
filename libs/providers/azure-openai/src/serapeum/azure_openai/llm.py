@@ -98,14 +98,15 @@ class AzureClient:
         - Instantiate with explicit credentials (requires a live
           endpoint):
             ```python
-            >>> from serapeum.azure_openai import Completions  # doctest: +SKIP
-            >>> llm = Completions(  # doctest: +SKIP
-            ...     engine="my-gpt4o-deployment",
-            ...     model="gpt-4o",
-            ...     api_key="sk-...",
-            ...     azure_endpoint="https://myresource.openai.azure.com/",
-            ...     api_version="2024-02-01",
-            ... )
+            from serapeum.azure_openai import Completions
+
+            llm = Completions(
+                engine="my-gpt4o-deployment",
+                model="gpt-4o",
+                api_key="sk-...",
+                azure_endpoint="https://myresource.openai.azure.com/",
+                api_version="2024-02-01",
+            )
 
             ```
 
@@ -295,37 +296,39 @@ class Completions(AzureClient, OpenAICompletions):
             ```
         - Instantiate with API-key authentication:
             ```python
-            >>> from serapeum.azure_openai import Completions  # doctest: +SKIP
-            >>> llm = Completions(  # doctest: +SKIP
-            ...     engine="my-deployment",
-            ...     model="gpt-4o",
-            ...     api_key="YOUR_AZURE_OPENAI_API_KEY",
-            ...     azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
-            ...     api_version="2024-02-01",
-            ... )
-            >>> response = llm.chat(messages=[...])  # doctest: +SKIP
+            from serapeum.azure_openai import Completions
+
+            llm = Completions(
+                engine="my-deployment",
+                model="gpt-4o",
+                api_key="YOUR_AZURE_OPENAI_API_KEY",
+                azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+                api_version="2024-02-01",
+            )
+            response = llm.chat(messages=[...])
 
             ```
         - Instantiate with Microsoft Entra ID (managed identity):
             ```python
-            >>> from azure.identity import (  # doctest: +SKIP
-            ...     DefaultAzureCredential,
-            ...     get_bearer_token_provider,
-            ... )
-            >>> from serapeum.azure_openai import Completions  # doctest: +SKIP
-            >>> credential = DefaultAzureCredential()  # doctest: +SKIP
-            >>> token_provider = get_bearer_token_provider(  # doctest: +SKIP
-            ...     credential,
-            ...     "https://cognitiveservices.azure.com/.default",
-            ... )
-            >>> llm = Completions(  # doctest: +SKIP
-            ...     engine="my-deployment",
-            ...     model="gpt-4o",
-            ...     azure_ad_token_provider=token_provider,
-            ...     use_azure_ad=True,
-            ...     azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
-            ...     api_version="2024-02-01",
-            ... )
+            from azure.identity import (
+                DefaultAzureCredential,
+                get_bearer_token_provider,
+            )
+            from serapeum.azure_openai import Completions
+
+            credential = DefaultAzureCredential()
+            token_provider = get_bearer_token_provider(
+                credential,
+                "https://cognitiveservices.azure.com/.default",
+            )
+            llm = Completions(
+                engine="my-deployment",
+                model="gpt-4o",
+                azure_ad_token_provider=token_provider,
+                use_azure_ad=True,
+                azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+                api_version="2024-02-01",
+            )
 
             ```
 
@@ -409,15 +412,16 @@ class Responses(AzureClient, OpenAIResponses):
             ```
         - Instantiate with an o3 deployment:
             ```python
-            >>> from serapeum.azure_openai import Responses  # doctest: +SKIP
-            >>> llm = Responses(  # doctest: +SKIP
-            ...     engine="my-o3-deployment",
-            ...     model="o3",
-            ...     api_key="YOUR_AZURE_OPENAI_API_KEY",
-            ...     azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
-            ...     api_version="2024-02-01",
-            ... )
-            >>> response = llm.chat(messages=[...])  # doctest: +SKIP
+            from serapeum.azure_openai import Responses
+
+            llm = Responses(
+                engine="my-o3-deployment",
+                model="o3",
+                api_key="YOUR_AZURE_OPENAI_API_KEY",
+                azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+                api_version="2024-02-01",
+            )
+            response = llm.chat(messages=[...])
 
             ```
 

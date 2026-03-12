@@ -47,20 +47,20 @@ def refresh_openai_azure_ad_token(
     Examples:
         - Acquire a fresh token (requires Azure credentials):
             ```python
-            >>> from serapeum.azure_openai.utils import refresh_openai_azure_ad_token  # doctest: +SKIP
-            >>> token = refresh_openai_azure_ad_token()  # doctest: +SKIP
-            >>> token.token[:5]  # doctest: +SKIP
-            'eyJ0a'
+            from serapeum.azure_openai.utils import refresh_openai_azure_ad_token
+
+            token = refresh_openai_azure_ad_token()
+            token.token[:5]   # e.g. 'eyJ0a'
 
             ```
         - Reuse a still-valid token (returned unchanged):
             ```python
-            >>> import time  # doctest: +SKIP
-            >>> from serapeum.azure_openai.utils import refresh_openai_azure_ad_token  # doctest: +SKIP
-            >>> existing = refresh_openai_azure_ad_token()  # doctest: +SKIP
-            >>> same = refresh_openai_azure_ad_token(existing)  # doctest: +SKIP
-            >>> same.token == existing.token  # doctest: +SKIP
-            True
+            import time
+            from serapeum.azure_openai.utils import refresh_openai_azure_ad_token
+
+            existing = refresh_openai_azure_ad_token()
+            same = refresh_openai_azure_ad_token(existing)
+            same.token == existing.token  # True
 
             ```
 

@@ -10,10 +10,11 @@ from serapeum.core.base.llms.types import (
     CompletionResponse,
     Message,
     Metadata,
+    TextChunk,
 )
-from serapeum.core.llms import FunctionCallingLLM
+from serapeum.core.llms import FunctionCallingLLM, ToolCallArguments
 from serapeum.core.tools import CallableTool
-from serapeum.core.tools.types import BaseTool, ToolCallArguments
+from serapeum.core.tools.types import BaseTool
 
 
 class MockFunctionCallingLLM(FunctionCallingLLM):
@@ -25,17 +26,19 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         self._tool_selection = tool_selection
 
     def chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
-        return ChatResponse(message=Message(role="user", content=""))
+        return ChatResponse(
+            message=Message(role="user", chunks=[TextChunk(content="")]),
+        )
 
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
         pass
 
-    async def achat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponse:
-        return ChatResponse(message=Message(role="user", content=""))
+    async def achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
+        return ChatResponse(
+            message=Message(role="user", chunks=[TextChunk(content="")]),
+        )
 
     async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
@@ -49,7 +52,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     def _prepare_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
+        message: Optional[Union[str, Message]] = None,
         chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,

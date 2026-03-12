@@ -454,7 +454,9 @@ def _wrap_sync_stream(
     @functools.wraps(fn)
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
         def gen():  # type: ignore[return]
-            for attempt in build_retryer(self.max_retries, is_retryable_fn, retry_logger):
+            for attempt in build_retryer(
+                self.max_retries, is_retryable_fn, retry_logger
+            ):
                 with attempt:
                     yield from fn(self, *args, **kwargs)
                     return
@@ -473,7 +475,9 @@ def _wrap_async(
 
     @functools.wraps(fn)
     async def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
-        async for attempt in build_async_retryer(self.max_retries, is_retryable_fn, retry_logger):
+        async for attempt in build_async_retryer(
+            self.max_retries, is_retryable_fn, retry_logger
+        ):
             with attempt:
                 result = await fn(self, *args, **kwargs)
         return result
@@ -491,7 +495,9 @@ def _wrap_async_stream(
     @functools.wraps(fn)
     async def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
         async def gen():  # type: ignore[return]
-            async for attempt in build_async_retryer(self.max_retries, is_retryable_fn, retry_logger):
+            async for attempt in build_async_retryer(
+                self.max_retries, is_retryable_fn, retry_logger
+            ):
                 with attempt:
                     inner = await fn(self, *args, **kwargs)
                     async for chunk in inner:

@@ -2,6 +2,7 @@
 
 This module contains tests for the TextCompletionLLM class using the Ollama backend.
 """
+
 from __future__ import annotations
 
 import json
@@ -16,6 +17,7 @@ from serapeum.core.base.llms.types import (
     Message,
     MessageRole,
     Metadata,
+    TextChunk,
 )
 from serapeum.core.llms import TextCompletionLLM
 from serapeum.core.output_parsers import PydanticParser
@@ -45,7 +47,12 @@ class MockChatLLM(MagicMock):
         """Chat."""
         test_object = {"hello": "chat"}
         text = json.dumps(test_object)
-        return ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=text))
+        return ChatResponse(
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content=text)],
+            )
+        )
 
     @property
     def metadata(self) -> Metadata:
@@ -81,7 +88,7 @@ class TestTextCompletionLLM:
     @pytest.mark.e2e
     def test_text_llm_with_messages(self, llm_model: Ollama) -> None:
         """Test text llm with messages."""
-        messages = [Message(role=MessageRole.USER, content="Test")]
+        messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Test")])]
         prompt = ChatPromptTemplate(message_templates=messages)
         output_parser = PydanticParser(output_cls=ModelTest)
         text_llm = TextCompletionLLM(
@@ -96,7 +103,7 @@ class TestTextCompletionLLM:
     @pytest.mark.e2e
     def test_llm_program_with_messages_and_chat(self, llm_model: Ollama) -> None:
         """Test llm program with messages and chat."""
-        messages = [Message(role=MessageRole.USER, content="Test")]
+        messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Test")])]
         prompt = ChatPromptTemplate(message_templates=messages)
         output_parser = PydanticParser(output_cls=ModelTest)
         text_llm = TextCompletionLLM(

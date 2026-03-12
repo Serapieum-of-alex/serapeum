@@ -1,72 +1,72 @@
+"""OpenAI Responses API provider.
+
+Provides the :class:`Responses` class, which targets the ``/v1/responses``
+endpoint. This endpoint is required for reasoning-focused models such as
+``o3`` and ``o4-mini``, and also supports general-purpose models like
+``gpt-4o-mini``.  Key capabilities include streaming, built-in tools
+(file search, web search, code interpreter), stateful conversation
+continuation via ``track_previous_responses``, structured output via
+tool-call forcing, and reasoning-effort control.
+"""
+
 from __future__ import annotations
 
 import logging
-
-from openai import AzureOpenAI
-from openai.types.responses import Response
 from typing import (
     TYPE_CHECKING,
     Any,
-    AsyncGenerator,
-    Generator,
     Literal,
     Sequence,
-    TypeVar,
-    cast,
     overload,
 )
 
-from serapeum.core.llms import (
-    Message,
-    ChatResponse,
-    ChatResponseAsyncGen,
-    ChatResponseGen,
-    Metadata,
-    MessageRole,
-    ThinkingBlock,
-    ToolCallBlock,
-    ChatToCompletion,
-)
+from openai import AzureOpenAI
+from openai.types.responses import Response
 from pydantic import (
     Field,
     PrivateAttr,
-    BaseModel,
     model_validator,
 )
+
 from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
 )
-
-from serapeum.core.llms import FunctionCallingLLM
-from serapeum.core.tools import ToolCallArguments
-from serapeum.core.utils.schemas import parse_partial_json
-from serapeum.core.prompts import PromptTemplate
-from serapeum.core.llms import FlexibleModel
+from serapeum.core.llms import (
+    ChatResponse,
+    ChatResponseAsyncGen,
+    ChatResponseGen,
+    ChatToCompletion,
+    FunctionCallingLLM,
+    Message,
+    MessageRole,
+    Metadata,
+    TextChunk,
+    ThinkingBlock,
+)
+from serapeum.core.retry import retry
 from serapeum.openai.data.models import (
     O1_MODELS,
     is_function_calling_model,
     openai_modelname_to_contextsize,
 )
+from serapeum.openai.llm.base import Client, ModelMetadata, StructuredOutput
 from serapeum.openai.parsers import (
     ResponsesOutputParser,
     ResponsesStreamAccumulator,
     to_openai_message_dicts,
 )
-from serapeum.openai.llm.base import Client, ModelMetadata
 from serapeum.openai.retry import is_retryable
 from serapeum.openai.utils import resolve_tool_choice
-from serapeum.core.retry import retry
-
 
 if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool
 
 logger = logging.getLogger(__name__)
 
-Model = TypeVar("Model", bound=BaseModel)
 
-
-class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
+class Responses(
+    StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM
+):
     """OpenAI Responses API provider.
 
     Uses the ``/v1/responses`` endpoint, which is required for models such as
@@ -130,45 +130,79 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
             calls.
 
     Examples:
-        - Basic non-streaming completion
+        - Basic non-streaming completion with result exploration
             ```python
-            >>> from serapeum.openai import OpenAIResponses
-            >>> llm = OpenAIResponses(model="o3-mini", api_key="sk-test")  # doctest: +SKIP
-            >>> resp = llm.complete("Explain recursion briefly")  # doctest: +SKIP
-            >>> print(resp.text)  # doctest: +SKIP
+            from serapeum.openai import Responses
+
+            llm = Responses(model="o3-mini", api_key="sk-test")
+            resp = llm.complete("Explain recursion briefly")
+            resp.text  # 'Recursion is a technique where a function calls itself...'
+            resp.additional_kwargs["usage"].total_tokens  # 85
 
             ```
         - Stateful multi-turn conversation
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
-            >>> llm = OpenAIResponses(  # doctest: +SKIP
-            ...     model="gpt-4o-mini",
-            ...     track_previous_responses=True,
-            ...     api_key="sk-test",
-            ... )
-            >>> r1 = llm.chat([Message(role=MessageRole.USER, content="Hello")])  # doctest: +SKIP
-            >>> r2 = llm.chat([Message(role=MessageRole.USER, content="What did I just say?")])  # doctest: +SKIP
+            from serapeum.openai import Responses
+            from serapeum.core.llms import Message, MessageRole, TextChunk
+
+            llm = Responses(
+                model="gpt-4o-mini",
+                track_previous_responses=True,
+                api_key="sk-test",
+            )
+            r1 = llm.chat([
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="My name is Alice")],
+                )
+            ])
+            r1.message.content  # 'Nice to meet you, Alice!'
+            r2 = llm.chat([
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="What is my name?")],
+                )
+            ])
+            r2.message.content  # 'Your name is Alice!'
 
             ```
         - Streaming with a built-in web search tool
             ```python
-            >>> llm = OpenAIResponses(  # doctest: +SKIP
-            ...     model="gpt-4o-mini",
-            ...     built_in_tools=[{"type": "web_search_preview"}],
-            ...     api_key="sk-test",
-            ... )
-            >>> messages = [Message(role=MessageRole.USER, content="Latest AI news")]  # doctest: +SKIP
-            >>> for chunk in llm.chat(messages, stream=True):  # doctest: +SKIP
-            ...     print(chunk.delta, end="", flush=True)
+            from serapeum.openai import Responses
+            from serapeum.core.llms import Message, MessageRole, TextChunk
+
+            llm = Responses(
+                model="gpt-4o-mini",
+                built_in_tools=[{"type": "web_search_preview"}],
+                api_key="sk-test",
+            )
+            messages = [
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Latest AI news")],
+                )
+            ]
+            for chunk in llm.chat(messages, stream=True):
+                print(chunk.delta, end="", flush=True)
+
+            ```
+        - Inspecting model metadata
+            ```python
+            from serapeum.openai import Responses
+
+            llm = Responses(model="o3-mini", api_key="sk-test")
+            llm.metadata.context_window  # 200000
+            llm.metadata.is_chat_model  # True
+            llm.metadata.model_name  # 'o3-mini'
 
             ```
 
     See Also:
-        OpenAI: Chat Completions API provider for models such as ``gpt-4o``.
+        Completions: Chat Completions API provider for models such as ``gpt-4o``.
         serapeum.openai.llm.base.Client: SDK client lifecycle management.
-        serapeum.openai.converters.ResponsesOutputParser: Parses Responses API
+        serapeum.openai.parsers.ResponsesOutputParser: Parses Responses API
             output items into a :class:`~serapeum.core.llms.ChatResponse`.
-        serapeum.openai.converters.ResponsesStreamAccumulator: Accumulates
+        serapeum.openai.parsers.ResponsesStreamAccumulator: Accumulates
             streaming Responses API events.
     """
 
@@ -243,9 +277,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
 
     @model_validator(mode="wrap")
     @classmethod
-    def _inject_response_state(
-        cls, data: Any, handler: Any
-    ) -> OpenAIResponses:
+    def _inject_response_state(cls, data: Any, handler: Any) -> Responses:
         """Extract ``previous_response_id`` before Pydantic validation.
 
         A ``mode="wrap"`` validator that pops the ``"previous_response_id"`` key
@@ -276,7 +308,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
         return instance
 
     @model_validator(mode="after")
-    def _validate_model(self) -> OpenAIResponses:
+    def _validate_model(self) -> Responses:
         """Enforce O1 temperature and sync ``store`` with ``track_previous_responses``.
 
         Sets ``temperature`` to ``1.0`` for O1 reasoning models (whose API
@@ -301,6 +333,15 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
 
         Returns:
             str: The string ``"openai_responses_llm"``.
+
+        Examples:
+            - Retrieve the class identifier
+                ```python
+                >>> from serapeum.openai import Responses
+                >>> Responses.class_name()
+                'openai_responses_llm'
+
+                ```
         """
         return "openai_responses_llm"
 
@@ -317,6 +358,18 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
         Returns:
             Metadata: Populated metadata object including context window, output
                 token cap, capability flags, and model name.
+
+        Examples:
+            - Access metadata fields
+                ```python
+                from serapeum.openai import Responses
+
+                llm = Responses(model="o3-mini", api_key="sk-test")
+                llm.metadata.context_window  # 200000
+                llm.metadata.is_chat_model  # True
+                llm.metadata.model_name  # 'o3-mini'
+
+                ```
         """
         return Metadata(
             context_window=self.context_window
@@ -328,6 +381,18 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
             ),
             model_name=self.model,
         )
+
+    def _should_use_structure_outputs(self) -> bool:
+        """Return ``False`` — the Responses API always uses function-calling.
+
+        The Responses API does not support the Chat Completions
+        ``response_format`` parameter. All structured output requests go
+        through the tool-call forcing path (``tool_choice="required"``).
+
+        Returns:
+            bool: Always ``False``.
+        """
+        return False
 
     def _is_azure_client(self) -> bool:
         """Return whether the underlying SDK client targets Azure OpenAI.
@@ -399,12 +464,20 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
 
     @overload
     def chat(
-        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> ChatResponse: ...
 
     @overload
     def chat(
-        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> ChatResponseGen: ...
 
     def chat(
@@ -427,6 +500,45 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
         Returns:
             ChatResponse | ChatResponseGen: A complete response or a synchronous
                 token generator.
+
+        Examples:
+            - Non-streaming chat call
+                ```python
+                from serapeum.openai import Responses
+                from serapeum.core.llms import Message, MessageRole, TextChunk
+
+                llm = Responses(model="gpt-4o-mini", api_key="sk-test")
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                resp = llm.chat(msgs)
+                resp.message.content  # 'Hello! How can I help you today?'
+                resp.message.role  # <MessageRole.ASSISTANT: 'assistant'>
+
+                ```
+            - Streaming chat call
+                ```python
+                from serapeum.openai import Responses
+                from serapeum.core.llms import Message, MessageRole, TextChunk
+
+                llm = Responses(model="gpt-4o-mini", api_key="sk-test")
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                for chunk in llm.chat(msgs, stream=True):
+                    print(chunk.delta, end="", flush=True)
+
+                ```
+
+        See Also:
+            achat: Async counterpart of this method.
+            complete: Text completion interface for prompt strings.
         """
         result: ChatResponse | ChatResponseGen = (
             self._stream_chat(messages, **kwargs)
@@ -549,12 +661,20 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
 
     @overload
     async def achat(
-        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> ChatResponse: ...
 
     @overload
     async def achat(
-        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> ChatResponseAsyncGen: ...
 
     async def achat(
@@ -579,6 +699,50 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
         Returns:
             ChatResponse | ChatResponseAsyncGen: A complete response or an async
                 token generator.
+
+        Examples:
+            - Async non-streaming chat
+                ```python
+                import asyncio
+                from serapeum.openai import Responses
+                from serapeum.core.llms import Message, MessageRole, TextChunk
+
+                llm = Responses(model="gpt-4o-mini", api_key="sk-test")
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                resp = asyncio.run(llm.achat(msgs))
+                resp.message.content  # 'Hello! How can I help you?'
+
+                ```
+            - Async streaming chat
+                ```python
+                import asyncio
+                from serapeum.openai import Responses
+                from serapeum.core.llms import Message, MessageRole, TextChunk
+
+                async def stream_demo():
+                    llm = Responses(
+                        model="gpt-4o-mini", api_key="sk-test",
+                    )
+                    msgs = [
+                        Message(
+                            role=MessageRole.USER,
+                            chunks=[TextChunk(content="Hi")],
+                        )
+                    ]
+                    async for chunk in await llm.achat(msgs, stream=True):
+                        print(chunk.delta, end="")
+
+                asyncio.run(stream_demo())
+
+                ```
+
+        See Also:
+            chat: Synchronous counterpart of this method.
         """
         result: ChatResponse | ChatResponseAsyncGen = (
             await self._astream_chat(messages, **kwargs)
@@ -588,9 +752,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
         return result
 
     @retry(is_retryable, logger)
-    async def _achat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponse:
+    async def _achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         """Send a non-streaming async Responses API request.
 
         Async counterpart to :meth:`_chat`. Decorated with
@@ -688,7 +850,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
     def _prepare_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: str | Message | None = None,
+        message: str | Message | None = None,
         chat_history: list[Message] | None = None,
         allow_parallel_tool_calls: bool = True,
         tool_required: bool = False,
@@ -707,7 +869,7 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
 
         Args:
             tools: Tools whose specs are to be included in the request.
-            user_msg: Optional user message to append to the conversation.
+            message: Optional user message to append to the conversation.
                 Accepts a plain string or a
                 :class:`~serapeum.core.llms.Message`.
             chat_history: Prior conversation turns. Defaults to an empty list.
@@ -726,8 +888,32 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
             dict[str, Any]: Payload dict with keys ``"messages"``, ``"tools"``,
                 ``"tool_choice"``, ``"parallel_tool_calls"``, and any extra
                 *kwargs*.
-        """
 
+        Examples:
+            - Prepare a tool-calling payload
+                ```python
+                from serapeum.openai import Responses
+                from serapeum.core.tools import CallableTool
+
+                def search(query: str) -> str:
+                    "Search the web."
+                    return f"Results for {query}"
+
+                tool = CallableTool.from_function(search)
+                llm = Responses(model="gpt-4o-mini", api_key="sk-test")
+                payload = llm._prepare_chat_with_tools(
+                    tools=[tool],
+                    message="Find the latest Python release",
+                )
+                len(payload["tools"])  # 1
+                payload["tools"][0]["type"]  # 'function'
+
+                ```
+
+        See Also:
+            Completions._prepare_chat_with_tools: Chat Completions API variant
+                that uses the nested tool-spec format.
+        """
         # openai responses api has a slightly different tool spec format
         tool_specs = [
             {
@@ -747,196 +933,22 @@ class OpenAIResponses(ModelMetadata, Client, ChatToCompletion, FunctionCallingLL
                 tool_spec["strict"] = True
                 tool_spec["parameters"]["additionalProperties"] = False
 
-        if isinstance(user_msg, str):
-            user_msg = Message(role=MessageRole.USER, content=user_msg)
+        if isinstance(message, str):
+            message = Message(
+                role=MessageRole.USER,
+                chunks=[TextChunk(content=message)],
+            )
 
         messages = chat_history or []
-        if user_msg:
-            messages.append(user_msg)
+        if message:
+            messages.append(message)
 
         return {
             "messages": messages,
             "tools": tool_specs or None,
-            "tool_choice": resolve_tool_choice(tool_choice, tool_required)
-            if tool_specs
-            else None,
+            "tool_choice": (
+                resolve_tool_choice(tool_choice, tool_required) if tool_specs else None
+            ),
             "parallel_tool_calls": allow_parallel_tool_calls,
             **kwargs,
         }
-
-    def get_tool_calls_from_response(
-        self,
-        response: "ChatResponse",
-        error_on_no_tool_call: bool = True,
-        **kwargs: Any,
-    ) -> list[ToolCallArguments]:
-        """Extract parsed tool-call arguments from a Responses API chat response.
-
-        Collects :class:`~serapeum.core.llms.ToolCallBlock` entries from
-        ``response.message.chunks`` and parses each block's ``tool_kwargs``
-        through :func:`~serapeum.core.utils.schemas.parse_partial_json`.
-
-        Args:
-            response: A :class:`~serapeum.core.llms.ChatResponse` produced by
-                the Responses API that may contain tool calls.
-            error_on_no_tool_call: When ``True`` (default), raises
-                :exc:`ValueError` if no tool calls are found.
-            **kwargs: Accepted for interface compatibility; not forwarded.
-
-        Returns:
-            list[ToolCallArguments]: One entry per tool call, each carrying the
-                ``tool_id``, ``tool_name``, and parsed ``tool_kwargs``.
-
-        Raises:
-            ValueError: If *error_on_no_tool_call* is ``True`` and no tool
-                calls are present in the response.
-        """
-        tool_calls: list[ToolCallBlock] = [
-            block
-            for block in response.message.chunks
-            if isinstance(block, ToolCallBlock)
-        ]
-
-        if len(tool_calls) < 1:
-            if error_on_no_tool_call:
-                raise ValueError(
-                    f"Expected at least one tool call, but got {len(tool_calls)} tool calls."
-                )
-            else:
-                return []
-
-        tool_selections = []
-        for tool_call in tool_calls:
-            # this should handle both complete and partial jsons
-            try:
-                argument_dict = parse_partial_json(cast(str, tool_call.tool_kwargs))
-            except Exception:
-                argument_dict = {}
-
-            tool_selections.append(
-                ToolCallArguments(
-                    tool_id=tool_call.tool_call_id or "",
-                    tool_name=tool_call.tool_name,
-                    tool_kwargs=argument_dict,
-                )
-            )
-
-        return tool_selections
-
-    @overload
-    def structured_predict(
-        self, output_cls: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
-    ) -> Model: ...
-
-    @overload
-    def structured_predict(
-        self, output_cls: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
-    ) -> Generator[Model | FlexibleModel, None, None]: ...
-
-    def structured_predict(
-        self,
-        output_cls: type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        *,
-        stream: bool = False,
-        **prompt_args: Any,
-    ) -> Model | Generator[Model | FlexibleModel, None, None]:
-        """Predict a structured output using tool-call forcing.
-
-        Overrides the base implementation to ensure ``tool_choice="required"``
-        is set so the model always invokes the schema-bound tool. Delegates to
-        :meth:`~serapeum.core.llms.FunctionCallingLLM.stream_structured_predict`
-        for streaming or
-        :meth:`~serapeum.core.llms.FunctionCallingLLM.structured_predict` for
-        non-streaming.
-
-        Args:
-            output_cls: Pydantic model class defining the expected output schema.
-            prompt: Prompt template used to generate the model input.
-            llm_kwargs: Additional keyword arguments forwarded to the underlying
-                LLM call. Defaults to ``{}``.
-            stream: When ``True``, returns a generator that yields partial
-                :class:`~serapeum.core.llms.FlexibleModel` objects as the model
-                streams the tool arguments.
-            **prompt_args: Template variable values used to render *prompt*.
-
-        Returns:
-            Model | Generator[Model | FlexibleModel, None, None]: Fully parsed
-                Pydantic model instance, or a streaming generator of partial
-                instances.
-        """
-        llm_kwargs = llm_kwargs or {}
-
-        llm_kwargs["tool_choice"] = (
-            "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
-        )
-        if stream:
-            result: Model | Generator[Model | FlexibleModel, None, None] = (
-                super().stream_structured_predict(
-                    output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-                )
-            )
-        else:
-            result = super().structured_predict(
-                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-            )
-        return result
-
-    @overload
-    async def astructured_predict(
-        self, output_cls: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[False] = ..., **prompt_args: Any,
-    ) -> Model: ...
-
-    @overload
-    async def astructured_predict(
-        self, output_cls: type[Model], prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = ..., *, stream: Literal[True], **prompt_args: Any,
-    ) -> AsyncGenerator[Model | FlexibleModel, None]: ...
-
-    async def astructured_predict(
-        self,
-        output_cls: type[Model],
-        prompt: PromptTemplate,
-        llm_kwargs: dict[str, Any] | None = None,
-        *,
-        stream: bool = False,
-        **prompt_args: Any,
-    ) -> Model | AsyncGenerator[Model | FlexibleModel, None]:
-        """Asynchronously predict a structured output using tool-call forcing.
-
-        Async counterpart to :meth:`structured_predict`.
-
-        Args:
-            output_cls: Pydantic model class defining the expected output schema.
-            prompt: Prompt template used to generate the model input.
-            llm_kwargs: Additional keyword arguments forwarded to the underlying
-                LLM call. Defaults to ``{}``.
-            stream: When ``True``, returns an async generator that yields partial
-                :class:`~serapeum.core.llms.FlexibleModel` objects.
-            **prompt_args: Template variable values used to render *prompt*.
-
-        Returns:
-            Model | AsyncGenerator[Model | FlexibleModel, None]: Fully parsed
-                Pydantic model instance, or an async streaming generator of
-                partial instances.
-        """
-        llm_kwargs = llm_kwargs or {}
-
-        llm_kwargs["tool_choice"] = (
-            "required" if "tool_choice" not in llm_kwargs else llm_kwargs["tool_choice"]
-        )
-        if stream:
-            result: Model | AsyncGenerator[Model | FlexibleModel, None] = (
-                await super().astream_structured_predict(
-                    output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-                )
-            )
-        else:
-            result = await super().astructured_predict(
-                output_cls, prompt, llm_kwargs=llm_kwargs, **prompt_args
-            )
-        return result

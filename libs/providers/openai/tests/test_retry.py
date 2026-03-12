@@ -21,6 +21,7 @@ def _make_response(status_code: int) -> MagicMock:
 # Retryable exceptions
 # ---------------------------------------------------------------------------
 
+
 class TestRetryableExceptions:
     """Exceptions that ``is_retryable`` should classify as transient."""
 
@@ -51,7 +52,9 @@ class TestRetryableExceptions:
     def test_server_error_status_codes(self, status_code: int) -> None:
         resp = _make_response(status_code)
         exc = openai.APIStatusError(
-            f"error {status_code}", response=resp, body=None,
+            f"error {status_code}",
+            response=resp,
+            body=None,
         )
         assert is_retryable(exc) is True
 
@@ -65,6 +68,7 @@ class TestRetryableExceptions:
 # ---------------------------------------------------------------------------
 # Non-retryable exceptions
 # ---------------------------------------------------------------------------
+
 
 class TestNonRetryableExceptions:
     """Exceptions that ``is_retryable`` should classify as permanent."""

@@ -44,7 +44,7 @@ class MockLLM(MagicMock):
     def invoke_callable(
         self,
         tools: List["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
+        message: Optional[Union[str, Message]] = None,
         chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -58,7 +58,7 @@ class MockLLM(MagicMock):
     async def ainvoke_callable(
         self,
         tools: List["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
+        message: Optional[Union[str, Message]] = None,
         chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,

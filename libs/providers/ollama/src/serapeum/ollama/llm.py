@@ -18,10 +18,18 @@ from __future__ import annotations
 import asyncio
 import inspect
 import logging
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Generator, Literal, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncGenerator,
+    Callable,
+    Generator,
+    Literal,
+    overload,
+)
 
 import ollama as ollama_sdk  # type: ignore[attr-defined]
-from pydantic import BaseModel, Field, PrivateAttr, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
 from serapeum.core.llms import (
@@ -36,13 +44,13 @@ from serapeum.core.llms import (
     MessageRole,
     Metadata,
     TextChunk,
+    ToolCallBlock,
 )
-
 from serapeum.core.llms.orchestrators import StreamingObjectProcessor
 from serapeum.core.prompts import PromptTemplate
-from serapeum.core.tools import ArgumentCoercer, ToolCallArguments, ToolCallError
-from serapeum.core.types import StructuredOutputMode
 from serapeum.core.retry import retry
+from serapeum.core.tools import ArgumentCoercer
+from serapeum.core.types import StructuredOutputMode
 from serapeum.ollama.client import Client
 from serapeum.ollama.retry import is_retryable
 
@@ -85,69 +93,6 @@ def get_additional_kwargs(
             ```
     """
     return {k: v for k, v in response.items() if k not in exclude}
-
-
-def force_single_tool_call(response: ChatResponse) -> None:
-    """Mutate a response to include at most a single tool call.
-
-    Ollama may return multiple tool calls within a single assistant message. Some
-    consumers require a single call at a time. This helper trims the list to the
-    first occurrence in-place.
-
-    Args:
-        response (ChatResponse):
-            Parsed chat response whose ``message.additional_kwargs['tool_calls']``
-            may contain multiple entries.
-
-    Returns:
-        None: The function mutates ``response`` and returns nothing.
-
-    Examples:
-        - Truncate multiple tool calls to one
-            ```python
-            >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-            >>> r = ChatResponse(message=Message(
-            ...     role=MessageRole.ASSISTANT,
-            ...     content="",
-            ...     additional_kwargs={
-            ...         "tool_calls": [
-            ...             {"function": {"name": "a", "arguments": {}}},
-            ...             {"function": {"name": "b", "arguments": {}}},
-            ...         ]
-            ...     },
-            ... ))
-            >>> force_single_tool_call(r)
-            >>> len(r.message.additional_kwargs.get("tool_calls", []))
-            1
-
-            ```
-        - No-op when there are no tool calls
-            ```python
-            >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-            >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, content="hi"))
-            >>> force_single_tool_call(r)
-            >>> r.message.additional_kwargs.get("tool_calls")
-
-            ```
-        - Single tool call is left as-is
-            ```python
-            >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-            >>> r = ChatResponse(message=Message(
-            ...     role=MessageRole.ASSISTANT,
-            ...     content="",
-            ...     additional_kwargs={
-            ...         "tool_calls": [{"function": {"name": "a", "arguments": {}}}]
-            ...     },
-            ... ))
-            >>> force_single_tool_call(r)
-            >>> r.message.additional_kwargs["tool_calls"][0]["function"]["name"]
-            'a'
-
-            ```
-    """
-    tool_calls = response.message.additional_kwargs.get("tool_calls", [])
-    if tool_calls and len(tool_calls) > 1:
-        response.message.additional_kwargs["tool_calls"] = [tool_calls[0]]
 
 
 class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
@@ -219,7 +164,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         - Basic chat via Ollama Cloud
             ```python
             >>> import os
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> from serapeum.ollama import Ollama  # type: ignore
             >>> llm = Ollama(
             ...     model="qwen3-next:80b",
@@ -227,7 +172,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ...     temperature=0.0,
             ...     timeout=120,
             ... )
-            >>> response = llm.chat([Message(role=MessageRole.USER, content="Say 'hello'.")])
+            >>> response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="Say 'hello'.")])])
             >>> response.message.role
             <MessageRole.ASSISTANT: 'assistant'>
             >>> print("content:", response.message.content)
@@ -269,7 +214,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         - Stream chat deltas and collect incremental content
             ```python
             >>> import os
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> from serapeum.ollama import Ollama  # type: ignore
             >>> llm = Ollama(
             ...     model="qwen3-next:80b",
@@ -278,7 +223,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             ...     timeout=120,
             ... )
             >>> chunks = list(llm.chat([  # doctest: +SKIP, +ELLIPSIS
-            ...     Message(role=MessageRole.USER, content="Say 'hello'.")
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Say 'hello'.")])
             ... ], stream=True))
             >>> print("delta:", chunks[0].delta)  # first streamed token  # doctest: +SKIP, +ELLIPSIS
             delta: ...
@@ -595,12 +540,12 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         Examples:
             - Text-only conversion
                 ```python
-                >>> from serapeum.core.llms import Message, MessageList, MessageRole
+                >>> from serapeum.core.llms import Message, MessageList, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama      # type: ignore[attr-defined]
                 >>> llm = Ollama(model="m")
                 >>> wire = llm._convert_to_ollama_messages(
-                ...     MessageList.from_list([
-                ...         Message(role=MessageRole.USER, content="hello"),
+                ...     MessageList(messages=[
+                ...         Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")]),
                 ...     ])
                 ... )
                 >>> print(wire)
@@ -698,7 +643,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
     def _prepare_chat_with_tools(
         self,
         tools: list[BaseTool],
-        user_msg: str | Message | None = None,
+        message: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -708,7 +653,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
 
         Args:
             tools (List[BaseTool]): Tools to expose to the model (converted using OpenAI schema).
-            user_msg (str | Message | None): Optional user message to append.
+            message (str | Message | None): Optional user message to append.
             chat_history (list[Message] | None): Optional existing conversation history.
             verbose (bool): Currently unused verbosity flag.
             allow_parallel_tool_calls (bool): Indicator forwarded to validators.
@@ -720,7 +665,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         Examples:
             - Combine history, a new user message, and tool specs
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama      # type: ignore
                 >>> class T:
                 ...     def __init__(self, n):
@@ -730,7 +675,11 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ...         self.metadata = M()
                 ...
                 >>> llm = Ollama(model="m")
-                >>> payload = llm._prepare_chat_with_tools([T("t1")], user_msg="hi", chat_history=[Message(role=MessageRole.SYSTEM, content="s")])
+                >>> payload = llm._prepare_chat_with_tools(
+                ...     [T("t1")],
+                ...     message="hi",
+                ...     chat_history=[Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="s")])],
+                ... )
                 >>> len(payload["messages"])
                 2
                 >>> payload["messages"][0].role == MessageRole.SYSTEM
@@ -746,187 +695,20 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             tool.metadata.to_openai_tool(skip_length_check=True) for tool in tools
         ]
 
-        if isinstance(user_msg, str):
-            user_msg = Message(role=MessageRole.USER, content=user_msg)
+        if isinstance(message, str):
+            message = Message(
+                role=MessageRole.USER,
+                chunks=[TextChunk(content=message)],
+            )
 
         messages = list(chat_history or [])
-        if user_msg:
-            messages.append(user_msg)
+        if message:
+            messages.append(message)
 
         return {
             "messages": messages,
             "tools": tool_specs or None,
         }
-
-    def _validate_chat_with_tools_response(
-        self,
-        response: ChatResponse,
-        tools: list["BaseTool"],
-        allow_parallel_tool_calls: bool = False,
-        **kwargs: Any,
-    ) -> ChatResponse:
-        """Validate and normalize a chat-with-tools response.
-
-        If ``allow_parallel_tool_calls`` is ``False``, the response is mutated to
-        include at most a single tool call.
-
-        Args:
-            response (ChatResponse): Response to validate.
-            tools (List[BaseTool]): Tools originally requested (unused, reserved for future checks).
-            allow_parallel_tool_calls (bool): Whether multiple tool calls are allowed.
-            **kwargs (Any): Reserved for future options.
-
-        Returns:
-            ChatResponse: The validated response (possibly mutated in-place).
-
-        Examples:
-            - Trim multiple tool calls down to the first one
-                ```python
-                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-                >>> from serapeum.ollama import Ollama  # type: ignore
-                >>> llm = Ollama(model="m")
-                >>> response = ChatResponse(
-                ...     message=Message(
-                ...         role=MessageRole.ASSISTANT, content="", additional_kwargs={
-                ...             "tool_calls": [
-                ...                 {"function": {"name": "a", "arguments": {}}},
-                ...                 {"function": {"name": "b", "arguments": {}}},
-                ...             ]
-                ...         }
-                ...     )
-                ... )
-                >>> validated = llm._validate_chat_with_tools_response(
-                ...     response, tools=[], allow_parallel_tool_calls=False,
-                ... )
-                >>> validated.message.additional_kwargs["tool_calls"]
-                [{'function': {'name': 'a', 'arguments': {}}}]
-
-                ```
-            - Allow parallel tool calls to pass through untrimmed
-                ```python
-                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-                >>> from serapeum.ollama import Ollama  # type: ignore
-                >>> llm = Ollama(model="m")
-                >>> response = ChatResponse(
-                ...     message=Message(
-                ...         role=MessageRole.ASSISTANT, content="", additional_kwargs={
-                ...             "tool_calls": [
-                ...                 {"function": {"name": "a", "arguments": {}}},
-                ...                 {"function": {"name": "b", "arguments": {}}},
-                ...             ]
-                ...         }
-                ...     )
-                ... )
-                >>> validated = llm._validate_chat_with_tools_response(
-                ...     response, tools=[], allow_parallel_tool_calls=True,
-                ... )
-                >>> [tc["function"]["name"] for tc in validated.message.additional_kwargs["tool_calls"]]
-                ['a', 'b']
-
-                ```
-        """
-        if not allow_parallel_tool_calls:
-            force_single_tool_call(response)
-        return response
-
-    def get_tool_calls_from_response(
-        self,
-        response: ChatResponse,
-        error_on_no_tool_call: bool = True,
-    ) -> list[ToolCallArguments]:
-        """Extract tool call selections from a chat response.
-
-        Args:
-            response (ChatResponse): Response potentially containing tool calls.
-            error_on_no_tool_call (bool): Whether to raise when no tool calls are present.
-
-        Returns:
-            list[ToolCallArguments]: Parsed tool selections (empty when allowed and none present).
-
-        Raises:
-            ValueError: When ``error_on_no_tool_call`` is ``True`` and no tool calls exist.
-
-        Examples:
-            - Parse a single tool call and explore its fields
-                ```python
-                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-                >>> from serapeum.ollama import Ollama  # type: ignore
-                >>> llm = Ollama(model="m")
-                >>> r = ChatResponse(
-                ...     message=Message(
-                ...         role=MessageRole.ASSISTANT,
-                ...         content="",
-                ...         additional_kwargs={
-                ...             "tool_calls": [
-                ...                 {"function": {"name": "run", "arguments": {"a": 1}}}
-                ...             ]
-                ...         },
-                ...     )
-                ... )
-                >>> calls = llm.get_tool_calls_from_response(r)
-                >>> calls[0].tool_name
-                'run'
-                >>> calls[0].tool_id
-                'run'
-                >>> calls[0].tool_kwargs
-                {'a': 1}
-
-                ```
-            - Gracefully return empty list when no tool calls and errors disabled
-                ```python
-                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-                >>> from serapeum.ollama import Ollama  # type: ignore
-                >>> llm = Ollama(model="m")
-                >>> empty = ChatResponse(
-                ...     message=Message(role=MessageRole.ASSISTANT, content="No tools needed.")
-                ... )
-                >>> calls = llm.get_tool_calls_from_response(empty, error_on_no_tool_call=False)
-                >>> calls
-                []
-
-                ```
-            - Raise ToolCallError when no tool call is present and errors are enabled
-                ```python
-                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
-                >>> from serapeum.ollama import Ollama  # type: ignore
-                >>> llm = Ollama(model="m")
-                >>> empty = ChatResponse(
-                ...     message=Message(role=MessageRole.ASSISTANT, content="")
-                ... )
-                >>> llm.get_tool_calls_from_response(empty, error_on_no_tool_call=True)
-                Traceback (most recent call last):
-                    ...
-                serapeum.core.tools.types.ToolCallError: Expected at least one tool call, but the LLM response contained 0 tool calls.
-
-                ```
-        """
-        tool_calls = response.message.additional_kwargs.get("tool_calls", [])
-
-        tool_selections = []
-        if not tool_calls or len(tool_calls) < 1:
-            if error_on_no_tool_call:
-                raise ToolCallError(
-                    f"Expected at least one tool call, but the LLM response contained "
-                    f"{len(tool_calls) if tool_calls else 0} tool calls.",
-                    tool_name=None,
-                )
-        else:
-            coercer = ArgumentCoercer()
-            for tool_call in tool_calls:
-                # Coerce arguments to proper types (handles JSON strings, type mismatches, etc.)
-                raw_arguments = tool_call["function"]["arguments"]
-                argument_dict = coercer.coerce(raw_arguments)
-
-                tool_selections.append(
-                    ToolCallArguments(
-                        # tool ids not provided by Ollama
-                        tool_id=tool_call["function"]["name"],
-                        tool_name=tool_call["function"]["name"],
-                        tool_kwargs=argument_dict,
-                    )
-                )
-
-        return tool_selections
 
     @staticmethod
     def _build_chat_response(raw: Any) -> ChatResponse:
@@ -953,7 +735,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 'Hi'
                 >>> resp.message.role
                 <MessageRole.ASSISTANT: 'assistant'>
-                >>> resp.message.additional_kwargs["tool_calls"]
+                >>> resp.message.tool_calls
                 []
 
                 ```
@@ -972,15 +754,31 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ```
         """
         raw = dict(raw)
-        tool_calls = raw["message"].get("tool_calls") or []
+        raw_tool_calls = raw["message"].get("tool_calls") or []
         token_counts = Ollama._get_response_token_counts(raw)
         if token_counts:
             raw["usage"] = token_counts
+
+        chunks: list = []
+        content = raw["message"]["content"]
+        if content:
+            chunks.append(TextChunk(content=content))
+
+        coercer = ArgumentCoercer()
+        for tc in raw_tool_calls:
+            func = tc["function"]
+            chunks.append(
+                ToolCallBlock(
+                    tool_call_id=func["name"],
+                    tool_name=func["name"],
+                    tool_kwargs=coercer.coerce(func["arguments"]),
+                )
+            )
+
         return ChatResponse(
             message=Message(
-                content=raw["message"]["content"],
+                chunks=chunks,
                 role=raw["message"]["role"],
-                additional_kwargs={"tool_calls": tool_calls},
             ),
             raw=raw,
         )
@@ -1028,10 +826,12 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         Examples:
             - Non-streaming chat — explore the response message
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="llama3.1", timeout=120)
-                >>> resp = llm.chat([Message(role=MessageRole.USER, content="Say hi")])  # doctest: +SKIP, +ELLIPSIS
+                >>> resp = llm.chat([  # doctest: +SKIP, +ELLIPSIS
+                ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Say hi")])
+                ... ])
                 >>> resp.message.role  # doctest: +SKIP
                 <MessageRole.ASSISTANT: 'assistant'>
                 >>> print("content:", resp.message.content)  # doctest: +SKIP, +ELLIPSIS
@@ -1042,11 +842,11 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 ```
             - Streaming chat — collect deltas and see accumulated text
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama  # type: ignore
                 >>> llm = Ollama(model="llama3.1", timeout=180)
                 >>> chunks = list(llm.chat(  # doctest: +SKIP, +ELLIPSIS
-                ...     [Message(role=MessageRole.USER, content="Count to 3")],
+                ...     [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 3")])],
                 ...     stream=True,
                 ... ))
                 >>> print("delta:", chunks[0].delta)  # first streamed token  # doctest: +SKIP, +ELLIPSIS
@@ -1056,7 +856,11 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
 
                 ```
         """
-        result = self._stream_chat(messages, **kwargs) if stream else self._chat(messages, **kwargs)
+        result = (
+            self._stream_chat(messages, **kwargs)
+            if stream
+            else self._chat(messages, **kwargs)
+        )
         return result
 
     @retry(is_retryable, logger)
@@ -1144,22 +948,33 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
 
         tools_dict["response_txt"] += r["message"]["content"]
         new_tool_calls = [dict(t) for t in (r["message"].get("tool_calls", []) or [])]
+        coercer = ArgumentCoercer()
         for tool_call in new_tool_calls:
             func_name = str(tool_call["function"]["name"])
             func_args = str(tool_call["function"]["arguments"])
             if (func_name, func_args) not in tools_dict["seen_tool_calls"]:
                 tools_dict["seen_tool_calls"].add((func_name, func_args))
-                tools_dict["all_tool_calls"].append(tool_call)
+                tools_dict["all_tool_calls"].append(
+                    ToolCallBlock(
+                        tool_call_id=func_name,
+                        tool_name=func_name,
+                        tool_kwargs=coercer.coerce(tool_call["function"]["arguments"]),
+                    )
+                )
 
         token_counts = Ollama._get_response_token_counts(r)
         if token_counts:
             r["usage"] = token_counts
 
+        chunks: list = []
+        if tools_dict["response_txt"]:
+            chunks.append(TextChunk(content=tools_dict["response_txt"]))
+        chunks.extend(tools_dict["all_tool_calls"])
+
         return ChatResponse(
             message=Message(
-                content=tools_dict["response_txt"],
+                chunks=chunks,
                 role=r["message"]["role"],
-                additional_kwargs={"tool_calls": tools_dict["all_tool_calls"]},
             ),
             delta=r["message"]["content"],
             raw=r,
@@ -1243,12 +1058,12 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             - Async non-streaming chat — explore the response
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama      # type: ignore
                 >>> llm = Ollama(model="llama3.1", timeout=120)  # doctest: +SKIP
                 >>> async def chat_example():  # doctest: +SKIP
                 ...     response = await llm.achat([
-                ...         Message(role=MessageRole.USER, content="Say hello")
+                ...         Message(role=MessageRole.USER, chunks=[TextChunk(content="Say hello")])
                 ...     ])
                 ...     return response
                 >>> resp = asyncio.run(chat_example())  # doctest: +SKIP, +ELLIPSIS
@@ -1261,13 +1076,13 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
             - Async streaming chat — collect deltas
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> from serapeum.ollama import Ollama      # type: ignore
                 >>> llm = Ollama(model="llama3.1", timeout=120)  # doctest: +SKIP
                 >>> async def stream_example():  # doctest: +SKIP
                 ...     deltas = []
                 ...     async for chunk in await llm.achat(
-                ...         [Message(role=MessageRole.USER, content="Count to 3")],
+                ...         [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 3")])],
                 ...         stream=True,
                 ...     ):
                 ...         deltas.append(chunk.delta)
@@ -1283,7 +1098,11 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
         See Also:
             chat: Synchronous variant.
         """
-        result = await self._astream_chat(messages, **kwargs) if stream else await self._achat(messages, **kwargs)
+        result = (
+            await self._astream_chat(messages, **kwargs)
+            if stream
+            else await self._achat(messages, **kwargs)
+        )
         return result
 
     @retry(is_retryable, logger)
@@ -1513,7 +1332,7 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 objects = processor.process(response, cur_objects)
                 cur_objects = objects if isinstance(objects, list) else [objects]
                 yield objects
-            except Exception:
+            except Exception:  # nosec B112
                 continue
 
     @overload
@@ -1685,5 +1504,5 @@ class Ollama(Client, ChatToCompletion, FunctionCallingLLM):
                 objects = processor.process(response, cur_objects)
                 cur_objects = objects if isinstance(objects, list) else [objects]
                 yield objects
-            except Exception:
+            except Exception:  # nosec B112
                 continue

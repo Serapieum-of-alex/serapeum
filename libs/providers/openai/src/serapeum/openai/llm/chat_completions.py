@@ -1,3 +1,17 @@
+"""OpenAI Chat Completions and legacy Completions API provider.
+
+Provides the :class:`Completions` class, which routes requests to either the
+Chat Completions API (``/v1/chat/completions``) for chat models such as
+``gpt-4o`` and ``gpt-4-turbo``, or the legacy Completions API
+(``/v1/completions``) for instruct models such as ``gpt-3.5-turbo-instruct``.
+Streaming, function calling, structured outputs via native JSON-schema,
+audio modalities, and per-token log-probability extraction are all supported.
+
+The module also exposes :func:`get_tool_calls_from_legacy_response`, a helper
+that extracts tool-call arguments from responses stored in the legacy
+``additional_kwargs["tool_calls"]`` format used by older versions of the SDK.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -10,32 +24,35 @@ from typing import (
     overload,
 )
 
-from serapeum.core.llms import (
-    Message,
-    ChatResponse,
-    ChatResponseAsyncGen,
-    ChatResponseGen,
-    CompletionResponse,
-    CompletionResponseAsyncGen,
-    CompletionResponseGen,
-    Metadata,
-    MessageRole,
-    ToolCallBlock,
-    TextChunk,
-    ChatToCompletion
-)
-from pydantic import (
-    Field,
-    model_validator,
-    ConfigDict
-)
+from openai.types.chat.chat_completion_chunk import ChoiceDelta
+from pydantic import ConfigDict, Field, model_validator
 
+from serapeum.core.base.llms.utils import (
+    acompletion_to_chat_decorator,
+    astream_completion_to_chat_decorator,
+    completion_to_chat_decorator,
+    stream_completion_to_chat_decorator,
+)
 from serapeum.core.configs.defaults import (
     DEFAULT_TEMPERATURE,
 )
-
-from serapeum.core.llms import FunctionCallingLLM
-from serapeum.core.tools import ToolCallArguments
+from serapeum.core.llms import (
+    ChatResponse,
+    ChatResponseAsyncGen,
+    ChatResponseGen,
+    ChatToCompletion,
+    CompletionResponse,
+    CompletionResponseAsyncGen,
+    CompletionResponseGen,
+    FunctionCallingLLM,
+    Message,
+    MessageRole,
+    Metadata,
+    TextChunk,
+    ToolCallArguments,
+    ToolCallBlock,
+)
+from serapeum.core.retry import retry
 from serapeum.core.utils.schemas import parse_partial_json
 from serapeum.openai.data.models import (
     O1_MODELS,
@@ -44,23 +61,15 @@ from serapeum.openai.data.models import (
     is_function_calling_model,
     openai_modelname_to_contextsize,
 )
+from serapeum.openai.llm.base import Client, ModelMetadata, StructuredOutput
 from serapeum.openai.parsers import (
     ChatMessageParser,
     LogProbParser,
     ToolCallAccumulator,
     to_openai_message_dicts,
 )
-from serapeum.openai.llm.base import Client, ModelMetadata, StructuredOutput
 from serapeum.openai.retry import is_retryable
-from serapeum.openai.utils import force_single_tool_call, resolve_tool_choice
-from serapeum.core.retry import retry
-from openai.types.chat.chat_completion_chunk import ChoiceDelta
-from serapeum.core.base.llms.utils import (
-    completion_to_chat_decorator,
-    stream_completion_to_chat_decorator,
-    acompletion_to_chat_decorator,
-    astream_completion_to_chat_decorator
-)
+from serapeum.openai.utils import resolve_tool_choice
 
 if TYPE_CHECKING:
     from serapeum.core.tools import BaseTool
@@ -68,7 +77,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM):
+class Completions(
+    StructuredOutput, ModelMetadata, Client, ChatToCompletion, FunctionCallingLLM
+):
     """OpenAI Chat Completions and Completions API provider.
 
     Routes requests to either the Chat Completions API (for chat models such as
@@ -87,7 +98,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
     Args:
         model: OpenAI model identifier (e.g. ``"gpt-4o"``, ``"gpt-4-turbo"``).
             Models that are exclusive to the Responses API (e.g. ``"o3"``) are
-            rejected at construction time; use :class:`OpenAIResponses` instead.
+            rejected at construction time; use :class:`Responses` instead.
         temperature: Sampling temperature in ``[0.0, 2.0]``. Higher values produce
             more creative, less deterministic output. Automatically forced to
             ``1.0`` for O1 reasoning models. Defaults to
@@ -127,40 +138,71 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             ``False``).
 
     Examples:
-        - Basic chat completion
+        - Basic chat completion with result exploration
             ```python
-            >>> from serapeum.openai import OpenAI
-            >>> from serapeum.core.llms import Message, MessageRole
-            >>> llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-            >>> resp = llm.chat([Message(role=MessageRole.USER, content="Say hi")])  # doctest: +SKIP
-            >>> isinstance(resp.message.content, str)  # doctest: +SKIP
-            True
+            from serapeum.openai import Completions
+            from serapeum.core.llms import Message, MessageRole, TextChunk
+
+            llm = Completions(model="gpt-4o-mini", api_key="sk-test")
+            resp = llm.chat([
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Say hi")],
+                )
+            ])
+            resp.message.content  # 'Hi! How can I help you today?'
+            resp.additional_kwargs["total_tokens"]  # 25
 
             ```
-        - Streaming text completion
+        - Streaming text completion and collecting tokens
             ```python
-            >>> llm = OpenAI(model="gpt-3.5-turbo-instruct", api_key="sk-test")  # doctest: +SKIP
-            >>> for chunk in llm.complete("Once upon a time", stream=True):  # doctest: +SKIP
-            ...     print(chunk.delta, end="", flush=True)
+            from serapeum.openai import Completions
+
+            llm = Completions(
+                model="gpt-3.5-turbo-instruct",
+                api_key="sk-test",
+            )
+            for chunk in llm.complete(
+                "Once upon a time", stream=True
+            ):
+                print(chunk.delta, end="", flush=True)
 
             ```
-        - Structured output prediction
+        - Structured output prediction with result exploration
             ```python
-            >>> from pydantic import BaseModel
-            >>> from serapeum.core.prompts import PromptTemplate
-            >>> class Summary(BaseModel):
-            ...     title: str
-            ...     points: list[str]
-            >>> llm = OpenAI(model="gpt-4o-mini", api_key="sk-test")  # doctest: +SKIP
-            >>> tmpl = PromptTemplate("Summarise: {text}")  # doctest: +SKIP
-            >>> out = llm.structured_predict(Summary, tmpl, text="…")  # doctest: +SKIP
-            >>> isinstance(out, Summary)  # doctest: +SKIP
-            True
+            from pydantic import BaseModel
+            from serapeum.openai import Completions
+            from serapeum.core.prompts import PromptTemplate
+
+            class Summary(BaseModel):
+                title: str
+                points: list[str]
+
+            llm = Completions(
+                model="gpt-4o-mini", api_key="sk-test"
+            )
+            tmpl = PromptTemplate("Summarise: {text}")
+            out = llm.parse(
+                Summary, tmpl, text="AI is transforming..."
+            )
+            out.title  # 'AI Transformation'
+            len(out.points)  # 3
+
+            ```
+        - Inspecting model metadata
+            ```python
+            from serapeum.openai import Completions
+
+            llm = Completions(
+                model="gpt-4o-mini", api_key="sk-test"
+            )
+            llm.metadata.context_window  # 128000
+            llm.metadata.model_name  # 'gpt-4o-mini'
 
             ```
 
     See Also:
-        OpenAIResponses: Responses API provider for models exclusive to that API.
+        Responses: Responses API provider for models exclusive to that API.
         serapeum.openai.llm.base.Client: OpenAI SDK client lifecycle management.
         serapeum.openai.llm.base.StructuredOutput: Native JSON-schema structured outputs.
         serapeum.openai.llm.base.ModelMetadata: Model name normalisation and tokenizer.
@@ -197,7 +239,9 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         default=False,
         description="Whether to use strict mode for invoking tools/using schemas.",
     )
-    reasoning_effort: Literal["none", "minimal", "low", "medium", "high", "xhigh"] | None = Field(
+    reasoning_effort: (
+        Literal["none", "minimal", "low", "medium", "high", "xhigh"] | None
+    ) = Field(
         default=None,
         description="The effort to use for reasoning models.",
     )
@@ -211,7 +255,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
     )
 
     @model_validator(mode="after")
-    def _validate_model(self) -> OpenAI:
+    def _validate_model(self) -> Completions:
         """Force O1 temperature and validate model is Chat Completions-compatible.
 
         Sets ``temperature`` to ``1.0`` for O1 reasoning models whose API does
@@ -232,7 +276,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         if not is_chatcomp_api_supported(self.model):
             raise ValueError(
                 f"Cannot use model {self.model} as it is only supported by the "
-                "Responses API. Use the OpenAIResponses class for it."
+                "Responses API. Use the Responses class for it."
             )
 
         return self
@@ -243,6 +287,15 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
 
         Returns:
             str: The string ``"openai"``.
+
+        Examples:
+            - Retrieve the class identifier
+                ```python
+                >>> from serapeum.openai import Completions
+                >>> Completions.class_name()
+                'openai'
+
+                ```
         """
         return "openai"
 
@@ -258,6 +311,21 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             Metadata: Populated metadata object with context window, output
                 token cap, chat/function-calling capability flags, model name,
                 and the appropriate system-message role.
+
+        Examples:
+            - Access metadata fields
+                ```python
+                from serapeum.openai import Completions
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                llm.metadata.context_window  # 128000
+                llm.metadata.is_chat_model  # True
+                llm.metadata.is_function_calling_model  # True
+                llm.metadata.model_name  # 'gpt-4o-mini'
+
+                ```
         """
         return Metadata(
             context_window=openai_modelname_to_contextsize(self._get_model_name()),
@@ -267,19 +335,27 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                 model=self._get_model_name()
             ),
             model_name=self.model,
-            system_role=MessageRole.USER
-            if self.model in O1_MODELS
-            else MessageRole.SYSTEM,
+            system_role=(
+                MessageRole.USER if self.model in O1_MODELS else MessageRole.SYSTEM
+            ),
         )
 
     @overload
     def chat(
-        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> ChatResponse: ...
 
     @overload
     def chat(
-        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> ChatResponseGen: ...
 
     def chat(
@@ -305,6 +381,53 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             ChatResponse | ChatResponseGen: A complete response when
                 ``stream=False``, or a synchronous generator of partial responses
                 when ``stream=True``.
+
+        Examples:
+            - Non-streaming chat call
+                ```python
+                from serapeum.openai import Completions
+                from serapeum.core.llms import (
+                    Message, MessageRole, TextChunk,
+                )
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                resp = llm.chat(msgs)
+                resp.message.content  # 'Hello! ...'
+                resp.message.role  # MessageRole.ASSISTANT
+
+                ```
+            - Streaming chat call
+                ```python
+                from serapeum.openai import Completions
+                from serapeum.core.llms import (
+                    Message, MessageRole, TextChunk,
+                )
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                for chunk in llm.chat(msgs, stream=True):
+                    print(chunk.delta, end="", flush=True)
+
+                ```
+
+        See Also:
+            achat: Async counterpart of this method.
+            complete: Text completion interface for prompt strings.
         """
         if stream:
             if self._use_chat_completions(kwargs):
@@ -323,12 +446,22 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
 
     @overload
     def complete(
-        self, prompt: str, formatted: bool = ..., *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> CompletionResponse: ...
 
     @overload
     def complete(
-        self, prompt: str, formatted: bool = ..., *, stream: Literal[True], **kwargs: Any,
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> CompletionResponseGen: ...
 
     def complete(
@@ -361,6 +494,41 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
 
         Raises:
             ValueError: If ``"audio"`` is in :attr:`modalities`.
+
+        Examples:
+            - Non-streaming text completion
+                ```python
+                from serapeum.openai import Completions
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                resp = llm.complete(
+                    "Explain recursion in one sentence"
+                )
+                resp.text  # 'Recursion is when a function ...'
+                resp.additional_kwargs["total_tokens"]  # 42
+
+                ```
+            - Streaming text completion
+                ```python
+                from serapeum.openai import Completions
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                collected = []
+                for chunk in llm.complete(
+                    "Once upon a time", stream=True
+                ):
+                    collected.append(chunk.delta)
+                "".join(collected)  # ', in a land far away, ...'
+
+                ```
+
+        See Also:
+            acomplete: Async counterpart of this method.
+            chat: Chat-style message interface.
         """
         if self.modalities and "audio" in self.modalities:
             raise ValueError(
@@ -393,9 +561,10 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                 ``False`` to use the legacy Completions endpoint.
         """
         if "use_chat_completions" in kwargs:
-            return kwargs["use_chat_completions"]
-        return self.metadata.is_chat_model
-
+            val = kwargs["use_chat_completions"]
+        else:
+            val = self.metadata.is_chat_model
+        return val
 
     def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         """Build the keyword-argument dict for an OpenAI API call.
@@ -496,7 +665,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         return ChatResponse(
             message=message,
             raw=response,
-            likelihood_score=logprobs,
+            logprob=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 
@@ -509,9 +678,8 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         Decorated with :func:`~serapeum.core.retry.retry`. Each yielded chunk
         carries the cumulative text so far plus the per-step delta. Tool-call
         fragments are merged incrementally by
-        :class:`~serapeum.openai.converters.ToolCallAccumulator` so that
-        ``additional_kwargs["tool_calls"]`` always reflects the latest accumulated
-        state.
+        :class:`~serapeum.openai.converters.ToolCallAccumulator` and stored as
+        :class:`~serapeum.core.llms.ToolCallBlock` entries in ``message.chunks``.
 
         Audio output is not supported in streaming mode.
 
@@ -546,7 +714,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             **self._get_model_kwargs(stream=True, **kwargs),
         ):
             blocks = []
-            response = response
             if len(response.choices) > 0:
                 delta = response.choices[0].delta
             else:
@@ -565,11 +732,9 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             content += content_delta
             blocks.append(TextChunk(content=content))
 
-            additional_kwargs = {}
             if is_function:
                 accumulator.update(delta.tool_calls)
                 if accumulator.tool_calls:
-                    additional_kwargs["tool_calls"] = accumulator.tool_calls
                     for tool_call in accumulator.tool_calls:
                         if tool_call.function:
                             blocks.append(
@@ -584,7 +749,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                 message=Message(
                     role=role,
                     chunks=blocks,
-                    additional_kwargs=additional_kwargs,
                 ),
                 delta=content_delta,
                 raw=response,
@@ -627,7 +791,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         return CompletionResponse(
             text=text,
             raw=response,
-            likelihood_score=logprobs,
+            logprob=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 
@@ -745,15 +909,22 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
             "total_tokens": total_tokens,
         }
 
-
     @overload
     async def achat(
-        self, messages: Sequence[Message], *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> ChatResponse: ...
 
     @overload
     async def achat(
-        self, messages: Sequence[Message], *, stream: Literal[True], **kwargs: Any,
+        self,
+        messages: Sequence[Message],
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> ChatResponseAsyncGen: ...
 
     async def achat(
@@ -779,11 +950,67 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         Returns:
             ChatResponse | ChatResponseAsyncGen: A complete response or an async
                 token generator.
+
+        Examples:
+            - Async non-streaming chat
+                ```python
+                import asyncio
+                from serapeum.openai import Completions
+                from serapeum.core.llms import (
+                    Message, MessageRole, TextChunk,
+                )
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                msgs = [
+                    Message(
+                        role=MessageRole.USER,
+                        chunks=[TextChunk(content="Hello")],
+                    )
+                ]
+                resp = asyncio.run(llm.achat(msgs))
+                resp.message.content  # 'Hello! ...'
+
+                ```
+            - Async streaming chat
+                ```python
+                import asyncio
+                from serapeum.openai import Completions
+                from serapeum.core.llms import (
+                    Message, MessageRole, TextChunk,
+                )
+
+                async def stream_demo():
+                    llm = Completions(
+                        model="gpt-4o-mini",
+                        api_key="sk-test",
+                    )
+                    msgs = [
+                        Message(
+                            role=MessageRole.USER,
+                            chunks=[
+                                TextChunk(content="Hi")
+                            ],
+                        )
+                    ]
+                    async for chunk in await llm.achat(
+                        msgs, stream=True
+                    ):
+                        print(chunk.delta, end="")
+
+                asyncio.run(stream_demo())
+
+                ```
+
+        See Also:
+            chat: Synchronous counterpart of this method.
+            acomplete: Async text completion interface.
         """
         if stream:
             if self._use_chat_completions(kwargs):
-                result: ChatResponse | ChatResponseAsyncGen = (
-                    await self._astream_chat(messages, **kwargs)
+                result: ChatResponse | ChatResponseAsyncGen = await self._astream_chat(
+                    messages, **kwargs
                 )
             else:
                 result = await astream_completion_to_chat_decorator(
@@ -799,12 +1026,22 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
 
     @overload
     async def acomplete(
-        self, prompt: str, formatted: bool = ..., *, stream: Literal[False] = ..., **kwargs: Any,
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[False] = ...,
+        **kwargs: Any,
     ) -> CompletionResponse: ...
 
     @overload
     async def acomplete(
-        self, prompt: str, formatted: bool = ..., *, stream: Literal[True], **kwargs: Any,
+        self,
+        prompt: str,
+        formatted: bool = ...,
+        *,
+        stream: Literal[True],
+        **kwargs: Any,
     ) -> CompletionResponseAsyncGen: ...
 
     async def acomplete(
@@ -833,6 +1070,26 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
 
         Raises:
             ValueError: If ``"audio"`` is in :attr:`modalities`.
+
+        Examples:
+            - Async non-streaming completion
+                ```python
+                import asyncio
+                from serapeum.openai import Completions
+
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                resp = asyncio.run(
+                    llm.acomplete("Explain gravity")
+                )
+                resp.text  # 'Gravity is a fundamental ...'
+
+                ```
+
+        See Also:
+            complete: Synchronous counterpart of this method.
+            achat: Async chat-style message interface.
         """
         if self.modalities and "audio" in self.modalities:
             raise ValueError(
@@ -851,9 +1108,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         return result
 
     @retry(is_retryable, logger)
-    async def _achat(
-        self, messages: Sequence[Message], **kwargs: Any
-    ) -> ChatResponse:
+    async def _achat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponse:
         """Send a non-streaming async chat-completions request.
 
         Async counterpart to :meth:`_chat`. Decorated with
@@ -893,7 +1148,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         return ChatResponse(
             message=message,
             raw=response,
-            likelihood_score=logprobs,
+            logprob=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 
@@ -970,11 +1225,9 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                 content += content_delta
                 blocks.append(TextChunk(content=content))
 
-                additional_kwargs = {}
                 if is_function:
                     accumulator.update(delta.tool_calls)
                     if accumulator.tool_calls:
-                        additional_kwargs["tool_calls"] = accumulator.tool_calls
                         for tool_call in accumulator.tool_calls:
                             if tool_call.function:
                                 blocks.append(
@@ -989,7 +1242,6 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                     message=Message(
                         role=role,
                         chunks=blocks,
-                        additional_kwargs=additional_kwargs,
                     ),
                     delta=content_delta,
                     raw=response,
@@ -1033,7 +1285,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         return CompletionResponse(
             text=text,
             raw=response,
-            likelihood_score=logprobs,
+            logprob=logprobs,
             additional_kwargs=self._get_response_token_counts(response),
         )
 
@@ -1085,7 +1337,7 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
     def _prepare_chat_with_tools(
         self,
         tools: Sequence["BaseTool"],
-        user_msg: str | Message | None = None,
+        message: str | Message | None = None,
         chat_history: list[Message] | None = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -1098,11 +1350,11 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
 
         Converts each :class:`~serapeum.core.tools.BaseTool` into an OpenAI
         tool spec dict, applies ``strict`` mode if requested, and assembles the
-        ``messages`` list (appending *user_msg* to *chat_history*).
+        ``messages`` list (appending *message* to *chat_history*).
 
         Args:
             tools: Tools whose specs are to be included in the request.
-            user_msg: Optional user message to append to the conversation.
+            message: Optional user message to append to the conversation.
                 Accepts either a plain string (wrapped in a USER
                 :class:`~serapeum.core.llms.Message`) or an existing ``Message``
                 object.
@@ -1123,6 +1375,35 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
         Returns:
             dict[str, Any]: Payload dict with keys ``"messages"``, ``"tools"``,
                 ``"tool_choice"``, and any extra *kwargs*.
+
+        Examples:
+            - Prepare a tool-calling payload
+                ```python
+                from serapeum.openai import Completions
+                from serapeum.core.tools import CallableTool
+
+                def get_weather(city: str) -> str:
+                    '''Get weather for a city.'''
+                    return f"Sunny in {city}"
+
+                tool = CallableTool.from_function(get_weather)
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                payload = llm._prepare_chat_with_tools(
+                    tools=[tool],
+                    message="What's the weather in London?",
+                )
+                len(payload["tools"])  # 1
+                payload["messages"][-1].content
+                # "What's the weather in London?"
+
+                ```
+
+        See Also:
+            Responses._prepare_chat_with_tools: Responses API variant that uses
+                the flat tool-spec format.
+            get_tool_calls_from_response: Extracts tool calls from the response.
         """
         tool_specs = [
             tool.metadata.to_openai_tool(skip_length_check=True) for tool in tools
@@ -1141,53 +1422,24 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                     # in current openai 1.40.0 it is always false.
                     tool_spec["function"]["parameters"]["additionalProperties"] = False
 
-        if isinstance(user_msg, str):
-            user_msg = Message(role=MessageRole.USER, content=user_msg)
+        if isinstance(message, str):
+            message = Message(
+                role=MessageRole.USER,
+                chunks=[TextChunk(content=message)],
+            )
 
-        messages = chat_history or []
-        if user_msg:
-            messages.append(user_msg)
+        messages = list(chat_history or [])
+        if message:
+            messages.append(message)
 
         return {
             "messages": messages,
             "tools": tool_specs or None,
-            "tool_choice": resolve_tool_choice(tool_choice, tool_required)
-            if tool_specs
-            else None,
+            "tool_choice": (
+                resolve_tool_choice(tool_choice, tool_required) if tool_specs else None
+            ),
             **kwargs,
         }
-
-    def _validate_chat_with_tools_response(
-        self,
-        response: ChatResponse,
-        tools: Sequence["BaseTool"],
-        allow_parallel_tool_calls: bool = False,
-        **kwargs: Any,
-    ) -> ChatResponse:
-        """Enforce single-tool-call constraint on a chat-with-tools response.
-
-        When *allow_parallel_tool_calls* is ``False``, calls
-        :func:`~serapeum.openai.utils.force_single_tool_call` to raise if the
-        response contains more than one tool call.
-
-        Args:
-            response: The chat response to validate.
-            tools: Tools that were available during the call (unused but
-                required by the interface).
-            allow_parallel_tool_calls: When ``False`` (default), raises if the
-                model invoked multiple tools simultaneously.
-            **kwargs: Accepted for interface compatibility; not forwarded.
-
-        Returns:
-            ChatResponse: The unmodified *response* after validation.
-
-        Raises:
-            ValueError: If parallel tool calls are disallowed and the response
-                contains more than one tool call.
-        """
-        if not allow_parallel_tool_calls:
-            force_single_tool_call(response)
-        return response
 
     def get_tool_calls_from_response(
         self,
@@ -1197,14 +1449,12 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
     ) -> list[ToolCallArguments]:
         """Extract parsed tool-call arguments from a chat response.
 
-        Looks for :class:`~serapeum.core.llms.ToolCallBlock` entries in
-        ``response.message.chunks`` first (the modern path). Falls back to
+        Delegates to the base-class implementation which reads
+        :class:`~serapeum.core.llms.ToolCallBlock` entries from
+        ``response.message.tool_calls``.  Falls back to
         ``response.message.additional_kwargs["tool_calls"]`` for backward
-        compatibility with older response formats.
-
-        Attempts to parse tool-call arguments as JSON using
-        :func:`~serapeum.core.utils.schemas.parse_partial_json`; if parsing
-        fails, the arguments default to an empty dict.
+        compatibility with older response formats that store raw OpenAI SDK
+        tool-call objects.
 
         Args:
             response: A :class:`~serapeum.core.llms.ChatResponse` that may
@@ -1222,63 +1472,119 @@ class OpenAI(StructuredOutput, ModelMetadata, Client, ChatToCompletion, Function
                 calls are present.
             ValueError: If the legacy path encounters a tool type other than
                 ``"function"``.
+
+        Examples:
+            - Extract tool calls from a response
+                ```python
+                from serapeum.openai import Completions
+                from serapeum.core.llms import (
+                    Message, MessageRole, TextChunk,
+                )
+                from serapeum.core.tools import CallableTool
+
+                def get_weather(city: str) -> str:
+                    '''Get weather for a city.'''
+                    return f"Sunny in {city}"
+
+                tool = CallableTool.from_function(get_weather)
+                llm = Completions(
+                    model="gpt-4o-mini", api_key="sk-test"
+                )
+                payload = llm._prepare_chat_with_tools(
+                    tools=[tool],
+                    message="What's the weather in Paris?",
+                )
+                resp = llm.chat(**payload)
+                calls = llm.get_tool_calls_from_response(resp)
+                calls[0].tool_name  # 'get_weather'
+                calls[0].tool_kwargs  # {'city': 'Paris'}
+
+                ```
+
+        See Also:
+            _prepare_chat_with_tools: Builds the tool-calling payload dict.
+            get_tool_calls_from_legacy_response: Fallback parser for legacy
+                response formats.
         """
-        tool_call_blocks = [
-            block
-            for block in response.message.chunks
-            if isinstance(block, ToolCallBlock)
-        ]
-        if tool_call_blocks:
-            tool_selections = []
-            for tool_call in tool_call_blocks:
-                # this should handle both complete and partial jsons
-                try:
-                    if isinstance(tool_call.tool_kwargs, str):
-                        argument_dict = parse_partial_json(tool_call.tool_kwargs)
-                    else:
-                        argument_dict = tool_call.tool_kwargs
-                except (ValueError, TypeError, JSONDecodeError):
-                    argument_dict = {}
+        result = super().get_tool_calls_from_response(
+            response, error_on_no_tool_call=False, **kwargs
+        )
 
-                tool_selections.append(
-                    ToolCallArguments(
-                        tool_id=tool_call.tool_call_id or "",
-                        tool_name=tool_call.tool_name,
-                        tool_kwargs=argument_dict,
-                    )
-                )
-            result = tool_selections
-        else:
-            # Legacy backward-compatible path: read from additional_kwargs.
-            legacy_tool_calls = response.message.additional_kwargs.get("tool_calls", [])
-
-            if legacy_tool_calls:
-                tool_selections = []
-                for tool_call in legacy_tool_calls:
-                    if tool_call.type != "function":
-                        raise ValueError("Invalid tool type. Unsupported by OpenAI llm")
-
-                    # this should handle both complete and partial jsons
-                    try:
-                        argument_dict = parse_partial_json(tool_call.function.arguments)
-                    except (ValueError, TypeError, JSONDecodeError):
-                        argument_dict = {}
-
-                    tool_selections.append(
-                        ToolCallArguments(
-                            tool_id=tool_call.id,
-                            tool_name=tool_call.function.name,
-                            tool_kwargs=argument_dict,
-                        )
-                    )
-                result = tool_selections
-            elif error_on_no_tool_call:
-                raise ValueError(
-                    f"Expected at least one tool call, but got {len(legacy_tool_calls)} tool calls."
-                )
-            else:
-                result = []
-
+        if not result:
+            result = get_tool_calls_from_legacy_response(
+                response, error_on_no_tool_call
+            )
         return result
 
 
+def get_tool_calls_from_legacy_response(
+    response: ChatResponse, error_on_no_tool_call: bool = True
+) -> list[ToolCallArguments]:
+    """Extract tool-call arguments from a legacy-format chat response.
+
+    Older versions of the OpenAI SDK stored raw tool-call objects inside
+    ``response.message.additional_kwargs["tool_calls"]`` rather than as
+    :class:`~serapeum.core.llms.ToolCallBlock` chunks.  This helper parses
+    that legacy format and returns a uniform
+    :class:`~serapeum.core.llms.ToolCallArguments` list.
+
+    Args:
+        response: A :class:`~serapeum.core.llms.ChatResponse` whose
+            ``message.additional_kwargs`` may contain a ``"tool_calls"`` list
+            of raw SDK tool-call objects.
+        error_on_no_tool_call: When ``True`` (default), raises
+            :exc:`ValueError` if no tool calls are found in the response.
+
+    Returns:
+        list[ToolCallArguments]: One entry per tool call with ``tool_id``,
+            ``tool_name``, and ``tool_kwargs`` parsed from the function
+            arguments JSON string.
+
+    Raises:
+        ValueError: If *error_on_no_tool_call* is ``True`` and the response
+            contains no tool calls.
+        ValueError: If a tool-call entry has a ``type`` other than
+            ``"function"``.
+
+    Examples:
+        - Parse tool calls from a legacy response
+            ```python
+            from serapeum.openai.llm.chat_completions import (
+                get_tool_calls_from_legacy_response,
+            )
+
+            calls = get_tool_calls_from_legacy_response(response)
+            calls[0].tool_name  # 'get_weather'
+            calls[0].tool_kwargs["city"]  # 'London'
+
+            ```
+
+    See Also:
+        Completions.get_tool_calls_from_response: High-level extraction that
+            tries the modern path first, then falls back to this function.
+    """
+    legacy_tool_calls = response.message.additional_kwargs.get("tool_calls", [])
+    result: list[ToolCallArguments] = []
+    if legacy_tool_calls:
+        for tool_call in legacy_tool_calls:
+            if tool_call.type != "function":
+                raise ValueError("Invalid tool type. Unsupported by OpenAI llm")
+            try:
+                argument_dict = parse_partial_json(tool_call.function.arguments)
+            except (ValueError, TypeError, JSONDecodeError):
+                argument_dict = {}
+
+            result.append(
+                ToolCallArguments(
+                    tool_id=tool_call.id,
+                    tool_name=tool_call.function.name,
+                    tool_kwargs=argument_dict,
+                )
+            )
+    elif error_on_no_tool_call:
+        raise ValueError(
+            "Expected at least one tool call, but got "
+            f"{len(legacy_tool_calls)} tool calls."
+        )
+
+    return result

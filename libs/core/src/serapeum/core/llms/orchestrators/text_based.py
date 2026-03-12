@@ -1,5 +1,7 @@
 """Structured text completion LLM runner for Pydantic models."""
+
 from __future__ import annotations
+
 from typing import Any, Type
 
 from pydantic import BaseModel

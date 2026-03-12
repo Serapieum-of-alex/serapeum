@@ -14,7 +14,6 @@ theme:
     # - navigation.expand  # Disabled: keep sections collapsed by default
     - navigation.indexes
     - navigation.footer
-    - navigation.sections
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.top

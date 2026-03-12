@@ -102,7 +102,7 @@ Wraps an existing LLM to force all outputs into a specific Pydantic model format
 - You need structured outputs without manually handling parsing
 
 #### Example
-```python function_calling 
+```python function_calling
 import os
 from pydantic import BaseModel
 from serapeum.ollama import Ollama
@@ -126,7 +126,7 @@ structured_llm = StructuredOutputLLM(
 
 # All responses will be PersonInfo instances
 response = structured_llm.chat([
-    Message(role="user", content="Tell me about Alice, a 30-year-old engineer")
+    Message(role="user", chunks=[TextChunk(content="Tell me about Alice, a 30-year-old engineer")])
 ])
 print(response.raw)
 # PersonInfo(name='Alice', age=30, occupation='Engineer')

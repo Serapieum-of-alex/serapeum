@@ -14,6 +14,7 @@ from serapeum.core.base.llms.types import (
     Message,
     MessageRole,
     Metadata,
+    TextChunk,
 )
 from serapeum.core.llms.base import (
     LLM,
@@ -100,16 +101,30 @@ class ChatStubLLM(LLM):
         self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
     ) -> ChatResponse | ChatResponseGen:
         if stream:
+
             def gen() -> ChatResponseGen:
                 yield ChatResponse(
-                    message=Message(content="ok", role=MessageRole.ASSISTANT), delta="o"
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        chunks=[TextChunk(content="ok")],
+                    ),
+                    delta="o",
                 )
                 yield ChatResponse(
-                    message=Message(content="ok", role=MessageRole.ASSISTANT), delta="k"
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        chunks=[TextChunk(content="ok")],
+                    ),
+                    delta="k",
                 )
 
             return gen()
-        return ChatResponse(message=Message(content="pong", role=MessageRole.ASSISTANT))
+        return ChatResponse(
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content="pong")],
+            ),
+        )
 
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
@@ -121,16 +136,30 @@ class ChatStubLLM(LLM):
         self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any
     ) -> ChatResponse | ChatResponseAsyncGen:
         if stream:
+
             async def agen() -> ChatResponseAsyncGen:
                 yield ChatResponse(
-                    message=Message(content="ok", role=MessageRole.ASSISTANT), delta="o"
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        chunks=[TextChunk(content="ok")],
+                    ),
+                    delta="o",
                 )
                 yield ChatResponse(
-                    message=Message(content="ok", role=MessageRole.ASSISTANT), delta="k"
+                    message=Message(
+                        role=MessageRole.ASSISTANT,
+                        chunks=[TextChunk(content="ok")],
+                    ),
+                    delta="k",
                 )
 
             return agen()
-        return ChatResponse(message=Message(content="pong", role=MessageRole.ASSISTANT))
+        return ChatResponse(
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content="pong")],
+            ),
+        )
 
     async def acomplete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
@@ -168,16 +197,32 @@ class TestStreamResponseToTokens:
 
         def responses() -> ChatResponseGen:
             yield ChatResponse(
-                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="H"
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="Hi")],
+                ),
+                delta="H",
             )
             yield ChatResponse(
-                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="i"
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="Hi")],
+                ),
+                delta="i",
             )
             yield ChatResponse(
-                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=""
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="Hi")],
+                ),
+                delta="",
             )
             yield ChatResponse(
-                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=None
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="Hi")],
+                ),
+                delta=None,
             )
 
         tokens = list(stream_response_to_tokens(responses()))
@@ -216,16 +261,32 @@ class TestAStreamResponseToTokens:
 
         async def responses() -> ChatResponseAsyncGen:
             yield ChatResponse(
-                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="H"
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="Hi")],
+                ),
+                delta="H",
             )
             yield ChatResponse(
-                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta="i"
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="Hi")],
+                ),
+                delta="i",
             )
             yield ChatResponse(
-                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=""
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="Hi")],
+                ),
+                delta="",
             )
             yield ChatResponse(
-                message=Message(content="Hi", role=MessageRole.ASSISTANT), delta=None
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="Hi")],
+                ),
+                delta=None,
             )
 
         agen = await astream_response_to_tokens(responses())
@@ -379,7 +440,7 @@ class TestGetPrompt:
 #         Checks: first message has system role and expected content.
 #         """
 #         llm = ChatStubLLM(system_prompt="You are helpful.")
-#         messages = [Message(content="Hi", role=MessageRole.USER)]
+#         messages = [Message(chunks=[TextChunk(content="Hi")], role=MessageRole.USER)]
 #         extended = llm._extend_messages(messages)
 #         assert extended[0].role == MessageRole.SYSTEM
 #         assert extended[0].content == "You are helpful."

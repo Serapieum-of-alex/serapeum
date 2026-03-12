@@ -300,12 +300,13 @@ def client(self) -> Client:
 ```
 
 ### 2. Template Method Pattern
+
 ```python notest
 # FunctionCallingLLM defines workflow
 def generate_tool_calls(self, messages, tools, **kwargs):
     prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass implements
     response = self.chat(prepared)
-    validated = self._validate_chat_with_tools_response(response, tools)  # Subclass implements
+    validated = self._validate_response(response, allow_parallel_tool_calls=False)  # Subclass implements
     return validated
 ```
 

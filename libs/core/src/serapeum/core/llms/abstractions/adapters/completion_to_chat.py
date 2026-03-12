@@ -5,6 +5,7 @@ delegating to completion methods. This is useful for LLM providers that
 primarily support a completion interface (e.g. llama.cpp) but need to
 implement the full chat interface as well.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -111,7 +112,9 @@ class CompletionToChat:
             completion_gen: CompletionResponseGen = self.complete(  # type: ignore[attr-defined]
                 prompt, formatted=True, stream=True, **kwargs
             )
-            result: ChatResponse | ChatResponseGen = CompletionResponse.stream_to_chat_response(completion_gen)
+            result: ChatResponse | ChatResponseGen = (
+                CompletionResponse.stream_to_chat_response(completion_gen)
+            )
         else:
             completion_response: CompletionResponse = self.complete(  # type: ignore[attr-defined]
                 prompt, formatted=True, **kwargs
@@ -160,8 +163,12 @@ class CompletionToChat:
         """
         prompt = self.messages_to_prompt(messages)  # type: ignore[attr-defined]
         if stream:
-            completion_gen = await self.acomplete(prompt, formatted=True, stream=True, **kwargs)
-            result: ChatResponse | ChatResponseAsyncGen = CompletionResponse.astream_to_chat_response(completion_gen)
+            completion_gen = await self.acomplete(
+                prompt, formatted=True, stream=True, **kwargs
+            )
+            result: ChatResponse | ChatResponseAsyncGen = (
+                CompletionResponse.astream_to_chat_response(completion_gen)
+            )
         else:
             completion_response = await self.acomplete(prompt, formatted=True, **kwargs)
             result = completion_response.to_chat_response()
@@ -188,7 +195,12 @@ class CompletionToChat:
     ) -> CompletionResponseAsyncGen: ...
 
     async def acomplete(
-        self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs: Any
+        self,
+        prompt: str,
+        formatted: bool = False,
+        *,
+        stream: bool = False,
+        **kwargs: Any,
     ) -> CompletionResponse | CompletionResponseAsyncGen:
         """Async completion — offloads synchronous ``complete`` to a thread pool.
 

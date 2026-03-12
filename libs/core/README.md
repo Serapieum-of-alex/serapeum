@@ -32,10 +32,10 @@ helpers for prompts, output parsing, and tool calling, this is the package to us
 
 ## Installation
 
-From the repo:
+From the repo root:
 
 ```bash
-cd serapeum-core
+cd libs/core
 python -m pip install -e .
 ```
 

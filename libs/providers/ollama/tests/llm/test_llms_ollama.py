@@ -1,16 +1,19 @@
 """Tests for Ollama LLM integration and related functionality."""
 
 from __future__ import annotations
+
 from copy import deepcopy
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
-import pytest
 import ollama as ollama_sdk
+import pytest
 from pydantic import BaseModel
 
+from serapeum.core.base.llms.types import TextChunk
 from serapeum.core.llms import BaseLLM, Message
 from serapeum.core.tools import CallableTool
 from serapeum.ollama import Ollama
+
 from ..models import client
 
 response_dict = {
@@ -80,7 +83,7 @@ def test_ollama_chat(mock_ollama_client, model_name) -> None:
     """
     mock_ollama_client.chat = MagicMock(return_value=normal_response)
     llm = Ollama(model=model_name, timeout=80)
-    response = llm.chat([Message(role="user", content="Hello!")])
+    response = llm.chat([Message(role="user", chunks=[TextChunk(content="Hello!")])])
     assert response is not None
     assert str(response).strip() != ""
 
@@ -110,7 +113,9 @@ def test_ollama_stream_chat(llm_model) -> None:
     Inputs: model_name and user message.
     Expected: Each streamed response is non-empty and has a delta.
     """
-    response = llm_model.chat([Message(role="user", content="Hello!")], stream=True)
+    response = llm_model.chat(
+        [Message(role="user", chunks=[TextChunk(content="Hello!")])], stream=True
+    )
     for r in response:
         assert r is not None
         assert r.delta is not None
@@ -147,7 +152,9 @@ async def test_ollama_async_chat(llm_model) -> None:
     Inputs: model_name and user message.
     Expected: Response is non-empty string.
     """
-    response = await llm_model.achat([Message(role="user", content="Hello!")])
+    response = await llm_model.achat(
+        [Message(role="user", chunks=[TextChunk(content="Hello!")])]
+    )
     assert response is not None
     assert str(response).strip() != ""
 
@@ -179,7 +186,9 @@ async def test_ollama_async_stream_chat(llm_model) -> None:
     Inputs: model_name and user message.
     Expected: Each streamed response is non-empty and has a delta.
     """
-    response = await llm_model.achat([Message(role="user", content="Hello!")], stream=True)
+    response = await llm_model.achat(
+        [Message(role="user", chunks=[TextChunk(content="Hello!")])], stream=True
+    )
     async for r in response:
         assert r is not None
         assert r.delta is not None
@@ -216,7 +225,7 @@ def test_chat_with_tools(mock_ollama_client, model_name) -> None:
     """
     mock_ollama_client.chat = MagicMock(return_value=response_for_tool_call)
     llm = Ollama(model=model_name, timeout=80)
-    response = llm.generate_tool_calls([tool], user_msg="Hello!")
+    response = llm.generate_tool_calls([tool], message="Hello!")
     tool_calls = llm.get_tool_calls_from_response(response)
     assert len(tool_calls) == 1
     assert tool_calls[0].tool_name == tool.metadata.name
@@ -239,7 +248,7 @@ async def test_async_chat_with_tools(mock_ollama_async_prop, model_name) -> None
     mock_ollama_async_client.chat = AsyncMock(return_value=response_for_tool_call)
     mock_ollama_async_prop.return_value = mock_ollama_async_client
     llm = Ollama(model=model_name)
-    response = await llm.agenerate_tool_calls([tool], user_msg="Hello!")
+    response = await llm.agenerate_tool_calls([tool], message="Hello!")
     tool_calls = llm.get_tool_calls_from_response(response)
     assert len(tool_calls) == 1
     assert tool_calls[0].tool_name == tool.metadata.name

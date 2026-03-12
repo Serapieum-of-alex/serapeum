@@ -239,7 +239,7 @@ response = llm.complete("Say hello.")
 ```python notest
 from serapeum.core.llms import Message, MessageRole
 
-messages = [Message(role=MessageRole.USER, content="Hello!")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])]
 response = llm.chat(messages)
 
 # Transition to ProcessingChat:

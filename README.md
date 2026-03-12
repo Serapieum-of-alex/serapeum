@@ -14,69 +14,69 @@
 [//]: # ([![GitHub forks]&#40;https://img.shields.io/github/forks/Serapieum-of-alex/serapeum&#41;]&#40;https://github.com/Serapieum-of-alex/serapeum/network/members&#41;)
 
 Serapeum is a modular LLM toolkit. The repo contains a core package with shared
-LLM abstractions plus provider integrations (Ollama, others) and supporting
-docs, examples, and prompts.
+LLM abstractions plus provider integrations (OpenAI, Azure OpenAI, Ollama,
+llama.cpp) and supporting docs and examples.
 
 ## What is in this repo
 
-- `serapeum-core/`: Provider-agnostic core (LLM interfaces, prompts, parsers,
+- `libs/core/`: Provider-agnostic core (LLM interfaces, prompts, parsers,
   tools, structured outputs).
-- `serapeum-integrations/`: Provider adapters (e.g. Ollama).
+- `libs/providers/`: Provider adapters (OpenAI, Azure OpenAI, Ollama,
+  llama.cpp).
 - `docs/`: Architecture and reference docs (MkDocs).
 - `examples/`: Usage examples and notebooks.
-- `prompts/`: Prompt templates and assets.
-- `scripts/`: Utility scripts for development and maintenance.
-- `skills/`: Codex skills used for repo automation.
 
 ## Packages
 
-- `serapeum-core` (Python package)
-  - Shared LLM models and interfaces.
-  - Prompt templates and output parsers.
-  - Tool schemas and execution utilities.
-- `serapeum-ollama` (Python package under `libs/providers/ollama/`)
-  - Ollama-backed LLM adapter.
-  - Tool calling and structured output support when available.
+| Package | Location | Description |
+|---------|----------|-------------|
+| `serapeum-core` | `libs/core/` | Shared LLM interfaces, prompt templates, output parsers, tool schemas |
+| `serapeum-openai` | `libs/providers/openai/` | OpenAI Chat Completions and Responses API adapter |
+| `serapeum-azure-openai` | `libs/providers/azure-openai/` | Azure OpenAI deployment adapter (extends serapeum-openai) |
+| `serapeum-ollama` | `libs/providers/ollama/` | Ollama-backed LLM and embedding adapter |
+| `serapeum-llama-cpp` | `libs/providers/llama-cpp/` | Local GGUF model inference via llama-cpp-python |
 
 Each package has its own README with details and examples.
 
-## Quick start (editable installs)
+## Quick start
 
-From the repo root:
-
-```bash
-python -m pip install -e libs/core
-python -m pip install -e libs/providers/ollama
-```
-
-## Development setup
-
-Install dev dependencies per package:
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management
+and workspace orchestration.
 
 ```bash
-python -m pip install -e serapeum-core[dev]
-python -m pip install -e libs/providers/ollama[dev]
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Sync all workspace dependencies from root
+uv sync --dev --active
+
+# Or sync a specific provider
+uv sync --package serapeum-openai --active
 ```
 
 ## Testing
 
-Run tests per package:
+The workspace venv lives outside the project, so use `python -m pytest`
+directly (not `uv run pytest`):
 
 ```bash
-cd serapeum-core
+# Run all tests
 python -m pytest
+
+# Run tests for a specific package
+python -m pytest libs/core/tests
+python -m pytest libs/providers/openai/tests
+python -m pytest libs/providers/ollama/tests
+python -m pytest libs/providers/llama-cpp/tests
+
+# Skip end-to-end tests
+python -m pytest -m "not e2e"
 ```
 
-```bash
-cd libs/providers/ollama
-python -m pytest
-```
-
-Markers are defined in each package `pyproject.toml`.
+Markers are defined in each package's `pyproject.toml`.
 
 ## Links
 
 - Homepage: https://github.com/Serapieum-of-alex/serapeum
 - Docs: https://serapieum-of-alex.github.io/serapeum
-- Changelog: https://github.com/Serapieum-of-alex/serapeum/HISTORY.rst
 - Security: `SECURITY.md`

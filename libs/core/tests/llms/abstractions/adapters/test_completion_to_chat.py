@@ -9,6 +9,7 @@ from serapeum.core.base.llms.types import (
     CompletionResponse,
     Message,
     MessageRole,
+    TextChunk,
 )
 from serapeum.core.llms.abstractions.adapters import CompletionToChat
 
@@ -33,8 +34,8 @@ class ConcreteCompletionLLM(CompletionToChat):
         self.last_prompt: str | None = None
         self.last_formatted: bool | None = None
         self.last_kwargs: dict = {}
-        self.complete_call_count = 0   # tracks complete(stream=False) calls
-        self.stream_call_count = 0     # tracks complete(stream=True) calls
+        self.complete_call_count = 0  # tracks complete(stream=False) calls
+        self.stream_call_count = 0  # tracks complete(stream=True) calls
         self.messages_to_prompt_call_count = 0
 
     def messages_to_prompt(self, messages) -> str:
@@ -49,7 +50,9 @@ class ConcreteCompletionLLM(CompletionToChat):
         self.messages_to_prompt_call_count += 1
         return " ".join(m.content or "" for m in messages)
 
-    def complete(self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs):
+    def complete(
+        self, prompt: str, formatted: bool = False, *, stream: bool = False, **kwargs
+    ):
         """Return a CompletionResponse or streaming generator, recording arguments.
 
         Args:
@@ -87,7 +90,9 @@ def _make_messages(*contents: str) -> list[Message]:
     Returns:
         A list of Message objects with USER role.
     """
-    return [Message(role=MessageRole.USER, content=c) for c in contents]
+    return [
+        Message(role=MessageRole.USER, chunks=[TextChunk(content=c)]) for c in contents
+    ]
 
 
 @pytest.mark.unit
@@ -105,9 +110,9 @@ class TestCompletionToChatChat:
         messages = _make_messages("Hello")
         result = llm.chat(messages)
 
-        assert isinstance(result, ChatResponse), (
-            f"Expected ChatResponse, got {type(result)}"
-        )
+        assert isinstance(
+            result, ChatResponse
+        ), f"Expected ChatResponse, got {type(result)}"
 
     def test_chat_non_stream_content_matches_completion_response(self):
         """chat(stream=False) content must match the underlying CompletionResponse text.
@@ -120,9 +125,9 @@ class TestCompletionToChatChat:
         messages = _make_messages("Hi")
         result = llm.chat(messages)
 
-        assert result.message.content == "World", (
-            f"Expected 'World', got {result.message.content!r}"
-        )
+        assert (
+            result.message.content == "World"
+        ), f"Expected 'World', got {result.message.content!r}"
 
     def test_chat_non_stream_role_is_assistant(self):
         """chat(stream=False) must produce an ASSISTANT-role message.
@@ -134,9 +139,9 @@ class TestCompletionToChatChat:
         llm = ConcreteCompletionLLM()
         result = llm.chat(_make_messages("ping"))
 
-        assert result.message.role == MessageRole.ASSISTANT, (
-            f"Expected ASSISTANT role, got {result.message.role}"
-        )
+        assert (
+            result.message.role == MessageRole.ASSISTANT
+        ), f"Expected ASSISTANT role, got {result.message.role}"
 
     def test_chat_non_stream_calls_messages_to_prompt(self):
         """chat() must call messages_to_prompt with the messages argument.
@@ -153,9 +158,9 @@ class TestCompletionToChatChat:
             f"Expected messages_to_prompt to be called once, "
             f"was called {llm.messages_to_prompt_call_count} time(s)"
         )
-        assert llm.last_prompt == "foo bar", (
-            f"Prompt built from messages was {llm.last_prompt!r}, expected 'foo bar'"
-        )
+        assert (
+            llm.last_prompt == "foo bar"
+        ), f"Prompt built from messages was {llm.last_prompt!r}, expected 'foo bar'"
 
     def test_chat_non_stream_calls_complete_with_formatted_true(self):
         """chat() must pass formatted=True when calling complete().
@@ -168,9 +173,9 @@ class TestCompletionToChatChat:
         llm = ConcreteCompletionLLM()
         llm.chat(_make_messages("x"))
 
-        assert llm.last_formatted is True, (
-            f"Expected formatted=True to be forwarded to complete(), got {llm.last_formatted}"
-        )
+        assert (
+            llm.last_formatted is True
+        ), f"Expected formatted=True to be forwarded to complete(), got {llm.last_formatted}"
 
     def test_chat_non_stream_forwards_kwargs_to_complete(self):
         """chat() must forward extra kwargs to complete().
@@ -182,9 +187,10 @@ class TestCompletionToChatChat:
         llm = ConcreteCompletionLLM()
         llm.chat(_make_messages("test"), temperature=0.5, max_tokens=50)
 
-        assert llm.last_kwargs == {"temperature": 0.5, "max_tokens": 50}, (
-            f"Forwarded kwargs mismatch: {llm.last_kwargs}"
-        )
+        assert llm.last_kwargs == {
+            "temperature": 0.5,
+            "max_tokens": 50,
+        }, f"Forwarded kwargs mismatch: {llm.last_kwargs}"
 
     def test_chat_non_stream_result_is_to_chat_response_conversion(self):
         """chat(stream=False) result must equal CompletionResponse.to_chat_response().
@@ -198,12 +204,12 @@ class TestCompletionToChatChat:
         result = llm.chat(_make_messages("q"))
         expected = CompletionResponse(text="check").to_chat_response()
 
-        assert result.message.content == expected.message.content, (
-            f"Content mismatch: {result.message.content!r} != {expected.message.content!r}"
-        )
-        assert result.message.role == expected.message.role, (
-            f"Role mismatch: {result.message.role} != {expected.message.role}"
-        )
+        assert (
+            result.message.content == expected.message.content
+        ), f"Content mismatch: {result.message.content!r} != {expected.message.content!r}"
+        assert (
+            result.message.role == expected.message.role
+        ), f"Role mismatch: {result.message.role} != {expected.message.role}"
 
     def test_chat_stream_returns_generator(self):
         """chat(stream=True) must return a generator, not a ChatResponse.
@@ -217,9 +223,9 @@ class TestCompletionToChatChat:
         llm = ConcreteCompletionLLM()
         result = llm.chat(_make_messages("stream me"), stream=True)
 
-        assert isinstance(result, types.GeneratorType), (
-            f"Expected a generator, got {type(result)}"
-        )
+        assert isinstance(
+            result, types.GeneratorType
+        ), f"Expected a generator, got {type(result)}"
 
     def test_chat_stream_yields_chat_response_instances(self):
         """chat(stream=True) must yield ChatResponse objects.
@@ -233,9 +239,9 @@ class TestCompletionToChatChat:
 
         assert len(chunks) == 2, f"Expected 2 chunks, got {len(chunks)}"
         for i, chunk in enumerate(chunks):
-            assert isinstance(chunk, ChatResponse), (
-                f"Chunk {i} is {type(chunk)}, expected ChatResponse"
-            )
+            assert isinstance(
+                chunk, ChatResponse
+            ), f"Chunk {i} is {type(chunk)}, expected ChatResponse"
 
     def test_chat_stream_chunk_contents(self):
         """chat(stream=True) chunks must carry the completion deltas.
@@ -247,18 +253,14 @@ class TestCompletionToChatChat:
         llm = ConcreteCompletionLLM()
         chunks = list(llm.chat(_make_messages("stream"), stream=True))
 
-        assert chunks[0].message.content == "He", (
-            f"First chunk content: {chunks[0].message.content!r}"
-        )
-        assert chunks[0].delta == "He", (
-            f"First chunk delta: {chunks[0].delta!r}"
-        )
-        assert chunks[1].message.content == "Hello", (
-            f"Second chunk content: {chunks[1].message.content!r}"
-        )
-        assert chunks[1].delta == "llo", (
-            f"Second chunk delta: {chunks[1].delta!r}"
-        )
+        assert (
+            chunks[0].message.content == "He"
+        ), f"First chunk content: {chunks[0].message.content!r}"
+        assert chunks[0].delta == "He", f"First chunk delta: {chunks[0].delta!r}"
+        assert (
+            chunks[1].message.content == "Hello"
+        ), f"Second chunk content: {chunks[1].message.content!r}"
+        assert chunks[1].delta == "llo", f"Second chunk delta: {chunks[1].delta!r}"
 
     def test_chat_stream_calls_complete_with_formatted_true(self):
         """chat(stream=True) must call complete(stream=True) with formatted=True.
@@ -270,9 +272,9 @@ class TestCompletionToChatChat:
         llm = ConcreteCompletionLLM()
         list(llm.chat(_make_messages("x"), stream=True))
 
-        assert llm.last_formatted is True, (
-            f"Expected formatted=True forwarded to complete(stream=True), got {llm.last_formatted}"
-        )
+        assert (
+            llm.last_formatted is True
+        ), f"Expected formatted=True forwarded to complete(stream=True), got {llm.last_formatted}"
 
     def test_chat_stream_forwards_kwargs_to_complete(self):
         """chat(stream=True) must forward extra kwargs to complete(stream=True).
@@ -284,9 +286,10 @@ class TestCompletionToChatChat:
         llm = ConcreteCompletionLLM()
         list(llm.chat(_make_messages("kw"), stream=True, top_p=0.9, stop=["<|end|>"]))
 
-        assert llm.last_kwargs == {"top_p": 0.9, "stop": ["<|end|>"]}, (
-            f"Forwarded kwargs mismatch: {llm.last_kwargs}"
-        )
+        assert llm.last_kwargs == {
+            "top_p": 0.9,
+            "stop": ["<|end|>"],
+        }, f"Forwarded kwargs mismatch: {llm.last_kwargs}"
 
     @pytest.mark.parametrize("stream", [False, True], ids=["no-stream", "stream"])
     def test_chat_calls_messages_to_prompt_exactly_once(self, stream: bool):
@@ -325,9 +328,9 @@ class TestCompletionToChatAchat:
         llm = ConcreteCompletionLLM()
         result = await llm.achat(_make_messages("hello async"))
 
-        assert isinstance(result, ChatResponse), (
-            f"Expected ChatResponse, got {type(result)}"
-        )
+        assert isinstance(
+            result, ChatResponse
+        ), f"Expected ChatResponse, got {type(result)}"
 
     @pytest.mark.asyncio
     async def test_achat_non_stream_content_matches(self):
@@ -340,9 +343,9 @@ class TestCompletionToChatAchat:
         llm = ConcreteCompletionLLM(response_text="async world")
         result = await llm.achat(_make_messages("q"))
 
-        assert result.message.content == "async world", (
-            f"Expected 'async world', got {result.message.content!r}"
-        )
+        assert (
+            result.message.content == "async world"
+        ), f"Expected 'async world', got {result.message.content!r}"
 
     @pytest.mark.asyncio
     async def test_achat_non_stream_role_is_assistant(self):
@@ -355,9 +358,9 @@ class TestCompletionToChatAchat:
         llm = ConcreteCompletionLLM()
         result = await llm.achat(_make_messages("role check"))
 
-        assert result.message.role == MessageRole.ASSISTANT, (
-            f"Expected ASSISTANT, got {result.message.role}"
-        )
+        assert (
+            result.message.role == MessageRole.ASSISTANT
+        ), f"Expected ASSISTANT, got {result.message.role}"
 
     @pytest.mark.asyncio
     async def test_achat_non_stream_delegates_to_acomplete(self):
@@ -386,9 +389,9 @@ class TestCompletionToChatAchat:
         llm = ConcreteCompletionLLM()
         await llm.achat(_make_messages("kwarg"), seed=42)
 
-        assert llm.last_kwargs == {"seed": 42}, (
-            f"Forwarded kwargs mismatch: {llm.last_kwargs}"
-        )
+        assert llm.last_kwargs == {
+            "seed": 42
+        }, f"Forwarded kwargs mismatch: {llm.last_kwargs}"
 
     @pytest.mark.asyncio
     async def test_achat_non_stream_calls_messages_to_prompt(self):
@@ -406,9 +409,9 @@ class TestCompletionToChatAchat:
             f"Expected messages_to_prompt called once, "
             f"got {llm.messages_to_prompt_call_count}"
         )
-        assert llm.last_prompt == "alpha beta", (
-            f"Expected prompt 'alpha beta', got {llm.last_prompt!r}"
-        )
+        assert (
+            llm.last_prompt == "alpha beta"
+        ), f"Expected prompt 'alpha beta', got {llm.last_prompt!r}"
 
     @pytest.mark.asyncio
     async def test_achat_stream_returns_async_generator(self):
@@ -421,12 +424,12 @@ class TestCompletionToChatAchat:
         llm = ConcreteCompletionLLM()
         result = await llm.achat(_make_messages("async stream"), stream=True)
 
-        assert hasattr(result, "__aiter__"), (
-            f"Expected async generator (has __aiter__), got {type(result)}"
-        )
-        assert hasattr(result, "__anext__"), (
-            f"Expected async generator (has __anext__), got {type(result)}"
-        )
+        assert hasattr(
+            result, "__aiter__"
+        ), f"Expected async generator (has __aiter__), got {type(result)}"
+        assert hasattr(
+            result, "__anext__"
+        ), f"Expected async generator (has __anext__), got {type(result)}"
 
     @pytest.mark.asyncio
     async def test_achat_stream_yields_chat_response_instances(self):
@@ -445,9 +448,9 @@ class TestCompletionToChatAchat:
 
         assert len(chunks) == 2, f"Expected 2 chunks, got {len(chunks)}"
         for i, chunk in enumerate(chunks):
-            assert isinstance(chunk, ChatResponse), (
-                f"Chunk {i} is {type(chunk)}, expected ChatResponse"
-            )
+            assert isinstance(
+                chunk, ChatResponse
+            ), f"Chunk {i} is {type(chunk)}, expected ChatResponse"
 
     @pytest.mark.asyncio
     async def test_achat_stream_chunk_contents_and_deltas(self):
@@ -464,18 +467,14 @@ class TestCompletionToChatAchat:
         async for chunk in gen:
             chunks.append(chunk)
 
-        assert chunks[0].message.content == "He", (
-            f"First chunk content: {chunks[0].message.content!r}"
-        )
-        assert chunks[0].delta == "He", (
-            f"First chunk delta: {chunks[0].delta!r}"
-        )
-        assert chunks[1].message.content == "Hello", (
-            f"Second chunk content: {chunks[1].message.content!r}"
-        )
-        assert chunks[1].delta == "llo", (
-            f"Second chunk delta: {chunks[1].delta!r}"
-        )
+        assert (
+            chunks[0].message.content == "He"
+        ), f"First chunk content: {chunks[0].message.content!r}"
+        assert chunks[0].delta == "He", f"First chunk delta: {chunks[0].delta!r}"
+        assert (
+            chunks[1].message.content == "Hello"
+        ), f"Second chunk content: {chunks[1].message.content!r}"
+        assert chunks[1].delta == "llo", f"Second chunk delta: {chunks[1].delta!r}"
 
     @pytest.mark.asyncio
     async def test_achat_stream_forwards_kwargs_to_complete(self):
@@ -490,9 +489,9 @@ class TestCompletionToChatAchat:
         async for _ in gen:
             pass
 
-        assert llm.last_kwargs == {"repeat": 3}, (
-            f"Forwarded kwargs mismatch: {llm.last_kwargs}"
-        )
+        assert llm.last_kwargs == {
+            "repeat": 3
+        }, f"Forwarded kwargs mismatch: {llm.last_kwargs}"
 
 
 @pytest.mark.unit
@@ -510,9 +509,9 @@ class TestCompletionToChatAcomplete:
         llm = ConcreteCompletionLLM()
         result = await llm.acomplete("async prompt")
 
-        assert isinstance(result, CompletionResponse), (
-            f"Expected CompletionResponse, got {type(result)}"
-        )
+        assert isinstance(
+            result, CompletionResponse
+        ), f"Expected CompletionResponse, got {type(result)}"
 
     @pytest.mark.asyncio
     async def test_acomplete_non_stream_text_matches(self):
@@ -525,9 +524,7 @@ class TestCompletionToChatAcomplete:
         llm = ConcreteCompletionLLM(response_text="done")
         result = await llm.acomplete("any prompt")
 
-        assert result.text == "done", (
-            f"Expected text 'done', got {result.text!r}"
-        )
+        assert result.text == "done", f"Expected text 'done', got {result.text!r}"
 
     @pytest.mark.asyncio
     async def test_acomplete_non_stream_delegates_to_complete(self):
@@ -540,9 +537,9 @@ class TestCompletionToChatAcomplete:
         llm = ConcreteCompletionLLM()
         await llm.acomplete("test")
 
-        assert llm.complete_call_count == 1, (
-            f"Expected complete() called once, got {llm.complete_call_count}"
-        )
+        assert (
+            llm.complete_call_count == 1
+        ), f"Expected complete() called once, got {llm.complete_call_count}"
 
     @pytest.mark.asyncio
     async def test_acomplete_non_stream_forwards_prompt(self):
@@ -555,12 +552,14 @@ class TestCompletionToChatAcomplete:
         llm = ConcreteCompletionLLM()
         await llm.acomplete("my exact prompt")
 
-        assert llm.last_prompt == "my exact prompt", (
-            f"Expected prompt 'my exact prompt', got {llm.last_prompt!r}"
-        )
+        assert (
+            llm.last_prompt == "my exact prompt"
+        ), f"Expected prompt 'my exact prompt', got {llm.last_prompt!r}"
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("formatted", [False, True], ids=["unformatted", "formatted"])
+    @pytest.mark.parametrize(
+        "formatted", [False, True], ids=["unformatted", "formatted"]
+    )
     async def test_acomplete_non_stream_forwards_formatted_flag(self, formatted: bool):
         """acomplete(stream=False) must pass the formatted flag to complete().
 
@@ -574,9 +573,9 @@ class TestCompletionToChatAcomplete:
         llm = ConcreteCompletionLLM()
         await llm.acomplete("p", formatted=formatted)
 
-        assert llm.last_formatted == formatted, (
-            f"Expected formatted={formatted}, got {llm.last_formatted}"
-        )
+        assert (
+            llm.last_formatted == formatted
+        ), f"Expected formatted={formatted}, got {llm.last_formatted}"
 
     @pytest.mark.asyncio
     async def test_acomplete_non_stream_forwards_kwargs(self):
@@ -589,9 +588,9 @@ class TestCompletionToChatAcomplete:
         llm = ConcreteCompletionLLM()
         await llm.acomplete("prompt", n=1)
 
-        assert llm.last_kwargs == {"n": 1}, (
-            f"Forwarded kwargs mismatch: {llm.last_kwargs}"
-        )
+        assert llm.last_kwargs == {
+            "n": 1
+        }, f"Forwarded kwargs mismatch: {llm.last_kwargs}"
 
     @pytest.mark.asyncio
     async def test_acomplete_stream_returns_async_generator(self):
@@ -604,12 +603,12 @@ class TestCompletionToChatAcomplete:
         llm = ConcreteCompletionLLM()
         result = await llm.acomplete("stream prompt", stream=True)
 
-        assert hasattr(result, "__aiter__"), (
-            f"Expected async generator (__aiter__), got {type(result)}"
-        )
-        assert hasattr(result, "__anext__"), (
-            f"Expected async generator (__anext__), got {type(result)}"
-        )
+        assert hasattr(
+            result, "__aiter__"
+        ), f"Expected async generator (__aiter__), got {type(result)}"
+        assert hasattr(
+            result, "__anext__"
+        ), f"Expected async generator (__anext__), got {type(result)}"
 
     @pytest.mark.asyncio
     async def test_acomplete_stream_yields_completion_response_instances(self):
@@ -628,9 +627,9 @@ class TestCompletionToChatAcomplete:
 
         assert len(chunks) == 2, f"Expected 2 chunks, got {len(chunks)}"
         for i, chunk in enumerate(chunks):
-            assert isinstance(chunk, CompletionResponse), (
-                f"Chunk {i} is {type(chunk)}, expected CompletionResponse"
-            )
+            assert isinstance(
+                chunk, CompletionResponse
+            ), f"Chunk {i} is {type(chunk)}, expected CompletionResponse"
 
     @pytest.mark.asyncio
     async def test_acomplete_stream_chunk_text_and_delta(self):
@@ -665,9 +664,9 @@ class TestCompletionToChatAcomplete:
         async for _ in gen:
             pass
 
-        assert llm.stream_call_count == 1, (
-            f"Expected complete(stream=True) called once, got {llm.stream_call_count}"
-        )
+        assert (
+            llm.stream_call_count == 1
+        ), f"Expected complete(stream=True) called once, got {llm.stream_call_count}"
         assert llm.complete_call_count == 0, (
             f"Expected complete(stream=False) NOT called, "
             f"but was called {llm.complete_call_count} time(s)"
@@ -684,16 +683,18 @@ class TestCompletionToChatAcomplete:
         llm = ConcreteCompletionLLM()
         await llm.acomplete("dispatch check non-stream")
 
-        assert llm.complete_call_count == 1, (
-            f"Expected complete(stream=False) called once, got {llm.complete_call_count}"
-        )
+        assert (
+            llm.complete_call_count == 1
+        ), f"Expected complete(stream=False) called once, got {llm.complete_call_count}"
         assert llm.stream_call_count == 0, (
             f"Expected complete(stream=True) NOT called, "
             f"but was called {llm.stream_call_count} time(s)"
         )
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("formatted", [False, True], ids=["unformatted", "formatted"])
+    @pytest.mark.parametrize(
+        "formatted", [False, True], ids=["unformatted", "formatted"]
+    )
     async def test_acomplete_stream_forwards_formatted_flag(self, formatted: bool):
         """acomplete(stream=True) must forward the formatted flag to complete(stream=True).
 
@@ -727,6 +728,6 @@ class TestCompletionToChatAcomplete:
         async for _ in gen:
             pass
 
-        assert llm.last_kwargs == {"verbose": True}, (
-            f"Forwarded kwargs mismatch: {llm.last_kwargs}"
-        )
+        assert llm.last_kwargs == {
+            "verbose": True
+        }, f"Forwarded kwargs mismatch: {llm.last_kwargs}"

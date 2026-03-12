@@ -1,22 +1,21 @@
 """tools module."""
 
 from __future__ import annotations
+
 import asyncio
 import json
 from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Type
 
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import BaseModel, ValidationError
 
 from serapeum.core.base.llms.types import ChunkType, TextChunk
 from serapeum.core.utils.schemas import Schema
 
-
 __all__ = [
     "MinimalToolSchema",
     "ArgumentCoercer",
-    "ToolCallArguments",
     "ToolMetadata",
     "ToolOutput",
     "BaseTool",
@@ -869,85 +868,6 @@ class BaseToolAsyncAdapter(AsyncBaseTool):
         return await asyncio.to_thread(self.call, input_values)
 
 
-class ToolCallArguments(BaseModel):
-    """Represents a concrete tool choice and its arguments.
-
-    This Pydantic model captures the selection of a tool (by id and name) and the
-    keyword arguments that should be passed to it at execution time. It is typically
-    produced by an LLM during function-calling or constructed programmatically before
-    dispatching to an executor.
-
-    Notes:
-    - The ``tool_kwargs`` field uses a validator that replaces non-dictionary inputs
-      with an empty dictionary instead of raising a validation error. This keeps
-      downstream execution resilient to imperfect upstream outputs.
-
-    Args:
-        tool_id (str):
-            An identifier for the tool call (e.g., provider-specific id).
-        tool_name (str):
-            The name of the tool to execute.
-        tool_kwargs (dict[str, Any]):
-            Keyword arguments for the tool. If a non-dict value is supplied, it is coerced to an empty dict by
-            validation.
-
-    Returns:
-        ToolCallArguments: A validated instance describing the tool call.
-
-    Raises:
-        pydantic.ValidationError: If required fields are missing or have incompatible
-            types that cannot be coerced. Note that ``tool_kwargs`` specifically
-            coerces non-dict values to ``{}`` instead of raising.
-
-    Examples:
-        - Typical usage: construct a selection and access its fields
-            ```python
-            >>> from serapeum.core.tools.types import ToolCallArguments
-            >>> sel = ToolCallArguments(tool_id="abc123", tool_name="echo", tool_kwargs={"text": "hi"})
-            >>> (sel.tool_name, sel.tool_kwargs["text"])
-            ('echo', 'hi')
-
-            ```
-
-        - Non-dict ``tool_kwargs`` are replaced with an empty dict
-            ```python
-            >>> from serapeum.core.tools.types import ToolCallArguments
-            >>> sel = ToolCallArguments(tool_id="id-1", tool_name="echo", tool_kwargs="not-a-dict")
-            >>> sel.tool_kwargs
-            {}
-
-            ```
-
-        - Missing required fields raise a ValidationError
-            ```python
-            >>> from pydantic import ValidationError
-            >>> from serapeum.core.tools.types import ToolCallArguments
-            >>> try:
-            ...     ToolCallArguments(tool_id="only-id", tool_kwargs={})  # missing tool_name
-            ... except ValidationError as e:
-            ...     print(e.error_count(), "validation error")
-            1 validation error
-
-            ```
-
-    See Also:
-        - serapeum.core.tools.invoke.ToolExecutor.execute_with_selection: Execute a selection synchronously.
-        - serapeum.core.tools.invoke.ToolExecutor.execute_async_with_selection: Execute a selection asynchronously.
-    """
-
-    tool_id: str = Field(description="Tool ID to select.")
-    tool_name: str = Field(description="Tool name to select.")
-    tool_kwargs: dict[str, Any] = Field(description="Keyword arguments for the tool.")
-
-    @field_validator("tool_kwargs", mode="wrap")
-    @classmethod
-    def ignore_non_dict_arguments(cls, v: Any, handler: Any) -> dict[str, Any]:
-        try:
-            return handler(v)
-        except ValidationError:
-            return handler({})
-
-
 class ArgumentCoercer:
     """Coerce LLM-returned tool arguments to match expected tool schema types.
 
@@ -1107,11 +1027,17 @@ class ArgumentCoercer:
 class ToolCallError(Exception):
     """Exception raised when a tool call fails.
 
+    ``str(exc)`` returns *message* unchanged.  ``tool_name`` is stored as
+    instance metadata and does **not** appear in ``exc.args`` or the
+    string representation.
+
     Args:
-        message (str): Description of the failure.
+        message (str): Human-readable description of the failure.
         tool_name (str | None): Name of the tool that failed, if known.
+            Accessible via ``exc.tool_name``.
     """
 
     def __init__(self, message: str, tool_name: str | None = None) -> None:
+        """Initialize a ToolCallError with a message and optional tool name."""
         super().__init__(message)
         self.tool_name = tool_name

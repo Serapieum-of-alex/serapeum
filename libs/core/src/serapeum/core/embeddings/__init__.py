@@ -1,17 +1,18 @@
 """Embedding module."""
 
 from __future__ import annotations
+
+from serapeum.core.base.embeddings.base import BaseEmbedding
 from serapeum.core.base.embeddings.types import (
-    NodeType,
-    NodeContentType,
     BaseNode,
+    CallMixin,
     LinkedNodes,
+    MetadataMode,
+    NodeContentType,
     NodeInfo,
     NodeInfoType,
-    MetadataMode,
-    CallMixin,
+    NodeType,
 )
-from serapeum.core.base.embeddings.base import BaseEmbedding
 from serapeum.core.embeddings.types import MockEmbedding
 
 __all__ = [

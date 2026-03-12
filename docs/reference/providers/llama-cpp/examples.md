@@ -60,8 +60,8 @@ You can also let LlamaCPP download a model automatically via `model_url` or
 
 The most straightforward way to use `LlamaCPP`:
 
-```python 
-import os 
+```python
+import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
@@ -86,7 +86,7 @@ print(response.text)  # "Hello! How are you?"
 
 Using the chat API (via CompletionToChatMixin):
 
-```python 
+```python
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.core.llms import Message, MessageRole
@@ -101,7 +101,7 @@ llm = LlamaCPP(
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
 
-messages = [Message(role=MessageRole.USER, content="What is 2+2?")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="What is 2+2?")])]
 response = llm.chat(messages)
 print(response.message.content)  # "4"
 ```
@@ -114,7 +114,7 @@ print(response.message.content)  # "4"
 
 Load a GGUF file already on disk:
 
-```python 
+```python
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -133,7 +133,7 @@ llm = LlamaCPP(
 
 Download and cache a GGUF model from a direct URL:
 
-```python 
+```python
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama2 import (
     messages_to_prompt,
@@ -151,7 +151,7 @@ llm = LlamaCPP(
 
 Download from HuggingFace Hub using `huggingface_hub`:
 
-```python 
+```python
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama2 import (
     messages_to_prompt,
@@ -170,7 +170,7 @@ llm = LlamaCPP(
 
 With all common parameters:
 
-```python 
+```python
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -222,7 +222,7 @@ llm = LlamaCPP(
 
 Simple text completion:
 
-```python 
+```python
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -296,7 +296,7 @@ print(response.text)
 
 Stop generation at specific tokens:
 
-```python 
+```python
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -319,7 +319,7 @@ response = llm.complete("Say hello.")
 
 Access the underlying llama-cpp-python response:
 
-```python 
+```python
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -350,7 +350,7 @@ Chat is provided by `CompletionToChatMixin`, which formats messages using
 
 Basic conversation:
 
-```python 
+```python
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.core.llms import Message, MessageRole
@@ -365,7 +365,7 @@ llm = LlamaCPP(
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
 
-messages = [Message(role=MessageRole.USER, content="What is 2+2?")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="What is 2+2?")])]
 response = llm.chat(messages)
 print(response.message.content)  # "4"
 print(response.message.role)     # MessageRole.ASSISTANT
@@ -375,7 +375,7 @@ print(response.message.role)     # MessageRole.ASSISTANT
 
 With conversation history:
 
-```python 
+```python
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.core.llms import Message, MessageRole
@@ -391,9 +391,9 @@ llm = LlamaCPP(
 )
 
 messages = [
-    Message(role=MessageRole.USER, content="My name is Alex."),
-    Message(role=MessageRole.ASSISTANT, content="Nice to meet you, Alex!"),
-    Message(role=MessageRole.USER, content="What is my name?"),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="My name is Alex.")]),
+    Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="Nice to meet you, Alex!")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is my name?")]),
 ]
 
 response = llm.chat(messages)
@@ -404,7 +404,7 @@ print(response.message.content)  # Should mention "Alex"
 
 System message for context:
 
-```python 
+```python
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.core.llms import Message, MessageRole
@@ -420,8 +420,8 @@ llm = LlamaCPP(
 )
 
 messages = [
-    Message(role=MessageRole.SYSTEM, content="You are a helpful math tutor."),
-    Message(role=MessageRole.USER, content="What is the square root of 144?"),
+    Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are a helpful math tutor.")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is the square root of 144?")]),
 ]
 
 response = llm.chat(messages)
@@ -436,7 +436,7 @@ print(response.message.content)  # "12"
 
 Real-time streaming completion:
 
-```python 
+```python
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
@@ -474,7 +474,7 @@ llm = LlamaCPP(
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
 
-messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Tell me a joke.")])]
 for chunk in llm.chat(messages, stream=True):
     print(chunk.delta, end="", flush=True)
 ```
@@ -570,7 +570,7 @@ async def main():
         completion_to_prompt=completion_to_prompt_v3_instruct,
     )
 
-    messages = [Message(role=MessageRole.USER, content="Hello!")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])]
     response = await llm.achat(messages)
     print(response.message.content)
 
@@ -612,7 +612,7 @@ asyncio.run(main())
 
 Process multiple requests concurrently:
 
-```python 
+```python
 import os
 import asyncio
 from serapeum.llama_cpp import LlamaCPP
@@ -695,7 +695,7 @@ for your model produces garbage output.
 
 #### Llama 2 / Mistral
 
-```python 
+```python
 from serapeum.llama_cpp.formatters.llama2 import (
     messages_to_prompt,
     completion_to_prompt,
@@ -709,7 +709,7 @@ Uses the `[INST]...[/INST]` format:
 
 #### Llama 3 Instruct
 
-```python 
+```python
 from serapeum.llama_cpp.formatters.llama3 import (
     messages_to_prompt_v3_instruct,
     completion_to_prompt_v3_instruct,
@@ -737,7 +737,7 @@ with a default system prompt.
 
 You can write your own formatters for other model families:
 
-```python notest 
+```python notest
 from collections.abc import Sequence
 from serapeum.core.llms import Message, MessageRole
 from serapeum.llama_cpp import LlamaCPP
@@ -835,7 +835,7 @@ def process(prompt):
 
 Always use the correct formatter for your model family:
 
-```python 
+```python
 from serapeum.llama_cpp import LlamaCPP
 # Llama 2 / Mistral models
 from serapeum.llama_cpp.formatters.llama2 import messages_to_prompt, completion_to_prompt
@@ -891,7 +891,7 @@ llm = LlamaCPP(
 
 ### 5. Use Temperature=0 for Deterministic Output
 
-```python 
+```python
 import os
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (

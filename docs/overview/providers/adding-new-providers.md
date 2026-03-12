@@ -146,7 +146,7 @@ class ProviderLLM(FunctionCallingLLM):
         # TODO: Call provider API
         # response = provider_client.chat(messages=messages, **kwargs)
         # return ChatResponse(
-        #     message=Message(role="assistant", content=response.content),
+        #     message=Message(role="assistant", chunks=[TextChunk(content=response.content)]),
         #     raw=response
         # )
         raise NotImplementedError("Implement chat logic")
@@ -189,7 +189,7 @@ class ProviderLLM(FunctionCallingLLM):
         # TODO: Stream from provider API
         # for chunk in provider_client.stream_chat(messages=messages, **kwargs):
         #     yield ChatResponse(
-        #         message=Message(role="assistant", content=chunk.content),
+        #         message=Message(role="assistant", chunks=[TextChunk(content=chunk.content)]),
         #         raw=chunk
         #     )
         raise NotImplementedError("Implement streaming chat")
@@ -232,7 +232,7 @@ class ProviderLLM(FunctionCallingLLM):
         # TODO: Implement async chat
         # response = await provider_async_client.chat(messages=messages, **kwargs)
         # return ChatResponse(
-        #     message=Message(role="assistant", content=response.content),
+        #     message=Message(role="assistant", chunks=[TextChunk(content=response.content)]),
         #     raw=response
         # )
         raise NotImplementedError("Implement async chat")
@@ -278,7 +278,7 @@ class ProviderLLM(FunctionCallingLLM):
         # TODO: Implement async streaming chat
         # async for chunk in provider_async_client.stream_chat(messages=messages, **kwargs):
         #     yield ChatResponse(
-        #         message=Message(role="assistant", content=chunk.content),
+        #         message=Message(role="assistant", chunks=[TextChunk(content=chunk.content)]),
         #         raw=chunk
         #     )
         raise NotImplementedError("Implement async streaming chat")
@@ -594,7 +594,7 @@ def test_metadata():
 def test_chat():
     """Test chat functionality (requires provider API)."""
     llm = ProviderLLM(model="test-model")
-    messages = [Message(role=MessageRole.USER, content="Hello")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])]
     response = llm.chat(messages)
     assert response.message.content
     assert response.message.role == MessageRole.ASSISTANT
@@ -603,7 +603,7 @@ def test_chat():
 def test_streaming():
     """Test streaming chat."""
     llm = ProviderLLM(model="test-model")
-    messages = [Message(role=MessageRole.USER, content="Count to 3")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 3")])]
 
     chunks = list(llm.chat(messages, stream=True))
     assert len(chunks) > 0
@@ -614,7 +614,7 @@ def test_streaming():
 async def test_async_chat():
     """Test async chat."""
     llm = ProviderLLM(model="test-model")
-    messages = [Message(role=MessageRole.USER, content="Hello")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])]
     response = await llm.achat(messages)
     assert response.message.content
 ```
@@ -724,7 +724,7 @@ llm = ProviderLLM(
 )
 
 # Chat
-messages = [Message(role=MessageRole.USER, content="Hello!")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])]
 response = llm.chat(messages)
 print(response.message.content)
 ```

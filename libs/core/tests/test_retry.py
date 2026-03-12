@@ -108,7 +108,9 @@ class _AsyncClient(Retry, BaseModel):
         return "async_ok"
 
     @retry(_always_retryable)
-    async def succeed_with_args(self, a: int, b: str, *, kw: bool = False) -> dict[str, Any]:
+    async def succeed_with_args(
+        self, a: int, b: str, *, kw: bool = False
+    ) -> dict[str, Any]:
         """Returns args/kwargs for passthrough verification."""
         return {"a": a, "b": b, "kw": kw}
 
@@ -178,17 +180,21 @@ class _AsyncStreamClient(Retry, BaseModel):
     @retry(_always_retryable, stream=True)
     async def stream(self) -> Any:
         """Returns async gen that yields chunks successfully."""
+
         async def gen():
             yield "async_chunk1"
             yield "async_chunk2"
+
         return gen()
 
     @retry(_always_retryable, stream=True)
     async def stream_with_args(self, prefix: str) -> Any:
         """Returns async gen yielding chunks with args."""
+
         async def gen():
             yield f"{prefix}_1"
             yield f"{prefix}_2"
+
         return gen()
 
     @retry(_always_retryable, stream=True)
@@ -202,22 +208,27 @@ class _AsyncStreamClient(Retry, BaseModel):
             if attempt <= 1:
                 raise ConnectionError("mid-stream failure")
             yield "complete"
+
         return gen()
 
     @retry(_always_retryable, stream=True)
     async def stream_always_fail(self) -> Any:
         """Always raises retryable after yielding partial data."""
+
         async def gen():
             yield "partial"
             raise ConnectionError("always fails")
+
         return gen()
 
     @retry(_always_retryable, stream=True)
     async def stream_permanent_error(self) -> Any:
         """Raises non-retryable during iteration."""
+
         async def gen():
             raise ValueError("permanent")
             yield  # noqa: unreachable
+
         return gen()
 
 
@@ -244,9 +255,9 @@ class TestRetry:
         """Test Retry rejects negative max_retries via ge=0 constraint."""
         with pytest.raises(ValidationError) as exc_info:
             _DummyModel(max_retries=-1)
-        assert "max_retries" in str(exc_info.value), (
-            f"Validation error should reference max_retries: {exc_info.value}"
-        )
+        assert "max_retries" in str(
+            exc_info.value
+        ), f"Validation error should reference max_retries: {exc_info.value}"
 
     def test_large_max_retries(self) -> None:
         """Test Retry accepts large max_retries values without error."""
@@ -272,9 +283,9 @@ class TestModuleConstants:
 
     def test_default_initial_delay_value(self) -> None:
         """Test DEFAULT_INITIAL_DELAY is 0.5 seconds."""
-        assert DEFAULT_INITIAL_DELAY == 0.5, (
-            f"Expected 0.5, got {DEFAULT_INITIAL_DELAY}"
-        )
+        assert (
+            DEFAULT_INITIAL_DELAY == 0.5
+        ), f"Expected 0.5, got {DEFAULT_INITIAL_DELAY}"
 
     def test_default_max_delay_value(self) -> None:
         """Test DEFAULT_MAX_DELAY is 8.0 seconds."""
@@ -310,9 +321,9 @@ class TestBuildRetryer:
             for attempt in build_retryer(2, _always_retryable):
                 with attempt:
                     counter()
-        assert counter.calls == 3, (
-            f"Expected 3 calls (1 initial + 2 retries), got {counter.calls}"
-        )
+        assert (
+            counter.calls == 3
+        ), f"Expected 3 calls (1 initial + 2 retries), got {counter.calls}"
 
     def test_non_retryable_raises_immediately(self) -> None:
         """Test non-retryable exception propagates without retry."""
@@ -420,7 +431,9 @@ class TestBuildAsyncRetryer:
         assert counter.calls == 1, f"Expected 1 call, got {counter.calls}"
 
     @pytest.mark.asyncio
-    async def test_with_logger_emits_warning(self, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_with_logger_emits_warning(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Test async logger receives WARNING before each sleep."""
         logger = logging.getLogger("test.retry.async")
         counter = _Counter(fail_times=1)
@@ -458,9 +471,11 @@ class TestRetryDecorator:
         """Test decorated method passes positional and keyword args correctly."""
         client = _SyncClient(max_retries=3)
         result = client.succeed_with_args(42, "hello", kw=True)
-        assert result == {"a": 42, "b": "hello", "kw": True}, (
-            f"Args not passed through correctly: {result}"
-        )
+        assert result == {
+            "a": 42,
+            "b": "hello",
+            "kw": True,
+        }, f"Args not passed through correctly: {result}"
 
     def test_retries_on_transient_failure(self) -> None:
         """Test decorator retries on retryable exception and returns result."""
@@ -502,16 +517,16 @@ class TestRetryDecorator:
 
     def test_preserves_function_name(self) -> None:
         """Test functools.wraps preserves the original method name."""
-        assert _SyncClient.succeed.__name__ == "succeed", (
-            f"Expected 'succeed', got {_SyncClient.succeed.__name__}"
-        )
+        assert (
+            _SyncClient.succeed.__name__ == "succeed"
+        ), f"Expected 'succeed', got {_SyncClient.succeed.__name__}"
 
     def test_preserves_docstring(self) -> None:
         """Test functools.wraps preserves the original docstring."""
         assert _SyncClient.succeed.__doc__ is not None, "Docstring should be preserved"
-        assert "Always succeeds" in _SyncClient.succeed.__doc__, (
-            f"Original docstring lost: {_SyncClient.succeed.__doc__}"
-        )
+        assert (
+            "Always succeeds" in _SyncClient.succeed.__doc__
+        ), f"Original docstring lost: {_SyncClient.succeed.__doc__}"
 
     def test_with_logger(self, caplog: pytest.LogCaptureFixture) -> None:
         """Test decorator with logger emits warnings on retry."""
@@ -550,9 +565,11 @@ class TestAretry:
         """Test decorated async method passes args correctly."""
         client = _AsyncClient(max_retries=3)
         result = await client.succeed_with_args(42, "hello", kw=True)
-        assert result == {"a": 42, "b": "hello", "kw": True}, (
-            f"Args not passed through correctly: {result}"
-        )
+        assert result == {
+            "a": 42,
+            "b": "hello",
+            "kw": True,
+        }, f"Args not passed through correctly: {result}"
 
     @pytest.mark.asyncio
     async def test_retries_on_transient_failure(self) -> None:
@@ -586,16 +603,16 @@ class TestAretry:
     @pytest.mark.asyncio
     async def test_preserves_function_name(self) -> None:
         """Test functools.wraps preserves async method name."""
-        assert _AsyncClient.succeed.__name__ == "succeed", (
-            f"Expected 'succeed', got {_AsyncClient.succeed.__name__}"
-        )
+        assert (
+            _AsyncClient.succeed.__name__ == "succeed"
+        ), f"Expected 'succeed', got {_AsyncClient.succeed.__name__}"
 
     @pytest.mark.asyncio
     async def test_wrapper_is_coroutine_function(self) -> None:
         """Test wrapped method is still recognized as a coroutine function."""
-        assert inspect.iscoroutinefunction(_AsyncClient.succeed), (
-            "Wrapped method should be a coroutine function"
-        )
+        assert inspect.iscoroutinefunction(
+            _AsyncClient.succeed
+        ), "Wrapped method should be a coroutine function"
 
 
 @pytest.mark.unit
@@ -606,21 +623,27 @@ class TestRetryStream:
         """Test decorated generator yields all chunks on success."""
         client = _StreamClient(max_retries=2)
         chunks = list(client.stream())
-        assert chunks == ["chunk1", "chunk2"], f"Expected ['chunk1', 'chunk2'], got {chunks}"
+        assert chunks == [
+            "chunk1",
+            "chunk2",
+        ], f"Expected ['chunk1', 'chunk2'], got {chunks}"
 
     def test_returns_generator(self) -> None:
         """Test decorated method returns a generator object."""
         client = _StreamClient(max_retries=2)
         result = client.stream()
-        assert inspect.isgenerator(result), (
-            f"Expected generator, got {type(result).__name__}"
-        )
+        assert inspect.isgenerator(
+            result
+        ), f"Expected generator, got {type(result).__name__}"
 
     def test_args_passthrough(self) -> None:
         """Test decorated generator passes args correctly."""
         client = _StreamClient(max_retries=2)
         chunks = list(client.stream_with_args("test"))
-        assert chunks == ["test_1", "test_2"], f"Expected ['test_1', 'test_2'], got {chunks}"
+        assert chunks == [
+            "test_1",
+            "test_2",
+        ], f"Expected ['test_1', 'test_2'], got {chunks}"
 
     def test_retries_mid_stream_failure(self) -> None:
         """Test generator retries on mid-stream failure.
@@ -633,9 +656,15 @@ class TestRetryStream:
         client = _StreamClient(max_retries=2)
         chunks = list(client.stream_fail_then_succeed())
         assert len(chunks) == 3, f"Expected 3 chunks, got {len(chunks)}: {chunks}"
-        assert chunks[0] == "partial", f"First chunk should be 'partial', got {chunks[0]}"
-        assert chunks[1] == "partial", f"Second chunk should be 'partial', got {chunks[1]}"
-        assert chunks[2] == "complete", f"Third chunk should be 'complete', got {chunks[2]}"
+        assert (
+            chunks[0] == "partial"
+        ), f"First chunk should be 'partial', got {chunks[0]}"
+        assert (
+            chunks[1] == "partial"
+        ), f"Second chunk should be 'partial', got {chunks[1]}"
+        assert (
+            chunks[2] == "complete"
+        ), f"Third chunk should be 'complete', got {chunks[2]}"
 
     def test_exhausted_retries_raises(self) -> None:
         """Test generator re-raises when all retries exhausted."""
@@ -657,17 +686,17 @@ class TestRetryStream:
 
     def test_preserves_function_name(self) -> None:
         """Test functools.wraps preserves generator method name."""
-        assert _StreamClient.stream.__name__ == "stream", (
-            f"Expected 'stream', got {_StreamClient.stream.__name__}"
-        )
+        assert (
+            _StreamClient.stream.__name__ == "stream"
+        ), f"Expected 'stream', got {_StreamClient.stream.__name__}"
 
     def test_lazy_evaluation(self) -> None:
         """Test generator is lazily evaluated (no work done until iterated)."""
         client = _StreamClient(max_retries=2)
         gen = client.stream_fail_then_succeed()
-        assert client.call_count == 0, (
-            f"Generator should not execute until iterated, call_count={client.call_count}"
-        )
+        assert (
+            client.call_count == 0
+        ), f"Generator should not execute until iterated, call_count={client.call_count}"
         next(gen)
         assert client.call_count >= 1, "First next() should trigger execution"
 
@@ -681,27 +710,29 @@ class TestAretryStream:
         """Test async gen yields all chunks on success."""
         client = _AsyncStreamClient(max_retries=2)
         chunks = [chunk async for chunk in await client.stream()]
-        assert chunks == ["async_chunk1", "async_chunk2"], (
-            f"Expected ['async_chunk1', 'async_chunk2'], got {chunks}"
-        )
+        assert chunks == [
+            "async_chunk1",
+            "async_chunk2",
+        ], f"Expected ['async_chunk1', 'async_chunk2'], got {chunks}"
 
     @pytest.mark.asyncio
     async def test_returns_async_generator(self) -> None:
         """Test decorated method returns an async generator object."""
         client = _AsyncStreamClient(max_retries=2)
         result = await client.stream()
-        assert inspect.isasyncgen(result), (
-            f"Expected async generator, got {type(result).__name__}"
-        )
+        assert inspect.isasyncgen(
+            result
+        ), f"Expected async generator, got {type(result).__name__}"
 
     @pytest.mark.asyncio
     async def test_args_passthrough(self) -> None:
         """Test async gen passes args correctly."""
         client = _AsyncStreamClient(max_retries=2)
         chunks = [chunk async for chunk in await client.stream_with_args("test")]
-        assert chunks == ["test_1", "test_2"], (
-            f"Expected ['test_1', 'test_2'], got {chunks}"
-        )
+        assert chunks == [
+            "test_1",
+            "test_2",
+        ], f"Expected ['test_1', 'test_2'], got {chunks}"
 
     @pytest.mark.asyncio
     async def test_retries_mid_stream_failure(self) -> None:
@@ -715,9 +746,15 @@ class TestAretryStream:
         client = _AsyncStreamClient(max_retries=2)
         chunks = [chunk async for chunk in await client.stream_fail_then_succeed()]
         assert len(chunks) == 3, f"Expected 3 chunks, got {len(chunks)}: {chunks}"
-        assert chunks[0] == "partial", f"First chunk should be 'partial', got {chunks[0]}"
-        assert chunks[1] == "partial", f"Second chunk should be 'partial', got {chunks[1]}"
-        assert chunks[2] == "complete", f"Third chunk should be 'complete', got {chunks[2]}"
+        assert (
+            chunks[0] == "partial"
+        ), f"First chunk should be 'partial', got {chunks[0]}"
+        assert (
+            chunks[1] == "partial"
+        ), f"Second chunk should be 'partial', got {chunks[1]}"
+        assert (
+            chunks[2] == "complete"
+        ), f"Third chunk should be 'complete', got {chunks[2]}"
 
     @pytest.mark.asyncio
     async def test_exhausted_retries_raises(self) -> None:
@@ -743,13 +780,13 @@ class TestAretryStream:
     @pytest.mark.asyncio
     async def test_preserves_function_name(self) -> None:
         """Test functools.wraps preserves async gen method name."""
-        assert _AsyncStreamClient.stream.__name__ == "stream", (
-            f"Expected 'stream', got {_AsyncStreamClient.stream.__name__}"
-        )
+        assert (
+            _AsyncStreamClient.stream.__name__ == "stream"
+        ), f"Expected 'stream', got {_AsyncStreamClient.stream.__name__}"
 
     @pytest.mark.asyncio
     async def test_wrapper_is_coroutine_function(self) -> None:
         """Test wrapped async gen method is a coroutine function."""
-        assert inspect.iscoroutinefunction(_AsyncStreamClient.stream), (
-            "Wrapped method should be a coroutine function"
-        )
+        assert inspect.iscoroutinefunction(
+            _AsyncStreamClient.stream
+        ), "Wrapped method should be a coroutine function"

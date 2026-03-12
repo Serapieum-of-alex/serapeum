@@ -7,7 +7,9 @@ does not eagerly pull in the third-party ``openai`` SDK.
 from __future__ import annotations
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "AzureOpenAI": ("serapeum.azure_openai.llm", "AzureOpenAI"),
+    "AzureClient": ("serapeum.azure_openai.llm", "AzureClient"),
+    "Completions": ("serapeum.azure_openai.llm", "Completions"),
+    "Responses": ("serapeum.azure_openai.llm", "Responses"),
     "SyncAzureOpenAI": ("serapeum.azure_openai.llm", "SyncAzureOpenAI"),
     "AsyncAzureOpenAI": ("serapeum.azure_openai.llm", "AsyncAzureOpenAI"),
 }
@@ -26,4 +28,10 @@ def __getattr__(name: str) -> object:
     return result
 
 
-__all__ = ["AzureOpenAI", "SyncAzureOpenAI", "AsyncAzureOpenAI"]
+__all__ = [
+    "AzureClient",
+    "Completions",
+    "Responses",
+    "SyncAzureOpenAI",
+    "AsyncAzureOpenAI",
+]

@@ -10,11 +10,12 @@ explaining inputs, expected results, and what is being verified.
 
 from __future__ import annotations
 
+import asyncio
 from typing import Sequence
 
 import pytest
 from pydantic import BaseModel
-import asyncio
+
 from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.llms import ToolOrchestratingLLM
 from serapeum.core.prompts.base import PromptTemplate
@@ -245,6 +246,7 @@ class TestOllamaE2E:
 
         Expected: Should generate valid dict output from function via LLM.
         """
+
         def extract_info(name: str, age: int, city: str) -> dict:
             """Extract person information."""
             return {
@@ -273,6 +275,7 @@ class TestOllamaE2E:
 
         Expected: Should execute async function via LLM successfully.
         """
+
         async def async_processor(text: str, multiplier: int) -> dict:
             """Process text asynchronously."""
             await asyncio.sleep(0.01)

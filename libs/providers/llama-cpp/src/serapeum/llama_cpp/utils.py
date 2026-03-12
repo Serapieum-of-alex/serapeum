@@ -67,7 +67,9 @@ def _fetch_model_file(model_url: str, model_path: Path) -> None:
         tqdm: Progress bar library used to display download progress.
         requests.Response.iter_content: Underlying streaming iterator.
     """
-    logger.info(f"Downloading {model_url} to {model_path}",)
+    logger.info(
+        f"Downloading {model_url} to {model_path}",
+    )
     try:
         with requests.get(model_url, stream=True, timeout=(10, 120)) as r:
             r.raise_for_status()

@@ -5,11 +5,20 @@ streaming, and structured outputs.
 """
 
 from __future__ import annotations
+
 from abc import ABC
-from typing import Any, AsyncGenerator, Generator, Protocol, TYPE_CHECKING, runtime_checkable, Sequence
-from typing_extensions import Annotated
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncGenerator,
+    Generator,
+    Protocol,
+    runtime_checkable,
+)
 
 from pydantic import BaseModel, Field, WithJsonSchema, field_validator, model_validator
+from typing_extensions import Annotated
+
 from serapeum.core.base.llms.base import BaseLLM
 from serapeum.core.base.llms.types import (
     ChatResponseAsyncGen,
@@ -19,11 +28,10 @@ from serapeum.core.base.llms.types import (
     Message,
     MessageList,
     MessageRole,
-    CompletionResponse,
+    TextChunk,
 )
 from serapeum.core.output_parsers import BaseParser, TokenAsyncGen, TokenGen
 from serapeum.core.prompts import BasePromptTemplate, PromptTemplate
-
 from serapeum.core.types import Model, StructuredOutputMode
 
 if TYPE_CHECKING:
@@ -38,13 +46,13 @@ class MessagesToPromptType(Protocol):
         - Join message contents into a newline-separated prompt
             ```python
             >>> from serapeum.core.llms.base import MessagesToPromptType
-            >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList
+            >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList, TextChunk
             >>> def newline_join(message_list):
             ...     return '\n'.join(message.content or "" for message in message_list)
             ...
             >>> msgs = MessageList(messages=[
-            ...     Message(content="hello", role=MessageRole.USER),
-            ...     Message(content="world", role=MessageRole.ASSISTANT),
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")]),
+            ...     Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="world")]),
             ... ])
             >>> newline_join(msgs)
             'hello\nworld'
@@ -52,14 +60,16 @@ class MessagesToPromptType(Protocol):
             ```
         - Validate message content before rendering the prompt
             ```python
-            >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList
+            >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList, TextChunk
             >>> def validated_join(message_list):
             ...     contents = [message.content for message in message_list]
             ...     if any(content is None for content in contents):
             ...         raise ValueError("Missing content")
             ...     return " ".join(str(content) for content in contents)
             ...
-            >>> validated_join(MessageList(messages=[Message(content="hi", role=MessageRole.USER)]))
+            >>> validated_join(MessageList(messages=[
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
+            ... ]))
             'hi'
 
             ```
@@ -82,14 +92,16 @@ class MessagesToPromptType(Protocol):
         Examples:
             - Concatenate user and assistant messages into one prompt
                 ```python
-                >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList
+                >>> from serapeum.core.base.llms.types import (
+                ...     Message, MessageRole, MessageList, TextChunk,
+                ... )
                 >>> def concatenate(message_list):
                 ...     return " ".join((message.content or "").strip() for message in message_list)
                 ...
                 >>> concatenate(
                 ...     MessageList(messages=[
-                ...         Message(content="Hello", role=MessageRole.USER),
-                ...         Message(content="world", role=MessageRole.ASSISTANT),
+                ...         Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")]),
+                ...         Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="world")]),
                 ...     ])
                 ... )
                 'Hello world'
@@ -97,14 +109,18 @@ class MessagesToPromptType(Protocol):
                 ```
             - Reject empty message content before joining
                 ```python
-                >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList
+                >>> from serapeum.core.base.llms.types import (
+                ...     Message, MessageRole, MessageList, TextChunk,
+                ... )
                 >>> def strict_concat(message_list):
                 ...     for message in message_list:
                 ...         if message.content is None:
                 ...             raise ValueError("Missing content")
                 ...     return " ".join(str(message.content) for message in message_list)
                 ...
-                >>> strict_concat(MessageList(messages=[Message(content="Ping", role=MessageRole.USER)]))
+                >>> strict_concat(MessageList(messages=[
+                ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Ping")])
+                ... ]))
                 'Ping'
 
                 ```
@@ -227,14 +243,22 @@ def stream_response_to_tokens(
         - ChatResponse:
             - Collect assistant deltas from a chat stream
                 ```python
-                >>> from serapeum.core.base.llms.types import ChatResponse, Message, MessageRole
+                >>> from serapeum.core.base.llms.types import (
+                ...     ChatResponse, Message, MessageRole, TextChunk,
+                ... )
                 >>> def responses():
                 ...     yield ChatResponse(
-                ...         message=Message(content="Hello", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="Hello")],
+                ...         ),
                 ...         delta="Hel",
                 ...     )
                 ...     yield ChatResponse(
-                ...         message=Message(content="Hello", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="Hello")],
+                ...         ),
                 ...         delta="lo",
                 ...     )
                 ...
@@ -244,14 +268,22 @@ def stream_response_to_tokens(
                 ```
             - Support chat responses without deltas
                 ```python
-                >>> from serapeum.core.base.llms.types import ChatResponse, Message, MessageRole
+                >>> from serapeum.core.base.llms.types import (
+                ...     ChatResponse, Message, MessageRole, TextChunk,
+                ... )
                 >>> def responses():
                 ...     yield ChatResponse(
-                ...         message=Message(content="Partial", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="Partial")],
+                ...         ),
                 ...         delta=None,
                 ...     )
                 ...     yield ChatResponse(
-                ...         message=Message(content="Partial", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="Partial")],
+                ...         ),
                 ...         delta="",
                 ...     )
                 ...
@@ -323,14 +355,22 @@ async def astream_response_to_tokens(
             - Aggregate assistant deltas asynchronously
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.base.llms.types import ChatResponse, Message, MessageRole
+                >>> from serapeum.core.base.llms.types import (
+                ...     ChatResponse, Message, MessageRole, TextChunk,
+                ... )
                 >>> async def responses():
                 ...     yield ChatResponse(
-                ...         message=Message(content="Hi", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="Hi")],
+                ...         ),
                 ...         delta="H",
                 ...     )
                 ...     yield ChatResponse(
-                ...         message=Message(content="Hi", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="Hi")],
+                ...         ),
                 ...         delta="i",
                 ...     )
                 ...
@@ -345,14 +385,22 @@ async def astream_response_to_tokens(
             - Surface empty delta entries when no new tokens are produced
                 ```python
                 >>> import asyncio
-                >>> from serapeum.core.base.llms.types import ChatResponse, Message, MessageRole
+                >>> from serapeum.core.base.llms.types import (
+                ...     ChatResponse, Message, MessageRole, TextChunk,
+                ... )
                 >>> async def responses():
                 ...     yield ChatResponse(
-                ...         message=Message(content="Partial", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="Partial")],
+                ...         ),
                 ...         delta=None,
                 ...     )
                 ...     yield ChatResponse(
-                ...         message=Message(content="Partial", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="Partial")],
+                ...         ),
                 ...         delta="",
                 ...     )
                 ...
@@ -529,14 +577,16 @@ class LLM(BaseLLM, ABC):
                 ```
             - Preserve a custom adapter when one is supplied
                 ```python
-                >>> from serapeum.core.base.llms.types import Message, MessageRole, MessageList
+                >>> from serapeum.core.base.llms.types import (
+                ...     Message, MessageRole, MessageList, TextChunk,
+                ... )
                 >>> def reverse_messages(message_list):
                 ...     return "\\n".join(message.content or "" for message in reversed(message_list))
                 ...
                 >>> adapter = LLM.set_messages_to_prompt(reverse_messages)
                 >>> adapter(MessageList(messages=[
-                ...     Message(content="first", role=MessageRole.USER),
-                ...     Message(content="second", role=MessageRole.ASSISTANT),
+                ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="first")]),
+                ...     Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="second")]),
                 ... ]))
                 'second\\nfirst'
 
@@ -990,6 +1040,7 @@ class LLM(BaseLLM, ABC):
                 ...     Message,
                 ...     Metadata,
                 ...     MessageRole,
+                ...     TextChunk,
                 ... )
                 >>> class DemoLLM(LLM):
                 ...     @property
@@ -1004,7 +1055,9 @@ class LLM(BaseLLM, ABC):
                 ...     async def acomplete(self, prompt, formatted=False, **kwargs):
                 ...         return CompletionResponse(text=prompt, delta=prompt)
                 ...
-                >>> messages = [Message(content="Hi", role=MessageRole.USER)]
+                >>> messages = [Message(
+                ...     role=MessageRole.USER, chunks=[TextChunk(content="Hi")]
+                ... )]
                 >>> DemoLLM()._extend_messages(messages)[0].content
                 'Hi'
 
@@ -1016,6 +1069,7 @@ class LLM(BaseLLM, ABC):
                 ...     Message,
                 ...     Metadata,
                 ...     MessageRole,
+                ...     TextChunk,
                 ... )
                 >>> class DemoLLM(LLM):
                 ...     @property
@@ -1031,7 +1085,9 @@ class LLM(BaseLLM, ABC):
                 ...     async def acomplete(self, prompt, formatted=False, **kwargs):
                 ...         return CompletionResponse(text=prompt, delta=prompt)
                 ...
-                >>> extended = DemoLLM()._extend_messages([Message(content="Hi", role=MessageRole.USER)])
+                >>> extended = DemoLLM()._extend_messages([
+                ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi")])
+                ... ])
                 >>> extended[0].role.value
                 'system'
 
@@ -1041,7 +1097,10 @@ class LLM(BaseLLM, ABC):
         """
         if self.system_prompt:
             messages = [
-                Message(role=MessageRole.SYSTEM, content=self.system_prompt),
+                Message(
+                    role=MessageRole.SYSTEM,
+                    chunks=[TextChunk(content=self.system_prompt)],
+                ),
                 *messages,
             ]
         return messages
@@ -1321,7 +1380,9 @@ class LLM(BaseLLM, ABC):
         """
         structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
-        result = await structured_output_tool.acall(llm_kwargs=llm_kwargs, **prompt_args)
+        result = await structured_output_tool.acall(
+            llm_kwargs=llm_kwargs, **prompt_args
+        )
 
         return result
 
@@ -1442,7 +1503,9 @@ class LLM(BaseLLM, ABC):
         """
         structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
-        result = structured_output_tool(stream=True, llm_kwargs=llm_kwargs, **prompt_args)
+        result = structured_output_tool(
+            stream=True, llm_kwargs=llm_kwargs, **prompt_args
+        )
         for r in result:
             yield r
 
@@ -1652,7 +1715,9 @@ class LLM(BaseLLM, ABC):
         async def gen() -> AsyncGenerator[Model | list[Model], None]:
             structured_output_tool = self._get_structured_output_tool(schema, prompt)
 
-            result = await structured_output_tool.acall(stream=True, llm_kwargs=llm_kwargs, **prompt_args)
+            result = await structured_output_tool.acall(
+                stream=True, llm_kwargs=llm_kwargs, **prompt_args
+            )
             async for r in result:
                 yield r
 
@@ -1705,6 +1770,7 @@ class LLM(BaseLLM, ABC):
                 ...     Message,
                 ...     MessageRole,
                 ...     Metadata,
+                ...     TextChunk,
                 ... )
                 >>> class DemoLLM(LLM):
                 ...     @property
@@ -1712,7 +1778,10 @@ class LLM(BaseLLM, ABC):
                 ...         return Metadata.model_construct(is_chat_model=True)
                 ...     def chat(self, messages, **kwargs):
                 ...         return ChatResponse(
-                ...             message=Message(content="pong", role=MessageRole.ASSISTANT)
+                ...             message=Message(
+                ...                 role=MessageRole.ASSISTANT,
+                ...                 chunks=[TextChunk(content="pong")],
+                ...             )
                 ...         )
                 ...     async def achat(self, messages, **kwargs):
                 ...         raise NotImplementedError()
@@ -1802,14 +1871,21 @@ class LLM(BaseLLM, ABC):
                 ...     Message,
                 ...     MessageRole,
                 ...     Metadata,
+                ...     TextChunk,
                 ... )
                 >>> def chat_stream():
                 ...     yield ChatResponse(
-                ...         message=Message(content="ok", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="ok")],
+                ...         ),
                 ...         delta="o",
                 ...     )
                 ...     yield ChatResponse(
-                ...         message=Message(content="ok", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="ok")],
+                ...         ),
                 ...         delta="k",
                 ...     )
                 ...
@@ -1851,7 +1927,9 @@ class LLM(BaseLLM, ABC):
             stream_tokens = stream_response_to_tokens(chat_response)
         else:
             formatted_prompt = self._get_prompt(prompt, **prompt_args)
-            stream_response = self.complete(formatted_prompt, formatted=True, stream=True)
+            stream_response = self.complete(
+                formatted_prompt, formatted=True, stream=True
+            )
             stream_tokens = stream_response_to_tokens(stream_response)
 
         if prompt.output_parser is not None or self.output_parser is not None:
@@ -1911,6 +1989,7 @@ class LLM(BaseLLM, ABC):
                 ...     Message,
                 ...     MessageRole,
                 ...     Metadata,
+                ...     TextChunk,
                 ... )
                 >>> class DemoLLM(LLM):
                 ...     @property
@@ -1920,7 +1999,10 @@ class LLM(BaseLLM, ABC):
                 ...         raise NotImplementedError()
                 ...     async def achat(self, messages, **kwargs):
                 ...         return ChatResponse(
-                ...             message=Message(content="pong", role=MessageRole.ASSISTANT)
+                ...             message=Message(
+                ...                 role=MessageRole.ASSISTANT,
+                ...                 chunks=[TextChunk(content="pong")],
+                ...             )
                 ...         )
                 ...     def complete(self, prompt, formatted=False, **kwargs):
                 ...         raise NotImplementedError()
@@ -2013,14 +2095,21 @@ class LLM(BaseLLM, ABC):
                 ...     Message,
                 ...     MessageRole,
                 ...     Metadata,
+                ...     TextChunk,
                 ... )
                 >>> async def chat_stream():
                 ...     yield ChatResponse(
-                ...         message=Message(content="ok", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="ok")],
+                ...         ),
                 ...         delta="o",
                 ...     )
                 ...     yield ChatResponse(
-                ...         message=Message(content="ok", role=MessageRole.ASSISTANT),
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[TextChunk(content="ok")],
+                ...         ),
                 ...         delta="k",
                 ...     )
                 ...

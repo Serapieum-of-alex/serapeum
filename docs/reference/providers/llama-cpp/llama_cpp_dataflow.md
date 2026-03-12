@@ -241,8 +241,8 @@ Output:
 ```python notest
 Input:
   messages = [
-    Message(role=MessageRole.SYSTEM, content="You are a math tutor."),
-    Message(role=MessageRole.USER, content="What is 2+2?"),
+    Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are a math tutor.")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is 2+2?")]),
   ]
   stream = False
 
@@ -265,8 +265,7 @@ Transformations:
      ChatResponse(
        message=Message(
          role=MessageRole.ASSISTANT,
-         content="4"
-       ),
+         chunks=[TextChunk(content="4")]),
        raw={...}
      )
 

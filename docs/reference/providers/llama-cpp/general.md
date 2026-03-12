@@ -85,7 +85,7 @@ llm = LlamaCPP(
     completion_to_prompt=completion_to_prompt_v3_instruct,
 )
 
-messages = [Message(role=MessageRole.USER, content="Say hello.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Say hello.")])]
 response = llm.chat(messages)
 print(response.message.content)
 ```

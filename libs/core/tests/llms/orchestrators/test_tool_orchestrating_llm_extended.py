@@ -16,17 +16,19 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import BaseModel
 
+from serapeum.core.base.llms.types import TextChunk
 from serapeum.core.chat.types import AgentChatResponse
 from serapeum.core.llms import (
     ChatResponse,
     FunctionCallingLLM,
     Message,
     Metadata,
+    ToolCallArguments,
     ToolOrchestratingLLM,
 )
 from serapeum.core.prompts.base import PromptTemplate
 from serapeum.core.tools import ToolOutput
-from serapeum.core.tools.types import BaseTool, ToolCallArguments
+from serapeum.core.tools.types import BaseTool
 
 
 class Song(BaseModel):
@@ -92,7 +94,7 @@ class NonFunctionCallingMockLLM(MagicMock):
     def invoke_callable(
         self,
         tools: List["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
+        message: Optional[Union[str, Message]] = None,
         chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -108,7 +110,7 @@ class NonFunctionCallingMockLLM(MagicMock):
     async def ainvoke_callable(
         self,
         tools: List["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
+        message: Optional[Union[str, Message]] = None,
         chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -146,11 +148,17 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     def chat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | Generator[ChatResponse, None, None]:  # type: ignore[override]
         if stream:
             return self._stream_chat(messages, **kwargs)
-        return ChatResponse(message=Message.from_str("ok"))
+        return ChatResponse(message=Message(chunks=[TextChunk(content="ok")]))
 
-    def _stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> Generator[ChatResponse, None, None]:
-        yield ChatResponse(message=Message.from_str("chunk-1"))
-        yield ChatResponse(message=Message.from_str("chunk-2"))
+    def _stream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> Generator[ChatResponse, None, None]:
+        yield ChatResponse(
+            message=Message(chunks=[TextChunk(content="chunk-1")]),
+        )
+        yield ChatResponse(
+            message=Message(chunks=[TextChunk(content="chunk-2")]),
+        )
 
     def complete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
@@ -158,11 +166,17 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     async def achat(self, messages: Sequence[Message], *, stream: bool = False, **kwargs: Any) -> ChatResponse | AsyncGenerator[ChatResponse, None]:  # type: ignore[override]
         if stream:
             return self._astream_chat(messages, **kwargs)
-        return ChatResponse(message=Message.from_str("ok"))
+        return ChatResponse(message=Message(chunks=[TextChunk(content="ok")]))
 
-    async def _astream_chat(self, messages: Sequence[Message], **kwargs: Any) -> AsyncGenerator[ChatResponse, None]:
-        yield ChatResponse(message=Message.from_str("chunk-1"))
-        yield ChatResponse(message=Message.from_str("chunk-2"))
+    async def _astream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> AsyncGenerator[ChatResponse, None]:
+        yield ChatResponse(
+            message=Message(chunks=[TextChunk(content="chunk-1")]),
+        )
+        yield ChatResponse(
+            message=Message(chunks=[TextChunk(content="chunk-2")]),
+        )
 
     async def acomplete(self, prompt: str, formatted: bool = False, **kwargs: Any):  # type: ignore[override]
         raise NotImplementedError
@@ -171,7 +185,7 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
     def _prepare_chat_with_tools(  # type: ignore[override]
         self,
         tools: Sequence["BaseTool"],
-        user_msg: Optional[Union[str, Message]] = None,
+        message: Optional[Union[str, Message]] = None,
         chat_history: Optional[List[Message]] = None,
         verbose: bool = False,
         allow_parallel_tool_calls: bool = False,
@@ -180,9 +194,13 @@ class MockFunctionCallingLLM(FunctionCallingLLM):
         # Just forward the provided history/messages to the underlying chat methods
         if chat_history is not None:
             messages = chat_history
-        elif user_msg is not None:
+        elif message is not None:
             messages = [
-                Message.from_str(user_msg) if isinstance(user_msg, str) else user_msg
+                (
+                    Message(chunks=[TextChunk(content=message)])
+                    if isinstance(message, str)
+                    else message
+                )
             ]
         else:
             messages = []
@@ -412,9 +430,7 @@ class TestToolOrchestratingLLMStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(
-            schema=Album, prompt="Album {topic}", llm=llm
-        )
+        tools_llm = ToolOrchestratingLLM(schema=Album, prompt="Album {topic}", llm=llm)
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:
@@ -481,9 +497,7 @@ class TestToolOrchestratingLLMAStreamCall:
         Check: Warning logged and correct single yield
         """
         llm = MockFunctionCallingLLM()
-        tools_llm = ToolOrchestratingLLM(
-            schema=Album, prompt="Album {topic}", llm=llm
-        )
+        tools_llm = ToolOrchestratingLLM(schema=Album, prompt="Album {topic}", llm=llm)
         with patch(
             "serapeum.core.llms.orchestrators.tool_based._logger"
         ) as mock_logger:

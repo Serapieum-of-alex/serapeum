@@ -1,5 +1,7 @@
 """Structured output wrapper and helpers around the core LLM API."""
+
 from __future__ import annotations
+
 from typing import Any, Literal, Sequence, Type, overload
 
 from pydantic import BaseModel, Field, SerializeAsAny
@@ -11,8 +13,8 @@ from serapeum.core.base.llms.types import (
     Message,
     MessageRole,
     Metadata,
+    TextChunk,
 )
-
 from serapeum.core.llms.abstractions.adapters import ChatToCompletion
 from serapeum.core.llms.base import LLM
 from serapeum.core.prompts.base import ChatPromptTemplate
@@ -57,14 +59,17 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
         **kwargs: Any,
     ) -> ChatResponseGen: ...
 
-    def _stream_chat(self, messages: Sequence[Message], **kwargs: Any) -> ChatResponseGen:
+    def _stream_chat(
+        self, messages: Sequence[Message], **kwargs: Any
+    ) -> ChatResponseGen:
         chat_prompt = ChatPromptTemplate(message_templates=messages)
         for partial_output in self.llm.stream_parse(
             schema=self.output_cls, prompt=chat_prompt, llm_kwargs=kwargs
         ):
             yield ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content=partial_output.json()
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content=partial_output.json())],
                 ),
                 raw=partial_output,
             )
@@ -82,7 +87,8 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
             )
             result = ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content=output.model_dump_json()
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content=output.model_dump_json())],
                 ),
                 raw=output,
             )
@@ -115,7 +121,8 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
         ):
             yield ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content=partial_output.json()
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content=partial_output.json())],
                 ),
                 raw=partial_output,
             )
@@ -137,7 +144,8 @@ class StructuredOutputLLM(ChatToCompletion, LLM):
             )
             result = ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content=output.model_dump_json()
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content=output.model_dump_json())],
                 ),
                 raw=output,
             )

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from typing import List
 
@@ -12,18 +14,18 @@ from openai.types.chat.chat_completion_message_tool_call import (
 )
 from openai.types.chat.chat_completion_token_logprob import ChatCompletionTokenLogprob
 from openai.types.completion_choice import Logprobs
+from pydantic import BaseModel
 
 from serapeum.core.base.llms.types import (
-    Message,
     ChatResponse,
     Image,
     LogProb,
+    Message,
     MessageRole,
     TextChunk,
     ToolCallBlock,
 )
-from pydantic import BaseModel
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions
 from serapeum.openai.data.models import (
     ALL_AVAILABLE_MODELS,
     CHAT_MODELS,
@@ -45,10 +47,13 @@ from serapeum.openai.parsers import (
 @pytest.fixture()
 def chat_messages_with_function_calling() -> List[Message]:
     return [
-        Message(role=MessageRole.USER, content="test question with functions"),
+        Message(
+            role=MessageRole.USER,
+            chunks=[TextChunk(content="test question with functions")],
+        ),
         Message(
             role=MessageRole.ASSISTANT,
-            content=None,
+            chunks=[],
             additional_kwargs={
                 "function_call": {
                     "name": "get_current_weather",
@@ -58,7 +63,11 @@ def chat_messages_with_function_calling() -> List[Message]:
         ),
         Message(
             role=MessageRole.TOOL,
-            content='{"temperature": "22", "unit": "celsius", "description": "Sunny"}',
+            chunks=[
+                TextChunk(
+                    content='{"temperature": "22", "unit": "celsius", "description": "Sunny"}'
+                )
+            ],
             additional_kwargs={
                 "tool_call_id": "get_current_weather",
             },
@@ -127,26 +136,14 @@ def azure_chat_messages_with_function_calling() -> List[Message]:
                     tool_kwargs='{\n  "location": "San Diego",\n  "max_price": 300,\n  "features": "beachfront,free breakfast"\n}',
                 )
             ],
-            additional_kwargs={
-                "tool_calls": [
-                    ChatCompletionMessageToolCall(
-                        id="0123",
-                        type="function",
-                        function=Function(
-                            name="search_hotels",
-                            arguments='{\n  "location": "San Diego",\n  "max_price": 300,\n  "features": "beachfront,free breakfast"\n}',
-                        ),
-                    )
-                ],
-            },
         ),
     ]
 
 
 def test_to_openai_message_dicts_basic_enum() -> None:
     chat_messages = [
-        Message(role=MessageRole.USER, content="test question"),
-        Message(role=MessageRole.ASSISTANT, content="test answer"),
+        Message(role=MessageRole.USER, chunks=[TextChunk(content="test question")]),
+        Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="test answer")]),
     ]
     openai_messages = to_openai_message_dicts(
         chat_messages,
@@ -159,8 +156,8 @@ def test_to_openai_message_dicts_basic_enum() -> None:
 
 def test_to_openai_message_dicts_basic_string() -> None:
     chat_messages = [
-        Message(role="user", content="test question"),
-        Message(role="assistant", content="test answer"),
+        Message(role="user", chunks=[TextChunk(content="test question")]),
+        Message(role="assistant", chunks=[TextChunk(content="test answer")]),
     ]
     openai_messages = to_openai_message_dicts(
         chat_messages,
@@ -175,8 +172,8 @@ def test_to_openai_message_dicts_empty_content() -> None:
     """If neither `tool_calls` nor `function_call` is set, content must not be set to None,
     see: https://platform.openai.com/docs/api-reference/chat/create"""
     chat_messages = [
-        Message(role="user", content="test question"),
-        Message(role="assistant", content=""),
+        Message(role="user", chunks=[TextChunk(content="test question")]),
+        Message(role="assistant", chunks=[TextChunk(content="")]),
     ]
     openai_messages = to_openai_message_dicts(
         chat_messages,
@@ -338,14 +335,18 @@ def test_to_openai_message_dicts_with_content_blocks_with_detail() -> None:
 
 
 def test_from_openai_token_logprob_none_top_logprob() -> None:
-    logprob = ChatCompletionTokenLogprob(token="", logprob=1.0, top_logprobs=[])
+    logprob = ChatCompletionTokenLogprob(
+        token="", logprob=1.0, top_logprobs=[]
+    )  # nosec B106
     logprob.top_logprobs = None
     result: List[LogProb] = LogProbParser.from_token(logprob)
     assert isinstance(result, list)
 
 
 def test_from_openai_token_logprobs_none_top_logprobs() -> None:
-    logprob = ChatCompletionTokenLogprob(token="", logprob=1.0, top_logprobs=[])
+    logprob = ChatCompletionTokenLogprob(
+        token="", logprob=1.0, top_logprobs=[]
+    )  # nosec B106
     logprob.top_logprobs = None
     result: List[LogProb] = LogProbParser.from_tokens([logprob])
     assert isinstance(result, list)
@@ -361,7 +362,7 @@ def _build_chat_response(arguments: str) -> ChatResponse:
     return ChatResponse(
         message=Message(
             role=MessageRole.ASSISTANT,
-            content=None,
+            chunks=[],
             additional_kwargs={
                 "tool_calls": [
                     ChatCompletionMessageToolCall(
@@ -382,7 +383,7 @@ def test_get_tool_calls_from_response_returns_empty_arguments_with_invalid_json_
     None
 ):
     response = _build_chat_response("INVALID JSON")
-    tools = OpenAI(model="gpt-4o-mini").get_tool_calls_from_response(response)
+    tools = Completions(model="gpt-4o-mini").get_tool_calls_from_response(response)
     assert len(tools) == 1
     assert tools[0].tool_kwargs == {}
 
@@ -391,7 +392,7 @@ def test_get_tool_calls_from_response_returns_empty_arguments_with_non_dict_json
     None
 ):
     response = _build_chat_response("null")
-    tools = OpenAI(model="gpt-4o-mini").get_tool_calls_from_response(response)
+    tools = Completions(model="gpt-4o-mini").get_tool_calls_from_response(response)
     assert len(tools) == 1
     assert tools[0].tool_kwargs == {}
 
@@ -399,7 +400,7 @@ def test_get_tool_calls_from_response_returns_empty_arguments_with_non_dict_json
 def test_get_tool_calls_from_response_returns_arguments_with_dict_json_input() -> None:
     arguments = {"test": 123}
     response = _build_chat_response(json.dumps(arguments))
-    tools = OpenAI(model="gpt-4o-mini").get_tool_calls_from_response(response)
+    tools = Completions(model="gpt-4o-mini").get_tool_calls_from_response(response)
     assert len(tools) == 1
     assert tools[0].tool_kwargs == arguments
 
@@ -424,9 +425,9 @@ def test_is_json_schema_supported_o1_mini_excluded() -> None:
     ]
 
     for model in o1_mini_models:
-        assert is_json_schema_supported(model) is False, (
-            f"Model {model} should be excluded"
-        )
+        assert (
+            is_json_schema_supported(model) is False
+        ), f"Model {model} should be excluded"
 
 
 def test_is_json_schema_supported_unsupported_models() -> None:
@@ -440,9 +441,9 @@ def test_is_json_schema_supported_unsupported_models() -> None:
     ]
 
     for model in unsupported_models:
-        assert is_json_schema_supported(model) is False, (
-            f"Model {model} should not be supported"
-        )
+        assert (
+            is_json_schema_supported(model) is False
+        ), f"Model {model} should not be supported"
 
 
 def test_gpt_5_chat_latest_model_support() -> None:
@@ -450,25 +451,25 @@ def test_gpt_5_chat_latest_model_support() -> None:
     model_name = "gpt-5-chat-latest"
 
     # Test that model is in available models
-    assert model_name in ALL_AVAILABLE_MODELS, (
-        f"{model_name} should be in ALL_AVAILABLE_MODELS"
-    )
+    assert (
+        model_name in ALL_AVAILABLE_MODELS
+    ), f"{model_name} should be in ALL_AVAILABLE_MODELS"
 
     # Test that model is recognized as a chat model
-    assert is_chat_model(model_name) is True, (
-        f"{model_name} should be recognized as a chat model"
-    )
+    assert (
+        is_chat_model(model_name) is True
+    ), f"{model_name} should be recognized as a chat model"
 
     # Test that model supports function calling
-    assert is_function_calling_model(model_name) is True, (
-        f"{model_name} should support function calling"
-    )
+    assert (
+        is_function_calling_model(model_name) is True
+    ), f"{model_name} should support function calling"
 
     # Test that model has correct context size
     context_size = openai_modelname_to_contextsize(model_name)
-    assert context_size == 128000, (
-        f"{model_name} should have 128000 tokens context, got {context_size}"
-    )
+    assert (
+        context_size == 128000
+    ), f"{model_name} should have 128000 tokens context, got {context_size}"
 
     # Test that model is in CHAT_MODELS
     assert model_name in CHAT_MODELS, f"{model_name} should be in CHAT_MODELS"

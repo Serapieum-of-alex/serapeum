@@ -1,7 +1,34 @@
-"""OpenAI model metadata and capability queries.
+"""OpenAI model metadata registry and capability query functions.
 
-Data is loaded from models.yaml at import time. All public constants and
-query functions remain the same as before so callers need no changes.
+This module loads the model registry from ``models.yaml`` at import time and
+exposes it as a set of public dictionaries (keyed by model name, valued by
+context-window size in tokens) and predicate functions for querying model
+capabilities.
+
+Public constants:
+
+- :data:`O1_MODELS` -- o1-series reasoning models.
+- :data:`RESPONSES_API_ONLY_MODELS` -- models only available via the Responses API.
+- :data:`O1_MODELS_WITHOUT_FUNCTION_CALLING` -- o1-series models that lack
+  function-calling support.
+- :data:`GPT4_MODELS` -- GPT-4 family models.
+- :data:`AZURE_TURBO_MODELS` -- Azure-specific turbo model identifiers.
+- :data:`TURBO_MODELS` -- GPT-3.5/4 turbo models.
+- :data:`GPT3_5_MODELS` -- GPT-3.5 family models.
+- :data:`GPT3_MODELS` -- Legacy GPT-3 models.
+- :data:`DISCONTINUED_MODELS` -- Models that have been retired by OpenAI.
+- :data:`JSON_SCHEMA_MODELS` -- Model prefixes that support native JSON-schema
+  ``response_format``.
+- :data:`ALL_AVAILABLE_MODELS` -- Union of all non-discontinued model groups.
+- :data:`CHAT_MODELS` -- Subset of models that support the chat-completions API.
+
+Public functions:
+
+- :func:`is_chatcomp_api_supported` -- check Chat Completions API support.
+- :func:`is_json_schema_supported` -- check native JSON-schema structured output.
+- :func:`openai_modelname_to_contextsize` -- look up a model's context window.
+- :func:`is_chat_model` -- check whether a model is a chat model.
+- :func:`is_function_calling_model` -- check function-calling capability.
 """
 
 from __future__ import annotations
@@ -47,10 +74,89 @@ CHAT_MODELS: dict[str, int] = {
 
 
 def is_chatcomp_api_supported(model: str) -> bool:
+    """Check whether a model supports the Chat Completions API.
+
+    Some newer models (e.g. ``gpt-5.2-pro``) are only available through the
+    Responses API and cannot be used with the ``/chat/completions`` endpoint.
+
+    Args:
+        model: OpenAI model identifier (e.g. ``"gpt-4o"``, ``"gpt-5.2-pro"``).
+
+    Returns:
+        ``True`` if the model can be used with the Chat Completions API,
+        ``False`` if it is restricted to the Responses API.
+
+    Examples:
+        - Standard models support Chat Completions:
+            ```python
+            >>> from serapeum.openai.data.models import is_chatcomp_api_supported
+            >>> is_chatcomp_api_supported("gpt-4o")
+            True
+
+            ```
+
+        - Responses-API-only models do not:
+            ```python
+            >>> from serapeum.openai.data.models import is_chatcomp_api_supported
+            >>> is_chatcomp_api_supported("gpt-5.2-pro")
+            False
+
+            ```
+
+    See Also:
+        :data:`RESPONSES_API_ONLY_MODELS`: The set of models excluded from
+            Chat Completions support.
+    """
     return model not in RESPONSES_API_ONLY_MODELS
 
 
 def is_json_schema_supported(model: str) -> bool:
+    """Check whether a model supports native JSON-schema structured output.
+
+    Native JSON-schema mode uses the ``response_format`` parameter with a
+    ``json_schema`` payload, allowing the API to constrain generation to
+    match a Pydantic model's schema directly -- without function-calling.
+
+    The check has three requirements:
+
+    1. The ``openai`` SDK must be installed and expose the internal
+       ``_type_to_response_format`` helper.
+    2. The model name must **not** start with ``"o1-mini"`` (which lacks
+       JSON-schema support).
+    3. The model name must start with one of the prefixes listed in
+       :data:`JSON_SCHEMA_MODELS`.
+
+    Args:
+        model: OpenAI model identifier (e.g. ``"gpt-4o"``, ``"o1-mini"``).
+
+    Returns:
+        ``True`` if the model supports native JSON-schema structured output,
+        ``False`` otherwise (including when the ``openai`` SDK is unavailable).
+
+    Examples:
+        - GPT-4o supports JSON schema:
+            ```python
+            from serapeum.openai.data.models import is_json_schema_supported
+            is_json_schema_supported("gpt-4o")
+            # True
+
+            ```
+
+        - o1-mini does not support JSON schema:
+            ```python
+            from serapeum.openai.data.models import is_json_schema_supported
+            is_json_schema_supported("o1-mini")
+            # False
+
+            ```
+
+    See Also:
+        :data:`JSON_SCHEMA_MODELS`: List of model-name prefixes that have
+            JSON-schema support.
+        :class:`~serapeum.openai.llm.base.structured.StructuredOutput`:
+            Uses this predicate to decide between native and function-calling
+            structured output.
+    """
     try:
         from openai.resources.chat.completions import completions
 
@@ -67,21 +173,53 @@ def is_json_schema_supported(model: str) -> bool:
 
 
 def openai_modelname_to_contextsize(modelname: str) -> int:
-    """Calculate the maximum number of tokens possible to generate for a model.
+    """Look up the maximum context-window size (in tokens) for an OpenAI model.
+
+    Fine-tuned model identifiers (both legacy ``<base>:ft-*`` and modern
+    ``ft:<base>:*`` formats) are resolved to their base model before lookup.
 
     Args:
-        modelname: The modelname we want to know the context size for.
+        modelname: OpenAI model identifier, e.g. ``"gpt-4o"``,
+            ``"ft:gpt-4o:my-org:custom:id"``, or ``"gpt-3.5-turbo"``.
 
     Returns:
-        The maximum context size
+        The context-window size in tokens for the given model.
 
-    Example:
-        .. code-block:: python
+    Raises:
+        ValueError: If *modelname* refers to a discontinued model or is not
+            found in :data:`ALL_AVAILABLE_MODELS`.
 
-            max_tokens = openai.modelname_to_contextsize("text-davinci-003")
+    Examples:
+        - Look up context size for a standard model:
+            ```python
+            >>> from serapeum.openai.data.models import openai_modelname_to_contextsize
+            >>> openai_modelname_to_contextsize("gpt-4o")
+            128000
 
-    Modified from:
-        https://github.com/hwchase17/langchain/blob/master/langchain/llms/openai.py
+            ```
+
+        - Fine-tuned model identifiers resolve to their base:
+            ```python
+            >>> from serapeum.openai.data.models import openai_modelname_to_contextsize
+            >>> openai_modelname_to_contextsize("ft:gpt-4o:acme:suffix:abc123")
+            128000
+
+            ```
+
+        - Discontinued models raise an error:
+            ```python
+            from serapeum.openai.data.models import openai_modelname_to_contextsize
+            openai_modelname_to_contextsize("code-davinci-002")
+            # Traceback (most recent call last):
+            #     ...
+            # ValueError: OpenAI model code-davinci-002 has been discontinued. ...
+
+            ```
+
+    See Also:
+        :data:`ALL_AVAILABLE_MODELS`: The full mapping of model names to
+            context-window sizes.
+        :data:`DISCONTINUED_MODELS`: Models that are no longer available.
     """
     # handling finetuned models
     if modelname.startswith("ft:"):
@@ -103,10 +241,94 @@ def openai_modelname_to_contextsize(modelname: str) -> int:
 
 
 def is_chat_model(model: str) -> bool:
+    """Check whether a model is a chat-completions model.
+
+    Chat models support the multi-turn ``/chat/completions`` endpoint as
+    opposed to the legacy single-turn ``/completions`` endpoint.
+
+    Args:
+        model: OpenAI model identifier (e.g. ``"gpt-4o"``, ``"davinci-002"``).
+
+    Returns:
+        ``True`` if *model* appears in :data:`CHAT_MODELS`, ``False``
+        otherwise.
+
+    Examples:
+        - GPT-4o is a chat model:
+            ```python
+            >>> from serapeum.openai.data.models import is_chat_model
+            >>> is_chat_model("gpt-4o")
+            True
+
+            ```
+
+        - Legacy completion-only models are not:
+            ```python
+            >>> from serapeum.openai.data.models import is_chat_model
+            >>> is_chat_model("davinci-002")
+            False
+
+            ```
+
+    See Also:
+        :data:`CHAT_MODELS`: The authoritative set of chat model identifiers.
+        :func:`is_function_calling_model`: A stricter check that also excludes
+            old snapshots and certain o1 models.
+    """
     return model in CHAT_MODELS
 
 
 def is_function_calling_model(model: str) -> bool:
+    """Check whether a model supports function calling (tool use).
+
+    Function calling is available for chat models that are **not** early
+    snapshots (``0301`` / ``0314`` date suffixes) and **not** in the
+    :data:`O1_MODELS_WITHOUT_FUNCTION_CALLING` set.
+
+    For unknown models (not in :data:`ALL_AVAILABLE_MODELS`), the function
+    optimistically returns ``True`` to allow custom or fine-tuned model names.
+
+    Fine-tuned identifiers (``ft:<base>:*`` and legacy ``ft-<base>:*``) are
+    resolved to their base model name before the check.
+
+    Args:
+        model: OpenAI model identifier (e.g. ``"gpt-4o"``,
+            ``"gpt-3.5-turbo-0301"``, ``"ft:gpt-4o:org:tag:id"``).
+
+    Returns:
+        ``True`` if the model supports function calling, ``False`` otherwise.
+
+    Examples:
+        - Modern chat models support function calling:
+            ```python
+            >>> from serapeum.openai.data.models import is_function_calling_model
+            >>> is_function_calling_model("gpt-4o")
+            True
+
+            ```
+
+        - Early snapshots do not:
+            ```python
+            >>> from serapeum.openai.data.models import is_function_calling_model
+            >>> is_function_calling_model("gpt-4-0314")
+            False
+
+            ```
+
+        - Unknown models are assumed capable:
+            ```python
+            >>> from serapeum.openai.data.models import is_function_calling_model
+            >>> is_function_calling_model("my-custom-model")
+            True
+
+            ```
+
+    See Also:
+        :func:`is_chat_model`: Checks only whether the model is a chat model,
+            without the snapshot and o1 exclusions.
+        :data:`O1_MODELS_WITHOUT_FUNCTION_CALLING`: The set of o1 models
+            excluded from function-calling support.
+    """
     # default to True for models that are not in the ALL_AVAILABLE_MODELS dict
     if model not in ALL_AVAILABLE_MODELS:
         is_fc = True

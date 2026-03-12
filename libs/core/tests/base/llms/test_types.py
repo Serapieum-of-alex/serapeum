@@ -14,7 +14,7 @@ from serapeum.core.base.llms.types import (
     ChatResponse,
     CompletionResponse,
     Image,
-    LikelihoodScore,
+    LogProb,
     Message,
     MessageList,
     MessageRole,
@@ -50,7 +50,7 @@ def pdf_url() -> str:
 @pytest.fixture()
 def mock_pdf_bytes(pdf_url) -> bytes:
     """Returns a byte string representing a very simple, minimal PDF file."""
-    return urlopen(pdf_url).read()
+    return urlopen(pdf_url).read()  # nosec B310
 
 
 @pytest.fixture()
@@ -75,21 +75,24 @@ def mp4_base64(mp4_bytes: bytes) -> bytes:
 class TestMessage:
     """Test Message."""
 
-    def test_chat_message_from_str(self):
-        m = Message.from_str(content="test content")
+    def test_chat_message_from_chunks(self):
+        m = Message(chunks=[TextChunk(content="test content")])
         assert m.content == "test content"
         assert len(m.chunks) == 1
         assert type(m.chunks[0]) is TextChunk
         assert m.chunks[0].content == "test content"
 
     def test_chat_message_content_legacy_get(self):
-        m = Message(content="test content")
+        m = Message(chunks=[TextChunk(content="test content")])
         assert m.content == "test content"
         assert len(m.chunks) == 1
         assert type(m.chunks[0]) is TextChunk
         assert m.chunks[0].content == "test content"
 
-        m = Message(role="user", content="test content")
+        m = Message(
+            role="user",
+            chunks=[TextChunk(content="test content")],
+        )
         assert m.role == "user"
         assert m.content == "test content"
         assert len(m.chunks) == 1
@@ -113,31 +116,34 @@ class TestMessage:
         assert type(m.chunks[0]) is TextChunk
         assert m.chunks[0].content == "test content"
 
-        m = Message(content="some original content")
+        m = Message(chunks=[TextChunk(content="some original content")])
         m.content = "test content"
         assert len(m.chunks) == 1
         assert type(m.chunks[0]) is TextChunk
         assert m.chunks[0].content == "test content"
 
-        m = Message(content=[TextChunk(content="test content"), Image()])
+        m = Message(chunks=[TextChunk(content="test content"), Image()])
         with pytest.raises(ValueError):
             m.content = "test content"
 
     def test_chat_message_content_returns_empty_string(self):
-        m = Message(content=[TextChunk(content="test content"), Image()])
+        m = Message(chunks=[TextChunk(content="test content"), Image()])
         assert m.content == "test content"
         m = Message()
         assert m.content is None
 
     def test_chat_message__str__(self):
-        assert str(Message(content="test content")) == "user: test content"
+        assert (
+            str(Message(chunks=[TextChunk(content="test content")]))
+            == "user: test content"
+        )
 
     def test_chat_message_serializer(self):
         class SimpleModel(BaseModel):
             some_field: str = ""
 
         m = Message(
-            content="test content",
+            chunks=[TextChunk(content="test content")],
             additional_kwargs={
                 "some_list": ["a", "b", "c"],
                 "some_object": SimpleModel(),
@@ -152,13 +158,12 @@ class TestMessage:
             "chunks": [{"type": "text", "content": "test content"}],
         }
 
-    def test_chat_message_legacy_roundtrip(self):
-        legacy_message = {
-            "role": MessageRole.USER,
-            "content": "foo",
-            "additional_kwargs": {},
-        }
-        m = Message(**legacy_message)
+    def test_chat_message_chunks_roundtrip(self):
+        m = Message(
+            role=MessageRole.USER,
+            chunks=[TextChunk(content="foo")],
+            additional_kwargs={},
+        )
         assert m.model_dump(exclude_none=True) == {
             "additional_kwargs": {},
             "chunks": [{"type": "text", "content": "foo"}],
@@ -273,7 +278,7 @@ class TestImageBlock:
 
 def test_chat_response():
     """Test ChatResponse string representation."""
-    message = Message("some content")
+    message = Message(chunks=[TextChunk(content="some content")])
     cr = ChatResponse(message=message)
     assert str(cr) == str(message)
 
@@ -284,21 +289,26 @@ class TestChatResponseToCompletionResponse:
     def test_to_completion_response(self):
         """Test conversion to CompletionResponse.
 
-        Inputs: ChatResponse with message text "Hello" and raw payload. The Message carries additional_kwargs; the ChatResponse also has its own additional_kwargs.
-        Expected: CompletionResponse.text == "Hello"; additional_kwargs are taken from the MESSAGE (not the response) per implementation; raw propagated.
-        Checks: Exact equality for text; verify precedence/selection of additional_kwargs.
+        Inputs: ChatResponse with message text "Hello" and raw payload.
+            The Message carries additional_kwargs; the ChatResponse also
+            has its own additional_kwargs.
+        Expected: CompletionResponse.text == "Hello"; additional_kwargs
+            are merged from message and response levels, with
+            response-level taking precedence; raw propagated.
+        Checks: Exact equality for text; verify merge precedence of
+            additional_kwargs.
         """
         msg = Message(
             role=MessageRole.ASSISTANT,
-            content="Hello",
-            additional_kwargs={"from": "message"},
+            chunks=[TextChunk(content="Hello")],
+            additional_kwargs={"from": "message", "msg_only": True},
         )
         cr = ChatResponse(
             message=msg, additional_kwargs={"from": "response"}, raw={"r": True}
         )
         out = cr.to_completion_response()
         assert out.text == "Hello"
-        assert out.additional_kwargs == {"from": "message"}
+        assert out.additional_kwargs == {"from": "response", "msg_only": True}
         assert out.raw == {"r": True}
 
     def test_when_none_text(self):
@@ -309,7 +319,7 @@ class TestChatResponseToCompletionResponse:
         Checks: Exact empty string, not None.
         """
         img = Image(content=b"\x89PNG", image_mimetype="image/png")
-        msg = Message(role=MessageRole.ASSISTANT, content=[img])
+        msg = Message(role=MessageRole.ASSISTANT, chunks=[img])
         assert msg.content is None  # guard
         cr = ChatResponse(message=msg)
         out = cr.to_completion_response()
@@ -325,13 +335,18 @@ class TestChatResponseToCompletionResponse:
 
         def chat_gen():
             yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="A"),
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="A")],
+                ),
                 delta="A",
                 raw={"i": 0},
             )
             yield ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content="B", additional_kwargs={"x": 2}
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="B")],
+                    additional_kwargs={"x": 2},
                 ),
                 delta="B",
                 raw={"i": 1},
@@ -356,13 +371,18 @@ class TestChatResponseToCompletionResponse:
 
         async def agen():
             yield ChatResponse(
-                message=Message(role=MessageRole.ASSISTANT, content="X"),
+                message=Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="X")],
+                ),
                 delta="x",
                 raw={"k": 0},
             )
             yield ChatResponse(
                 message=Message(
-                    role=MessageRole.ASSISTANT, content="Y", additional_kwargs={"a": 1}
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="Y")],
+                    additional_kwargs={"a": 1},
                 ),
                 delta="y",
                 raw={"k": 1},
@@ -410,9 +430,9 @@ class TestCompletionResponse:
             """
             with pytest.raises(ValidationError) as exc_info:
                 CompletionResponse()  # type: ignore[call-arg]
-            assert "text" in str(exc_info.value), (
-                f"Expected 'text' in validation error, got: {exc_info.value}"
-            )
+            assert "text" in str(
+                exc_info.value
+            ), f"Expected 'text' in validation error, got: {exc_info.value}"
 
         @pytest.mark.unit
         def test_init_empty_string_text_is_valid(self):
@@ -435,12 +455,12 @@ class TestCompletionResponse:
             """
             cr = CompletionResponse(text="x")
             assert cr.raw is None, f"raw should default to None, got: {cr.raw}"
-            assert cr.likelihood_score is None, (
-                f"likelihood_score should default to None, got: {cr.likelihood_score}"
-            )
-            assert cr.additional_kwargs == {}, (
-                f"additional_kwargs should default to {{}}, got: {cr.additional_kwargs}"
-            )
+            assert (
+                cr.logprob is None
+            ), f"likelihood_score should default to None, got: {cr.logprob}"
+            assert (
+                cr.additional_kwargs == {}
+            ), f"additional_kwargs should default to {{}}, got: {cr.additional_kwargs}"
             assert cr.delta is None, f"delta should default to None, got: {cr.delta}"
 
         @pytest.mark.unit
@@ -461,9 +481,9 @@ class TestCompletionResponse:
             assert cr.text == "result", f"Unexpected text: {cr.text!r}"
             assert cr.raw == raw_payload, f"Unexpected raw: {cr.raw}"
             assert cr.delta == "res", f"Unexpected delta: {cr.delta!r}"
-            assert cr.additional_kwargs == {"usage": {"input": 10}}, (
-                f"Unexpected additional_kwargs: {cr.additional_kwargs}"
-            )
+            assert cr.additional_kwargs == {
+                "usage": {"input": 10}
+            }, f"Unexpected additional_kwargs: {cr.additional_kwargs}"
 
         @pytest.mark.unit
         def test_init_with_likelihood_scores(self):
@@ -474,15 +494,13 @@ class TestCompletionResponse:
                 stored intact and accessible by index.
             """
             scores = [
-                [LikelihoodScore(token="hello", next_token_log_prob=-0.5, bytes=[104, 101])]
-            ]
-            cr = CompletionResponse(text="hello", likelihood_score=scores)
-            assert cr.likelihood_score == scores, (
-                f"Unexpected likelihood_score: {cr.likelihood_score}"
-            )
-            assert cr.likelihood_score[0][0].token == "hello", (
-                "First token should be 'hello'"
-            )
+                [LogProb(token="hello", logprob=-0.5, bytes=[104, 101])]
+            ]  # nosec B106
+            cr = CompletionResponse(text="hello", logprob=scores)
+            assert cr.logprob == scores, f"Unexpected likelihood_score: {cr.logprob}"
+            assert (
+                cr.logprob[0][0].token == "hello"
+            ), "First token should be 'hello'"  # nosec B105
 
     class TestStr:
 
@@ -508,14 +526,16 @@ class TestCompletionResponse:
                 value, including empty, multiline, unicode, and padded strings.
             """
             cr = CompletionResponse(text=text)
-            assert str(cr) == text, (
-                f"Expected str representation {text!r}, got {str(cr)!r}"
-            )
+            assert (
+                str(cr) == text
+            ), f"Expected str representation {text!r}, got {str(cr)!r}"
 
     class TestToChatResponse:
 
         @pytest.mark.unit
-        def test_to_chat_response_text_becomes_message_content(self, basic: CompletionResponse):
+        def test_to_chat_response_text_becomes_message_content(
+            self, basic: CompletionResponse
+        ):
             """Test that text maps to the ChatResponse message content.
 
             Args:
@@ -526,12 +546,14 @@ class TestCompletionResponse:
                 original CompletionResponse.text.
             """
             chat = basic.to_chat_response()
-            assert chat.message.content == basic.text, (
-                f"Expected message.content={basic.text!r}, got {chat.message.content!r}"
-            )
+            assert (
+                chat.message.content == basic.text
+            ), f"Expected message.content={basic.text!r}, got {chat.message.content!r}"
 
         @pytest.mark.unit
-        def test_to_chat_response_message_role_is_assistant(self, basic: CompletionResponse):
+        def test_to_chat_response_message_role_is_assistant(
+            self, basic: CompletionResponse
+        ):
             """Test that the resulting ChatResponse message role is ASSISTANT.
 
             Args:
@@ -542,9 +564,9 @@ class TestCompletionResponse:
                 regardless of any other fields.
             """
             chat = basic.to_chat_response()
-            assert chat.message.role == MessageRole.ASSISTANT, (
-                f"Expected role=ASSISTANT, got {chat.message.role!r}"
-            )
+            assert (
+                chat.message.role == MessageRole.ASSISTANT
+            ), f"Expected role=ASSISTANT, got {chat.message.role!r}"
 
         @pytest.mark.unit
         def test_to_chat_response_raw_propagated(self):
@@ -569,14 +591,16 @@ class TestCompletionResponse:
                 remain an empty dict because to_chat_response does not forward
                 it to the response level.
             """
-            cr = CompletionResponse(text="data", additional_kwargs={"usage": {"tokens": 5}})
+            cr = CompletionResponse(
+                text="data", additional_kwargs={"usage": {"tokens": 5}}
+            )
             chat = cr.to_chat_response()
-            assert chat.message.additional_kwargs == {"usage": {"tokens": 5}}, (
-                f"Expected message-level kwargs, got {chat.message.additional_kwargs}"
-            )
-            assert chat.additional_kwargs == {}, (
-                f"ChatResponse.additional_kwargs should be empty, got {chat.additional_kwargs}"
-            )
+            assert chat.message.additional_kwargs == {
+                "usage": {"tokens": 5}
+            }, f"Expected message-level kwargs, got {chat.message.additional_kwargs}"
+            assert (
+                chat.additional_kwargs == {}
+            ), f"ChatResponse.additional_kwargs should be empty, got {chat.additional_kwargs}"
 
         @pytest.mark.unit
         def test_to_chat_response_delta_not_propagated(self):
@@ -589,9 +613,9 @@ class TestCompletionResponse:
             """
             cr = CompletionResponse(text="tok", delta="d")
             chat = cr.to_chat_response()
-            assert chat.delta is None, (
-                f"delta should not propagate via to_chat_response, got {chat.delta!r}"
-            )
+            assert (
+                chat.delta is None
+            ), f"delta should not propagate via to_chat_response, got {chat.delta!r}"
 
         @pytest.mark.unit
         def test_to_chat_response_empty_text(self):
@@ -603,9 +627,9 @@ class TestCompletionResponse:
             """
             cr = CompletionResponse(text="")
             chat = cr.to_chat_response()
-            assert chat.message.content == "", (
-                f"Expected empty content, got {chat.message.content!r}"
-            )
+            assert (
+                chat.message.content == ""
+            ), f"Expected empty content, got {chat.message.content!r}"
 
         @pytest.mark.integration
         def test_to_chat_response_round_trip(self):
@@ -623,16 +647,16 @@ class TestCompletionResponse:
                 delta="d",
             )
             restored = original.to_chat_response().to_completion_response()
-            assert restored.text == original.text, (
-                f"text not preserved: {restored.text!r}"
-            )
+            assert (
+                restored.text == original.text
+            ), f"text not preserved: {restored.text!r}"
             assert restored.raw == original.raw, f"raw not preserved: {restored.raw}"
-            assert restored.additional_kwargs == original.additional_kwargs, (
-                f"additional_kwargs not preserved: {restored.additional_kwargs}"
-            )
-            assert restored.delta is None, (
-                f"delta should be lost in round-trip via to_chat_response, got {restored.delta!r}"
-            )
+            assert (
+                restored.additional_kwargs == original.additional_kwargs
+            ), f"additional_kwargs not preserved: {restored.additional_kwargs}"
+            assert (
+                restored.delta is None
+            ), f"delta should be lost in round-trip via to_chat_response, got {restored.delta!r}"
 
     class TestStreamToChatResponse:
         """Tests for stream_to_chat_response."""
@@ -652,12 +676,12 @@ class TestCompletionResponse:
 
             results = list(CompletionResponse.stream_to_chat_response(comp_gen()))
             assert len(results) == 2, f"Expected 2 results, got {len(results)}"
-            assert results[0].message.content == "A", (
-                f"Expected 'A', got {results[0].message.content!r}"
-            )
-            assert results[1].message.content == "B", (
-                f"Expected 'B', got {results[1].message.content!r}"
-            )
+            assert (
+                results[0].message.content == "A"
+            ), f"Expected 'A', got {results[0].message.content!r}"
+            assert (
+                results[1].message.content == "B"
+            ), f"Expected 'B', got {results[1].message.content!r}"
 
         @pytest.mark.unit
         def test_stream_to_chat_response_empty_generator(self):
@@ -696,8 +720,12 @@ class TestCompletionResponse:
 
             results = list(CompletionResponse.stream_to_chat_response(comp_gen()))
             assert results[0].message.content == "tok1"
-            assert results[0].delta == "d1", f"Expected delta='d1', got {results[0].delta!r}"
-            assert results[0].raw == {"i": 0}, f"Expected raw={{'i':0}}, got {results[0].raw}"
+            assert (
+                results[0].delta == "d1"
+            ), f"Expected delta='d1', got {results[0].delta!r}"
+            assert results[0].raw == {
+                "i": 0
+            }, f"Expected raw={{'i':0}}, got {results[0].raw}"
             assert results[0].message.additional_kwargs == {"a": 1}
             assert results[1].message.content == "tok2"
             assert results[1].delta == "d2"
@@ -719,9 +747,9 @@ class TestCompletionResponse:
 
             results = list(CompletionResponse.stream_to_chat_response(comp_gen()))
             roles = [r.message.role for r in results]
-            assert all(role == MessageRole.ASSISTANT for role in roles), (
-                f"All roles should be ASSISTANT, got {roles}"
-            )
+            assert all(
+                role == MessageRole.ASSISTANT for role in roles
+            ), f"All roles should be ASSISTANT, got {roles}"
 
         @pytest.mark.unit
         def test_stream_to_chat_response_returns_generator(self):
@@ -737,9 +765,9 @@ class TestCompletionResponse:
                 yield CompletionResponse(text="a")
 
             result = CompletionResponse.stream_to_chat_response(comp_gen())
-            assert isinstance(result, _types.GeneratorType), (
-                f"Expected GeneratorType, got {type(result)}"
-            )
+            assert isinstance(
+                result, _types.GeneratorType
+            ), f"Expected GeneratorType, got {type(result)}"
 
     class TestAstreamToChatResponse:
         """Tests for astream_to_chat_response."""
@@ -762,12 +790,12 @@ class TestCompletionResponse:
             async for item in CompletionResponse.astream_to_chat_response(comp_agen()):
                 results.append(item)
             assert len(results) == 2, f"Expected 2 results, got {len(results)}"
-            assert results[0].message.content == "X", (
-                f"Expected 'X', got {results[0].message.content!r}"
-            )
-            assert results[1].message.content == "Y", (
-                f"Expected 'Y', got {results[1].message.content!r}"
-            )
+            assert (
+                results[0].message.content == "X"
+            ), f"Expected 'X', got {results[0].message.content!r}"
+            assert (
+                results[1].message.content == "Y"
+            ), f"Expected 'Y', got {results[1].message.content!r}"
 
         @pytest.mark.asyncio
         @pytest.mark.unit
@@ -809,7 +837,9 @@ class TestCompletionResponse:
             async for item in CompletionResponse.astream_to_chat_response(comp_agen()):
                 results.append(item)
             assert results[0].message.content == "a1"
-            assert results[0].delta == "da1", f"Expected delta='da1', got {results[0].delta!r}"
+            assert (
+                results[0].delta == "da1"
+            ), f"Expected delta='da1', got {results[0].delta!r}"
             assert results[0].raw == {"seq": 0}
             assert results[0].message.additional_kwargs == {"p": 10}
             assert results[1].message.content == "a2"
@@ -835,12 +865,13 @@ class TestCompletionResponse:
             async for item in CompletionResponse.astream_to_chat_response(comp_agen()):
                 results.append(item)
             roles = [r.message.role for r in results]
-            assert all(role == MessageRole.ASSISTANT for role in roles), (
-                f"All roles should be ASSISTANT, got {roles}"
-            )
+            assert all(
+                role == MessageRole.ASSISTANT for role in roles
+            ), f"All roles should be ASSISTANT, got {roles}"
 
     class TestPydanticModelMethods:
         """Tests for Pydantic model methods."""
+
         @pytest.mark.unit
         def test_model_dump_contains_all_keys(self, basic: CompletionResponse):
             """Test that model_dump returns a dict with all expected keys.
@@ -853,13 +884,13 @@ class TestCompletionResponse:
                 BaseResponse field key.
             """
             dumped = basic.model_dump()
-            for key in ("text", "raw", "likelihood_score", "additional_kwargs", "delta"):
-                assert key in dumped, (
-                    f"Key '{key}' missing from model_dump; keys present: {list(dumped.keys())}"
-                )
-            assert dumped["text"] == "Hello world", (
-                f"Unexpected text in dump: {dumped['text']!r}"
-            )
+            for key in ("text", "raw", "logprob", "additional_kwargs", "delta"):
+                assert (
+                    key in dumped
+                ), f"Key '{key}' missing from model_dump; keys present: {list(dumped.keys())}"
+            assert (
+                dumped["text"] == "Hello world"
+            ), f"Unexpected text in dump: {dumped['text']!r}"
 
         @pytest.mark.unit
         def test_model_validate_roundtrip(self, basic: CompletionResponse):
@@ -885,7 +916,7 @@ class TestCompletionResponse:
             """
             a = CompletionResponse(text="abc", delta="x", additional_kwargs={"k": 1})
             b = CompletionResponse(text="abc", delta="x", additional_kwargs={"k": 1})
-            assert a == b, f"Expected equal instances"
+            assert a == b, "Expected equal instances"
 
         @pytest.mark.unit
         def test_equality_different_text(self):
@@ -913,8 +944,14 @@ class TestMessageLists:
             Checks: Exact string equality; ordering preserved; single trailing assistant line; no trailing newline at end.
             """
             messages = [
-                Message(role=MessageRole.SYSTEM, content="You are a bot."),
-                Message(role=MessageRole.USER, content="Hello"),
+                Message(
+                    role=MessageRole.SYSTEM,
+                    chunks=[TextChunk(content="You are a bot.")],
+                ),
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="Hello")],
+                ),
             ]
             message_list = MessageList(messages=messages)
             prompt = message_list.to_prompt()
@@ -951,7 +988,7 @@ class TestMessageLists:
             """
             msg = Message(
                 role=MessageRole.USER,
-                content="Hi",
+                chunks=[TextChunk(content="Hi")],
                 additional_kwargs={"tool": {"name": "calc"}},
             )
             message_list = MessageList(messages=[msg])
@@ -975,7 +1012,7 @@ class TestMessageLists:
             """
             msg = Message(
                 role=MessageRole.USER,
-                content=[TextChunk(content="Line1"), TextChunk(content="Line2")],
+                chunks=[TextChunk(content="Line1"), TextChunk(content="Line2")],
             )
             message_list = MessageList(messages=[msg])
             prompt = message_list.to_prompt()
@@ -996,7 +1033,7 @@ class TestMessageLists:
             Checks: Graceful handling of non-text content without exceptions.
             """
             img = Image(content=b"\x89PNG", image_mimetype="image/png")
-            msg = Message(role=MessageRole.USER, content=[img])
+            msg = Message(role=MessageRole.USER, chunks=[img])
             message_list = MessageList(messages=[msg])
             prompt = message_list.to_prompt()
 
@@ -1016,9 +1053,18 @@ class TestMessageLists:
             Checks: Ordering stability and presence of the final assistant prompt starter even when an assistant message exists in input.
             """
             messages = [
-                Message(role=MessageRole.USER, content="A"),
-                Message(role=MessageRole.ASSISTANT, content="B"),
-                Message(role=MessageRole.TOOL, content="C"),
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="A")],
+                ),
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="B")],
+                ),
+                Message(
+                    role=MessageRole.TOOL,
+                    chunks=[TextChunk(content="C")],
+                ),
             ]
             message_list = MessageList(messages=messages)
             prompt = message_list.to_prompt()
@@ -1036,12 +1082,12 @@ class TestMessageLists:
     class TestMessageListBasics:
         """Test MessageList basic operations."""
 
-        def test_from_list_and_len_getitem_slice_and_append(self):
-            """Test MessageList.from_list, __len__, __getitem__, slice, and append.
+        def test_len_getitem_slice_and_append(self):
+            """Test MessageList constructor, __len__, __getitem__, slice, and append.
 
             Inputs:
                 - Start with two messages (system and user).
-                - Use MessageList.from_list to construct, then test __len__, __getitem__ (int), slicing, and append.
+                - Use MessageList constructor, then test __len__, __getitem__ (int), slicing, and append.
             Expected:
                 - Length reflects number of messages.
                 - Integer indexing returns Message; slicing returns MessageList with correct subset.
@@ -1049,9 +1095,15 @@ class TestMessageLists:
             Checks:
                 - Types of returned objects; content and roles remain intact.
             """
-            m1 = Message(role=MessageRole.SYSTEM, content="You are a bot.")
-            m2 = Message(role=MessageRole.USER, content="Hello")
-            ml = MessageList.from_list([m1, m2])
+            m1 = Message(
+                role=MessageRole.SYSTEM,
+                chunks=[TextChunk(content="You are a bot.")],
+            )
+            m2 = Message(
+                role=MessageRole.USER,
+                chunks=[TextChunk(content="Hello")],
+            )
+            ml = MessageList(messages=[m1, m2])
 
             # __len__ and __getitem__
             assert len(ml) == 2
@@ -1065,7 +1117,10 @@ class TestMessageLists:
             assert sub[0] is m1
 
             # append maintains order
-            m3 = Message(role=MessageRole.ASSISTANT, content="Hi!")
+            m3 = Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content="Hi!")],
+            )
             ml.append(m3)
             assert list(ml)[-1] is m3
             assert [m.role for m in ml] == [
@@ -1096,11 +1151,26 @@ class TestMessageLists:
             Checks: Type and ordering preserved; other roles excluded.
             """
             messages = [
-                Message(role=MessageRole.SYSTEM, content="S"),
-                Message(role=MessageRole.USER, content="U1"),
-                Message(role=MessageRole.ASSISTANT, content="A"),
-                Message(role=MessageRole.USER, content="U2"),
-                Message(role=MessageRole.TOOL, content="T"),
+                Message(
+                    role=MessageRole.SYSTEM,
+                    chunks=[TextChunk(content="S")],
+                ),
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="U1")],
+                ),
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    chunks=[TextChunk(content="A")],
+                ),
+                Message(
+                    role=MessageRole.USER,
+                    chunks=[TextChunk(content="U2")],
+                ),
+                Message(
+                    role=MessageRole.TOOL,
+                    chunks=[TextChunk(content="T")],
+                ),
             ]
             ml = MessageList(messages=messages)
             only_users = ml.filter_by_role(MessageRole.USER)

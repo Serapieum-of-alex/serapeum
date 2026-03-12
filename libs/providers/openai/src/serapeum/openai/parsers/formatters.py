@@ -1,18 +1,30 @@
-"""Outbound formatters — serapeum Message types to OpenAI API request formats.
+"""Outbound formatters that convert serapeum ``Message`` types into OpenAI API request payloads.
 
-Classes:
+This module provides two parallel conversion pipelines -- one for the Chat Completions API
+and one for the Responses API -- plus a top-level dispatcher that selects the correct pipeline.
 
-- :class:`ChatFormat` — static block-level converters for the Chat Completions API
-- :class:`ResponsesFormat` — static block-level converters for the Responses API
-- :class:`ChatMessageConverter` — converts a ``Message`` to a Chat Completions API dict
-- :class:`ResponsesMessageConverter` — converts a ``Message`` to a Responses API dict or list
-- :func:`to_openai_message_dicts` — top-level dispatcher that selects the correct converter
-- :func:`to_openai_tool` — converts a Pydantic model class to an OpenAI function tool spec
+Block-level converters:
+    - :class:`ChatFormat` -- serapeum content blocks to Chat Completions ``content`` array items.
+    - :class:`ResponsesFormat` -- serapeum content blocks to Responses API ``content`` array items.
+
+Message-level converters:
+    - :class:`ChatMessageConverter` -- full ``Message`` to a Chat Completions ``messages`` element.
+    - :class:`ResponsesMessageConverter` -- full ``Message`` to a Responses API ``input`` element
+      (may return a single dict or a list of dicts).
+
+Top-level helpers:
+    - :func:`to_openai_message_dicts` -- dispatches a message sequence to the correct converter
+      based on the ``is_responses_api`` flag.
+    - :func:`to_openai_tool` -- converts a Pydantic model class into an OpenAI function tool spec.
+
+Private helpers:
+    - :func:`_rewrite_system_to_developer` -- mutates ``"system"`` to ``"developer"`` for O1 models.
+    - :func:`_strip_none_keys` -- removes ``None``-valued keys from a dict.
+    - :func:`_should_null_content` -- decides whether an assistant message's content should be ``None``.
 """
 
 from __future__ import annotations
 
-import base64
 import logging
 from collections.abc import Callable
 from typing import Any, Sequence, Type, cast
@@ -23,7 +35,6 @@ from pydantic import BaseModel
 
 from serapeum.core.llms import (
     Audio,
-    ContentBlock,
     DocumentBlock,
     Image,
     Message,
@@ -46,26 +57,30 @@ OpenAIToolCall = ChatCompletionMessageToolCall | ChoiceDeltaToolCall
 def _rewrite_system_to_developer(
     message_dict: dict[str, Any], model: str | None
 ) -> None:
-    """Rewrite the ``system`` role to ``developer`` for O1-family models that support function calling.
+    """Rewrite the ``"system"`` role to ``"developer"`` in place for O1-family models.
 
-    OpenAI's o3-mini and similar O1-family models that support function calling
-    expect the ``developer`` role instead of ``system``. This function mutates
-    *message_dict* in place when the conditions are met.
+    OpenAI's O1-family models that support function calling (e.g. ``o3-mini``)
+    require the ``"developer"`` role instead of ``"system"``.  This helper
+    mutates *message_dict* in place when the model is in
+    :data:`~serapeum.openai.data.models.O1_MODELS` but **not** in
+    :data:`~serapeum.openai.data.models.O1_MODELS_WITHOUT_FUNCTION_CALLING`.
 
-    The rewrite is **not** applied for:
+    The rewrite is skipped when any of the following are true:
 
-    - Models outside :data:`~serapeum.openai.models.O1_MODELS`
-    - Models in :data:`~serapeum.openai.models.O1_MODELS_WITHOUT_FUNCTION_CALLING`
-      (e.g. ``o1-mini``, ``o1-preview``) which do not support system prompts at all
-    - When *model* is ``None``
-    - When the role is not ``"system"``
+    - *model* is ``None``.
+    - *model* is not recognised as an O1-family model.
+    - *model* is in :data:`O1_MODELS_WITHOUT_FUNCTION_CALLING` (those models
+      do not support system prompts at all, e.g. ``o1-mini``, ``o1-preview``).
+    - The message's ``"role"`` is not ``"system"``.
 
     Args:
-        message_dict: The message dict to mutate in place. Must contain a ``"role"`` key.
-        model: The OpenAI model name. Pass ``None`` to skip rewriting entirely.
+        message_dict: A mutable message dict containing at least a ``"role"`` key.
+            The ``"role"`` value is overwritten in place when conditions are met.
+        model: The target OpenAI model identifier (e.g. ``"o3-mini"``).  Pass
+            ``None`` to unconditionally skip the rewrite.
 
     Examples:
-        - Rewrites for o3-mini
+        - Rewrite for an O1 model that supports function calling:
             ```python
             >>> d = {"role": "system", "content": "You are helpful."}
             >>> _rewrite_system_to_developer(d, "o3-mini")
@@ -73,7 +88,7 @@ def _rewrite_system_to_developer(
             'developer'
 
             ```
-        - No-op for a standard model
+        - Standard GPT model is left unchanged:
             ```python
             >>> d = {"role": "system", "content": "You are helpful."}
             >>> _rewrite_system_to_developer(d, "gpt-4o")
@@ -81,7 +96,7 @@ def _rewrite_system_to_developer(
             'system'
 
             ```
-        - No-op when model is None
+        - ``None`` model skips rewriting entirely:
             ```python
             >>> d = {"role": "system", "content": "You are helpful."}
             >>> _rewrite_system_to_developer(d, None)
@@ -91,8 +106,10 @@ def _rewrite_system_to_developer(
             ```
 
     See Also:
-        :data:`~serapeum.openai.models.O1_MODELS`: Set of O1-family model identifiers.
-        :data:`~serapeum.openai.models.O1_MODELS_WITHOUT_FUNCTION_CALLING`: Models excluded from rewriting.
+        :data:`~serapeum.openai.data.models.O1_MODELS`:
+            The full set of O1-family model identifiers.
+        :data:`~serapeum.openai.data.models.O1_MODELS_WITHOUT_FUNCTION_CALLING`:
+            O1 models that lack function-calling support.
     """
     if (
         model is not None
@@ -104,17 +121,20 @@ def _rewrite_system_to_developer(
 
 
 def _strip_none_keys(message_dict: dict[str, Any], drop_none: bool) -> None:
-    """Remove all keys whose value is ``None`` from *message_dict* when *drop_none* is set.
+    """Remove every ``None``-valued key from *message_dict* when *drop_none* is ``True``.
 
-    This is a no-op when *drop_none* is ``False``. The dict is mutated in place.
+    Useful for cleaning up message dicts before sending them to the OpenAI API, which
+    may reject unexpected ``null`` values depending on the endpoint.  When *drop_none*
+    is ``False``, this function is a no-op.
 
     Args:
-        message_dict: The dict to strip None-valued keys from.
-        drop_none: When ``True``, removes every key whose value is ``None``.
-            When ``False``, the dict is left unchanged.
+        message_dict: A mutable dict to strip ``None``-valued keys from.  Mutated
+            in place -- matching keys are removed via ``dict.pop``.
+        drop_none: Controls whether stripping is applied.  ``True`` removes all
+            keys whose value is ``None``; ``False`` leaves the dict untouched.
 
     Examples:
-        - Removes None values when drop_none is True
+        - Strip all ``None`` values when enabled:
             ```python
             >>> d = {"role": "assistant", "content": None, "tool_calls": None}
             >>> _strip_none_keys(d, drop_none=True)
@@ -122,7 +142,7 @@ def _strip_none_keys(message_dict: dict[str, Any], drop_none: bool) -> None:
             ['role']
 
             ```
-        - Leaves None values intact when drop_none is False
+        - Dict is left intact when stripping is disabled:
             ```python
             >>> d = {"role": "assistant", "content": None}
             >>> _strip_none_keys(d, drop_none=False)
@@ -137,117 +157,145 @@ def _strip_none_keys(message_dict: dict[str, Any], drop_none: bool) -> None:
 
 
 def _should_null_content(message: Message, has_tool_calls: bool) -> bool:
-    """Return ``True`` when an assistant message's content should be sent as ``None``.
+    """Decide whether an assistant message's ``content`` field should be ``None``.
 
-    The OpenAI Chat Completions API requires ``content: null`` for assistant
-    messages that consist exclusively of tool calls or function calls.  A message
-    qualifies when **all** of the following hold:
+    The OpenAI API requires ``content: null`` for assistant messages that carry
+    only tool calls or function calls.  This predicate returns ``True`` when
+    **both** conditions are satisfied:
 
-    1. The role is ``assistant``
-    2. At least one of the following is true:
-
-       - ``"function_call"`` is present in ``message.additional_kwargs``
-       - ``"tool_calls"`` is present in ``message.additional_kwargs``
-       - *has_tool_calls* is ``True`` (the message has :class:`~serapeum.core.llms.ToolCallBlock` chunks)
+    1. The message role is ``"assistant"``.
+    2. At least one tool-call indicator is present:
+       - ``"function_call"`` in ``message.additional_kwargs``, **or**
+       - ``"tool_calls"`` in ``message.additional_kwargs``, **or**
+       - *has_tool_calls* is ``True`` (the caller already detected
+         :class:`~serapeum.core.llms.ToolCallBlock` chunks).
 
     Args:
-        message: The serapeum message to inspect.
-        has_tool_calls: Whether the caller has already detected ``ToolCallBlock``
-            chunks in the message. Avoids re-iterating chunks.
+        message: The serapeum :class:`~serapeum.core.llms.Message` to inspect.
+        has_tool_calls: Pre-computed flag indicating whether the message
+            contains :class:`~serapeum.core.llms.ToolCallBlock` chunks.
+            Passing this avoids redundant iteration over the chunks list.
 
     Returns:
-        ``True`` if content should be nulled; ``False`` otherwise.
+        ``True`` when the outgoing ``content`` should be set to ``None``;
+        ``False`` otherwise.
 
     Examples:
-        - Returns True for assistant with tool_calls in additional_kwargs
+        - Assistant with ``tool_calls`` in ``additional_kwargs`` is nulled:
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> msg = Message(
             ...     role=MessageRole.ASSISTANT,
-            ...     content="",
+            ...     chunks=[TextChunk(content="")],
             ...     additional_kwargs={"tool_calls": [{"id": "c1"}]},
             ... )
             >>> _should_null_content(msg, has_tool_calls=False)
             True
 
             ```
-        - Returns False for user messages regardless of tool_calls
+        - User messages are never nulled, even with tool calls present:
             ```python
-            >>> msg = Message(role=MessageRole.USER, content="hi")
+            >>> msg = Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
             >>> _should_null_content(msg, has_tool_calls=True)
             False
 
             ```
-        - Returns False for assistant with no tool information
+        - Assistant without any tool-call indicator is not nulled:
             ```python
-            >>> msg = Message(role=MessageRole.ASSISTANT, content="hello")
+            >>> msg = Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="hello")])
             >>> _should_null_content(msg, has_tool_calls=False)
             False
 
             ```
 
     See Also:
-        :meth:`ChatMessageConverter._resolve_content`: Uses this to decide whether to emit ``None``.
-        :meth:`ResponsesMessageConverter._resolve_content`: Same check for the Responses API path.
+        :meth:`ChatMessageConverter._resolve_content`:
+            Calls this to decide the Chat Completions ``content`` value.
+        :meth:`ResponsesMessageConverter._resolve_content`:
+            Calls this to decide the Responses API ``content`` value.
     """
-    return (
-        message.role == MessageRole.ASSISTANT
-        and (
-            "function_call" in message.additional_kwargs
-            or "tool_calls" in message.additional_kwargs
-            or has_tool_calls
-        )
+    return message.role == MessageRole.ASSISTANT and (
+        "function_call" in message.additional_kwargs
+        or "tool_calls" in message.additional_kwargs
+        or has_tool_calls
     )
 
 
 class ChatFormat:
-    """Namespace of static converters from serapeum content blocks to Chat Completions API dicts.
+    """Static converters that transform serapeum content blocks into Chat Completions API dicts.
 
-    All methods accept a single content block and return a dict conforming to
-    the ``content`` array item schema used by the OpenAI Chat Completions API.
+    Each static method accepts a single serapeum content block
+    (:class:`~serapeum.core.llms.TextChunk`, :class:`~serapeum.core.llms.Image`,
+    :class:`~serapeum.core.llms.Audio`, :class:`~serapeum.core.llms.DocumentBlock`,
+    or :class:`~serapeum.core.llms.ToolCallBlock`) and returns a dict that conforms
+    to the ``content`` array item schema of the OpenAI Chat Completions API.
 
-    The :attr:`content_converters` class attribute maps block *types* to their
-    converter callables, enabling generic dispatch for blocks that are not
-    explicitly handled by :class:`ChatMessageConverter`.
+    The :attr:`content_converters` class-level dispatch table maps block **types**
+    to their converter callables, enabling :class:`ChatMessageConverter` to handle
+    block types that are not covered by explicit ``isinstance`` checks.
 
     Examples:
-        - Convert a text chunk
+        - Convert a text chunk to a Chat Completions content item:
             ```python
             >>> from serapeum.core.llms import TextChunk
             >>> ChatFormat.text(TextChunk(content="hello"))
             {'type': 'text', 'text': 'hello'}
 
             ```
-        - Convert an image with a URL
+        - Convert an image URL to an ``image_url`` content item:
             ```python
             >>> from serapeum.core.llms import Image
             >>> result = ChatFormat.image(Image(url="https://example.com/img.png"))
             >>> result["type"]
             'image_url'
+            >>> result["image_url"]["url"]
+            'https://example.com/img.png'
+
+            ```
+        - Convert a tool call block to a function call dict:
+            ```python
+            >>> from serapeum.core.llms import ToolCallBlock
+            >>> result = ChatFormat.tool_call(
+            ...     ToolCallBlock(tool_call_id="c1", tool_name="search", tool_kwargs={"q": "x"})
+            ... )
+            >>> result["function"]["name"]
+            'search'
 
             ```
 
     See Also:
-        :class:`ResponsesFormat`: Equivalent namespace for the Responses API.
-        :class:`ChatMessageConverter`: Uses these converters when building message dicts.
+        :class:`ResponsesFormat`:
+            Equivalent converter namespace for the Responses API.
+        :class:`ChatMessageConverter`:
+            Message-level converter that delegates to these block-level converters.
     """
 
     @staticmethod
     def text(block: TextChunk) -> dict[str, Any]:
-        """Convert a :class:`~serapeum.core.llms.TextChunk` to a Chat Completions text dict.
+        """Convert a :class:`~serapeum.core.llms.TextChunk` into a Chat Completions ``text`` content item.
 
         Args:
-            block: The text chunk to convert.
+            block: The text chunk whose ``content`` string is placed into
+                the returned dict.
 
         Returns:
-            A dict with ``{"type": "text", "text": <content>}``.
+            A dict of the form ``{"type": "text", "text": <content>}`` ready
+            for inclusion in the ``content`` array of a Chat Completions
+            message.
 
         Examples:
-            - Basic conversion
+            - Simple text conversion:
                 ```python
                 >>> from serapeum.core.llms import TextChunk
                 >>> ChatFormat.text(TextChunk(content="hello world"))
                 {'type': 'text', 'text': 'hello world'}
+
+                ```
+            - Empty content is preserved as-is:
+                ```python
+                >>> from serapeum.core.llms import TextChunk
+                >>> ChatFormat.text(TextChunk(content=""))
+                {'type': 'text', 'text': ''}
 
                 ```
         """
@@ -255,23 +303,29 @@ class ChatFormat:
 
     @staticmethod
     def document(block: DocumentBlock) -> dict[str, Any]:
-        """Convert a :class:`~serapeum.core.llms.DocumentBlock` to a Chat Completions file dict.
+        """Convert a :class:`~serapeum.core.llms.DocumentBlock` into a Chat Completions ``file`` content item.
 
-        The document's binary content is base64-encoded and embedded as a data URI.
+        The document's binary content is base64-encoded via
+        :meth:`~serapeum.core.llms.DocumentBlock.as_base64` and embedded as a
+        ``data:`` URI in the ``file_data`` field.
 
         Args:
-            block: The document block to convert. Must implement ``as_base64()``
-                returning ``(b64_string, mimetype)``.
+            block: The document block to convert.  Its ``as_base64()`` method must
+                return a ``(b64_string, mimetype)`` tuple, and its ``title``
+                attribute provides the filename.
 
         Returns:
-            A dict with keys ``type``, ``filename``, and ``file_data`` (data URI).
+            A dict with keys ``"type"`` (``"file"``), ``"filename"``, and
+            ``"file_data"`` (a ``data:<mimetype>;base64,...`` URI string).
 
         Examples:
-            - Convert a PDF document (skipped — requires DocumentBlock I/O)
+            - Convert a PDF document block (requires filesystem):
                 ```python
-                >>> # result = ChatFormat.document(doc_block)  # doctest: +SKIP
-                >>> # result["type"]
-                >>> # 'file'
+                # result = ChatFormat.document(doc_block)
+                # result["type"]
+                # 'file'
+                # result["filename"]
+                # 'report.pdf'
 
                 ```
         """
@@ -284,22 +338,25 @@ class ChatFormat:
 
     @staticmethod
     def image(block: Image) -> dict[str, Any]:
-        """Convert an :class:`~serapeum.core.llms.Image` block to a Chat Completions image_url dict.
+        """Convert an :class:`~serapeum.core.llms.Image` block into a Chat Completions ``image_url`` content item.
 
-        When the block has a URL, it is used directly. When the block has inline
-        content (no URL), :meth:`~serapeum.core.llms.Image.as_data_uri` is called to
-        produce a ``data:`` URI. The optional ``detail`` field is only included when
-        it is set on the block.
+        When the block carries a ``url``, it is used directly.  When the block
+        contains inline image data instead (``url`` is ``None``),
+        :meth:`~serapeum.core.llms.Image.as_data_uri` is called to produce a
+        ``data:`` URI.  The optional ``detail`` field (``"low"``, ``"high"``, or
+        ``"auto"``) is included in the inner dict only when it is set on the block.
 
         Args:
-            block: The image block to convert.
+            block: The :class:`~serapeum.core.llms.Image` block to convert.
+                Must have either ``url`` or inline ``content`` set.
 
         Returns:
-            A dict with ``{"type": "image_url", "image_url": {...}}``.
-            The inner dict contains ``url`` and optionally ``detail``.
+            A dict of the form ``{"type": "image_url", "image_url": {"url": ..., ...}}``.
+            The inner ``image_url`` dict always contains ``"url"`` and optionally
+            contains ``"detail"``.
 
         Examples:
-            - Image from URL (no detail)
+            - Image from a URL without explicit detail:
                 ```python
                 >>> from serapeum.core.llms import Image
                 >>> result = ChatFormat.image(Image(url="https://example.com/img.png"))
@@ -309,8 +366,9 @@ class ChatFormat:
                 False
 
                 ```
-            - Image from URL with detail
+            - Image from a URL with detail specified:
                 ```python
+                >>> from serapeum.core.llms import Image
                 >>> result = ChatFormat.image(
                 ...     Image(url="https://example.com/img.png", detail="low")
                 ... )
@@ -329,23 +387,32 @@ class ChatFormat:
 
     @staticmethod
     def audio(block: Audio) -> dict[str, Any]:
-        """Convert an :class:`~serapeum.core.llms.Audio` block to a Chat Completions input_audio dict.
+        """Convert an :class:`~serapeum.core.llms.Audio` block into a Chat Completions ``input_audio`` content item.
 
-        The audio is resolved via :meth:`~serapeum.core.llms.Audio.resolve_audio` with
-        ``as_base64=True`` and read into a UTF-8 string.
+        The audio payload is resolved via
+        :meth:`~serapeum.core.llms.Audio.resolve_audio` with ``as_base64=True``,
+        then decoded to a UTF-8 string (base64 is ASCII-safe).  The resulting
+        dict is suitable for inclusion in the ``content`` array of an
+        ``input_audio``-enabled Chat Completions request.
 
         Args:
-            block: The audio block to convert. Must implement ``resolve_audio()``.
+            block: The :class:`~serapeum.core.llms.Audio` block to convert.  Its
+                ``resolve_audio()`` method must return a file-like object and its
+                ``format`` attribute (e.g. ``"mp3"``, ``"wav"``) is included in the
+                output dict.
 
         Returns:
-            A dict with ``{"type": "input_audio", "input_audio": {"data": ..., "format": ...}}``.
+            A dict of the form
+            ``{"type": "input_audio", "input_audio": {"data": <b64_str>, "format": <fmt>}}``.
 
         Examples:
-            - Convert an audio block (skipped — requires resolve_audio I/O)
+            - Convert an audio block (requires I/O):
                 ```python
-                >>> # result = ChatFormat.audio(audio_block)  # doctest: +SKIP
-                >>> # result["type"]
-                >>> # 'input_audio'
+                # result = ChatFormat.audio(audio_block)
+                # result["type"]
+                # 'input_audio'
+                # result["input_audio"]["format"]
+                # 'mp3'
 
                 ```
         """
@@ -358,16 +425,26 @@ class ChatFormat:
 
     @staticmethod
     def tool_call(block: ToolCallBlock) -> dict[str, Any]:
-        """Convert a :class:`~serapeum.core.llms.ToolCallBlock` to a Chat Completions function call dict.
+        """Convert a :class:`~serapeum.core.llms.ToolCallBlock` into a Chat Completions ``function`` tool-call dict.
+
+        The returned dict is intended for the ``tool_calls`` array of an
+        assistant message, **not** the ``content`` array.  It follows the
+        Chat Completions schema: ``type`` is ``"function"``, the tool's
+        name and arguments live under ``"function"``, and the call identifier
+        is at the top level under ``"id"``.
 
         Args:
-            block: The tool call block to convert.
+            block: The :class:`~serapeum.core.llms.ToolCallBlock` to convert.
+                ``tool_call_id``, ``tool_name``, and ``tool_kwargs`` are mapped
+                to ``id``, ``function.name``, and ``function.arguments``
+                respectively.
 
         Returns:
-            A dict with ``{"type": "function", "function": {...}, "id": ...}``.
+            A dict of the form
+            ``{"type": "function", "function": {"name": ..., "arguments": ...}, "id": ...}``.
 
         Examples:
-            - Convert a tool call block
+            - Convert a tool call block and inspect the result:
                 ```python
                 >>> from serapeum.core.llms import ToolCallBlock
                 >>> result = ChatFormat.tool_call(
@@ -379,6 +456,8 @@ class ChatFormat:
                 'c1'
                 >>> result["function"]["name"]
                 'search'
+                >>> result["function"]["arguments"]
+                {'q': 'x'}
 
                 ```
         """
@@ -398,73 +477,106 @@ class ChatFormat:
         Image: image.__func__,
         Audio: audio.__func__,
     }
-    """Dispatch table mapping block types to their converter callables.
+    """Dispatch table mapping serapeum block types to their static converter callables.
 
-    Used by :class:`ChatMessageConverter` to convert block types that are
-    not explicitly handled via ``isinstance`` checks. Access the unbound
-    function via the ``.__func__`` trick because the methods are staticmethods
-    at class-definition time.
+    :class:`ChatMessageConverter` uses this table as a fallback for block types
+    that are not covered by explicit ``isinstance`` checks (i.e. types other than
+    :class:`~serapeum.core.llms.TextChunk`, :class:`~serapeum.core.llms.ThinkingBlock`,
+    and :class:`~serapeum.core.llms.ToolCallBlock`).  The ``.__func__`` accessor
+    is needed because the methods are ``@staticmethod`` descriptors at class-definition
+    time.
     """
 
 
 class ResponsesFormat:
-    """Namespace of static converters from serapeum content blocks to Responses API dicts.
+    """Static converters that transform serapeum content blocks into Responses API dicts.
 
-    The Responses API has a different schema than the Chat Completions API:
-    text blocks carry ``input_text`` / ``output_text`` type tags (role-dependent),
-    images use a flat ``image_url`` string rather than a nested dict, and thinking
-    blocks map to ``reasoning`` items.
+    The Responses API schema differs from Chat Completions in several ways:
 
-    The :attr:`content_converters` dispatch table covers ``DocumentBlock`` and
-    ``Image`` only; ``TextChunk`` and ``ThinkingBlock`` and ``ToolCallBlock`` are
-    handled explicitly in :class:`ResponsesMessageConverter`.
+    - Text blocks use role-dependent type tags: ``"input_text"`` for user
+      messages and ``"output_text"`` for assistant/system messages.
+    - Images use a flat ``"image_url"`` string (not a nested object) and
+      always include ``"detail"`` (defaulting to ``"auto"``).
+    - Thinking blocks map to ``"reasoning"`` items with a ``"summary"`` list.
+    - Tool calls use ``"function_call"`` type with ``"call_id"`` (not
+      ``"function"`` type with ``"id"`` as in Chat Completions).
+
+    The :attr:`content_converters` dispatch table covers only
+    :class:`~serapeum.core.llms.DocumentBlock` and :class:`~serapeum.core.llms.Image`.
+    :class:`~serapeum.core.llms.TextChunk`, :class:`~serapeum.core.llms.ThinkingBlock`,
+    :class:`~serapeum.core.llms.ToolCallBlock`, and :class:`~serapeum.core.llms.Audio`
+    are handled by explicit ``isinstance`` checks in :class:`ResponsesMessageConverter`.
 
     Examples:
-        - Text block for user role produces input_text
+        - User text block produces ``input_text``:
             ```python
             >>> from serapeum.core.llms import TextChunk
             >>> ResponsesFormat.text(TextChunk(content="hello"), "user")
             {'type': 'input_text', 'text': 'hello'}
 
             ```
-        - Text block for assistant role produces output_text
+        - Assistant text block produces ``output_text``:
             ```python
+            >>> from serapeum.core.llms import TextChunk
             >>> ResponsesFormat.text(TextChunk(content="hello"), "assistant")
             {'type': 'output_text', 'text': 'hello'}
 
             ```
+        - Image conversion includes ``detail`` defaulting to ``"auto"``:
+            ```python
+            >>> from serapeum.core.llms import Image
+            >>> result = ResponsesFormat.image(Image(url="https://example.com/img.png"))
+            >>> result["detail"]
+            'auto'
+
+            ```
 
     See Also:
-        :class:`ChatFormat`: Equivalent namespace for the Chat Completions API.
-        :class:`ResponsesMessageConverter`: Uses these converters when building Responses dicts.
+        :class:`ChatFormat`:
+            Equivalent converter namespace for the Chat Completions API.
+        :class:`ResponsesMessageConverter`:
+            Message-level converter that delegates to these block-level converters.
     """
 
     @staticmethod
     def text(block: TextChunk, role: str) -> dict[str, Any]:
-        """Convert a :class:`~serapeum.core.llms.TextChunk` to a Responses API text dict.
+        """Convert a :class:`~serapeum.core.llms.TextChunk` into a Responses API text content item.
 
-        The type tag is ``"input_text"`` for user messages and ``"output_text"``
-        for all other roles (assistant, system, etc.).
+        The type tag varies by role: ``"input_text"`` for ``"user"`` messages
+        and ``"output_text"`` for all other roles (``"assistant"``, ``"system"``,
+        ``"developer"``, etc.).
 
         Args:
-            block: The text chunk to convert.
-            role: The message role string (e.g. ``"user"``, ``"assistant"``).
+            block: The :class:`~serapeum.core.llms.TextChunk` whose ``content``
+                string is placed into the returned dict.
+            role: The message role string that determines whether the type tag
+                is ``"input_text"`` or ``"output_text"``.
 
         Returns:
-            A dict with ``{"type": "input_text" | "output_text", "text": <content>}``.
+            A dict of the form ``{"type": <tag>, "text": <content>}`` where
+            ``<tag>`` is ``"input_text"`` when *role* is ``"user"`` and
+            ``"output_text"`` otherwise.
 
         Examples:
-            - User role → input_text
+            - User role produces ``input_text``:
                 ```python
                 >>> from serapeum.core.llms import TextChunk
                 >>> ResponsesFormat.text(TextChunk(content="Hi"), "user")
                 {'type': 'input_text', 'text': 'Hi'}
 
                 ```
-            - Assistant role → output_text
+            - Assistant role produces ``output_text``:
                 ```python
+                >>> from serapeum.core.llms import TextChunk
                 >>> ResponsesFormat.text(TextChunk(content="Hi"), "assistant")
                 {'type': 'output_text', 'text': 'Hi'}
+
+                ```
+            - System role also produces ``output_text``:
+                ```python
+                >>> from serapeum.core.llms import TextChunk
+                >>> ResponsesFormat.text(TextChunk(content="Be helpful"), "system")["type"]
+                'output_text'
 
                 ```
         """
@@ -473,20 +585,30 @@ class ResponsesFormat:
 
     @staticmethod
     def document(block: DocumentBlock) -> dict[str, Any]:
-        """Convert a :class:`~serapeum.core.llms.DocumentBlock` to a Responses API file dict.
+        """Convert a :class:`~serapeum.core.llms.DocumentBlock` into a Responses API ``input_file`` item.
+
+        The document's binary content is base64-encoded via
+        :meth:`~serapeum.core.llms.DocumentBlock.as_base64` and embedded as a
+        ``data:`` URI.  The Responses API uses ``"input_file"`` as the type tag
+        (versus ``"file"`` in Chat Completions).
 
         Args:
-            block: The document block to convert.
+            block: The :class:`~serapeum.core.llms.DocumentBlock` to convert.
+                Its ``as_base64()`` method must return a ``(b64_string, mimetype)``
+                tuple, and its ``title`` attribute provides the filename.
 
         Returns:
-            A dict with keys ``type`` (``"input_file"``), ``filename``, and ``file_data``.
+            A dict with keys ``"type"`` (``"input_file"``), ``"filename"``, and
+            ``"file_data"`` (a ``data:<mimetype>;base64,...`` URI string).
 
         Examples:
-            - Convert a document block (skipped — requires I/O)
+            - Convert a document block (requires filesystem):
                 ```python
-                >>> # result = ResponsesFormat.document(doc_block)  # doctest: +SKIP
-                >>> # result["type"]
-                >>> # 'input_file'
+                # result = ResponsesFormat.document(doc_block)
+                # result["type"]
+                # 'input_file'
+                # result["filename"]
+                # 'notes.pdf'
 
                 ```
         """
@@ -499,20 +621,27 @@ class ResponsesFormat:
 
     @staticmethod
     def image(block: Image) -> dict[str, Any]:
-        """Convert an :class:`~serapeum.core.llms.Image` block to a Responses API image dict.
+        """Convert an :class:`~serapeum.core.llms.Image` block into a Responses API ``input_image`` item.
 
-        Unlike the Chat Completions equivalent, the Responses API uses a flat
-        ``image_url`` string rather than a nested object, and always includes
-        ``detail`` (defaulting to ``"auto"``).
+        Unlike the Chat Completions path (:meth:`ChatFormat.image`), the Responses
+        API uses a flat ``"image_url"`` **string** rather than a nested object, and
+        the ``"detail"`` field is **always** present (defaults to ``"auto"`` when
+        not set on the block).
+
+        When the block carries a ``url``, it is stringified directly.  When the
+        block contains inline image data instead (``url`` is ``None``),
+        :meth:`~serapeum.core.llms.Image.as_data_uri` produces a ``data:`` URI.
 
         Args:
-            block: The image block to convert.
+            block: The :class:`~serapeum.core.llms.Image` block to convert.
+                Must have either ``url`` or inline ``content`` set.
 
         Returns:
-            A dict with ``{"type": "input_image", "image_url": <str>, "detail": <str>}``.
+            A dict of the form
+            ``{"type": "input_image", "image_url": <url_str>, "detail": <detail>}``.
 
         Examples:
-            - Image with URL, no explicit detail
+            - Image from a URL with default detail:
                 ```python
                 >>> from serapeum.core.llms import Image
                 >>> result = ResponsesFormat.image(Image(url="https://example.com/img.png"))
@@ -524,8 +653,9 @@ class ResponsesFormat:
                 'auto'
 
                 ```
-            - Image with explicit detail
+            - Image with explicit ``"high"`` detail:
                 ```python
+                >>> from serapeum.core.llms import Image
                 >>> result = ResponsesFormat.image(
                 ...     Image(url="https://example.com/img.png", detail="high")
                 ... )
@@ -546,24 +676,30 @@ class ResponsesFormat:
 
     @staticmethod
     def thinking(block: ThinkingBlock) -> dict[str, Any] | None:
-        """Convert a :class:`~serapeum.core.llms.ThinkingBlock` to a Responses API reasoning dict.
+        """Convert a :class:`~serapeum.core.llms.ThinkingBlock` into a Responses API ``reasoning`` item.
 
-        Returns ``None`` (and the item is silently dropped) when either:
+        A valid ``reasoning`` item is produced only when **both** of the
+        following conditions are met:
 
-        - ``block.content`` is falsy (empty or ``None``)
-        - ``block.additional_information`` does not contain an ``"id"`` key
+        1. ``block.content`` is truthy (non-empty, non-``None``).
+        2. ``block.additional_information`` contains an ``"id"`` key (the
+           reasoning item identifier assigned by the API).
 
-        Both conditions must hold for a non-``None`` result to be produced.
+        When either condition fails, ``None`` is returned and the caller
+        (typically :class:`ResponsesMessageConverter`) silently drops the item.
 
         Args:
-            block: The thinking block to convert.
+            block: The :class:`~serapeum.core.llms.ThinkingBlock` to convert.
+                Its ``content`` becomes the ``summary_text`` and its
+                ``additional_information["id"]`` becomes the reasoning ``id``.
 
         Returns:
-            A reasoning dict with ``type``, ``id``, and ``summary`` fields,
-            or ``None`` if the block lacks the required data.
+            A dict of the form
+            ``{"type": "reasoning", "id": ..., "summary": [{"type": "summary_text", "text": ...}]}``
+            when the block has sufficient data, or ``None`` otherwise.
 
         Examples:
-            - Valid thinking block returns a reasoning dict
+            - Valid thinking block with content and id:
                 ```python
                 >>> from serapeum.core.llms import ThinkingBlock
                 >>> result = ResponsesFormat.thinking(
@@ -573,20 +709,22 @@ class ResponsesFormat:
                 'reasoning'
                 >>> result["id"]
                 'r1'
-                >>> result["summary"]
-                [{'type': 'summary_text', 'text': 'step 1'}]
+                >>> result["summary"][0]["text"]
+                'step 1'
 
                 ```
-            - Returns None when content is missing
+            - Missing content returns ``None``:
                 ```python
+                >>> from serapeum.core.llms import ThinkingBlock
                 >>> ResponsesFormat.thinking(
                 ...     ThinkingBlock(content=None, additional_information={"id": "r1"})
                 ... ) is None
                 True
 
                 ```
-            - Returns None when id is missing
+            - Missing ``"id"`` in additional_information returns ``None``:
                 ```python
+                >>> from serapeum.core.llms import ThinkingBlock
                 >>> ResponsesFormat.thinking(
                 ...     ThinkingBlock(content="step 1", additional_information={})
                 ... ) is None
@@ -598,27 +736,30 @@ class ResponsesFormat:
             return {
                 "type": "reasoning",
                 "id": block.additional_information["id"],
-                "summary": [
-                    {"type": "summary_text", "text": block.content or ""}
-                ],
+                "summary": [{"type": "summary_text", "text": block.content or ""}],
             }
         return None
 
     @staticmethod
     def tool_call(block: ToolCallBlock) -> dict[str, Any]:
-        """Convert a :class:`~serapeum.core.llms.ToolCallBlock` to a Responses API function_call dict.
+        """Convert a :class:`~serapeum.core.llms.ToolCallBlock` into a Responses API ``function_call`` item.
 
-        The Responses API uses ``"function_call"`` type (not ``"function"`` as in Chat Completions)
-        and uses ``call_id`` instead of ``id``.
+        The Responses API schema differs from Chat Completions: the type tag is
+        ``"function_call"`` (not ``"function"``), the call identifier lives under
+        ``"call_id"`` (not ``"id"``), and ``"arguments"`` and ``"name"`` are at the
+        top level (not nested under a ``"function"`` key).
 
         Args:
-            block: The tool call block to convert.
+            block: The :class:`~serapeum.core.llms.ToolCallBlock` to convert.
+                ``tool_call_id`` maps to ``call_id``, ``tool_name`` maps to
+                ``name``, and ``tool_kwargs`` maps to ``arguments``.
 
         Returns:
-            A dict with ``{"type": "function_call", "arguments": ..., "call_id": ..., "name": ...}``.
+            A dict of the form
+            ``{"type": "function_call", "arguments": ..., "call_id": ..., "name": ...}``.
 
         Examples:
-            - Convert a tool call
+            - Convert a tool call block and inspect the result:
                 ```python
                 >>> from serapeum.core.llms import ToolCallBlock
                 >>> result = ResponsesFormat.tool_call(
@@ -628,6 +769,10 @@ class ResponsesFormat:
                 'function_call'
                 >>> result["call_id"]
                 'c1'
+                >>> result["name"]
+                'search'
+                >>> result["arguments"]
+                {'q': 'x'}
 
                 ```
         """
@@ -643,10 +788,14 @@ class ResponsesFormat:
         DocumentBlock: document.__func__,
         Image: image.__func__,
     }
-    """Dispatch table for block types handled via generic dispatch in :class:`ResponsesMessageConverter`.
+    """Dispatch table mapping serapeum block types to their static converter callables.
 
-    Covers ``DocumentBlock`` and ``Image`` only. ``TextChunk``, ``ThinkingBlock``,
-    ``ToolCallBlock``, and ``Audio`` are handled by explicit ``isinstance`` checks.
+    Only :class:`~serapeum.core.llms.DocumentBlock` and
+    :class:`~serapeum.core.llms.Image` are included here.
+    :class:`~serapeum.core.llms.TextChunk`, :class:`~serapeum.core.llms.ThinkingBlock`,
+    :class:`~serapeum.core.llms.ToolCallBlock`, and :class:`~serapeum.core.llms.Audio`
+    are handled by explicit ``isinstance`` checks in
+    :meth:`ResponsesMessageConverter._process_blocks`.
     """
 
 
@@ -656,44 +805,52 @@ class ResponsesFormat:
 
 
 class ChatMessageConverter:
-    """Converts a serapeum :class:`~serapeum.core.llms.Message` into a Chat Completions API dict.
+    """Convert a serapeum :class:`~serapeum.core.llms.Message` into a Chat Completions API message dict.
 
-    Use the builder pattern: construct with the message and optional parameters,
-    then call :meth:`build` to obtain the final dict.
+    Follows the builder pattern: construct an instance with the source message and
+    optional parameters, then call :meth:`build` to produce the final
+    :class:`~openai.types.chat.ChatCompletionMessageParam` dict.
 
-    The conversion applies the following steps in order:
+    The conversion pipeline runs the following steps in order:
 
-    1. **Audio reference short-circuit**: if the message is an assistant message
-       with ``reference_audio_id`` in ``additional_kwargs``, returns a minimal
-       ``{"role": "assistant", "audio": {"id": ...}}`` dict immediately.
-    2. **Block processing**: iterates ``message.chunks`` and dispatches to
-       :class:`ChatFormat` converters. :class:`~serapeum.core.llms.ThinkingBlock`
-       items are silently skipped (not supported by the Chat Completions API).
-    3. **Assembly**: builds ``{"role": ..., "content": ..., "tool_calls": ...}``.
-    4. **Legacy kwargs merge**: when no ``ToolCallBlock`` chunks are present,
-       copies ``tool_calls``/``function_call`` from ``additional_kwargs``.
-    5. **Role rewrite**: calls :func:`_rewrite_system_to_developer` for O1 models.
-    6. **None stripping**: calls :func:`_strip_none_keys` when ``drop_none=True``.
+    1. **Audio reference short-circuit** -- if the message is an assistant message
+       whose ``additional_kwargs`` contains ``"reference_audio_id"``, a minimal
+       ``{"role": "assistant", "audio": {"id": ...}}`` dict is returned immediately.
+    2. **Block processing** -- each chunk in ``message.chunks`` is dispatched to a
+       :class:`ChatFormat` converter.  :class:`~serapeum.core.llms.ThinkingBlock`
+       items are silently skipped (Chat Completions does not support reasoning).
+    3. **Assembly** -- ``role``, ``content``, and optionally ``tool_calls`` are
+       assembled into a dict.
+    4. **Legacy kwargs merge** -- when no :class:`~serapeum.core.llms.ToolCallBlock`
+       chunks were found, ``tool_calls`` / ``function_call`` from
+       ``additional_kwargs`` are copied into the result dict.
+    5. **Role rewrite** -- :func:`_rewrite_system_to_developer` rewrites
+       ``"system"`` to ``"developer"`` for O1-family models.
+    6. **None stripping** -- :func:`_strip_none_keys` removes ``None``-valued keys
+       when ``drop_none=True``.
 
     Args:
-        message: The serapeum message to convert.
-        drop_none: When ``True``, keys with ``None`` values are removed from the result.
-            Defaults to ``False``.
-        model: The target OpenAI model name. Used to determine whether to rewrite
-            ``"system"`` → ``"developer"``. Pass ``None`` to skip rewriting.
+        message: The serapeum :class:`~serapeum.core.llms.Message` to convert.
+        drop_none: When ``True``, keys whose value is ``None`` are removed from
+            the final dict.  Defaults to ``False``.
+        model: The target OpenAI model identifier.  Used to decide whether to
+            rewrite ``"system"`` to ``"developer"`` for O1-family models.
+            Pass ``None`` to skip model-specific rewrites.
 
     Examples:
-        - Simple user message
+        - Convert a simple user message:
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> result = ChatMessageConverter(
-            ...     Message(role=MessageRole.USER, content="hello")
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])
             ... ).build()
-            >>> result
-            {'role': 'user', 'content': 'hello'}
+            >>> result["role"]
+            'user'
+            >>> result["content"]
+            'hello'
 
             ```
-        - Assistant with tool calls
+        - Assistant message with tool calls nulls content automatically:
             ```python
             >>> from serapeum.core.llms import Message, MessageRole, ToolCallBlock
             >>> msg = Message(
@@ -707,11 +864,11 @@ class ChatMessageConverter:
             'c1'
 
             ```
-        - O1 model rewrites system to developer
+        - O1 model rewrites ``"system"`` to ``"developer"``:
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> result = ChatMessageConverter(
-            ...     Message(role=MessageRole.SYSTEM, content="be helpful"),
+            ...     Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="be helpful")]),
             ...     model="o3-mini",
             ... ).build()
             >>> result["role"]
@@ -720,9 +877,12 @@ class ChatMessageConverter:
             ```
 
     See Also:
-        :class:`ResponsesMessageConverter`: Equivalent converter for the Responses API.
-        :func:`to_openai_message_dicts`: Top-level dispatcher that selects this converter.
-        :class:`ChatFormat`: Block-level converter namespace used internally.
+        :class:`ResponsesMessageConverter`:
+            Equivalent converter for the Responses API.
+        :func:`to_openai_message_dicts`:
+            Top-level dispatcher that selects the correct converter.
+        :class:`ChatFormat`:
+            Block-level converter namespace used internally.
     """
 
     def __init__(
@@ -732,6 +892,7 @@ class ChatMessageConverter:
         drop_none: bool = False,
         model: str | None = None,
     ) -> None:
+        """Initialize ChatMessageConverter."""
         self._message = message
         self._model = model
         self._drop_none = drop_none
@@ -740,24 +901,29 @@ class ChatMessageConverter:
         self._tool_call_dicts: list[dict[str, Any]] = []
 
     def build(self) -> ChatCompletionMessageParam:
-        """Convert the message and return the Chat Completions API dict.
+        """Execute the full conversion pipeline and return the Chat Completions message dict.
+
+        Runs the audio-reference short-circuit check, block processing, assembly,
+        legacy kwargs merge, role rewrite, and ``None``-stripping steps described
+        in the class docstring.
 
         Returns:
-            A :class:`~openai.types.chat.ChatCompletionMessageParam` dict
-            suitable for use as an element of the ``messages`` list in an
-            OpenAI chat completion request.
+            A :class:`~openai.types.chat.ChatCompletionMessageParam` dict ready
+            to be included in the ``messages`` list of an OpenAI chat completion
+            request.
 
         Raises:
-            ValueError: If a content block type is not supported by
-                :class:`ChatFormat` and is not a :class:`~serapeum.core.llms.ThinkingBlock`
-                or :class:`~serapeum.core.llms.ToolCallBlock`.
+            ValueError: If a content block type is not recognised by
+                :attr:`ChatFormat.content_converters` and is not a
+                :class:`~serapeum.core.llms.ThinkingBlock` or
+                :class:`~serapeum.core.llms.ToolCallBlock`.
 
         Examples:
-            - Build a system message
+            - Build a system message dict:
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> ChatMessageConverter(
-                ...     Message(role=MessageRole.SYSTEM, content="You are helpful.")
+                ...     Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are helpful.")])
                 ... ).build()
                 {'role': 'system', 'content': 'You are helpful.'}
 
@@ -775,38 +941,39 @@ class ChatMessageConverter:
         return cast(ChatCompletionMessageParam, result)
 
     def _try_audio_reference(self) -> dict[str, Any] | None:
-        """Return a short-circuit dict for assistant messages with a reference audio id.
+        """Short-circuit for assistant messages that reference a previously generated audio.
 
-        When an assistant message's ``additional_kwargs`` contains a
-        ``"reference_audio_id"`` key, the Chat Completions API expects a
-        minimal ``{"role": "assistant", "audio": {"id": ...}}`` dict instead of
-        the normal content dict.  This avoids re-encoding audio that has already
-        been produced in a previous turn.
+        When an assistant message's ``additional_kwargs`` contains
+        ``"reference_audio_id"``, the Chat Completions API expects a minimal
+        ``{"role": "assistant", "audio": {"id": ...}}`` dict instead of the
+        normal ``content``-based dict.  This avoids re-encoding audio that was
+        produced in an earlier conversation turn.
 
         Returns:
-            A dict with ``role`` and ``audio.id`` if the conditions are met;
-            ``None`` otherwise.
+            A dict with ``"role"`` and ``"audio"`` keys when the conditions
+            are met; ``None`` otherwise (normal processing continues).
 
         Examples:
-            - Returns dict for assistant with reference_audio_id
+            - Assistant with a ``reference_audio_id`` produces a short-circuit dict:
                 ```python
-                >>> from serapeum.core.llms import Message, MessageRole
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> converter = ChatMessageConverter(
                 ...     Message(
                 ...         role=MessageRole.ASSISTANT,
-                ...         content="",
+                ...         chunks=[TextChunk(content="")],
                 ...         additional_kwargs={"reference_audio_id": "audio_123"},
                 ...     )
                 ... )
                 >>> result = converter._try_audio_reference()
-                >>> result
-                {'role': 'assistant', 'audio': {'id': 'audio_123'}}
+                >>> result["audio"]["id"]
+                'audio_123'
 
                 ```
-            - Returns None for user messages
+            - User messages always return ``None``:
                 ```python
+                >>> from serapeum.core.llms import Message, MessageRole, TextChunk
                 >>> converter = ChatMessageConverter(
-                ...     Message(role=MessageRole.USER, content="hi")
+                ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="hi")])
                 ... )
                 >>> converter._try_audio_reference() is None
                 True
@@ -827,17 +994,24 @@ class ChatMessageConverter:
         return result
 
     def _process_blocks(self) -> None:
-        """Iterate message chunks and dispatch to :class:`ChatFormat` converters.
+        """Walk ``message.chunks`` and dispatch each block to the appropriate :class:`ChatFormat` converter.
 
-        Populates :attr:`_content` (list of block dicts), :attr:`_content_txt`
-        (concatenated plain text), and :attr:`_tool_call_dicts` (function call dicts).
+        Populates three internal accumulators:
+
+        - :attr:`_content` -- a list of content-item dicts for the ``content`` array.
+        - :attr:`_content_txt` -- the concatenated plain-text string (used when the
+          message can be represented as a simple string).
+        - :attr:`_tool_call_dicts` -- a list of function-call dicts for the
+          ``tool_calls`` array.
 
         :class:`~serapeum.core.llms.ThinkingBlock` items are silently skipped with
-        a ``DEBUG``-level log — the Chat Completions API does not support reasoning.
+        a ``DEBUG``-level log message because the Chat Completions API does not
+        support reasoning items.
 
         Raises:
-            ValueError: If a block type is not in :attr:`ChatFormat.content_converters`
-                and is not a :class:`~serapeum.core.llms.ThinkingBlock` or
+            ValueError: If a block's type is not found in
+                :attr:`ChatFormat.content_converters` and is not a
+                :class:`~serapeum.core.llms.ThinkingBlock` or
                 :class:`~serapeum.core.llms.ToolCallBlock`.
         """
         for block in self._message.chunks:
@@ -860,38 +1034,49 @@ class ChatMessageConverter:
                     )
 
     def _resolve_content(self) -> str | list[dict[str, Any]] | None:
-        """Determine the final ``content`` value for the message dict.
+        """Determine the final ``content`` value for the outgoing message dict.
 
-        Resolution rules (applied in order):
+        The Chat Completions API accepts ``content`` as a plain string, a list
+        of content-item dicts, or ``null``.  This method picks the appropriate
+        form using the following rules (applied in order):
 
-        1. If ``_content_txt`` is empty **and** the assistant has tool calls →
-           return ``None`` (the API requires ``content: null`` in this case).
-        2. If the role is **not** ``assistant``, ``tool``, or ``system``, **and**
-           the chunks contain non-text blocks → return the full ``_content`` list.
-        3. Otherwise → return ``_content_txt`` (the plain-text string).
+        1. If :attr:`_content_txt` is empty **and** :func:`_should_null_content`
+           returns ``True`` -- return ``None`` (the API requires ``content: null``
+           for tool-call-only assistant messages).
+        2. If the role is **not** ``"assistant"``, ``"tool"``, or ``"system"``
+           **and** the message contains non-text blocks (images, documents, etc.)
+           -- return the full :attr:`_content` list.
+        3. Otherwise -- return :attr:`_content_txt` as a plain string.
 
         Returns:
-            A plain-text string, a list of content block dicts, or ``None``.
+            A plain-text string, a list of content-item dicts, or ``None``.
         """
         has_tool_calls = len(self._tool_call_dicts) > 0
         content: str | list[dict[str, Any]] | None = self._content_txt
 
-        if self._content_txt == "" and _should_null_content(self._message, has_tool_calls):
-            content = None
-        elif (
-            self._message.role.value not in ("assistant", "tool", "system")
-            and not all(isinstance(b, TextChunk) for b in self._message.chunks)
+        if self._content_txt == "" and _should_null_content(
+            self._message, has_tool_calls
         ):
+            content = None
+        elif self._message.role.value not in (
+            "assistant",
+            "tool",
+            "system",
+        ) and not all(isinstance(b, TextChunk) for b in self._message.chunks):
             content = self._content
 
         return content
 
     def _assemble(self) -> dict[str, Any]:
-        """Construct the base message dict with role, content, and optional tool calls.
+        """Construct the base Chat Completions message dict from accumulated state.
+
+        Combines ``role`` (from the source message), ``content`` (resolved by
+        :meth:`_resolve_content`), and optionally ``tool_calls`` (when
+        :attr:`_tool_call_dicts` is non-empty) into a single dict.
 
         Returns:
-            A dict with at minimum ``role`` and ``content`` keys.
-            A ``tool_calls`` key is added when :attr:`_tool_call_dicts` is non-empty.
+            A dict with at minimum ``"role"`` and ``"content"`` keys.  A
+            ``"tool_calls"`` key is added when tool-call blocks were found.
         """
         result: dict[str, Any] = {
             "role": self._message.role.value,
@@ -902,19 +1087,22 @@ class ChatMessageConverter:
         return result
 
     def _merge_legacy_kwargs(self, result: dict[str, Any]) -> None:
-        """Merge legacy tool call kwargs from ``additional_kwargs`` into *result*.
+        """Copy legacy tool-call information from ``additional_kwargs`` into *result*.
 
-        When a message carries ``tool_calls`` or ``function_call`` in
-        ``additional_kwargs`` **and** no :class:`~serapeum.core.llms.ToolCallBlock`
-        chunks were found, the entire ``additional_kwargs`` dict is merged into
-        *result*. This supports messages that were originally received from the API
-        and stored as raw dicts rather than typed blocks.
+        This handles messages that were originally received from the OpenAI API
+        and stored with ``tool_calls`` or ``function_call`` in
+        ``additional_kwargs`` rather than as typed
+        :class:`~serapeum.core.llms.ToolCallBlock` chunks.  The merge is
+        performed **only** when no chunk-based tool calls were detected (to
+        avoid duplicating information).
 
-        ``tool_call_id`` is **always** passed through when present, regardless of
-        whether chunk-based tool calls exist.
+        The ``tool_call_id`` key is **always** passed through when present,
+        regardless of whether chunk-based tool calls exist -- it is needed for
+        ``tool``-role response messages.
 
         Args:
-            result: The assembled message dict to mutate in place.
+            result: The assembled message dict to mutate in place.  Keys from
+                ``additional_kwargs`` are added via ``dict.update``.
         """
         has_tool_calls = len(self._tool_call_dicts) > 0
         if (
@@ -928,56 +1116,58 @@ class ChatMessageConverter:
 
 
 class ResponsesMessageConverter:
-    """Converts a serapeum :class:`~serapeum.core.llms.Message` into a Responses API dict or list.
+    """Convert a serapeum :class:`~serapeum.core.llms.Message` into a Responses API input item.
 
-    Use the builder pattern: construct with the message and optional parameters,
-    then call :meth:`build` to obtain the final result.
+    Follows the builder pattern: construct an instance with the source message and
+    optional parameters, then call :meth:`build` to produce the result.
 
-    The result type varies by message content:
+    The return type of :meth:`build` depends on the message content:
 
-    - A single ``dict`` for standard messages (user, assistant, system/developer).
-    - A ``list[dict]`` when the message has tool call chunks, legacy ``tool_calls``
-      in ``additional_kwargs``, or when a :class:`~serapeum.core.llms.ThinkingBlock`
-      precedes a message dict (reasoning items are prepended).
+    - A **single dict** for standard messages (user, assistant, system/developer).
+    - A **list of dicts** when the message contains
+      :class:`~serapeum.core.llms.ToolCallBlock` chunks, legacy ``tool_calls`` in
+      ``additional_kwargs``, or :class:`~serapeum.core.llms.ThinkingBlock` items
+      that produce reasoning entries (which are prepended to the list).
 
     Unlike :class:`ChatMessageConverter`, the Responses API **always** uses
-    ``"developer"`` instead of ``"system"`` — this rewrite happens unconditionally
-    in :meth:`_assemble_message_dict`, independent of the model parameter.
+    ``"developer"`` instead of ``"system"`` -- this rewrite is unconditional in
+    :meth:`_assemble_message_dict` and does not depend on the *model* parameter.
 
     Args:
-        message: The serapeum message to convert.
-        drop_none: When ``True``, keys with ``None`` values are removed from
-            message dicts. Defaults to ``False``.
-        model: Unused in the current implementation (the system→developer rewrite
-            is unconditional for the Responses API). Kept for API symmetry with
-            :class:`ChatMessageConverter`.
+        message: The serapeum :class:`~serapeum.core.llms.Message` to convert.
+        drop_none: When ``True``, keys whose value is ``None`` are removed from
+            each generated dict.  Defaults to ``False``.
+        model: Currently unused (the ``system`` to ``developer`` rewrite is
+            unconditional for the Responses API).  Retained for API symmetry
+            with :class:`ChatMessageConverter`.
 
     Examples:
-        - Simple user message
+        - Convert a simple user message:
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> ResponsesMessageConverter(
-            ...     Message(role=MessageRole.USER, content="hello")
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])
             ... ).build()
             {'role': 'user', 'content': 'hello'}
 
             ```
-        - System message is always rewritten to developer
+        - System messages are unconditionally rewritten to ``"developer"``:
             ```python
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> result = ResponsesMessageConverter(
-            ...     Message(role=MessageRole.SYSTEM, content="be helpful")
+            ...     Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="be helpful")])
             ... ).build()
             >>> result["role"]
             'developer'
 
             ```
-        - Tool role message produces a function_call_output dict
+        - Tool-role message produces a ``function_call_output`` dict:
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> result = ResponsesMessageConverter(
             ...     Message(
             ...         role=MessageRole.TOOL,
-            ...         content="42",
+            ...         chunks=[TextChunk(content="42")],
             ...         additional_kwargs={"tool_call_id": "c1"},
             ...     )
             ... ).build()
@@ -985,13 +1175,18 @@ class ResponsesMessageConverter:
             'function_call_output'
             >>> result["call_id"]
             'c1'
+            >>> result["output"]
+            '42'
 
             ```
 
     See Also:
-        :class:`ChatMessageConverter`: Equivalent converter for the Chat Completions API.
-        :func:`to_openai_message_dicts`: Top-level dispatcher that selects this converter.
-        :class:`ResponsesFormat`: Block-level converter namespace used internally.
+        :class:`ChatMessageConverter`:
+            Equivalent converter for the Chat Completions API.
+        :func:`to_openai_message_dicts`:
+            Top-level dispatcher that selects the correct converter.
+        :class:`ResponsesFormat`:
+            Block-level converter namespace used internally.
     """
 
     def __init__(
@@ -1001,6 +1196,7 @@ class ResponsesMessageConverter:
         drop_none: bool = False,
         model: str | None = None,
     ) -> None:
+        """Initialize ResponsesMessageConverter."""
         self._message = message
         self._model = model
         self._drop_none = drop_none
@@ -1010,34 +1206,49 @@ class ResponsesMessageConverter:
         self._reasoning: list[dict[str, Any]] = []
 
     def build(self) -> dict[str, Any] | list[dict[str, Any]]:
-        """Convert the message and return the Responses API representation.
+        """Execute the conversion pipeline and return the Responses API input item(s).
+
+        Runs block processing (via :meth:`_process_blocks`) followed by assembly
+        (via :meth:`_assemble`) to produce either a single dict or a list of
+        dicts suitable for the Responses API ``input`` parameter.
 
         Returns:
-            A single dict for standard messages, or a list of dicts when the
-            message has tool calls or :class:`~serapeum.core.llms.ThinkingBlock`
-            items that produce reasoning entries.
+            A single dict for standard messages (user, assistant, developer),
+            or a list of dicts when the message produces tool-call items
+            and/or reasoning items.
 
         Raises:
-            ValueError: If the message contains an :class:`~serapeum.core.llms.Audio`
-                block (not supported by the Responses API).
-            ValueError: If a block type is unsupported and not in
-                :attr:`ResponsesFormat.content_converters`.
-            ValueError: If a tool-role message lacks ``tool_call_id`` or ``call_id``
-                in ``additional_kwargs``.
+            ValueError: If the message contains an
+                :class:`~serapeum.core.llms.Audio` block (audio is not
+                supported by the Responses API).
+            ValueError: If a content block type is not recognised by
+                :attr:`ResponsesFormat.content_converters` and is not
+                explicitly handled.
+            ValueError: If a ``"tool"``-role message lacks both
+                ``"tool_call_id"`` and ``"call_id"`` in ``additional_kwargs``.
         """
         self._process_blocks()
         result = self._assemble()
         return result
 
     def _process_blocks(self) -> None:
-        """Iterate message chunks and dispatch to :class:`ResponsesFormat` converters.
+        """Walk ``message.chunks`` and dispatch each block to the appropriate :class:`ResponsesFormat` converter.
 
-        Populates :attr:`_content`, :attr:`_content_txt`, :attr:`_tool_call_dicts`,
-        and :attr:`_reasoning`.
+        Populates four internal accumulators:
+
+        - :attr:`_content` -- a list of content-item dicts for the ``content`` array.
+        - :attr:`_content_txt` -- the concatenated plain-text string.
+        - :attr:`_tool_call_dicts` -- a list of ``function_call`` dicts.
+        - :attr:`_reasoning` -- a list of ``reasoning`` dicts from
+          :class:`~serapeum.core.llms.ThinkingBlock` chunks.
 
         Raises:
-            ValueError: If the message contains an :class:`~serapeum.core.llms.Audio` block.
-            ValueError: If a block type is not handled.
+            ValueError: If the message contains an
+                :class:`~serapeum.core.llms.Audio` block (the Responses API
+                does not support audio input).
+            ValueError: If a block's type is not found in
+                :attr:`ResponsesFormat.content_converters` and is not
+                explicitly handled.
         """
         for block in self._message.chunks:
             if isinstance(block, TextChunk):
@@ -1052,9 +1263,7 @@ class ResponsesMessageConverter:
             elif isinstance(block, ToolCallBlock):
                 self._tool_call_dicts.append(ResponsesFormat.tool_call(block))
             elif isinstance(block, Audio):
-                raise ValueError(
-                    "Audio blocks are not supported in the Responses API"
-                )
+                raise ValueError("Audio blocks are not supported in the Responses API")
             else:
                 converter = ResponsesFormat.content_converters.get(type(block))
                 if converter:
@@ -1065,44 +1274,52 @@ class ResponsesMessageConverter:
                     )
 
     def _resolve_content(self) -> str | list[dict[str, Any]] | None:
-        """Determine the final ``content`` value for the message dict.
+        """Determine the final ``content`` value for the outgoing Responses API message dict.
 
-        Resolution rules (applied in order):
+        The Responses API accepts ``content`` as a plain string, a list of
+        content-item dicts, or ``null``.  This method picks the appropriate
+        form using the following rules (applied in order):
 
-        1. If ``_content_txt`` is empty **and** the assistant has tool calls →
-           return ``None``.
-        2. If the role is ``"system"`` or ``"developer"``, **or** all chunks are
-           :class:`~serapeum.core.llms.TextChunk` → return ``_content_txt`` (string).
-        3. Otherwise → return the full ``_content`` list.
+        1. If :attr:`_content_txt` is empty **and** :func:`_should_null_content`
+           returns ``True`` -- return ``None``.
+        2. If the role is ``"system"`` or ``"developer"``, **or** every chunk is a
+           :class:`~serapeum.core.llms.TextChunk` -- return :attr:`_content_txt`
+           as a plain string.
+        3. Otherwise -- return the full :attr:`_content` list (the message
+           contains non-text blocks such as images or documents).
 
         Returns:
-            A plain-text string, a list of content block dicts, or ``None``.
+            A plain-text string, a list of content-item dicts, or ``None``.
         """
         has_tool_calls = len(self._tool_call_dicts) > 0
         content: str | list[dict[str, Any]] | None = self._content_txt
-        if self._content_txt == "" and _should_null_content(self._message, has_tool_calls):
+        if self._content_txt == "" and _should_null_content(
+            self._message, has_tool_calls
+        ):
             content = None
         elif (
-            (content is not None and self._message.role.value in ("system", "developer"))
-            or all(isinstance(block, TextChunk) for block in self._message.chunks)
-        ):
+            content is not None and self._message.role.value in ("system", "developer")
+        ) or all(isinstance(block, TextChunk) for block in self._message.chunks):
             pass  # content is already the string form
         else:
             content = self._content
         return content
 
     def _assemble_tool_output(self) -> dict[str, Any]:
-        """Construct a ``function_call_output`` dict for tool-role messages.
+        """Build a ``function_call_output`` dict for ``"tool"``-role messages.
 
-        Looks up ``tool_call_id`` first, then falls back to ``call_id`` in
-        ``additional_kwargs``.
+        The Responses API expects tool results as a ``function_call_output`` item
+        rather than a message dict.  The ``call_id`` is resolved by looking up
+        ``"tool_call_id"`` first, then falling back to ``"call_id"`` in the
+        message's ``additional_kwargs``.
 
         Returns:
-            A dict with ``{"type": "function_call_output", "output": ..., "call_id": ...}``.
+            A dict of the form
+            ``{"type": "function_call_output", "output": <text>, "call_id": <id>}``.
 
         Raises:
-            ValueError: If neither ``tool_call_id`` nor ``call_id`` is present in
-                ``additional_kwargs``.
+            ValueError: If neither ``"tool_call_id"`` nor ``"call_id"`` is found
+                in ``additional_kwargs``.
         """
         call_id = self._message.additional_kwargs.get(
             "tool_call_id", self._message.additional_kwargs.get("call_id")
@@ -1118,17 +1335,20 @@ class ResponsesMessageConverter:
         }
 
     def _assemble_message_dict(self) -> dict[str, Any] | list[dict[str, Any]]:
-        """Construct a standard message dict, optionally prefixed by reasoning items.
+        """Construct a standard Responses API message dict, optionally prefixed by reasoning items.
 
-        Always rewrites ``"system"`` → ``"developer"`` (unconditional for the Responses API).
-        Applies :func:`_strip_none_keys` when ``drop_none=True``.
+        The ``"system"`` role is unconditionally rewritten to ``"developer"``
+        (required by the Responses API regardless of model).
+        :func:`_strip_none_keys` is applied when ``drop_none=True``.
 
-        When :attr:`_reasoning` is non-empty, wraps the message in a list:
-        ``[reasoning_1, ..., message_dict]``.
+        When :attr:`_reasoning` contains reasoning items (from
+        :class:`~serapeum.core.llms.ThinkingBlock` chunks), the result is a
+        list: ``[reasoning_1, ..., reasoning_N, message_dict]``.  Otherwise a
+        single message dict is returned.
 
         Returns:
-            A single message dict, or a list starting with reasoning items followed
-            by the message dict.
+            A single message dict, or a list whose first elements are reasoning
+            dicts and whose last element is the message dict.
         """
         message_dict: dict[str, Any] = {
             "role": self._message.role.value,
@@ -1144,25 +1364,27 @@ class ResponsesMessageConverter:
         return result
 
     def _assemble(self) -> dict[str, Any] | list[dict[str, Any]]:
-        """Select the appropriate output shape based on message role and content.
+        """Select the correct Responses API output shape based on message role and accumulated state.
 
-        Priority order:
+        The selection follows this priority order:
 
-        1. **Chunk tool calls**: :class:`~serapeum.core.llms.ToolCallBlock` chunks
-           were found → return ``[*reasoning, *tool_call_dicts]``.
-        2. **Legacy tool calls**: ``"tool_calls"`` key in ``additional_kwargs``
-           → return ``[*reasoning, *legacy_calls]``.
-        3. **Tool role**: message role is ``"tool"`` → return the output of
-           :meth:`_assemble_tool_output`.
-        4. **Standard message**: all other cases → return output of
+        1. **Chunk-based tool calls** -- :class:`~serapeum.core.llms.ToolCallBlock`
+           chunks were found: return ``[*reasoning, *tool_call_dicts]``.
+        2. **Legacy tool calls** -- ``"tool_calls"`` key in ``additional_kwargs``
+           (no chunk-based calls): return ``[*reasoning, *legacy_call_dicts]``.
+        3. **Tool role** -- message role is ``"tool"``: delegate to
+           :meth:`_assemble_tool_output` for a ``function_call_output`` dict.
+        4. **Standard message** -- all other cases: delegate to
            :meth:`_assemble_message_dict`.
 
         Returns:
-            A dict or list of dicts representing the Responses API input item(s).
+            A single dict or a list of dicts representing one or more Responses
+            API ``input`` items.
         """
         if self._tool_call_dicts:
             result: dict[str, Any] | list[dict[str, Any]] = [
-                *self._reasoning, *self._tool_call_dicts
+                *self._reasoning,
+                *self._tool_call_dicts,
             ]
         elif "tool_calls" in self._message.additional_kwargs:
             legacy_calls = [
@@ -1183,70 +1405,78 @@ def to_openai_message_dicts(
     model: str | None = None,
     is_responses_api: bool = False,
 ) -> list[ChatCompletionMessageParam] | str:
-    """Convert a sequence of serapeum messages to OpenAI API format.
+    """Convert a sequence of serapeum messages into the OpenAI API format.
 
-    Selects either the Chat Completions path (via :class:`ChatMessageConverter`) or
-    the Responses API path (via :class:`ResponsesMessageConverter`) based on
-    *is_responses_api*.
+    This is the main entry point for outbound message formatting.  It selects
+    either the **Chat Completions** pipeline (via :class:`ChatMessageConverter`)
+    or the **Responses API** pipeline (via :class:`ResponsesMessageConverter`)
+    based on the *is_responses_api* flag.
 
-    **Responses API special case**: when the input is a single plain-text user
-    message, the function returns the content string directly rather than a list.
-    The OpenAI Responses API ``input`` parameter accepts a bare ``str`` for
-    simple use-cases like image generation and MCP tool use.
+    **Responses API string shortcut**: when the input consists of a single
+    plain-text user message, the function returns the content as a bare ``str``
+    instead of a list.  The OpenAI Responses API ``input`` parameter accepts a
+    raw string for simple use-cases like image generation and MCP tool use.
 
     Args:
-        messages: The sequence of serapeum :class:`~serapeum.core.llms.Message`
-            objects to convert.
-        drop_none: When ``True``, keys with ``None`` values are stripped from each
-            message dict. Defaults to ``False``.
-        model: The target model name, forwarded to the converter for O1-family
-            role rewrites. Pass ``None`` to skip model-specific logic.
-        is_responses_api: When ``True``, uses :class:`ResponsesMessageConverter`
-            (Responses API format). When ``False`` (default), uses
-            :class:`ChatMessageConverter` (Chat Completions format).
+        messages: The sequence of serapeum
+            :class:`~serapeum.core.llms.Message` objects to convert.
+        drop_none: When ``True``, keys whose value is ``None`` are removed
+            from each generated dict.  Defaults to ``False``.
+        model: The target OpenAI model identifier, forwarded to the converter
+            for O1-family role rewrites.  Pass ``None`` to skip
+            model-specific logic.
+        is_responses_api: When ``True``, uses the Responses API converter.
+            When ``False`` (the default), uses the Chat Completions converter.
 
     Returns:
-        A list of ``ChatCompletionMessageParam`` dicts for the Chat Completions
-        path, or for the Responses API path when there are multiple messages or
-        non-text content. Returns a plain ``str`` for the Responses API path when
-        the input is a single user message with string content.
+        For the **Chat Completions** path: a list of
+        :class:`~openai.types.chat.ChatCompletionMessageParam` dicts.
+
+        For the **Responses API** path: a list of dicts when there are
+        multiple messages or non-text content, or a plain ``str`` when the
+        input is a single user message with string content.
 
     Examples:
-        - Chat Completions path (default)
+        - Chat Completions path (default) produces a list of message dicts:
             ```python
-            >>> from serapeum.core.llms import Message, MessageRole
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> msgs = [
-            ...     Message(role=MessageRole.USER, content="Hello"),
-            ...     Message(role=MessageRole.ASSISTANT, content="Hi"),
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")]),
+            ...     Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="Hi")]),
             ... ]
-            >>> to_openai_message_dicts(msgs)
-            [{'role': 'user', 'content': 'Hello'}, {'role': 'assistant', 'content': 'Hi'}]
+            >>> result = to_openai_message_dicts(msgs)
+            >>> result[0]["role"]
+            'user'
+            >>> result[1]["content"]
+            'Hi'
 
             ```
-        - Responses API path — single user message returns a bare string
+        - Responses API path with a single user message returns a bare string:
             ```python
-            >>> msgs = [Message(role=MessageRole.USER, content="Generate an image")]
-            >>> result = to_openai_message_dicts(msgs, is_responses_api=True)
-            >>> result
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
+            >>> msgs = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Generate an image")])]
+            >>> to_openai_message_dicts(msgs, is_responses_api=True)
             'Generate an image'
 
             ```
-        - Responses API path — multiple messages return a list
+        - Responses API path with multiple messages returns a list:
             ```python
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
             >>> msgs = [
-            ...     Message(role=MessageRole.SYSTEM, content="You are helpful."),
-            ...     Message(role=MessageRole.USER, content="Hello"),
+            ...     Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are helpful.")]),
+            ...     Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")]),
             ... ]
             >>> result = to_openai_message_dicts(msgs, is_responses_api=True)
-            >>> isinstance(result, list)
-            True
             >>> result[0]["role"]
             'developer'
+            >>> result[1]["content"]
+            'Hello'
 
             ```
-        - O1 model rewrite via model parameter
+        - O1-family model rewrites ``"system"`` to ``"developer"`` automatically:
             ```python
-            >>> msgs = [Message(role=MessageRole.SYSTEM, content="You are helpful.")]
+            >>> from serapeum.core.llms import Message, MessageRole, TextChunk
+            >>> msgs = [Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are helpful.")])]
             >>> result = to_openai_message_dicts(msgs, model="o3-mini")
             >>> result[0]["role"]
             'developer'
@@ -1254,8 +1484,10 @@ def to_openai_message_dicts(
             ```
 
     See Also:
-        :class:`ChatMessageConverter`: Performs the Chat Completions conversion.
-        :class:`ResponsesMessageConverter`: Performs the Responses API conversion.
+        :class:`ChatMessageConverter`:
+            Performs the Chat Completions conversion.
+        :class:`ResponsesMessageConverter`:
+            Performs the Responses API conversion.
     """
     if is_responses_api:
         final_message_dicts: list[dict[str, Any]] = []
@@ -1276,9 +1508,9 @@ def to_openai_message_dicts(
             and final_message_dicts[0]["role"] == "user"
             and isinstance(final_message_dicts[0]["content"], str)
         ):
-            result: list[ChatCompletionMessageParam] | str = (
-                final_message_dicts[0]["content"]
-            )
+            result: list[ChatCompletionMessageParam] | str = final_message_dicts[0][
+                "content"
+            ]
         else:
             result = final_message_dicts
     else:
@@ -1297,18 +1529,24 @@ def to_openai_message_dicts(
 def to_openai_tool(
     pydantic_class: Type[BaseModel], description: str | None = None
 ) -> dict[str, Any]:
-    """Convert a Pydantic model class to an OpenAI function tool specification.
+    """Convert a Pydantic model class into an OpenAI function tool specification dict.
 
-    Generates the JSON schema from the Pydantic model (via ``model_json_schema()``)
-    and wraps it in the OpenAI tool dict format. The description is taken from
-    the schema's ``"description"`` field (derived from the model's docstring) if
-    present; otherwise falls back to the *description* argument.
+    Generates a JSON schema from the Pydantic model via ``model_json_schema()``
+    and wraps it in the OpenAI tool dict format expected by the ``tools``
+    parameter of the Chat Completions and Responses APIs.
+
+    The tool **description** is resolved in this order:
+
+    1. The ``"description"`` key in the generated JSON schema (populated from
+       the model class's docstring).
+    2. The explicit *description* argument (used as a fallback).
+    3. ``None`` if neither source provides a description.
 
     Args:
-        pydantic_class: A Pydantic ``BaseModel`` subclass whose schema defines
-            the tool's parameters.
-        description: An explicit description for the tool function. Used as a
-            fallback when the model class has no docstring. Defaults to ``None``.
+        pydantic_class: A :class:`~pydantic.BaseModel` subclass whose fields
+            define the tool's input parameters.
+        description: An explicit description string.  Used only when the model
+            class has no docstring.  Defaults to ``None``.
 
     Returns:
         A dict conforming to the OpenAI function tool format::
@@ -1317,13 +1555,13 @@ def to_openai_tool(
                 "type": "function",
                 "function": {
                     "name": "<model class title>",
-                    "description": "<description or None>",
-                    "parameters": {<JSON schema>},
+                    "description": "<resolved description or None>",
+                    "parameters": {<full JSON schema>},
                 },
             }
 
     Examples:
-        - Model with a docstring — docstring becomes the description
+        - Model with a docstring uses the docstring as the description:
             ```python
             >>> from pydantic import BaseModel
             >>> class SearchTool(BaseModel):
@@ -1337,10 +1575,13 @@ def to_openai_tool(
             'SearchTool'
             >>> result["function"]["description"]
             'Search the web.'
+            >>> "query" in result["function"]["parameters"]["properties"]
+            True
 
             ```
-        - No docstring — explicit description is used
+        - Model without a docstring falls back to the explicit description:
             ```python
+            >>> from pydantic import BaseModel
             >>> class MyTool(BaseModel):
             ...     value: int
             ...
@@ -1348,8 +1589,9 @@ def to_openai_tool(
             'A tool'
 
             ```
-        - No docstring, no description — description is None
+        - No docstring and no explicit description results in ``None``:
             ```python
+            >>> from pydantic import BaseModel
             >>> class Bare(BaseModel):
             ...     x: str
             ...
@@ -1359,8 +1601,12 @@ def to_openai_tool(
             ```
 
     See Also:
-        :class:`DictMessageParser`: Parses ``function_call`` blocks that reference tool names.
-        :class:`ChatFormat`: Converts :class:`~serapeum.core.llms.ToolCallBlock` instances (not schemas).
+        :class:`ChatFormat`:
+            Converts :class:`~serapeum.core.llms.ToolCallBlock` instances
+            (tool *calls*, not tool *schemas*).
+        :class:`ResponsesFormat`:
+            Converts :class:`~serapeum.core.llms.ToolCallBlock` instances for
+            the Responses API.
     """
     schema = pydantic_class.model_json_schema()
     schema_description = schema.get("description", None) or description

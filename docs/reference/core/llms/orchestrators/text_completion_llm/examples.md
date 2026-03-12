@@ -285,12 +285,10 @@ llm = Ollama(model="ministral-3:14b", api_key=os.environ.get("OLLAMA_API_KEY"), 
 messages = [
     Message(
         role=MessageRole.SYSTEM,
-        content="You are a professional translator."
-    ),
+        chunks=[TextChunk(content="You are a professional translator.")]),
     Message(
         role=MessageRole.USER,
-        content="Translate to {target_lang}: {text}"
-    ),
+        chunks=[TextChunk(content="Translate to {target_lang}: {text}")]),
 ]
 
 prompt = ChatPromptTemplate(message_templates=messages)

@@ -7,6 +7,7 @@ performance. All operations support both synchronous and asynchronous execution.
 """
 
 from __future__ import annotations
+
 from typing import Any, Sequence
 
 from pydantic import Field
@@ -455,9 +456,7 @@ class OllamaEmbedding(Client, BaseEmbedding):  # type: ignore[misc]
         formatted_texts = [self._format_text(text) for text in texts]
         return self._embed_batch_raw(formatted_texts)
 
-    async def _aget_text_embeddings(
-        self, texts: list[str]
-    ) -> list[list[float]]:
+    async def _aget_text_embeddings(self, texts: list[str]) -> list[list[float]]:
         """Asynchronously generate embedding vectors for multiple documents or text passages.
 
         Async batch version of _get_text_embedding. Formats all texts with the optional

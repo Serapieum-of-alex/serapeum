@@ -155,13 +155,13 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
         from serapeum.providers.{provider} import {Provider}LLM
 
         llm = {Provider}LLM(model="model-name", api_key="your-key")
-        response = llm.chat([Message(role=MessageRole.USER, content="Hello")])
+        response = llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello")])])
         print(response.message.content)
         ```
 
         Streaming chat:
         ```python
-        for chunk in llm.chat([Message(role=MessageRole.USER, content="Hi")], stream=True):
+        for chunk in llm.chat([Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi")])], stream=True):
             print(chunk.delta, end="", flush=True)
         ```
 
@@ -294,7 +294,7 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
         return ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content=response.choices[0].message.content,
+                chunks=[TextChunk(content=response.choices[0].message.content)],
             ),
             raw=response,
         )
@@ -325,7 +325,7 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
                 yield ChatResponse(
                     message=Message(
                         role=MessageRole.ASSISTANT,
-                        content=full_content,
+                        chunks=[TextChunk(content=full_content)],
                     ),
                     delta=delta,
                     raw=chunk,
@@ -360,7 +360,7 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
         return ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content=response.choices[0].message.content,
+                chunks=[TextChunk(content=response.choices[0].message.content)],
             ),
             raw=response,
         )
@@ -393,7 +393,7 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
                 yield ChatResponse(
                     message=Message(
                         role=MessageRole.ASSISTANT,
-                        content=full_content,
+                        chunks=[TextChunk(content=full_content)],
                     ),
                     delta=delta,
                     raw=chunk,
@@ -422,7 +422,7 @@ class {Provider}LLM(ChatToCompletionMixin, FunctionCallingLLM):
         ]
 
         if isinstance(user_msg, str):
-            user_msg = Message(role=MessageRole.USER, content=user_msg)
+            user_msg = Message(role=MessageRole.USER, chunks=[TextChunk(content=user_msg)])
 
         messages = chat_history or []
         if user_msg:
@@ -519,7 +519,7 @@ class TestChat:
 
         # Test
         messages = MessageList.from_list([
-            Message(role=MessageRole.USER, content="Hi")
+            Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi")])
         ])
         response = llm.chat(messages)
 
@@ -538,7 +538,7 @@ class TestChat:
 
         # Test
         messages = MessageList.from_list([
-            Message(role=MessageRole.USER, content="Hi")
+            Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi")])
         ])
         chunks = list(llm.chat(messages, stream=True))
 
@@ -558,7 +558,7 @@ class TestChat:
 
         # Test
         messages = MessageList.from_list([
-            Message(role=MessageRole.USER, content="Hi")
+            Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi")])
         ])
         response = await llm.achat(messages)
 
@@ -597,7 +597,7 @@ class TestE2E:
         llm = {Provider}LLM(model="model-name", api_key=api_key)
         response = llm.chat(
             MessageList.from_list([
-                Message(role=MessageRole.USER, content="Say 'test'")
+                Message(role=MessageRole.USER, chunks=[TextChunk(content="Say 'test'")])
             ])
         )
 
@@ -634,7 +634,7 @@ llm = {Provider}LLM(
 )
 
 response = llm.chat([
-    Message(role=MessageRole.USER, content="Hello!")
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])
 ])
 
 print(response.message.content)
@@ -644,7 +644,7 @@ print(response.message.content)
 
 ```python
 for chunk in llm.chat([
-    Message(role=MessageRole.USER, content="Tell me a story")
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="Tell me a story")])
 ], stream=True):
     print(chunk.delta, end="", flush=True)
 ```
@@ -663,7 +663,7 @@ import asyncio
 
 async def main():
     response = await llm.achat([
-        Message(role=MessageRole.USER, content="Hi")
+        Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi")])
     ])
     print(response.message.content)
 

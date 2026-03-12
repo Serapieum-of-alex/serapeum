@@ -103,7 +103,7 @@ sequenceDiagram
     Note over LlamaCPP: Follows complete() flow above
 
     LlamaCPP->>LlamaCPP: Wrap CompletionResponse in ChatResponse
-    Note over LlamaCPP: Create Message(role=ASSISTANT,<br/>content=text)
+    Note over LlamaCPP: Create Message(role=ASSISTANT,<br/>chunks=[TextChunk(content=text)])
 
     LlamaCPP-->>User: ChatResponse
     deactivate LlamaCPP

@@ -1,15 +1,17 @@
 """Tool invocation utilities."""
 
+from __future__ import annotations
+
 import json
 import logging
 from dataclasses import dataclass
 from typing import Any, Sequence
 
+from serapeum.core.base.llms.types import ToolCallArguments
 from serapeum.core.tools.types import (
-    BaseTool,
-    ToolCallArguments,
-    ToolOutput,
     AsyncBaseTool,
+    BaseTool,
+    ToolOutput,
 )
 
 __all__ = ["ExecutionConfig", "ToolExecutor"]

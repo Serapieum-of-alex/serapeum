@@ -270,7 +270,7 @@ result = tools_llm(text="AI is transforming industries worldwide")
 Use structured message templates for complex prompts:
 
 ```python function_calling
-import os 
+import os
 from pydantic import BaseModel
 from serapeum.core.llms import Message, MessageRole, ToolOrchestratingLLM
 from serapeum.core.prompts import ChatPromptTemplate
@@ -288,12 +288,10 @@ llm = Ollama(model="llama3.1", timeout=80)
 messages = [
     Message(
         role=MessageRole.SYSTEM,
-        content="You are an expert code reviewer."
-    ),
+        chunks=[TextChunk(content="You are an expert code reviewer.")]),
     Message(
         role=MessageRole.USER,
-        content="Review this {language} code:\n\n{code}"
-    ),
+        chunks=[TextChunk(content="Review this {language} code:\n\n{code}")]),
 ]
 
 prompt = ChatPromptTemplate(message_templates=messages)

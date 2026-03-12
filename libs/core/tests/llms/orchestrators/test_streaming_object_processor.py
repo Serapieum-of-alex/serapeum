@@ -12,6 +12,7 @@ from typing import Any, List, Optional
 import pytest
 from pydantic import BaseModel, Field
 
+from serapeum.core.base.llms.types import TextChunk
 from serapeum.core.llms import ChatResponse, Message, MessageRole
 from serapeum.core.llms.orchestrators.utils import (
     FlexibleModel,
@@ -65,7 +66,10 @@ class TestExtractArgs:
         """
         content = '{"name": "John", "age": 33}'
         resp = ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content=content)
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content=content)],
+            ),
         )
         p = StreamingObjectProcessor(Person)
         args = p._extract_args(resp)
@@ -85,7 +89,7 @@ class TestExtractArgs:
         resp = ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content="",
+                chunks=[TextChunk(content="")],
                 additional_kwargs={"tool_calls": [{}]},
             )
         )
@@ -107,7 +111,7 @@ class TestExtractArgs:
         resp = ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content="",
+                chunks=[TextChunk(content="")],
                 additional_kwargs={"tool_calls": {"unexpected": True}},
             )
         )
@@ -131,7 +135,7 @@ class TestExtractArgs:
         resp = ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content="",
+                chunks=[TextChunk(content="")],
                 additional_kwargs={"tool_calls": [{}, {}]},
             )
         )
@@ -154,7 +158,7 @@ class TestExtractArgs:
         resp = ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content="",
+                chunks=[TextChunk(content="")],
                 additional_kwargs={"tool_calls": [{"any": 1}]},
             )
         )
@@ -442,7 +446,8 @@ class TestProcess:
         """
         resp = ChatResponse(
             message=Message(
-                role=MessageRole.ASSISTANT, content='{"name": "John", "age": 30}'
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content='{"name": "John", "age": 30}')],
             )
         )
         p = StreamingObjectProcessor(Person)
@@ -463,7 +468,10 @@ class TestProcess:
             - Returned instance equals the previous object's values.
         """
         resp = ChatResponse(
-            message=Message(role=MessageRole.ASSISTANT, content='{"name": "Jo"')
+            message=Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content='{"name": "Jo"')],
+            )
         )
         prev = Person(name="John", age=25)
         p = StreamingObjectProcessor(Person)
@@ -486,7 +494,7 @@ class TestProcess:
         resp = ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content="",
+                chunks=[TextChunk(content="")],
                 additional_kwargs={"tool_calls": [{}, {}]},
             )
         )
@@ -514,7 +522,7 @@ class TestProcess:
         resp = ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content="",
+                chunks=[TextChunk(content="")],
                 additional_kwargs={"tool_calls": [{}]},
             )
         )
@@ -532,7 +540,7 @@ def test_process_streaming_objects() -> None:
     response = ChatResponse(
         message=Message(
             role=MessageRole.ASSISTANT,
-            content='{"name": "John", "age": 30}',
+            chunks=[TextChunk(content='{"name": "John", "age": 30}')],
         )
     )
 
@@ -547,7 +555,7 @@ def test_process_streaming_objects() -> None:
     incomplete_response = ChatResponse(
         message=Message(
             role=MessageRole.ASSISTANT,
-            content='{"name": "John", "age":',
+            chunks=[TextChunk(content='{"name": "John", "age":')],
         )
     )
 
@@ -570,7 +578,7 @@ def test_process_streaming_objects() -> None:
     tool_call_response = ChatResponse(
         message=Message(
             role=MessageRole.ASSISTANT,
-            content="",
+            chunks=[TextChunk(content="")],
             additional_kwargs={
                 "tool_calls": [
                     {

@@ -71,7 +71,7 @@ llm = Ollama(model="gpt-oss:20b", api_key=os.environ.get("OLLAMA_API_KEY"))
 
 # Simple chat
 messages = [
-    Message(role=MessageRole.USER, content="What is Python?")
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is Python?")])
 ]
 response = llm.chat(messages)
 print(response.message.content)
@@ -98,7 +98,7 @@ weather_tool = CallableTool.from_function(get_weather)
 # Chat with tool calling
 response = llm.generate_tool_calls(
     tools=[weather_tool],
-    user_msg="What's the weather in San Francisco?"
+    message="What's the weather in San Francisco?"
 )
 print(response.message.additional_kwargs["tool_calls"])
 # [ToolCall(function=Function(name='get_weather', arguments={'city': 'San Francisco'}))]

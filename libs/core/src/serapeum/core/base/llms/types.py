@@ -3,23 +3,24 @@
 from __future__ import annotations
 
 import base64
+from binascii import Error as BinasciiError
 from collections.abc import Sequence as ABCSequence
 from enum import Enum
 from io import BytesIO, IOBase
-from binascii import Error as BinasciiError
 from pathlib import Path
 from typing import Annotated, Any, AsyncGenerator, Generator, Iterator, Literal
 from urllib.parse import urlparse
 
 import requests
-from filetype import guess as filetype_guess
 from filetype import get_type
+from filetype import guess as filetype_guess
 from pydantic import (
     AnyUrl,
     BaseModel,
     ConfigDict,
     Field,
     FilePath,
+    ValidationError,
     field_serializer,
     field_validator,
     model_validator,
@@ -27,6 +28,7 @@ from pydantic import (
 from typing_extensions import Self
 
 from serapeum.core.configs.defaults import DEFAULT_CONTEXT_WINDOW, DEFAULT_NUM_OUTPUTS
+from serapeum.core.utils.schemas import parse_partial_json
 
 ImageType = str | BytesIO
 
@@ -70,9 +72,8 @@ class Image(Chunk):
     @classmethod
     def url_str_to_any_url(cls, url: str | AnyUrl) -> AnyUrl:
         """Store the url as Anyurl."""
-        if isinstance(url, AnyUrl):
-            return url
-        return AnyUrl(url=url)
+        result = url if isinstance(url, AnyUrl) else AnyUrl(url=url)
+        return result
 
     @model_validator(mode="after")  # type: ignore[misc]
     def to_base64(self) -> Self:
@@ -90,25 +91,27 @@ class Image(Chunk):
                 else self.base64.encode("utf-8")
             )
 
-        if not self.content:
-            return self
+        if self.content:
+            decoded_img: bytes | None = None
+            try:
+                # Check if image is already base64 encoded
+                decoded_img = base64.b64decode(self.content)
+            except Exception:
+                # Not base64 - encode it
+                if isinstance(self.content, str):
+                    content_bytes = self.content.encode()
+                elif isinstance(self.content, bytes):
+                    content_bytes = self.content
+                else:
+                    content_bytes = None
 
-        decoded_img: bytes
-        try:
-            # Check if image is already base64 encoded
-            decoded_img = base64.b64decode(self.content)
-        except Exception:
-            # Not base64 - encode it
-            if isinstance(self.content, str):
-                content_bytes = self.content.encode()
-            elif isinstance(self.content, bytes):
-                content_bytes = self.content
-            else:
-                return self  # None case
-            decoded_img = content_bytes
-            self.content = base64.b64encode(content_bytes)
+                if content_bytes is not None:
+                    decoded_img = content_bytes
+                    self.content = base64.b64encode(content_bytes)
 
-        self._guess_mimetype(decoded_img)
+            if decoded_img is not None:
+                self._guess_mimetype(decoded_img)
+
         return self
 
     def _guess_mimetype(self, img_data: bytes) -> None:
@@ -146,9 +149,8 @@ class Audio(Chunk):
     @classmethod
     def url_str_to_any_url(cls, url: str | AnyUrl) -> AnyUrl:
         """Store the url as Anyurl."""
-        if isinstance(url, AnyUrl):
-            return url
-        return AnyUrl(url=url)
+        result = url if isinstance(url, AnyUrl) else AnyUrl(url=url)
+        return result
 
     @model_validator(mode="after")  # type: ignore[misc]
     def to_base64(self) -> Self:
@@ -158,25 +160,26 @@ class Audio(Chunk):
         we try to guess it using the filetype library. To avoid resource-intense
         operations, we won't load the path or the URL to guess the mimetype.
         """
-        if not self.content:
-            return self
+        if self.content:
+            decoded_audio: bytes | None = None
+            try:
+                # Check if audio is already base64 encoded
+                decoded_audio = base64.b64decode(self.content)
+            except Exception:
+                # Not base64 - encode it
+                if isinstance(self.content, str):
+                    content_bytes = self.content.encode()
+                elif isinstance(self.content, bytes):
+                    content_bytes = self.content
+                else:
+                    content_bytes = None
 
-        decoded_audio: bytes
-        try:
-            # Check if audio is already base64 encoded
-            decoded_audio = base64.b64decode(self.content)
-        except Exception:
-            # Not base64 - encode it
-            if isinstance(self.content, str):
-                content_bytes = self.content.encode()
-            elif isinstance(self.content, bytes):
-                content_bytes = self.content
-            else:
-                return self  # None case
-            decoded_audio = content_bytes
-            self.content = base64.b64encode(content_bytes)
+                if content_bytes is not None:
+                    decoded_audio = content_bytes
+                    self.content = base64.b64encode(content_bytes)
 
-        self._guess_format(decoded_audio)
+            if decoded_audio is not None:
+                self._guess_format(decoded_audio)
 
         return self
 
@@ -199,9 +202,6 @@ class Audio(Chunk):
         )
 
 
-ChunkType = Annotated[TextChunk | Image | Audio, Field(discriminator="type")]
-
-
 class DocumentBlock(BaseModel):
     """A representation of a document to directly pass to the LLM."""
 
@@ -221,14 +221,11 @@ class DocumentBlock(BaseModel):
         if not self.title:
             self.title = "input_document"
 
-        # skip data validation if no byte is provided
-        if not self.data or not isinstance(self.data, bytes):
-            return self
-
-        try:
-            decoded_document = base64.b64decode(self.data, validate=True)
-        except BinasciiError:
-            self.data = base64.b64encode(self.data)
+        if self.data and isinstance(self.data, bytes):
+            try:
+                base64.b64decode(self.data, validate=True)
+            except BinasciiError:
+                self.data = base64.b64encode(self.data)
 
         return self
 
@@ -236,16 +233,16 @@ class DocumentBlock(BaseModel):
     def serialize_data(self, data: bytes | IOBase | None) -> bytes | None:
         """Serialize the data field."""
         if isinstance(data, bytes):
-            return data
-        if isinstance(data, IOBase):
+            result = data
+        elif isinstance(data, IOBase):
             data.seek(0)
-            return data.read()
-        return None
+            result = data.read()
+        else:
+            result = None
+        return result
 
     def resolve_document(self) -> IOBase:
-        """
-        Resolve a document such that it is represented by a BufferIO object.
-        """
+        """Resolve a document such that it is represented by a BufferIO object."""
         data_buffer = (
             self.data
             if isinstance(self.data, IOBase)
@@ -266,37 +263,32 @@ class DocumentBlock(BaseModel):
         return data_buffer
 
     def _get_b64_string(self, data_buffer: IOBase) -> str:
-        """
-        Get base64-encoded string from a IOBase buffer.
-        """
+        """Get base64-encoded string from a IOBase buffer."""
         data = data_buffer.read()
         return base64.b64encode(data).decode("utf-8")
 
     def _get_b64_bytes(self, data_buffer: IOBase) -> bytes:
-        """
-        Get base64-encoded bytes from a IOBase buffer.
-        """
+        """Get base64-encoded bytes from a IOBase buffer."""
         data = data_buffer.read()
         return base64.b64encode(data)
 
     def guess_format(self) -> str | None:
         path = self.path or self.url
-        if not path:
-            return None
-
-        return Path(str(path)).suffix.replace(".", "")
+        result = Path(str(path)).suffix.replace(".", "") if path else None
+        return result
 
     def _guess_mimetype(self) -> str | None:
         if self.data:
             guess = filetype_guess(self.data)
-            return str(guess.mime) if guess else None
-
-        suffix = self.guess_format()
-        if not suffix:
-            return None
-
-        guess = get_type(ext=suffix)
-        return str(guess.mime) if guess else None
+            result = str(guess.mime) if guess else None
+        else:
+            suffix = self.guess_format()
+            if suffix:
+                guess = get_type(ext=suffix)
+                result = str(guess.mime) if guess else None
+            else:
+                result = None
+        return result
 
     def as_base64(self) -> tuple[str, str]:
         """Return ``(base64_string, mimetype)`` for this document."""
@@ -309,7 +301,88 @@ class DocumentBlock(BaseModel):
         return b64_string, mimetype
 
 
+class ToolCallArguments(BaseModel):
+    """Represents a concrete tool choice and its arguments.
+
+    This Pydantic model captures the selection of a tool (by id and name) and the
+    keyword arguments that should be passed to it at execution time. It is typically
+    produced by an LLM during function-calling or constructed programmatically before
+    dispatching to an executor.
+
+    Notes:
+    - The ``tool_kwargs`` field uses a validator that replaces non-dictionary inputs
+      with an empty dictionary instead of raising a validation error. This keeps
+      downstream execution resilient to imperfect upstream outputs.
+
+    Args:
+        tool_id (str):
+            An identifier for the tool call (e.g., provider-specific id).
+        tool_name (str):
+            The name of the tool to execute.
+        tool_kwargs (dict[str, Any]):
+            Keyword arguments for the tool. If a non-dict value is supplied, it is coerced to an empty dict by
+            validation.
+
+    Returns:
+        ToolCallArguments: A validated instance describing the tool call.
+
+    Raises:
+        pydantic.ValidationError: If required fields are missing or have incompatible
+            types that cannot be coerced. Note that ``tool_kwargs`` specifically
+            coerces non-dict values to ``{}`` instead of raising.
+
+    Examples:
+        - Typical usage: construct a selection and access its fields
+            ```python
+            >>> from serapeum.core.base.llms.types import ToolCallArguments
+            >>> sel = ToolCallArguments(tool_id="abc123", tool_name="echo", tool_kwargs={"text": "hi"})
+            >>> (sel.tool_name, sel.tool_kwargs["text"])
+            ('echo', 'hi')
+
+            ```
+
+        - Non-dict ``tool_kwargs`` are replaced with an empty dict
+            ```python
+            >>> from serapeum.core.base.llms.types import ToolCallArguments
+            >>> sel = ToolCallArguments(tool_id="id-1", tool_name="echo", tool_kwargs="not-a-dict")
+            >>> sel.tool_kwargs
+            {}
+
+            ```
+
+        - Missing required fields raise a ValidationError
+            ```python
+            >>> from pydantic import ValidationError
+            >>> from serapeum.core.base.llms.types import ToolCallArguments
+            >>> try:
+            ...     ToolCallArguments(tool_id="only-id", tool_kwargs={})  # missing tool_name
+            ... except ValidationError as e:
+            ...     print(e.error_count(), "validation error")
+            1 validation error
+
+            ```
+
+    See Also:
+        - serapeum.core.tools.invoke.ToolExecutor.execute_with_selection: Execute a selection synchronously.
+        - serapeum.core.tools.invoke.ToolExecutor.execute_async_with_selection: Execute a selection asynchronously.
+    """
+
+    tool_id: str = Field(description="Tool ID to select.")
+    tool_name: str = Field(description="Tool name to select.")
+    tool_kwargs: dict[str, Any] = Field(description="Keyword arguments for the tool.")
+
+    @field_validator("tool_kwargs", mode="wrap")
+    @classmethod
+    def ignore_non_dict_arguments(cls, v: Any, handler: Any) -> dict[str, Any]:
+        try:
+            return handler(v)
+        except ValidationError:
+            return handler({})
+
+
 class ToolCallBlock(BaseModel):
+    """A representation of a tool call block within a message."""
+
     type: Literal["tool_call"] = "tool_call"
     tool_call_id: str | None = Field(
         default=None, description="ID of the tool call, if provided"
@@ -320,9 +393,28 @@ class ToolCallBlock(BaseModel):
         description="Arguments provided to the tool, if available",
     )
 
+    @property
+    def parsed_kwargs(self) -> dict[str, Any]:
+        """Return tool_kwargs as a dict, parsing JSON strings on demand."""
+        if isinstance(self.tool_kwargs, dict):
+            result = self.tool_kwargs
+        else:
+            try:
+                result = parse_partial_json(self.tool_kwargs)
+            except (ValueError, TypeError):
+                result = {}
+        return result
+
+    def get_arguments(self) -> ToolCallArguments:
+        return ToolCallArguments(
+            tool_id=self.tool_call_id or "",
+            tool_name=self.tool_name,
+            tool_kwargs=self.parsed_kwargs,
+        )
+
 
 class ThinkingBlock(BaseModel):
-    """A representation of the content streamed from reasoning/thinking processes by LLMs"""
+    """A representation of the content streamed from reasoning/thinking processes by LLMs."""
 
     type: Literal["thinking"] = "thinking"
     content: str | None = Field(
@@ -341,7 +433,7 @@ class ThinkingBlock(BaseModel):
 
 ChunkType = Annotated[
     TextChunk | Image | Audio | DocumentBlock | ToolCallBlock | ThinkingBlock,
-    Field(discriminator="type")
+    Field(discriminator="type"),
 ]
 
 
@@ -353,20 +445,6 @@ class Message(BaseModel):
     role: MessageRole = MessageRole.USER
     additional_kwargs: dict[str, Any] = Field(default_factory=dict)
     chunks: list[ChunkType] = Field(default_factory=list)
-
-    def __init__(self, /, content: Any | None = None, **data: Any) -> None:
-        """Constructor.
-
-        If content was passed and contained text, store a single TextChunk.
-        If content was passed and it was a list, assume it's a list of content chunks and store it.
-        """
-        if content is not None:
-            if isinstance(content, str):
-                data["chunks"] = [TextChunk(content=content)]
-            elif isinstance(content, list):
-                data["chunks"] = content
-
-        super().__init__(**data)
 
     @property
     def content(self) -> str | None:
@@ -381,6 +459,15 @@ class Message(BaseModel):
         )
 
         return result
+
+    @property
+    def tool_calls(self) -> list[ToolCallBlock]:
+        """Tool calls contained in this message.
+
+        Returns:
+            All ToolCallBlock entries from chunks, in order.
+        """
+        return [b for b in self.chunks if isinstance(b, ToolCallBlock)]
 
     @content.setter
     def content(self, content: str) -> None:
@@ -402,30 +489,20 @@ class Message(BaseModel):
         """Return a human-readable representation of the message."""
         return f"{self.role.value}: {self.content}"
 
-    @classmethod
-    def from_str(
-        cls,
-        content: str,
-        role: MessageRole | str = MessageRole.USER,
-        **kwargs: Any,
-    ) -> Self:
-        if isinstance(role, str):
-            role = MessageRole(role)
-        return cls(role=role, chunks=[TextChunk(content=content)], **kwargs)
-
     def _recursive_serialization(self, value: Any) -> Any:
         if isinstance(value, BaseModel):
             value.model_rebuild()  # ensures all fields are initialized and serializable
-            return value.model_dump()
-        if isinstance(value, dict):
-            return {
+            result = value.model_dump()
+        elif isinstance(value, dict):
+            result = {
                 key: self._recursive_serialization(value)
                 for key, value in value.items()
-                # if value is not None
             }
-        if isinstance(value, list):
-            return [self._recursive_serialization(item) for item in value]
-        return value
+        elif isinstance(value, list):
+            result = [self._recursive_serialization(item) for item in value]
+        else:
+            result = value
+        return result
 
     @field_serializer("additional_kwargs", check_fields=False)  # type: ignore[misc]
     def serialize_additional_kwargs(self, value: Any, _info: Any) -> Any:
@@ -447,9 +524,12 @@ class MessageList(BaseModel, ABCSequence):
 
     def __getitem__(self, index: int | slice) -> Message | MessageList:
         """Retrieve a message or slice of messages."""
-        if isinstance(index, slice):
-            return MessageList(messages=self.messages[index])
-        return self.messages[index]
+        result = (
+            MessageList(messages=self.messages[index])
+            if isinstance(index, slice)
+            else self.messages[index]
+        )
+        return result
 
     def to_prompt(self) -> str:
         """Convert messages to a prompt string."""
@@ -476,17 +556,12 @@ class MessageList(BaseModel, ABCSequence):
         self.messages.append(message)
 
     @classmethod
-    def from_list(cls, messages: list[Message]) -> "MessageList":
-        """Create from a standard list."""
-        return cls(messages=messages)
-
-    @classmethod
     def from_str(cls, prompt: str) -> "MessageList":
         """Create from a string prompt."""
-        return cls(messages=[Message(role=MessageRole.USER, content=prompt)])
+        return cls(messages=[Message(chunks=[TextChunk(content=prompt)])])
 
 
-class LikelihoodScore(BaseModel):
+class LogProb(BaseModel):
     """LikelihoodScore of a token.
 
     The log probability information for a token generated by the model.
@@ -494,7 +569,7 @@ class LikelihoodScore(BaseModel):
     Attributes:
         token(str):
             the actual text token (string).
-        next_token_log_prob(float):
+        logprob(float):
             The logarithmic probability score (float) indicating how likely the model thought this token was the
             correct next token.
         bytes(list[int]):
@@ -502,7 +577,7 @@ class LikelihoodScore(BaseModel):
     """
 
     token: str = Field(default_factory=str)
-    next_token_log_prob: float = Field(default_factory=float)
+    logprob: float = Field(default_factory=float)
     bytes: list[int] = Field(default_factory=list)
 
 
@@ -510,7 +585,7 @@ class BaseResponse(BaseModel):
     """Base response."""
 
     raw: Any | None = None
-    likelihood_score: list[list[LikelihoodScore]] | None = None
+    logprob: list[list[LogProb]] | None = None
     additional_kwargs: dict = Field(default_factory=dict)
     delta: str | None = None
 
@@ -528,7 +603,10 @@ class ChatResponse(BaseResponse):
         """Convert a chat response to a completion response."""
         return CompletionResponse(
             text=self.message.content or "",
-            additional_kwargs=self.message.additional_kwargs,
+            additional_kwargs={
+                **self.message.additional_kwargs,
+                **self.additional_kwargs,
+            },
             raw=self.raw,
             delta=self.delta,
         )
@@ -571,6 +649,71 @@ class ChatResponse(BaseResponse):
 
         return gen()
 
+    def force_single_tool_call(self) -> None:
+        """Mutate a response to include at most a single tool call.
+
+        Ollama may return multiple tool calls within a single assistant message. Some
+        consumers require a single call at a time. This helper trims the list to the
+        first occurrence in-place.
+
+        Args:
+            response (ChatResponse):
+                Parsed chat response whose ``message.chunks`` may contain multiple
+                ToolCallBlock entries.
+
+        Returns:
+            None: The function mutates ``response`` and returns nothing.
+
+        Examples:
+            - Truncate multiple tool calls to one
+                ```python
+                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse, ToolCallBlock
+                >>> r = ChatResponse(message=Message(
+                ...     role=MessageRole.ASSISTANT,
+                ...     chunks=[
+                ...         ToolCallBlock(tool_name="a", tool_kwargs={}),
+                ...         ToolCallBlock(tool_name="b", tool_kwargs={}),
+                ...     ],
+                ... ))
+                >>> r.force_single_tool_call()
+                >>> len(r.message.tool_calls)
+                1
+
+                ```
+            - No-op when there are no tool calls
+                ```python
+                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse
+                >>> r = ChatResponse(message=Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="hi")]))
+                >>> r.force_single_tool_call()
+                >>> r.message.tool_calls
+                []
+
+                ```
+            - Single tool call is left as-is
+                ```python
+                >>> from serapeum.core.llms import Message, MessageRole, ChatResponse, ToolCallBlock
+                >>> r = ChatResponse(
+                ...         message=Message(
+                ...             role=MessageRole.ASSISTANT,
+                ...             chunks=[ToolCallBlock(tool_name="a", tool_kwargs={})],
+                ...         )
+                ... )
+                >>> r.force_single_tool_call()
+                >>> r.message.tool_calls[0].tool_name
+                'a'
+
+                ```
+        """
+        tool_calls = [
+            block for block in self.message.chunks if isinstance(block, ToolCallBlock)
+        ]
+        if len(tool_calls) > 1:
+            self.message.chunks = [
+                block
+                for block in self.message.chunks
+                if not isinstance(block, ToolCallBlock)
+            ] + [tool_calls[0]]
+
 
 ChatResponseGen = Generator[ChatResponse, None, None]
 ChatResponseAsyncGen = AsyncGenerator[ChatResponse, None]
@@ -592,7 +735,7 @@ class CompletionResponse(BaseResponse):
         raw: Raw JSON payload returned by the provider, if available.
             Useful for accessing provider-specific metadata not otherwise
             surfaced.
-        likelihood_score: Per-token log-probability scores returned by
+        logprob: Per-token log-probability scores returned by
             the provider.  Outer list corresponds to choices; inner list
             to tokens within each choice.  ``None`` when not provided.
         additional_kwargs: Arbitrary provider-specific metadata such as
@@ -724,7 +867,7 @@ class CompletionResponse(BaseResponse):
         return ChatResponse(
             message=Message(
                 role=MessageRole.ASSISTANT,
-                content=self.text,
+                chunks=[TextChunk(content=self.text)],
                 additional_kwargs=self.additional_kwargs,
             ),
             raw=self.raw,
@@ -783,7 +926,7 @@ class CompletionResponse(BaseResponse):
                 yield ChatResponse(
                     message=Message(
                         role=MessageRole.ASSISTANT,
-                        content=response.text,
+                        chunks=[TextChunk(content=response.text)],
                         additional_kwargs=response.additional_kwargs,
                     ),
                     delta=response.delta,
@@ -847,7 +990,7 @@ class CompletionResponse(BaseResponse):
                 yield ChatResponse(
                     message=Message(
                         role=MessageRole.ASSISTANT,
-                        content=response.text,
+                        chunks=[TextChunk(content=response.text)],
                         additional_kwargs=response.additional_kwargs,
                     ),
                     delta=response.delta,
@@ -929,119 +1072,40 @@ def resolve_binary(
     Raises:
         ValueError: If no valid source is provided
     """
-    # Handle raw bytes input
+    # Each branch resolves to raw bytes; as_base64 encoding is applied once at the end.
     if raw_bytes is not None:
         try:
-            # Try to decode the bytes as base64
-            decoded_bytes = base64.b64decode(raw_bytes)
+            resolved = base64.b64decode(raw_bytes)
         except Exception:
-            # the bytes are already raw binary data
-            decoded_bytes = raw_bytes
+            resolved = raw_bytes
 
-        if as_base64:
-            # Re-encode the decoded bytes to base64
-            return BytesIO(base64.b64encode(decoded_bytes))
-
-        # Return the decoded binary data
-        buffer = BytesIO(decoded_bytes)
-
-    # Handle file path input
     elif path is not None:
         path = Path(path) if isinstance(path, str) else path
+        resolved = path.read_bytes()
 
-        # Read file content as bytes
-        data = path.read_bytes()
-
-        # Check if the caller wants base64-encoded output
-        if as_base64:
-            # Encode the file bytes to base64 and wrap in BytesIO
-            return BytesIO(base64.b64encode(data))
-
-        # Create a BytesIO buffer containing the raw file bytes
-        buffer = BytesIO(data)
-
-    # Handle URL input
     elif url is not None:
-        # Parse the URL to extract its components (scheme, path, etc.)
         parsed_url = urlparse(url)
 
-        # Special handling for data: URLs (embedded data in the URL itself)
         if parsed_url.scheme == "data":
-            # Data URL format: data:[<mediatype>][;base64],<data>
-            # The path attribute contains everything after "data:"
             data_part = parsed_url.path
-
-            # Validate that the data URL has the required comma separator
             if "," not in data_part:
                 raise ValueError("Invalid data URL format: missing comma separator")
 
-            # Split the data URL into metadata (mediatype and encoding) and actual data
-            # Only split on the first comma to preserve commas in the data portion
             metadata, url_data = data_part.split(",", 1)
-
-            # Check if the metadata indicates base64 encoding
             is_base64_encoded = metadata.endswith(";base64")
 
-            # Handle base64-encoded data URLs
             if is_base64_encoded:
-                # Decode the base64 string from the URL to get raw binary data
-                decoded_data = base64.b64decode(url_data)
-
-                # Check if the caller wants base64-encoded output
-                if as_base64:
-                    # Re-encode to base64 and wrap in BytesIO
-                    return BytesIO(base64.b64encode(decoded_data))
-                else:
-                    # Return the decoded binary data wrapped in BytesIO
-                    return BytesIO(decoded_data)
-
-            # Handle plain text data URLs (not base64-encoded)
+                resolved = base64.b64decode(url_data)
             else:
-                # Check if the caller wants base64-encoded output
-                if as_base64:
-                    # Convert the text to UTF-8 bytes, then encode to base64
-                    return BytesIO(base64.b64encode(url_data.encode("utf-8")))
-                else:
-                    # Convert the text to UTF-8 bytes and wrap in BytesIO
-                    return BytesIO(url_data.encode("utf-8"))
+                resolved = url_data.encode("utf-8")
+        else:
+            # HTTP(S) URLs
+            response = requests.get(url, headers={}, timeout=120)
+            response.raise_for_status()
+            resolved = response.content
 
-        # Handle HTTP(S) URLs - fetch data from the network
-        # Create empty headers dict (placeholder for future authentication/headers)
-        headers = {}
-
-        # Make HTTP GET request to fetch the data from the URL
-        response = requests.get(url, headers=headers)
-
-        # Raise an exception if the request failed (4xx or 5xx status codes)
-        response.raise_for_status()
-
-        # Check if the caller wants base64-encoded output
-        if as_base64:
-            # Encode the response content to base64 and wrap in BytesIO
-            return BytesIO(base64.b64encode(response.content))
-
-        # Create a BytesIO buffer containing the raw response content
-        buffer = BytesIO(response.content)
-
-    # Branch 4: No valid source provided
     else:
-        # Raise an error if none of the input parameters were provided
         raise ValueError("No valid source provided to resolve binary data!")
 
-    # Return the buffer created in one of the branches above
+    buffer = BytesIO(base64.b64encode(resolved) if as_base64 else resolved)
     return buffer
-
-
-
-ContentBlock = Annotated[
-    TextChunk | Image | Audio | ThinkingBlock | ToolCallBlock,
-    Field(discriminator="block_type"),
-]
-
-
-class LogProb(BaseModel):
-    """LogProb of a token."""
-
-    token: str = Field(default_factory=str)
-    logprob: float = Field(default_factory=float)
-    bytes: list[int] = Field(default_factory=list)

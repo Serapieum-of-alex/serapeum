@@ -1,8 +1,28 @@
+"""Azure OpenAI provider classes for Serapeum.
+
+Provides :class:`Completions` and :class:`Responses`, which are
+Azure-specific subclasses of the corresponding OpenAI provider classes.
+Both inherit connection management from the :class:`AzureClient` mixin,
+which handles Azure AD / Microsoft Entra ID authentication,
+deployment-name (engine) aliasing, and Azure SDK client construction.
+
+Public classes:
+
+- :class:`AzureClient` -- Mixin that adds Azure-specific fields
+  (``engine``, ``azure_endpoint``, ``use_azure_ad``) and overrides SDK
+  client construction to target Azure OpenAI endpoints.
+- :class:`Completions` -- Azure Chat Completions API provider
+  (``/chat/completions``).
+- :class:`Responses` -- Azure Responses API provider
+  (``/v1/responses``).
+"""
+
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
+import httpx
 from openai import AsyncAzureOpenAI
 from openai import AzureOpenAI as SyncAzureOpenAI
 from openai.lib.azure import AzureADTokenProvider
@@ -13,70 +33,100 @@ from serapeum.azure_openai.utils import (
     resolve_from_aliases,
 )
 from serapeum.core.base.llms.utils import get_from_param_or_env
-from serapeum.openai import OpenAI
+from serapeum.openai import Completions as OpenAICompletions
+from serapeum.openai import Responses as OpenAIResponses
 from serapeum.openai.utils import DEFAULT_OPENAI_API_BASE
 
-__all__ = ["AzureOpenAI", "SyncAzureOpenAI", "AsyncAzureOpenAI"]
+__all__ = [
+    "AzureClient",
+    "Completions",
+    "Responses",
+    "SyncAzureOpenAI",
+    "AsyncAzureOpenAI",
+]
 
 
-class AzureOpenAI(OpenAI):
-    """Azure OpenAI.
+class AzureClient:
+    """Mixin that adds Azure-specific connection fields and client construction.
 
-    To use this, you must first deploy a model on Azure OpenAI.
-    Unlike OpenAI, you need to specify an ``engine`` parameter to identify
-    your deployment (called "model deployment name" in Azure portal).
+    Overrides the credential resolution and SDK client construction
+    methods from :class:`~serapeum.openai.llm.base.Client` to target
+    Azure OpenAI endpoints using Azure AD or API-key authentication.
 
-    - ``model``: Name of the model (e.g. ``gpt-4o``).
-      This is only used to decide completion vs. chat endpoint.
-    - ``engine``: This will correspond to the custom name you chose
-      for your deployment when you deployed a model.
+    This mixin is designed to be composed with an API-specific class
+    (``OpenAICompletions`` or ``OpenAIResponses``) via multiple
+    inheritance::
 
-    You must have the following environment variables set:
+        class Completions(AzureClient, OpenAICompletions): ...
+        class Responses(AzureClient, OpenAIResponses): ...
 
-    - ``OPENAI_API_VERSION``: set this to ``2024-02-01`` or newer.
-    - ``AZURE_OPENAI_ENDPOINT``: your endpoint should look like
-      ``https://YOUR_RESOURCE_NAME.openai.azure.com/``
-    - ``AZURE_OPENAI_API_KEY``: your API key if the api type is ``azure``.
-      Or pass through ``azure_ad_token_provider`` and set ``use_azure_ad=True``
-      to use managed identity with Azure Entra ID.
-
-    More information can be found here:
-        https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart
+    Args:
+        model: OpenAI model name (e.g. ``"gpt-4o"``).  Used for routing
+            and capability checks; the actual deployment is identified
+            by ``engine``.  Defaults to ``"gpt-35-turbo"``.
+        engine: Azure deployment name (called "model deployment name"
+            in the Azure portal).  Aliases ``deployment_name``,
+            ``deployment_id``, and ``deployment`` are also accepted.
+        azure_endpoint: Azure OpenAI resource URL, e.g.
+            ``https://YOUR_RESOURCE.openai.azure.com/``.  Falls back to
+            the ``AZURE_OPENAI_ENDPOINT`` environment variable.
+        azure_deployment: Optional Azure deployment identifier (passed
+            directly to the SDK).
+        use_azure_ad: When ``True``, authenticate via Microsoft Entra
+            ID instead of an API key.  Defaults to ``False``.
+        azure_ad_token_provider: Callback that returns a bearer token
+            for Azure AD authentication.
 
     Examples:
-        ```python
-        from serapeum.azure_openai import AzureOpenAI
+        - Concrete classes expose the Azure-specific fields from this
+          mixin:
+            ```python
+            >>> from serapeum.azure_openai.llm import Completions
+            >>> sorted(
+            ...     f for f in Completions.model_fields
+            ...     if f.startswith("azure")
+            ... )
+            ['azure_ad_token_provider', 'azure_deployment', 'azure_endpoint']
 
-        llm = AzureOpenAI(
-            engine="my-deployment",
-            model="gpt-4o",
-            api_key="YOUR_AZURE_OPENAI_API_KEY",
-            azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
-            api_version="2024-02-01",
-        )
-        ```
+            ```
+        - The ``engine`` field identifies the Azure deployment:
+            ```python
+            >>> from serapeum.azure_openai.llm import Completions
+            >>> Completions.model_fields["engine"].description
+            'The name of the deployed azure engine.'
 
-        Using managed identity (passing a token provider instead of an API key):
+            ```
+        - Instantiate with explicit credentials (requires a live
+          endpoint):
+            ```python
+            from serapeum.azure_openai import Completions
 
-        ```python
-        from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-        from serapeum.azure_openai import AzureOpenAI
+            llm = Completions(
+                engine="my-gpt4o-deployment",
+                model="gpt-4o",
+                api_key="sk-...",
+                azure_endpoint="https://myresource.openai.azure.com/",
+                api_version="2024-02-01",
+            )
 
-        credential = DefaultAzureCredential()
-        token_provider = get_bearer_token_provider(
-            credential, "https://cognitiveservices.azure.com/.default"
-        )
+            ```
 
-        llm = AzureOpenAI(
-            engine="my-deployment",
-            model="gpt-4o",
-            azure_ad_token_provider=token_provider,
-            use_azure_ad=True,
-            azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
-            api_version="2024-02-01",
-        )
-        ```
+    See Also:
+        serapeum.openai.llm.base.Client: Parent mixin providing shared
+            connection fields (``api_key``, ``timeout``,
+            ``max_retries``) and lazy SDK client lifecycle.
+        Completions: Concrete Azure Chat Completions provider.
+        Responses: Concrete Azure Responses API provider.
     """
+
+    if TYPE_CHECKING:
+        api_key: str | None
+        api_base: str | None
+        api_version: str | None
+        timeout: float
+        default_headers: dict[str, str] | None
+        _http_client: httpx.Client | None
+        _async_http_client: httpx.AsyncClient | None
 
     model: str = Field(default="gpt-35-turbo", description="The OpenAI model name.")
     engine: str = Field(description="The name of the deployed azure engine.")
@@ -125,10 +175,7 @@ class AzureOpenAI(OpenAI):
                 "azure_endpoint", None, "AZURE_OPENAI_ENDPOINT", ""
             )
 
-        if (
-            api_base == DEFAULT_OPENAI_API_BASE
-            and azure_endpoint is None
-        ):
+        if api_base == DEFAULT_OPENAI_API_BASE and azure_endpoint is None:
             raise ValueError(
                 "You must set OPENAI_API_BASE to your Azure endpoint. "
                 "It should look like https://YOUR_RESOURCE_NAME.openai.azure.com/"
@@ -137,11 +184,11 @@ class AzureOpenAI(OpenAI):
         return values
 
     @model_validator(mode="after")
-    def _reset_api_base_for_azure(self) -> AzureOpenAI:
-        """Reset api_base to None when it is the OpenAI default or azure_endpoint is set.
+    def _reset_api_base_for_azure(self) -> AzureClient:
+        """Reset api_base when it is the OpenAI default or azure_endpoint is set.
 
-        Runs after the parent ``_resolve_credentials`` validator which may set
-        ``api_base`` to the OpenAI default URL.
+        Runs after the parent ``_resolve_credentials`` validator which
+        may set ``api_base`` to the OpenAI default URL.
         """
         if self.api_base == DEFAULT_OPENAI_API_BASE or self.azure_endpoint:
             self.api_base = None
@@ -156,6 +203,7 @@ class AzureOpenAI(OpenAI):
         Raises:
             ValueError: If no API key can be resolved from any source.
         """
+        api_key: str | None
         if self.use_azure_ad:
             if self.azure_ad_token_provider:
                 api_key = self.azure_ad_token_provider()
@@ -201,10 +249,217 @@ class AzureOpenAI(OpenAI):
         return AsyncAzureOpenAI(**kwargs)
 
     def _get_model_kwargs(self, **kwargs: Any) -> dict[str, Any]:
-        model_kwargs = super()._get_model_kwargs(**kwargs)
+        """Swap ``model`` for the Azure ``engine`` deployment name."""
+        model_kwargs: dict[str, Any] = super()._get_model_kwargs(**kwargs)  # type: ignore[misc]
         model_kwargs["model"] = self.engine
         return model_kwargs
 
+
+class Completions(AzureClient, OpenAICompletions):
+    """Azure OpenAI Chat Completions API provider.
+
+    Combines Azure-specific connection management from
+    :class:`AzureClient` with the Chat Completions API logic from
+    :class:`~serapeum.openai.llm.chat_completions.Completions`.
+
+    To use this provider you must first deploy a model on Azure OpenAI.
+    Unlike direct OpenAI, you need to specify an ``engine`` parameter
+    to identify your deployment (called "model deployment name" in the
+    Azure portal):
+
+    - ``model`` -- the OpenAI model name (e.g. ``gpt-4o``).  Used
+      internally for capability checks; not sent to the API.
+    - ``engine`` -- the Azure deployment name you chose when deploying
+      the model.
+
+    Required environment variables (or equivalent constructor args):
+
+    - ``OPENAI_API_VERSION`` -- set to ``2024-02-01`` or newer.
+    - ``AZURE_OPENAI_ENDPOINT`` -- your resource URL, e.g.
+      ``https://YOUR_RESOURCE_NAME.openai.azure.com/``.
+    - ``AZURE_OPENAI_API_KEY`` -- your API key, **or** pass
+      ``azure_ad_token_provider`` and ``use_azure_ad=True`` for
+      managed identity with Microsoft Entra ID.
+
+    More information:
+        https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart
+
+    Examples:
+        - Query the canonical provider name:
+            ```python
+            >>> from serapeum.azure_openai import Completions
+            >>> Completions.class_name()
+            'azure_openai_completions'
+
+            ```
+        - Inspect Azure-specific fields available on this class:
+            ```python
+            >>> from serapeum.azure_openai import Completions
+            >>> sorted(
+            ...     f for f in Completions.model_fields
+            ...     if f.startswith("azure")
+            ... )
+            ['azure_ad_token_provider', 'azure_deployment', 'azure_endpoint']
+
+            ```
+        - Instantiate with API-key authentication:
+            ```python
+            from serapeum.azure_openai import Completions
+
+            llm = Completions(
+                engine="my-deployment",
+                model="gpt-4o",
+                api_key="YOUR_AZURE_OPENAI_API_KEY",
+                azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+                api_version="2024-02-01",
+            )
+            response = llm.chat(messages=[...])
+
+            ```
+        - Instantiate with Microsoft Entra ID (managed identity):
+            ```python
+            from azure.identity import (
+                DefaultAzureCredential,
+                get_bearer_token_provider,
+            )
+            from serapeum.azure_openai import Completions
+
+            credential = DefaultAzureCredential()
+            token_provider = get_bearer_token_provider(
+                credential,
+                "https://cognitiveservices.azure.com/.default",
+            )
+            llm = Completions(
+                engine="my-deployment",
+                model="gpt-4o",
+                azure_ad_token_provider=token_provider,
+                use_azure_ad=True,
+                azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+                api_version="2024-02-01",
+            )
+
+            ```
+
+    See Also:
+        AzureClient: Mixin providing Azure-specific fields and client
+            construction.
+        serapeum.openai.llm.chat_completions.Completions: The OpenAI
+            Chat Completions base class that this class extends.
+        Responses: Azure Responses API provider for reasoning models.
+    """
+
     @classmethod
     def class_name(cls) -> str:
-        return "azure_openai_llm"
+        """Return the canonical provider identifier for this class.
+
+        Returns:
+            The string ``"azure_openai_completions"``.
+
+        Examples:
+            - Retrieve the provider name for logging or dispatch:
+                ```python
+                >>> from serapeum.azure_openai import Completions
+                >>> Completions.class_name()
+                'azure_openai_completions'
+
+                ```
+
+        See Also:
+            Responses.class_name: Returns
+                ``"azure_openai_responses"``.
+        """
+        return "azure_openai_completions"
+
+
+class Responses(AzureClient, OpenAIResponses):  # type: ignore[misc]
+    """Azure OpenAI Responses API provider.
+
+    Combines Azure-specific connection management from
+    :class:`AzureClient` with the Responses API logic from
+    :class:`~serapeum.openai.llm.responses.Responses`.
+
+    Supports streaming, built-in tools (web search, file search, code
+    interpreter), stateful conversation continuation via
+    ``track_previous_responses``, structured output via tool-call
+    forcing, and reasoning-effort control -- all through an Azure
+    OpenAI deployment.
+
+    Required environment variables (or equivalent constructor args):
+
+    - ``OPENAI_API_VERSION`` -- set to ``2024-02-01`` or newer.
+    - ``AZURE_OPENAI_ENDPOINT`` -- your resource URL, e.g.
+      ``https://YOUR_RESOURCE_NAME.openai.azure.com/``.
+    - ``AZURE_OPENAI_API_KEY`` -- your API key, **or** pass
+      ``azure_ad_token_provider`` and ``use_azure_ad=True`` for
+      managed identity with Microsoft Entra ID.
+
+    Examples:
+        - Query the canonical provider name:
+            ```python
+            >>> from serapeum.azure_openai import Responses
+            >>> Responses.class_name()
+            'azure_openai_responses'
+
+            ```
+        - Inspect Azure-specific fields available on this class:
+            ```python
+            >>> from serapeum.azure_openai import Responses
+            >>> sorted(
+            ...     f for f in Responses.model_fields
+            ...     if f.startswith("azure")
+            ... )
+            ['azure_ad_token_provider', 'azure_deployment', 'azure_endpoint']
+
+            ```
+        - The ``engine`` field identifies the Azure deployment:
+            ```python
+            >>> from serapeum.azure_openai import Responses
+            >>> Responses.model_fields["engine"].description
+            'The name of the deployed azure engine.'
+
+            ```
+        - Instantiate with an o3 deployment:
+            ```python
+            from serapeum.azure_openai import Responses
+
+            llm = Responses(
+                engine="my-o3-deployment",
+                model="o3",
+                api_key="YOUR_AZURE_OPENAI_API_KEY",
+                azure_endpoint="https://YOUR_RESOURCE.openai.azure.com/",
+                api_version="2024-02-01",
+            )
+            response = llm.chat(messages=[...])
+
+            ```
+
+    See Also:
+        AzureClient: Mixin providing Azure-specific fields and client
+            construction.
+        serapeum.openai.llm.responses.Responses: The OpenAI Responses
+            base class that this class extends.
+        Completions: Azure Chat Completions API provider for standard
+            chat models.
+    """
+
+    @classmethod
+    def class_name(cls) -> str:
+        """Return the canonical provider identifier for this class.
+
+        Returns:
+            The string ``"azure_openai_responses"``.
+
+        Examples:
+            - Retrieve the provider name for logging or dispatch:
+                ```python
+                >>> from serapeum.azure_openai import Responses
+                >>> Responses.class_name()
+                'azure_openai_responses'
+
+                ```
+
+        See Also:
+            Completions.class_name: Returns
+                ``"azure_openai_completions"``.
+        """
+        return "azure_openai_responses"

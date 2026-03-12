@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.llama_cpp.formatters.llama3 import (
     DEFAULT_SYSTEM_PROMPT,
     EOT,
@@ -24,15 +24,15 @@ from serapeum.llama_cpp.formatters.llama3 import (
 
 
 def _user(content: str) -> Message:
-    return Message(role=MessageRole.USER, content=content)
+    return Message(role=MessageRole.USER, chunks=[TextChunk(content=content)])
 
 
 def _assist(content: str) -> Message:
-    return Message(role=MessageRole.ASSISTANT, content=content)
+    return Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content=content)])
 
 
 def _system(content: str) -> Message:
-    return Message(role=MessageRole.SYSTEM, content=content)
+    return Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content=content)])
 
 
 @pytest.mark.unit
@@ -183,7 +183,9 @@ class TestMessagesToPromptV3Instruct:
             system block, leaving ``remaining`` empty (the trailing
             HEADER_ASSIST is still appended).
         """
-        messages = [Message(role=MessageRole.ASSISTANT, content="wrong")]
+        messages = [
+            Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="wrong")])
+        ]
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt_v3_instruct(messages)
         assert "Expected a USER message at position 0" in str(
@@ -211,7 +213,9 @@ class TestMessagesToPromptV3Instruct:
             When ASSISTANT appears where USER is expected at position 0,
             the error message must identify the unexpected role.
         """
-        messages = [Message(role=MessageRole.ASSISTANT, content="wrong")]
+        messages = [
+            Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="wrong")])
+        ]
         with pytest.raises(ValueError) as exc_info:
             messages_to_prompt_v3_instruct(messages)
         error = str(exc_info.value)

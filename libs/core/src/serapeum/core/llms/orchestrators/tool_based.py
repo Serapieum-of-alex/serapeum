@@ -238,9 +238,7 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
             TypeError: If schema is neither a Pydantic model nor a callable.
         """
         # Check if it's a Pydantic model (class that inherits from BaseModel)
-        if isinstance(self._schema, type) and issubclass(
-            self._schema, BaseModel
-        ):
+        if isinstance(self._schema, type) and issubclass(self._schema, BaseModel):
             return CallableTool.from_model(self._schema)
         # Check if it's a callable (function, method, or callable class)
         elif callable(self._schema):
@@ -494,7 +492,9 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     ) -> Generator[Model | list[Model], None, None]:
         """Internal streaming implementation — use ``__call__(stream=True)``."""
         if not isinstance(self._llm, FunctionCallingLLM):
-            raise ValueError("Streaming is only supported for FunctionCallingLLM instances.")
+            raise ValueError(
+                "Streaming is only supported for FunctionCallingLLM instances."
+            )
 
         llm_kwargs = llm_kwargs or {}
         tool = self._create_tool()
@@ -599,7 +599,9 @@ class ToolOrchestratingLLM(BasePydanticLLM[BaseModel]):
     ) -> AsyncGenerator[Model | list[Model], None]:
         """Internal async streaming implementation — use ``acall(stream=True)``."""
         if not isinstance(self._llm, FunctionCallingLLM):
-            raise ValueError("Streaming is only supported for FunctionCallingLLM instances.")
+            raise ValueError(
+                "Streaming is only supported for FunctionCallingLLM instances."
+            )
 
         tool = self._create_tool()
         llm_kwargs = llm_kwargs or {}

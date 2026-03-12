@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import ollama as ollama_sdk
 import pytest
 
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 from serapeum.ollama import Ollama
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_ollama(*, max_retries: int = 3, client: MagicMock | None = None) -> Ollama:
     """Create an Ollama instance with an injected mock client."""
@@ -26,7 +26,7 @@ def _make_ollama(*, max_retries: int = 3, client: MagicMock | None = None) -> Ol
 
 
 def _user_message() -> list[Message]:
-    return [Message(role=MessageRole.USER, content="hello")]
+    return [Message(role=MessageRole.USER, chunks=[TextChunk(content="hello")])]
 
 
 def _chat_response_dict() -> dict:

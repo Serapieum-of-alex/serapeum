@@ -1,5 +1,7 @@
 """Base classes and implementations for prompt templates used by LLMs."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Sequence
 
@@ -225,7 +227,7 @@ class ChatPromptTemplate(BasePromptTemplate):  # type: ignore[no-redef]
         """From messages."""
         if isinstance(message_templates[0], tuple):
             message_templates = [
-                Message.from_str(role=role, content=content)  # type: ignore[arg-type]
+                Message(role=role, chunks=[TextChunk(content=content)])
                 for role, content in message_templates
             ]
         return cls(message_templates=message_templates, **kwargs)  # type: ignore[arg-type]

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import time
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from serapeum.azure_openai.utils import refresh_openai_azure_ad_token, resolve_from_aliases
+from serapeum.azure_openai.utils import (
+    refresh_openai_azure_ad_token,
+    resolve_from_aliases,
+)
 
 
 @pytest.mark.unit
@@ -50,9 +52,7 @@ class TestRefreshOpenaiAzureadToken:
         assert result is token
 
     @patch("serapeum.azure_openai.utils.DefaultAzureCredential")
-    def test_none_token_triggers_refresh(
-        self, mock_credential_cls: MagicMock
-    ) -> None:
+    def test_none_token_triggers_refresh(self, mock_credential_cls: MagicMock) -> None:
         """None token triggers credential refresh."""
         mock_credential = mock_credential_cls.return_value
         new_token = MagicMock()
@@ -92,5 +92,7 @@ class TestRefreshOpenaiAzureadToken:
             message="bad creds"
         )
 
-        with pytest.raises(ValueError, match="Unable to acquire a valid Microsoft Entra ID"):
+        with pytest.raises(
+            ValueError, match="Unable to acquire a valid Microsoft Entra ID"
+        ):
             refresh_openai_azure_ad_token(None)

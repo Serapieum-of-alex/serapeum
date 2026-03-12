@@ -28,7 +28,7 @@ llm = Ollama(
 )
 
 # Send chat request
-messages = [Message(role=MessageRole.USER, content="Say 'pong'.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Say 'pong'.")])]
 response = llm.chat(messages)
 print(response.message.content)  # "Pong!"
 ```
@@ -253,11 +253,12 @@ def client(self) -> Client:
 
 ### 2. **Template Method Pattern**
 FunctionCallingLLM defines workflow, Ollama implements specifics:
+
 ```python
 def generate_tool_calls(self, messages, tools, **kwargs):
     prepared = self._prepare_chat_with_tools(messages, tools, **kwargs)  # Subclass
     response = self.chat(prepared)
-    validated = self._validate_chat_with_tools_response(response, tools)  # Subclass
+    validated = self._validate_response(response, tools)  # Subclass
     return validated
 ```
 
@@ -382,12 +383,12 @@ uv pip install -e libs/providers/serapeum-ollama
 # Create once
 import os
 from serapeum.ollama import Ollama
-from serapeum.core.llms import Message, MessageRole
+from serapeum.core.llms import Message, MessageRole, TextChunk
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"), timeout=180)
 
 # Reuse many times
-messages1 = [Message(role=MessageRole.USER, content="Hi!")]
-messages2 = [Message(role=MessageRole.USER, content="How are you?")]
+messages1 = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Hi!")])]
+messages2 = [Message(role=MessageRole.USER, chunks=[TextChunk(content="How are you?")])]
 response1 = llm.chat(messages1)
 response2 = llm.chat(messages2)
 print(response1.message.content)  # "Hi!"
@@ -404,7 +405,7 @@ llm = Ollama(
   api_key=os.environ.get("OLLAMA_API_KEY"),
   timeout=180
 )
-messages = [Message(role=MessageRole.USER, content="Tell me a joke.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Tell me a joke.")])]
 for chunk in llm.chat(messages, stream=True):
     print(f"{chunk.message.content}\n", end="", flush=True)
 
@@ -441,14 +442,14 @@ from serapeum.ollama import Ollama
 
 # Define your output schema
 class Song(BaseModel):
-    title: str
-    duration: int  # in seconds
+  title: str
+  duration: int  # in seconds
 
 class Album(BaseModel):
-    title: str
-    artist: str
-    songs: list[Song]
-    
+  title: str
+  artist: str
+  songs: list[Song]
+
 llm = Ollama(
   model="qwen3.5:397b",
   api_key=os.environ.get("OLLAMA_API_KEY"),
@@ -459,22 +460,22 @@ llm = Ollama(
 tool = CallableTool.from_model(Album)
 
 # Get structured output via tool calling
-response = llm.generate_tool_calls(tools=[tool], user_msg="Create an album about rock")
+response = llm.generate_tool_calls(tools=[tool], message="Create an album about rock")
 
 # print(response.message.additional_kwargs["tool_calls"])
 # [
 #   ToolCall(
 #       function=Function(
-#           name='Album', 
-#           arguments={'title': 'Thunder & Lightning', 'artist': 'The Rock Legends', 
+#           name='Album',
+#           arguments={'title': 'Thunder & Lightning', 'artist': 'The Rock Legends',
 #           'songs': [
-#               {'duration': 245, 'title': 'Electric Storm'}, 
-#               {'duration': 312, 'title': 'Midnight Rider'}, 
-#               {'duration': 278, 'title': 'Breaking Chains'}, 
-#               {'duration': 295, 'title': 'Highway to Glory'}, 
-#               {'duration': 267, 'title': 'Rebel Heart'}, 
-#               {'duration': 334, 'title': 'Stone Cold Blues'}, 
-#               {'duration': 289, 'title': 'Rise Up'}, 
+#               {'duration': 245, 'title': 'Electric Storm'},
+#               {'duration': 312, 'title': 'Midnight Rider'},
+#               {'duration': 278, 'title': 'Breaking Chains'},
+#               {'duration': 295, 'title': 'Highway to Glory'},
+#               {'duration': 267, 'title': 'Rebel Heart'},
+#               {'duration': 334, 'title': 'Stone Cold Blues'},
+#               {'duration': 289, 'title': 'Rise Up'},
 #               {'duration': 356, 'title': 'Last Stand'}
 #           ]
 #        }
@@ -501,9 +502,9 @@ async def main():
 
     # Prepare multiple message lists
     message_list = [
-        [Message(role=MessageRole.USER, content="What is 2+2?")],
-        [Message(role=MessageRole.USER, content="What is the capital of France?")],
-        [Message(role=MessageRole.USER, content="What is Python?")],
+        [Message(role=MessageRole.USER, chunks=[TextChunk(content="What is 2+2?")])],
+        [Message(role=MessageRole.USER, chunks=[TextChunk(content="What is the capital of France?")])],
+        [Message(role=MessageRole.USER, chunks=[TextChunk(content="What is Python?")])],
     ]
 
     # Process multiple requests concurrently

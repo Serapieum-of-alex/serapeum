@@ -9,6 +9,7 @@ without the overhead of loading actual embedding models or making API calls.
 """
 
 from __future__ import annotations
+
 from pydantic import Field, field_validator
 
 from serapeum.core.base.embeddings.base import BaseEmbedding, Embedding

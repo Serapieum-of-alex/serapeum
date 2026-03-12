@@ -1,18 +1,19 @@
 """Helper adapters to bridge chat and completion interfaces for LLM backends."""
-from __future__ import annotations
-import os
 
-from typing import Sequence, Callable, Any, Awaitable
+from __future__ import annotations
+
+import os
+from typing import Any, Awaitable, Callable, Sequence
 
 from serapeum.core.llms import (
-    MessageRole,
-    Message,
     ChatResponse,
-    CompletionResponse,
-    CompletionResponseGen,
+    ChatResponseAsyncGen,
     ChatResponseGen,
+    CompletionResponse,
     CompletionResponseAsyncGen,
-    ChatResponseAsyncGen
+    CompletionResponseGen,
+    Message,
+    MessageRole,
 )
 
 __all__ = [
@@ -21,7 +22,7 @@ __all__ = [
     "completion_to_chat_decorator",
     "stream_completion_to_chat_decorator",
     "acompletion_to_chat_decorator",
-    "astream_completion_to_chat_decorator"
+    "astream_completion_to_chat_decorator",
 ]
 
 
@@ -48,6 +49,7 @@ def get_from_param_or_env(
             f" `{env_key}` which contains it, or pass"
             f"  `{key}` as a named parameter."
         )
+
 
 def messages_to_prompt(messages: Sequence[Message]) -> str:
     """Convert messages to a prompt string."""
@@ -117,7 +119,7 @@ def astream_completion_to_chat_decorator(
     """Convert a completion function to a chat function."""
 
     async def wrapper(
-            messages: Sequence[Message], **kwargs: Any
+        messages: Sequence[Message], **kwargs: Any
     ) -> ChatResponseAsyncGen:
         # normalize input
         prompt = messages_to_prompt(messages)

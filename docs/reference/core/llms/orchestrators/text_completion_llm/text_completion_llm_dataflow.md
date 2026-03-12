@@ -101,7 +101,7 @@ Input:
 
 Transformations:
   1. kwargs: {test_input: "hello"}
-  2. Formatted messages: [Message(role=USER, content="This is a test...")]
+  2. Formatted messages: [Message(role=USER, chunks=[TextChunk(content="This is a test...")])]
   3. Extended messages: [Message(role=SYSTEM, ...), Message(role=USER, ...)]
   4. LLM request: {"model": "llama3.1", "messages": [...]}
   5. Raw response: '{"hello": "world"}'

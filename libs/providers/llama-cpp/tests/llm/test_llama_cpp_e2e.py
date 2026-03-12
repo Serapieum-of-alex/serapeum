@@ -19,7 +19,13 @@ import os
 
 import pytest
 
-from serapeum.core.llms import ChatResponse, CompletionResponse, Message, MessageRole
+from serapeum.core.llms import (
+    ChatResponse,
+    CompletionResponse,
+    Message,
+    MessageRole,
+    TextChunk,
+)
 from serapeum.llama_cpp import LlamaCPP
 from serapeum.llama_cpp.formatters.llama3 import (
     completion_to_prompt_v3_instruct,
@@ -44,7 +50,9 @@ TEMPERATURE = 0.0
 
 def _user_messages(*contents: str) -> list[Message]:
     """Build a list of USER messages from plain strings."""
-    return [Message(role=MessageRole.USER, content=c) for c in contents]
+    return [
+        Message(role=MessageRole.USER, chunks=[TextChunk(content=c)]) for c in contents
+    ]
 
 
 @pytest.fixture(scope="module")
@@ -586,9 +594,16 @@ class TestLlamaCPPChat:
             errors, proving the prompt formatter handles multi-turn context.
         """
         messages = [
-            Message(role=MessageRole.USER, content="My name is Alex."),
-            Message(role=MessageRole.ASSISTANT, content="Nice to meet you, Alex!"),
-            Message(role=MessageRole.USER, content="What is my name?"),
+            Message(
+                role=MessageRole.USER, chunks=[TextChunk(content="My name is Alex.")]
+            ),
+            Message(
+                role=MessageRole.ASSISTANT,
+                chunks=[TextChunk(content="Nice to meet you, Alex!")],
+            ),
+            Message(
+                role=MessageRole.USER, chunks=[TextChunk(content="What is my name?")]
+            ),
         ]
         response = llm.chat(messages)
         assert isinstance(

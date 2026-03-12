@@ -1,6 +1,7 @@
 """Utilities for working with JSON schemas and LLMs."""
 
 from __future__ import annotations
+
 import copy
 import json
 import re
@@ -12,7 +13,7 @@ __all__ = [
     "Schema",
     "JsonParser",
     "PYDANTIC_FORMAT_TMPL",
-    "parse_partial_json"
+    "parse_partial_json",
 ]
 
 PYDANTIC_FORMAT_TMPL = """
@@ -255,7 +256,7 @@ class SchemaFormatter:
         excluded_keys: list[str] | None = None,
         escape_json: bool = True,
     ) -> str:
-        """Format a schema dictionary for inclusion in an LLM prompt.
+        r"""Format a schema dictionary for inclusion in an LLM prompt.
 
         Args:
             schema_dict: Full JSON Schema dictionary.
@@ -268,12 +269,13 @@ class SchemaFormatter:
 
         Examples:
             >>> from pydantic import BaseModel
+            >>> from serapeum.core.utils.schemas import SchemaFormatter
             >>> class Task(BaseModel):
             ...     title: str
             ...     done: bool = False
             >>> schema = Task.model_json_schema()
             >>> prompt = SchemaFormatter.format_for_llm(schema, escape_json=False)
-            >>> prompt.split('\\n')[1]
+            >>> prompt.split('\n')[1]
             "Here's a JSON schema to follow strictly:"
         """
         simplified_schema = SchemaFormatter.simplify(schema_dict, excluded_keys)

@@ -29,7 +29,7 @@ jobs:
         uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
         with:
           python-version: ${{ matrix.python-version }}
-          install-groups: dev
+          install-groups: "groups: dev"
           verify-lock: true
 
       - name: Test llama-cpp Package
@@ -57,7 +57,7 @@ jobs:
         uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
         with:
           python-version: "3.12"
-          install-groups: dev
+          install-groups: "groups: dev"
           verify-lock: true
 
       # stories260K.gguf: 1.19 MB LLaMA model trained on TinyStories.
@@ -106,7 +106,7 @@ jobs:
         uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
         with:
           python-version: "3.12"
-          install-groups: dev
+          install-groups: "groups: dev"
 
       - name: Install llama-cpp dev deps (type stubs)
         run: uv sync --package serapeum-llama-cpp --dev --active
@@ -126,7 +126,7 @@ jobs:
         uses: Serapieum-of-alex/github-actions/actions/python-setup/uv@uv/v1
         with:
           python-version: "3.12"
-          install-groups: dev
+          install-groups: "groups: dev"
           verify-lock: true
 
       - name: Test llama-cpp doctests

@@ -12,7 +12,7 @@ from serapeum.core.tools.concurrent import (
     chunks,
     run_async_tasks,
 )
-from serapeum.core.utils.base import run_jobs, DEFAULT_NUM_WORKERS
+from serapeum.core.utils.base import DEFAULT_NUM_WORKERS, run_jobs
 
 
 class TestAsyncioRun:

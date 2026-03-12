@@ -115,7 +115,7 @@ llm = Ollama(
 
 # Simple chat
 messages = [
-    Message(role=MessageRole.USER, content="Explain quantum computing in one sentence.")
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="Explain quantum computing in one sentence.")])
 ]
 response = llm.chat(messages)
 print(response.message.content)
@@ -141,16 +141,16 @@ llm = Ollama(
 
 # Single message
 response = llm.chat([
-    Message(role=MessageRole.USER, content="What is the capital of France?")
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What is the capital of France?")])
 ])
 print(response.message.content)  # "The capital of France is Paris."
 
 # Multi-turn conversation
 conversation = [
-    Message(role=MessageRole.SYSTEM, content="You are a helpful assistant."),
-    Message(role=MessageRole.USER, content="What's 2+2?"),
-    Message(role=MessageRole.ASSISTANT, content="4"),
-    Message(role=MessageRole.USER, content="And if I add 3?"),
+    Message(role=MessageRole.SYSTEM, chunks=[TextChunk(content="You are a helpful assistant.")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="What's 2+2?")]),
+    Message(role=MessageRole.ASSISTANT, chunks=[TextChunk(content="4")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content="And if I add 3?")]),
 ]
 
 response = llm.chat(MessageList.from_list(conversation))
@@ -208,7 +208,7 @@ from serapeum.ollama import Ollama
 from serapeum.core.llms import Message, MessageRole
 
 llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"))
-messages = [Message(role=MessageRole.USER, content="Write a haiku about coding.")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Write a haiku about coding.")])]
 
 # Synchronous streaming
 print("Streaming response: ", end="")
@@ -230,7 +230,7 @@ from serapeum.core.llms import Message, MessageRole
 
 async def stream_example():
     llm = Ollama(model="qwen3.5:397b", api_key=os.environ.get("OLLAMA_API_KEY"))
-    messages = [Message(role=MessageRole.USER, content="Count to 5.")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 5.")])]
 
     stream = await llm.achat(messages, stream=True)
     async for chunk in stream:
@@ -391,7 +391,7 @@ def calculate(operation: str, a: float, b: float) -> float:
 
 calculator_tool = CallableTool.from_model(CalculatorInput)
 
-messages = [Message(role=MessageRole.USER, content="What's 25 + 17?")]
+messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="What's 25 + 17?")])]
 
 llm = Ollama(
     model="qwen3.5:397b",
@@ -583,9 +583,8 @@ context = similarities[0][0]
 messages = [
     Message(
         role=MessageRole.SYSTEM,
-        content=f"Answer based on this context: {context}"
-    ),
-    Message(role=MessageRole.USER, content=query)
+        chunks=[TextChunk(content=f"Answer based on this context: {context}")]),
+    Message(role=MessageRole.USER, chunks=[TextChunk(content=query)])
 ]
 
 response = llm.chat(messages)
@@ -701,12 +700,12 @@ async def main():
 
     # Async chat
     response = await llm.achat([
-        Message(role=MessageRole.USER, content="Hello!")
+        Message(role=MessageRole.USER, chunks=[TextChunk(content="Hello!")])
     ])
     print(response.message.content)
 
     # Async streaming
-    messages = [Message(role=MessageRole.USER, content="Count to 5.")]
+    messages = [Message(role=MessageRole.USER, chunks=[TextChunk(content="Count to 5.")])]
     stream = await llm.achat(messages, stream=True)
 
     async for chunk in stream:

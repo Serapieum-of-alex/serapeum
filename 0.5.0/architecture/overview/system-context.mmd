@@ -1,0 +1,74 @@
+%% Architecture Overview: System Context (C4-like)
+%% Color/Style Legend is defined in legend.md
+flowchart LR
+  %% Styles
+  classDef abstract fill:#f5f5f5,stroke:#666,stroke-dasharray: 5 3
+  classDef concrete fill:#e3f2fd,stroke:#1565c0
+  classDef interface fill:#fffde7,stroke:#f9a825
+  classDef datamodel fill:#e8f5e9,stroke:#2e7d32
+  classDef layerBase fill:#ede7f6,stroke:#5e35b1
+  classDef layerCore fill:#e0f7fa,stroke:#00838f
+  classDef layerHigh fill:#fff3e0,stroke:#ef6c00
+  classDef external fill:#ffebee,stroke:#c62828
+
+  subgraph L1[Layer 1: Base Models & Interfaces]
+    direction TB
+    AB(serapeum.core.base.llms.base.BaseLLM):::abstract
+    DM1(serapeum.core.base.llms.types.Message):::datamodel
+    DM2(ChatResponse):::datamodel
+    DM3(CompletionResponse):::datamodel
+    ML(MessageList):::datamodel
+  end
+  class L1 layerBase
+
+  subgraph L2[Layer 2: Core Abstractions]
+    direction TB
+    LLM(serapeum.core.llms.base.LLM):::abstract
+    PT(serapeum.core.prompts.base.PromptTemplate):::concrete
+    CPT(ChatPromptTemplate):::concrete
+    OP(serapeum.core.output_parsers):::interface
+  end
+  class L2 layerCore
+
+  subgraph L3[Layer 3: High-level Orchestration]
+    direction TB
+    FCLLM(serapeum.core.llms.function_calling.FunctionCallingLLM):::concrete
+    SLLM(serapeum.core.llms.structured_output_llm.StructuredOutputLLM):::concrete
+    TO(serapeum.core.llms.ToolOrchestratingLLM):::concrete
+    Tools(serapeum.core.tools.callable_tool.CallableTool):::concrete
+    TModels(serapeum.core.tools.types.*):::concrete
+    ACR(serapeum.core.chat.types.AgentChatResponse):::concrete
+  end
+  class L3 layerHigh
+
+  subgraph L4[Layer 4: Concrete Implementations]
+    direction TB
+    OLL(serapeum.ollama.base.Ollama):::concrete
+  end
+
+  subgraph EXT[External Systems]
+    direction TB
+    U(User Application Code):::external
+    OServer(Ollama Server API):::external
+    Pyd(Pydantic Models):::external
+  end
+  class EXT external
+
+  %% Relations
+  U -->|uses| PT
+  U -->|calls| LLM
+  PT -->|formats to| ML
+  ML -->|consumed by| AB
+  LLM -->|produces| DM2
+  LLM -->|produces| DM3
+  LLM -->|parses via| OP
+  FCLLM -->|extends| LLM
+  SLLM -->|wraps| LLM
+  TO -->|uses| Tools
+  TO -->|uses| FCLLM
+  Tools -->|emit| TModels
+  FCLLM -->|returns| ACR
+  OLL -->|extends| FCLLM
+  OLL -->|HTTP| OServer
+  SLLM -->|validates with| Pyd
+  TO -->|validates with| Pyd

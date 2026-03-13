@@ -1,0 +1,86 @@
+%% Mermaid Class Diagram for serapeum.core.tools
+
+classDiagram
+    %% Core models
+    class MinimalToolSchema {
+        +input: str
+    }
+
+    class Schema {
+        +full_schema: Dict~str, Any~
+        +resolved_schema: Dict~str, Any~?
+        +referenced_schema: Dict~str, Any~?
+        +resolve_references(inline=False) dict
+        +_resolve_local_refs(obj, defs) Any
+    }
+
+    class ToolMetadata {
+        +name: str?
+        +description: str
+        +tool_schema: BaseModel?
+        +return_direct: bool
+        +get_schema() dict
+        +tool_schema_str: str
+        +get_name() str
+        +to_openai_tool(skip_length_check=False) Dict
+    }
+
+    class ToolOutput {
+        +chunks: List~ChunkType~
+        +tool_name: str
+        +raw_input: Dict~str, Any~?
+        +raw_output: Any
+        +is_error: bool
+        +content: str
+        +__str__() str
+    }
+
+    %% Tool interfaces and adapters
+    class BaseTool {
+        <<abstract>>
+        +metadata: ToolMetadata
+        +__call__(input_values) ToolOutput
+    }
+
+    class AsyncBaseTool {
+        <<abstract>>
+        +__call__(*args, **kwargs) ToolOutput
+        +call(input_values) ToolOutput
+        +acall(input_values) ToolOutput
+    }
+
+    class BaseToolAsyncAdapter {
+        +base_tool: BaseTool
+        +metadata: ToolMetadata
+        +call(input_values) ToolOutput
+        +acall(input_values) ToolOutput
+    }
+
+    class ToolCallArguments {
+        +tool_id: str
+        +tool_name: str
+        +tool_kwargs: Dict~str, Any~
+        +ignore_non_dict_arguments(v, handler) Dict~str, Any~
+    }
+
+    %% Schema utilities
+    %% (Schema resolution handled by `Schema` in this module)
+
+    %% Execution utilities
+    %% (Tool executors are no longer part of this module)
+
+    %% External content chunk types
+    class TextChunk
+
+    %% Inheritance
+    BaseTool <|-- AsyncBaseTool
+    AsyncBaseTool <|-- BaseToolAsyncAdapter
+
+    %% Associations/uses
+    MinimalToolSchema <.. ToolMetadata : default
+    ToolMetadata ..> MinimalToolSchema : fallback
+    ToolMetadata ..> Schema : inlines refs
+    ToolOutput ..> TextChunk : contains
+    BaseToolAsyncAdapter --> BaseTool : wraps
+    BaseTool ..> ToolOutput : returns
+    AsyncBaseTool ..> ToolOutput : returns

@@ -1,6 +1,6 @@
 [project]
 name = "serapeum-azure-openai"
-version = "0.0.0"
+version = "0.1.0"
 description = "serapeum azure openai integration"
 authors = [{name = "Mostafa Farrag", email = "moah.farrag@gmail.com"}]
 readme = "README.md"
@@ -25,10 +25,10 @@ classifiers = [
 
 requires-python = ">=3.11,<4.0"
 dependencies = [
-    "serapeum-core>=0.4.0",
-    "serapeum-openai",
+    "serapeum-core>=0.5.0",
+    "serapeum-openai>=0.1.0",
     "azure-identity>=1.15.0,<2",
-    "httpx",
+    "httpx>=0.28.1",
 ]
 
 

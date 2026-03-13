@@ -3398,7 +3398,7 @@ wheels = [
 
 [[package]]
 name = "serapeum"
-version = "0.3.0"
+version = "0.5.0"
 source = { editable = "." }
 dependencies = [
     { name = "serapeum-azure-openai" },
@@ -3487,7 +3487,7 @@ docs = [
 
 [[package]]
 name = "serapeum-azure-openai"
-version = "0.0.0"
+version = "0.1.0"
 source = { editable = "libs/providers/azure-openai" }
 dependencies = [
     { name = "azure-identity" },
@@ -3515,7 +3515,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "azure-identity", specifier = ">=1.15.0,<2" },
-    { name = "httpx" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "serapeum-core", editable = "libs/core" },
     { name = "serapeum-openai", editable = "libs/providers/openai" },
 ]
@@ -3538,7 +3538,7 @@ dev = [
 
 [[package]]
 name = "serapeum-core"
-version = "0.4.0"
+version = "0.5.0"
 source = { editable = "libs/core" }
 dependencies = [
     { name = "filetype" },
@@ -3593,7 +3593,7 @@ dev = [
 
 [[package]]
 name = "serapeum-llama-cpp"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "libs/providers/llama-cpp" }
 dependencies = [
     { name = "huggingface-hub" },
@@ -3648,7 +3648,7 @@ dev = [
 
 [[package]]
 name = "serapeum-ollama"
-version = "0.4.0"
+version = "0.5.0"
 source = { editable = "libs/providers/ollama" }
 dependencies = [
     { name = "ollama" },
@@ -3695,7 +3695,7 @@ dev = [
 
 [[package]]
 name = "serapeum-openai"
-version = "0.0.0"
+version = "0.1.0"
 source = { editable = "libs/providers/openai" }
 dependencies = [
     { name = "openai" },

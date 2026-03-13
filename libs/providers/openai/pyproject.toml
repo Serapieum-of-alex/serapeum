@@ -1,6 +1,6 @@
 [project]
 name = "serapeum-openai"
-version = "0.0.0"
+version = "0.1.0"
 description = "serapeum openai integration"
 authors = [
     {name = "Mostafa Farrag", email = "moah.farrag@gmail.com"}
@@ -26,7 +26,7 @@ classifiers = [
 
 requires-python = ">=3.11,<4.0"
 dependencies = [
-    "serapeum-core>=0.4.0",
+    "serapeum-core>=0.5.0",
     "openai>=1.108.1,<3",
     "tiktoken>=0.12.0",
     "pyyaml>=6.0"

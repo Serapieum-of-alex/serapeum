@@ -1,6 +1,6 @@
 [project]
 name = "serapeum-azure-openai"
-version = "0.0.0"
+version = "0.1.0"
 description = "serapeum azure openai integration"
 authors = [{name = "Mostafa Farrag", email = "moah.farrag@gmail.com"}]
 readme = "README.md"

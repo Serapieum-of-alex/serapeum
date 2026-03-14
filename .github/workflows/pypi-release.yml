@@ -25,6 +25,8 @@ on:
           - serapeum-core
           - serapeum-ollama
           - serapeum-llama-cpp
+          - serapeum-openai
+          - serapeum-azure-openai
 
 jobs:
   publish:
@@ -43,7 +45,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PACKAGE="${{ github.event.inputs.package }}"
           else
-            PACKAGE=$(git tag --sort=-creatordate | grep -E '^serapeum-(core|ollama|llama-cpp)-[0-9]+\.[0-9]+\.[0-9]+$' | head -1 | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+$//')
+            PACKAGE=$(git tag --sort=-creatordate | grep -E '^serapeum-(core|ollama|llama-cpp|openai|azure-openai)-[0-9]+\.[0-9]+\.[0-9]+$' | head -1 | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+$//')
           fi
           echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV
           echo "Publishing package: $PACKAGE"

@@ -1,9 +1,6 @@
-## serapeum-openai-0.1.0 (2026-03-12)
+## serapeum-openai-0.1.0 (2026-03-14)
 
 
-- build: sync uv.lock after serapeum-llama-cpp version bump
-- build: sync uv.lock after serapeum-ollama version bump
-- build: sync uv.lock after serapeum-core version bump
 - refactor(api)!: unify provider API surface across core, OpenAI, Azure, and Ollama (#48)
 - - Move shared logic (tool-call extraction, response validation) from                                               
     individual providers into FunctionCallingLLM base class

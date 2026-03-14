@@ -3487,7 +3487,7 @@ docs = [
 
 [[package]]
 name = "serapeum-azure-openai"
-version = "0.1.0"
+version = "0.0.0"
 source = { editable = "libs/providers/azure-openai" }
 dependencies = [
     { name = "azure-identity" },
